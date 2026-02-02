@@ -443,7 +443,7 @@ describe("Graph Cache - LRU Implementation", () => {
 
 		it("should handle circular references without infinite loops", () => {
 			const cache = createGraphCache();
-			const obj: any = { data: "test" };
+			const obj: { data: string } = { data: "test" };
 			obj.self = obj;
 
 			// Should not throw

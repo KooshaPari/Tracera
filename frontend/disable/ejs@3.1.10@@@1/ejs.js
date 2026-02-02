@@ -341,7 +341,7 @@
 									try {
 										result = handleCache(options)(data);
 										resolve(result);
-									} catch (err) {
+									} catch (_err) {
 										reject(err);
 									}
 								});
@@ -351,7 +351,7 @@
 						} else {
 							try {
 								result = handleCache(options)(data);
-							} catch (err) {
+							} catch (_err) {
 								return cb(err);
 							}
 
@@ -1246,7 +1246,7 @@
 							// If Object.defineProperty() doesn't exist, attempt to shadow this property using the assignment operator.
 							exports.escapeXML.toString = escapeXMLToString;
 						}
-					} catch (err) {
+					} catch (_err) {
 						console.warn(
 							"Unable to set escapeXML.toString (is the Function prototype frozen?)",
 						);

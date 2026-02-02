@@ -88,7 +88,7 @@ internals.valueOf = (obj) => {
 
 	try {
 		return objValueOf.call(obj);
-	} catch (err) {
+	} catch (_err) {
 		return err;
 	}
 };

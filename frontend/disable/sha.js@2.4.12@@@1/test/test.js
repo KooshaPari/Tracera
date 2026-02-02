@@ -10,7 +10,7 @@ var nodeSupportsUint16 = false;
 try {
 	crypto.createHash('sha1').update(new Uint16Array());
 	nodeSupportsUint16 = true;
-} catch (err) {}
+} catch (_err) {}
 
 var inputs = [
 	['', 'ascii'],
@@ -122,7 +122,7 @@ tape('call digest for more than MAX_UINT32 bits of data', function (t) {
 	var bigData;
 	try {
 		bigData = Buffer.alloc(0x1ffffffff / 8);
-	} catch (err) {
+	} catch (_err) {
 		// node < 3 has a lower buffer size limit than node 3+. node 0.10 requires the `/8`, 0.12 - 2 are fine with `-8`
 		bigData = Buffer.alloc(0x3fffffff / 8);
 	}

@@ -9,7 +9,7 @@ const toBeChecked = async function (...args) {
 			message: () =>
 				utils_1.getMessage(this, "toBeChecked", true, isChecked, ""),
 		};
-	} catch (err) {
+	} catch (_err) {
 		return {
 			pass: false,
 			message: () => err.toString(),

@@ -1,3 +1,4 @@
+import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig, externalizeDepsPlugin } from "electron-vite";
 import path from "path";
@@ -16,7 +17,7 @@ export default defineConfig({
 		},
 	},
 	renderer: {
-		plugins: [react()],
+		plugins: [tailwindcss(), react()],
 		root: "../web",
 		resolve: {
 			alias: {
@@ -25,9 +26,14 @@ export default defineConfig({
 		},
 		build: {
 			outDir: path.resolve(__dirname, "dist/renderer"),
+			cssMinify: "lightningcss",
 			rollupOptions: {
 				input: path.resolve(__dirname, "../web/index.html"),
 			},
+		},
+		css: {
+			transformer: "lightningcss",
+			lightningcss: {},
 		},
 	},
 });

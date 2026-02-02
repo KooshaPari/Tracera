@@ -574,7 +574,7 @@ var require_react_dom_production_min = __commonJS({
     ["rowSpan", "start"].forEach(function(a3) {
       z[a3] = new v(a3, 5, !1, a3.toLowerCase(), null, !1, !1);
     });
-    var ra = /[\-:]([a-z])/g;
+    var ra = /[-:]([a-z])/g;
     function sa(a3) {
       return a3[1].toUpperCase();
     }
@@ -3807,7 +3807,7 @@ Error generating stack: ` + f4.message + `
               }
               d = e, b.updateQueue = d, d !== null && (b.flags |= 4);
             } else {
-              g2 = e.nodeType === 9 ? e : e.ownerDocument, a3 === "http://www.w3.org/1999/xhtml" && (a3 = kb(c)), a3 === "http://www.w3.org/1999/xhtml" ? c === "script" ? (a3 = g2.createElement("div"), a3.innerHTML = "<script><\/script>", a3 = a3.removeChild(a3.firstChild)) : typeof d.is == "string" ? a3 = g2.createElement(c, { is: d.is }) : (a3 = g2.createElement(c), c === "select" && (g2 = a3, d.multiple ? g2.multiple = !0 : d.size && (g2.size = d.size))) : a3 = g2.createElementNS(a3, c), a3[Of] = b, a3[Pf] = d, zj(a3, b, !1, !1), b.stateNode = a3;
+              g2 = e.nodeType === 9 ? e : e.ownerDocument, a3 === "http://www.w3.org/1999/xhtml" && (a3 = kb(c)), a3 === "http://www.w3.org/1999/xhtml" ? c === "script" ? (a3 = g2.createElement("div"), a3.innerHTML = "<script></script>", a3 = a3.removeChild(a3.firstChild)) : typeof d.is == "string" ? a3 = g2.createElement(c, { is: d.is }) : (a3 = g2.createElement(c), c === "select" && (g2 = a3, d.multiple ? g2.multiple = !0 : d.size && (g2.size = d.size))) : a3 = g2.createElementNS(a3, c), a3[Of] = b, a3[Pf] = d, zj(a3, b, !1, !1), b.stateNode = a3;
               a: {
                 switch (g2 = vb(c, d), c) {
                   case "dialog":
@@ -5712,7 +5712,7 @@ var require_react_dom = __commonJS({
       if (!(typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ > "u" || typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.checkDCE != "function"))
         try {
           __REACT_DEVTOOLS_GLOBAL_HOOK__.checkDCE(checkDCE);
-        } catch (err) {
+        } catch (_err) {
           console.error(err);
         }
     }
@@ -8691,7 +8691,7 @@ var themesBase, preferredColorScheme, themes, create, init_create = __esm({
         // We always inherit the preferred color scheme.
         ...themes[preferredColorScheme],
         // And then the declared theme base if it exists.
-        ...themes[vars.base] || {},
+        ...themes[vars.base],
         // And then the actual theme content.
         ...vars,
         // If no theme base was declared, we declare the preferred color scheme as the base.
@@ -9429,8 +9429,8 @@ var require_bash = __commonJS({
               pattern: /\$\{[^}]+\}/,
               greedy: !0,
               inside: {
-                operator: /:[-=?+]?|[!\/]|##?|%%?|\^\^?|,,?/,
-                punctuation: /[\[\]]/,
+                operator: /:[-=?+]?|[!/]|##?|%%?|\^\^?|,,?/,
+                punctuation: /[[\]]/,
                 environment: {
                   pattern: RegExp("(\\{)" + envVars),
                   lookbehind: !0,
@@ -9749,7 +9749,7 @@ var require_graphql = __commonJS({
         operator: /[!=|&]|\.{3}/,
         "property-query": /\w+(?=\s*\()/,
         object: /\w+(?=\s*\{)/,
-        punctuation: /[!(){}\[\]:=,]/,
+        punctuation: /[!(){}[\]:=,]/,
         property: /\w+/
       }, Prism.hooks.add("after-tokenize", function(env) {
         if (env.language !== "graphql")
@@ -10023,7 +10023,7 @@ var require_jsx = __commonJS({
         }
         spread = re(spread).source, Prism2.languages.jsx = Prism2.languages.extend("markup", javascript), Prism2.languages.jsx.tag.pattern = re(
           /<\/?(?:[\w.:-]+(?:<S>+(?:[\w.:$-]+(?:=(?:"(?:\\[\s\S]|[^\\"])*"|'(?:\\[\s\S]|[^\\'])*'|[^\s{'"/>=]+|<BRACES>))?|<SPREAD>))*<S>*\/?)?>/.source
-        ), Prism2.languages.jsx.tag.inside.tag.pattern = /^<\/?[^\s>\/]*/, Prism2.languages.jsx.tag.inside["attr-value"].pattern = /=(?!\{)(?:"(?:\\[\s\S]|[^\\"])*"|'(?:\\[\s\S]|[^\\'])*'|[^\s'">]+)/, Prism2.languages.jsx.tag.inside.tag.inside["class-name"] = /^[A-Z]\w*(?:\.[A-Z]\w*)*$/, Prism2.languages.jsx.tag.inside.comment = javascript.comment, Prism2.languages.insertBefore(
+        ), Prism2.languages.jsx.tag.inside.tag.pattern = /^<\/?[^\s>/]*/, Prism2.languages.jsx.tag.inside["attr-value"].pattern = /=(?!\{)(?:"(?:\\[\s\S]|[^\\"])*"|'(?:\\[\s\S]|[^\\'])*'|[^\s'">]+)/, Prism2.languages.jsx.tag.inside.tag.inside["class-name"] = /^[A-Z]\w*(?:\.[A-Z]\w*)*$/, Prism2.languages.jsx.tag.inside.comment = javascript.comment, Prism2.languages.insertBefore(
           "inside",
           "attr-name",
           {
@@ -10245,7 +10245,7 @@ var require_markdown = __commonJS({
                 lookbehind: !0
               },
               string: /(?:"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\((?:\\.|[^)\\])*\))$/,
-              punctuation: /^[\[\]!:]|[<>]/
+              punctuation: /^[[\]!:]|[<>]/
             },
             alias: "url"
           },
@@ -10451,7 +10451,7 @@ var require_markup = __commonJS({
           greedy: !0,
           inside: {
             "internal-subset": {
-              pattern: /(^[^\[]*\[)[\s\S]+(?=\]>$)/,
+              pattern: /(^[^[]*\[)[\s\S]+(?=\]>$)/,
               lookbehind: !0,
               greedy: !0,
               inside: null
@@ -10471,14 +10471,14 @@ var require_markup = __commonJS({
           greedy: !0
         },
         tag: {
-          pattern: /<\/?(?!\d)[^\s>\/=$<%]+(?:\s(?:\s*[^\s>\/=]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s'">=]+(?=[\s>]))|(?=[\s/>])))+)?\s*\/?>/,
+          pattern: /<\/?(?!\d)[^\s>/=$<%]+(?:\s(?:\s*[^\s>/=]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s'">=]+(?=[\s>]))|(?=[\s/>])))+)?\s*\/?>/,
           greedy: !0,
           inside: {
             tag: {
-              pattern: /^<\/?[^\s>\/]+/,
+              pattern: /^<\/?[^\s>/]+/,
               inside: {
                 punctuation: /^<\/?/,
-                namespace: /^[^\s>\/:]+:/
+                namespace: /^[^\s>/:]+:/
               }
             },
             "special-attr": [],
@@ -10496,9 +10496,9 @@ var require_markup = __commonJS({
             },
             punctuation: /\/?>/,
             "attr-name": {
-              pattern: /[^\s>\/]+/,
+              pattern: /[^\s>/]+/,
               inside: {
-                namespace: /^[^\s>\/:]+:/
+                namespace: /^[^\s>/:]+:/
               }
             }
           }
@@ -10634,7 +10634,7 @@ var require_typescript = __commonJS({
           // keywords that have to be followed by an identifier
           /\b(?:asserts|infer|interface|module|namespace|type)\b(?=\s*(?:[{_$a-zA-Z\xA0-\uFFFF]|$))/,
           // This is for `import type *, {}`
-          /\btype\b(?=\s*(?:[\{*]|$))/
+          /\btype\b(?=\s*(?:[{*]|$))/
         ), delete Prism2.languages.typescript.parameter, delete Prism2.languages.typescript["literal-property"];
         var typeInside = Prism2.languages.extend("typescript", {});
         delete typeInside["class-name"], Prism2.languages.typescript["class-name"].inside = typeInside, Prism2.languages.insertBefore("typescript", "function", {
@@ -10731,7 +10731,7 @@ var require_yaml = __commonJS({
         Prism2.languages.yaml = {
           scalar: {
             pattern: RegExp(
-              /([\-:]\s*(?:\s<<prop>>[ \t]+)?[|>])[ \t]*(?:((?:\r?\n|\r)[ \t]+)\S[^\r\n]*(?:\2[^\r\n]+)*)/.source.replace(
+              /([-:]\s*(?:\s<<prop>>[ \t]+)?[|>])[ \t]*(?:((?:\r?\n|\r)[ \t]+)\S[^\r\n]*(?:\2[^\r\n]+)*)/.source.replace(
                 /<<prop>>/g,
                 function() {
                   return properties;
@@ -12490,7 +12490,7 @@ var require_prism_core = __commonJS({
               );
             try {
               throw new Error();
-            } catch (err) {
+            } catch (_err) {
               var src = (/at [^(\r\n]*\((.*):[^:]+:[^:]+\)$/i.exec(err.stack) || [])[1];
               if (src) {
                 var scripts = document.getElementsByTagName("script");
@@ -13081,7 +13081,7 @@ var require_javascript = __commonJS({
             lookbehind: !0
           },
           {
-            pattern: /(^|[^.]|\.\.\.\s*)\b(?:as|assert(?=\s*\{)|async(?=\s*(?:function\b|\(|[$\w\xA0-\uFFFF]|$))|await|break|case|class|const|continue|debugger|default|delete|do|else|enum|export|extends|finally(?=\s*(?:\{|$))|for|from(?=\s*(?:['"]|$))|function|(?:get|set)(?=\s*(?:[#\[$\w\xA0-\uFFFF]|$))|if|implements|import|in|instanceof|interface|let|new|null|of|package|private|protected|public|return|static|super|switch|this|throw|try|typeof|undefined|var|void|while|with|yield)\b/,
+            pattern: /(^|[^.]|\.\.\.\s*)\b(?:as|assert(?=\s*\{)|async(?=\s*(?:function\b|\(|[$\w\xA0-\uFFFF]|$))|await|break|case|class|const|continue|debugger|default|delete|do|else|enum|export|extends|finally(?=\s*(?:\{|$))|for|from(?=\s*(?:['"]|$))|function|(?:get|set)(?=\s*(?:[#[$\w\xA0-\uFFFF]|$))|if|implements|import|in|instanceof|interface|let|new|null|of|package|private|protected|public|return|static|super|switch|this|throw|try|typeof|undefined|var|void|while|with|yield)\b/,
             lookbehind: !0
           }
         ],
@@ -13103,7 +13103,7 @@ var require_javascript = __commonJS({
       }), Prism.languages.javascript["class-name"][0].pattern = /(\b(?:class|extends|implements|instanceof|interface|new)\s+)[\w.\\]+/, Prism.languages.insertBefore("javascript", "keyword", {
         regex: {
           // eslint-disable-next-line regexp/no-dupe-characters-character-class
-          pattern: /((?:^|[^$\w\xA0-\uFFFF."'\])\s]|\b(?:return|yield))\s*)\/(?:\[(?:[^\]\\\r\n]|\\.)*\]|\\.|[^/\\\[\r\n])+\/[dgimyus]{0,7}(?=(?:\s|\/\*(?:[^*]|\*(?!\/))*\*\/)*(?:$|[\r\n,.;:})\]]|\/\/))/,
+          pattern: /((?:^|[^$\w\xA0-\uFFFF."'\])\s]|\b(?:return|yield))\s*)\/(?:\[(?:[^\]\\\r\n]|\\.)*\]|\\.|[^/\\[\r\n])+\/[dgimyus]{0,7}(?=(?:\s|\/\*(?:[^*]|\*(?!\/))*\*\/)*(?:$|[\r\n,.;:})\]]|\/\/))/,
           lookbehind: !0,
           greedy: !0,
           inside: {
@@ -15424,7 +15424,7 @@ var require_decode2 = __commonJS({
       return a3 < b ? 1 : -1;
     };
     exports.decodeHTML = (function() {
-      for (var legacy = Object.keys(legacy_json_1.default).sort(sorter), keys3 = Object.keys(entities_json_1.default).sort(sorter), i = 0, j = 0; i < keys3.length; i++)
+      for (var legacy = Object.keys(legacy_json_1.default).toSorted(sorter), keys3 = Object.keys(entities_json_1.default).toSorted(sorter), i = 0, j = 0; i < keys3.length; i++)
         legacy[j] === keys3[i] ? (keys3[i] += ";?", j++) : keys3[i] += ";";
       var re = new RegExp("&(?:" + keys3.join("|") + "|#[xX][\\da-fA-F]+;?|#\\d+;?)", "g"), replace2 = getReplacer(entities_json_1.default);
       function replacer3(str2) {
@@ -15461,7 +15461,7 @@ var require_encode = __commonJS({
     exports.encodeHTML = getInverse(inverseHTML, htmlReplacer);
     exports.encodeNonAsciiHTML = getASCIIEncoder(inverseHTML);
     function getInverseObj(obj) {
-      return Object.keys(obj).sort().reduce(function(inverse, name) {
+      return Object.keys(obj).toSorted().reduce(function(inverse, name) {
         return inverse[obj[name]] = "&" + name + ";", inverse;
       }, {});
     }
@@ -15708,7 +15708,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           var r2 = _step.value;
           results.push(toHexString(r2));
         }
-      } catch (err) {
+      } catch (_err) {
         _iterator.e(err);
       } finally {
         _iterator.f();
@@ -15773,7 +15773,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     }
     function resetStyles(stack) {
       var stackClone = stack.slice(0);
-      return stack.length = 0, stackClone.reverse().map(function(tag) {
+      return stack.length = 0, stackClone.toReversed().map(function(tag) {
         return "</" + tag + ">";
       }).join("");
     }
@@ -15834,7 +15834,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             var g2 = _step2.value;
             callback("display", g2);
           }
-        } catch (err) {
+        } catch (_err) {
           _iterator2.e(err);
         } finally {
           _iterator2.f();
@@ -16665,7 +16665,7 @@ var require_dist = __commonJS({
             } catch (e) {
               if (e instanceof NoParsletFoundError) {
                 if (brackets)
-                  throw new Error("Empty square brackets for variadic are not allowed.");
+                  throw new Error("Empty square brackets for variadic are not allowed.", { cause: e });
                 return {
                   type: "JsdocTypeVariadic",
                   meta: {
@@ -24103,13 +24103,13 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             };
             for (_iterator2.s(); !(_step2 = _iterator2.n()).done; )
               _loop();
-          } catch (err) {
+          } catch (_err) {
             _iterator2.e(err);
           } finally {
             _iterator2.f();
           }
         }
-      } catch (err) {
+      } catch (_err) {
         _iterator.e(err);
       } finally {
         _iterator.f();
@@ -24126,7 +24126,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             var _step3$value = _slicedToArray(_step3.value, 2), key = _step3$value[0], values = _step3$value[1];
             fn4.call(thisArg, values, key, roles3);
           }
-        } catch (err) {
+        } catch (_err) {
           _iterator3.e(err);
         } finally {
           _iterator3.f();
@@ -26693,7 +26693,7 @@ var require_collections = __commonJS({
     exports.printListItems = printListItems2;
     exports.printObjectProperties = printObjectProperties2;
     var getKeysOfEnumerableProperties2 = (object, compareKeys) => {
-      let keys3 = Object.keys(object).sort(compareKeys);
+      let keys3 = Object.keys(object).toSorted(compareKeys);
       return Object.getOwnPropertySymbols && Object.getOwnPropertySymbols(object).forEach((symbol) => {
         Object.getOwnPropertyDescriptor(object, symbol).enumerable && keys3.push(symbol);
       }), keys3;
@@ -27021,7 +27021,7 @@ var require_DOMElement = __commonJS({
       return ++depth > config4.maxDepth ? (0, _markup.printElementAsLeaf)(type5, config4) : (0, _markup.printElement)(
         type5,
         (0, _markup.printProps)(
-          nodeIsFragment3(node2) ? [] : Array.from(node2.attributes).map((attr) => attr.name).sort(),
+          nodeIsFragment3(node2) ? [] : Array.from(node2.attributes).map((attr) => attr.name).toSorted(),
           nodeIsFragment3(node2) ? {} : Array.from(node2.attributes).reduce((props, attribute) => (props[attribute.name] = attribute.value, props), {}),
           config4,
           indentation + config4.indent,
@@ -27331,7 +27331,7 @@ var require_ReactElement = __commonJS({
       return "UNDEFINED";
     }, getPropKeys2 = (element) => {
       let { props } = element;
-      return Object.keys(props).filter((key) => key !== "children" && props[key] !== void 0).sort();
+      return Object.keys(props).filter((key) => key !== "children" && props[key] !== void 0).toSorted();
     }, serialize3 = (element, config4, indentation, depth, refs, printer2) => ++depth > config4.maxDepth ? (0, _markup.printElementAsLeaf)(getType4(element), config4) : (0, _markup.printElement)(
       getType4(element),
       (0, _markup.printProps)(
@@ -27377,7 +27377,7 @@ var require_ReactTestComponent = __commonJS({
       return typeof globalThis < "u" ? globalThis : typeof global2 < "u" ? global2 : typeof self < "u" ? self : typeof window < "u" ? window : Function("return this")();
     })(), Symbol3 = global2["jest-symbol-do-not-touch"] || global2.Symbol, testSymbol2 = typeof Symbol3 == "function" && Symbol3.for ? Symbol3.for("react.test.json") : 245830487, getPropKeys2 = (object) => {
       let { props } = object;
-      return props ? Object.keys(props).filter((key) => props[key] !== void 0).sort() : [];
+      return props ? Object.keys(props).filter((key) => props[key] !== void 0).toSorted() : [];
     }, serialize3 = (object, config4, indentation, depth, refs, printer2) => ++depth > config4.maxDepth ? (0, _markup.printElementAsLeaf)(object.type, config4) : (0, _markup.printElement)(
       object.type,
       object.props ? (0, _markup.printProps)(
@@ -27943,7 +27943,7 @@ var require_copy_to_clipboard = __commonJS({
         if (!successful)
           throw new Error("copy command was unsuccessful");
         success = !0;
-      } catch (err) {
+      } catch (_err) {
         debug2 && console.error("unable to copy using execCommand: ", err), debug2 && console.warn("trying IE specific stuff");
         try {
           window.clipboardData.setData(options.format || "text", text), options.onCopy && options.onCopy(window.clipboardData), success = !0;
@@ -28956,7 +28956,7 @@ var require_simplify = __commonJS({
     "use strict";
     var satisfies = require_satisfies(), compare = require_compare();
     module2.exports = (versions, range, options) => {
-      let set3 = [], first = null, prev2 = null, v = versions.sort((a3, b) => compare(a3, b, options));
+      let set3 = [], first = null, prev2 = null, v = versions.toSorted((a3, b) => compare(a3, b, options));
       for (let version2 of v)
         satisfies(version2, range, options) ? (prev2 = version2, first || (first = version2)) : (prev2 && set3.push([first, prev2]), prev2 = null, first = null);
       first && set3.push([first, null]);
@@ -30250,7 +30250,7 @@ function computeAutoPlacement(state3, options) {
       padding
     })[getBasePlacement(placement2)], acc;
   }, {});
-  return Object.keys(overflows).sort(function(a3, b) {
+  return Object.keys(overflows).toSorted(function(a3, b) {
     return overflows[a3] - overflows[b];
   });
 }
@@ -33101,7 +33101,7 @@ function get(object, path, defaultValue) {
   var result = object == null ? void 0 : baseGet_default(object, path);
   return result === void 0 ? defaultValue : result;
 }
-var get_default = get, isObject3 = isObject, dateFormat = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z$/, isJSON = (input2) => input2.match(/^[\[\{\"\}].*[\]\}\"]$/);
+var get_default = get, isObject3 = isObject, dateFormat = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z$/, isJSON = (input2) => input2.match(/^[[{"}].*[\]}"]$/);
 function convertUnconventionalData(data) {
   if (!isObject3(data))
     return data;
@@ -33321,7 +33321,7 @@ var { document: document2, location: location2 } = scope, KEY = "storybook-chann
       }).filter(([k, v]) => typeof v < "u")
     ), stringifyOptions = {
       ...defaultEventOptions,
-      ...scope.CHANNEL_OPTIONS || {},
+      ...scope.CHANNEL_OPTIONS,
       ...eventOptions
     }, frames = this.getFrames(target), query = new URLSearchParams(location2?.search || ""), data = stringify(
       {
@@ -33618,7 +33618,7 @@ var import_react7 = __toESM(require_react(), 1), Link = ({
   href: input2 = "",
   ...props
 }) => {
-  let href = /^\//.test(input2) ? `./?path=${input2}` : input2, target = /^#.*/.test(input2) ? "_self" : "_top";
+  let href = input2.startsWith('/') ? `./?path=${input2}` : input2, target = /^#.*/.test(input2) ? "_self" : "_top";
   return import_react7.default.createElement("a", { href, target, ...props });
 };
 
@@ -41916,7 +41916,7 @@ function _mergeNamespaces(n, m3) {
   }), Object.freeze(n);
 }
 function getKeysOfEnumerableProperties(object, compareKeys) {
-  let rawKeys = Object.keys(object), keys3 = compareKeys === null ? rawKeys : rawKeys.sort(compareKeys);
+  let rawKeys = Object.keys(object), keys3 = compareKeys === null ? rawKeys : rawKeys.toSorted(compareKeys);
   if (Object.getOwnPropertySymbols)
     for (let symbol of Object.getOwnPropertySymbols(object))
       Object.getOwnPropertyDescriptor(object, symbol).enumerable && keys3.push(symbol);
@@ -42076,7 +42076,7 @@ var serialize$3 = (node2, config4, indentation, depth, refs, printer2) => {
   if (nodeIsComment(node2))
     return printComment(node2.data, config4);
   let type5 = nodeIsFragment(node2) ? "DocumentFragment" : node2.tagName.toLowerCase();
-  return ++depth > config4.maxDepth ? printElementAsLeaf(type5, config4) : printElement(type5, printProps(nodeIsFragment(node2) ? [] : Array.from(node2.attributes, (attr) => attr.name).sort(), nodeIsFragment(node2) ? {} : [...node2.attributes].reduce((props, attribute) => (props[attribute.name] = attribute.value, props), {}), config4, indentation + config4.indent, depth, refs, printer2), printChildren(Array.prototype.slice.call(node2.childNodes || node2.children), config4, indentation + config4.indent, depth, refs, printer2), config4, indentation);
+  return ++depth > config4.maxDepth ? printElementAsLeaf(type5, config4) : printElement(type5, printProps(nodeIsFragment(node2) ? [] : Array.from(node2.attributes, (attr) => attr.name).toSorted(), nodeIsFragment(node2) ? {} : [...node2.attributes].reduce((props, attribute) => (props[attribute.name] = attribute.value, props), {}), config4, indentation + config4.indent, depth, refs, printer2), printChildren(Array.prototype.slice.call(node2.childNodes || node2.children), config4, indentation + config4.indent, depth, refs, printer2), config4, indentation);
 }, plugin$3 = {
   serialize: serialize$3,
   test: test$3
@@ -42320,7 +42320,7 @@ function getType(element) {
 }
 function getPropKeys$1(element) {
   let { props } = element;
-  return Object.keys(props).filter((key) => key !== "children" && props[key] !== void 0).sort();
+  return Object.keys(props).filter((key) => key !== "children" && props[key] !== void 0).toSorted();
 }
 var serialize$1 = (element, config4, indentation, depth, refs, printer2) => ++depth > config4.maxDepth ? printElementAsLeaf(getType(element), config4) : printElement(getType(element), printProps(getPropKeys$1(element), element.props, config4, indentation + config4.indent, depth, refs, printer2), printChildren(getChildren(element.props.children), config4, indentation + config4.indent, depth, refs, printer2), config4, indentation), test$1 = (val) => val != null && ReactIs.isElement(val), plugin$1 = {
   serialize: serialize$1,
@@ -42328,7 +42328,7 @@ var serialize$1 = (element, config4, indentation, depth, refs, printer2) => ++de
 }, testSymbol = typeof Symbol == "function" && Symbol.for ? Symbol.for("react.test.json") : 245830487;
 function getPropKeys(object) {
   let { props } = object;
-  return props ? Object.keys(props).filter((key) => props[key] !== void 0).sort() : [];
+  return props ? Object.keys(props).filter((key) => props[key] !== void 0).toSorted() : [];
 }
 var serialize2 = (object, config4, indentation, depth, refs, printer2) => ++depth > config4.maxDepth ? printElementAsLeaf(object.type, config4) : printElement(object.type, object.props ? printProps(getPropKeys(object), object.props, config4, indentation + config4.indent, depth, refs, printer2) : "", object.children ? printChildren(object.children, config4, indentation + config4.indent, depth, refs, printer2) : "", config4, indentation), test = (val) => val && val.$$typeof === testSymbol, plugin = {
   serialize: serialize2,
@@ -42996,7 +42996,7 @@ function format2(...args) {
       case "%j":
         try {
           return JSON.stringify(args[i++]);
-        } catch (err) {
+        } catch (_err) {
           let m3 = err.message;
           if (m3.includes("circular structure") || m3.includes("cyclic structures") || m3.includes("cyclic object"))
             return "[Circular]";
@@ -43938,10 +43938,10 @@ function comparePrimitive(a3, b, options) {
 `), options);
 }
 function sortMap(map2) {
-  return new Map(Array.from(map2.entries()).sort());
+  return new Map(Array.from(map2.entries()).toSorted());
 }
 function sortSet(set3) {
-  return new Set(Array.from(set3.values()).sort());
+  return new Set(Array.from(set3.values()).toSorted());
 }
 function compareObjects(a3, b, options) {
   let difference2, hasThrown = !1;
@@ -44093,7 +44093,7 @@ function serializeValue(val, seen = /* @__PURE__ */ new WeakMap()) {
     return seen.set(val, clone3), val.forEach((e, i) => {
       try {
         clone3[i] = serializeValue(e, seen);
-      } catch (err) {
+      } catch (_err) {
         clone3[i] = getUnserializableMessage(err);
       }
     }), clone3;
@@ -44106,7 +44106,7 @@ function serializeValue(val, seen = /* @__PURE__ */ new WeakMap()) {
         if (!(key in clone3))
           try {
             clone3[key] = serializeValue(val[key], seen);
-          } catch (err) {
+          } catch (_err) {
             delete clone3[key], clone3[key] = getUnserializableMessage(err);
           }
       }), obj = Object.getPrototypeOf(obj);
@@ -44480,7 +44480,7 @@ var alreadyCompletedException = new Error(
       let callsById = calls.concat(call2).reduce((a3, c) => Object.assign(a3, { [c.id]: c }), {});
       return {
         // Calls are sorted to ensure parent calls always come before calls in their callback.
-        calls: Object.values(callsById).sort(
+        calls: Object.values(callsById).toSorted(
           (a3, b) => a3.id.localeCompare(b.id, void 0, { numeric: !0 })
         )
       };
@@ -44667,7 +44667,7 @@ function expectTypes(obj, types) {
   let flagMsg = flag(obj, "message"), ssfi = flag(obj, "ssfi");
   flagMsg = flagMsg ? flagMsg + ": " : "", obj = flag(obj, "object"), types = types.map(function(t) {
     return t.toLowerCase();
-  }), types.sort();
+  }), types.toSorted();
   let str2 = types.map(function(t, index4) {
     let art = ~["a", "e", "i", "o", "u"].indexOf(t.charAt(0)) ? "an" : "a";
     return (types.length > 1 && index4 === types.length - 1 ? "or " : "") + art + " " + t;
@@ -45352,7 +45352,7 @@ function entriesEqual(leftHandOperand, rightHandOperand, options) {
     leftHandItems.push([key, value]);
   }, "gatherEntries")), rightHandOperand.forEach(__name(function(key, value) {
     rightHandItems.push([key, value]);
-  }, "gatherEntries")), iterableEqual(leftHandItems.sort(), rightHandItems.sort(), options);
+  }, "gatherEntries")), iterableEqual(leftHandItems.toSorted(), rightHandItems.toSorted(), options);
 }
 __name(entriesEqual, "entriesEqual");
 function iterableEqual(leftHandOperand, rightHandOperand, options) {
@@ -45419,9 +45419,9 @@ __name(keysEqual, "keysEqual");
 function objectEqual(leftHandOperand, rightHandOperand, options) {
   var leftHandKeys = getEnumerableKeys(leftHandOperand), rightHandKeys = getEnumerableKeys(rightHandOperand), leftHandSymbols = getEnumerableSymbols(leftHandOperand), rightHandSymbols = getEnumerableSymbols(rightHandOperand);
   if (leftHandKeys = leftHandKeys.concat(leftHandSymbols), rightHandKeys = rightHandKeys.concat(rightHandSymbols), leftHandKeys.length && leftHandKeys.length === rightHandKeys.length)
-    return iterableEqual(mapSymbols(leftHandKeys).sort(), mapSymbols(rightHandKeys).sort()) === !1 ? !1 : keysEqual(leftHandOperand, rightHandOperand, leftHandKeys, options);
+    return iterableEqual(mapSymbols(leftHandKeys).toSorted(), mapSymbols(rightHandKeys).toSorted()) === !1 ? !1 : keysEqual(leftHandOperand, rightHandOperand, leftHandKeys, options);
   var leftHandEntries = getIteratorEntries(leftHandOperand), rightHandEntries = getIteratorEntries(rightHandOperand);
-  return leftHandEntries.length && leftHandEntries.length === rightHandEntries.length ? (leftHandEntries.sort(), rightHandEntries.sort(), iterableEqual(leftHandEntries, rightHandEntries, options)) : leftHandKeys.length === 0 && leftHandEntries.length === 0 && rightHandKeys.length === 0 && rightHandEntries.length === 0;
+  return leftHandEntries.length && leftHandEntries.length === rightHandEntries.length ? (leftHandEntries.toSorted(), rightHandEntries.toSorted(), iterableEqual(leftHandEntries, rightHandEntries, options)) : leftHandKeys.length === 0 && leftHandEntries.length === 0 && rightHandKeys.length === 0 && rightHandEntries.length === 0;
 }
 __name(objectEqual, "objectEqual");
 function isPrimitive2(value) {
@@ -45992,7 +45992,7 @@ function include(val, msg) {
         }
         try {
           propAssertion.property(prop, val[prop]);
-        } catch (err) {
+        } catch (_err) {
           if (!check_error_exports.compatibleConstructor(err, AssertionError))
             throw err;
           firstErr === null && (firstErr = err), numErrs++;
@@ -46352,7 +46352,7 @@ function assertInstanceOf(constructor, msg) {
   let target = flag2(this, "object"), ssfi = flag2(this, "ssfi"), flagMsg = flag2(this, "message"), isInstanceOf;
   try {
     isInstanceOf = target instanceof constructor;
-  } catch (err) {
+  } catch (_err) {
     throw err instanceof TypeError ? (flagMsg = flagMsg ? flagMsg + ": " : "", new AssertionError(
       flagMsg + "The instanceof assertion needs a constructor but " + type(constructor) + " was given.",
       void 0,
@@ -46535,8 +46535,8 @@ function assertKeys(keys3) {
     ok,
     "expected #{this} to " + deepStr + str2,
     "expected #{this} to not " + deepStr + str2,
-    expected.slice(0).sort(compareByInspect),
-    actual.sort(compareByInspect),
+    expected.slice(0).toSorted(compareByInspect),
+    actual.toSorted(compareByInspect),
     !0
   );
 }
@@ -46550,7 +46550,7 @@ function assertThrows(errorLike, errMsgMatcher, msg) {
   let caughtErr, errorWasThrown = !1;
   try {
     obj();
-  } catch (err) {
+  } catch (_err) {
     errorWasThrown = !0, caughtErr = err;
   }
   let everyArgIsUndefined = errorLike === void 0 && errMsgMatcher === void 0, everyArgIsDefined = !!(errorLike && errMsgMatcher), errorLikeFail = !1, errMsgMatcherFail = !1;
@@ -49144,7 +49144,7 @@ function buildElementRoleList(elementRolesMap) {
         specificity: getSelectorSpecificity(element)
       }
     ];
-  return result.sort(bySelectorSpecificity);
+  return result.toSorted(bySelectorSpecificity);
 }
 function toHaveAccessibleName(htmlElement, expectedAccessibleName) {
   checkHtmlElement(htmlElement, toHaveAccessibleName, this);
@@ -49291,7 +49291,7 @@ function isSubset(styles4, computedStyle) {
   });
 }
 function printoutStyles(styles4) {
-  return Object.keys(styles4).sort().map((prop) => `${prop}: ${styles4[prop]};`).join(`
+  return Object.keys(styles4).toSorted().map((prop) => `${prop}: ${styles4[prop]};`).join(`
 `);
 }
 function expectedDiff(diffFn, expected, computedStyles) {
@@ -49371,7 +49371,7 @@ function getFormValue(container, name) {
     }
 }
 function getPureName(name) {
-  return /\[\]$/.test(name) ? name.slice(0, -2) : name;
+  return name.endsWith('[]') ? name.slice(0, -2) : name;
 }
 function getAllFormValues(container) {
   return Array.from(container.elements).map((element) => element.name).reduce(
@@ -49902,7 +49902,7 @@ function requireJsTokens() {
   if (hasRequiredJsTokens) return jsTokens_1;
   hasRequiredJsTokens = 1;
   var Identifier, JSXIdentifier, JSXPunctuator, JSXString, JSXText, KeywordsWithExpressionAfter, KeywordsWithNoLineTerminatorAfter, LineTerminatorSequence, MultiLineComment, Newline, NumericLiteral, Punctuator, RegularExpressionLiteral, SingleLineComment, StringLiteral, Template, TokensNotPrecedingObjectLiteral, TokensPrecedingExpression, WhiteSpace;
-  return RegularExpressionLiteral = /\/(?![*\/])(?:\[(?:(?![\]\\]).|\\.)*\]|(?![\/\\]).|\\.)*(\/[$_\u200C\u200D\p{ID_Continue}]*|\\)?/yu, Punctuator = /--|\+\+|=>|\.{3}|\??\.(?!\d)|(?:&&|\|\||\?\?|[+\-%&|^]|\*{1,2}|<{1,2}|>{1,3}|!=?|={1,2}|\/(?![\/*]))=?|[?~,:;[\](){}]/y, Identifier = /(\x23?)(?=[$_\p{ID_Start}\\])(?:[$_\u200C\u200D\p{ID_Continue}]|\\u[\da-fA-F]{4}|\\u\{[\da-fA-F]+\})+/yu, StringLiteral = /(['"])(?:(?!\1)[^\\\n\r]|\\(?:\r\n|[^]))*(\1)?/y, NumericLiteral = /(?:0[xX][\da-fA-F](?:_?[\da-fA-F])*|0[oO][0-7](?:_?[0-7])*|0[bB][01](?:_?[01])*)n?|0n|[1-9](?:_?\d)*n|(?:(?:0(?!\d)|0\d*[89]\d*|[1-9](?:_?\d)*)(?:\.(?:\d(?:_?\d)*)?)?|\.\d(?:_?\d)*)(?:[eE][+-]?\d(?:_?\d)*)?|0[0-7]+/y, Template = /[`}](?:[^`\\$]|\\[^]|\$(?!\{))*(`|\$\{)?/y, WhiteSpace = /[\t\v\f\ufeff\p{Zs}]+/yu, LineTerminatorSequence = /\r?\n|[\r\u2028\u2029]/y, MultiLineComment = /\/\*(?:[^*]|\*(?!\/))*(\*\/)?/y, SingleLineComment = /\/\/.*/y, JSXPunctuator = /[<>.:={}]|\/(?![\/*])/y, JSXIdentifier = /[$_\p{ID_Start}][$_\u200C\u200D\p{ID_Continue}-]*/yu, JSXString = /(['"])(?:(?!\1)[^])*(\1)?/y, JSXText = /[^<>{}]+/y, TokensPrecedingExpression = /^(?:[\/+-]|\.{3}|\?(?:InterpolationIn(?:JSX|Template)|NoLineTerminatorHere|NonExpressionParenEnd|UnaryIncDec))?$|[{}([,;<>=*%&|^!~?:]$/, TokensNotPrecedingObjectLiteral = /^(?:=>|[;\]){}]|else|\?(?:NoLineTerminatorHere|NonExpressionParenEnd))?$/, KeywordsWithExpressionAfter = /^(?:await|case|default|delete|do|else|instanceof|new|return|throw|typeof|void|yield)$/, KeywordsWithNoLineTerminatorAfter = /^(?:return|throw|yield)$/, Newline = RegExp(LineTerminatorSequence.source), jsTokens_1 = function* (input2, { jsx: jsx10 = !1 } = {}) {
+  return RegularExpressionLiteral = /\/(?![*/])(?:\[(?:(?![\]\\]).|\\.)*\]|(?![/\\]).|\\.)*(\/[$_\u200C\u200D\p{ID_Continue}]*|\\)?/yu, Punctuator = /--|\+\+|=>|\.{3}|\??\.(?!\d)|(?:&&|\|\||\?\?|[+\-%&|^]|\*{1,2}|<{1,2}|>{1,3}|!=?|={1,2}|\/(?![/*]))=?|[?~,:;[\](){}]/y, Identifier = /(\x23?)(?=[$_\p{ID_Start}\\])(?:[$_\u200C\u200D\p{ID_Continue}]|\\u[\da-fA-F]{4}|\\u\{[\da-fA-F]+\})+/yu, StringLiteral = /(['"])(?:(?!\1)[^\\\n\r]|\\(?:\r\n|[^]))*(\1)?/y, NumericLiteral = /(?:0[xX][\da-fA-F](?:_?[\da-fA-F])*|0[oO][0-7](?:_?[0-7])*|0[bB][01](?:_?[01])*)n?|0n|[1-9](?:_?\d)*n|(?:(?:0(?!\d)|0\d*[89]\d*|[1-9](?:_?\d)*)(?:\.(?:\d(?:_?\d)*)?)?|\.\d(?:_?\d)*)(?:[eE][+-]?\d(?:_?\d)*)?|0[0-7]+/y, Template = /[`}](?:[^`\\$]|\\[^]|\$(?!\{))*(`|\$\{)?/y, WhiteSpace = /[\t\v\f\ufeff\p{Zs}]+/yu, LineTerminatorSequence = /\r?\n|[\r\u2028\u2029]/y, MultiLineComment = /\/\*(?:[^*]|\*(?!\/))*(\*\/)?/y, SingleLineComment = /\/\/.*/y, JSXPunctuator = /[<>.:={}]|\/(?![/*])/y, JSXIdentifier = /[$_\p{ID_Start}][$_\u200C\u200D\p{ID_Continue}-]*/yu, JSXString = /(['"])(?:(?!\1)[^])*(\1)?/y, JSXText = /[^<>{}]+/y, TokensPrecedingExpression = /^(?:[/+-]|\.{3}|\?(?:InterpolationIn(?:JSX|Template)|NoLineTerminatorHere|NonExpressionParenEnd|UnaryIncDec))?$|[{}([,;<>=*%&|^!~?:]$/, TokensNotPrecedingObjectLiteral = /^(?:=>|[;\]){}]|else|\?(?:NoLineTerminatorHere|NonExpressionParenEnd))?$/, KeywordsWithExpressionAfter = /^(?:await|case|default|delete|do|else|instanceof|new|return|throw|typeof|void|yield)$/, KeywordsWithNoLineTerminatorAfter = /^(?:return|throw|yield)$/, Newline = RegExp(LineTerminatorSequence.source), jsTokens_1 = function* (input2, { jsx: jsx10 = !1 } = {}) {
     var braces, firstCodePoint, isExpression, lastIndex, lastSignificantToken, length2, match3, mode, nextLastIndex, nextLastSignificantToken, parenNesting, postfixIncDec, punctuator, stack;
     for ({ length: length2 } = input2, lastIndex = 0, lastSignificantToken = "", stack = [
       { tag: "JS" }
@@ -50312,7 +50312,7 @@ function createInternalSpy(cb) {
     if (state22.impl)
       try {
         new.target ? result = Reflect.construct(state22.impl, args, new.target) : result = state22.impl.apply(this, args), type5 = "ok";
-      } catch (err) {
+      } catch (_err) {
         throw result = err, type5 = "error", state22.results.push([type5, err]), err;
       }
     let resultTuple = [type5, result];
@@ -51146,7 +51146,7 @@ function wrapAssertion(utils, name, fn4) {
       return result && typeof result == "object" && typeof result.then == "function" ? result.then(noop2, (err) => {
         handleTestError(test3, err);
       }) : result;
-    } catch (err) {
+    } catch (_err) {
       handleTestError(test3, err);
     }
   };
@@ -51378,7 +51378,7 @@ var JestChaiExpect = (chai, utils) => {
       let isThrow = !1;
       try {
         obj();
-      } catch (err) {
+      } catch (_err) {
         isThrow = !0, thrown = err;
       }
       if (!isThrow && !isNot) {
@@ -52582,7 +52582,7 @@ function createDOMElementFilter(filterNode) {
       if (nodeIsComment2(node2))
         return printComment2(node2.data, config4);
       let type5 = nodeIsFragment2(node2) ? "DocumentFragment" : node2.tagName.toLowerCase();
-      return ++depth > config4.maxDepth ? printElementAsLeaf2(type5, config4) : printElement2(type5, printProps2(nodeIsFragment2(node2) ? [] : Array.from(node2.attributes).map((attr) => attr.name).sort(), nodeIsFragment2(node2) ? {} : Array.from(node2.attributes).reduce((props, attribute) => (props[attribute.name] = attribute.value, props), {}), config4, indentation + config4.indent, depth, refs, printer2), printChildren2(Array.prototype.slice.call(node2.childNodes || node2.children).filter(filterNode), config4, indentation + config4.indent, depth, refs, printer2), config4, indentation);
+      return ++depth > config4.maxDepth ? printElementAsLeaf2(type5, config4) : printElement2(type5, printProps2(nodeIsFragment2(node2) ? [] : Array.from(node2.attributes).map((attr) => attr.name).toSorted(), nodeIsFragment2(node2) ? {} : Array.from(node2.attributes).reduce((props, attribute) => (props[attribute.name] = attribute.value, props), {}), config4, indentation + config4.indent, depth, refs, printer2), printChildren2(Array.prototype.slice.call(node2.childNodes || node2.children).filter(filterNode), config4, indentation + config4.indent, depth, refs, printer2), config4, indentation);
     }
   };
 }
@@ -52906,7 +52906,7 @@ function buildElementRoleList2(elementRolesMap) {
       roles: Array.from(roles3),
       specificity: getSelectorSpecificity(element)
     }];
-  return result.sort(bySelectorSpecificity);
+  return result.toSorted(bySelectorSpecificity);
 }
 function getRoles(container, _temp) {
   let {
@@ -55323,7 +55323,7 @@ function isVisible(element) {
 // ../../node_modules/@testing-library/user-event/dist/esm/utils/focus/getTabDestination.js
 function getTabDestination(activeElement, shift) {
   let document13 = activeElement.ownerDocument, focusableElements = document13.querySelectorAll(FOCUSABLE_SELECTOR), enabledElements = Array.from(focusableElements).filter((el) => el === activeElement || !(Number(el.getAttribute("tabindex")) < 0 || isDisabled2(el)));
-  Number(activeElement.getAttribute("tabindex")) >= 0 && enabledElements.sort((a3, b) => {
+  Number(activeElement.getAttribute("tabindex")) >= 0 && enabledElements.toSorted((a3, b) => {
     let i = Number(a3.getAttribute("tabindex")), j = Number(b.getAttribute("tabindex"));
     return i === j ? 0 : i === 0 ? 1 : j === 0 ? -1 : i - j;
   });
@@ -56979,7 +56979,7 @@ function assertPointerEvents(instance, element) {
 `));
 }
 function printTree(tree) {
-  return tree.reverse().map((el, i) => [
+  return tree.toReversed().map((el, i) => [
     "".padEnd(i),
     el.tagName,
     el.id && `#${el.id}`,
@@ -59420,7 +59420,7 @@ var initialGlobals4 = {
 };
 
 // src/csf/index.ts
-var sanitize = (string) => string.toLowerCase().replace(/[ ’–—―′¿'`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/gi, "-").replace(/-+/g, "-").replace(/^-+/, "").replace(/-+$/, ""), sanitizeSafe = (string, part) => {
+var sanitize = (string) => string.toLowerCase().replace(/[ ’–—―′¿'`~!@#$%^&*()_|+\-=?;:'",.<>{}[\]\\/]/gi, "-").replace(/-+/g, "-").replace(/^-+/, "").replace(/-+$/, ""), sanitizeSafe = (string, part) => {
   let sanitized = sanitize(string);
   if (sanitized === "")
     throw new Error(`Invalid ${part} '${string}', must include alphanumeric characters`);
@@ -59664,7 +59664,7 @@ async function handleRequest(request) {
     }
     let json3 = await response.json();
     return json3.entries || json3.stories ? { storyIndex: json3 } : json3;
-  } catch (err) {
+  } catch (_err) {
     return { indexError: err };
   }
 }
@@ -60090,7 +60090,7 @@ var { document: document8 } = scope, isFunction4 = (val) => typeof val == "funct
         },
         layoutCustomisations: {
           ...defaultLayoutState.layoutCustomisations,
-          ...layoutCustomisations ?? {}
+          ...layoutCustomisations
         },
         ui: toMerged(defaultLayoutState.ui, pick(options, Object.keys(defaultLayoutState.ui))),
         selectedPanel: selectedPanel || defaultLayoutState.selectedPanel,
@@ -60131,7 +60131,7 @@ var { document: document8 } = scope, isFunction4 = (val) => typeof val == "funct
         return;
       let updatedLayout = {
         ...layout,
-        ...options.layout || {},
+        ...options.layout,
         ...pick(options, Object.keys(layout)),
         ...singleStory && { navSize: 0 }
       }, updatedUi = {
@@ -60641,7 +60641,7 @@ function createStatusStore({
         let newState = { ...state3 };
         for (let status of statuses) {
           let { storyId, typeId } = status;
-          newState[storyId] = { ...newState[storyId] ?? {}, [typeId]: status };
+          newState[storyId] = { ...newState[storyId], [typeId]: status };
         }
         return newState;
       });
@@ -60698,7 +60698,7 @@ function createStatusStore({
                   typeId
                 });
             }
-          newState[storyId] = { ...newState[storyId] ?? {}, [typeId]: status };
+          newState[storyId] = { ...newState[storyId], [typeId]: status };
         }
         return newState;
       });
@@ -60930,7 +60930,7 @@ var init12 = ({
           return;
         }
         await api.setIndex(storyIndex);
-      } catch (err) {
+      } catch (_err) {
         await store2.setState({ indexError: err });
       }
     },
@@ -62093,7 +62093,7 @@ var parseBoolean = (value) => {
   return prevParams = customQueryParams, { viewMode, layout, ui, selectedPanel, location: location4, path, customQueryParams, storyId };
 }, init13 = (moduleArgs) => {
   let { store: store2, navigate, provider, fullAPI } = moduleArgs, navigateTo = (path, queryParams = {}, options = {}) => {
-    let params = Object.entries(queryParams).filter(([, v]) => v).sort(([a3], [b]) => a3 < b ? -1 : 1).map(([k, v]) => `${k}=${v}`), to = [path, ...params].join("&");
+    let params = Object.entries(queryParams).filter(([, v]) => v).toSorted(([a3], [b]) => a3 < b ? -1 : 1).map(([k, v]) => `${k}=${v}`), to = [path, ...params].join("&");
     return navigate(to, options);
   }, api = {
     getStoryHrefs(storyId, options = {}) {
@@ -62187,7 +62187,7 @@ var version = "10.2.3";
 // src/manager-api/modules/versions.ts
 var { VERSIONCHECK } = scope, getVersionCheckData = (0, import_memoizerific8.default)(1)(() => {
   try {
-    return { ...JSON.parse(VERSIONCHECK).data || {} };
+    return { ...JSON.parse(VERSIONCHECK).data };
   } catch {
     return {};
   }
@@ -62497,7 +62497,7 @@ function ManagerConsumer({
   let managerContext = (0, import_react22.useContext)(ManagerContext), renderer = (0, import_react22.useRef)(children), filterer = (0, import_react22.useRef)(filter);
   if (typeof renderer.current != "function")
     return import_react22.default.createElement(import_react22.Fragment, null, renderer.current);
-  let comboData = filterer.current(managerContext), comboDataArray = (0, import_react22.useMemo)(() => [...Object.entries(comboData).reduce((acc, keyval) => acc.concat(keyval), [])], [managerContext.state]);
+  let comboData = filterer.current(managerContext), comboDataArray = (0, import_react22.useMemo)(() => Object.entries(comboData).reduce((acc, keyval) => acc.concat(keyval), []), [managerContext.state]);
   return (0, import_react22.useMemo)(() => {
     let Child = renderer.current;
     return import_react22.default.createElement(Child, { ...comboData });
@@ -68359,7 +68359,7 @@ function $488c6ddbf4ef74c2$var$getCachedNumberFormatter(locale, options = {}) {
       style: "decimal"
     };
   }
-  let cacheKey = locale + (options ? Object.entries(options).sort((a3, b) => a3[0] < b[0] ? -1 : 1).join() : "");
+  let cacheKey = locale + (options ? Object.entries(options).toSorted((a3, b) => a3[0] < b[0] ? -1 : 1).join() : "");
   if ($488c6ddbf4ef74c2$var$formatterCache.has(cacheKey)) return $488c6ddbf4ef74c2$var$formatterCache.get(cacheKey);
   let numberFormatter = new Intl.NumberFormat(locale, options);
   return $488c6ddbf4ef74c2$var$formatterCache.set(cacheKey, numberFormatter), numberFormatter;
@@ -68394,7 +68394,7 @@ function $a916eb452884faea$export$b7a616150fdb9f44(options = {}) {
 // ../../node_modules/@react-aria/i18n/dist/useCollator.mjs
 var $325a3faab7a68acd$var$cache = /* @__PURE__ */ new Map();
 function $325a3faab7a68acd$export$a16aca283550c30d(options) {
-  let { locale } = $18f2051aff69b9bf$export$43bb16f9c6d9e3f7(), cacheKey = locale + (options ? Object.entries(options).sort((a3, b) => a3[0] < b[0] ? -1 : 1).join() : "");
+  let { locale } = $18f2051aff69b9bf$export$43bb16f9c6d9e3f7(), cacheKey = locale + (options ? Object.entries(options).toSorted((a3, b) => a3[0] < b[0] ? -1 : 1).join() : "");
   if ($325a3faab7a68acd$var$cache.has(cacheKey)) return $325a3faab7a68acd$var$cache.get(cacheKey);
   let formatter2 = new Intl.Collator(locale, options);
   return $325a3faab7a68acd$var$cache.set(cacheKey, formatter2), formatter2;
@@ -70235,8 +70235,7 @@ var ToggleButton = (0, import_react94.forwardRef)(
 );
 ToggleButton.displayName = "ToggleButton";
 var StyledToggle = styled(Button)(
-  ({ theme: theme3, variant = "outline", pressed }) => ({
-    ...pressed ? {
+  ({ theme: theme3, variant = "outline", pressed }) => (pressed ? {
       ...variant === "solid" ? {
         background: theme3.base === "lighten" ? curriedDarken$1(0.1, theme3.color.secondary) : curriedDarken$1(0.2, theme3.color.secondary)
       } : {},
@@ -70249,8 +70248,7 @@ var StyledToggle = styled(Button)(
         background: curriedTransparentize$1(0.93, theme3.barSelectedColor),
         color: theme3.base === "light" ? curriedDarken$1(0.1, theme3.color.secondary) : theme3.color.secondary
       } : {}
-    } : {}
-  })
+    } : {})
 );
 
 // src/components/components/ActionList/ActionList.tsx

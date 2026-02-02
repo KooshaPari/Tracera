@@ -17,6 +17,24 @@ interface ComplianceGaugeFullProps {
 	className?: string;
 }
 
+function getGaugeColor(value: number): string {
+	if (value >= 90) return "#10b981"; // emerald
+	if (value >= 80) return "#06b6d4"; // cyan
+	if (value >= 70) return "#3b82f6"; // blue
+	if (value >= 60) return "#f59e0b"; // amber
+	if (value >= 40) return "#f97316"; // orange
+	return "#ef4444"; // red
+}
+
+function getStatus(value: number): string {
+	if (value >= 90) return "Excellent";
+	if (value >= 80) return "Very Good";
+	if (value >= 70) return "Good";
+	if (value >= 60) return "Fair";
+	if (value >= 40) return "Poor";
+	return "Critical";
+}
+
 export function ComplianceGaugeFull({
 	score,
 	size = 200,
@@ -56,27 +74,7 @@ export function ComplianceGaugeFull({
 	const strokeDashoffset =
 		circumference - (animatedScore / 100) * circumference;
 
-	// Color gradient based on score
-	const getGaugeColor = (value: number): string => {
-		if (value >= 90) return "#10b981"; // emerald
-		if (value >= 80) return "#06b6d4"; // cyan
-		if (value >= 70) return "#3b82f6"; // blue
-		if (value >= 60) return "#f59e0b"; // amber
-		if (value >= 40) return "#f97316"; // orange
-		return "#ef4444"; // red
-	};
-
 	const gaugeColor = getGaugeColor(animatedScore);
-
-	// Get status text
-	const getStatus = (value: number): string => {
-		if (value >= 90) return "Excellent";
-		if (value >= 80) return "Very Good";
-		if (value >= 70) return "Good";
-		if (value >= 60) return "Fair";
-		if (value >= 40) return "Poor";
-		return "Critical";
-	};
 
 	return (
 		<motion.div

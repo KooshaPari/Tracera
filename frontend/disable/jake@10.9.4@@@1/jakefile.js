@@ -109,7 +109,7 @@ task("lint", (doFix) => {
 	}
 	try {
 		proc.execSync(cmd);
-	} catch (err) {
+	} catch (_err) {
 		console.log(err.message);
 		console.log(err.stderr.toString());
 		console.log(err.stdout.toString());

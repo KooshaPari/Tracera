@@ -4,7 +4,6 @@
  */
 
 import { render } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { axe } from "./setup";
 
@@ -153,7 +152,6 @@ describe("CommandPalette - Combobox ARIA Pattern", () => {
 
 describe("CommandPalette - Keyboard Navigation", () => {
 	it("should support arrow key navigation", async () => {
-		const user = userEvent.setup();
 		const { getByRole } = render(
 			<MockCommandPalette open={true} onClose={() => {}} />,
 		);
@@ -169,9 +167,8 @@ describe("CommandPalette - Keyboard Navigation", () => {
 
 	it("should support Escape to close", async () => {
 		const handleClose = vi.fn();
-		const user = userEvent.setup();
 
-		const { rerender, getByRole } = render(
+		render(
 			<MockCommandPalette open={true} onClose={handleClose} />,
 		);
 		const input = getByRole("combobox");
@@ -182,7 +179,6 @@ describe("CommandPalette - Keyboard Navigation", () => {
 	});
 
 	it("should support Enter to select", async () => {
-		const user = userEvent.setup();
 		const { getByRole } = render(
 			<MockCommandPalette open={true} onClose={() => {}} />,
 		);
@@ -196,7 +192,6 @@ describe("CommandPalette - Keyboard Navigation", () => {
 
 	it("should support Tab to exit palette", async () => {
 		const handleClose = vi.fn();
-		const user = userEvent.setup();
 		const { getByRole } = render(
 			<MockCommandPalette open={true} onClose={handleClose} />,
 		);
@@ -219,7 +214,7 @@ describe("CommandPalette - Focus Management", () => {
 		expect(input).toHaveFocus();
 
 		// Check for focus-visible class or ring
-		const styles = window.getComputedStyle(input);
+		const _styles = window.getComputedStyle(input);
 		// Focus indicator should be visible
 	});
 
@@ -293,7 +288,7 @@ describe("CommandPalette - Screen Reader Accessibility", () => {
 
 describe("CommandPalette - WCAG 2.1 AA Compliance", () => {
 	it("should pass axe accessibility audit", async () => {
-		const { container } = render(
+		render(
 			<MockCommandPalette open={true} onClose={() => {}} />,
 		);
 		const results = await axe(container);
@@ -301,7 +296,7 @@ describe("CommandPalette - WCAG 2.1 AA Compliance", () => {
 	});
 
 	it("should have sufficient color contrast", () => {
-		const { container } = render(
+		render(
 			<MockCommandPalette open={true} onClose={() => {}} />,
 		);
 

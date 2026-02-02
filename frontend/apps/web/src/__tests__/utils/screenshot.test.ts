@@ -17,7 +17,8 @@ import {
 	uploadScreenshot,
 } from "../../utils/screenshot";
 
-global.fetch = vi.fn();
+// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- test mock
+global.fetch = vi.fn() as unknown as typeof fetch;
 
 beforeEach(() => {
 	vi.clearAllMocks();

@@ -38,7 +38,7 @@ function _iterableToArrayLimit(arr, i) {
 			_arr.push(_s.value);
 			if (i && _arr.length === i) break;
 		}
-	} catch (err) {
+	} catch (_err) {
 		_d = true;
 		_e = err;
 	} finally {
@@ -160,7 +160,7 @@ var roleElementMap = {
 					values = _step$value[1];
 				fn.call(thisArg, values, _key, roleElement);
 			}
-		} catch (err) {
+		} catch (_err) {
 			_iterator.e(err);
 		} finally {
 			_iterator.f();

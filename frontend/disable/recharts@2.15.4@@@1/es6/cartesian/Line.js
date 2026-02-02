@@ -135,7 +135,7 @@ export var Line = /*#__PURE__*/function (_PureComponent) {
       var curveDom = this.mainCurve;
       try {
         return curveDom && curveDom.getTotalLength && curveDom.getTotalLength() || 0;
-      } catch (err) {
+      } catch (_err) {
         return 0;
       }
     }

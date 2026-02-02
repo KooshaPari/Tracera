@@ -10,7 +10,7 @@ function GraphRedirectComponent() {
 
 	useEffect(() => {
 		// Redirect to projects list with a hint to select a project
-		navigate({
+		void navigate({
 			to: "/projects",
 			replace: true, // Replace history entry to prevent back button issues
 		});

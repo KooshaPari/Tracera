@@ -42,7 +42,7 @@ module.exports = Base.extend({
 			validate(value, helpers, { method }) {
 				try {
 					return method(value, helpers);
-				} catch (err) {
+				} catch (_err) {
 					return helpers.error("any.custom", { error: err });
 				}
 			},

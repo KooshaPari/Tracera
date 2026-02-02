@@ -237,7 +237,7 @@ class LazyResult {
           }
         }
       }
-    } catch (err) {
+    } catch (_err) {
       /* c8 ignore next 3 */
       // eslint-disable-next-line no-console
       if (console && console.error) console.error(err)

@@ -1,5 +1,6 @@
 // TemporalNavigator Storybook stories
 import type { Meta, StoryObj } from "@storybook/react";
+import { logger } from '@/lib/logger';
 import {
 	type Branch,
 	TemporalNavigator,

@@ -108,7 +108,7 @@ export function CreateTestCaseForm({
 		control,
 		formState: { errors },
 	} = useForm<TestCaseFormData>({
-		resolver: zodResolver(testCaseSchema) as any,
+		resolver: zodResolver(testCaseSchema),
 		defaultValues: {
 			testType: "functional",
 			priority: "medium",

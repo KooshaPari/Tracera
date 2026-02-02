@@ -258,7 +258,7 @@ describe("DesignTokenBrowser", () => {
 
 		it("should collapse all categories with button", async () => {
 			const tokens = [...mockColorTokens, ...mockSpacingTokens];
-			const { rerender } = render(<DesignTokenBrowser tokens={tokens} />);
+			render(<DesignTokenBrowser tokens={tokens} />);
 
 			// First expand all
 			const expandAllButton = screen.getByText("Expand All");
@@ -299,7 +299,7 @@ describe("DesignTokenBrowser", () => {
 				const primaryToken = screen.getByText("primary");
 				const tokenContainer = primaryToken.closest("div[class*='flex-col']");
 				if (tokenContainer) {
-					userEvent.click(tokenContainer);
+					void userEvent.click(tokenContainer);
 				}
 			});
 
@@ -361,7 +361,7 @@ describe("DesignTokenBrowser", () => {
 					.closest("div[class*='flex-col']")
 					?.querySelector("button");
 				if (expandButton) {
-					userEvent.click(expandButton);
+					void userEvent.click(expandButton);
 				}
 			});
 

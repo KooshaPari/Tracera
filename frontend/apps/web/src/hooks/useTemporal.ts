@@ -3,8 +3,10 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Branch, Version } from "@/components/temporal/TemporalNavigator";
-import { getAuthHeaders } from "@/api/client";
 import { QUERY_CONFIGS, queryKeys } from "@/lib/queryConfig";
+import client from "@/api/client";
+
+const { getAuthHeaders } = client;
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
@@ -15,7 +17,7 @@ async function fetchBranches(projectId: string): Promise<Branch[]> {
 	});
 	if (!res.ok) throw new Error("Failed to fetch branches");
 	const data = await res.json();
-	return Array.isArray(data) ? data : data.branches || [];
+	return Array.isArray(data) ? data : data['branches'] || [];
 }
 
 export function useBranches(projectId: string) {
@@ -33,7 +35,7 @@ async function fetchVersions(branchId: string): Promise<Version[]> {
 	});
 	if (!res.ok) throw new Error("Failed to fetch versions");
 	const data = await res.json();
-	return Array.isArray(data) ? data : data.versions || [];
+	return Array.isArray(data) ? data : data['versions'] || [];
 }
 
 export function useVersions(branchId: string) {
@@ -70,7 +72,7 @@ export function useCreateBranch() {
 	return useMutation({
 		mutationFn: createBranch,
 		onSuccess: (_, variables) => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: [queryKeys.branches, variables.projectId],
 			});
 		},
@@ -104,7 +106,7 @@ export function useCreateVersion() {
 	return useMutation({
 		mutationFn: createVersion,
 		onSuccess: (_, variables) => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: [queryKeys.versions, variables.branchId],
 			});
 		},
@@ -141,10 +143,10 @@ export function useMergeBranch() {
 	return useMutation({
 		mutationFn: mergeBranch,
 		onSuccess: (_, variables) => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: [queryKeys.branches],
 			});
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: [queryKeys.versions, variables.targetBranchId],
 			});
 		},
@@ -201,8 +203,8 @@ export function useUpdateBranch() {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: updateBranch,
-		onSuccess: (data) => {
-			queryClient.invalidateQueries({
+		onSuccess: (_data) => {
+			void queryClient.invalidateQueries({
 				queryKey: [queryKeys.branches],
 			});
 		},
@@ -238,7 +240,7 @@ export function useUpdateVersion() {
 	return useMutation({
 		mutationFn: updateVersion,
 		onSuccess: () => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: [queryKeys.versions],
 			});
 		},
@@ -259,7 +261,7 @@ export function useDeleteBranch() {
 	return useMutation({
 		mutationFn: deleteBranch,
 		onSuccess: () => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: [queryKeys.branches],
 			});
 		},

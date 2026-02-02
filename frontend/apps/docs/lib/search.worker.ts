@@ -65,12 +65,12 @@ function initializeSearch(indexData: SearchIndex) {
       type: 'init-complete',
       duration,
       documentCount: documents.length,
-    });
+    }, self.location.origin);
   } catch (error) {
     self.postMessage({
       type: 'error',
       error: error instanceof Error ? error.message : 'Failed to initialize search',
-    });
+    }, self.location.origin);
   }
 }
 
@@ -104,7 +104,7 @@ function performSearch(query: string, maxResults: number = 20): SearchResult[] {
     query,
     duration,
     resultCount: results.length,
-  });
+  }, self.location.origin);
 
   return results;
 }
@@ -133,15 +133,15 @@ self.addEventListener('message', (event: MessageEvent<SearchMessage>) => {
         self.postMessage({
           type: 'error',
           error: `Unknown message type: ${type}`,
-        });
+        }, self.location.origin);
     }
   } catch (error) {
     self.postMessage({
       type: 'error',
       error: error instanceof Error ? error.message : 'Unknown error',
-    });
+    }, self.location.origin);
   }
 });
 
 // Signal that worker is ready
-self.postMessage({ type: 'ready' });
+self.postMessage({ type: 'ready' }, self.location.origin);

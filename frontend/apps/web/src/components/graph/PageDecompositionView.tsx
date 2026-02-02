@@ -160,7 +160,7 @@ function PageDecompositionViewComponent({
 	const [showDepthIndicator, setShowDepthIndicator] = useState(true);
 
 	// Build decomposition tree
-	const { tree, stats, itemMap } = useMemo(() => {
+	const { tree, stats, /* _itemMap */ } = useMemo(() => {
 		return buildDecompositionTree(items, links, rootId);
 	}, [items, links, rootId]);
 
@@ -415,10 +415,8 @@ function DecompositionTreeItem({
 	selectedId,
 	expandedIds,
 	onToggle,
-	onSelect,
-	onViewInCode,
-	onViewInDesign,
-	showDepthIndicator,
+    onSelect,
+    onViewInCodeIndicator: _onViewInCodeIndicator,
 	viewMode,
 }: DecompositionTreeItemProps) {
 	const isExpanded = expandedIds.has(node.id);
@@ -584,7 +582,7 @@ function DecompositionTreeItem({
 							onToggle={onToggle}
 							onSelect={onSelect}
 							onViewInCode={onViewInCode}
-							onViewInDesign={onViewInDesign}
+							
 							showDepthIndicator={showDepthIndicator}
 							viewMode={viewMode}
 						/>
@@ -685,7 +683,7 @@ function buildDecompositionTree(
 	function buildNode(item: Item, depth: number): DecompositionNode {
 		const entityType = inferEntityType(item);
 		const children = (childrenMap.get(item.id) || [])
-			.sort((a, b) => {
+			.toSorted((a, b) => {
 				// Sort by entity depth, then by title
 				const depthA = ENTITY_DEPTH_LEVELS[inferEntityType(a)] || 0;
 				const depthB = ENTITY_DEPTH_LEVELS[inferEntityType(b)] || 0;
@@ -725,7 +723,7 @@ function buildDecompositionTree(
 	}
 
 	// Group and sort root items
-	const sortedRoots = rootItems.sort((a, b) => {
+	const sortedRoots = rootItems.toSorted((a, b) => {
 		const typeOrder = ["site", "page", "screen", "layout", "wireframe"];
 		const aOrder = typeOrder.indexOf(a.type?.toLowerCase() || "");
 		const bOrder = typeOrder.indexOf(b.type?.toLowerCase() || "");

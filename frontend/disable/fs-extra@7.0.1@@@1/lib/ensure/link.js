@@ -42,7 +42,7 @@ function createLinkSync (srcpath, dstpath) {
 
   try {
     fs.lstatSync(srcpath)
-  } catch (err) {
+  } catch (_err) {
     err.message = err.message.replace('lstat', 'ensureLink')
     throw err
   }

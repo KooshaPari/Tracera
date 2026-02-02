@@ -14,7 +14,6 @@ const TARGETS = {
 };
 
 let startupTime = 0;
-const hmrTime = 0;
 
 console.log("🚀 Starting Dev Server Performance Benchmark\n");
 console.log("Targets:");

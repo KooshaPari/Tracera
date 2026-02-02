@@ -3,7 +3,7 @@ import {
 	TabsContent,
 	TabsList,
 	TabsTrigger,
-} from "@tracertm/ui/components/Tabs";
+} from "@/components/ui/tabs";
 import { Download, Link2, Upload } from "lucide-react";
 import { useState } from "react";
 import {
@@ -26,9 +26,9 @@ export function EquivalenceManager({ projectId }: EquivalenceManagerProps) {
 	);
 
 	// Mock data for equivalence components (would be loaded from API)
-	const mockEquivalenceLinks = [];
-	const mockCanonicalConcepts = [];
-	const mockCanonicalProjections = [];
+	const mockEquivalenceLinks: Array<{ id: string; source: string; target: string }> = [];
+	const mockCanonicalConcepts: Array<{ id: string; name: string; description: string }> = [];
+	const mockCanonicalProjections: Array<{ id: string; conceptId: string; projection: string }> = [];
 
 	return (
 		<div className="space-y-6">
@@ -46,7 +46,7 @@ export function EquivalenceManager({ projectId }: EquivalenceManagerProps) {
 
 			<Tabs
 				value={activeTab}
-				onValueChange={(tab) => setActiveTab(tab as typeof activeTab)}
+				onValueChange={(tab: string) => setActiveTab(tab as typeof activeTab)}
 				className="w-full"
 			>
 				<TabsList>

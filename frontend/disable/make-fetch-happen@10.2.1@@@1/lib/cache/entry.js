@@ -166,7 +166,7 @@ class CacheEntry {
 					},
 				},
 			);
-		} catch (err) {
+		} catch (_err) {
 			// if the compact request fails, ignore the error and return
 			return;
 		}
@@ -201,7 +201,7 @@ class CacheEntry {
 		const key = cacheKey(request);
 		try {
 			await cacache.rm.entry(options.cachePath, key, { removeFully: true });
-		} catch (err) {
+		} catch (_err) {
 			// ignore errors
 		}
 	}
@@ -433,7 +433,7 @@ class CacheEntry {
 				...options,
 				headers: undefined,
 			});
-		} catch (err) {
+		} catch (_err) {
 			// if the network fetch fails, return the stale
 			// cached response unless it has a cache-control
 			// of 'must-revalidate'
@@ -470,7 +470,7 @@ class CacheEntry {
 						metadata,
 					},
 				);
-			} catch (err) {
+			} catch (_err) {
 				// if updating the cache index fails, we ignore it and
 				// respond anyway
 			}

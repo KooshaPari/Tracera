@@ -24,7 +24,7 @@ function getStatsSync(src, dest) {
 	const srcStat = statSync(src);
 	try {
 		destStat = statSync(dest);
-	} catch (err) {
+	} catch (_err) {
 		if (err.code === "ENOENT") return { srcStat, destStat: null };
 		throw err;
 	}
@@ -87,7 +87,7 @@ function checkParentPathsSync(src, srcStat, dest, funcName) {
 	let destStat;
 	try {
 		destStat = statSync(destParent);
-	} catch (err) {
+	} catch (_err) {
 		if (err.code === "ENOENT") return;
 		throw err;
 	}

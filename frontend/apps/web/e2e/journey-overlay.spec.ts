@@ -121,9 +121,9 @@ test.describe("Journey Overlay", () => {
 					// Check if journey name is displayed in selector
 					const selectedText = await journeySelector
 						.textContent()
-						.catch(() => "");
+						.catch(() => null);
 
-					if (selectedText.includes(journeyName)) {
+					if (selectedText != null && selectedText.includes(journeyName)) {
 						console.log(`Selected journey "${journeyName}" displayed`);
 					}
 				}
@@ -184,7 +184,7 @@ test.describe("Journey Overlay", () => {
 			) {
 				// Get initial nodes
 				const initialNodes = page.locator(".react-flow__nodes > div[data-id]");
-				const initialCount = await initialNodes.count().catch(() => 0);
+				const _initialCount = await initialNodes.count().catch(() => 0);
 
 				// Select a journey
 				await journeySelector.click();

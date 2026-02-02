@@ -93,7 +93,7 @@ async function updateRootPackageJson() {
 
   // Sort overrides alphabetically
   pkg.overrides = Object.fromEntries(
-    Object.entries(pkg.overrides).sort(([a], [b]) => a.localeCompare(b))
+    Object.entries(pkg.overrides).toSorted(([a], [b]) => a.localeCompare(b))
   );
 
   await writeFile(pkgPath, JSON.stringify(pkg, null, '\t') + '\n');

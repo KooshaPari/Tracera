@@ -75,7 +75,7 @@ class ModuleWalker {
 				modulePath,
 				true,
 			);
-		} catch (err) {
+		} catch (_err) {
 			return;
 		}
 		const moduleWait = [];

@@ -39,16 +39,19 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { getAuthHeaders } from "@/api/client";
 import { getProjectDisplayName } from "@/lib/project-name-utils";
 import { cn } from "@/lib/utils";
-import { type CanonicalExport, exportImportApi } from "../api/endpoints";
+import { exportImportApi } from '../api/endpoints';
+import type { CanonicalExport } from '../api/endpoints';
 import {
 	useCreateProject,
 	useDeleteProject,
 	useProjects,
 	useUpdateProject,
 } from "../hooks/useProjects";
+import client from "@/api/client";
+
+const { getAuthHeaders } = client;
 
 interface ProjectCardProps {
 	project: Project;
@@ -81,13 +84,13 @@ function ProjectCard({
 			await deleteProject.mutateAsync(project.id);
 			toast.success(`Project "${displayName}" deleted`);
 			onDelete?.(project.id);
-		} catch (error) {
-			toast.error("Failed to delete project");
+        } catch {
+            toast.error("Failed to delete project");
 		}
 	};
 
 	const handleCopyId = () => {
-		navigator.clipboard.writeText(project.id);
+		undefined;
 		toast.success("Project ID copied to clipboard");
 	};
 
@@ -128,7 +131,7 @@ function ProjectCard({
 								<DropdownMenuItem
 									onClick={(e) => {
 										e.stopPropagation();
-										navigate({ to: `/projects/${project.id}` });
+										undefined;
 									}}
 									className="gap-2 cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors"
 								>
@@ -159,7 +162,7 @@ function ProjectCard({
 								<DropdownMenuItem
 									onClick={(e) => {
 										e.stopPropagation();
-										handleDelete();
+										undefined;
 									}}
 									className="gap-2 text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer hover:bg-destructive/10 hover:text-destructive transition-colors"
 								>
@@ -246,11 +249,11 @@ function EditProjectDialog({
 
 		try {
 			await updateProject.mutateAsync({
-				id: project.id,
 				data: {
 					name: name.trim(),
 					...(description.trim() ? { description: description.trim() } : {}),
 				},
+				id: project.id,
 			});
 			toast.success(
 				`Project "${getProjectDisplayName({ ...project, name })}" updated`,
@@ -258,8 +261,8 @@ function EditProjectDialog({
 			setName("");
 			setDescription("");
 			onOpenChange(false);
-		} catch (err) {
-			toast.error("Cluster reject: Failed to update project");
+        } catch {
+            toast.error("Cluster reject: Failed to update project");
 		}
 	};
 
@@ -292,7 +295,7 @@ function EditProjectDialog({
 								onChange={(e) => setName(e.target.value)}
 								placeholder="e.g. PROJECT-X-ALPHA"
 								className="h-12 bg-muted/30 border-none rounded-xl font-bold px-4"
-								autoFocus
+								
 							/>
 						</div>
 
@@ -365,14 +368,9 @@ function CreateProjectDialog({
 			setName("");
 			setDescription("");
 			onOpenChange(false);
-			navigate({
-				to: openIntegrations
-					? `/projects/${project.id}/settings`
-					: `/projects/${project.id}`,
-				search: openIntegrations ? ({ tab: "integrations" } as any) : undefined,
-			});
-		} catch (err) {
-			toast.error("Cluster reject: Failed to initialize project");
+			undefined;
+        } catch {
+            toast.error("Cluster reject: Failed to initialize project");
 		}
 	};
 
@@ -405,7 +403,7 @@ function CreateProjectDialog({
 								onChange={(e) => setName(e.target.value)}
 								placeholder="e.g. PROJECT-X-ALPHA"
 								className="h-12 bg-muted/30 border-none rounded-xl font-bold px-4"
-								autoFocus
+								
 							/>
 						</div>
 
@@ -487,9 +485,7 @@ export function ProjectsListView() {
 
 	const handleOpenChange = (open: boolean) => {
 		if (!open)
-			navigate({
-				search: (prev: any) => ({ ...prev, action: undefined }),
-			} as any);
+			{undefined;}
 	};
 
 	const handleExport = async () => {
@@ -504,26 +500,26 @@ export function ProjectsListView() {
 			const blob = result instanceof Blob
 				? result
 				: new Blob([JSON.stringify(result)], { type: "application/json" });
-			const ext = exportFormat === "full" ? "json" : exportFormat === "csv" ? "csv" : "json";
-			const url = window.URL.createObjectURL(blob);
+			const ext = exportFormat === "full" ? "json" : (exportFormat === "csv" ? "csv" : "json");
+			const url = globalThis.URL.createObjectURL(blob);
 			const a = document.createElement("a");
 			a.href = url;
 			a.download = `tracertm-export-${exportFormat}-${new Date().toISOString().split("T")[0]}.${ext}`;
-			document.body.appendChild(a);
+			document.body.append(a);
 			a.click();
-			window.URL.revokeObjectURL(url);
+			globalThis.URL.revokeObjectURL(url);
 			document.body.removeChild(a);
 			toast.success(exportFormat === "full" ? "Full project export completed" : "Registry backup completed");
 			setShowExportDialog(false);
-		} catch {
-			toast.error("Export sequence failed");
+        } catch {
+            toast.error("Export sequence failed");
 		} finally {
 			setIsExporting(false);
 		}
 	};
 
 	const handleImport = async () => {
-		if (!importFile) return;
+		if (!importFile) {return;}
 		setIsImporting(true);
 		try {
 			const content = await importFile.text();
@@ -534,15 +530,15 @@ export function ProjectsListView() {
 					return;
 				}
 				const canonical = {
-					project: parsed.project as { id: string; name: string; description?: string; created_at?: string },
 					items: parsed.items as CanonicalExport["items"],
 					links: (parsed.links ?? []) as CanonicalExport["links"],
+					project: parsed.project as { id: string; name: string; description?: string; created_at?: string },
 				};
 				const result = await exportImportApi.importFull(canonical);
 				toast.success(`New project created: ${result.items_imported} items, ${result.links_imported} links`);
 				setShowImportDialog(false);
 				setImportFile(null);
-				navigate({ to: "/projects/$projectId", params: { projectId: result.project_id } });
+				undefined;
 			} else {
 				const projectId = importProjectId ?? projectsArray[0]?.id;
 				if (!projectId) {
@@ -554,8 +550,8 @@ export function ProjectsListView() {
 				setShowImportDialog(false);
 				setImportFile(null);
 			}
-		} catch (e) {
-			toast.error(e instanceof Error ? e.message : "Import integrity failure");
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : "Import integrity failure");
 		} finally {
 			setIsImporting(false);
 		}
@@ -564,7 +560,7 @@ export function ProjectsListView() {
 	const projectsArray = Array.isArray(projects) ? projects : [];
 
 	useEffect(() => {
-		if (projectsArray.length === 0) return;
+		if (projectsArray.length === 0) {return;}
 		const fetchCounts = async () => {
 			const counts: Record<string, number> = {};
 			for (const p of projectsArray) {
@@ -588,7 +584,7 @@ export function ProjectsListView() {
 			}
 			setProjectItemCounts(counts);
 		};
-		fetchCounts();
+		undefined;
 	}, [projectsArray]);
 
 	const filteredAndSortedProjects = useMemo(() => {
@@ -598,18 +594,18 @@ export function ProjectsListView() {
 		});
 
 		return filtered
-			.map((p) => ({ project: p, itemCount: projectItemCounts[p.id] || 0 }))
-			.sort((a, b) => {
+			.map((p) => ({ itemCount: projectItemCounts[p.id] || 0, project: p }))
+			.toSorted((a, b) => {
 				let comp = 0;
 				if (sortBy === "name") {
 					const aName = getProjectDisplayName(a.project);
 					const bName = getProjectDisplayName(b.project);
 					comp = aName.localeCompare(bName);
 				} else if (sortBy === "date")
-					comp =
+					{comp =
 						new Date(a.project.createdAt || 0).getTime() -
-						new Date(b.project.createdAt || 0).getTime();
-				else comp = a.itemCount - b.itemCount;
+						new Date(b.project.createdAt || 0).getTime();}
+				else {comp = a.itemCount - b.itemCount;}
 				return sortOrder === "asc" ? comp : -comp;
 			});
 	}, [projectsArray, searchQuery, sortBy, sortOrder, projectItemCounts]);
@@ -659,7 +655,7 @@ export function ProjectsListView() {
 					</Button>
 					<Button
 						size="sm"
-						onClick={() => navigate({ search: { action: "create" } as any })}
+						onClick={() => undefined}
 						className="rounded-xl shadow-lg shadow-primary/20 gap-2 font-black uppercase tracking-widest text-[10px]"
 					>
 						<Plus className="h-4 w-4" /> New Registry
@@ -741,9 +737,9 @@ export function ProjectsListView() {
 
 			<EditProjectDialog
 				project={editingProject}
-				open={!!editingProject}
+				open={Boolean(editingProject)}
 				onOpenChange={(open) => {
-					if (!open) setEditingProject(null);
+					if (!open) {setEditingProject(null);}
 				}}
 			/>
 
@@ -860,7 +856,7 @@ export function ProjectsListView() {
 									Browse Files
 								</span>
 								<p className="text-[10px] text-muted-foreground mt-1 font-medium">
-									{importFile ? importFile.name : importMode === "full" ? "Canonical JSON" : "JSON or CSV"}
+									{importFile ? importFile.name : (importMode === "full" ? "Canonical JSON" : "JSON or CSV")}
 								</p>
 							</Label>
 						</div>

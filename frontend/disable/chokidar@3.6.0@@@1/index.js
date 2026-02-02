@@ -170,7 +170,7 @@ class DirEntry {
 		const dir = this.path;
 		try {
 			await readdir(dir);
-		} catch (err) {
+		} catch (_err) {
 			if (this._removeWatcher) {
 				this._removeWatcher(sysPath.dirname(dir), sysPath.basename(dir));
 			}
@@ -676,7 +676,7 @@ class FSWatcher extends EventEmitter {
 			let stats;
 			try {
 				stats = await stat(fullPath);
-			} catch (err) {}
+			} catch (_err) {}
 			// Suppress event when fs_stat fails, to avoid sending undefined 'stat'
 			if (!stats || this.closed) return;
 			args.push(stats);

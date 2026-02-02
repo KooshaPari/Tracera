@@ -793,7 +793,7 @@ export function parseWithError<T>(
 ): SerovalNode | undefined {
   try {
     return parseSOS(ctx, current);
-  } catch (err) {
+  } catch (_err) {
     onError(ctx, err);
     return NIL;
   }

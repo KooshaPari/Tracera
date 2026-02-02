@@ -2,7 +2,6 @@
  * Custom test environment setup
  */
 
-// @ts-expect-error - jsdom types may not be available
 import { JSDOM } from "jsdom";
 import type { Environment, EnvironmentOptions } from "vitest";
 import { populateGlobal } from "vitest/environments";
@@ -12,7 +11,7 @@ export default class CustomTestEnvironment implements Environment {
 	dom: JSDOM;
 	transformMode = "ssr" as const;
 
-	async setup(global: any, { jsdom = {} }: EnvironmentOptions) {
+	async setup(global: typeof globalThis, { jsdom = {} }: EnvironmentOptions) {
 		this.dom = new JSDOM("<!DOCTYPE html>", {
 			...(jsdom as any),
 			pretendToBeVisual: true,

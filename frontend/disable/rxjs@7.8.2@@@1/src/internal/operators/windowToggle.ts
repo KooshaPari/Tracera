@@ -83,7 +83,7 @@ export function windowToggle<T, O>(
           let closingNotifier: Observable<any>;
           try {
             closingNotifier = innerFrom(closingSelector(openValue));
-          } catch (err) {
+          } catch (_err) {
             handleError(err);
             return;
           }

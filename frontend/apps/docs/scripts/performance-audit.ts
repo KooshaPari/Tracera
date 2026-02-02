@@ -46,26 +46,6 @@ function formatBytes(bytes: number): string {
   return `${(bytes / Math.pow(k, i)).toFixed(2)} ${sizes[i]}`;
 }
 
-function getDirectorySize(dirPath: string): number {
-  let totalSize = 0;
-
-  if (!existsSync(dirPath)) return 0;
-
-  const files = readdirSync(dirPath, { withFileTypes: true });
-
-  for (const file of files) {
-    const filePath = join(dirPath, file.name);
-
-    if (file.isDirectory()) {
-      totalSize += getDirectorySize(filePath);
-    } else {
-      totalSize += statSync(filePath).size;
-    }
-  }
-
-  return totalSize;
-}
-
 function analyzeBundle(buildDir: string) {
   const staticDir = join(buildDir, 'static');
 

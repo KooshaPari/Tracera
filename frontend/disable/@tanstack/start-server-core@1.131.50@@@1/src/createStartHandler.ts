@@ -249,7 +249,7 @@ export function createStartHandler<TRouter extends AnyRouter>({
 					// Server Routes did not produce a response, so fallback to normal SSR matching using the router
 					const routerResponse = await executeRouter();
 					return routerResponse;
-				} catch (err) {
+				} catch (_err) {
 					if (err instanceof Response) {
 						return err;
 					}

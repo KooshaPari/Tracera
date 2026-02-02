@@ -324,7 +324,7 @@ test.describe("Sync and Offline Mode", () => {
 		test("should show live status badges", async ({ page }) => {
 			// Look for live status indicator
 			const liveBadge = page.getByText(/live|real-time/i);
-			await expect(liveeBadge)
+			await expect(liveBadge)
 				.toBeVisible({ timeout: 5000 })
 				.catch(() => {
 					console.log("Live status badge not displayed");
@@ -478,7 +478,7 @@ test.describe("Sync and Offline Mode", () => {
 			}
 		});
 
-		test("should retry failed syncs", async ({ page, context }) => {
+		test("should retry failed syncs", async ({ page, context: _context }) => {
 			// This requires more complex setup
 			console.log("Sync retry testing requires backend simulation");
 

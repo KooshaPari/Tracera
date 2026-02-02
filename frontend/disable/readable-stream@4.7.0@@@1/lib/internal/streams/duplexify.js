@@ -126,7 +126,7 @@ module.exports = function duplexify(body, name) {
             try {
               await promise
               process.nextTick(cb, null)
-            } catch (err) {
+            } catch (_err) {
               process.nextTick(cb, err)
             }
           })

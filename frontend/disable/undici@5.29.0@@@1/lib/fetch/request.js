@@ -83,7 +83,7 @@ class Request {
       let parsedURL
       try {
         parsedURL = new URL(input, baseUrl)
-      } catch (err) {
+      } catch (_err) {
         throw new TypeError('Failed to parse URL from ' + input, { cause: err })
       }
 
@@ -229,7 +229,7 @@ class Request {
         let parsedReferrer
         try {
           parsedReferrer = new URL(referrer, baseUrl)
-        } catch (err) {
+        } catch (_err) {
           throw new TypeError(`Referrer "${referrer}" is not a valid URL.`, { cause: err })
         }
 

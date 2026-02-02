@@ -124,8 +124,8 @@ describe("useGraph Hooks - Query Keys and Patterns", () => {
 		});
 
 		it("should find paths between items", () => {
-			const source = "item-1";
-			const target = "item-2";
+			const source: string = "item-1";
+			const target: string = "item-2";
 			expect(source !== target).toBe(true);
 		});
 

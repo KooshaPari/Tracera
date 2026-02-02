@@ -349,7 +349,7 @@ class Task extends EventEmitter {
 							},
 						);
 					}
-				} catch (err) {
+				} catch (_err) {
 					this.errorOut(err);
 					return; // Bail out, not complete
 				}

@@ -10,32 +10,32 @@ var modADir = path.join(__dirname, 'symlinks', 'source', 'node_modules', 'mod-a'
 var symlinkModADir = path.join(__dirname, 'symlinks', 'dest', 'node_modules', 'mod-a');
 try {
     fs.unlinkSync(symlinkDir);
-} catch (err) {}
+} catch (_err) {}
 try {
     fs.unlinkSync(packageDir);
-} catch (err) {}
+} catch (_err) {}
 try {
     fs.unlinkSync(modADir);
-} catch (err) {}
+} catch (_err) {}
 try {
     fs.unlinkSync(symlinkModADir);
-} catch (err) {}
+} catch (_err) {}
 
 try {
     fs.symlinkSync('./_/symlink_target', symlinkDir, 'dir');
-} catch (err) {
+} catch (_err) {
     // if fails then it is probably on Windows and lets try to create a junction
     fs.symlinkSync(path.join(__dirname, 'resolver', 'symlinked', '_', 'symlink_target') + '\\', symlinkDir, 'junction');
 }
 try {
     fs.symlinkSync('../../package', packageDir, 'dir');
-} catch (err) {
+} catch (_err) {
     // if fails then it is probably on Windows and lets try to create a junction
     fs.symlinkSync(path.join(__dirname, '..', '..', 'package') + '\\', packageDir, 'junction');
 }
 try {
     fs.symlinkSync('../../source/node_modules/mod-a', symlinkModADir, 'dir');
-} catch (err) {
+} catch (_err) {
     // if fails then it is probably on Windows and lets try to create a junction
     fs.symlinkSync(path.join(__dirname, '..', '..', 'source', 'node_modules', 'mod-a') + '\\', symlinkModADir, 'junction');
 }

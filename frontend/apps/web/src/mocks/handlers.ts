@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-type-assertion -- MSW params/body are validated at runtime */
 // MSW handlers for TraceRTM API mocking
 import { HttpResponse, http } from "msw";
 import type {

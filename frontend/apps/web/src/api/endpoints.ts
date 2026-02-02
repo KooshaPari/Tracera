@@ -1,9 +1,11 @@
 // Complete API Client for TraceRTM Backend
-import { apiClient, handleApiResponse, safeApiCall } from "./client";
+/* oxlint-disable import/no-named-export, import/group-exports, import/max-dependencies, eslint/arrow-body-style, eslint/require-await, eslint/new-cap, eslint/no-ternary, eslint/sort-keys, eslint/sort-imports, eslint/id-length, eslint/max-lines, typescript-eslint/array-type, typescript-eslint/explicit-function-return-type, typescript-eslint/explicit-module-boundary-types, oxc/no-async-await */
+import client from "./client";
 import type {
 	CreateItemInput,
 	CreateLinkInput,
 	CreateProjectInput,
+	CursorPaginationResponse,
 	DependencyAnalysis,
 	GraphData,
 	ImpactAnalysis,
@@ -17,6 +19,8 @@ import type {
 	UpdateLinkInput,
 	UpdateProjectInput,
 } from "./types";
+
+const { apiClient, handleApiResponse, safeApiCall } = client;
 
 // ============================================================================
 // PROJECT ENDPOINTS
@@ -81,14 +85,29 @@ export const projectsApi = {
 export const itemsApi = {
 	list: async (
 		params?: PaginationParams & { project_id?: string },
-	): Promise<Item[]> => {
-		const response = await handleApiResponse<{ total: number; items: Item[] }>(
+	): Promise<Item[] | CursorPaginationResponse<Item>> => {
+		const response = await handleApiResponse<
+			| { total: number; items: Item[] }
+			| CursorPaginationResponse<Item>
+			| Item[]
+		>(
 			apiClient.GET("/api/v1/items", {
 				params: { query: params },
 			}),
 		);
-		// API returns { total: number, items: Item[] }, extract items array
-		return Array.isArray(response) ? response : response.items || [];
+		// Handle different response formats:
+		// 1. Array of items (old format)
+		// 2. Cursor pagination response (new format with cursor)
+		// 3. Legacy offset pagination response (with total)
+		if (Array.isArray(response)) {
+			return response;
+		}
+		if ("next_cursor" in response || "has_more" in response) {
+			// Return full cursor pagination response
+			return response;
+		}
+		// Legacy format with total
+		return response.items || [];
 	},
 
 	get: async (id: string): Promise<Item> => {

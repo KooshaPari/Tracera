@@ -26,18 +26,20 @@ export {
 } from "./drilldown";
 // Equivalence IO (existing)
 export type {
-	LayoutCache,
-	LayoutCacheEntry,
-	NodePositions,
+	EquivalenceImportOptions,
+	EquivalenceExportPackage,
 } from "./equivalenceIO";
 export {
-	cacheLayout,
-	evictFromCache,
-	generateCacheKey,
-	getCachedLayout,
-	isLayoutCacheValid,
-	loadLayoutCache,
-	saveLayoutCache,
+	serializeToJSON,
+	deserializeFromJSON,
+	serializeToCSV,
+	deserializeLinksFromCSV,
+	deserializeConceptsFromCSV,
+	deserializeProjectionsFromCSV,
+	validateExportPackage,
+	validateImportOptions,
+	mergeExportPackages,
+	createExportSummary,
 } from "./equivalenceIO";
 // Grouping algorithms
 export {
@@ -78,4 +80,4 @@ export {
 	shouldUseSimplifiedNode,
 } from "./lod";
 // Type styles (existing)
-export { getTypeColor, getTypeIcon, getTypeLabel } from "./typeStyles";
+export { getTypeColor, getTypeIcon, getTypeCategory, getCategoryColor, getStatusColor, getPriorityColor } from "./typeStyles";

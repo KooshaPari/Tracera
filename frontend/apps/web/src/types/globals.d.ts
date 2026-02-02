@@ -20,8 +20,8 @@ interface ImportMeta {
 
 // Window extensions
 interface Window {
-	// Add any window extensions here
 	__TRACERTM_DEVTOOLS__?: boolean;
+	__wsCheckInterval?: ReturnType<typeof setInterval>;
 }
 
 // Module declarations

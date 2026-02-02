@@ -147,7 +147,7 @@ class ZlibBase extends Minipass {
       result = this[_handle]._processChunk(chunk, flushFlag)
       // if we don't throw, reset it back how it was
       Buffer.concat = OriginalBufferConcat
-    } catch (err) {
+    } catch (_err) {
       // or if we do, put Buffer.concat() back before we emit error
       // Error events call into user code, which may call Buffer.concat()
       Buffer.concat = OriginalBufferConcat

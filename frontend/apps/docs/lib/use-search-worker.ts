@@ -124,8 +124,8 @@ export function useSearchWorker(): UseSearchWorkerReturn {
       worker.postMessage({
         type: 'init',
         indexData,
-      });
-    } catch (err) {
+      }, worker.location.origin);
+    } catch (_err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load search index';
       setError(errorMessage);
       console.error('❌ Failed to load search index:', err);
@@ -152,7 +152,7 @@ export function useSearchWorker(): UseSearchWorkerReturn {
         type: 'search',
         query,
         maxResults,
-      });
+      }, self.location.origin);
     },
     [isReady]
   );

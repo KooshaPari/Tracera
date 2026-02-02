@@ -64,7 +64,7 @@ function requireNative() {
   if (process.env.NAPI_RS_NATIVE_LIBRARY_PATH) {
     try {
       return require(process.env.NAPI_RS_NATIVE_LIBRARY_PATH);
-    } catch (err) {
+    } catch (_err) {
       loadErrors.push(err)
     }
   } else if (process.platform === 'android') {
@@ -531,7 +531,7 @@ if (!nativeBinding || process.env.NAPI_RS_FORCE_WASI) {
   try {
     wasiBinding = require('./tailwindcss-oxide.wasi.cjs')
     nativeBinding = wasiBinding
-  } catch (err) {
+  } catch (_err) {
     if (process.env.NAPI_RS_FORCE_WASI) {
       wasiBindingError = err
     }
@@ -540,7 +540,7 @@ if (!nativeBinding || process.env.NAPI_RS_FORCE_WASI) {
     try {
       wasiBinding = require('@tailwindcss/oxide-wasm32-wasi')
       nativeBinding = wasiBinding
-    } catch (err) {
+    } catch (_err) {
       if (process.env.NAPI_RS_FORCE_WASI) {
         wasiBindingError.cause = err
         loadErrors.push(err)

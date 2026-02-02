@@ -83,14 +83,14 @@ function copy(text, options) {
 			throw new Error("copy command was unsuccessful");
 		}
 		success = true;
-	} catch (err) {
+	} catch (_err) {
 		debug && console.error("unable to copy using execCommand: ", err);
 		debug && console.warn("trying IE specific stuff");
 		try {
 			window.clipboardData.setData(options.format || "text", text);
 			options.onCopy && options.onCopy(window.clipboardData);
 			success = true;
-		} catch (err) {
+		} catch (_err) {
 			debug && console.error("unable to copy using clipboardData: ", err);
 			debug && console.error("falling back to prompt");
 			message = format("message" in options ? options.message : defaultMessage);

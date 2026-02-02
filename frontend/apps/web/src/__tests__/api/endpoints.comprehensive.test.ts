@@ -12,11 +12,11 @@ import {
 	linksApi,
 	projectsApi,
 	searchApi,
-} from "@/api/endpoints";
+} from "../../api/endpoints";
 import { mockItems, mockLinks, mockProjects } from "../mocks/data";
 
 // Mock the client module - must use factory function for hoisting
-vi.mock("@/api/client", () => {
+vi.mock("../../api/client", () => {
 	const mockApiClient = {
 		GET: vi.fn(),
 		POST: vi.fn(),
@@ -52,20 +52,24 @@ import {
 	apiClient,
 	handleApiResponse,
 	safeApiCall,
-} from "@/api/client";
+} from "../../api/client";
 
 describe("API Endpoints - Comprehensive Tests", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		// Default mock: successful response
-		vi.mocked(handleApiResponse).mockImplementation(async (promise: any) => {
+		vi.mocked(handleApiResponse).mockImplementation(async (promise: Promise<Response>) => {
 			if (!promise) throw new ApiError(500, "Null promise");
-			const result = await promise;
+			const result = (await promise) as unknown as {
+				error?: unknown;
+				response?: { status?: number };
+				data?: unknown;
+			};
 			if (result?.error)
 				throw new ApiError(
 					result.response?.status || 500,
 					"Error",
-					result.error,
+					result.error as string,
 				);
 			return result?.data;
 		});
@@ -912,7 +916,7 @@ describe("API Endpoints - Comprehensive Tests", () => {
 				global.fetch = vi.fn().mockResolvedValue({
 					ok: true,
 					blob: () => Promise.resolve(mockBlob),
-				});
+				}) as typeof fetch;
 
 				const result = await exportImportApi.export("proj-1", "json");
 				expect(result).toBeInstanceOf(Blob);
@@ -926,7 +930,7 @@ describe("API Endpoints - Comprehensive Tests", () => {
 				global.fetch = vi.fn().mockResolvedValue({
 					ok: true,
 					blob: () => Promise.resolve(mockBlob),
-				});
+				}) as typeof fetch;
 
 				const result = await exportImportApi.export("proj-1", "csv");
 				expect(result).toBeInstanceOf(Blob);
@@ -937,7 +941,7 @@ describe("API Endpoints - Comprehensive Tests", () => {
 				global.fetch = vi.fn().mockResolvedValue({
 					ok: true,
 					blob: () => Promise.resolve(mockBlob),
-				});
+				}) as typeof fetch;
 
 				const result = await exportImportApi.export("proj-1", "markdown");
 				expect(result).toBeInstanceOf(Blob);
@@ -947,7 +951,7 @@ describe("API Endpoints - Comprehensive Tests", () => {
 				global.fetch = vi.fn().mockResolvedValue({
 					ok: false,
 					status: 500,
-				});
+				}) as typeof fetch;
 
 				await expect(exportImportApi.export("proj-1", "json")).rejects.toThrow(
 					"Export failed",
@@ -1003,7 +1007,7 @@ describe("API Endpoints - Comprehensive Tests", () => {
 				global.fetch = vi.fn().mockResolvedValue({
 					ok: true,
 					blob: () => Promise.resolve(mockBlob),
-				});
+				}) as typeof fetch;
 
 				// Mock export to be callable
 				vi.spyOn(exportImportApi, "export").mockResolvedValue(mockBlob);

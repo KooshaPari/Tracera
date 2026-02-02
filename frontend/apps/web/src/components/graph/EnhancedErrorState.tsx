@@ -38,7 +38,7 @@ export const EnhancedErrorState = memo(function EnhancedErrorState({
 
   const handleCopyError = () => {
     const errorText = `Error: ${errorDetails.message}\n${errorDetails.stack || ''}`;
-    navigator.clipboard.writeText(errorText);
+    void navigator.clipboard.writeText(errorText);
   };
 
   if (variant === 'inline') {

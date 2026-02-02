@@ -212,7 +212,7 @@ export function SpecMetadataPanel({
 											{key}
 										</span>
 										<span className="font-medium truncate max-w-[120px]">
-											{typeof value === "object"
+											{typeof value === "object" && value !== null
 												? JSON.stringify(value)
 												: String(value)}
 										</span>

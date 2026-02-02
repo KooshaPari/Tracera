@@ -139,7 +139,7 @@ function runBenchmarks() {
   const avgDuration = durations.reduce((sum, d) => sum + d, 0) / durations.length;
   const minDuration = Math.min(...durations);
   const maxDuration = Math.max(...durations);
-  const p95Duration = durations.sort((a, b) => a - b)[Math.floor(durations.length * 0.95)];
+  const p95Duration = durations.toSorted((a, b) => a - b)[Math.floor(durations.length * 0.95)];
   const under100ms = results.filter((r) => r.duration < 100).length;
   const successRate = (under100ms / results.length) * 100;
 

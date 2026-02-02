@@ -115,9 +115,9 @@ export function CreateDefectItemForm({
 	const onSubmitWithAnnouncement = useCallback(
 		async (data: DefectItemFormData) => {
 			try {
-				await onSubmit(data);
+				await Promise.resolve(onSubmit(data));
 				announceToScreenReader("Defect item created successfully", "polite");
-			} catch (error) {
+			} catch {
 				announceToScreenReader(
 					"Error creating defect item. Please check the form and try again.",
 					"assertive",

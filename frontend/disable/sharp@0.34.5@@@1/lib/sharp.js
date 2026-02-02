@@ -25,7 +25,7 @@ for (path of paths) {
   try {
     sharp = require(path);
     break;
-  } catch (err) {
+  } catch (_err) {
     errors.push(err);
   }
 }

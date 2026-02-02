@@ -24,7 +24,8 @@ const mockWindow = {
 global.window = mockWindow as any;
 globalThis.window = mockWindow as any;
 
-// Mock WebSocket
+// Mock WebSocket (intentionally uses on* properties to mirror WebSocket API)
+/* eslint-disable unicorn/prefer-add-event-listener */
 class MockWebSocket {
 	static CONNECTING = 0;
 	static OPEN = 1;
@@ -60,14 +61,14 @@ class MockWebSocket {
 		}
 	}
 
-	addEventListener(event: string, handler: any) {
+	addEventListener(event: string, handler: EventListener) {
 		if (event === "open") this.onopen = handler;
 		if (event === "close") this.onclose = handler;
 		if (event === "error") this.onerror = handler;
 		if (event === "message") this.onmessage = handler;
 	}
 
-	removeEventListener(event: string, handler: any) {
+	removeEventListener(event: string, handler: EventListener) {
 		if (event === "open" && this.onopen === handler) this.onopen = null;
 		if (event === "close" && this.onclose === handler) this.onclose = null;
 		if (event === "error" && this.onerror === handler) this.onerror = null;
@@ -75,6 +76,7 @@ class MockWebSocket {
 			this.onmessage = null;
 	}
 }
+/* eslint-enable unicorn/prefer-add-event-listener */
 
 // Replace global WebSocket
 global.WebSocket = MockWebSocket as any;

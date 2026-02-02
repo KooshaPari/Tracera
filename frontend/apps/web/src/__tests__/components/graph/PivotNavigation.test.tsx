@@ -4,7 +4,6 @@
  */
 
 import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import type { Item } from "@tracertm/types";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
@@ -167,7 +166,7 @@ describe("PivotNavigation Component", () => {
 		});
 
 		it("returns null when no equivalent items and showEmpty is false", () => {
-			const { container } = render(
+			render(
 				<PivotNavigation
 					currentItem={mockCurrentItem}
 					currentPerspective="product"
@@ -205,7 +204,6 @@ describe("PivotNavigation Component", () => {
 		});
 
 		it("navigates directly when clicking single item button", async () => {
-			const user = userEvent.setup();
 			const singleTarget: PivotTarget[] = [
 				{
 					item: mockTechnicalItem,
@@ -256,7 +254,6 @@ describe("PivotNavigation Component", () => {
 		});
 
 		it("shows item details in tooltip", async () => {
-			const user = userEvent.setup();
 			const singleTarget: PivotTarget[] = [
 				{
 					item: mockTechnicalItem,
@@ -286,7 +283,6 @@ describe("PivotNavigation Component", () => {
 		});
 
 		it("shows confidence percentage in tooltip", async () => {
-			const user = userEvent.setup();
 			const singleTarget: PivotTarget[] = [
 				{
 					item: mockTechnicalItem,
@@ -346,7 +342,6 @@ describe("PivotNavigation Component", () => {
 		});
 
 		it("opens popover when clicking multi-item button", async () => {
-			const user = userEvent.setup();
 			const multipleTargets: PivotTarget[] = [
 				{
 					item: mockTechnicalItem,
@@ -382,7 +377,6 @@ describe("PivotNavigation Component", () => {
 		});
 
 		it("displays all items in popover", async () => {
-			const user = userEvent.setup();
 			const multipleTargets: PivotTarget[] = [
 				{
 					item: mockTechnicalItem,
@@ -421,7 +415,6 @@ describe("PivotNavigation Component", () => {
 		});
 
 		it("navigates when clicking item in popover", async () => {
-			const user = userEvent.setup();
 			const multipleTargets: PivotTarget[] = [
 				{
 					item: mockTechnicalItem,
@@ -460,7 +453,6 @@ describe("PivotNavigation Component", () => {
 		});
 
 		it("displays type information in popover", async () => {
-			const user = userEvent.setup();
 			const multipleTargets: PivotTarget[] = [
 				{
 					item: mockTechnicalItem,
@@ -535,7 +527,6 @@ describe("PivotNavigation Component", () => {
 		});
 
 		it("shows confidence tooltip on hover", async () => {
-			const user = userEvent.setup();
 			render(
 				<PivotNavigation
 					currentItem={mockCurrentItem}
@@ -588,7 +579,6 @@ describe("PivotNavigation Component", () => {
 		});
 
 		it("opens popover with all perspectives in compact mode", async () => {
-			const user = userEvent.setup();
 			render(
 				<PivotNavigation
 					currentItem={mockCurrentItem}
@@ -610,7 +600,6 @@ describe("PivotNavigation Component", () => {
 		});
 
 		it("groups items by perspective in compact popover", async () => {
-			const user = userEvent.setup();
 			render(
 				<PivotNavigation
 					currentItem={mockCurrentItem}
@@ -632,7 +621,6 @@ describe("PivotNavigation Component", () => {
 		});
 
 		it("navigates from compact popover", async () => {
-			const user = userEvent.setup();
 			render(
 				<PivotNavigation
 					currentItem={mockCurrentItem}
@@ -655,7 +643,7 @@ describe("PivotNavigation Component", () => {
 		});
 
 		it("returns null when no equivalents in compact mode with showEmpty false", () => {
-			const { container } = render(
+			render(
 				<PivotNavigation
 					currentItem={mockCurrentItem}
 					currentPerspective="product"
@@ -688,7 +676,6 @@ describe("PivotNavigation Component", () => {
 		});
 
 		it("shows 'No equivalents' message on disabled button hover", async () => {
-			const user = userEvent.setup();
 			render(
 				<PivotNavigation
 					currentItem={mockCurrentItem}
@@ -785,7 +772,6 @@ describe("PivotNavigation Component", () => {
 
 	describe("Accessibility", () => {
 		it("supports keyboard navigation", async () => {
-			const user = userEvent.setup();
 			render(
 				<PivotNavigation
 					currentItem={mockCurrentItem}

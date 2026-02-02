@@ -145,7 +145,7 @@ export class DesignSync {
 		console.log("⬇️  Pulling updates from Figma...");
 
 		// Get Figma file data
-		const file = await this.client.getFile(this.config.figmaFileKey);
+		const _file = await this.client.getFile(this.config.figmaFileKey);
 
 		// Get design tokens/variables
 		const variables = await this.client.getVariables(this.config.figmaFileKey);

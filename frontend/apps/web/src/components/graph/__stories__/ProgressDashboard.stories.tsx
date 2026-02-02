@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { ProgressDashboard } from "../ProgressDashboard";
+import { ProgressDashboard } from "@/components/temporal/ProgressDashboard";
 
 const meta: Meta<typeof ProgressDashboard> = {
 	title: "Components/Graph/ProgressDashboard",
@@ -17,77 +17,97 @@ const meta: Meta<typeof ProgressDashboard> = {
 		layout: "fullscreen",
 	},
 	argTypes: {
-		progress: { control: { type: "range", min: 0, max: 100, step: 10 } },
-		status: {
-			control: "select",
-			options: ["idle", "running", "completed", "error"],
-		},
+		projectId: { control: "text" },
+		isLoading: { control: "boolean" },
+		onMilestoneClick: { action: "milestoneClick" },
+		onSprintClick: { action: "sprintClick" },
 	},
 };
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const mockMetrics = {
-	componentsAnalyzed: 150,
-	linksDetected: 450,
-	relationshipsFound: 280,
-	dependenciesResolved: 320,
-};
+const mockMilestones = [
+	{
+		id: "m1",
+		projectId: "proj-1",
+		name: "v1.0 Release",
+		slug: "v1-0-release",
+		targetDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+		status: "in_progress" as const,
+		health: "green" as const,
+		progress: {
+			totalItems: 10,
+			completedItems: 7,
+			inProgressItems: 2,
+			blockedItems: 0,
+			notStartedItems: 1,
+			percentage: 70,
+		},
+		itemIds: ["item-1", "item-2"],
+		itemCount: 10,
+		createdAt: new Date().toISOString(),
+		updatedAt: new Date().toISOString(),
+	},
+];
+
+const mockSprints = [
+	{
+		id: "s1",
+		projectId: "proj-1",
+		name: "Sprint 1",
+		slug: "sprint-1",
+		startDate: new Date().toISOString(),
+		endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+		durationDays: 14,
+		status: "active" as const,
+		health: "green" as const,
+		plannedPoints: 50,
+		completedPoints: 35,
+		remainingPoints: 15,
+		addedPoints: 0,
+		removedPoints: 0,
+		itemIds: [] as string[],
+		itemCount: 10,
+		completedItemIds: [] as string[],
+		createdAt: new Date().toISOString(),
+		updatedAt: new Date().toISOString(),
+	},
+];
 
 /**
- * Initial state
+ * Default state
  */
-export const Idle: Story = {
+export const Default: Story = {
 	args: {
-		progress: 0,
-		status: "idle",
-		metrics: mockMetrics,
+		projectId: "proj-1",
+		milestones: mockMilestones,
+		sprints: mockSprints,
+		isLoading: false,
 	},
 };
 
 /**
- * In progress
+ * Loading state
  */
-export const Running: Story = {
+export const Loading: Story = {
 	args: {
-		progress: 45,
-		status: "running",
-		metrics: mockMetrics,
+		projectId: "proj-1",
+		milestones: [],
+		sprints: [],
+		isLoading: true,
 	},
 };
 
 /**
- * Near completion
+ * Empty state
  */
-export const NearCompletion: Story = {
+export const Empty: Story = {
 	args: {
-		progress: 85,
-		status: "running",
-		metrics: mockMetrics,
-	},
-};
-
-/**
- * Completed
- */
-export const Completed: Story = {
-	args: {
-		progress: 100,
-		status: "completed",
-		metrics: mockMetrics,
-	},
-};
-
-/**
- * Error state
- */
-export const ErrorState: Story = {
-	args: {
-		progress: 35,
-		status: "error",
-		metrics: mockMetrics,
-		errorMessage: "Failed to analyze components. Please try again.",
+		projectId: "proj-1",
+		milestones: [],
+		sprints: [],
+		isLoading: false,
 	},
 };
 
@@ -96,9 +116,10 @@ export const ErrorState: Story = {
  */
 export const Tablet: Story = {
 	args: {
-		progress: 65,
-		status: "running",
-		metrics: mockMetrics,
+		projectId: "proj-1",
+		milestones: mockMilestones,
+		sprints: mockSprints,
+		isLoading: false,
 	},
 	parameters: {
 		viewport: {
@@ -112,12 +133,13 @@ export const Tablet: Story = {
  */
 export const DarkMode: Story = {
 	args: {
-		progress: 75,
-		status: "running",
-		metrics: mockMetrics,
+		projectId: "proj-1",
+		milestones: mockMilestones,
+		sprints: mockSprints,
+		isLoading: false,
 	},
 	decorators: [
-		(Story) => (
+		(Story: React.ComponentType) => (
 			<div className="dark" data-theme="dark" style={{ minHeight: "100vh" }}>
 				<Story />
 			</div>
@@ -128,22 +150,6 @@ export const DarkMode: Story = {
 			modes: {
 				dark: { query: "[data-theme='dark']" },
 			},
-		},
-	},
-};
-
-/**
- * With large metrics
- */
-export const LargeMetrics: Story = {
-	args: {
-		progress: 90,
-		status: "running",
-		metrics: {
-			componentsAnalyzed: 2500,
-			linksDetected: 8500,
-			relationshipsFound: 5200,
-			dependenciesResolved: 6800,
 		},
 	},
 };

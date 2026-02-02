@@ -209,7 +209,7 @@ class Request {
     if (this[kHandler].onBodySent) {
       try {
         return this[kHandler].onBodySent(chunk)
-      } catch (err) {
+      } catch (_err) {
         this.abort(err)
       }
     }
@@ -223,7 +223,7 @@ class Request {
     if (this[kHandler].onRequestSent) {
       try {
         return this[kHandler].onRequestSent()
-      } catch (err) {
+      } catch (_err) {
         this.abort(err)
       }
     }
@@ -255,7 +255,7 @@ class Request {
 
     try {
       return this[kHandler].onHeaders(statusCode, headers, resume, statusText)
-    } catch (err) {
+    } catch (_err) {
       this.abort(err)
     }
   }
@@ -269,7 +269,7 @@ class Request {
     }
     try {
       return this[kHandler].onData(chunk)
-    } catch (err) {
+    } catch (_err) {
       this.abort(err)
       return false
     }
@@ -295,7 +295,7 @@ class Request {
 
     try {
       return this[kHandler].onComplete(trailers)
-    } catch (err) {
+    } catch (_err) {
       // TODO (fix): This might be a bad idea?
       this.onError(err)
     }

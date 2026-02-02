@@ -126,7 +126,7 @@ function validateBinaryVersion(...command) {
 			})
 			.toString()
 			.trim();
-	} catch (err) {
+	} catch (_err) {
 		if (
 			os2.platform() === "darwin" &&
 			/_SecTrustEvaluateWithError/.test(err + "")
@@ -186,7 +186,7 @@ function fetch(url) {
 function extractFileFromTarGzip(buffer, subpath) {
 	try {
 		buffer = zlib.unzipSync(buffer);
-	} catch (err) {
+	} catch (_err) {
 		throw new Error(
 			`Invalid gzip data in archive: ${(err && err.message) || err}`,
 		);

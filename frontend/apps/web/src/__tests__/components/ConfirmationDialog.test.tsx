@@ -15,9 +15,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	BulkConfirmationDialog,
 	ConfirmationDialog,
-} from "@/components/ui/confirmation-dialog";
+} from "../../components/ui/confirmation-dialog";
 
 describe("ConfirmationDialog", () => {
+	let user: ReturnType<typeof userEvent.setup>;
 	const defaultProps = {
 		open: true,
 		onOpenChange: vi.fn(),
@@ -28,6 +29,7 @@ describe("ConfirmationDialog", () => {
 	};
 
 	beforeEach(() => {
+		user = userEvent.setup();
 		vi.clearAllMocks();
 	});
 
@@ -41,7 +43,7 @@ describe("ConfirmationDialog", () => {
 	});
 
 	it("does not render when closed", () => {
-		const { rerender } = render(
+		render(
 			<ConfirmationDialog {...defaultProps} open={false} />,
 		);
 
@@ -49,7 +51,6 @@ describe("ConfirmationDialog", () => {
 	});
 
 	it("calls onConfirm when confirm button clicked", async () => {
-		const user = userEvent.setup();
 		const onConfirm = vi.fn();
 
 		render(
@@ -69,7 +70,6 @@ describe("ConfirmationDialog", () => {
 	});
 
 	it("calls onCancel when cancel button clicked", async () => {
-		const user = userEvent.setup();
 		const onCancel = vi.fn();
 
 		render(
@@ -197,6 +197,7 @@ describe("ConfirmationDialog", () => {
 });
 
 describe("BulkConfirmationDialog", () => {
+	let user: ReturnType<typeof userEvent.setup>;
 	const defaultProps = {
 		open: true,
 		onOpenChange: vi.fn(),
@@ -206,6 +207,7 @@ describe("BulkConfirmationDialog", () => {
 	};
 
 	beforeEach(() => {
+		user = userEvent.setup();
 		vi.clearAllMocks();
 	});
 
@@ -234,7 +236,6 @@ describe("BulkConfirmationDialog", () => {
 	});
 
 	it("calls onConfirm with correct action", async () => {
-		const user = userEvent.setup();
 		const onConfirm = vi.fn();
 
 		render(<BulkConfirmationDialog {...defaultProps} onConfirm={onConfirm} />);

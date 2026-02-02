@@ -351,8 +351,8 @@ function calculateModularityGain(
 function createClusterNodes(
 	communities: Map<string, string>,
 	graph: GraphStructure,
-	items: Item[],
-	links: Link[],
+	_items: Item[],
+	_links: Link[],
 	level: number,
 ): ClusterNode[] {
 	const communityGroups = new Map<string, Set<string>>();
@@ -368,7 +368,7 @@ function createClusterNodes(
 	const clusters: ClusterNode[] = [];
 	let clusterIndex = 0;
 
-	for (const [communityId, nodeIds] of communityGroups) {
+	for (const [_communityId, nodeIds] of communityGroups) {
 		// Calculate cluster statistics
 		const typeDistribution: Record<string, number> = {};
 		let internalEdges = 0;

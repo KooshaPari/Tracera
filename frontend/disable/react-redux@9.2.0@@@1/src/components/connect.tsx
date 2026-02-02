@@ -48,7 +48,7 @@ const NO_SUBSCRIPTION_ARRAY = [null, null]
 const stringifyComponent = (Comp: unknown) => {
   try {
     return JSON.stringify(Comp)
-  } catch (err) {
+  } catch (_err) {
     return String(Comp)
   }
 }
@@ -728,7 +728,7 @@ function connect<
             ? () => childPropsSelector(getServerState(), wrapperProps)
             : actualChildPropsSelector,
         )
-      } catch (err) {
+      } catch (_err) {
         if (latestSubscriptionCallbackError.current) {
           // eslint-disable-next-line no-extra-semi
           ;(err as Error).message +=

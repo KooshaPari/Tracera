@@ -4,7 +4,6 @@
  */
 
 import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import type {
 	ComponentLibrary,
 	ComponentProp,
@@ -220,7 +219,6 @@ describe("ComponentLibraryExplorer Component", () => {
 
 	describe("Library Selection", () => {
 		it("selects library when clicking library name", async () => {
-			const user = userEvent.setup();
 			render(
 				<ComponentLibraryExplorer
 					libraries={[mockUILibrary, mockIconsLibrary]}
@@ -287,7 +285,6 @@ describe("ComponentLibraryExplorer Component", () => {
 		});
 
 		it("shows sync button for library", async () => {
-			const user = userEvent.setup();
 			render(
 				<ComponentLibraryExplorer
 					libraries={[mockUILibrary]}
@@ -304,7 +301,6 @@ describe("ComponentLibraryExplorer Component", () => {
 
 	describe("Component Selection", () => {
 		it("selects component when clicking component name", async () => {
-			const user = userEvent.setup();
 			render(
 				<ComponentLibraryExplorer
 					libraries={[mockUILibrary]}
@@ -375,7 +371,6 @@ describe("ComponentLibraryExplorer Component", () => {
 
 	describe("Search Functionality", () => {
 		it("filters components by search query", async () => {
-			const user = userEvent.setup();
 			render(
 				<ComponentLibraryExplorer
 					libraries={[mockUILibrary]}
@@ -393,7 +388,6 @@ describe("ComponentLibraryExplorer Component", () => {
 		});
 
 		it("case-insensitive search", async () => {
-			const user = userEvent.setup();
 			render(
 				<ComponentLibraryExplorer
 					libraries={[mockUILibrary]}
@@ -411,7 +405,6 @@ describe("ComponentLibraryExplorer Component", () => {
 		});
 
 		it("searches in component descriptions", async () => {
-			const user = userEvent.setup();
 			render(
 				<ComponentLibraryExplorer
 					libraries={[mockUILibrary]}
@@ -429,7 +422,6 @@ describe("ComponentLibraryExplorer Component", () => {
 		});
 
 		it("shows no results message when no matches", async () => {
-			const user = userEvent.setup();
 			render(
 				<ComponentLibraryExplorer
 					libraries={[mockUILibrary]}
@@ -446,7 +438,6 @@ describe("ComponentLibraryExplorer Component", () => {
 		});
 
 		it("clears search results when query cleared", async () => {
-			const user = userEvent.setup();
 			render(
 				<ComponentLibraryExplorer
 					libraries={[mockUILibrary]}
@@ -528,7 +519,6 @@ describe("ComponentLibraryExplorer Component", () => {
 
 	describe("External Links", () => {
 		it("shows Storybook link for component", async () => {
-			const user = userEvent.setup();
 			render(
 				<ComponentLibraryExplorer
 					libraries={[mockUILibrary]}
@@ -544,7 +534,6 @@ describe("ComponentLibraryExplorer Component", () => {
 		});
 
 		it("shows Figma link for component", async () => {
-			const user = userEvent.setup();
 			render(
 				<ComponentLibraryExplorer
 					libraries={[mockUILibrary]}
@@ -560,7 +549,6 @@ describe("ComponentLibraryExplorer Component", () => {
 		});
 
 		it("shows code link for component", async () => {
-			const user = userEvent.setup();
 			render(
 				<ComponentLibraryExplorer
 					libraries={[mockUILibrary]}
@@ -648,7 +636,6 @@ describe("ComponentLibraryExplorer Component", () => {
 		});
 
 		it("allows expanding/collapsing categories", async () => {
-			const user = userEvent.setup();
 			render(
 				<ComponentLibraryExplorer
 					libraries={[mockUILibrary]}
@@ -664,7 +651,6 @@ describe("ComponentLibraryExplorer Component", () => {
 
 	describe("Sync Operations", () => {
 		it("calls onSyncLibrary when sync button clicked", async () => {
-			const user = userEvent.setup();
 			render(
 				<ComponentLibraryExplorer
 					libraries={[mockUILibrary]}
@@ -745,7 +731,6 @@ describe("ComponentLibraryExplorer Component", () => {
 
 	describe("Accessibility", () => {
 		it("supports keyboard navigation", async () => {
-			const user = userEvent.setup();
 			render(
 				<ComponentLibraryExplorer
 					libraries={[mockUILibrary]}
@@ -823,7 +808,6 @@ describe("ComponentLibraryExplorer Component", () => {
 		});
 
 		it("filters by category", async () => {
-			const user = userEvent.setup();
 			render(
 				<ComponentLibraryExplorer
 					libraries={[mockUILibrary]}

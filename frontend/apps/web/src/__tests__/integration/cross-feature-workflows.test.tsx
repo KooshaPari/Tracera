@@ -6,7 +6,9 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+let user: ReturnType<typeof userEvent.setup>;
 
 // Mock API Client
 class MockApiClient {
@@ -58,7 +60,7 @@ class MockApiClient {
 function MockProjectWorkflow({
 	onWorkflowComplete = vi.fn(),
 }: {
-	onWorkflowComplete?: (result: any) => void;
+	onWorkflowComplete?: (result: unknown) => void;
 }) {
 	const [step, setStep] = React.useState(1);
 	const [project, setProject] = React.useState<any>(null);
@@ -109,9 +111,11 @@ function MockProjectWorkflow({
 						onSubmit={(e) => {
 							e.preventDefault();
 							const formData = new FormData(e.currentTarget);
-							handleCreateProject(
-								formData.get("name") as string,
-								formData.get("description") as string,
+							const name = formData.get("name");
+							const description = formData.get("description");
+							void handleCreateProject(
+								typeof name === "string" ? name : "",
+								typeof description === "string" ? description : "",
 							);
 						}}
 					>
@@ -147,9 +151,11 @@ function MockProjectWorkflow({
 							e.preventDefault();
 							const input = e.currentTarget.querySelector(
 								"input[name='item-name']",
-							) as HTMLInputElement;
-							handleCreateItem(input.value);
-							input.value = "";
+							);
+							if (input instanceof HTMLInputElement) {
+								void handleCreateItem(input.value);
+								input.value = "";
+							}
 						}}
 					>
 						<input
@@ -204,7 +210,7 @@ function MockProjectWorkflow({
 function MockSearchWorkflow({
 	onSearch = vi.fn(),
 }: {
-	onSearch?: (results: any[]) => void;
+	onSearch?: (results: unknown[]) => void;
 }) {
 	const [query, setQuery] = React.useState("");
 	const [results, setResults] = React.useState<any[]>([]);
@@ -272,7 +278,7 @@ function MockSearchWorkflow({
 function MockLinkCreationWorkflow({
 	onLinkCreate = vi.fn(),
 }: {
-	onLinkCreate?: (link: any) => void;
+	onLinkCreate?: (link: unknown) => void;
 }) {
 	const [sourceId, setSourceId] = React.useState("");
 	const [targetId, setTargetId] = React.useState("");
@@ -367,9 +373,12 @@ function MockLinkCreationWorkflow({
 }
 
 describe("Project Creation Workflow - End-to-End", () => {
+	beforeEach(() => {
+		user = userEvent.setup();
+	});
+
 	it("should complete multi-step project setup", async () => {
 		const handleComplete = vi.fn();
-		const user = userEvent.setup();
 
 		render(<MockProjectWorkflow onWorkflowComplete={handleComplete} />);
 
@@ -419,7 +428,6 @@ describe("Project Creation Workflow - End-to-End", () => {
 	});
 
 	it("should prevent incomplete workflow progression", async () => {
-		const user = userEvent.setup();
 
 		render(<MockProjectWorkflow />);
 
@@ -444,9 +452,12 @@ describe("Project Creation Workflow - End-to-End", () => {
 });
 
 describe("Search and Filter Integration", () => {
+	beforeEach(() => {
+		user = userEvent.setup();
+	});
+
 	it("should perform search and return results", async () => {
 		const handleSearch = vi.fn();
-		const user = userEvent.setup();
 
 		render(<MockSearchWorkflow onSearch={handleSearch} />);
 
@@ -463,7 +474,6 @@ describe("Search and Filter Integration", () => {
 	});
 
 	it("should display no results message when search returns empty", async () => {
-		const user = userEvent.setup();
 
 		render(<MockSearchWorkflow />);
 
@@ -486,7 +496,6 @@ describe("Search and Filter Integration", () => {
 	});
 
 	it("should enable search button when query is entered", async () => {
-		const user = userEvent.setup();
 
 		render(<MockSearchWorkflow />);
 
@@ -500,9 +509,12 @@ describe("Search and Filter Integration", () => {
 });
 
 describe("Link Creation Workflow", () => {
+	beforeEach(() => {
+		user = userEvent.setup();
+	});
+
 	it("should create traceability links", async () => {
 		const handleLinkCreate = vi.fn();
-		const user = userEvent.setup();
 
 		render(<MockLinkCreationWorkflow onLinkCreate={handleLinkCreate} />);
 
@@ -521,21 +533,22 @@ describe("Link Creation Workflow", () => {
 	});
 
 	it("should support different link types", async () => {
-		const user = userEvent.setup();
 
 		render(<MockLinkCreationWorkflow />);
 
 		const linkTypeSelect = screen.getByDisplayValue("Traces");
 
 		// Should have multiple options
-		const options = (linkTypeSelect as HTMLSelectElement).options;
+		const options =
+			linkTypeSelect instanceof HTMLSelectElement
+				? linkTypeSelect.options
+				: [];
 		expect(options).toHaveLength(4);
 		expect(options[1]).toHaveTextContent("Implements");
 		expect(options[2]).toHaveTextContent("Verifies");
 	});
 
 	it("should create multiple links in sequence", async () => {
-		const user = userEvent.setup();
 
 		render(<MockLinkCreationWorkflow />);
 
@@ -568,7 +581,7 @@ describe("Cross-Feature Workflow Integration", () => {
 	function MockCompleteWorkflow({
 		onWorkflowMetrics = vi.fn(),
 	}: {
-		onWorkflowMetrics?: (metrics: any) => void;
+		onWorkflowMetrics?: (metrics: unknown) => void;
 	}) {
 		const [workflowState, setWorkflowState] = React.useState({
 			projectCreated: false,
@@ -649,7 +662,7 @@ describe("Cross-Feature Workflow Integration", () => {
 						onChange={(e) =>
 							setWorkflowState({
 								...workflowState,
-								sharedLink: e.target.value || null,
+								sharedLink: (e.target.value || null) as string | null,
 							})
 						}
 						placeholder="Share link"
@@ -660,9 +673,12 @@ describe("Cross-Feature Workflow Integration", () => {
 		);
 	}
 
+	beforeEach(() => {
+		user = userEvent.setup();
+	});
+
 	it("should track cross-feature workflow metrics", async () => {
 		const handleMetrics = vi.fn();
-		const user = userEvent.setup();
 
 		render(<MockCompleteWorkflow onWorkflowMetrics={handleMetrics} />);
 
@@ -709,8 +725,8 @@ describe("Error Recovery in Workflows", () => {
 					throw new Error("Operation failed");
 				}
 				setError(null);
-			} catch (err) {
-				const errorMsg = err instanceof Error ? err.message : "Unknown error";
+			} catch (error) {
+				const errorMsg = error instanceof Error ? error.message : "Unknown error";
 				setError(errorMsg);
 				onError(new Error(errorMsg));
 			}
@@ -743,9 +759,12 @@ describe("Error Recovery in Workflows", () => {
 		);
 	}
 
+	beforeEach(() => {
+		user = userEvent.setup();
+	});
+
 	it("should handle workflow errors gracefully", async () => {
 		const handleError = vi.fn();
-		const user = userEvent.setup();
 
 		render(
 			<MockWorkflowWithErrorHandling shouldFail={true} onError={handleError} />,
@@ -763,7 +782,6 @@ describe("Error Recovery in Workflows", () => {
 	});
 
 	it("should allow dismissing errors", async () => {
-		const user = userEvent.setup();
 
 		render(<MockWorkflowWithErrorHandling shouldFail={true} />);
 

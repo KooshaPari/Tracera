@@ -272,7 +272,7 @@ function tryHandleCache(options, data, cb) {
 				try {
 					result = handleCache(options)(data);
 					resolve(result);
-				} catch (err) {
+				} catch (_err) {
 					reject(err);
 				}
 			});
@@ -282,7 +282,7 @@ function tryHandleCache(options, data, cb) {
 	} else {
 		try {
 			result = handleCache(options)(data);
-		} catch (err) {
+		} catch (_err) {
 			return cb(err);
 		}
 

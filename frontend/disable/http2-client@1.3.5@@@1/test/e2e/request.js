@@ -57,7 +57,7 @@ const onHttpServerReady = new Promise((resolve, reject) => {
 			serverCloseActions.push(server.close.bind(server));
 			resolve();
 		});
-	} catch (err) {
+	} catch (_err) {
 		reject(err);
 	}
 });
@@ -115,7 +115,7 @@ describe("e2e", () => {
 							expect(response.statusCode).eq(200);
 							expect(response.body.method).eq("POST");
 							resolve();
-						} catch (err) {
+						} catch (_err) {
 							reject(err);
 						}
 					},
@@ -144,7 +144,7 @@ describe("e2e", () => {
 							expect(response.statusCode).eq(200);
 							expect(respBody.headers[":method"]).eq("POST");
 							resolve();
-						} catch (err) {
+						} catch (_err) {
 							reject(err);
 						}
 					},
@@ -273,7 +273,7 @@ describe("e2e", () => {
 						try {
 							expect(err.code).eq("ECONNRESET");
 							resolve();
-						} catch (err) {
+						} catch (_err) {
 							reject(err);
 						}
 					});
@@ -282,7 +282,7 @@ describe("e2e", () => {
 						try {
 							req.abort();
 							resolve();
-						} catch (err) {
+						} catch (_err) {
 							reject(err);
 						}
 					});
@@ -300,7 +300,7 @@ describe("e2e", () => {
 						try {
 							expect(err.code).eq("ECONNREFUSED");
 							resolve();
-						} catch (err) {
+						} catch (_err) {
 							reject(err);
 						}
 					});
@@ -364,7 +364,7 @@ describe("e2e", () => {
 						try {
 							expect(err.code).eq("ECONNRESET");
 							resolve();
-						} catch (err) {
+						} catch (_err) {
 							reject(err);
 						}
 					});
@@ -552,7 +552,7 @@ describe("e2e", () => {
 						try {
 							expect(err.code).eq("ECONNRESET");
 							resolve();
-						} catch (err) {
+						} catch (_err) {
 							reject(err);
 						}
 					});
@@ -582,7 +582,7 @@ describe("e2e", () => {
 						try {
 							expect(err.code).eq("ECONNRESET");
 							resolve();
-						} catch (err) {
+						} catch (_err) {
 							reject(err);
 						}
 					});
@@ -591,7 +591,7 @@ describe("e2e", () => {
 						try {
 							req.abort();
 							resolve();
-						} catch (err) {
+						} catch (_err) {
 							reject(err);
 						}
 					});

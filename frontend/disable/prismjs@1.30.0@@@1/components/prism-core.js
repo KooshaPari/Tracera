@@ -232,7 +232,7 @@ var Prism = (function (_self) {
 
 				try {
 					throw new Error();
-				} catch (err) {
+				} catch (_err) {
 					// Get file src url from stack. Specifically works with the format of stack traces in IE.
 					// A stack will look like this:
 					//

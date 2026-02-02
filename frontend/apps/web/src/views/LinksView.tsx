@@ -29,6 +29,14 @@ import { cn } from "@/lib/utils";
 import { useItems } from "../hooks/useItems";
 import { useDeleteLink, useLinks } from "../hooks/useLinks";
 
+function buildItemLink(itemId: string, item?: { projectId?: string; project_id?: string; view?: string; view_type?: string }) {
+	const projectId = item?.projectId || item?.project_id;
+	const viewType = item?.view || item?.view_type || "feature";
+	return projectId
+		? `/projects/${projectId}/views/${String(viewType).toLowerCase()}/${itemId}`
+		: "/projects";
+}
+
 export function LinksView() {
 	const { data: linksData, isLoading: linksLoading, error } = useLinks();
 	const { data: itemsData } = useItems();
@@ -40,30 +48,20 @@ export function LinksView() {
 	const links = linksData?.links ?? [];
 	const items = itemsData?.items ?? [];
 
-	const filteredLinks = useMemo(() => {
-		return links.filter((link) => {
+	const filteredLinks = useMemo(() => links.filter((link) => {
 			const matchesQuery =
 				link.sourceId.toLowerCase().includes(searchQuery.toLowerCase()) ||
 				link.targetId.toLowerCase().includes(searchQuery.toLowerCase()) ||
 				link.type.toLowerCase().includes(searchQuery.toLowerCase());
 			const matchesType = typeFilter === "all" || link.type === typeFilter;
 			return matchesQuery && matchesType;
-		});
-	}, [links, searchQuery, typeFilter]);
-
-	const buildItemLink = (itemId: string, item?: any) => {
-		const projectId = item?.projectId || item?.project_id;
-		const viewType = item?.view || item?.view_type || "feature";
-		return projectId
-			? `/projects/${projectId}/views/${String(viewType).toLowerCase()}/${itemId}`
-			: "/projects";
-	};
+		}), [links, searchQuery, typeFilter]);
 
 	const handleDelete = async (id: string) => {
 		try {
 			await deleteLink.mutateAsync(id);
 			toast.success("Relationship link dissolved");
-		} catch (err) {
+		} catch {
 			toast.error("Failed to delete link");
 		}
 	};
@@ -72,11 +70,11 @@ export function LinksView() {
 	useEffect(() => {
 		if (error) {
 			toast.error("Failed to load links", {
-				description: error.message,
 				action: {
 					label: "Retry",
-					onClick: () => window.location.reload(),
+					onClick: () => globalThis.location.reload(),
 				},
+				description: error.message,
 			});
 		}
 	}, [error]);
@@ -102,7 +100,7 @@ export function LinksView() {
 					title="Traceability interrupted"
 					message="Failed to synchronize relationship graph."
 					error={error}
-					retry={() => window.location.reload()}
+					retry={() => globalThis.location.reload()}
 					className="flex flex-col items-center justify-center text-center p-8 rounded-lg border border-destructive/20 bg-destructive/5"
 				/>
 			</div>
@@ -136,25 +134,25 @@ export function LinksView() {
 			<div className="grid grid-cols-1 md:grid-cols-3 gap-4 stagger-children">
 				{[
 					{
+						color: "text-blue-500",
+						icon: Network,
 						label: "Total Connections",
 						value: links.length,
-						icon: Network,
-						color: "text-blue-500",
 					},
 					{
+						color: "text-green-500",
+						icon: Activity,
 						label: "Connection Density",
 						value: `${items.length > 0 ? (links.length / items.length).toFixed(2) : 0}`,
-						icon: Activity,
-						color: "text-green-500",
 					},
 					{
+						color: "text-orange-500",
+						icon: Layers,
 						label: "Orphan Nodes",
 						value: items.filter(
 							(i) =>
 								!links.some((l) => l.sourceId === i.id || l.targetId === i.id),
 						).length,
-						icon: Layers,
-						color: "text-orange-500",
 					},
 				].map((s, i) => (
 					<Card
@@ -197,7 +195,7 @@ export function LinksView() {
 					</SelectTrigger>
 					<SelectContent>
 						<SelectItem value="all">All Types</SelectItem>
-						{Array.from(new Set(links.map((l) => l.type))).map((t) => (
+						{[...new Set(links.map((l) => l.type))].map((t) => (
 							<SelectItem key={t} value={t}>
 								{t}
 							</SelectItem>

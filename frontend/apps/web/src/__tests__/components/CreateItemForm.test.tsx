@@ -16,7 +16,7 @@ describe("CreateItemForm", () => {
 	});
 
 	it("should render the form", async () => {
-		const { container } = render(
+		render(
 			<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />,
 		);
 
@@ -42,8 +42,8 @@ describe("CreateItemForm", () => {
 
 		// Use queryByLabelText to avoid test failures if fields don't exist
 		const viewSelect = screen.queryByLabelText(/View/);
-		if (viewSelect) {
-			expect((viewSelect as HTMLSelectElement).value).toBe("CODE");
+		if (viewSelect instanceof HTMLSelectElement) {
+			expect(viewSelect.value).toBe("CODE");
 		}
 	});
 
@@ -66,7 +66,7 @@ describe("CreateItemForm", () => {
 	});
 
 	it("should validate required fields", async () => {
-		const { container } = render(
+		render(
 			<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />,
 		);
 
@@ -84,14 +84,16 @@ describe("CreateItemForm", () => {
 	});
 
 	it("should submit valid form data", async () => {
-		const user = userEvent.setup();
-		const { container } = render(
+		render(
 			<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />,
 		);
 
 		// Find title input more flexibly
-		const titleInput = (container.querySelector('input[name="title"]') ||
-			screen.queryByLabelText(/Title/)) as HTMLInputElement | null;
+		const titleEl =
+			container.querySelector('input[name="title"]') ||
+			screen.queryByLabelText(/Title/);
+		const titleInput =
+			titleEl instanceof HTMLInputElement ? titleEl : null;
 
 		if (titleInput) {
 			await user.type(titleInput, "Test Item");
@@ -117,7 +119,7 @@ describe("CreateItemForm", () => {
 	});
 
 	it("should update type options when view changes", async () => {
-		const { container } = render(
+		render(
 			<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />,
 		);
 
@@ -139,7 +141,7 @@ describe("CreateItemForm", () => {
 	});
 
 	it("should handle all status options", () => {
-		const { container } = render(
+		render(
 			<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />,
 		);
 
@@ -151,7 +153,7 @@ describe("CreateItemForm", () => {
 	});
 
 	it("should handle all priority options", () => {
-		const { container } = render(
+		render(
 			<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />,
 		);
 
@@ -163,17 +165,16 @@ describe("CreateItemForm", () => {
 	});
 
 	it("should validate title length", async () => {
-		const { container } = render(
+		render(
 			<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />,
 		);
 
 		// Find title input by various selectors with fallbacks
-		let titleInput = container.querySelector(
-			'input[name="title"]',
-		) as HTMLInputElement;
-		if (!titleInput) {
-			titleInput = screen.queryByLabelText(/title/i) as HTMLInputElement;
+		let titleEl = container.querySelector('input[name="title"]');
+		if (!(titleEl instanceof HTMLInputElement)) {
+			titleEl = screen.queryByLabelText(/title/i);
 		}
+		const titleInput = titleEl instanceof HTMLInputElement ? titleEl : null;
 
 		if (titleInput) {
 			const longTitle = "a".repeat(501);
@@ -184,7 +185,7 @@ describe("CreateItemForm", () => {
 	});
 
 	it("should accept optional owner field", () => {
-		const { container } = render(
+		render(
 			<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />,
 		);
 

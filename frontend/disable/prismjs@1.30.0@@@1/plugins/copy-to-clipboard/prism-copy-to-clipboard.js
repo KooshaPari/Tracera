@@ -52,7 +52,7 @@
 					copyInfo.error();
 				}
 			}, 1);
-		} catch (err) {
+		} catch (_err) {
 			setTimeout(function () {
 				copyInfo.error(err);
 			}, 1);

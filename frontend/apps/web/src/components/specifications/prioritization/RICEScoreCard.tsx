@@ -35,6 +35,13 @@ const confidenceLevels = [
 	{ value: 50, label: "Low", description: "Limited evidence" },
 ];
 
+function getScoreColor(score: number): string {
+	if (score >= 1000) return "text-green-600";
+	if (score >= 500) return "text-blue-600";
+	if (score >= 100) return "text-yellow-600";
+	return "text-gray-600";
+}
+
 export function RICEScoreCard({
 	initialValues,
 	onCalculate,
@@ -60,13 +67,6 @@ export function RICEScoreCard({
 				rice_score: riceScore,
 			});
 		}
-	};
-
-	const getScoreColor = (score: number): string => {
-		if (score >= 1000) return "text-green-600";
-		if (score >= 500) return "text-blue-600";
-		if (score >= 100) return "text-yellow-600";
-		return "text-gray-600";
 	};
 
 	return (

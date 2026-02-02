@@ -149,7 +149,7 @@ test.describe("Component Library", () => {
 				) {
 					const text = await componentItems.textContent().catch(() => "");
 
-					if (text) {
+					if (text != null && text !== "") {
 						console.log("Component items display name and metadata");
 					}
 				}
@@ -230,10 +230,7 @@ test.describe("Component Library", () => {
 				await page.waitForTimeout(500);
 
 				// Look for search input
-				const searchInput = page
-					.locator("input")
-					.filter({ hasAttribute: "placeholder", name: /search/i })
-					.first();
+				const searchInput = page.getByPlaceholder(/search/i).first();
 
 				if (await searchInput.isVisible({ timeout: 2000 }).catch(() => false)) {
 					console.log("Search input found in component library");
@@ -253,10 +250,7 @@ test.describe("Component Library", () => {
 				await libraryBtn.click();
 				await page.waitForTimeout(500);
 
-				const searchInput = page
-					.locator("input")
-					.filter({ hasAttribute: "placeholder", name: /search/i })
-					.first();
+				const searchInput = page.getByPlaceholder(/search/i).first();
 
 				if (await searchInput.isVisible({ timeout: 2000 }).catch(() => false)) {
 					// Type search query
@@ -292,10 +286,7 @@ test.describe("Component Library", () => {
 				await libraryBtn.click();
 				await page.waitForTimeout(500);
 
-				const searchInput = page
-					.locator("input")
-					.filter({ hasAttribute: "placeholder", name: /search/i })
-					.first();
+				const searchInput = page.getByPlaceholder(/search/i).first();
 
 				if (await searchInput.isVisible({ timeout: 2000 }).catch(() => false)) {
 					// Search by type keyword
@@ -326,10 +317,7 @@ test.describe("Component Library", () => {
 				await libraryBtn.click();
 				await page.waitForTimeout(500);
 
-				const searchInput = page
-					.locator("input")
-					.filter({ hasAttribute: "placeholder", name: /search/i })
-					.first();
+				const searchInput = page.getByPlaceholder(/search/i).first();
 
 				if (await searchInput.isVisible({ timeout: 2000 }).catch(() => false)) {
 					// Search with unlikely term

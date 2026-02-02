@@ -188,7 +188,7 @@ async function simulateWorkerLayoutComputation(
 	const workerOverhead = 5; // ms
 
 	// Computation happens in parallel, no main thread blocking
-	const computationTime = await simulateLayoutComputation(nodeCount, algorithm);
+	await simulateLayoutComputation(nodeCount, algorithm);
 
 	// Total time includes overhead
 	await new Promise((resolve) => setTimeout(resolve, workerOverhead));
@@ -198,7 +198,7 @@ async function simulateWorkerLayoutComputation(
 // RUN
 // ============================================================================
 
-main().catch((error) => {
+main().catch((error: unknown) => {
 	console.error('Benchmark failed:', error);
 	process.exit(1);
 });

@@ -10,8 +10,7 @@
 	},
 	"scripts": {
 		"build": "tsc --build",
-		"clean": "tsc --build --clean",
-		"typecheck": "tsc --noEmit"
+		"clean": "tsc --build --clean"
 	},
 	"dependencies": {
 		"@legendapp/state": "^3.0.0-alpha.40",

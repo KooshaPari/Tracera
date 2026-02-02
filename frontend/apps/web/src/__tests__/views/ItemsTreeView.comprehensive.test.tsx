@@ -1,10 +1,9 @@
 /**
  * Comprehensive Tests for ItemsTreeView
  */
-
+/* eslint-disable @typescript-eslint/no-unsafe-type-assertion -- mock return values for useItems/useProjects */
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useItems } from "../../hooks/useItems";
 import { useProjects } from "../../hooks/useProjects";
@@ -103,7 +102,6 @@ describe("ItemsTreeView", () => {
 	});
 
 	it("handles expand/collapse", async () => {
-		const user = userEvent.setup();
 		const mockItems = [
 			{
 				id: "item-1",
@@ -152,7 +150,6 @@ describe("ItemsTreeView", () => {
 	});
 
 	it("displays search functionality", async () => {
-		const user = userEvent.setup();
 
 		vi.mocked(useItems).mockReturnValue({
 			data: [],

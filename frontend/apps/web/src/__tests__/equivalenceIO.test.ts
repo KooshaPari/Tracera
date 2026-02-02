@@ -267,7 +267,7 @@ describe("equivalenceIO - Validation", () => {
 		});
 
 		it("should reject invalid confidence values", () => {
-			const invalid: any = {
+			const invalid: Record<string, unknown> = {
 				...mockExportPackage,
 				equivalenceLinks: [
 					{

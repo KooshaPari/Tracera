@@ -36,6 +36,35 @@ interface Comment {
  * Note: This is a placeholder implementation. Real comment data
  * would come from the backend.
  */
+function getInitials(name: string) {
+	return name
+		.split(" ")
+		.map((n) => n[0])
+		.join("")
+		.toUpperCase()
+		.slice(0, 2);
+}
+
+function formatTimestamp(timestamp: string) {
+	const date = new Date(timestamp);
+	const now = new Date();
+	const diffMs = now.getTime() - date.getTime();
+	const diffMins = Math.floor(diffMs / 60_000);
+	const diffHours = Math.floor(diffMs / 3_600_000);
+	const diffDays = Math.floor(diffMs / 86_400_000);
+
+	if (diffMins < 1) {return "Just now";}
+	if (diffMins < 60) {return `${diffMins}m ago`;}
+	if (diffHours < 24) {return `${diffHours}h ago`;}
+	if (diffDays < 7) {return `${diffDays}d ago`;}
+
+	return date.toLocaleDateString(undefined, {
+		day: "numeric",
+		month: "short",
+		year: date.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
+	});
+}
+
 export function CommentsTab({ item, className }: CommentsTabProps) {
 	const [newComment, setNewComment] = useState("");
 	const [isSubmitting, setIsSubmitting] = useState(false);
@@ -55,44 +84,15 @@ export function CommentsTab({ item, className }: CommentsTabProps) {
 			await new Promise((resolve) => setTimeout(resolve, 500));
 			toast.success("Comment added successfully");
 			setNewComment("");
-		} catch (error) {
+		} catch {
 			toast.error("Failed to add comment");
 		} finally {
 			setIsSubmitting(false);
 		}
 	};
 
-	const getInitials = (name: string) => {
-		return name
-			.split(" ")
-			.map((n) => n[0])
-			.join("")
-			.toUpperCase()
-			.slice(0, 2);
-	};
-
-	const formatTimestamp = (timestamp: string) => {
-		const date = new Date(timestamp);
-		const now = new Date();
-		const diffMs = now.getTime() - date.getTime();
-		const diffMins = Math.floor(diffMs / 60000);
-		const diffHours = Math.floor(diffMs / 3600000);
-		const diffDays = Math.floor(diffMs / 86400000);
-
-		if (diffMins < 1) return "Just now";
-		if (diffMins < 60) return `${diffMins}m ago`;
-		if (diffHours < 24) return `${diffHours}h ago`;
-		if (diffDays < 7) return `${diffDays}d ago`;
-
-		return date.toLocaleDateString(undefined, {
-			month: "short",
-			day: "numeric",
-			year: date.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
-		});
-	};
-
 	return (
-		<div className={cn("space-y-6", className)}>
+		<div className={cn("space-y-6", className)} data-item-id={item.id}>
 			{/* Comment Input */}
 			<Card className="border-0 bg-muted/40 p-4">
 				<div className="space-y-4">

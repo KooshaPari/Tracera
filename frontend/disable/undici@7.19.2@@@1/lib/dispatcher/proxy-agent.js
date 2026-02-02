@@ -188,7 +188,7 @@ class ProxyAgent extends DispatcherBase {
             servername = opts.servername
           }
           this[kConnectEndpoint]({ ...opts, servername, httpSocket: socket }, callback)
-        } catch (err) {
+        } catch (_err) {
           if (err.code === 'ERR_TLS_CERT_ALTNAME_INVALID') {
             // Throw a custom error to avoid loop in client.js#connect
             callback(new SecureProxyConnectionError(err))

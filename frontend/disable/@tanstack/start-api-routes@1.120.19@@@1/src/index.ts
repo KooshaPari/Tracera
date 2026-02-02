@@ -341,7 +341,7 @@ export const defaultAPIFileRouteHandler: StartAPIHandlerCallback = async ({
 	try {
 		// We can guarantee that action is defined since we filtered for it earlier
 		action = await match.payload.$APIRoute!.import().then((m) => m.APIRoute);
-	} catch (err) {
+	} catch (_err) {
 		// If we can't import the route file, return a 500
 		console.error("Error importing route file:", err);
 		return new Response("Internal server error", { status: 500 });

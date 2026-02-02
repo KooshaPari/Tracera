@@ -310,7 +310,7 @@ nativeBinding = requireNative();
 if (!nativeBinding || process.env.NAPI_RS_FORCE_WASI) {
 	try {
 		nativeBinding = require("./swc.wasi.cjs");
-	} catch (err) {
+	} catch (_err) {
 		if (process.env.NAPI_RS_FORCE_WASI) {
 			console.error(err);
 		}
@@ -318,7 +318,7 @@ if (!nativeBinding || process.env.NAPI_RS_FORCE_WASI) {
 	if (!nativeBinding) {
 		try {
 			nativeBinding = require("@swc/core-wasm32-wasi");
-		} catch (err) {
+		} catch (_err) {
 			if (process.env.NAPI_RS_FORCE_WASI) {
 				console.error(err);
 			}

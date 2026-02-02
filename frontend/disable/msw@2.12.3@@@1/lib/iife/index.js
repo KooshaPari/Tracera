@@ -14176,7 +14176,7 @@ ${operationTypes.join("\n")}
         error3 = Reflect.construct(ErrorConstructor, [
           formatMessage2
         ]);
-      } catch (err) {
+      } catch (_err) {
         error3 = ErrorConstructor(formatMessage2);
       }
       throw error3;
@@ -17731,7 +17731,7 @@ ${operationTypes.join("\n")}
           syncErr = error3;
           syncResult = result;
         });
-      } catch (err) {
+      } catch (_err) {
         syncErr = err;
       }
       if (syncErr) throw syncErr;
@@ -17767,7 +17767,7 @@ ${operationTypes.join("\n")}
         if (!isNonEmptyString(cookie2) && !isObject(cookie2) && cookie2 instanceof String && cookie2.length == 0) {
           return promiseCallback.resolve(void 0);
         }
-      } catch (err) {
+      } catch (_err) {
         return promiseCallback.reject(err);
       }
       const host = canonicalDomain(context.hostname) ?? null;
@@ -17804,7 +17804,7 @@ ${operationTypes.join("\n")}
             const err = new Error("Cookie has domain set to a public suffix");
             return options?.ignoreError ? promiseCallback.resolve(void 0) : promiseCallback.reject(err);
           }
-        } catch (err) {
+        } catch (_err) {
           return options?.ignoreError ? promiseCallback.resolve(void 0) : (
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             promiseCallback.reject(err)

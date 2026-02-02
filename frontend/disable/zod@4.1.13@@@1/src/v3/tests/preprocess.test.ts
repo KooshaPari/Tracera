@@ -52,7 +52,7 @@ test("preprocess ctx.addIssue non-fatal by default", () => {
 			});
 			return data;
 		}, z.string()).parse(1234);
-	} catch (err) {
+	} catch (_err) {
 		z.ZodError.assert(err);
 		expect(err.issues.length).toEqual(2);
 	}
@@ -68,7 +68,7 @@ test("preprocess ctx.addIssue fatal true", () => {
 			});
 			return data;
 		}, z.string()).parse(1234);
-	} catch (err) {
+	} catch (_err) {
 		z.ZodError.assert(err);
 		expect(err.issues.length).toEqual(1);
 	}

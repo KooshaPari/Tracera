@@ -140,7 +140,7 @@ declare module "events" {
 		 *
 		 * try {
 		 *   await once(ee, 'myevent');
-		 * } catch (err) {
+		 * } catch (_err) {
 		 *   console.error('error happened', err);
 		 * }
 		 * ```

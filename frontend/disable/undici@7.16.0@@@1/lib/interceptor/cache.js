@@ -111,7 +111,7 @@ function handleUncachedResponse (
       if (typeof handler.onComplete === 'function') {
         handler.onComplete([])
       }
-    } catch (err) {
+    } catch (_err) {
       if (typeof handler.onError === 'function') {
         handler.onError(err)
       }

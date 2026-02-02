@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { getAuthHeaders } from "@/api/client";
 import { CardErrorFallback } from "@/lib/lazy-loading";
 import { Badge } from "@tracertm/ui/components/Badge";
 import { Button } from "@tracertm/ui/components/Button";
@@ -21,9 +20,12 @@ import {
 	TabsTrigger,
 } from "@tracertm/ui/components/Tabs";
 import { useState } from "react";
+import client from "@/api/client";
 // Note: useParams from @tanstack/react-router requires route context
 // For now, we'll handle project_id via filters
 import type { SearchResult } from "../api/types";
+
+const { getAuthHeaders } = client;
 
 interface AdvancedFilters {
 	view?: string;
@@ -46,7 +48,7 @@ export function AdvancedSearchView() {
 	);
 
 	const searchQuery = useQuery({
-		queryKey: ["advanced-search", query, filters, activeTab],
+		enabled: query.trim().length > 0 || Object.keys(filters).length > 0,
 		queryFn: async () => {
 			if (!query.trim() && Object.keys(filters).length === 0) {
 				return null;
@@ -56,12 +58,12 @@ export function AdvancedSearchView() {
 			const response = await fetch(
 				`/api/v1/projects/${filters.project_id || "all"}/search/advanced`,
 				{
-					method: "POST",
-					headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 					body: JSON.stringify({
 						query: query || undefined,
 						filters: filters,
 					}),
+					headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+					method: "POST",
 				},
 			);
 
@@ -77,7 +79,7 @@ export function AdvancedSearchView() {
 				total: number;
 			}>;
 		},
-		enabled: query.trim().length > 0 || Object.keys(filters).length > 0,
+		queryKey: ["advanced-search", query, filters, activeTab],
 	});
 
 	const handleFilterChange = (key: keyof AdvancedFilters, value: string) => {
@@ -93,7 +95,7 @@ export function AdvancedSearchView() {
 	};
 
 	const results = searchQuery.data?.results || [];
-	const isLoading = searchQuery.isLoading;
+	const {isLoading} = searchQuery;
 
 	return (
 		<div className="space-y-6">
@@ -351,9 +353,9 @@ export function AdvancedSearchView() {
 									key={result.id}
 									to={
 										result.type === "item"
-											? result.project_id
+											? (result.project_id
 												? `/projects/${result.project_id}/views/${String(result.view || result.view_type || "feature").toLowerCase()}/${result.id}`
-												: "/projects"
+												: "/projects")
 											: result.type === "project"
 												? `/projects/${result.id}`
 												: result.project_id

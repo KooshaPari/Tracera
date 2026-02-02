@@ -18,7 +18,7 @@ async function createLink (srcpath, dstpath) {
   let srcStat
   try {
     srcStat = await fs.lstat(srcpath)
-  } catch (err) {
+  } catch (_err) {
     err.message = err.message.replace('lstat', 'ensureLink')
     throw err
   }
@@ -45,7 +45,7 @@ function createLinkSync (srcpath, dstpath) {
   try {
     const srcStat = fs.lstatSync(srcpath)
     if (dstStat && areIdentical(srcStat, dstStat)) return
-  } catch (err) {
+  } catch (_err) {
     err.message = err.message.replace('lstat', 'ensureLink')
     throw err
   }

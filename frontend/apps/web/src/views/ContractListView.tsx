@@ -51,8 +51,7 @@ export function ContractListView({ projectId }: ContractListViewProps) {
 	const [newStatus, setNewStatus] = useState<ContractStatus>("draft");
 	const [newDescription, setNewDescription] = useState("");
 
-	const filteredContracts = useMemo(() => {
-		return contracts.filter((contract: Contract) => {
+	const filteredContracts = useMemo(() => contracts.filter((contract: Contract) => {
 			const matchesStatus =
 				statusFilter === "all" || contract.status === statusFilter;
 			const matchesType =
@@ -68,22 +67,19 @@ export function ContractListView({ projectId }: ContractListViewProps) {
 					false);
 
 			return matchesStatus && matchesType && matchesQuery;
-		});
-	}, [contracts, statusFilter, typeFilter, searchQuery]);
+		}), [contracts, statusFilter, typeFilter, searchQuery]);
 
-	const statusCounts = useMemo(() => {
-		return {
-			all: contracts.length,
-			draft: contracts.filter((c: Contract) => c.status === "draft").length,
+	const statusCounts = useMemo(() => ({
 			active: contracts.filter((c: Contract) => c.status === "active").length,
+			all: contracts.length,
+			deprecated: contracts.filter((c: Contract) => c.status === "deprecated")
+				.length,
+			draft: contracts.filter((c: Contract) => c.status === "draft").length,
 			verified: contracts.filter((c: Contract) => c.status === "verified")
 				.length,
 			violated: contracts.filter((c: Contract) => c.status === "violated")
 				.length,
-			deprecated: contracts.filter((c: Contract) => c.status === "deprecated")
-				.length,
-		};
-	}, [contracts]);
+		}), [contracts]);
 
 	const typeCounts = useMemo(() => {
 		const counts: Record<string, number> = {};
@@ -103,7 +99,7 @@ export function ContractListView({ projectId }: ContractListViewProps) {
 		).length;
 		const passRate = total > 0 ? ((verified / total) * 100).toFixed(1) : "0";
 
-		return { total, verified, violated, passRate };
+		return { passRate, total, verified, violated };
 	}, [contracts]);
 
 	const handleCreate = async () => {
@@ -291,8 +287,8 @@ export function ContractListView({ projectId }: ContractListViewProps) {
 							key={contract.id}
 							onClick={() =>
 								navigate({
+									params: { contractId: contract.id, projectId },
 									to: "/projects/$projectId/contracts/$contractId",
-									params: { projectId, contractId: contract.id },
 								})
 							}
 							className="text-left"

@@ -7,7 +7,9 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getAuthHeaders } from "@/api/client";
+import client from "@/api/client";
+
+const { getAuthHeaders } = client;
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
@@ -1378,10 +1380,10 @@ export function useCreateRequirementSpec(projectId: string) {
 		mutationFn: (data: RequirementSpecCreate) =>
 			createRequirementSpec(projectId, data),
 		onSuccess: () => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.requirements(projectId),
 			});
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.stats(projectId),
 			});
 		},
@@ -1400,15 +1402,15 @@ export function useUpdateRequirementSpec(projectId: string) {
 			data: RequirementSpecUpdate;
 		}) => updateRequirementSpec(projectId, specId, data),
 		onSuccess: (data) => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.requirements(projectId),
 			});
 			queryClient.setQueryData(
-				itemSpecKeys.requirement(projectId, data.id),
+				itemSpecKeys.requirement(projectId, data['id']),
 				data,
 			);
-			queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.requirementByItem(projectId, data.item_id),
+			void queryClient.invalidateQueries({
+				queryKey: itemSpecKeys.requirementByItem(projectId, data['item_id']),
 			});
 		},
 	});
@@ -1420,10 +1422,10 @@ export function useDeleteRequirementSpec(projectId: string) {
 	return useMutation({
 		mutationFn: (specId: string) => deleteRequirementSpec(projectId, specId),
 		onSuccess: () => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.requirements(projectId),
 			});
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.stats(projectId),
 			});
 		},
@@ -1438,7 +1440,7 @@ export function useAnalyzeRequirementQuality(projectId: string) {
 			analyzeRequirementQuality(projectId, specId),
 		onSuccess: (data) => {
 			queryClient.setQueryData(
-				itemSpecKeys.requirement(projectId, data.id),
+				itemSpecKeys.requirement(projectId, data['id']),
 				data,
 			);
 		},
@@ -1452,7 +1454,7 @@ export function useAnalyzeRequirementImpact(projectId: string) {
 		mutationFn: (specId: string) => analyzeRequirementImpact(projectId, specId),
 		onSuccess: (data) => {
 			queryClient.setQueryData(
-				itemSpecKeys.requirement(projectId, data.id),
+				itemSpecKeys.requirement(projectId, data['id']),
 				data,
 			);
 		},
@@ -1482,14 +1484,14 @@ export function useVerifyRequirement(projectId: string) {
 				description,
 			),
 		onSuccess: (data) => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.requirements(projectId),
 			});
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.unverifiedRequirements(projectId),
 			});
 			queryClient.setQueryData(
-				itemSpecKeys.requirement(projectId, data.id),
+				itemSpecKeys.requirement(projectId, data['id']),
 				data,
 			);
 		},
@@ -1562,13 +1564,13 @@ export function useCreateTestSpec(projectId: string) {
 	return useMutation({
 		mutationFn: (data: TestSpecCreate) => createTestSpec(projectId, data),
 		onSuccess: () => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.tests(projectId),
 			});
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.testHealthReport(projectId),
 			});
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.stats(projectId),
 			});
 		},
@@ -1582,12 +1584,12 @@ export function useUpdateTestSpec(projectId: string) {
 		mutationFn: ({ specId, data }: { specId: string; data: TestSpecUpdate }) =>
 			updateTestSpec(projectId, specId, data),
 		onSuccess: (data) => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.tests(projectId),
 			});
-			queryClient.setQueryData(itemSpecKeys.test(projectId, data.id), data);
-			queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.testByItem(projectId, data.item_id),
+			queryClient.setQueryData(itemSpecKeys.test(projectId, data['id']), data);
+			void queryClient.invalidateQueries({
+				queryKey: itemSpecKeys.testByItem(projectId, data['item_id']),
 			});
 		},
 	});
@@ -1599,13 +1601,13 @@ export function useDeleteTestSpec(projectId: string) {
 	return useMutation({
 		mutationFn: (specId: string) => deleteTestSpec(projectId, specId),
 		onSuccess: () => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.tests(projectId),
 			});
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.testHealthReport(projectId),
 			});
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.stats(projectId),
 			});
 		},
@@ -1638,16 +1640,16 @@ export function useRecordTestRun(projectId: string) {
 				environment,
 			),
 		onSuccess: (data) => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.tests(projectId),
 			});
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.flakyTests(projectId),
 			});
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.testHealthReport(projectId),
 			});
-			queryClient.setQueryData(itemSpecKeys.test(projectId, data.id), data);
+			queryClient.setQueryData(itemSpecKeys.test(projectId, data['id']), data);
 		},
 	});
 }
@@ -1659,16 +1661,16 @@ export function useQuarantineTest(projectId: string) {
 		mutationFn: ({ specId, reason }: { specId: string; reason: string }) =>
 			quarantineTest(projectId, specId, reason),
 		onSuccess: (data) => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.tests(projectId),
 			});
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.quarantinedTests(projectId),
 			});
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.testHealthReport(projectId),
 			});
-			queryClient.setQueryData(itemSpecKeys.test(projectId, data.id), data);
+			queryClient.setQueryData(itemSpecKeys.test(projectId, data['id']), data);
 		},
 	});
 }
@@ -1679,16 +1681,16 @@ export function useUnquarantineTest(projectId: string) {
 	return useMutation({
 		mutationFn: (specId: string) => unquarantineTest(projectId, specId),
 		onSuccess: (data) => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.tests(projectId),
 			});
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.quarantinedTests(projectId),
 			});
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.testHealthReport(projectId),
 			});
-			queryClient.setQueryData(itemSpecKeys.test(projectId, data.id), data);
+			queryClient.setQueryData(itemSpecKeys.test(projectId, data['id']), data);
 		},
 	});
 }
@@ -1734,10 +1736,10 @@ export function useCreateEpicSpec(projectId: string) {
 	return useMutation({
 		mutationFn: (data: EpicSpecCreate) => createEpicSpec(projectId, data),
 		onSuccess: () => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.epics(projectId),
 			});
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.stats(projectId),
 			});
 		},
@@ -1751,12 +1753,12 @@ export function useUpdateEpicSpec(projectId: string) {
 		mutationFn: ({ specId, data }: { specId: string; data: EpicSpecUpdate }) =>
 			updateEpicSpec(projectId, specId, data),
 		onSuccess: (data) => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.epics(projectId),
 			});
-			queryClient.setQueryData(itemSpecKeys.epic(projectId, data.id), data);
-			queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.epicByItem(projectId, data.item_id),
+			queryClient.setQueryData(itemSpecKeys.epic(projectId, data['id']), data);
+			void queryClient.invalidateQueries({
+				queryKey: itemSpecKeys.epicByItem(projectId, data['item_id']),
 			});
 		},
 	});
@@ -1768,10 +1770,10 @@ export function useDeleteEpicSpec(projectId: string) {
 	return useMutation({
 		mutationFn: (specId: string) => deleteEpicSpec(projectId, specId),
 		onSuccess: () => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.epics(projectId),
 			});
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.stats(projectId),
 			});
 		},
@@ -1821,18 +1823,18 @@ export function useCreateUserStorySpec(projectId: string) {
 		mutationFn: (data: UserStorySpecCreate) =>
 			createUserStorySpec(projectId, data),
 		onSuccess: (_, variables) => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.userStories(projectId),
 			});
 			if (variables.parent_epic) {
-				queryClient.invalidateQueries({
+				void queryClient.invalidateQueries({
 					queryKey: itemSpecKeys.userStoriesByEpic(
 						projectId,
 						variables.parent_epic,
 					),
 				});
 			}
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.stats(projectId),
 			});
 		},
@@ -1851,15 +1853,15 @@ export function useUpdateUserStorySpec(projectId: string) {
 			data: UserStorySpecUpdate;
 		}) => updateUserStorySpec(projectId, specId, data),
 		onSuccess: (data) => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.userStories(projectId),
 			});
 			queryClient.setQueryData(
-				itemSpecKeys.userStory(projectId, data.id),
+				itemSpecKeys.userStory(projectId, data['id']),
 				data,
 			);
-			queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.userStoryByItem(projectId, data.item_id),
+			void queryClient.invalidateQueries({
+				queryKey: itemSpecKeys.userStoryByItem(projectId, data['item_id']),
 			});
 		},
 	});
@@ -1871,10 +1873,10 @@ export function useDeleteUserStorySpec(projectId: string) {
 	return useMutation({
 		mutationFn: (specId: string) => deleteUserStorySpec(projectId, specId),
 		onSuccess: () => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.userStories(projectId),
 			});
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.stats(projectId),
 			});
 		},
@@ -1923,18 +1925,18 @@ export function useCreateTaskSpec(projectId: string) {
 	return useMutation({
 		mutationFn: (data: TaskSpecCreate) => createTaskSpec(projectId, data),
 		onSuccess: (_, variables) => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.tasks(projectId),
 			});
 			if (variables.parent_story) {
-				queryClient.invalidateQueries({
+				void queryClient.invalidateQueries({
 					queryKey: itemSpecKeys.tasksByStory(
 						projectId,
 						variables.parent_story,
 					),
 				});
 			}
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.stats(projectId),
 			});
 		},
@@ -1948,12 +1950,12 @@ export function useUpdateTaskSpec(projectId: string) {
 		mutationFn: ({ specId, data }: { specId: string; data: TaskSpecUpdate }) =>
 			updateTaskSpec(projectId, specId, data),
 		onSuccess: (data) => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.tasks(projectId),
 			});
-			queryClient.setQueryData(itemSpecKeys.task(projectId, data.id), data);
-			queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.taskByItem(projectId, data.item_id),
+			queryClient.setQueryData(itemSpecKeys.task(projectId, data['id']), data);
+			void queryClient.invalidateQueries({
+				queryKey: itemSpecKeys.taskByItem(projectId, data['item_id']),
 			});
 		},
 	});
@@ -1965,10 +1967,10 @@ export function useDeleteTaskSpec(projectId: string) {
 	return useMutation({
 		mutationFn: (specId: string) => deleteTaskSpec(projectId, specId),
 		onSuccess: () => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.tasks(projectId),
 			});
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.stats(projectId),
 			});
 		},
@@ -2017,10 +2019,10 @@ export function useCreateDefectSpec(projectId: string) {
 	return useMutation({
 		mutationFn: (data: DefectSpecCreate) => createDefectSpec(projectId, data),
 		onSuccess: () => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.defects(projectId),
 			});
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.stats(projectId),
 			});
 		},
@@ -2039,12 +2041,12 @@ export function useUpdateDefectSpec(projectId: string) {
 			data: DefectSpecUpdate;
 		}) => updateDefectSpec(projectId, specId, data),
 		onSuccess: (data) => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.defects(projectId),
 			});
-			queryClient.setQueryData(itemSpecKeys.defect(projectId, data.id), data);
-			queryClient.invalidateQueries({
-				queryKey: itemSpecKeys.defectByItem(projectId, data.item_id),
+			queryClient.setQueryData(itemSpecKeys.defect(projectId, data['id']), data);
+			void queryClient.invalidateQueries({
+				queryKey: itemSpecKeys.defectByItem(projectId, data['item_id']),
 			});
 		},
 	});
@@ -2056,10 +2058,10 @@ export function useDeleteDefectSpec(projectId: string) {
 	return useMutation({
 		mutationFn: (specId: string) => deleteDefectSpec(projectId, specId),
 		onSuccess: () => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.defects(projectId),
 			});
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: itemSpecKeys.stats(projectId),
 			});
 		},

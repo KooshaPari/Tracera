@@ -29,7 +29,7 @@ async function getBaseConfigGypi({ gyp, nodeDir }) {
 			);
 			const baseConfigGypi = await fs.readFile(baseConfigGypiPath);
 			return parseConfigGypi(baseConfigGypi.toString());
-		} catch (err) {
+		} catch (_err) {
 			log.warn("read config.gypi", err.message);
 		}
 	}

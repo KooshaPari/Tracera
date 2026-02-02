@@ -82,6 +82,13 @@ export interface QAEnhancedNodeData {
 
 // === Main Component ===
 
+function getPassRateColor(rate: number): string {
+	if (rate >= 90) return "text-green-500 bg-green-500/10 border-green-500/30";
+	if (rate >= 70)
+		return "text-yellow-500 bg-yellow-500/10 border-yellow-500/30";
+	return "text-red-500 bg-red-500/10 border-red-500/30";
+}
+
 function QAEnhancedNodeComponent({
 	data,
 	selected,
@@ -91,13 +98,6 @@ function QAEnhancedNodeComponent({
 	const hasPreview =
 		!!data.preview?.thumbnailUrl || !!data.preview?.screenshotUrl;
 	const passRate = data.metrics?.passRate ?? 0;
-
-	const getPassRateColor = (rate: number) => {
-		if (rate >= 90) return "text-green-500 bg-green-500/10 border-green-500/30";
-		if (rate >= 70)
-			return "text-yellow-500 bg-yellow-500/10 border-yellow-500/30";
-		return "text-red-500 bg-red-500/10 border-red-500/30";
-	};
 
 	const handleImageClick = useCallback((e: React.MouseEvent) => {
 		e.stopPropagation();

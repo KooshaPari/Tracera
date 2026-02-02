@@ -2,19 +2,28 @@
  * Test setup and configuration
  */
 
+type TestGlobals = typeof globalThis & {
+	WebGL2RenderingContext?: unknown;
+	IntersectionObserver?: new (...args: unknown[]) => unknown;
+	ResizeObserver?: new (...args: unknown[]) => unknown;
+	WebSocket?: new (url: string) => unknown;
+	HTMLCanvasElement?: new (...args: unknown[]) => unknown;
+	__setFetchImpl__?: (impl: typeof fetch) => void;
+};
+
 // Mock WebGL2RenderingContext FIRST before any imports
 if (typeof globalThis !== "undefined") {
-	class WebGL2RenderingContextMock {
-		static BOOL = 35670;
-		static BYTE = 5120;
-		static UNSIGNED_BYTE = 5121;
-		static SHORT = 5122;
-		static UNSIGNED_SHORT = 5123;
-		static INT = 5124;
-		static UNSIGNED_INT = 5125;
-		static FLOAT = 5126;
-	}
-	(globalThis as any).WebGL2RenderingContext = WebGL2RenderingContextMock;
+	const WebGL2RenderingContextMock = {
+		BOOL: 35670,
+		BYTE: 5120,
+		UNSIGNED_BYTE: 5121,
+		SHORT: 5122,
+		UNSIGNED_SHORT: 5123,
+		INT: 5124,
+		UNSIGNED_INT: 5125,
+		FLOAT: 5126,
+	};
+	(globalThis as TestGlobals).WebGL2RenderingContext = WebGL2RenderingContextMock;
 }
 
 import { cleanup } from "@testing-library/react";
@@ -121,21 +130,23 @@ if (typeof navigator !== "undefined") {
 	});
 }
 // Mock IntersectionObserver
-(globalThis as any).IntersectionObserver = class IntersectionObserver {
+const IntersectionObserverMock = class {
 	disconnect() {}
 	observe() {}
 	takeRecords() {
 		return [];
 	}
 	unobserve() {}
-} as any;
+};
+(globalThis as TestGlobals).IntersectionObserver = IntersectionObserverMock;
 
 // Mock ResizeObserver
-(globalThis as any).ResizeObserver = class ResizeObserver {
+const ResizeObserverMock = class {
 	disconnect() {}
 	observe() {}
 	unobserve() {}
-} as any;
+};
+(globalThis as TestGlobals).ResizeObserver = ResizeObserverMock;
 
 // Mock pointer capture methods for Radix UI components
 if (typeof globalThis !== "undefined" && typeof Element !== "undefined") {
@@ -187,11 +198,11 @@ class MockWebSocket {
 	}
 }
 
-(globalThis as any).WebSocket = MockWebSocket as any;
+(globalThis as TestGlobals).WebSocket = MockWebSocket as (new (url: string) => unknown);
 
 // Mock HTMLCanvasElement for graph visualization
 if (typeof globalThis !== "undefined") {
-	(globalThis as any).HTMLCanvasElement = class MockCanvas {
+	const MockCanvas = class {
 		width: number = 300;
 		height: number = 150;
 
@@ -199,9 +210,9 @@ if (typeof globalThis !== "undefined") {
 			return {
 				fillRect: vi.fn(),
 				clearRect: vi.fn(),
-				getImageData: vi.fn(() => ({ data: new Array(4) })),
+				getImageData: vi.fn(() => ({ data: Array.from({ length: 4 }) })),
 				putImageData: vi.fn(),
-				createImageData: vi.fn(() => ({ data: new Array(4) })),
+				createImageData: vi.fn(() => ({ data: Array.from({ length: 4 }) })),
 				setTransform: vi.fn(),
 				drawImage: vi.fn(),
 				save: vi.fn(),
@@ -233,25 +244,26 @@ if (typeof globalThis !== "undefined") {
 		toBlob(callback: BlobCallback) {
 			callback(new Blob());
 		}
-	} as any;
+	};
+	(globalThis as TestGlobals).HTMLCanvasElement = MockCanvas as new (...args: unknown[]) => unknown;
 }
 
 // Mock fetch globally for API tests
 // Use a delegating mock so tests can override it in beforeEach
 let globalFetchImpl: typeof fetch = async (url) => {
-	logger.warn(`[WARN] Unmocked fetch to ${url}`);
+	console.warn(`[WARN] Unmocked fetch to ${url}`);
 	return new Response(JSON.stringify({ error: "Not mocked" }), {
 		status: 404,
 		headers: { "Content-Type": "application/json" },
 	});
 };
 
-global.fetch = vi.fn(async (url: any, options?: any) => {
+global.fetch = vi.fn(async (url: string | URL | Request, options?: RequestInit) => {
 	return globalFetchImpl(url, options);
-}) as unknown as typeof fetch;
+}) as typeof fetch;
 
 // Export so tests can replace the implementation
-(globalThis as any).__setFetchImpl__ = (impl: typeof fetch) => {
+(globalThis as TestGlobals).__setFetchImpl__ = (impl: typeof fetch) => {
 	globalFetchImpl = impl;
 };
 

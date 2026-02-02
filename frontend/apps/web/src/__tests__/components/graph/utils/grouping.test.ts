@@ -1,6 +1,6 @@
 // Tests for grouping algorithms
 
-import type { Item, Link } from "@tracertm/types";
+import type { Item, Link, LinkType } from "@tracertm/types";
 import { beforeEach, describe, expect, it } from "vitest";
 import {
 	calculateGroupCohesion,
@@ -11,11 +11,8 @@ import {
 	groupBySemantic,
 } from "../../../../components/graph/utils/grouping";
 
-describe("Grouping Algorithms", () => {
-	let items: Item[];
-	let links: Link[];
-
-	const createItem = (id: string, title: string, type: string): Item => ({
+function createItem(id: string, title: string, type: string): Item {
+	return {
 		id,
 		projectId: "p1",
 		view: "technical",
@@ -27,21 +24,28 @@ describe("Grouping Algorithms", () => {
 		version: 1,
 		createdAt: new Date().toISOString(),
 		updatedAt: new Date().toISOString(),
-	});
+	};
+}
 
-	const createLink = (
-		sourceId: string,
-		targetId: string,
-		type = "depends_on",
-	): Link => ({
+function createLink(
+	sourceId: string,
+	targetId: string,
+	type = "depends_on",
+): Link {
+	return {
 		id: `link-${sourceId}-${targetId}`,
 		sourceId,
 		targetId,
-		type: type as any,
+		type: type as LinkType,
 		description: `Link from ${sourceId} to ${targetId}`,
 		createdAt: new Date().toISOString(),
 		updatedAt: new Date().toISOString(),
-	});
+	};
+}
+
+describe("Grouping Algorithms", () => {
+	let items: Item[];
+	let links: Link[];
 
 	beforeEach(() => {
 		items = [

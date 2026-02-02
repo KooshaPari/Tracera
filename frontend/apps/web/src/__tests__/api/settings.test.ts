@@ -8,14 +8,19 @@ import { fetchSettings, updateSettings } from "@/api/settings";
 
 // Mock the API client
 vi.mock("@/api/client", () => ({
-	apiClient: {
-		GET: vi.fn(),
-		PUT: vi.fn(),
+	__esModule: true,
+	default: {
+		apiClient: {
+			GET: vi.fn(),
+			PUT: vi.fn(),
+		},
+		safeApiCall: vi.fn((promise) => promise),
 	},
-	safeApiCall: vi.fn((promise) => promise),
 }));
 
-import { apiClient, safeApiCall } from "@/api/client";
+import client from "@/api/client";
+
+const { apiClient, safeApiCall } = client;
 
 describe("Settings API", () => {
 	beforeEach(() => {

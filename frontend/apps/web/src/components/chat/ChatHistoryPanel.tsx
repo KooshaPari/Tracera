@@ -22,6 +22,27 @@ import type { ChatConversation } from "@/lib/ai/types";
 
 type SortOption = "newest" | "oldest";
 
+function formatDate(iso: string) {
+	const d = new Date(iso);
+	const now = new Date();
+	const sameDay =
+		d.getDate() === now.getDate() &&
+		d.getMonth() === now.getMonth() &&
+		d.getFullYear() === now.getFullYear();
+	if (sameDay) {
+		return d.toLocaleTimeString(undefined, {
+			hour: "2-digit",
+			minute: "2-digit",
+		});
+	}
+	return d.toLocaleDateString(undefined, {
+		month: "short",
+		day: "numeric",
+		year:
+			d.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
+	});
+}
+
 interface ChatHistoryPanelProps {
 	conversations: ChatConversation[];
 	activeConversationId: string | null;
@@ -73,29 +94,6 @@ export function ChatHistoryPanel({
 
 		return list;
 	}, [conversations, searchQuery, sort, filterByProject, projectId]);
-
-	const formatDate = (iso: string) => {
-		const d = new Date(iso);
-		const now = new Date();
-		const sameDay =
-			d.getDate() === now.getDate() &&
-			d.getMonth() === now.getMonth() &&
-			d.getFullYear() === now.getFullYear();
-		if (sameDay) {
-			return d.toLocaleTimeString(undefined, {
-				hour: "2-digit",
-				minute: "2-digit",
-			});
-		}
-		return d.toLocaleDateString(undefined, {
-			month: "short",
-			day: "numeric",
-			year:
-				d.getFullYear() !== now.getFullYear()
-					 ? "numeric"
-					 : undefined,
-		});
-	};
 
 	return (
 		<div

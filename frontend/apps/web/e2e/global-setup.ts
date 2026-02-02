@@ -31,7 +31,8 @@ export const test = base.extend({
 
 			await page.addInitScript((state) => {
 				// Mark test environment for route guards
-				(globalThis as any).__E2E__ = true;
+				(globalThis as typeof globalThis & { __E2E__?: boolean }).__E2E__ =
+					true;
 				const serialized = JSON.stringify({ state, version: 0 });
 				localStorage.setItem("tracertm-auth-store", serialized);
 				if (state.token) {

@@ -7,6 +7,7 @@ import type { ElkExtendedEdge, ElkNode } from "elkjs";
 import * as ELKModule from "elkjs/lib/elk.bundled.js";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ElkOptionsPayload, LayoutResponse } from "./graphLayout.worker";
+import { logger } from '@/lib/logger';
 
 // D2: Use worker for ELK layout when node count exceeds this (keeps main thread responsive)
 const LAYOUT_WORKER_THRESHOLD = 150;
@@ -703,8 +704,8 @@ export function useDAGLayout<T extends Record<string, unknown>>(
 					return inputNodes.length > LAYOUT_WORKER_THRESHOLD
 						? await runElkLayoutInWorker(inputNodes, inputEdges, elkOptions)
 						: await applyElkLayout(inputNodes, inputEdges, elkOptions);
-				} catch (err) {
-					logger.error("ELK layout failed:", err);
+} catch (error) {
+                    logger.error("ELK layout failed:", error);
 					// Fallback to grid layout
 					return applyGridLayout(inputNodes, {
 						nodeWidth,

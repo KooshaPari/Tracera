@@ -16,12 +16,8 @@ const meta: Meta<typeof GraphSearch> = {
 	},
 	argTypes: {
 		onSearch: { action: "search performed" },
-		placeholder: {
-			control: "text",
-		},
-		disabled: {
-			control: "boolean",
-		},
+		onHighlight: { action: "highlight" },
+		compact: { control: "boolean" },
 	},
 };
 
@@ -33,8 +29,10 @@ type Story = StoryObj<typeof meta>;
  */
 export const Default: Story = {
 	args: {
-		placeholder: "Search components...",
-		disabled: false,
+		items: [],
+		onSearch: () => {},
+		onHighlight: () => {},
+		compact: false,
 	},
 };
 
@@ -43,8 +41,10 @@ export const Default: Story = {
  */
 export const WithQuery: Story = {
 	args: {
-		placeholder: "Search components...",
-		disabled: false,
+		items: [],
+		onSearch: () => {},
+		onHighlight: () => {},
+		compact: false,
 	},
 	play: async ({ canvasElement }) => {
 		const input = canvasElement.querySelector("input");
@@ -56,12 +56,14 @@ export const WithQuery: Story = {
 };
 
 /**
- * Disabled search
+ * Compact search
  */
-export const Disabled: Story = {
+export const Compact: Story = {
 	args: {
-		placeholder: "Search components...",
-		disabled: true,
+		items: [],
+		onSearch: () => {},
+		onHighlight: () => {},
+		compact: true,
 	},
 };
 
@@ -70,8 +72,10 @@ export const Disabled: Story = {
  */
 export const Tablet: Story = {
 	args: {
-		placeholder: "Search components...",
-		disabled: false,
+		items: [],
+		onSearch: () => {},
+		onHighlight: () => {},
+		compact: false,
 	},
 	parameters: {
 		viewport: {
@@ -85,8 +89,10 @@ export const Tablet: Story = {
  */
 export const Mobile: Story = {
 	args: {
-		placeholder: "Search components...",
-		disabled: false,
+		items: [],
+		onSearch: () => {},
+		onHighlight: () => {},
+		compact: false,
 	},
 	parameters: {
 		viewport: {
@@ -100,8 +106,10 @@ export const Mobile: Story = {
  */
 export const DarkMode: Story = {
 	args: {
-		placeholder: "Search components...",
-		disabled: false,
+		items: [],
+		onSearch: () => {},
+		onHighlight: () => {},
+		compact: false,
 	},
 	decorators: [
 		(Story) => (
@@ -124,8 +132,10 @@ export const DarkMode: Story = {
  */
 export const Focused: Story = {
 	args: {
-		placeholder: "Search components...",
-		disabled: false,
+		items: [],
+		onSearch: () => {},
+		onHighlight: () => {},
+		compact: false,
 	},
 	play: async ({ canvasElement }) => {
 		const input = canvasElement.querySelector("input");

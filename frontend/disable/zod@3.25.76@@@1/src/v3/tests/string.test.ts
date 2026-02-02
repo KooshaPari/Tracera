@@ -309,17 +309,17 @@ test("url validations", () => {
 test("url error overrides", () => {
 	try {
 		z.string().url().parse("https");
-	} catch (err) {
+	} catch (_err) {
 		expect((err as z.ZodError).issues[0].message).toEqual("Invalid url");
 	}
 	try {
 		z.string().url("badurl").parse("https");
-	} catch (err) {
+	} catch (_err) {
 		expect((err as z.ZodError).issues[0].message).toEqual("badurl");
 	}
 	try {
 		z.string().url({ message: "badurl" }).parse("https");
-	} catch (err) {
+	} catch (_err) {
 		expect((err as z.ZodError).issues[0].message).toEqual("badurl");
 	}
 });

@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor, act } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { GraphSkeleton } from '@/components/graph/GraphSkeleton';
 import { ErrorState } from '@/components/graph/ErrorState';
 import { LoadingTransition } from '@/components/graph/LoadingTransition';
@@ -43,12 +42,13 @@ describe('GraphSkeleton', () => {
     const { container } = render(<GraphSkeleton nodeCount={5} />);
 
     const nodes = container.querySelectorAll('[class*="absolute rounded-lg border bg-card"]');
-    nodes.forEach((node, i) => {
-      const style = (node as HTMLElement).style;
-      expect(style.top).toBeTruthy();
-      expect(style.left).toBeTruthy();
-      expect(style.width).toBe('120px');
-      expect(style.height).toBe('60px');
+    nodes.forEach((node) => {
+      if (node instanceof HTMLElement) {
+        expect(node.style.top).toBeTruthy();
+        expect(node.style.left).toBeTruthy();
+        expect(node.style.width).toBe('120px');
+        expect(node.style.height).toBe('60px');
+      }
     });
   });
 });
@@ -90,7 +90,6 @@ describe('ErrorState', () => {
 
   it('should call onRetry when retry button is clicked', async () => {
     const onRetry = vi.fn();
-    const user = userEvent.setup();
 
     render(<ErrorState onRetry={onRetry} />);
 
@@ -142,7 +141,7 @@ describe('LoadingTransition', () => {
   });
 
   it('should transition from loading to content smoothly', async () => {
-    const { rerender } = render(
+    render(
       <LoadingTransition isLoading={true} minDisplayTime={300}>
         <div data-testid="content">Content</div>
       </LoadingTransition>
@@ -175,7 +174,7 @@ describe('LoadingTransition', () => {
   });
 
   it('should reset to skeleton when switching back to loading', () => {
-    const { rerender } = render(
+    render(
       <LoadingTransition isLoading={false}>
         <div data-testid="content">Content</div>
       </LoadingTransition>
@@ -195,7 +194,7 @@ describe('LoadingTransition', () => {
   });
 
   it('should respect custom minDisplayTime', async () => {
-    const { rerender } = render(
+    render(
       <LoadingTransition isLoading={true} minDisplayTime={500}>
         <div data-testid="content">Content</div>
       </LoadingTransition>
@@ -279,7 +278,7 @@ describe('LoadingProgress', () => {
 describe('Loading States Integration', () => {
   it('should work together in a complete loading flow', async () => {
     const onRetry = vi.fn();
-    const { rerender } = render(
+    render(
       <LoadingTransition isLoading={true}>
         <div data-testid="content">Graph Content</div>
       </LoadingTransition>

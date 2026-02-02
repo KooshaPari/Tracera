@@ -350,7 +350,7 @@ export function timeout<T, O extends ObservableInput<any>, M>(
                 seen,
               })
             ).subscribe(subscriber);
-          } catch (err) {
+          } catch (_err) {
             subscriber.error(err);
           }
         },

@@ -19,6 +19,11 @@ interface ContentAddressCardProps {
 	className?: string;
 }
 
+function formatDate(dateStr: string) {
+	const date = new Date(dateStr);
+	return date.toLocaleString();
+}
+
 export function ContentAddressCard({
 	contentHash,
 	contentCid,
@@ -41,11 +46,6 @@ export function ContentAddressCard({
 		} catch {
 			// Clipboard API not available
 		}
-	};
-
-	const formatDate = (dateStr: string) => {
-		const date = new Date(dateStr);
-		return date.toLocaleString();
 	};
 
 	return (

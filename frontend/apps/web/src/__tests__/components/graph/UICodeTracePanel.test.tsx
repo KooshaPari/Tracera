@@ -4,7 +4,6 @@
  */
 
 import { render, screen, waitFor, within } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import type { CanonicalConcept, CodeReference } from "@tracertm/types";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
@@ -149,7 +148,7 @@ describe("UICodeTracePanel", () => {
 		});
 
 		it("should render trace chain header with name and confidence", () => {
-			const { container } = render(
+			render(
 				<UICodeTracePanel traceChain={mockTraceChain} />,
 			);
 
@@ -178,14 +177,14 @@ describe("UICodeTracePanel", () => {
 		});
 
 		it("should render canonical concept card", () => {
-			const { container } = render(
+			render(
 				<UICodeTracePanel traceChain={mockTraceChain} />,
 			);
 
 			const text = container.textContent || "";
 			expect(text).toContain("Canonical Concept");
 			expect(text).toContain(mockCanonicalConcept.name);
-			expect(text).toContain(mockCanonicalConcept.description!);
+			expect(text).toContain(mockCanonicalConcept.description ?? "");
 		});
 	});
 
@@ -207,7 +206,7 @@ describe("UICodeTracePanel", () => {
 		});
 
 		it("should render code level with file and line information", () => {
-			const { container } = render(
+			render(
 				<UICodeTracePanel traceChain={mockTraceChain} />,
 			);
 
@@ -235,7 +234,7 @@ describe("UICodeTracePanel", () => {
 		});
 
 		it("should display perspective badges for each level", () => {
-			const { container } = render(
+			render(
 				<UICodeTracePanel traceChain={mockTraceChain} />,
 			);
 
@@ -259,7 +258,7 @@ describe("UICodeTracePanel", () => {
 		});
 
 		it("should display overall confidence in header", () => {
-			const { container } = render(
+			render(
 				<UICodeTracePanel traceChain={mockTraceChain} />,
 			);
 
@@ -295,7 +294,6 @@ describe("UICodeTracePanel", () => {
 
 	describe("user interactions", () => {
 		it("should call onOpenCode when code button is clicked", async () => {
-			const user = userEvent.setup();
 			render(
 				<UICodeTracePanel
 					traceChain={mockTraceChain}
@@ -311,7 +309,6 @@ describe("UICodeTracePanel", () => {
 		});
 
 		it("should call onOpenRequirement when requirement button is clicked", async () => {
-			const user = userEvent.setup();
 			render(
 				<UICodeTracePanel
 					traceChain={mockTraceChain}
@@ -327,7 +324,6 @@ describe("UICodeTracePanel", () => {
 		});
 
 		it("should call onNavigateToUI when component button is clicked", async () => {
-			const user = userEvent.setup();
 			render(
 				<UICodeTracePanel
 					traceChain={mockTraceChain}
@@ -345,7 +341,6 @@ describe("UICodeTracePanel", () => {
 		});
 
 		it("should call onRefreshTrace when refresh button is clicked", async () => {
-			const user = userEvent.setup();
 			render(
 				<UICodeTracePanel
 					traceChain={mockTraceChain}
@@ -365,7 +360,6 @@ describe("UICodeTracePanel", () => {
 
 	describe("tooltips and information display", () => {
 		it("should display strategy information in tooltips", async () => {
-			const user = userEvent.setup();
 			render(<UICodeTracePanel traceChain={mockTraceChain} />);
 
 			// Tooltips are displayed on hover
@@ -419,7 +413,7 @@ describe("UICodeTracePanel", () => {
 				lastUpdated: new Date().toISOString(),
 			};
 
-			const { container } = render(
+			render(
 				<UICodeTracePanel traceChain={chainWithMinimal} />,
 			);
 
@@ -460,7 +454,7 @@ describe("UICodeTracePanel", () => {
 				lastUpdated: new Date().toISOString(),
 			};
 
-			const { container } = render(
+			render(
 				<UICodeTracePanel traceChain={lowConfidenceChain} />,
 			);
 
@@ -489,7 +483,7 @@ describe("UICodeTracePanel", () => {
 				lastUpdated: new Date().toISOString(),
 			};
 
-			const { container } = render(
+			render(
 				<UICodeTracePanel traceChain={chainWithLongPath} />,
 			);
 
@@ -563,7 +557,7 @@ describe("UICodeTracePanel", () => {
 		});
 
 		it("should display code reference metadata", () => {
-			const { container } = render(
+			render(
 				<UICodeTracePanel traceChain={mockTraceChain} />,
 			);
 
@@ -579,12 +573,12 @@ describe("UICodeTracePanel", () => {
 
 	describe("scrolling behavior", () => {
 		it("should have scroll area for trace levels", () => {
-			const { container } = render(
+			render(
 				<UICodeTracePanel traceChain={mockTraceChain} />,
 			);
 
 			// Check for scroll container
-			const scrollArea = container.querySelector("[class*='scroll']");
+			const _scrollArea = container.querySelector("[class*='scroll']");
 			// ScrollArea should be present or the container should handle overflow
 			expect(container).toBeInTheDocument();
 		});

@@ -3,7 +3,7 @@
  * Target: 88.65% → 95% coverage
  * Focus: Remaining uncovered lines (147-148, 174-179)
  */
-
+/* eslint-disable @typescript-eslint/no-unsafe-type-assertion -- test mocks and global overrides */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	connectWebSocket,
@@ -46,9 +46,7 @@ global.window = {
 		protocol: "ws:",
 		host: "localhost:4000",
 	},
-	setInterval: vi.fn((_fn, _delay) => {
-		return 1 as any;
-	}),
+	setInterval: vi.fn((_fn: TimerHandler, _delay?: number) => 1 as ReturnType<typeof setInterval>),
 	clearInterval: vi.fn(),
 } as any;
 
@@ -86,7 +84,7 @@ describe("WebSocket - Comprehensive Coverage (Remaining Gaps)", () => {
 			await new Promise((resolve) => setTimeout(resolve, 10));
 			expect(sendSpy).toHaveBeenCalledWith({ type: "ping" });
 
-			await disconnectWebSocket();
+			disconnectWebSocket();
 		});
 
 		it("should not send heartbeat when connection is not open", async () => {
@@ -151,7 +149,7 @@ describe("WebSocket - Comprehensive Coverage (Remaining Gaps)", () => {
 			// Should have attempted reconnection
 			expect(connectSpy).toHaveBeenCalled();
 
-			await disconnectWebSocket();
+			disconnectWebSocket();
 		});
 
 		it("should stop reconnecting after max attempts", async () => {
@@ -185,7 +183,7 @@ describe("WebSocket - Comprehensive Coverage (Remaining Gaps)", () => {
 			const reconnectAttempts = (manager as any).reconnectAttempts;
 			expect(reconnectAttempts).toBeLessThanOrEqual(maxAttempts);
 
-			await disconnectWebSocket();
+			disconnectWebSocket();
 		});
 
 		it("should calculate exponential backoff delay", async () => {
@@ -224,7 +222,7 @@ describe("WebSocket - Comprehensive Coverage (Remaining Gaps)", () => {
 			global.window = originalWindow;
 			globalThis.window = originalWindow;
 
-			await disconnectWebSocket();
+			disconnectWebSocket();
 		});
 
 		it("should properly clean up heartbeat on disconnect", async () => {
@@ -234,7 +232,7 @@ describe("WebSocket - Comprehensive Coverage (Remaining Gaps)", () => {
 			await connectWebSocket();
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
-			await disconnectWebSocket();
+			disconnectWebSocket();
 
 			// Should have stopped heartbeat
 			expect(stopHeartbeatSpy).toHaveBeenCalled();
@@ -247,7 +245,7 @@ describe("WebSocket - Comprehensive Coverage (Remaining Gaps)", () => {
 			for (let i = 0; i < 5; i++) {
 				await connectWebSocket();
 				await new Promise((resolve) => setTimeout(resolve, 10));
-				await disconnectWebSocket();
+				disconnectWebSocket();
 				await new Promise((resolve) => setTimeout(resolve, 10));
 			}
 

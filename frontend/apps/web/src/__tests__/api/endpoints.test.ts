@@ -32,10 +32,11 @@ describe.skip("API Endpoints", () => {
 				// Handle native Request object
 				urlStr = url.url;
 				method = url.method || "GET";
-			} else if (url && typeof url === "object") {
+			} else if (url && typeof url === "object" && "url" in url) {
 				// Handle object with url property
-				urlStr = (url as any).url || String(url);
-				method = (url as any).method || "GET";
+				const urlObj = url as { url?: string; method?: string };
+				urlStr = urlObj.url ?? String(url);
+				method = urlObj.method ?? "GET";
 			} else {
 				urlStr = String(url);
 			}
@@ -175,7 +176,7 @@ describe.skip("API Endpoints", () => {
 		};
 
 		// Replace global fetch with our mock
-		global.fetch = vi.fn(fetchImpl) as any;
+		global.fetch = vi.fn(fetchImpl) as typeof fetch;
 	});
 	describe("projectsApi", () => {
 		it("should list projects", async () => {
@@ -232,9 +233,9 @@ describe.skip("API Endpoints", () => {
 		it("should create an item", async () => {
 			const newItem = {
 				project_id: "proj-1",
-				type: "feature" as any,
+				type: "feature" as const,
 				title: "New Item",
-				status: "pending" as any,
+				status: "pending" as const,
 			};
 			const item = await api.items.create(newItem);
 			expect(item).toHaveProperty("id");
@@ -267,7 +268,7 @@ describe.skip("API Endpoints", () => {
 			const newLink = {
 				source_id: "item-1",
 				target_id: "item-2",
-				type: "implements" as any,
+				type: "implements" as const,
 			};
 			const link = await api.links.create(newLink);
 			expect(link).toHaveProperty("id");
@@ -316,9 +317,9 @@ describe.skip("API Endpoints", () => {
 			// This will fail in MSW but tests the function exists
 			try {
 				await api.healthCheck();
-			} catch (e) {
+			} catch (_error) {
 				// Expected to fail with MSW
-				expect(e).toBeTruthy();
+				expect(_error).toBeTruthy();
 			}
 		});
 	});

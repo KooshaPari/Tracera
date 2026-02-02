@@ -18,6 +18,39 @@ export interface BurndownChartProps {
 	height?: number;
 }
 
+function BurndownCustomTooltip({
+	active,
+	payload,
+}: {
+	active?: boolean;
+	payload?: Array<{ payload: { date: string; ideal: number; actual: number; completed?: number } }>;
+}) {
+	if (active && payload && payload.length) {
+		const first = payload[0];
+		const data = first?.payload;
+		if (!data) return null;
+		return (
+			<div className="bg-white dark:bg-gray-800 p-3 rounded shadow-lg border border-gray-200 dark:border-gray-700">
+				<p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+					{data.date}
+				</p>
+				<p className="text-sm text-blue-600 dark:text-blue-400">
+					Ideal: {data.ideal} points
+				</p>
+				<p className="text-sm text-red-600 dark:text-red-400">
+					Actual: {data.actual} points
+				</p>
+				{data.completed !== undefined && (
+					<p className="text-sm text-green-600 dark:text-green-400">
+						Completed: {data.completed} points
+					</p>
+				)}
+			</div>
+		);
+	}
+	return null;
+}
+
 export const BurndownChart: React.FC<BurndownChartProps> = ({
 	sprint,
 	data = [],
@@ -31,7 +64,12 @@ export const BurndownChart: React.FC<BurndownChartProps> = ({
 					new Date(sprint.startDate).getTime()) /
 					(1000 * 60 * 60 * 24),
 			);
-			const mockData: any[] = [];
+			const mockData: Array<{
+				day: number;
+				date: string;
+				ideal: number;
+				actual: number;
+			}> = [];
 
 			for (let i = 0; i <= days; i++) {
 				const idealRemaining = Math.max(
@@ -59,7 +97,7 @@ export const BurndownChart: React.FC<BurndownChartProps> = ({
 
 		return data.map((point, index) => ({
 			day: index,
-			date: new Date(point.recordedDate).toLocaleDateString("en-US", {
+			date: new Date(point.date).toLocaleDateString("en-US", {
 				month: "short",
 				day: "numeric",
 			}),
@@ -68,31 +106,6 @@ export const BurndownChart: React.FC<BurndownChartProps> = ({
 			completed: point.completedPoints,
 		}));
 	}, [sprint, data]);
-
-	const CustomTooltip = ({ active, payload }: any) => {
-		if (active && payload && payload.length) {
-			const data = payload[0].payload;
-			return (
-				<div className="bg-white dark:bg-gray-800 p-3 rounded shadow-lg border border-gray-200 dark:border-gray-700">
-					<p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-						{data.date}
-					</p>
-					<p className="text-sm text-blue-600 dark:text-blue-400">
-						Ideal: {data.ideal} points
-					</p>
-					<p className="text-sm text-red-600 dark:text-red-400">
-						Actual: {data.actual} points
-					</p>
-					{data.completed !== undefined && (
-						<p className="text-sm text-green-600 dark:text-green-400">
-							Completed: {data.completed} points
-						</p>
-					)}
-				</div>
-			);
-		}
-		return null;
-	};
 
 	return (
 		<div className="w-full">
@@ -122,7 +135,7 @@ export const BurndownChart: React.FC<BurndownChartProps> = ({
 							position: "insideLeft",
 						}}
 					/>
-					<Tooltip content={<CustomTooltip />} />
+					<Tooltip content={<BurndownCustomTooltip />} />
 					<Legend wrapperStyle={{ paddingTop: "20px" }} iconType="line" />
 					<Line
 						type="monotone"

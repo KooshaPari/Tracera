@@ -16,6 +16,8 @@ vi.mock("../../api/endpoints", () => ({
 	},
 }));
 
+const user = userEvent.setup();
+
 describe("ExportView", () => {
 	let queryClient: QueryClient;
 
@@ -93,7 +95,6 @@ describe("ExportView", () => {
 			{ id: "proj-1", name: "Test Project" },
 		]);
 
-		const user = userEvent.setup();
 		render(
 			<QueryClientProvider client={queryClient}>
 				<ExportView />
@@ -123,7 +124,6 @@ describe("ExportView", () => {
 	});
 
 	it("triggers download on export", async () => {
-		const user = userEvent.setup();
 		const { api } = await import("../../api/endpoints");
 		const mockBlob = new Blob(["test data"], { type: "application/json" });
 		(api.exportImport.export as any).mockResolvedValue(mockBlob);

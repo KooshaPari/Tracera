@@ -21,8 +21,8 @@ vi.mock("@tanstack/react-router", async () => {
 		}),
 		useLocation: () => ({ pathname: "/" }),
 		useParams: () => ({}),
-		Link: ({ children, to, ...props }: any) => (
-			<a href={typeof to === "string" ? to : to?.toString?.()} {...props}>
+		Link: ({ children, to, ...props }: { children: React.ReactNode; to: string; [key: string]: unknown }) => (
+			<a href={typeof to === "string" ? to : String((to as unknown) ?? "")} {...props}>
 				{children}
 			</a>
 		),

@@ -67,7 +67,7 @@ export function CreateProcessForm({
 		control,
 		formState: { errors },
 	} = useForm<ProcessFormData>({
-		resolver: zodResolver(processSchema) as any,
+		resolver: zodResolver(processSchema),
 		defaultValues: {
 			stages: [],
 			swimlanes: [],

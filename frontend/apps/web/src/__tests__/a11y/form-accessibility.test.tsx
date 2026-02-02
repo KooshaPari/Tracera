@@ -4,7 +4,6 @@
  */
 
 import { render } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { axe } from "./setup";
 
@@ -100,14 +99,7 @@ function AccessibleForm() {
 
 describe("Form Accessibility - aria-describedby Connections", () => {
 	it("should connect required fields with help and error text", async () => {
-		const {
-			container,
-			getByLabelText,
-			getByRole,
-			getByText,
-			getByPlaceholderText,
-			queryByText,
-		} = render(<AccessibleForm />);
+		const { container, getByLabelText } = render(<AccessibleForm />);
 		const results = await axe(container);
 		expect(results).toHaveNoViolations();
 
@@ -117,14 +109,7 @@ describe("Form Accessibility - aria-describedby Connections", () => {
 	});
 
 	it("should associate help text with form fields", async () => {
-		const {
-			container,
-			getByLabelText,
-			getByRole,
-			getByText,
-			getByPlaceholderText,
-			queryByText,
-		} = render(<AccessibleForm />);
+		const { container, getByLabelText, getByText } = render(<AccessibleForm />);
 
 		const titleInput = getByLabelText(/title/i);
 		const describedBy = titleInput.getAttribute("aria-describedby");
@@ -139,14 +124,7 @@ describe("Form Accessibility - aria-describedby Connections", () => {
 	});
 
 	it("should support multiple describedby values", async () => {
-		const {
-			container,
-			getByLabelText,
-			getByRole,
-			getByText,
-			getByPlaceholderText,
-			queryByText,
-		} = render(<AccessibleForm />);
+		const { container, getByLabelText } = render(<AccessibleForm />);
 
 		const typeSelect = getByLabelText(/type/i);
 		const describedBy = typeSelect.getAttribute("aria-describedby");
@@ -162,14 +140,7 @@ describe("Form Accessibility - aria-describedby Connections", () => {
 
 describe("Form Accessibility - Required Indicators", () => {
 	it("should mark required fields with aria-required", async () => {
-		const {
-			container,
-			getByLabelText,
-			getByRole,
-			getByText,
-			getByPlaceholderText,
-			queryByText,
-		} = render(<AccessibleForm />);
+		const { container, getByLabelText } = render(<AccessibleForm />);
 
 		const titleInput = getByLabelText(/title/i);
 		expect(titleInput).toHaveAttribute("aria-required", "true");
@@ -182,13 +153,7 @@ describe("Form Accessibility - Required Indicators", () => {
 	});
 
 	it("should have accessible required indicator in label", () => {
-		const {
-			getByLabelText,
-			getByRole,
-			getByText,
-			getByPlaceholderText,
-			queryByText,
-		} = render(<AccessibleForm />);
+		const { getByLabelText } = render(<AccessibleForm />);
 
 		const titleLabel = getByLabelText(/title/i);
 		expect(titleLabel).toBeInTheDocument();
@@ -199,18 +164,13 @@ describe("Form Accessibility - Required Indicators", () => {
 	});
 
 	it("should have required attribute and aria-required in sync", async () => {
-		const {
-			container,
-			getByLabelText,
-			getByRole,
-			getByText,
-			getByPlaceholderText,
-			queryByText,
-		} = render(<AccessibleForm />);
+		const { container, getByLabelText } = render(<AccessibleForm />);
 
-		const titleInput = getByLabelText(/title/i) as HTMLInputElement;
-		expect(titleInput.required).toBe(true);
-		expect(titleInput).toHaveAttribute("aria-required", "true");
+		const titleEl = getByLabelText(/title/i);
+		const titleInput = titleEl instanceof HTMLInputElement ? titleEl : null;
+		expect(titleInput).not.toBeNull();
+		expect(titleInput!.required).toBe(true);
+		expect(titleInput!).toHaveAttribute("aria-required", "true");
 
 		const results = await axe(container);
 		expect(results).toHaveNoViolations();
@@ -219,17 +179,12 @@ describe("Form Accessibility - Required Indicators", () => {
 
 describe("Form Accessibility - Validation Announcements", () => {
 	it("should have aria-invalid for error states", () => {
-		const {
-			rerender,
-			getByLabelText,
-			getByRole,
-			getByText,
-			getByPlaceholderText,
-			queryByText,
-		} = render(<AccessibleForm />);
+		const { rerender, getByLabelText } = render(<AccessibleForm />);
 
-		let titleInput = getByLabelText(/title/i) as HTMLInputElement;
-		expect(titleInput).toHaveAttribute("aria-invalid", "false");
+		let titleInputEl = getByLabelText(/title/i);
+		let titleInput = titleInputEl instanceof HTMLInputElement ? titleInputEl : null;
+		expect(titleInput).not.toBeNull();
+		expect(titleInput!).toHaveAttribute("aria-invalid", "false");
 
 		// Simulate error state
 		rerender(
@@ -275,11 +230,13 @@ describe("Form Accessibility - Validation Announcements", () => {
 			</div>,
 		);
 
-		titleInput = getByLabelText(/title/i) as HTMLInputElement;
-		expect(titleInput).toHaveAttribute("aria-invalid", "true");
+		titleInputEl = getByLabelText(/title/i);
+		titleInput = titleInputEl instanceof HTMLInputElement ? titleInputEl : null;
+		expect(titleInput!).toHaveAttribute("aria-invalid", "true");
 	});
 
 	it("should have role='alert' on error messages", () => {
+		// eslint-disable-next-line unicorn/consistent-function-scoping -- test component
 		const ErrorForm = () => (
 			<form>
 				<div>
@@ -302,13 +259,7 @@ describe("Form Accessibility - Validation Announcements", () => {
 			</form>
 		);
 
-		const {
-			getByLabelText,
-			getByRole,
-			getByText,
-			getByPlaceholderText,
-			queryByText,
-		} = render(<ErrorForm />);
+		const { getByRole } = render(<ErrorForm />);
 
 		const errorMessage = getByRole("alert");
 		expect(errorMessage).toHaveAttribute("aria-live", "polite");
@@ -316,13 +267,7 @@ describe("Form Accessibility - Validation Announcements", () => {
 	});
 
 	it("should announce validation errors via aria-live", () => {
-		const {
-			getByLabelText,
-			getByRole,
-			getByText,
-			getByPlaceholderText,
-			queryByText,
-		} = render(
+		const { getByRole } = render(
 			<div>
 				<form>
 					<label htmlFor="title">Title</label>
@@ -352,13 +297,7 @@ describe("Form Accessibility - Validation Announcements", () => {
 
 describe("Form Accessibility - Focus Management", () => {
 	it("should have visible focus indicators on all form fields", () => {
-		const {
-			getByLabelText,
-			getByRole,
-			getByText,
-			getByPlaceholderText,
-			queryByText,
-		} = render(<AccessibleForm />);
+		const { getByLabelText } = render(<AccessibleForm />);
 
 		const titleInput = getByLabelText(/title/i);
 		titleInput.focus();
@@ -370,14 +309,7 @@ describe("Form Accessibility - Focus Management", () => {
 	});
 
 	it("should support keyboard navigation through form fields", async () => {
-		const user = userEvent.setup();
-		const {
-			getByLabelText,
-			getByRole,
-			getByText,
-			getByPlaceholderText,
-			queryByText,
-		} = render(<AccessibleForm />);
+		const { getByLabelText, getByPlaceholderText } = render(<AccessibleForm />);
 
 		const titleInput = getByLabelText(/title/i);
 		const typeSelect = getByLabelText(/type/i);
@@ -397,14 +329,7 @@ describe("Form Accessibility - Focus Management", () => {
 	});
 
 	it("should support Shift+Tab for reverse navigation", async () => {
-		const user = userEvent.setup();
-		const {
-			getByLabelText,
-			getByRole,
-			getByText,
-			getByPlaceholderText,
-			queryByText,
-		} = render(<AccessibleForm />);
+		const { getByLabelText } = render(<AccessibleForm />);
 
 		const titleInput = getByLabelText(/title/i);
 		const typeSelect = getByLabelText(/type/i);
@@ -419,14 +344,7 @@ describe("Form Accessibility - Focus Management", () => {
 
 describe("Form Accessibility - Dialog Focus Trap", () => {
 	it("should have dialog role and aria-modal", async () => {
-		const {
-			container,
-			getByLabelText,
-			getByRole,
-			getByText,
-			getByPlaceholderText,
-			queryByText,
-		} = render(<AccessibleForm />);
+		const { container, getByRole } = render(<AccessibleForm />);
 
 		const dialog = getByRole("dialog");
 		expect(dialog).toHaveAttribute("aria-modal", "true");
@@ -438,13 +356,7 @@ describe("Form Accessibility - Dialog Focus Trap", () => {
 	});
 
 	it("should have proper dialog structure with title and description", () => {
-		const {
-			getByLabelText,
-			getByRole,
-			getByText,
-			getByPlaceholderText,
-			queryByText,
-		} = render(<AccessibleForm />);
+		const { getByRole, getByText } = render(<AccessibleForm />);
 
 		const dialog = getByRole("dialog");
 		const title = getByText("Create Item");
@@ -460,27 +372,13 @@ describe("Form Accessibility - Dialog Focus Trap", () => {
 
 describe("Form Accessibility - WCAG 2.1 AA Compliance", () => {
 	it("should pass comprehensive accessibility audit", async () => {
-		const {
-			container,
-			getByLabelText,
-			getByRole,
-			getByText,
-			getByPlaceholderText,
-			queryByText,
-		} = render(<AccessibleForm />);
+		const { container } = render(<AccessibleForm />);
 		const results = await axe(container);
 		expect(results).toHaveNoViolations();
 	});
 
 	it("should have proper label associations", async () => {
-		const {
-			container,
-			getByLabelText,
-			getByRole,
-			getByText,
-			getByPlaceholderText,
-			queryByText,
-		} = render(<AccessibleForm />);
+		const { container, getByLabelText } = render(<AccessibleForm />);
 
 		const titleInput = getByLabelText(/title/i);
 		const typeSelect = getByLabelText(/type/i);
@@ -493,6 +391,7 @@ describe("Form Accessibility - WCAG 2.1 AA Compliance", () => {
 	});
 
 	it("should support autocomplete attributes", () => {
+		// eslint-disable-next-line unicorn/consistent-function-scoping -- test component
 		const FormWithAutocomplete = () => (
 			<form>
 				<label htmlFor="email">Email</label>
@@ -506,27 +405,17 @@ describe("Form Accessibility - WCAG 2.1 AA Compliance", () => {
 			</form>
 		);
 
-		const {
-			getByLabelText,
-			getByRole,
-			getByText,
-			getByPlaceholderText,
-			queryByText,
-		} = render(<FormWithAutocomplete />);
-		const emailInput = getByLabelText(/email/i) as HTMLInputElement;
-		expect(emailInput.autoComplete).toBe("email");
+		const { getByLabelText } = render(<FormWithAutocomplete />);
+		const emailEl = getByLabelText(/email/i);
+		const emailInput = emailEl instanceof HTMLInputElement ? emailEl : null;
+		expect(emailInput).not.toBeNull();
+		expect(emailInput!.autoComplete).toBe("email");
 	});
 });
 
 describe("Form Accessibility - Help Text and Hints", () => {
 	it("should have help text for all fields", () => {
-		const {
-			getByLabelText,
-			getByRole,
-			getByText,
-			getByPlaceholderText,
-			queryByText,
-		} = render(<AccessibleForm />);
+		const { getByText } = render(<AccessibleForm />);
 
 		const titleHelp = getByText(/Give this item a clear/i);
 		const typeHelp = getByText(/Select from options/i);
@@ -538,13 +427,7 @@ describe("Form Accessibility - Help Text and Hints", () => {
 	});
 
 	it("should connect help text via aria-describedby", () => {
-		const {
-			getByLabelText,
-			getByRole,
-			getByText,
-			getByPlaceholderText,
-			queryByText,
-		} = render(<AccessibleForm />);
+		const { getByLabelText, getByText } = render(<AccessibleForm />);
 
 		const titleInput = getByLabelText(/title/i);
 		const describedBy = titleInput.getAttribute("aria-describedby");
@@ -556,14 +439,7 @@ describe("Form Accessibility - Help Text and Hints", () => {
 	});
 
 	it("should differentiate between help and error text", () => {
-		const {
-			rerender,
-			getByLabelText,
-			getByRole,
-			getByText,
-			getByPlaceholderText,
-			queryByText,
-		} = render(<AccessibleForm />);
+		const { rerender, getByLabelText } = render(<AccessibleForm />);
 
 		// Initially just help text
 		let titleInput = getByLabelText(/title/i);

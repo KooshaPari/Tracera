@@ -58,6 +58,14 @@ import { useTableKeyboardNavigation } from "../hooks/useTableKeyboardNavigation"
 
 function getStatusBadge(status: ItemStatus) {
 	const config = {
+		blocked: {
+			color: "bg-red-500/10 text-red-600 border-red-500/20",
+			icon: AlertCircle,
+		},
+		cancelled: {
+			color: "bg-orange-500/10 text-orange-600 border-orange-500/20",
+			icon: X,
+		},
 		done: {
 			color: "bg-green-500/10 text-green-600 border-green-500/20",
 			icon: CheckCircle2,
@@ -66,15 +74,7 @@ function getStatusBadge(status: ItemStatus) {
 			color: "bg-blue-500/10 text-blue-600 border-blue-500/20",
 			icon: Clock,
 		},
-		blocked: {
-			color: "bg-red-500/10 text-red-600 border-red-500/20",
-			icon: AlertCircle,
-		},
 		todo: { color: "bg-muted text-muted-foreground", icon: Terminal },
-		cancelled: {
-			color: "bg-orange-500/10 text-orange-600 border-orange-500/20",
-			icon: X,
-		},
 	};
 	const c = config[status] || config.todo;
 	return (
@@ -94,14 +94,14 @@ function getPriorityDot(priority?: Priority) {
 	const colors = {
 		critical: "bg-red-500",
 		high: "bg-orange-500",
-		medium: "bg-blue-500",
 		low: "bg-green-500",
+		medium: "bg-blue-500",
 	};
 	const labels = {
 		critical: "Critical priority",
 		high: "High priority",
-		medium: "Medium priority",
 		low: "Low priority",
+		medium: "Medium priority",
 	};
 	const level = priority || "medium";
 	return (
@@ -272,8 +272,7 @@ const VirtualTableRow = memo(
 			</TableRow>
 		);
 	},
-	(prev, next) => {
-		return (
+	(prev, next) => (
 			prev.item.id === next.item.id &&
 			prev.item.title === next.item.title &&
 			prev.item.type === next.item.type &&
@@ -281,8 +280,7 @@ const VirtualTableRow = memo(
 			prev.item.priority === next.item.priority &&
 			prev.item.owner === next.item.owner &&
 			prev.isKeyboardFocused === next.isKeyboardFocused
-		);
-	},
+		),
 );
 
 VirtualTableRow.displayName = "VirtualTableRow";
@@ -343,26 +341,26 @@ export function ItemsTableViewA11y({
 			return matchesType && matchesQuery;
 		});
 
-		return filtered.sort((a, b) => {
+		return filtered.toSorted((a, b) => {
 			const dir = sortOrder === "asc" ? 1 : -1;
-			if (sortColumn === "title") return a.title.localeCompare(b.title) * dir;
+			if (sortColumn === "title") {return a.title.localeCompare(b.title) * dir;}
 			if (sortColumn === "created")
-				return (
+				{return (
 					(new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) *
 					dir
-				);
+				);}
 			return 0;
 		});
 	}, [items, effectiveTypeFilter, searchQuery, sortColumn, sortOrder]);
 
 	// Keyboard navigation
 	const { focusState: _focusState, setFocusState: _setFocusState } = useTableKeyboardNavigation({
-		rowCount: filteredAndSortedItems.length,
 		colCount: 6,
 		containerId: tableContainerId,
 		onNavigate: (rowIndex, colIndex) => {
-			setKeyboardFocusedCell({ row: rowIndex, col: colIndex });
+			setKeyboardFocusedCell({ col: colIndex, row: rowIndex });
 		},
+		rowCount: filteredAndSortedItems.length,
 	});
 
 	useEffect(() => {
@@ -373,30 +371,17 @@ export function ItemsTableViewA11y({
 
 	const closeCreateModal = useCallback(() => {
 		setShowCreateModal(false);
-		navigate({
-			search: (prev: any) => {
-				if (!prev) return {};
-				const { action, ...rest } = prev;
-				return rest;
-			},
-		} as any);
+		undefined;
 	}, [navigate]);
 
 	const handleItemNavigate = useCallback(
 		(item: any) => {
 			const viewType = String(item?.view || view || "feature").toLowerCase();
 			if (!effectiveProjectId) {
-				navigate({ to: "/projects" });
+				undefined;
 				return;
 			}
-			navigate({
-				to: "/projects/$projectId/views/$viewType/$itemId",
-				params: {
-					projectId: effectiveProjectId,
-					viewType,
-					itemId: item.id,
-				},
-			});
+			undefined;
 		},
 		[navigate, effectiveProjectId, view],
 	);
@@ -412,19 +397,19 @@ export function ItemsTableViewA11y({
 		}
 		try {
 			await createItem.mutateAsync({
-				projectId: effectiveProjectId,
-				view: (view as any) || "feature",
-				type: newType || (view as any) || "feature",
-				title: newTitle.trim(),
-				status: newStatus,
 				priority: newPriority,
+				projectId: effectiveProjectId,
+				status: newStatus,
+				title: newTitle.trim(),
+				type: newType || (view as any) || "feature",
+				view: (view as any) || "feature",
 			});
 			toast.success("Node created");
 			setNewTitle("");
 			setNewType(type || "feature");
 			closeCreateModal();
-		} catch {
-			toast.error("Failed to create node");
+        } catch {
+            toast.error("Failed to create node");
 		}
 	}, [
 		effectiveProjectId,
@@ -440,8 +425,8 @@ export function ItemsTableViewA11y({
 
 	const rowVirtualizer = useVirtualizer({
 		count: filteredAndSortedItems.length,
-		getScrollElement: () => parentRef.current,
 		estimateSize: () => 68,
+		getScrollElement: () => parentRef.current,
 		overscan: 10,
 	});
 
@@ -452,8 +437,8 @@ export function ItemsTableViewA11y({
 				toast.success("Node purged from registry");
 				// Announce to screen readers
 				announceToScreenReader("Item deleted successfully");
-			} catch {
-				toast.error("Purge failure");
+            } catch {
+                toast.error("Purge failure");
 				announceToScreenReader("Failed to delete item");
 			}
 		},
@@ -490,9 +475,7 @@ export function ItemsTableViewA11y({
 					<Button
 						size="sm"
 						onClick={() =>
-							navigate({
-								search: (prev: any) => ({ ...prev, action: "create" }),
-							} as any)
+							undefined
 						}
 						className="gap-2 rounded-xl shadow-lg shadow-primary/20"
 						aria-label="Create new node"
@@ -519,12 +502,7 @@ export function ItemsTableViewA11y({
 					<Select
 						value={projectFilter || "all"}
 						onValueChange={(v) =>
-							navigate({
-								search: (prev: any) => ({
-									...prev,
-									project: v === "all" ? undefined : v,
-								}),
-							} as any)
+							undefined
 						}
 					>
 						<SelectTrigger className="w-[180px] h-10 border-none bg-transparent hover:bg-background/50 transition-colors">
@@ -547,12 +525,7 @@ export function ItemsTableViewA11y({
 					<Select
 						value={effectiveTypeFilter || "all"}
 						onValueChange={(v) =>
-							navigate({
-								search: (prev: any) => ({
-									...prev,
-									type: v === "all" ? undefined : v,
-								}),
-							} as any)
+							undefined
 						}
 					>
 						<SelectTrigger className="w-[140px] h-10 border-none bg-transparent hover:bg-background/50 transition-colors">
@@ -597,9 +570,9 @@ export function ItemsTableViewA11y({
 										isSortable
 										sortDirection={
 											sortColumn === "title"
-												? sortOrder === "asc"
+												? (sortOrder === "asc"
 													? "ascending"
-													: "descending"
+													: "descending")
 												: "none"
 										}
 									>
@@ -643,13 +616,13 @@ export function ItemsTableViewA11y({
 							<div
 								style={{
 									height: `${rowVirtualizer.getTotalSize()}px`,
-									width: "100%",
 									position: "relative",
+									width: "100%",
 								}}
 							>
 								{rowVirtualizer.getVirtualItems().map((virtualRow) => {
 									const item = filteredAndSortedItems[virtualRow.index];
-									if (!item) return null;
+									if (!item) {return null;}
 
 									const isFocused =
 										keyboardFocusedCell?.row === virtualRow.index;
@@ -658,12 +631,12 @@ export function ItemsTableViewA11y({
 										<div
 											key={item.id}
 											style={{
+												height: `${virtualRow.size}px`,
+												left: 0,
 												position: "absolute",
 												top: 0,
-												left: 0,
-												width: "100%",
-												height: `${virtualRow.size}px`,
 												transform: `translateY(${virtualRow.start}px)`,
+												width: "100%",
 											}}
 										>
 											<div className="overflow-x-auto custom-scrollbar">
@@ -838,7 +811,7 @@ export function ItemsTableViewA11y({
  * Announce messages to screen readers using aria-live regions
  */
 function announceToScreenReader(message: string) {
-	const liveRegion = document.getElementById("table-announcements");
+	const liveRegion = document.querySelector("#table-announcements");
 	if (liveRegion) {
 		liveRegion.textContent = message;
 	}

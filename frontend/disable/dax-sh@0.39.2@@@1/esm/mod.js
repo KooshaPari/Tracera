@@ -80,7 +80,7 @@ function isConstructor(obj) {
 		try {
 			new prox();
 			return true;
-		} catch (err) {
+		} catch (_err) {
 			return false;
 		}
 	} else {
@@ -854,7 +854,7 @@ async function emptyDir(dir) {
 				}
 			}),
 		);
-	} catch (err) {
+	} catch (_err) {
 		if (!(err instanceof Deno2.errors.NotFound)) {
 			throw err;
 		}
@@ -871,7 +871,7 @@ function emptyDirSync(dir) {
 				Deno2.removeSync(filepath, { recursive: true });
 			}
 		}
-	} catch (err) {
+	} catch (_err) {
 		if (!(err instanceof Deno2.errors.NotFound)) {
 			throw err;
 		}
@@ -900,14 +900,14 @@ async function ensureDir(dir) {
 			);
 		}
 		return;
-	} catch (err) {
+	} catch (_err) {
 		if (!(err instanceof Deno2.errors.NotFound)) {
 			throw err;
 		}
 	}
 	try {
 		await Deno2.mkdir(dir, { recursive: true });
-	} catch (err) {
+	} catch (_err) {
 		if (!(err instanceof Deno2.errors.AlreadyExists)) {
 			throw err;
 		}
@@ -928,14 +928,14 @@ function ensureDirSync(dir) {
 			);
 		}
 		return;
-	} catch (err) {
+	} catch (_err) {
 		if (!(err instanceof Deno2.errors.NotFound)) {
 			throw err;
 		}
 	}
 	try {
 		Deno2.mkdirSync(dir, { recursive: true });
-	} catch (err) {
+	} catch (_err) {
 		if (!(err instanceof Deno2.errors.AlreadyExists)) {
 			throw err;
 		}
@@ -1070,7 +1070,7 @@ async function ensureFile(filePath) {
 				`Ensure path exists, expected 'file', got '${getFileInfoType(stat)}'`,
 			);
 		}
-	} catch (err) {
+	} catch (_err) {
 		if (err instanceof Deno2.errors.NotFound) {
 			await ensureDir(dirname3(toPathString(filePath)));
 			await Deno2.writeFile(filePath, new Uint8Array());
@@ -1087,7 +1087,7 @@ function ensureFileSync(filePath) {
 				`Ensure path exists, expected 'file', got '${getFileInfoType(stat)}'`,
 			);
 		}
-	} catch (err) {
+	} catch (_err) {
 		if (err instanceof Deno2.errors.NotFound) {
 			ensureDirSync(dirname3(toPathString(filePath)));
 			Deno2.writeFileSync(filePath, new Uint8Array());
@@ -1982,7 +1982,7 @@ async function* walk(
 				yield { path, ...entry };
 			}
 		}
-	} catch (err) {
+	} catch (_err) {
 		throw wrapErrorWithPath(err, normalize3(root));
 	}
 }
@@ -2013,7 +2013,7 @@ function* walkSync(
 	let entries;
 	try {
 		entries = Deno2.readDirSync(root);
-	} catch (err) {
+	} catch (_err) {
 		throw wrapErrorWithPath(err, normalize3(root));
 	}
 	for (const entry of entries) {
@@ -2351,7 +2351,7 @@ async function ensureValidCopy(src, dest, options) {
 	let destStat;
 	try {
 		destStat = await Deno2.lstat(dest);
-	} catch (err) {
+	} catch (_err) {
 		if (err instanceof Deno2.errors.NotFound) {
 			return;
 		}
@@ -2371,7 +2371,7 @@ function ensureValidCopySync(src, dest, options) {
 	let destStat;
 	try {
 		destStat = Deno2.lstatSync(dest);
-	} catch (err) {
+	} catch (_err) {
 		if (err instanceof Deno2.errors.NotFound) {
 			return;
 		}
@@ -2897,7 +2897,7 @@ var BufReader = class _BufReader {
 					}
 				}
 				bytesRead += rr;
-			} catch (err) {
+			} catch (_err) {
 				if (err instanceof PartialReadError) {
 					err.partial = p.subarray(0, bytesRead);
 				}
@@ -2959,7 +2959,7 @@ var BufReader = class _BufReader {
 		let line = null;
 		try {
 			line = await this.readSlice(LF2);
-		} catch (err) {
+		} catch (_err) {
 			let partial;
 			if (err instanceof PartialReadError) {
 				partial = err.partial;
@@ -3046,7 +3046,7 @@ var BufReader = class _BufReader {
 			s = this.#w - this.#r;
 			try {
 				await this.#fill();
-			} catch (err) {
+			} catch (_err) {
 				if (err instanceof PartialReadError) {
 					err.partial = slice;
 				}
@@ -3074,7 +3074,7 @@ var BufReader = class _BufReader {
 		while (avail < n && avail < this.#buf.byteLength && !this.#eof) {
 			try {
 				await this.#fill();
-			} catch (err) {
+			} catch (_err) {
 				if (err instanceof PartialReadError) {
 					err.partial = this.#buf.subarray(this.#r, this.#w);
 				}
@@ -3977,7 +3977,7 @@ async function pathMatches(environment, path) {
 	try {
 		const result = await environment.stat(path);
 		return result.isFile;
-	} catch (err) {
+	} catch (_err) {
 		if (err instanceof Deno2.errors.PermissionDenied) {
 			throw err;
 		}
@@ -4009,7 +4009,7 @@ function pathMatchesSync(environment, path) {
 	try {
 		const result = environment.statSync(path);
 		return result.isFile;
-	} catch (err) {
+	} catch (_err) {
 		if (err instanceof Deno2.errors.PermissionDenied) {
 			throw err;
 		}
@@ -5584,7 +5584,7 @@ var LoggerTreeBox = class extends TreeBox {
 async function safeLstat(path) {
 	try {
 		return await Deno2.lstat(path);
-	} catch (err) {
+	} catch (_err) {
 		if (err instanceof Deno2.errors.NotFound) {
 			return void 0;
 		} else {
@@ -5607,7 +5607,7 @@ async function getExecutableShebangFromPath(path) {
 				file.close();
 			} catch {}
 		}
-	} catch (err) {
+	} catch (_err) {
 		if (err instanceof Deno2.errors.NotFound) {
 			return false;
 		}
@@ -5672,7 +5672,7 @@ async function cdCommand(context) {
 				},
 			],
 		};
-	} catch (err) {
+	} catch (_err) {
 		return context.error(`cd: ${errorToString(err)}`);
 	}
 }
@@ -5688,7 +5688,7 @@ async function isDirectory(path) {
 	try {
 		const info = await Deno2.stat(path);
 		return info.isDirectory;
-	} catch (err) {
+	} catch (_err) {
 		if (err instanceof Deno2.errors.NotFound) {
 			return false;
 		} else {
@@ -5725,7 +5725,7 @@ function printEnvCommand(context) {
 		} else {
 			return { code: code2 };
 		}
-	} catch (err) {
+	} catch (_err) {
 		return handleError2(context, err);
 	}
 }
@@ -5793,7 +5793,7 @@ async function cpCommand(context) {
 	try {
 		await executeCp(context.cwd, context.args);
 		return { code: 0 };
-	} catch (err) {
+	} catch (_err) {
 		return context.error(`cp: ${errorToString(err)}`);
 	}
 }
@@ -5859,7 +5859,7 @@ async function mvCommand(context) {
 	try {
 		await executeMove(context.cwd, context.args);
 		return { code: 0 };
-	} catch (err) {
+	} catch (_err) {
 		return context.error(`mv: ${errorToString(err)}`);
 	}
 }
@@ -5939,7 +5939,7 @@ function echoCommand(context) {
 		} else {
 			return { code: 0 };
 		}
-	} catch (err) {
+	} catch (_err) {
 		return handleFailure(context, err);
 	}
 }
@@ -5952,7 +5952,7 @@ async function catCommand(context) {
 	try {
 		const code2 = await executeCat(context);
 		return { code: code2 };
-	} catch (err) {
+	} catch (_err) {
 		return context.error(`cat: ${errorToString(err)}`);
 	}
 }
@@ -5995,7 +5995,7 @@ async function executeCat(context) {
 					}
 				}
 				exitCode = context.signal.abortedExitCode ?? 0;
-			} catch (err) {
+			} catch (_err) {
 				const maybePromise = context.stderr.writeLine(
 					`cat ${path}: ${errorToString(err)}`,
 				);
@@ -6033,7 +6033,7 @@ function exitCommand(context) {
 			kind: "exit",
 			code: code2,
 		};
-	} catch (err) {
+	} catch (_err) {
 		return context.error(2, `exit: ${errorToString(err)}`);
 	}
 }
@@ -6073,7 +6073,7 @@ async function mkdirCommand(context) {
 	try {
 		await executeMkdir(context.cwd, context.args);
 		return { code: 0 };
-	} catch (err) {
+	} catch (_err) {
 		return context.error(`mkdir: ${errorToString(err)}`);
 	}
 }
@@ -6119,7 +6119,7 @@ async function rmCommand(context) {
 	try {
 		await executeRemove(context.cwd, context.args);
 		return { code: 0 };
-	} catch (err) {
+	} catch (_err) {
 		return context.error(`rm: ${errorToString(err)}`);
 	}
 }
@@ -6206,7 +6206,7 @@ function pwdCommand(context) {
 		} else {
 			return result;
 		}
-	} catch (err) {
+	} catch (_err) {
 		return handleError3(context, err);
 	}
 }
@@ -6266,7 +6266,7 @@ async function sleepCommand(context) {
 			return getAbortedResult();
 		}
 		return { code: 0 };
-	} catch (err) {
+	} catch (_err) {
 		return context.error(`sleep: ${errorToString(err)}`);
 	}
 }
@@ -6313,7 +6313,7 @@ async function testCommand(context) {
 				throw new Error("unsupported test type");
 		}
 		return { code: result ? 0 : 1 };
-	} catch (err) {
+	} catch (_err) {
 		return context.error(2, `test: ${errorToString(err)}`);
 	}
 }
@@ -6332,7 +6332,7 @@ async function touchCommand(context) {
 	try {
 		await executetouch(context.args);
 		return { code: 0 };
-	} catch (err) {
+	} catch (_err) {
 		return context.error(`touch: ${errorToString(err)}`);
 	}
 }
@@ -6363,7 +6363,7 @@ function unsetCommand(context) {
 				name,
 			})),
 		};
-	} catch (err) {
+	} catch (_err) {
 		return context.error(`unset: ${errorToString(err)}`);
 	}
 }
@@ -7080,7 +7080,7 @@ async function executeCommand(command, context) {
 			} else if (isDisposable(redirectPipe)) {
 				redirectPipe[Symbol.dispose]();
 			}
-		} catch (err) {
+		} catch (_err) {
 			if (result.code === 0) {
 				return context.error(
 					`failed disposing redirected pipe. ${errorToString(err)}`,
@@ -7182,7 +7182,7 @@ async function resolveRedirectPipe(redirect, context) {
 						kind: "input",
 						pipe: file,
 					};
-				} catch (err) {
+				} catch (_err) {
 					return handleFileOpenError(outputPath, err);
 				}
 			}
@@ -7209,7 +7209,7 @@ async function resolveRedirectPipe(redirect, context) {
 						pipe: file,
 						toFd,
 					};
-				} catch (err) {
+				} catch (_err) {
 					return handleFileOpenError(outputPath, err);
 				}
 			}
@@ -7310,7 +7310,7 @@ async function executeCommandArgs(commandArgs, context) {
 			clearEnv: true,
 			...pipeStringVals,
 		});
-	} catch (err) {
+	} catch (_err) {
 		throw checkMapCwdNotExistsError(cwd, err);
 	}
 	const listener = (signal) => p.kill(signal);
@@ -7755,7 +7755,7 @@ var Path = class {
 	async stat() {
 		try {
 			return await Deno2.stat(this.#path);
-		} catch (err) {
+		} catch (_err) {
 			if (err instanceof Deno2.errors.NotFound) {
 				return void 0;
 			} else {
@@ -7768,7 +7768,7 @@ var Path = class {
 	statSync() {
 		try {
 			return Deno2.statSync(this.#path);
-		} catch (err) {
+		} catch (_err) {
 			if (err instanceof Deno2.errors.NotFound) {
 				return void 0;
 			} else {
@@ -7781,7 +7781,7 @@ var Path = class {
 	async lstat() {
 		try {
 			return await Deno2.lstat(this.#path);
-		} catch (err) {
+		} catch (_err) {
 			if (err instanceof Deno2.errors.NotFound) {
 				return void 0;
 			} else {
@@ -7794,7 +7794,7 @@ var Path = class {
 	lstatSync() {
 		try {
 			return Deno2.lstatSync(this.#path);
-		} catch (err) {
+		} catch (_err) {
 			if (err instanceof Deno2.errors.NotFound) {
 				return void 0;
 			} else {
@@ -8176,7 +8176,7 @@ var Path = class {
 	#parseJson(text) {
 		try {
 			return JSON.parse(text);
-		} catch (err) {
+		} catch (_err) {
 			throw new Error(`Failed parsing JSON in '${this.toString()}'.`, {
 				cause: err,
 			});
@@ -8303,7 +8303,7 @@ var Path = class {
 		const resolvedPath = this.resolve();
 		try {
 			return await resolvedPath.open(options);
-		} catch (err) {
+		} catch (_err) {
 			if (err instanceof Deno2.errors.NotFound) {
 				const parent = resolvedPath.parent();
 				if (parent != null) {
@@ -8357,7 +8357,7 @@ var Path = class {
 	#openFileMaybeCreatingDirectorySync(options) {
 		try {
 			return this.openSync(options);
-		} catch (err) {
+		} catch (_err) {
 			if (err instanceof Deno2.errors.NotFound) {
 				const parent = this.resolve().parent();
 				if (parent != null) {
@@ -8657,7 +8657,7 @@ var FsFileWrapper = class extends Deno2.FsFile {
 async function notFoundToUndefined(action) {
 	try {
 		return await action();
-	} catch (err) {
+	} catch (_err) {
 		if (err instanceof Deno2.errors.NotFound) {
 			return void 0;
 		} else {
@@ -8668,7 +8668,7 @@ async function notFoundToUndefined(action) {
 function notFoundToUndefinedSync(action) {
 	try {
 		return action();
-	} catch (err) {
+	} catch (_err) {
 		if (err instanceof Deno2.errors.NotFound) {
 			return void 0;
 		} else {
@@ -9138,7 +9138,7 @@ var RequestResponse = class {
 				} catch {}
 				this.#abortController?.clearTimeout();
 			}
-		} catch (err) {
+		} catch (_err) {
 			await this.#response.body?.cancel();
 			throw err;
 		}
@@ -9158,7 +9158,7 @@ var RequestResponse = class {
 	async #withReturnHandling(action) {
 		try {
 			return await action();
-		} catch (err) {
+		} catch (_err) {
 			if (err instanceof TimeoutError) {
 				Error.captureStackTrace(err);
 			}
@@ -9928,7 +9928,7 @@ function parseAndSpawnCommand(state) {
 				} else {
 					resolve4(result);
 				}
-			} catch (err) {
+			} catch (_err) {
 				finalizeCommandResultBufferForError(stdoutBuffer, err);
 				finalizeCommandResultBufferForError(stderrBuffer, err);
 				reject(await cleanupDisposablesAndMaybeGetError(err));
@@ -9950,7 +9950,7 @@ function parseAndSpawnCommand(state) {
 		for (const disposable of disposables) {
 			try {
 				disposable[Symbol.dispose]();
-			} catch (err) {
+			} catch (_err) {
 				errors.push(err);
 			}
 		}
@@ -9959,7 +9959,7 @@ function parseAndSpawnCommand(state) {
 				asyncDisposables.map(async (d) => {
 					try {
 						await d[Symbol.asyncDispose]();
-					} catch (err) {
+					} catch (_err) {
 						errors.push(err);
 					}
 				}),
@@ -10388,7 +10388,7 @@ function templateInner(strings, exprs, escape) {
 									throw new Error("Function did not return a ReadableStream.");
 								}
 								return result;
-							} catch (err) {
+							} catch (_err) {
 								throw new Error(
 									`Error getting ReadableStream from function at expression ${i + 1}/${exprsCount}. ${errorToString(err)}`,
 								);
@@ -10438,7 +10438,7 @@ function templateInner(strings, exprs, escape) {
 									throw new Error("Function did not return a WritableStream.");
 								}
 								return result;
-							} catch (err) {
+							} catch (_err) {
 								throw new Error(
 									`Error getting WritableStream from function at expression ${i + 1}/${exprsCount}. ${errorToString(err)}`,
 								);
@@ -10454,7 +10454,7 @@ function templateInner(strings, exprs, escape) {
 				} else {
 					text += templateLiteralExprToString(expr, escape);
 				}
-			} catch (err) {
+			} catch (_err) {
 				const startMessage =
 					exprsCount === 1
 						? "Failed resolving expression in command."
@@ -10554,7 +10554,7 @@ async function withRetries($local, errorLogger, opts) {
 		}
 		try {
 			return await opts.action();
-		} catch (err) {
+		} catch (_err) {
 			errorLogger(err);
 		}
 	}

@@ -17,7 +17,7 @@
  * The key verification is relative performance (O(log n) vs O(n)) not absolute timings.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { getNodeType, type NodeTypeContext } from '@/components/graph/nodeRegistry';
 import { GraphSpatialIndex } from '@/lib/spatialIndex';
 import { getEdgeLODTier, EDGE_LOD_TIERS } from '@/lib/edgeLOD';

@@ -17,7 +17,9 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getAuthHeaders } from "@/api/client";
+import client from "@/api/client";
+
+const { getAuthHeaders } = client;
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
@@ -821,7 +823,7 @@ export function useInvalidateSpecAnalytics() {
 
 	return {
 		invalidateAll: (projectId: string) => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: [...specAnalyticsKeys.all, projectId],
 			});
 		},
@@ -830,7 +832,7 @@ export function useInvalidateSpecAnalytics() {
 			specType: SpecType,
 			specId: string,
 		) => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: specAnalyticsKeys.versionChain(projectId, specType, specId),
 			});
 		},
@@ -839,7 +841,7 @@ export function useInvalidateSpecAnalytics() {
 			specType: SpecType,
 			specId: string,
 		) => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: specAnalyticsKeys.contentAddress(projectId, specType, specId),
 			});
 		},

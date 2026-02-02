@@ -28,7 +28,7 @@ load.resolve = load.path = function (dir) {
   try {
     var name = runtimeRequire(path.join(dir, 'package.json')).name.toUpperCase().replace(/-/g, '_')
     if (process.env[name + '_PREBUILD']) dir = process.env[name + '_PREBUILD']
-  } catch (err) {}
+  } catch (_err) {}
 
   if (!prebuildsOnly) {
     var release = getFirst(path.join(dir, 'build/Release'), matchBuild)
@@ -77,7 +77,7 @@ load.resolve = load.path = function (dir) {
 function readdirSync (dir) {
   try {
     return fs.readdirSync(dir)
-  } catch (err) {
+  } catch (_err) {
     return []
   }
 }

@@ -19,7 +19,7 @@ function detectRuntimeFeatureByNodeModule (moduleName) {
   try {
     lazyLoaders[moduleName]()
     return true
-  } catch (err) {
+  } catch (_err) {
     if (err.code !== 'ERR_UNKNOWN_BUILTIN_MODULE' && err.code !== 'ERR_NO_CRYPTO') {
       throw err
     }

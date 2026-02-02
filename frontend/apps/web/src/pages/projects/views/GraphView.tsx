@@ -2,13 +2,15 @@
 // Provides separated views: traceability, page flow, component library, and perspectives
 // Uses Python backend for BOTH items and links so one DB source (avoids 0 nodes when Go has no items).
 
-import { getAuthHeaders, getBackendURL } from "@/api/client";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { Badge } from "@tracertm/ui/components/Badge";
 import { Skeleton } from "@tracertm/ui/components/Skeleton";
 import { useEffect } from "react";
 import { UnifiedGraphView } from "@/components/graph";
+import client from "@/api/client";
+
+const { getAuthHeaders, getBackendURL } = client;
 
 /** Python backend base URL for graph data (items + links from same DB so nodes/edges match). */
 function getGraphBackendURL(): string {
@@ -110,7 +112,7 @@ export function GraphView({ projectId: projectIdProp }: GraphViewProps) {
 	// Continue fetching next pages as user explores
 	useEffect(() => {
 		if (itemsQuery.hasNextPage && !itemsQuery.isFetchingNextPage) {
-			itemsQuery.fetchNextPage();
+			void itemsQuery.fetchNextPage();
 		}
 	}, [
 		itemsQuery.hasNextPage,
@@ -120,7 +122,7 @@ export function GraphView({ projectId: projectIdProp }: GraphViewProps) {
 
 	useEffect(() => {
 		if (linksQuery.hasNextPage && !linksQuery.isFetchingNextPage) {
-			linksQuery.fetchNextPage();
+			void linksQuery.fetchNextPage();
 		}
 	}, [
 		linksQuery.hasNextPage,
@@ -131,10 +133,8 @@ export function GraphView({ projectId: projectIdProp }: GraphViewProps) {
 	const items = itemsQuery.data?.pages.flatMap((p: any) => p.items || []) || [];
 	const rawLinks =
 		linksQuery.data?.pages.flatMap((p: any) => p.links || []) || [];
-	const itemsTotal =
-		itemsQuery.data?.pages?.[itemsQuery.data.pages.length - 1]?.total ?? 0;
-	const linksTotal =
-		linksQuery.data?.pages?.[linksQuery.data.pages.length - 1]?.total ?? 0;
+	// const _itemsTotal = itemsQuery.data?.pages?.[itemsQuery.data.pages.length - 1]?.total ?? 0;
+	// const _linksTotal = linksQuery.data?.pages?.[linksQuery.data.pages.length - 1]?.total ?? 0;
 	const itemsLoading = itemsQuery.isLoading || itemsQuery.isFetching;
 	const linksLoading = linksQuery.isLoading || linksQuery.isFetching;
 	const isPriming = (itemsLoading || linksLoading) && items.length === 0;
@@ -157,12 +157,12 @@ export function GraphView({ projectId: projectIdProp }: GraphViewProps) {
 
 	const handleNavigateToItem = (itemId: string) => {
 		if (!resolvedProjectId) {
-			navigate({ to: "/projects" });
+			void navigate({ to: "/projects" });
 			return;
 		}
 		const item = visibleItems.find((node: any) => node.id === itemId) ?? items.find((node: any) => node.id === itemId);
 		const viewType = String(item?.view || "feature").toLowerCase();
-		navigate({
+		void navigate({
 			to: "/projects/$projectId/views/$viewType/$itemId",
 			params: { projectId: resolvedProjectId, viewType, itemId },
 		});

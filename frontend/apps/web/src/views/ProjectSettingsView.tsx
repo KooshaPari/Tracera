@@ -33,19 +33,19 @@ export function ProjectSettingsView({ projectId }: { projectId: string }) {
 	}, [project]);
 
 	const activeTab = useMemo(() => {
-		if (search?.tab === "integrations") return "integrations";
+		if (search?.tab === "integrations") {return "integrations";}
 		return "general";
 	}, [search]);
 
 	const handleSave = async () => {
-		if (!project) return;
+		if (!project) {return;}
 		try {
 			await updateProject.mutateAsync({
+				data: { description: description.trim(), name: name.trim() },
 				id: project.id,
-				data: { name: name.trim(), description: description.trim() },
 			});
 			toast.success("Project settings updated");
-		} catch (err) {
+		} catch {
 			toast.error("Failed to update project settings");
 		}
 	};

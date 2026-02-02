@@ -1,5 +1,43 @@
 import type { Meta, StoryObj } from "@storybook/react";
+import type { Item, Link } from "@tracertm/types";
 import { NodeDetailPanel } from "../NodeDetailPanel";
+import type { EnhancedNodeData } from "../types";
+
+const mockItem: Item = {
+	id: "item-1",
+	projectId: "proj-1",
+	view: "technical",
+	type: "feature",
+	title: "Button Component",
+	description: "A reusable button component with multiple variants",
+	status: "todo",
+	priority: "medium",
+	version: 1,
+	createdAt: new Date().toISOString(),
+	updatedAt: new Date().toISOString(),
+};
+
+const mockNode: EnhancedNodeData = {
+	id: "node-1",
+	item: mockItem,
+	type: "component",
+	status: "todo",
+	label: "Button Component",
+	perspective: ["technical"],
+	connections: { incoming: 2, outgoing: 3, total: 5, byType: {} },
+	depth: 0,
+	hasChildren: true,
+};
+
+const relatedItems: Item[] = [
+	{ ...mockItem, id: "item-2", title: "Input Component" },
+	{ ...mockItem, id: "item-3", title: "Form Component" },
+];
+
+const incomingLinks: Link[] = [];
+const outgoingLinks: Link[] = [];
+
+const noop = () => {};
 
 const meta: Meta<typeof NodeDetailPanel> = {
 	title: "Components/Graph/NodeDetailPanel",
@@ -17,44 +55,41 @@ const meta: Meta<typeof NodeDetailPanel> = {
 	},
 	argTypes: {
 		onClose: { action: "closed" },
-		isOpen: {
-			control: "boolean",
-		},
+		onNavigateToItem: { action: "navigate" },
+		onFocusNode: { action: "focusNode" },
 	},
 };
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const mockNodeData = {
-	id: "node-1",
-	label: "Button Component",
-	type: "component",
-	properties: {
-		variant: "primary",
-		size: "medium",
-		disabled: false,
-	},
-	description: "A reusable button component with multiple variants",
-	relatedItems: 5,
-};
-
 /**
  * Open detail panel
  */
 export const Open: Story = {
 	args: {
-		isOpen: true,
-		node: mockNodeData,
+		node: mockNode,
+		relatedItems,
+		incomingLinks,
+		outgoingLinks,
+		onClose: noop,
+		onNavigateToItem: noop,
+		onFocusNode: noop,
 	},
 };
 
 /**
- * Closed detail panel
+ * Closed detail panel (node null)
  */
 export const Closed: Story = {
 	args: {
-		isOpen: false,
+		node: null,
+		relatedItems: [],
+		incomingLinks: [],
+		outgoingLinks: [],
+		onClose: noop,
+		onNavigateToItem: noop,
+		onFocusNode: noop,
 	},
 };
 
@@ -63,8 +98,13 @@ export const Closed: Story = {
  */
 export const Tablet: Story = {
 	args: {
-		isOpen: true,
-		node: mockNodeData,
+		node: mockNode,
+		relatedItems,
+		incomingLinks,
+		outgoingLinks,
+		onClose: noop,
+		onNavigateToItem: noop,
+		onFocusNode: noop,
 	},
 	parameters: {
 		viewport: {
@@ -78,8 +118,13 @@ export const Tablet: Story = {
  */
 export const DarkMode: Story = {
 	args: {
-		isOpen: true,
-		node: mockNodeData,
+		node: mockNode,
+		relatedItems,
+		incomingLinks,
+		outgoingLinks,
+		onClose: noop,
+		onNavigateToItem: noop,
+		onFocusNode: noop,
 	},
 	decorators: [
 		(Story) => (
@@ -98,24 +143,20 @@ export const DarkMode: Story = {
 };
 
 /**
- * With complex node data
+ * With more related items
  */
-export const ComplexNode: Story = {
+export const ManyRelated: Story = {
 	args: {
-		isOpen: true,
-		node: {
-			...mockNodeData,
-			properties: {
-				variant: ["primary", "secondary", "danger"],
-				size: ["small", "medium", "large"],
-				state: ["default", "hover", "active", "disabled"],
-				accessibility: {
-					ariaLabel: "Interactive button element",
-					role: "button",
-					tabIndex: 0,
-				},
-			},
-			relatedItems: 12,
-		},
+		node: { ...mockNode, connections: { ...mockNode.connections, total: 12 } },
+		relatedItems: [
+			...relatedItems,
+			{ ...mockItem, id: "item-4", title: "Card" },
+			{ ...mockItem, id: "item-5", title: "Modal" },
+		],
+		incomingLinks,
+		outgoingLinks,
+		onClose: noop,
+		onNavigateToItem: noop,
+		onFocusNode: noop,
 	},
 };

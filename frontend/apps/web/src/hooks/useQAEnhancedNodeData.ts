@@ -51,8 +51,8 @@ export function useQAEnhancedNodeData({
 				: undefined;
 
 		// Get latest execution for lastRunAt
-		const latest = completed.sort(
-			(a, b) =>
+		const latest = [...completed].sort(
+			(a: { completed_at?: string; created_at: string }, b: { completed_at?: string; created_at: string }) =>
 				new Date(b.completed_at || b.created_at).getTime() -
 				new Date(a.completed_at || a.created_at).getTime(),
 		)[0];
@@ -70,8 +70,8 @@ export function useQAEnhancedNodeData({
 	})();
 
 	// Get artifacts from latest execution
-	const latestExecution = itemExecutions.sort(
-		(a, b) =>
+	const latestExecution = [...itemExecutions].sort(
+		(a: { created_at: string }, b: { created_at: string }) =>
 			new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
 	)[0];
 

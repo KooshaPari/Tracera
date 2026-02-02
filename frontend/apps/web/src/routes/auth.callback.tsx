@@ -5,7 +5,6 @@ import { AlertCircle, CheckCircle, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { AUTH_ROUTES } from "@/config/constants";
 import { getReturnTo } from "@/lib/auth-utils";
-import { useAuthStore } from "@/stores/authStore";
 
 /**
  * OAuth Callback Route for WorkOS Authentication
@@ -22,6 +21,10 @@ import { useAuthStore } from "@/stores/authStore";
  * 5. Redirects to returnTo URL or dashboard
  */
 
+function handleCancel() {
+	window.location.href = "/home";
+}
+
 interface CallbackState {
 	status: "loading" | "success" | "error";
 	message: string;
@@ -30,7 +33,7 @@ interface CallbackState {
 function AuthCallback() {
 	const navigate = useNavigate();
 	const { user, isLoading } = useAuth();
-	const setAuthFromWorkOS = useAuthStore((state) => state.setAuthFromWorkOS);
+// 	const _setAuthFromWorkOS = useAuthStore((state) => state.setAuthFromWorkOS);
 	const [state, setState] = useState<CallbackState>({
 		status: "loading",
 		message: "Processing authentication...",
@@ -84,7 +87,7 @@ function AuthCallback() {
 		// Use a small delay to show success state
 		const redirectTimeout = setTimeout(() => {
 			// Use navigate for proper router integration
-			navigate({ to: returnTo });
+			void navigate({ to: returnTo });
 		}, 500);
 
 		return () => clearTimeout(redirectTimeout);
@@ -101,11 +104,6 @@ function AuthCallback() {
 		setTimeout(() => {
 			window.location.href = AUTH_ROUTES.LOGIN;
 		}, 500);
-	};
-
-	// Handle cancel - redirect to dashboard
-	const handleCancel = () => {
-		window.location.href = "/home";
 	};
 
 	return (

@@ -35,7 +35,7 @@ const statusColors: Record<ScenarioStatus, string> = {
 	skipped: "bg-muted text-muted-foreground border-border",
 };
 
-const statusIcons: Record<ScenarioStatus, any> = {
+const statusIcons: Record<ScenarioStatus, React.ComponentType<{ className?: string }>> = {
 	draft: FileText,
 	pending: Clock,
 	passing: CheckCircle2,

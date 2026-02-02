@@ -991,7 +991,7 @@ const HelpFormatter = _camelcase_alias(
 					let formats;
 					try {
 						formats = range(action.nargs).map(() => "%s");
-					} catch (err) {
+					} catch (_err) {
 						throw new TypeError("invalid nargs value");
 					}
 					result = sub(formats.join(" "), ...get_metavar(action.nargs));
@@ -2301,7 +2301,7 @@ const _ActionsContainer = _camelcase_alias(
 				if ("_get_formatter" in this) {
 					try {
 						this._get_formatter()._format_args(action, undefined);
-					} catch (err) {
+					} catch (_err) {
 						// check for 'invalid nargs value' is an artifact of TypeError and ValueError in js being the same
 						if (
 							err instanceof TypeError &&
@@ -2933,7 +2933,7 @@ const ArgumentParser = _camelcase_alias(
 				if (this.exit_on_error) {
 					try {
 						[namespace, args] = this._parse_known_args(args, namespace);
-					} catch (err) {
+					} catch (_err) {
 						if (err instanceof ArgumentError) {
 							this.error(err.message);
 						} else {
@@ -3289,7 +3289,7 @@ const ArgumentParser = _camelcase_alias(
 							}
 							arg_strings = this._read_args_from_files(arg_strings);
 							new_arg_strings = new_arg_strings.concat(arg_strings);
-						} catch (err) {
+						} catch (_err) {
 							this.error(err.message);
 						}
 					}
@@ -3682,7 +3682,7 @@ const ArgumentParser = _camelcase_alias(
 				if (![PARSER, REMAINDER].includes(action.nargs)) {
 					try {
 						_array_remove(arg_strings, "--");
-					} catch (err) {}
+					} catch (_err) {}
 				}
 
 				let value;
@@ -3758,7 +3758,7 @@ const ArgumentParser = _camelcase_alias(
 				try {
 					try {
 						result = type_func(arg_string);
-					} catch (err) {
+					} catch (_err) {
 						// Dear TC39, why would you ever consider making es6 classes not callable?
 						// We had one universal interface, [[Call]], which worked for anything
 						// (with familiar this-instanceof guard for classes). Now we have two.
@@ -3774,7 +3774,7 @@ const ArgumentParser = _camelcase_alias(
 							throw err;
 						}
 					}
-				} catch (err) {
+				} catch (_err) {
 					// ArgumentTypeErrors indicate errors
 					if (err instanceof ArgumentTypeError) {
 						//let name = getattr(action.type, 'name', repr(action.type))

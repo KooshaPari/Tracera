@@ -2,6 +2,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import type { Version } from "../TemporalNavigator";
 import { TimelineView } from "../TimelineView";
+import { logger } from '@/lib/logger';
 
 const meta = {
 	title: "Temporal/TimelineView",

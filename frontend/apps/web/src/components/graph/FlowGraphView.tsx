@@ -481,7 +481,7 @@ function FlowGraphViewInner({
 		}
 	};
 
-	const handleFit = () => fitView({ padding: 0.2, duration: 300 });
+	const handleFit = () => void fitView({ padding: 0.2, duration: 300 });
 	const handleReset = () => {
 		setPerspective("all");
 		setLayout("force");
@@ -495,7 +495,7 @@ function FlowGraphViewInner({
 		// Find the node and center on it
 		const node = nodes.find((n) => n.id === nodeId);
 		if (node) {
-			fitView({ nodes: [node], padding: 0.5, duration: 300 });
+			void fitView({ nodes: [node], padding: 0.5, duration: 300 });
 		}
 	};
 

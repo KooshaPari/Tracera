@@ -82,7 +82,7 @@ export function Transitioner() {
     const tryLoad = async () => {
       try {
         await router.load()
-      } catch (err) {
+      } catch (_err) {
         console.error(err)
       }
     }

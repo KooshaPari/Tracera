@@ -37,7 +37,7 @@ test("failed validation", () => {
 	};
 	try {
 		checker();
-	} catch (err) {
+	} catch (_err) {
 		if (err instanceof ZodError) {
 			expect(err.issues.length).toEqual(3);
 		}
@@ -52,7 +52,7 @@ test("failed async validation", async () => {
 	}
 	// try {
 	//   checker();
-	// } catch (err) {
+	// } catch (_err) {
 	//   if (err instanceof ZodError) {
 	//     expect(err.issues.length).toEqual(3);
 	//   }

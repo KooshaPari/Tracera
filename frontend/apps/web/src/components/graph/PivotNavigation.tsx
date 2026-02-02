@@ -82,13 +82,12 @@ const PERSPECTIVE_ICONS: Record<
 // =============================================================================
 
 function PivotNavigationComponent({
-	currentItem,
 	currentPerspective,
 	equivalentItems,
 	onPivot,
 	compact = false,
 	showEmpty = false,
-}: PivotNavigationProps) {
+}: Omit<PivotNavigationProps, 'currentItem'>) {
 	// Group equivalent items by perspective
 	const itemsByPerspective = useMemo(() => {
 		const grouped = new Map<GraphPerspective, PivotTarget[]>();
@@ -284,11 +283,10 @@ interface CompactPivotNavigationProps {
 }
 
 function CompactPivotNavigation({
-	currentPerspective,
 	itemsByPerspective,
 	perspectivesWithItems,
 	onPivot,
-}: CompactPivotNavigationProps) {
+}: Omit<CompactPivotNavigationProps, 'currentPerspective'>) {
 	const totalEquivalents = Array.from(itemsByPerspective.values()).reduce(
 		(sum, items) => sum + items.length,
 		0,
@@ -318,7 +316,7 @@ function CompactPivotNavigation({
 								const items = itemsByPerspective.get(config.id) || [];
 								if (items.length === 0) return null;
 
-								const Icon = PERSPECTIVE_ICONS[config.id] || Network;
+// 								const _Icon = PERSPECTIVE_ICONS[config.id] || Network;
 
 								return (
 									<div key={config.id} className="space-y-1">
@@ -368,14 +366,14 @@ interface ConfidenceIndicatorProps {
 	confidence: number;
 }
 
-function ConfidenceIndicator({ confidence }: ConfidenceIndicatorProps) {
-	const getColor = (conf: number) => {
-		if (conf >= 0.9) return "bg-green-500";
-		if (conf >= 0.7) return "bg-amber-500";
-		if (conf >= 0.5) return "bg-orange-500";
-		return "bg-red-500";
-	};
+function getConfidenceColor(conf: number): string {
+	if (conf >= 0.9) return "bg-green-500";
+	if (conf >= 0.7) return "bg-amber-500";
+	if (conf >= 0.5) return "bg-orange-500";
+	return "bg-red-500";
+}
 
+function ConfidenceIndicator({ confidence }: ConfidenceIndicatorProps) {
 	return (
 		<Tooltip delayDuration={200}>
 			<TooltipTrigger asChild>
@@ -384,8 +382,8 @@ function ConfidenceIndicator({ confidence }: ConfidenceIndicatorProps) {
 						<div
 							key={threshold}
 							className={`w-1 h-2 rounded-sm ${
-								confidence >= threshold
-									? getColor(confidence)
+									confidence >= threshold
+									? getConfidenceColor(confidence)
 									: "bg-muted-foreground/20"
 							}`}
 						/>
@@ -455,7 +453,7 @@ export function buildPivotTargets(
 		});
 	}
 
-	return results.sort((a, b) => b.confidence - a.confidence);
+    return results.toSorted((a, b) => b.confidence - a.confidence);
 }
 
 function getPerspectiveForItem(item: Item): GraphPerspective {

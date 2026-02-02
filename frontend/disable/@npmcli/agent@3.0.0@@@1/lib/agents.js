@@ -95,7 +95,7 @@ module.exports = class Agent extends AgentBase {
     try {
       result = await Promise.race(promises)
       ac.abort()
-    } catch (err) {
+    } catch (_err) {
       ac.abort()
       throw err
     }

@@ -6,7 +6,7 @@ import { requireAuth } from "@/lib/route-guards";
 
 const ProjectsListView = lazy(() =>
 	import("@/views/ProjectsListView").then((m) => {
-		const Comp = m.ProjectsListView ?? m.default;
+		const Comp = m.ProjectsListView;
 		if (Comp == null) {
 			logger.error("ProjectsListView module did not export a component", m);
 			return {

@@ -719,7 +719,7 @@ declare module "process" {
                  * try {
                  *   chdir('/tmp');
                  *   console.log(`New directory: ${cwd()}`);
-                 * } catch (err) {
+                 * } catch (_err) {
                  *   console.error(`chdir: ${err}`);
                  * }
                  * ```
@@ -1100,7 +1100,7 @@ declare module "process" {
                  *   try {
                  *     process.setgid(501);
                  *     console.log(`New gid: ${process.getgid()}`);
-                 *   } catch (err) {
+                 *   } catch (_err) {
                  *     console.log(`Failed to set gid: ${err}`);
                  *   }
                  * }
@@ -1144,7 +1144,7 @@ declare module "process" {
                  *   try {
                  *     process.setuid(501);
                  *     console.log(`New uid: ${process.getuid()}`);
-                 *   } catch (err) {
+                 *   } catch (_err) {
                  *     console.log(`Failed to set uid: ${err}`);
                  *   }
                  * }
@@ -1187,7 +1187,7 @@ declare module "process" {
                  *   try {
                  *     process.seteuid(501);
                  *     console.log(`New uid: ${process.geteuid()}`);
-                 *   } catch (err) {
+                 *   } catch (_err) {
                  *     console.log(`Failed to set uid: ${err}`);
                  *   }
                  * }
@@ -1231,7 +1231,7 @@ declare module "process" {
                  *   try {
                  *     process.setegid(501);
                  *     console.log(`New gid: ${process.getegid()}`);
-                 *   } catch (err) {
+                 *   } catch (_err) {
                  *     console.log(`Failed to set gid: ${err}`);
                  *   }
                  * }
@@ -1276,7 +1276,7 @@ declare module "process" {
                  *   try {
                  *     process.setgroups([501]);
                  *     console.log(process.getgroups()); // new groups
-                 *   } catch (err) {
+                 *   } catch (_err) {
                  *     console.log(`Failed to set groups: ${err}`);
                  *   }
                  * }

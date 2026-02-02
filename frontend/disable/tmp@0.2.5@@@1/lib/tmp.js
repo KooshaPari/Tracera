@@ -89,7 +89,7 @@ function tmpName(options, callback) {
 
           cb(null, name);
         });
-      } catch (err) {
+      } catch (_err) {
         cb(err);
       }
     })();
@@ -618,7 +618,7 @@ function _assertAndSanitizeOptions(options, cb) {
 
     try {
       _assertOptionsBase(options, tmpDir);
-    } catch (err) {
+    } catch (_err) {
       return cb(err);
     }
 

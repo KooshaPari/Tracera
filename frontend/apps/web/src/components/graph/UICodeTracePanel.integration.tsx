@@ -4,8 +4,9 @@
  */
 
 import type { CodeReference } from "@tracertm/types";
-import { useCallback, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { type UICodeTraceChain, UICodeTracePanel } from "./UICodeTracePanel";
+import { logger } from '@/lib/logger';
 
 // =============================================================================
 // EXAMPLE 1: Basic Integration with State Management
@@ -16,10 +17,11 @@ import { type UICodeTraceChain, UICodeTracePanel } from "./UICodeTracePanel";
  * and handle user interactions
  */
 export function BasicUICodeTracePanelExample() {
-	const [traceChain, setTraceChain] = useState<UICodeTraceChain | null>(null);
+	const [traceChain, _setTraceChain] = useState<UICodeTraceChain | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
 
 	// Simulate fetching trace chain from API
+	/*
 	const handleFetchTraceChain = useCallback(async (componentId: string) => {
 		setIsLoading(true);
 		try {
@@ -34,6 +36,7 @@ export function BasicUICodeTracePanelExample() {
 			setIsLoading(false);
 		}
 	}, []);
+	*/
 
 	const handleOpenCode = useCallback((codeRef: CodeReference) => {
 		// Option 1: VS Code Extension
@@ -153,7 +156,7 @@ export function AtomStateIntegrationExample() {
 	// const [traceHistory, setTraceHistory] = useAtom(traceHistoryAtom);
 
 	// Mock state
-	const [selectedTrace, setSelectedTrace] = useState<UICodeTraceChain | null>(
+	const [selectedTrace, _setSelectedTrace] = useState<UICodeTraceChain | null>(
 		null,
 	);
 	const [isRefreshing, setIsRefreshing] = useState(false);
@@ -188,7 +191,7 @@ export function AtomStateIntegrationExample() {
  */
 export function SidePanelLayoutExample() {
 	const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
-	const [traceChain, setTraceChain] = useState<UICodeTraceChain | null>(null);
+	const [traceChain, _setTraceChain] = useState<UICodeTraceChain | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
 
 	const handleSelectItem = useCallback(async (itemId: string) => {
@@ -260,9 +263,9 @@ export function SidePanelLayoutExample() {
  */
 export function ModalDialogExample() {
 	const [isOpen, setIsOpen] = useState(false);
-	const [traceChain, setTraceChain] = useState<UICodeTraceChain | null>(null);
+	const [traceChain, _setTraceChain] = useState<UICodeTraceChain | null>(null);
 
-	const handleOpenTraceModal = useCallback(async (componentId: string) => {
+	const handleOpenTraceModal = useCallback(async (_componentId: string) => {
 		// Fetch trace data
 		// const trace = await api.traces.getUICodeTrace({ componentId });
 		// setTraceChain(trace);
@@ -343,9 +346,9 @@ export function ErrorHandlingExample() {
 			// setTraceChain(trace);
 			void componentId;
 			setTraceChain(null);
-		} catch (err) {
+		} catch (error) {
 			const message =
-				err instanceof Error ? err.message : "Failed to fetch trace chain";
+				error instanceof Error ? error.message : "Failed to fetch trace chain";
 			setError(message);
 			setTraceChain(null);
 		} finally {
@@ -384,7 +387,7 @@ export function ErrorHandlingExample() {
  * Good for bookmarkable trace chains
  */
 export function URLSearchParamsExample() {
-	const [traceChain, setTraceChain] = useState<UICodeTraceChain | null>(null);
+	const [traceChain, _setTraceChain] = useState<UICodeTraceChain | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
 
 	// Get componentId from URL
@@ -406,7 +409,7 @@ export function URLSearchParamsExample() {
 
 	// Effect to fetch when component ID changes
 	React.useEffect(() => {
-		fetchTrace();
+		void fetchTrace();
 	}, [fetchTrace]);
 
 	return (
@@ -427,7 +430,7 @@ export function URLSearchParamsExample() {
  * Helps users understand context in the trace hierarchy
  */
 export function BreadcrumbNavigationExample() {
-	const [traceChain, setTraceChain] = useState<UICodeTraceChain | null>(null);
+	const [traceChain, _setTraceChain] = useState<UICodeTraceChain | null>(null);
 	const [selectedLevelIndex, setSelectedLevelIndex] = useState(0);
 
 	const selectedLevel = traceChain?.levels[selectedLevelIndex];
@@ -484,7 +487,7 @@ export function BreadcrumbNavigationExample() {
  * Example showing how to track user interactions for analytics
  */
 export function AnalyticsIntegrationExample() {
-	const [traceChain, setTraceChain] = useState<UICodeTraceChain | null>(null);
+	const [traceChain, _setTraceChain] = useState<UICodeTraceChain | null>(null);
 
 	const trackEvent = (eventName: string, data: Record<string, unknown>) => {
 		// Send to analytics service
@@ -527,7 +530,7 @@ export function AnalyticsIntegrationExample() {
  * Example showing how to export trace chain as JSON or PDF
  */
 export function ExportShareExample() {
-	const [traceChain, setTraceChain] = useState<UICodeTraceChain | null>(null);
+	const [traceChain, _setTraceChain] = useState<UICodeTraceChain | null>(null);
 
 	const handleExportJSON = () => {
 		if (!traceChain) return;
@@ -545,7 +548,7 @@ export function ExportShareExample() {
 		if (!traceChain) return;
 
 		const url = `${window.location.origin}?trace=${traceChain.id}`;
-		navigator.clipboard.writeText(url);
+		void navigator.clipboard.writeText(url);
 		alert("Trace link copied to clipboard!");
 	};
 

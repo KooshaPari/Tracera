@@ -54,8 +54,8 @@ describe("useKeyPress Hook", () => {
 		});
 
 		it("should not match when ctrl not pressed but required", () => {
-			const ctrlRequired = true;
-			const ctrlPressed = false;
+			const ctrlRequired: boolean = true;
+			const ctrlPressed: boolean = false;
 			const matches =
 				ctrlRequired === undefined || ctrlPressed === ctrlRequired;
 			expect(matches).toBe(false);
@@ -132,7 +132,7 @@ describe("useKeyPress Hook", () => {
 		it("should support event listener registration", () => {
 			// Mock addEventListener
 			const listeners = {} as Record<string, any[]>;
-			const mockAddEventListener = vi.fn((event: string, handler: any) => {
+			const mockAddEventListener = vi.fn((event: string, handler: EventListener) => {
 				if (!listeners[event]) listeners[event] = [];
 				listeners[event].push(handler);
 			});

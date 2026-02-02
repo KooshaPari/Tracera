@@ -16,7 +16,7 @@ function Login() {
 			window.location.href = "/home";
 		} else if (!isLoading && !user) {
 			// Not logged in, immediately redirect to WorkOS
-			signIn();
+			void signIn();
 		}
 	}, [user, isLoading, signIn]);
 

@@ -43,9 +43,9 @@ export function ScenarioDetailView() {
 					variant="ghost"
 					onClick={() =>
 						navigate({
-							to: "/projects/$projectId/specifications",
 							params: { projectId: params.projectId || "" },
 							search: { tab: "features" },
+							to: "/projects/$projectId/specifications",
 						})
 					}
 				>
@@ -65,11 +65,11 @@ export function ScenarioDetailView() {
 				variant="ghost"
 				onClick={() =>
 					navigate({
-						to: "/projects/$projectId/features/$featureId",
 						params: {
-							projectId: params.projectId || "",
 							featureId: params.featureId || "",
+							projectId: params.projectId || "",
 						},
+						to: "/projects/$projectId/features/$featureId",
 					})
 				}
 			>

@@ -134,7 +134,7 @@ export class RedoclyClient {
 			await this.verifyToken(accessToken);
 
 			return true;
-		} catch (err) {
+		} catch (_err) {
 			return false;
 		}
 	}
@@ -161,7 +161,7 @@ export class RedoclyClient {
 
 		try {
 			await this.verifyToken(accessToken, verbose);
-		} catch (err) {
+		} catch (_err) {
 			throw new Error(
 				"Authorization failed. Please check if you entered a valid API key.",
 			);

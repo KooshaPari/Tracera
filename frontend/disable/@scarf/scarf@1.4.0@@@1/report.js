@@ -116,7 +116,7 @@ function hashWithDefault(toHash, defaultReturn) {
 	let crypto;
 	try {
 		crypto = require("crypto");
-	} catch (err) {
+	} catch (_err) {
 		logIfVerbose("node crypto module unavailable");
 	}
 
@@ -254,7 +254,7 @@ function processDependencyTreeOutput(resolve, reject) {
 			}
 
 			return resolve(dependencyToReport);
-		} catch (err) {
+		} catch (_err) {
 			logIfVerbose(err, console.error);
 			return reject(err);
 		}
@@ -312,7 +312,7 @@ async function getDependencyInfo(packageJSONOverride) {
 			logIfVerbose(util.inspect(shallowDepInfo));
 			return shallowDepInfo;
 		}
-	} catch (err) {
+	} catch (_err) {
 		logIfVerbose(err, console.error);
 	}
 
@@ -471,7 +471,7 @@ async function reportPostInstall() {
 									);
 								}
 								return afterUserInput(enabled, savePreference);
-							} catch (err) {
+							} catch (_err) {
 								logIfVerbose(err, console.error);
 								return reject(err);
 							}

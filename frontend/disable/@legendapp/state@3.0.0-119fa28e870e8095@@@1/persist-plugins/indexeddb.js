@@ -66,7 +66,7 @@ var ObservablePersistIndexedDB = class {
         try {
           const transaction = this.db.transaction(tables, "readonly");
           await Promise.all(tables.map((table) => this.initTable(table, transaction)));
-        } catch (err) {
+        } catch (_err) {
           console.error("[legend-state] Error loading IndexedDB", err);
         }
         resolve();

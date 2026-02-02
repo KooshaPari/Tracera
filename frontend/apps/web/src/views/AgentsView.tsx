@@ -15,48 +15,52 @@ interface AgentSummary {
 
 const fallbackAgents: AgentSummary[] = [
 	{
+		capabilities: ["sync", "dependency-check"],
 		id: "agent-1",
+		lastRun: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
 		name: "Sync Agent",
 		status: "active",
 		tasksCompleted: 24,
-		lastRun: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
-		capabilities: ["sync", "dependency-check"],
 	},
 	{
+		capabilities: ["validation", "quality-checks"],
 		id: "agent-2",
+		lastRun: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
 		name: "Validation Agent",
 		status: "idle",
 		tasksCompleted: 12,
-		lastRun: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-		capabilities: ["validation", "quality-checks"],
 	},
 	{
+		capabilities: ["coverage-report", "test-execution"],
 		id: "agent-3",
+		lastRun: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
 		name: "Coverage Agent",
 		status: "running",
 		tasksCompleted: 7,
-		lastRun: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-		capabilities: ["coverage-report", "test-execution"],
 	},
 ];
 
 const statusVariant = (status: AgentStatus) => {
 	switch (status) {
-		case "active":
+		case "active": {
 			return "default";
-		case "running":
+		}
+		case "running": {
 			return "secondary";
-		case "idle":
+		}
+		case "idle": {
 			return "outline";
-		default:
+		}
+		default: {
 			return "outline";
+		}
 	}
 };
 
 const formatLastRun = (iso?: string) => {
-	if (!iso) return "Last run: —";
+	if (!iso) {return "Last run: —";}
 	const date = new Date(iso);
-	if (Number.isNaN(date.getTime())) return "Last run: —";
+	if (Number.isNaN(date.getTime())) {return "Last run: —";}
 	return `Last run: ${date.toLocaleString()}`;
 };
 
@@ -68,18 +72,18 @@ export function AgentsView() {
 		const load = async () => {
 			try {
 				const response = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:4000"}/api/v1/agents`);
-				if (!response.ok) return;
+				if (!response.ok) {return;}
 				const data = await response.json();
 				const list = Array.isArray(data) ? data : data?.agents;
 				if (active && Array.isArray(list) && list.length > 0) {
 					setAgents(
 						list.map((agent: any) => ({
+							capabilities: agent.capabilities ?? [],
 							id: String(agent.id ?? agent.agent_id ?? agent.name),
+							lastRun: agent.lastRun ?? agent.last_run ?? agent.lastHeartbeat,
 							name: String(agent.name ?? "Agent"),
 							status: (agent.status ?? "idle") as AgentStatus,
 							tasksCompleted: agent.tasksCompleted ?? agent.tasks_completed ?? 0,
-							lastRun: agent.lastRun ?? agent.last_run ?? agent.lastHeartbeat,
-							capabilities: agent.capabilities ?? [],
 						})),
 					);
 				}
@@ -88,7 +92,7 @@ export function AgentsView() {
 			}
 		};
 
-		load();
+		undefined;
 		return () => {
 			active = false;
 		};

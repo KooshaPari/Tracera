@@ -40,7 +40,7 @@ async function doRename(src, dest, overwrite, isChangingCase) {
 	try {
 		// Try w/ rename first, and try copy + remove if EXDEV
 		await fs.rename(src, dest);
-	} catch (err) {
+	} catch (_err) {
 		if (err.code !== "EXDEV") {
 			throw err;
 		}

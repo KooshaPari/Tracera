@@ -234,7 +234,7 @@ BunserBuf.prototype.append = function (buf, synchronous) {
 
 	try {
 		this.buf.append(buf);
-	} catch (err) {
+	} catch (_err) {
 		this.emit("error", err);
 		return;
 	}
@@ -249,7 +249,7 @@ BunserBuf.prototype.processLater = function () {
 	process.nextTick(() => {
 		try {
 			this.process(false);
-		} catch (err) {
+		} catch (_err) {
 			this.emit("error", err);
 		}
 	});

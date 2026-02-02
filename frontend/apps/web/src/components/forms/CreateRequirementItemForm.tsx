@@ -129,10 +129,10 @@ export function CreateRequirementItemForm({
 	const onSubmitWithAnnouncement = useCallback(
 		async (data: RequirementItemFormData) => {
 			try {
-				await onSubmit(data);
+				await Promise.resolve(onSubmit(data));
 				announceToScreenReader("Requirement created successfully", "polite");
-			} catch (error) {
-				announceToScreenReader(
+} catch {
+                announceToScreenReader(
 					"Error creating requirement. Please check the form and try again.",
 					"assertive",
 				);

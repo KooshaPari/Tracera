@@ -6,7 +6,8 @@
  * Implements ISO 29148 quality visualization.
  */
 
-import { isRequirementItem, type RequirementItem } from "@tracertm/types";
+import { isRequirementItem } from '@tracertm/types';
+import type { RequirementItem } from '@tracertm/types';
 import {
 	Badge,
 	Button,
@@ -54,120 +55,120 @@ interface RequirementDetailViewProps {
 // =============================================================================
 
 const EARS_PATTERN_STYLES = {
-	ubiquitous: {
-		bg: "bg-purple-500/10",
-		text: "text-purple-600",
-		border: "border-purple-500/30",
-		label: "Ubiquitous",
-		description: "Always applies - no conditions",
-		example: "The system shall encrypt all stored passwords",
-	},
-	event_driven: {
-		bg: "bg-blue-500/10",
-		text: "text-blue-600",
-		border: "border-blue-500/30",
-		label: "Event-Driven",
-		description: "When <trigger> occurs",
-		example: "When user clicks submit, the system shall validate form data",
-	},
-	state_driven: {
-		bg: "bg-green-500/10",
-		text: "text-green-600",
-		border: "border-green-500/30",
-		label: "State-Driven",
-		description: "While <state> holds",
-		example: "While offline mode is active, the system shall queue requests",
-	},
-	optional: {
-		bg: "bg-amber-500/10",
-		text: "text-amber-600",
-		border: "border-amber-500/30",
-		label: "Optional",
-		description: "Where <feature> is enabled",
-		example: "Where debug mode is enabled, the system shall log all events",
-	},
-	unwanted: {
-		bg: "bg-red-500/10",
-		text: "text-red-600",
-		border: "border-red-500/30",
-		label: "Unwanted",
-		description: "Shall not behavior",
-		example: "The system shall not store credit card numbers in plain text",
-	},
 	complex: {
 		bg: "bg-indigo-500/10",
-		text: "text-indigo-600",
 		border: "border-indigo-500/30",
-		label: "Complex",
 		description: "Multi-condition requirement",
 		example:
 			"When user logs in, while session is valid, the system shall grant access",
+		label: "Complex",
+		text: "text-indigo-600",
+	},
+	event_driven: {
+		bg: "bg-blue-500/10",
+		border: "border-blue-500/30",
+		description: "When <trigger> occurs",
+		example: "When user clicks submit, the system shall validate form data",
+		label: "Event-Driven",
+		text: "text-blue-600",
+	},
+	optional: {
+		bg: "bg-amber-500/10",
+		border: "border-amber-500/30",
+		description: "Where <feature> is enabled",
+		example: "Where debug mode is enabled, the system shall log all events",
+		label: "Optional",
+		text: "text-amber-600",
+	},
+	state_driven: {
+		bg: "bg-green-500/10",
+		border: "border-green-500/30",
+		description: "While <state> holds",
+		example: "While offline mode is active, the system shall queue requests",
+		label: "State-Driven",
+		text: "text-green-600",
+	},
+	ubiquitous: {
+		bg: "bg-purple-500/10",
+		border: "border-purple-500/30",
+		description: "Always applies - no conditions",
+		example: "The system shall encrypt all stored passwords",
+		label: "Ubiquitous",
+		text: "text-purple-600",
+	},
+	unwanted: {
+		bg: "bg-red-500/10",
+		border: "border-red-500/30",
+		description: "Shall not behavior",
+		example: "The system shall not store credit card numbers in plain text",
+		label: "Unwanted",
+		text: "text-red-600",
 	},
 } as const;
 
 const RISK_LEVEL_STYLES = {
 	critical: {
 		bg: "bg-red-500",
-		text: "text-white",
 		icon: AlertCircle,
 		label: "Critical",
+		text: "text-white",
 	},
 	high: {
 		bg: "bg-orange-500",
-		text: "text-white",
 		icon: AlertTriangle,
 		label: "High",
-	},
-	medium: {
-		bg: "bg-yellow-500",
 		text: "text-white",
-		icon: AlertTriangle,
-		label: "Medium",
 	},
 	low: {
 		bg: "bg-green-500",
-		text: "text-white",
 		icon: CheckCircle2,
 		label: "Low",
+		text: "text-white",
+	},
+	medium: {
+		bg: "bg-yellow-500",
+		icon: AlertTriangle,
+		label: "Medium",
+		text: "text-white",
 	},
 	minimal: {
 		bg: "bg-blue-500",
-		text: "text-white",
 		icon: CheckCircle2,
 		label: "Minimal",
+		text: "text-white",
 	},
 } as const;
 
 const VERIFICATION_STATUS_STYLES = {
-	unverified: {
-		icon: Clock,
-		bg: "bg-muted",
-		text: "text-muted-foreground",
-		label: "Unverified",
-	},
-	pending: {
-		icon: Clock,
-		bg: "bg-yellow-500/10",
-		text: "text-yellow-600",
-		label: "Pending",
-	},
-	verified: {
-		icon: CheckCircle2,
-		bg: "bg-green-500/10",
-		text: "text-green-600",
-		label: "Verified",
+	expired: {
+		bg: "bg-orange-500/10",
+		icon: AlertTriangle,
+		label: "Expired",
+		text: "text-orange-600",
 	},
 	failed: {
-		icon: XCircle,
 		bg: "bg-red-500/10",
-		text: "text-red-600",
+		icon: XCircle,
 		label: "Failed",
+		text: "text-red-600",
 	},
-	expired: {
-		icon: AlertTriangle,
-		bg: "bg-orange-500/10",
-		text: "text-orange-600",
-		label: "Expired",
+	pending: {
+		bg: "bg-yellow-500/10",
+		icon: Clock,
+		label: "Pending",
+		text: "text-yellow-600",
+	},
+	unverified: {
+		bg: "bg-muted",
+		icon: Clock,
+		label: "Unverified",
+		text: "text-muted-foreground",
+	},
+	verified: {
+		bg: "bg-green-500/10",
+		icon: CheckCircle2,
+		label: "Verified",
+		text: "text-green-600",
 	},
 } as const;
 
@@ -188,9 +189,9 @@ function QualityGauge({
 	const color =
 		percentage >= 80
 			? "bg-green-500"
-			: percentage >= 60
+			: (percentage >= 60
 				? "bg-yellow-500"
-				: "bg-red-500";
+				: "bg-red-500");
 
 	return (
 		<div className={cn("space-y-2", className)}>
@@ -322,12 +323,12 @@ export function RequirementDetailView({
 
 	// Calculate quality metrics
 	const qualityScores = {
-		verifiability: spec.testability_score || 0,
+		clarity: spec.completeness_score || 0,
 		traceability:
 			spec.upstream_count + spec.downstream_count > 0
 				? Math.min((spec.upstream_count + spec.downstream_count) / 10, 1)
 				: 0,
-		clarity: spec.completeness_score || 0,
+		verifiability: spec.testability_score || 0,
 	};
 
 	return (
@@ -724,9 +725,9 @@ export function RequirementDetailView({
 														"p-3 rounded-lg flex items-start gap-3",
 														issue.severity === "error"
 															? "bg-red-500/10 border border-red-500/20"
-															: issue.severity === "warning"
+															: (issue.severity === "warning"
 																? "bg-yellow-500/10 border border-yellow-500/20"
-																: "bg-blue-500/10 border border-blue-500/20",
+																: "bg-blue-500/10 border border-blue-500/20"),
 													)}
 												>
 													<AlertCircle
@@ -734,9 +735,9 @@ export function RequirementDetailView({
 															"h-4 w-4 shrink-0 mt-0.5",
 															issue.severity === "error"
 																? "text-red-600"
-																: issue.severity === "warning"
+																: (issue.severity === "warning"
 																	? "text-yellow-600"
-																	: "text-blue-600",
+																	: "text-blue-600"),
 														)}
 													/>
 													<div className="flex-1 space-y-1">

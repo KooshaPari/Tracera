@@ -11,8 +11,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { render, waitFor, screen, within } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, waitFor, screen } from '@testing-library/react';
 import { HybridGraphView } from '@/components/graph/HybridGraphView';
 import {
   generateSyntheticGraph,

@@ -144,15 +144,15 @@ export function useClustering(
 			setClustering(result);
 
 			// Initialize active clusters at highest level
-			const highestLevel = result.maxLevel;
-			const topLevelClusters = result.hierarchy.get(highestLevel) || [];
+			const highestLevel = result['maxLevel'];
+			const topLevelClusters = result['hierarchy'].get(highestLevel) || [];
 			setExpansionState({
 				expandedClusters: new Set(),
 				visibleItems: new Set(),
 				activeClusters: new Set(topLevelClusters.map((c) => c.id)),
 			});
-		} catch (err) {
-			setError(err instanceof Error ? err : new Error(String(err)));
+		} catch (error) {
+			setError(error instanceof Error ? error : new Error(String(error)));
 			setClustering(null);
 		} finally {
 			setIsProcessing(false);

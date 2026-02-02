@@ -162,7 +162,7 @@ function tryConnect(options, timeout) {
 					return resolve(true);
 				});
 			});
-		} catch (err) {
+		} catch (_err) {
 			//  Trying to open the socket has resulted in an exception we don't
 			//  understand. Better give up.
 			debug(`Unexpected exception trying to open socket: ${err}`);

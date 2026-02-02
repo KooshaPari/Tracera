@@ -123,7 +123,7 @@ test.describe("Bulk Item Selection", () => {
 
 			// All checkboxes should be checked
 			const allCheckboxes = page.locator('input[type="checkbox"]');
-			const checkboxCount = await allCheckboxes.count();
+			const _checkboxCount = await allCheckboxes.count();
 
 			// Wait for all to be checked
 			await page.waitForTimeout(300);

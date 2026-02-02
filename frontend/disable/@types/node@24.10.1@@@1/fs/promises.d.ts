@@ -620,7 +620,7 @@ declare module "fs/promises" {
 	 *   const createDir = await mkdir(projectFolder, { recursive: true });
 	 *
 	 *   console.log(`created ${createDir}`);
-	 * } catch (err) {
+	 * } catch (_err) {
 	 *   console.error(err.message);
 	 * }
 	 * ```
@@ -675,7 +675,7 @@ declare module "fs/promises" {
 	 *   const files = await readdir(path);
 	 *   for (const file of files)
 	 *     console.log(file);
-	 * } catch (err) {
+	 * } catch (_err) {
 	 *   console.error(err);
 	 * }
 	 * ```
@@ -984,7 +984,7 @@ declare module "fs/promises" {
 	 *
 	 * try {
 	 *   await mkdtemp(join(tmpdir(), 'foo-'));
-	 * } catch (err) {
+	 * } catch (_err) {
 	 *   console.error(err);
 	 * }
 	 * ```
@@ -1079,7 +1079,7 @@ declare module "fs/promises" {
 	 *   controller.abort();
 	 *
 	 *   await promise;
-	 * } catch (err) {
+	 * } catch (_err) {
 	 *   // When a request is aborted - err is an AbortError
 	 *   console.error(err);
 	 * }
@@ -1158,7 +1158,7 @@ declare module "fs/promises" {
 	 *   const filePath = new URL('./package.json', import.meta.url);
 	 *   const contents = await readFile(filePath, { encoding: 'utf8' });
 	 *   console.log(contents);
-	 * } catch (err) {
+	 * } catch (_err) {
 	 *   console.error(err.message);
 	 * }
 	 * ```
@@ -1178,7 +1178,7 @@ declare module "fs/promises" {
 	 *   controller.abort();
 	 *
 	 *   await promise;
-	 * } catch (err) {
+	 * } catch (_err) {
 	 *   // When a request is aborted - err is an AbortError
 	 *   console.error(err);
 	 * }
@@ -1252,7 +1252,7 @@ declare module "fs/promises" {
 	 *   const dir = await opendir('./');
 	 *   for await (const dirent of dir)
 	 *     console.log(dirent.name);
-	 * } catch (err) {
+	 * } catch (_err) {
 	 *   console.error(err);
 	 * }
 	 * ```
@@ -1288,7 +1288,7 @@ declare module "fs/promises" {
 	 *     const watcher = watch(__filename, { signal });
 	 *     for await (const event of watcher)
 	 *       console.log(event);
-	 *   } catch (err) {
+	 *   } catch (_err) {
 	 *     if (err.name === 'AbortError')
 	 *       return;
 	 *     throw err;

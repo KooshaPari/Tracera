@@ -4,6 +4,7 @@
 
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { ItemStatus } from "../../api/types";
 import { useSearch } from "../../hooks/useSearch";
 import { createWrapper } from "../utils/test-utils";
 
@@ -82,8 +83,8 @@ describe("Search Flow Integration", () => {
 
 		act(() => {
 			result.current.updateQuery({
-				types: ["feature" as any],
-				statuses: ["in_progress" as any],
+				types: ["feature"],
+				statuses: ["in_progress" as ItemStatus],
 			});
 		});
 

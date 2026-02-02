@@ -12,13 +12,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-interface PerformanceMetrics {
-  fps: number;
-  queryTime: number;
-  memoryUsage: number;
-  renderTime: number;
-}
-
 interface TestResult {
   testName: string;
   target: string;
@@ -108,7 +101,7 @@ class VerificationTester {
       };
 
       // Simulate viewport culling
-      const visibleNodes = testData.nodes.filter((node: any) => {
+      const _visibleNodes = testData.nodes.filter((node: any) => {
         return (
           node.position.x > viewportBounds.minX &&
           node.position.x < viewportBounds.maxX &&
@@ -158,7 +151,7 @@ class VerificationTester {
       };
 
       // Simulate R-tree search (linear search for benchmark)
-      const visibleNodes = testData.nodes.filter((node: any) => {
+      const _visibleNodes = testData.nodes.filter((node: any) => {
         return (
           node.position.x > viewportBounds.minX &&
           node.position.x < viewportBounds.maxX &&
@@ -336,7 +329,7 @@ class VerificationTester {
       };
 
       // Simulate culling
-      const visibleNodes = testData.nodes.filter((node: any) => {
+      const _visibleNodes = testData.nodes.filter((node: any) => {
         return (
           node.position.x > viewport.x &&
           node.position.x < viewport.x + viewport.width &&
@@ -374,10 +367,10 @@ class VerificationTester {
 
     for (const zoom of zoomLevels) {
       // Simulate LOD level calculation
-      let lodLevel: string;
-      if (zoom >= 0.8) lodLevel = 'high';
-      else if (zoom >= 0.5) lodLevel = 'medium';
-      else lodLevel = 'low';
+      let _lodLevel: string;
+      if (zoom >= 0.8) _lodLevel = 'high';
+      else if (zoom >= 0.5) _lodLevel = 'medium';
+      else _lodLevel = 'low';
 
       // Simulate node filtering
       const viewport = {
@@ -387,7 +380,7 @@ class VerificationTester {
         height: 1080 / zoom,
       };
 
-      const visibleNodes = testData.nodes.filter((node: any) => {
+      const _visibleNodes = testData.nodes.filter((node: any) => {
         return (
           node.position.x > viewport.x &&
           node.position.x < viewport.x + viewport.width &&

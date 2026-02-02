@@ -78,7 +78,7 @@ const mockComponents: LibraryComponent[] = [
 
 describe("FigmaSyncPanel", () => {
 	it("renders null when syncState is null", () => {
-		const { container } = render(
+		render(
 			<FigmaSyncPanel syncState={null} components={[]} />,
 		);
 		expect(
@@ -311,7 +311,7 @@ describe("FigmaSyncPanel", () => {
 	});
 
 	it("applies custom className", () => {
-		const { container } = render(
+		render(
 			<FigmaSyncPanel
 				syncState={mockSyncState}
 				components={mockComponents}

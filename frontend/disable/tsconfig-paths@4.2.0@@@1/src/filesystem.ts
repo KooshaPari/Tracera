@@ -40,7 +40,7 @@ export function fileExistsSync(path: string): boolean {
   try {
     const stats = fs.statSync(path);
     return stats.isFile();
-  } catch (err) {
+  } catch (_err) {
     // If error, assume file did not exist
     return false;
   }

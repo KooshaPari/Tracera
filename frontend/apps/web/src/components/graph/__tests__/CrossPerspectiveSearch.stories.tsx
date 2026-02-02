@@ -252,7 +252,7 @@ const createSampleLinks = (): Link[] => [
 export const Default: Story = {
 	render: () => {
 		const [selectedId, setSelectedId] = useState<string | null>(null);
-		const [highlightedId, setHighlightedId] = useState<string | null>(null);
+		const [_highlightedId, setHighlightedId] = useState<string | null>(null);
 
 		return (
 			<div className="max-w-4xl mx-auto space-y-4">

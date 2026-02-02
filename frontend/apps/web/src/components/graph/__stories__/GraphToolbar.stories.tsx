@@ -7,6 +7,7 @@ import { GraphToolbar } from "../GraphToolbar";
 import { useState } from "react";
 import type { LayoutType } from "../layouts/useDAGLayout";
 import type { GraphPerspective } from "../types";
+import { logger } from '@/lib/logger';
 
 const meta: Meta<typeof GraphToolbar> = {
 	title: "Graph/GraphToolbar",
@@ -67,11 +68,6 @@ function ToolbarWrapper({ variant }: { variant?: "full" | "compact" | "minimal" 
 			visibleNodes={120}
 			totalEdges={300}
 			visibleEdges={250}
-			onReset={() => {
-				setPerspective("all");
-				setLayout("flow-chart");
-				setSelectedNodeTypes([]);
-			}}
 			onExport={(format) => logger.info("Export:", format)}
 			variant={variant}
 		/>

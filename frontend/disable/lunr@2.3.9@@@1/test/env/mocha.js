@@ -546,7 +546,7 @@
 						var w = ctx.measureText(text).width;
 
 						ctx.fillText(text, x - w / 2 + 1, y + fontSize / 2 - 1);
-					} catch (err) {
+					} catch (_err) {
 						// don't fail if we can't render progress
 					}
 					return this;
@@ -1480,7 +1480,7 @@
 							if (!_reporter) {
 								try {
 									_reporter = require(reporter);
-								} catch (err) {
+								} catch (_err) {
 									err.message.indexOf("Cannot find module") !== -1
 										? console.warn('"' + reporter + '" reporter not found')
 										: console.warn(
@@ -1519,7 +1519,7 @@
 						if (!this._ui) {
 							try {
 								this._ui = require(name);
-							} catch (err) {
+							} catch (_err) {
 								throw new Error('invalid interface "' + name + '"');
 							}
 						}
@@ -4766,7 +4766,7 @@
 									done(new Pending());
 								};
 								callFnAsync(this.fn);
-							} catch (err) {
+							} catch (_err) {
 								done(utils.getError(err));
 							}
 							return;
@@ -4785,7 +4785,7 @@
 							} else {
 								callFn(this.fn);
 							}
-						} catch (err) {
+						} catch (_err) {
 							done(utils.getError(err));
 						}
 
@@ -5326,7 +5326,7 @@
 								self.fail(test, err);
 							});
 							test.run(fn);
-						} catch (err) {
+						} catch (_err) {
 							fn(err);
 						}
 					};
@@ -7132,7 +7132,7 @@
 							if (stat.isFile()) {
 								return path;
 							}
-						} catch (err) {
+						} catch (_err) {
 							// ignore error
 							return;
 						}
@@ -7149,7 +7149,7 @@
 									}
 									return;
 								}
-							} catch (err) {
+							} catch (_err) {
 								// ignore error
 								return;
 							}

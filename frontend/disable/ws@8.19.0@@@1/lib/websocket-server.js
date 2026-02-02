@@ -279,7 +279,7 @@ class WebSocketServer extends EventEmitter {
     if (secWebSocketProtocol !== undefined) {
       try {
         protocols = subprotocol.parse(secWebSocketProtocol);
-      } catch (err) {
+      } catch (_err) {
         const message = 'Invalid Sec-WebSocket-Protocol header';
         abortHandshakeOrEmitwsClientError(this, req, socket, 400, message);
         return;
@@ -306,7 +306,7 @@ class WebSocketServer extends EventEmitter {
           perMessageDeflate.accept(offers[PerMessageDeflate.extensionName]);
           extensions[PerMessageDeflate.extensionName] = perMessageDeflate;
         }
-      } catch (err) {
+      } catch (_err) {
         const message =
           'Invalid or unacceptable Sec-WebSocket-Extensions header';
         abortHandshakeOrEmitwsClientError(this, req, socket, 400, message);

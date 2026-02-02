@@ -320,7 +320,7 @@ async function getFileSize(filePath) {
 	try {
 		const { size } = await fstat(filePath);
 		return size;
-	} catch (err) {
+	} catch (_err) {
 		return -1;
 	}
 }
@@ -382,7 +382,7 @@ async function httpCallSucceeds(output, httpOptions) {
 			)}`,
 		);
 		return true;
-	} catch (err) {
+	} catch (_err) {
 		output(`  HTTP(S) error for ${httpOptions.url} ${err.toString()}`);
 		return false;
 	}

@@ -195,7 +195,7 @@ export class Client {
     if (options?.forceRefresh || this.#shouldRefresh()) {
       try {
         await this.#refreshSession();
-      } catch (err) {
+      } catch (_err) {
         if (err instanceof RefreshError) {
           throw new LoginRequiredError();
         } else {

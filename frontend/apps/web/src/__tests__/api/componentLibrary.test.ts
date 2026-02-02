@@ -1,14 +1,38 @@
+import type {
+	ComponentLibrary,
+	ComponentUsage,
+	DesignToken,
+	LibraryComponent,
+} from "@tracertm/types";
 import { describe, expect, it } from "vitest";
-import {
-	type ComponentLibrary,
-	type ComponentUsage,
-	type CreateComponentLibraryInput,
-	type CreateDesignTokenInput,
-	type CreateLibraryComponentInput,
-	componentLibraryQueryKeys,
-	type DesignToken,
-	type LibraryComponent,
-} from "../../api/componentLibrary";
+import componentLibraryApi from "../../api/component-library";
+
+type CreateComponentLibraryInput = {
+	projectId: string;
+	name: string;
+	description?: string;
+	version?: string;
+};
+
+type CreateLibraryComponentInput = {
+	libraryId: string;
+	name: string;
+	description?: string;
+	category: string;
+	properties?: Record<string, unknown>;
+	variant?: string;
+};
+
+type CreateDesignTokenInput = {
+	libraryId: string;
+	name: string;
+	type: string;
+	value: unknown;
+	category: string;
+	description?: string;
+};
+
+const { componentLibraryQueryKeys } = componentLibraryApi;
 
 describe("component library API hooks", () => {
 	describe("queryKeys", () => {
@@ -54,9 +78,13 @@ describe("component library API hooks", () => {
 				id: "library-1",
 				projectId: "project-1",
 				name: "UI Components",
+				slug: "ui-components",
 				description: "Core UI component library",
 				version: "1.0.0",
-				itemCount: 25,
+				source: "manual",
+				syncStatus: "synced",
+				componentCount: 25,
+				tokenCount: 10,
 				createdAt: "2024-01-01T00:00:00Z",
 				updatedAt: "2024-01-02T00:00:00Z",
 			};
@@ -65,7 +93,7 @@ describe("component library API hooks", () => {
 			expect(library.projectId).toBeDefined();
 			expect(library.name).toBeDefined();
 			expect(library.version).toBeDefined();
-			expect(library.itemCount).toBeGreaterThanOrEqual(0);
+			expect(library.componentCount).toBeGreaterThanOrEqual(0);
 		});
 
 		it("should allow optional description", () => {
@@ -73,8 +101,12 @@ describe("component library API hooks", () => {
 				id: "library-1",
 				projectId: "project-1",
 				name: "UI Components",
+				slug: "ui-components",
 				version: "1.0.0",
-				itemCount: 0,
+				source: "manual",
+				syncStatus: "synced",
+				componentCount: 0,
+				tokenCount: 0,
 				createdAt: "2024-01-01T00:00:00Z",
 				updatedAt: "2024-01-01T00:00:00Z",
 			};
@@ -88,12 +120,13 @@ describe("component library API hooks", () => {
 			const component: LibraryComponent = {
 				id: "component-1",
 				libraryId: "library-1",
+				projectId: "project-1",
 				name: "Button",
+				displayName: "Primary Button",
 				description: "Primary action button",
-				category: "interaction",
-				properties: { variant: "primary", size: "md" },
-				variant: "primary",
+				category: "atom",
 				usageCount: 150,
+				status: "stable",
 				createdAt: "2024-01-01T00:00:00Z",
 				updatedAt: "2024-01-02T00:00:00Z",
 			};
@@ -109,10 +142,12 @@ describe("component library API hooks", () => {
 			const component: LibraryComponent = {
 				id: "component-1",
 				libraryId: "library-1",
+				projectId: "project-1",
 				name: "Button",
-				category: "interaction",
-				properties: {},
+				displayName: "Button",
+				category: "atom",
 				usageCount: 0,
+				status: "stable",
 				createdAt: "2024-01-01T00:00:00Z",
 				updatedAt: "2024-01-01T00:00:00Z",
 			};
@@ -124,15 +159,17 @@ describe("component library API hooks", () => {
 	describe("ComponentUsage type", () => {
 		it("should validate component usage structure", () => {
 			const usage: ComponentUsage = {
-				itemId: "item-1",
+				id: "usage-1",
+				projectId: "project-1",
+				libraryId: "library-1",
 				componentId: "component-1",
-				usageCount: 5,
-				lastUsedAt: "2024-01-02T00:00:00Z",
+				usedInItemId: "item-1",
+				detectedAt: "2024-01-02T00:00:00Z",
 			};
 
-			expect(usage.itemId).toBeDefined();
+			expect(usage.usedInItemId).toBeDefined();
 			expect(usage.componentId).toBeDefined();
-			expect(usage.usageCount).toBeGreaterThan(0);
+			expect(usage.detectedAt).toBeDefined();
 		});
 	});
 
@@ -141,10 +178,12 @@ describe("component library API hooks", () => {
 			const token: DesignToken = {
 				id: "token-1",
 				libraryId: "library-1",
-				name: "color-primary",
+				projectId: "project-1",
+				name: "colors.primary.500",
+				path: ["colors", "primary", "500"],
 				type: "color",
 				value: "#0066CC",
-				category: "colors",
+				usageCount: 5,
 				description: "Primary brand color",
 				createdAt: "2024-01-01T00:00:00Z",
 				updatedAt: "2024-01-02T00:00:00Z",
@@ -155,17 +194,19 @@ describe("component library API hooks", () => {
 			expect(token.name).toBeDefined();
 			expect(token.type).toBeDefined();
 			expect(token.value).toBeDefined();
-			expect(token.category).toBeDefined();
+			expect(token.usageCount).toBeGreaterThanOrEqual(0);
 		});
 
-		it("should accept various value types", () => {
+		it("should store design token values as strings", () => {
 			const colorToken: DesignToken = {
 				id: "token-1",
 				libraryId: "library-1",
-				name: "color-primary",
+				projectId: "project-1",
+				name: "colors.primary.500",
+				path: ["colors", "primary", "500"],
 				type: "color",
 				value: "#0066CC",
-				category: "colors",
+				usageCount: 0,
 				createdAt: "2024-01-01T00:00:00Z",
 				updatedAt: "2024-01-01T00:00:00Z",
 			};
@@ -173,10 +214,12 @@ describe("component library API hooks", () => {
 			const spacingToken: DesignToken = {
 				id: "token-2",
 				libraryId: "library-1",
-				name: "spacing-sm",
+				projectId: "project-1",
+				name: "spacing.sm",
+				path: ["spacing", "sm"],
 				type: "spacing",
-				value: 8,
-				category: "spacing",
+				value: "8",
+				usageCount: 0,
 				createdAt: "2024-01-01T00:00:00Z",
 				updatedAt: "2024-01-01T00:00:00Z",
 			};
@@ -184,17 +227,19 @@ describe("component library API hooks", () => {
 			const typographyToken: DesignToken = {
 				id: "token-3",
 				libraryId: "library-1",
-				name: "typography-body",
+				projectId: "project-1",
+				name: "typography.body",
+				path: ["typography", "body"],
 				type: "typography",
-				value: { fontFamily: "Inter", fontSize: 16, lineHeight: 1.5 },
-				category: "typography",
+				value: "Inter/16/1.5",
+				usageCount: 0,
 				createdAt: "2024-01-01T00:00:00Z",
 				updatedAt: "2024-01-01T00:00:00Z",
 			};
 
 			expect(typeof colorToken.value).toBe("string");
-			expect(typeof spacingToken.value).toBe("number");
-			expect(typeof typographyToken.value).toBe("object");
+			expect(typeof spacingToken.value).toBe("string");
+			expect(typeof typographyToken.value).toBe("string");
 		});
 	});
 
@@ -230,9 +275,9 @@ describe("component library API hooks", () => {
 			const input: CreateDesignTokenInput = {
 				libraryId: "library-1",
 				name: "radius-sm",
-				type: "border-radius",
-				value: 4,
-				category: "border-radius",
+				type: "radius",
+				value: "4",
+				category: "radius",
 				description: "Small border radius",
 			};
 

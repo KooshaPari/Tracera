@@ -81,9 +81,9 @@ export function FeatureDetailView() {
 					variant="ghost"
 					onClick={() =>
 						navigate({
-							to: "/projects/$projectId/specifications",
 							params: { projectId: params.projectId || "" },
 							search: { tab: "features" },
+							to: "/projects/$projectId/specifications",
 						})
 					}
 				>
@@ -144,16 +144,16 @@ export function FeatureDetailView() {
 						: [
 								feature.createdAt
 									? {
-											label: "Created",
-											detail: `Feature ${feature.featureNumber}`,
 											date: feature.createdAt,
+											detail: `Feature ${feature.featureNumber}`,
+											label: "Created",
 										}
 									: null,
 								feature.updatedAt
 									? {
-											label: "Updated",
-											detail: "Metadata updated",
 											date: feature.updatedAt,
+											detail: "Metadata updated",
+											label: "Updated",
 										}
 									: null,
 							]
@@ -215,12 +215,12 @@ export function FeatureDetailView() {
 												size="sm"
 												onClick={() =>
 													navigate({
-														to: "/projects/$projectId/features/$featureId/scenarios/$scenarioId",
 														params: {
-															projectId: params.projectId || "",
 															featureId: params.featureId || "",
+															projectId: params.projectId || "",
 															scenarioId: scenario.id,
 														},
+														to: "/projects/$projectId/features/$featureId/scenarios/$scenarioId",
 													})
 												}
 											>

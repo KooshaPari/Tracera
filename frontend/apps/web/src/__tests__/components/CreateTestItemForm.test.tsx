@@ -1,9 +1,14 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
-import { CreateTestItemForm } from "@/components/forms/CreateTestItemForm";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { CreateTestItemForm } from "../../components/forms/CreateTestItemForm";
+
+let user: ReturnType<typeof userEvent.setup>;
 
 describe("CreateTestItemForm", () => {
+	beforeEach(() => {
+		user = userEvent.setup();
+	});
 	it("renders the form with all required fields", () => {
 		const onSubmit = vi.fn();
 		const onCancel = vi.fn();
@@ -39,7 +44,6 @@ describe("CreateTestItemForm", () => {
 	});
 
 	it("calls onCancel when cancel button is clicked", async () => {
-		const user = userEvent.setup();
 		const onSubmit = vi.fn();
 		const onCancel = vi.fn();
 
@@ -52,7 +56,6 @@ describe("CreateTestItemForm", () => {
 	});
 
 	it("validates required fields on submit", async () => {
-		const user = userEvent.setup();
 		const onSubmit = vi.fn();
 		const onCancel = vi.fn();
 
@@ -72,7 +75,6 @@ describe("CreateTestItemForm", () => {
 	});
 
 	it("submits form with valid data", async () => {
-		const user = userEvent.setup();
 		const onSubmit = vi.fn();
 		const onCancel = vi.fn();
 
@@ -113,7 +115,6 @@ describe("CreateTestItemForm", () => {
 	});
 
 	it("allows selecting different test types", async () => {
-		const user = userEvent.setup();
 		const onSubmit = vi.fn();
 		const onCancel = vi.fn();
 
@@ -134,7 +135,6 @@ describe("CreateTestItemForm", () => {
 	});
 
 	it("allows toggling critical path checkbox", async () => {
-		const user = userEvent.setup();
 		const onSubmit = vi.fn();
 		const onCancel = vi.fn();
 

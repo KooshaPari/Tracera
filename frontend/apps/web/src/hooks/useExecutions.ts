@@ -59,7 +59,7 @@ export function useCreateExecution(projectId: string) {
 		mutationFn: (data: ExecutionCreate) =>
 			executionsApi.create(projectId, data),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["executions", projectId] });
+			void queryClient.invalidateQueries({ queryKey: ["executions", projectId] });
 		},
 	});
 }
@@ -70,10 +70,10 @@ export function useStartExecution(projectId: string) {
 		mutationFn: (executionId: string) =>
 			executionsApi.start(projectId, executionId),
 		onSuccess: (_, executionId) => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: ["execution", projectId, executionId],
 			});
-			queryClient.invalidateQueries({ queryKey: ["executions", projectId] });
+			void queryClient.invalidateQueries({ queryKey: ["executions", projectId] });
 		},
 	});
 }
@@ -89,10 +89,10 @@ export function useCompleteExecution(projectId: string) {
 			data: ExecutionComplete;
 		}) => executionsApi.complete(projectId, executionId, data),
 		onSuccess: (_, { executionId }) => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: ["execution", projectId, executionId],
 			});
-			queryClient.invalidateQueries({ queryKey: ["executions", projectId] });
+			void queryClient.invalidateQueries({ queryKey: ["executions", projectId] });
 		},
 	});
 }
@@ -103,7 +103,7 @@ export function useUpdateExecutionConfig(projectId: string) {
 		mutationFn: (data: ExecutionEnvironmentConfigUpdate) =>
 			executionsApi.updateConfig(projectId, data),
 		onSuccess: () => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: ["execution-config", projectId],
 			});
 		},

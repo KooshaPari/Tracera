@@ -16,10 +16,14 @@ const meta: Meta<typeof EditAffordances> = {
 		layout: "fullscreen",
 	},
 	argTypes: {
+		editType: {
+			control: "select",
+			options: ["instant", "agent_required", "manual"],
+		},
 		onEdit: { action: "edit clicked" },
-		onDelete: { action: "delete clicked" },
-		onDuplicate: { action: "duplicate clicked" },
-		isReadOnly: { control: "boolean" },
+		isEditing: { control: "boolean" },
+		compact: { control: "boolean" },
+		showLabel: { control: "boolean" },
 	},
 };
 
@@ -31,16 +35,18 @@ type Story = StoryObj<typeof meta>;
  */
 export const Default: Story = {
 	args: {
-		isReadOnly: false,
+		editType: "instant",
+		isEditing: false,
 	},
 };
 
 /**
- * Read-only mode (no editing available)
+ * Agent-required edit type
  */
-export const ReadOnly: Story = {
+export const AgentRequired: Story = {
 	args: {
-		isReadOnly: true,
+		editType: "agent_required",
+		isEditing: false,
 	},
 };
 
@@ -49,7 +55,8 @@ export const ReadOnly: Story = {
  */
 export const Tablet: Story = {
 	args: {
-		isReadOnly: false,
+		editType: "instant",
+		isEditing: false,
 	},
 	parameters: {
 		viewport: {
@@ -63,7 +70,8 @@ export const Tablet: Story = {
  */
 export const Mobile: Story = {
 	args: {
-		isReadOnly: false,
+		editType: "instant",
+		isEditing: false,
 	},
 	parameters: {
 		viewport: {
@@ -77,7 +85,8 @@ export const Mobile: Story = {
  */
 export const DarkMode: Story = {
 	args: {
-		isReadOnly: false,
+		editType: "instant",
+		isEditing: false,
 	},
 	decorators: [
 		(Story) => (
@@ -100,7 +109,8 @@ export const DarkMode: Story = {
  */
 export const Hovered: Story = {
 	args: {
-		isReadOnly: false,
+		editType: "instant",
+		isEditing: false,
 	},
 	play: async ({ canvasElement }) => {
 		const element = canvasElement.querySelector("[role='group']");

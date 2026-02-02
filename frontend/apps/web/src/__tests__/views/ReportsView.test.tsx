@@ -155,6 +155,7 @@ describe("ReportsView", () => {
 	});
 
 	it("shows loading state during report generation", async () => {
+		const user = userEvent.setup();
 		const { api } = await import("../../api/endpoints");
 		(api.exportImport.export as any).mockImplementation(
 			() =>
@@ -170,7 +171,6 @@ describe("ReportsView", () => {
 			</QueryClientProvider>,
 		);
 
-		const user = userEvent.setup();
 
 		// Select project
 		const projectSelect = document.getElementById("project-select");

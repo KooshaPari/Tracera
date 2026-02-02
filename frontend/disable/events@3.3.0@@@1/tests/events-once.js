@@ -204,7 +204,7 @@ try {
 	hasBrowserEventTarget =
 		typeof new window.EventTarget().addEventListener === "function" &&
 		new window.Event("xyz").type === "xyz";
-} catch (err) {}
+} catch (_err) {}
 
 if (hasBrowserEventTarget) {
 	var onceWithBrowserEventTarget = function onceWithBrowserEventTarget() {

@@ -18,8 +18,8 @@ const mockMilestone: Milestone = {
 	name: "v1.0 Release",
 	slug: "v1-0-release",
 	targetDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-	status: "in_progress" as MilestoneStatus,
-	health: "green" as HealthStatus,
+	status: "in_progress" satisfies MilestoneStatus,
+	health: "green" satisfies HealthStatus,
 	progress: {
 		totalItems: 10,
 		completedItems: 7,
@@ -42,8 +42,8 @@ const mockSprint: Sprint = {
 	startDate: new Date().toISOString(),
 	endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
 	durationDays: 14,
-	status: "active" as SprintStatus,
-	health: "green" as HealthStatus,
+	status: "active" satisfies SprintStatus,
+	health: "green" satisfies HealthStatus,
 	plannedPoints: 50,
 	completedPoints: 35,
 	remainingPoints: 15,
@@ -204,7 +204,7 @@ describe("ProgressDashboard", () => {
 		const atRiskMilestone: Milestone = {
 			...mockMilestone,
 			id: "2",
-			health: "red" as HealthStatus,
+			health: "red" satisfies HealthStatus,
 		};
 
 		render(
@@ -222,14 +222,14 @@ describe("ProgressDashboard", () => {
 	it("shows active sprint highlighted", () => {
 		const activeSprint: Sprint = {
 			...mockSprint,
-			status: "active" as SprintStatus,
+			status: "active" satisfies SprintStatus,
 		};
 
 		const planningSprint: Sprint = {
 			...mockSprint,
 			id: "sprint-2",
 			name: "Sprint 2",
-			status: "planning" as SprintStatus,
+			status: "planning" satisfies SprintStatus,
 		};
 
 		render(

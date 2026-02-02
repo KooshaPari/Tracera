@@ -19,7 +19,7 @@ import { expect, test } from "./global-setup";
  */
 
 test.describe("Route Navigation - Static Routes", () => {
-	const staticRoutes = [
+	const _staticRoutes = [
 		"/",
 		"/projects",
 		"/items",
@@ -422,7 +422,7 @@ test.describe("Route Navigation - Sidebar Navigation", () => {
 
 		// Check if projects link is marked as active
 		const projectsLink = page.getByRole("link", { name: /projects/i });
-		const isActive = await projectsLink
+		const _isActive = await projectsLink
 			.evaluate((el) => {
 				return (
 					el.classList.contains("active") ||
@@ -481,7 +481,7 @@ test.describe("Route Navigation - Route Transitions", () => {
 
 		// Scroll down
 		await page.evaluate(() => window.scrollTo(0, 500));
-		const scrollBefore = await page.evaluate(() => window.scrollY);
+		const _scrollBefore = await page.evaluate(() => window.scrollY);
 
 		// Navigate to another route
 		await page.goto("/items");
@@ -600,7 +600,7 @@ test.describe("Route Navigation - Breadcrumb Navigation", () => {
 			.locator("nav")
 			.filter({ hasText: /projects|home/i })
 			.first();
-		const isVisible = await breadcrumb
+		const _isVisible = await breadcrumb
 			.isVisible({ timeout: 2000 })
 			.catch(() => false);
 
@@ -662,7 +662,7 @@ test.describe("Route Navigation - Performance", () => {
 	});
 
 	test("should handle multiple rapid navigation requests", async ({ page }) => {
-		const navigationPromises = [];
+		const navigationPromises: ReturnType<typeof page.goto>[] = [];
 
 		for (let i = 0; i < 5; i++) {
 			navigationPromises.push(page.goto("/projects"));

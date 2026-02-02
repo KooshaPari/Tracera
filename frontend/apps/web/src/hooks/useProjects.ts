@@ -7,7 +7,7 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 function authHeaders(token: string | null): Record<string, string> {
 	const headers: Record<string, string> = {};
 	if (token?.trim()) {
-		headers.Authorization = `Bearer ${token.trim()}`;
+		headers['Authorization'] = `Bearer ${token.trim()}`;
 	}
 	return headers;
 }
@@ -20,7 +20,7 @@ async function fetchProjects(token: string | null): Promise<Project[]> {
 	if (!res.ok) throw new Error("Failed to fetch projects");
 	const data = await res.json();
 	// API returns { total: number, projects: Project[] }, extract projects array
-	const projectsArray = Array.isArray(data) ? data : data.projects || [];
+	const projectsArray = Array.isArray(data) ? data : data['projects'] || [];
 	// Transform snake_case to camelCase for frontend compatibility
 	return projectsArray.map((project: any) => ({
 		...project,
@@ -44,8 +44,8 @@ async function fetchProject(id: string, token: string | null): Promise<Project> 
 	const data = await res.json();
 	return {
 		...data,
-		createdAt: data.created_at || data.createdAt,
-		updatedAt: data.updated_at || data.updatedAt,
+		createdAt: data['created_at'] || data['createdAt'],
+		updatedAt: data['updated_at'] || data['updatedAt'],
 	} as Project;
 }
 
@@ -113,7 +113,7 @@ export function useCreateProject() {
 		mutationFn: (data: { name: string; description?: string }) =>
 			createProject(data, token),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["projects"] });
+			void queryClient.invalidateQueries({ queryKey: ["projects"] });
 		},
 	});
 }
@@ -125,8 +125,8 @@ export function useUpdateProject() {
 		mutationFn: ({ id, data }: { id: string; data: Partial<Project> }) =>
 			updateProject(id, data, token),
 		onSuccess: (_, { id }) => {
-			queryClient.invalidateQueries({ queryKey: ["projects"] });
-			queryClient.invalidateQueries({ queryKey: ["projects", id] });
+			void queryClient.invalidateQueries({ queryKey: ["projects"] });
+			void queryClient.invalidateQueries({ queryKey: ["projects", id] });
 		},
 	});
 }
@@ -137,7 +137,7 @@ export function useDeleteProject() {
 	return useMutation({
 		mutationFn: (id: string) => deleteProject(id, token),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["projects"] });
+			void queryClient.invalidateQueries({ queryKey: ["projects"] });
 		},
 	});
 }

@@ -12,7 +12,7 @@
 
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { LoadingSpinner } from "@/components/layout/LoadingSpinner";
+import { LoadingSpinner } from "../../components/layout/LoadingSpinner";
 
 describe("LoadingSpinner Component", () => {
 	describe("Basic Rendering", () => {
@@ -81,7 +81,7 @@ describe("LoadingSpinner Component", () => {
 
 	describe("Text Display", () => {
 		it("should render with text when provided", () => {
-			render(<LoadingSpinner text="Loading data..." />);
+			const { container } = render(<LoadingSpinner text="Loading data..." />);
 
 			expect(screen.getByText("Loading data...")).toBeInTheDocument();
 		});
@@ -178,7 +178,7 @@ describe("LoadingSpinner Component", () => {
 		});
 
 		it("should render text in full screen mode", () => {
-			render(<LoadingSpinner fullScreen text="Loading application..." />);
+			const { container } = render(<LoadingSpinner fullScreen text="Loading application..." />);
 
 			expect(screen.getByText("Loading application...")).toBeInTheDocument();
 		});
@@ -238,7 +238,7 @@ describe("LoadingSpinner Component", () => {
 		});
 
 		it("should have dark mode classes for text", () => {
-			render(<LoadingSpinner text="Loading..." />);
+			const { container } = render(<LoadingSpinner text="Loading..." />);
 
 			const text = screen.getByText("Loading...");
 			expect(text).toHaveClass("dark:text-gray-400");
@@ -292,13 +292,13 @@ describe("LoadingSpinner Component", () => {
 
 		it("should handle very long text", () => {
 			const longText = "A".repeat(200);
-			render(<LoadingSpinner text={longText} />);
+			const { container } = render(<LoadingSpinner text={longText} />);
 
 			expect(screen.getByText(longText)).toBeInTheDocument();
 		});
 
 		it("should handle special characters in text", () => {
-			render(<LoadingSpinner text="Loading <data> & 'items'..." />);
+			const { container } = render(<LoadingSpinner text="Loading <data> & 'items'..." />);
 
 			expect(
 				screen.getByText("Loading <data> & 'items'..."),
@@ -377,14 +377,14 @@ describe("LoadingSpinner Component", () => {
 		});
 
 		it("should render as data fetching indicator", () => {
-			render(<LoadingSpinner size="md" text="Fetching data..." />);
+			const { container } = render(<LoadingSpinner size="md" text="Fetching data..." />);
 
 			const spinner = screen.getByText("Fetching data...").previousSibling;
 			expect(spinner).toHaveClass("animate-spin");
 		});
 
 		it("should render as form submission indicator", () => {
-			render(<LoadingSpinner size="sm" text="Submitting..." />);
+			const { container } = render(<LoadingSpinner size="sm" text="Submitting..." />);
 
 			expect(screen.getByText("Submitting...")).toBeInTheDocument();
 		});
@@ -392,7 +392,7 @@ describe("LoadingSpinner Component", () => {
 
 	describe("Accessibility", () => {
 		it("should have descriptive text for screen readers", () => {
-			render(<LoadingSpinner text="Loading content" />);
+			const { container } = render(<LoadingSpinner text="Loading content" />);
 
 			expect(screen.getByText("Loading content")).toBeInTheDocument();
 		});
@@ -416,7 +416,7 @@ describe("LoadingSpinner Component", () => {
 	describe("Performance", () => {
 		it("should render quickly without complex computations", () => {
 			const start = performance.now();
-			render(<LoadingSpinner />);
+			const { container } = render(<LoadingSpinner />);
 			const end = performance.now();
 
 			// Should render in less than 100ms

@@ -26,7 +26,7 @@ async function getBaseConfigGypi ({ gyp, nodeDir }) {
       const baseConfigGypiPath = path.resolve(nodeDir, 'include/node/config.gypi')
       const baseConfigGypi = await fs.promises.readFile(baseConfigGypiPath)
       return parseConfigGypi(baseConfigGypi.toString())
-    } catch (err) {
+    } catch (_err) {
       log.warn('read config.gypi', err.message)
     }
   }

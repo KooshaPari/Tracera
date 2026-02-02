@@ -129,7 +129,7 @@ function fromUrl(giturl, opts) {
 			committish = decodeURIComponent(segments.committish);
 			defaultRepresentation = protocolToRepresentation(parsed.protocol);
 		}
-	} catch (err) {
+	} catch (_err) {
 		/* istanbul ignore else */
 		if (err instanceof URIError) {
 			return;
@@ -258,7 +258,7 @@ const parseGitUrl = (giturl) => {
 	let result;
 	try {
 		result = new url.URL(giturl);
-	} catch (err) {}
+	} catch (_err) {}
 
 	if (result) {
 		return result;
@@ -267,7 +267,7 @@ const parseGitUrl = (giturl) => {
 	const correctedUrl = correctUrl(giturl);
 	try {
 		result = new url.URL(correctedUrl);
-	} catch (err) {}
+	} catch (_err) {}
 
 	return result;
 };

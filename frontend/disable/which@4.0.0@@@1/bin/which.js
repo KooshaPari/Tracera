@@ -46,7 +46,7 @@ for (const command of commands) {
     if (!flags.silent) {
       console.log([].concat(res).join('\n'))
     }
-  } catch (err) {
+  } catch (_err) {
     process.exitCode = 1
   }
 }

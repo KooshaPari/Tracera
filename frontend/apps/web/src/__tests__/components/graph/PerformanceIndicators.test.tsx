@@ -47,7 +47,7 @@ describe('PerformanceStats', () => {
   });
 
   it('applies correct FPS color classes', () => {
-    const { rerender } = render(
+    render(
       <PerformanceStats
         fps={60}
         nodeCount={100}
@@ -150,7 +150,7 @@ describe('PerformanceOverlay', () => {
   });
 
   it('renders at specified position', () => {
-    const { container, rerender } = render(
+    render(
       <PerformanceOverlay
         nodeCount={1000}
         edgeCount={2000}
@@ -178,7 +178,7 @@ describe('PerformanceOverlay', () => {
   });
 
   it('forwards variant to PerformanceStats', () => {
-    const { rerender } = render(
+    render(
       <PerformanceOverlay
         nodeCount={1000}
         edgeCount={2000}
@@ -225,7 +225,7 @@ describe('PerformanceChart', () => {
   });
 
   it('renders canvas with correct dimensions', () => {
-    const { container } = render(<PerformanceChart fps={60} width={300} height={80} />);
+    render(<PerformanceChart fps={60} width={300} height={80} />);
 
     const canvasElement = container.querySelector('canvas');
     expect(canvasElement).toBeInTheDocument();
@@ -236,7 +236,7 @@ describe('PerformanceChart', () => {
   it('draws FPS value on canvas', () => {
     render(<PerformanceChart fps={45} />);
 
-    expect(ctx.fillText).toHaveBeenCalledWith(
+    expect(vi.mocked(ctx).fillText).toHaveBeenCalledWith(
       expect.stringContaining('45 FPS'),
       expect.any(Number),
       expect.any(Number)
@@ -244,7 +244,7 @@ describe('PerformanceChart', () => {
   });
 
   it('uses correct color based on FPS', () => {
-    const { rerender } = render(<PerformanceChart fps={60} />);
+    render(<PerformanceChart fps={60} />);
 
     // Green for >= 55
     expect(ctx.strokeStyle).toBe('#10b981');
@@ -259,13 +259,13 @@ describe('PerformanceChart', () => {
   });
 
   it('maintains FPS history', () => {
-    const { rerender } = render(<PerformanceChart fps={60} />);
+    render(<PerformanceChart fps={60} />);
 
     rerender(<PerformanceChart fps={55} />);
     rerender(<PerformanceChart fps={50} />);
 
     // Should have drawn multiple points
-    expect(ctx.lineTo).toHaveBeenCalled();
+    expect(vi.mocked(ctx).lineTo).toHaveBeenCalled();
   });
 });
 
@@ -335,7 +335,7 @@ describe('useMemoryMonitor', () => {
     expect(result.current).toBeNull();
   });
 
-  it('returns memory stats when API is available', () => {
+  it('returns memory stats when API is available', async () => {
     // Mock performance.memory (Chrome only)
     Object.defineProperty(performance, 'memory', {
       value: {
@@ -348,7 +348,7 @@ describe('useMemoryMonitor', () => {
 
     const { result } = renderHook(() => useMemoryMonitor());
 
-    waitFor(() => {
+    await waitFor(() => {
       expect(result.current).toEqual({
         usedJSHeapSize: 50,
         totalJSHeapSize: 100,
@@ -400,7 +400,7 @@ describe('Integration Tests', () => {
   });
 
   it('handles rapid updates without errors', () => {
-    const { rerender } = render(
+    render(
       <PerformanceStats
         fps={60}
         nodeCount={1000}

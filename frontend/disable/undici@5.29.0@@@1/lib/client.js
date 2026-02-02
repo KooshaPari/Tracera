@@ -676,7 +676,7 @@ class Parser {
         currentParser = this
         ret = llhttp.llhttp_execute(this.ptr, currentBufferPtr, data.length)
         /* eslint-disable-next-line no-useless-catch */
-      } catch (err) {
+      } catch (_err) {
         /* istanbul ignore next: difficult to make a test case for */
         throw err
       } finally {
@@ -704,7 +704,7 @@ class Parser {
         }
         throw new HTTPParserError(message, constants.ERROR[ret], data.slice(offset))
       }
-    } catch (err) {
+    } catch (_err) {
       util.destroy(socket, err)
     }
   }
@@ -823,7 +823,7 @@ class Parser {
 
     try {
       request.onUpgrade(statusCode, headers, socket)
-    } catch (err) {
+    } catch (_err) {
       util.destroy(socket, err)
     }
 
@@ -1288,7 +1288,7 @@ async function connect (client) {
       })
     }
     client.emit('connect', client[kUrl], [client])
-  } catch (err) {
+  } catch (_err) {
     if (client.destroyed) {
       return
     }
@@ -1545,7 +1545,7 @@ function write (client, request) {
 
       util.destroy(socket, new InformationalError('aborted'))
     })
-  } catch (err) {
+  } catch (_err) {
     errorRequest(client, request, err)
   }
 
@@ -1663,7 +1663,7 @@ function writeH2 (client, session, request) {
 
       errorRequest(client, request, err || new RequestAbortedError())
     })
-  } catch (err) {
+  } catch (_err) {
     errorRequest(client, request, err)
   }
 
@@ -1950,7 +1950,7 @@ function writeStream ({ h2stream, body, client, request, socket, contentLength, 
       if (!writer.write(chunk) && this.pause) {
         this.pause()
       }
-    } catch (err) {
+    } catch (_err) {
       util.destroy(this, err)
     }
   }
@@ -2051,7 +2051,7 @@ async function writeBlob ({ h2stream, body, client, request, socket, contentLeng
     }
 
     resume(client)
-  } catch (err) {
+  } catch (_err) {
     util.destroy(isH2 ? h2stream : socket, err)
   }
 }
@@ -2096,7 +2096,7 @@ async function writeIterable ({ h2stream, body, client, request, socket, content
           await waitForDrain()
         }
       }
-    } catch (err) {
+    } catch (_err) {
       h2stream.destroy(err)
     } finally {
       request.onRequestSent()
@@ -2127,7 +2127,7 @@ async function writeIterable ({ h2stream, body, client, request, socket, content
     }
 
     writer.end()
-  } catch (err) {
+  } catch (_err) {
     writer.destroy(err)
   } finally {
     socket
@@ -2275,7 +2275,7 @@ function errorRequest (client, request, err) {
   try {
     request.onError(err)
     assert(request.aborted)
-  } catch (err) {
+  } catch (_err) {
     client.emit('error', err)
   }
 }

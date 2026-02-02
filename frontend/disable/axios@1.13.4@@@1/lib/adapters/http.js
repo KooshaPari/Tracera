@@ -444,7 +444,7 @@ export default isHttpAdapterSupported && function httpAdapter(config) {
         convertedData = fromDataURI(config.url, responseType === 'blob', {
           Blob: config.env && config.env.Blob
         });
-      } catch (err) {
+      } catch (_err) {
         throw AxiosError.from(err, AxiosError.ERR_BAD_REQUEST, config);
       }
 
@@ -592,7 +592,7 @@ export default isHttpAdapterSupported && function httpAdapter(config) {
         config.params,
         config.paramsSerializer
       ).replace(/^\?/, '');
-    } catch (err) {
+    } catch (_err) {
       const customErr = new Error(err.message);
       customErr.config = config;
       customErr.url = config.url;
@@ -792,7 +792,7 @@ export default isHttpAdapterSupported && function httpAdapter(config) {
               }
             }
             response.data = responseData;
-          } catch (err) {
+          } catch (_err) {
             return reject(AxiosError.from(err, null, config, response.request, response));
           }
           settle(resolve, reject, response);

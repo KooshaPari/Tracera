@@ -8,7 +8,7 @@ try {
   if (useGlobalLibvips() || process.env.npm_config_build_from_source) {
     process.exit(1);
   }
-} catch (err) {
+} catch (_err) {
   const summary = err.message.split(/\n/).slice(0, 1);
   console.log(`sharp: skipping install check: ${summary}`);
 }

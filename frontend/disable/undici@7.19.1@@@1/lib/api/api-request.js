@@ -38,7 +38,7 @@ class RequestHandler extends AsyncResource {
       }
 
       super('UNDICI_REQUEST')
-    } catch (err) {
+    } catch (_err) {
       if (util.isStream(body)) {
         util.destroy(body.on('error', noop), err)
       }
@@ -127,7 +127,7 @@ class RequestHandler extends AsyncResource {
           body: res,
           context
         })
-      } catch (err) {
+      } catch (_err) {
         // If the callback throws synchronously, we need to handle it
         // Remove reference to res to allow res being garbage collected
         this.res = null
@@ -200,7 +200,7 @@ function request (opts, callback) {
     const handler = new RequestHandler(opts, callback)
 
     this.dispatch(opts, handler)
-  } catch (err) {
+  } catch (_err) {
     if (typeof callback !== 'function') {
       throw err
     }

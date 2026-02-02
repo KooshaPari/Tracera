@@ -11,8 +11,7 @@
 	},
 	"scripts": {
 		"build": "tsc --build",
-		"clean": "tsc --build --clean",
-		"typecheck": "tsc --noEmit"
+		"clean": "tsc --build --clean"
 	},
 	"devDependencies": {
 		"typescript": "npm:@typescript/native-preview@7.0.0-dev.20251201.1"

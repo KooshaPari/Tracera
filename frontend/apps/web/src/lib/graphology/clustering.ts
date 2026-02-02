@@ -79,7 +79,7 @@ export class GraphClustering {
     });
 
     // Aggregate edges between clusters
-    graph.forEachEdge((edgeId, attrs, source, target) => {
+    graph.forEachEdge((_edgeId, _attrs, source, target) => {
       const sourceCommunity = communities.get(source) ?? 0;
       const targetCommunity = communities.get(target) ?? 0;
 
@@ -197,7 +197,7 @@ export class GraphClustering {
     });
 
     const memberEdges: string[] = [];
-    graph.forEachEdge((edgeId, attrs, source, target) => {
+    graph.forEachEdge((edgeId, _attrs, source, target) => {
       if (memberNodes.includes(source) && memberNodes.includes(target)) {
         memberEdges.push(edgeId);
       }

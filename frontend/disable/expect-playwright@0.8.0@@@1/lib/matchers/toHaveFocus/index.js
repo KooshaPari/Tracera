@@ -12,7 +12,7 @@ const toHaveFocus = async function (...args) {
 			message: () =>
 				utils_1.getMessage(this, "toHaveFocus", true, isFocused, ""),
 		};
-	} catch (err) {
+	} catch (_err) {
 		return {
 			pass: false,
 			message: () => err.toString(),

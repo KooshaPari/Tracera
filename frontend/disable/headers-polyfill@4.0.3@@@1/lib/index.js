@@ -52,7 +52,7 @@ function _iterable_to_array_limit(arr, i) {
 			_arr.push(_s.value);
 			if (i && _arr.length === i) break;
 		}
-	} catch (err) {
+	} catch (_err) {
 		_d = true;
 		_e = err;
 	} finally {
@@ -239,7 +239,7 @@ var __copyProps = (to, from, except, desc) => {
 				_iteratorNormalCompletion = true
 			)
 				_loop();
-		} catch (err) {
+		} catch (_err) {
 			_didIteratorError = true;
 			_iteratorError = err;
 		} finally {
@@ -953,7 +953,7 @@ var Headers = /*#__PURE__*/ (() => {
 							value = _step_value[1];
 						callback.call(thisArg, value, name, this);
 					}
-				} catch (err) {
+				} catch (_err) {
 					_didIteratorError = true;
 					_iteratorError = err;
 				} finally {
@@ -1008,7 +1008,7 @@ function getRawHeaders(headers) {
 				value = _step_value[1];
 			rawHeaders[headers[RAW_HEADER_NAMES].get(name)] = value;
 		}
-	} catch (err) {
+	} catch (_err) {
 		_didIteratorError = true;
 		_iteratorError = err;
 	} finally {

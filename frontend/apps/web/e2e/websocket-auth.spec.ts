@@ -1,5 +1,11 @@
 import { expect, test } from "@playwright/test";
 
+/** Decode WebSocket frame payload to string (Playwright uses { payload: string | Buffer }). */
+function framePayloadToText(payload: { payload: string | Buffer }): string {
+	const p = payload.payload;
+	return typeof p === "string" ? p : new TextDecoder().decode(p);
+}
+
 /**
  * WebSocket Authentication Security Tests
  *
@@ -34,14 +40,14 @@ test.describe("WebSocket Authentication Security", () => {
 
 	test("should send authentication in message after connection", async ({
 		page,
-		context,
+		context: _context,
 	}) => {
 		let authMessageSent = false;
 		const wsMessages: any[] = [];
 
 		page.on("websocket", (ws) => {
 			ws.on("framesent", (payload) => {
-				const data = JSON.parse(payload.text());
+				const data = JSON.parse(framePayloadToText(payload));
 				wsMessages.push(data);
 
 				// First message should be auth
@@ -64,27 +70,27 @@ test.describe("WebSocket Authentication Security", () => {
 	test("should wait for auth response before processing events", async ({
 		page,
 	}) => {
-		let authResponseReceived = false;
-		let eventMessageReceived = false;
+		let _authResponseReceived = false;
+		let _eventMessageReceived = false;
 		const messageOrder: string[] = [];
 
 		page.on("websocket", (ws) => {
 			ws.on("framereceived", (payload) => {
-				const data = JSON.parse(payload.text());
+				const data = JSON.parse(framePayloadToText(payload));
 				messageOrder.push(data.type);
 
 				if (data.type === "auth_success") {
-					authResponseReceived = true;
+					_authResponseReceived = true;
 				}
 				if (data.type === "auth_failed") {
-					authResponseReceived = true;
+					_authResponseReceived = true;
 				}
 				if (
 					data.type === "event" ||
 					data.type === "created" ||
 					data.type === "updated"
 				) {
-					eventMessageReceived = true;
+					_eventMessageReceived = true;
 				}
 			});
 		});
@@ -109,14 +115,14 @@ test.describe("WebSocket Authentication Security", () => {
 	});
 
 	test("should handle authentication failure", async ({ page }) => {
-		let authFailureHandled = false;
+		let _authFailureHandled = false;
 
 		page.on("websocket", (ws) => {
 			ws.on("framereceived", (payload) => {
-				const data = JSON.parse(payload.text());
+				const data = JSON.parse(framePayloadToText(payload));
 
 				if (data.type === "auth_failed") {
-					authFailureHandled = true;
+					_authFailureHandled = true;
 					console.log("✓ Authentication failure handled:", data.message);
 				}
 			});
@@ -137,7 +143,7 @@ test.describe("WebSocket Authentication Security", () => {
 
 		page.on("websocket", (ws) => {
 			ws.on("framereceived", (payload) => {
-				const data = JSON.parse(payload.text());
+				const data = JSON.parse(framePayloadToText(payload));
 
 				if (data.type === "auth_success") {
 					authComplete = true;
@@ -169,14 +175,14 @@ test.describe("WebSocket Authentication Security", () => {
 			connectionLog.push("WebSocket created");
 
 			ws.on("framesent", (payload) => {
-				const data = JSON.parse(payload.text());
+				const data = JSON.parse(framePayloadToText(payload));
 				if (data.type === "auth") {
 					connectionLog.push("Auth message sent");
 				}
 			});
 
 			ws.on("framereceived", (payload) => {
-				const data = JSON.parse(payload.text());
+				const data = JSON.parse(framePayloadToText(payload));
 				if (data.type === "auth_success") {
 					connectionLog.push("Auth success received");
 				}
@@ -226,7 +232,7 @@ test.describe("WebSocket Authentication Security", () => {
 
 		page.on("websocket", (ws) => {
 			ws.on("framesent", (payload) => {
-				const data = JSON.parse(payload.text());
+				const data = JSON.parse(framePayloadToText(payload));
 				if (data.type === "auth" && data.token) {
 					authenticationMethod = "message-based";
 					console.log("✓ Using message-based authentication");

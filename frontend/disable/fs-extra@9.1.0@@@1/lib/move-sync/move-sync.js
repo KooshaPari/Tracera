@@ -27,7 +27,7 @@ function doRename(src, dest, overwrite) {
 function rename(src, dest, overwrite) {
 	try {
 		fs.renameSync(src, dest);
-	} catch (err) {
+	} catch (_err) {
 		if (err.code !== "EXDEV") throw err;
 		return moveAcrossDevice(src, dest, overwrite);
 	}

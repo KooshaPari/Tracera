@@ -232,7 +232,7 @@ async function setupJestServer(providedConfig, index) {
 		};
 		try {
 			await wait_on_1.default(opts);
-		} catch (err) {
+		} catch (_err) {
 			const [portProcess] = await find_process_1.default("port", config.port);
 			if (portProcess) {
 				await killProc(portProcess);

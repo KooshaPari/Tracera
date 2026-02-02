@@ -327,7 +327,7 @@ namespace createAgent {
 					onsocket,
 					callbackError,
 				);
-			} catch (err) {
+			} catch (_err) {
 				Promise.reject(err).catch(callbackError);
 			}
 		}

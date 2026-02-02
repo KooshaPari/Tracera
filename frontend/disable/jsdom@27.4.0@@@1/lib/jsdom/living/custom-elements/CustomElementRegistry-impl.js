@@ -174,7 +174,7 @@ class CustomElementRegistryImpl {
       disableInternals = disabledFeatures.includes("internals");
       disableShadow = disabledFeatures.includes("shadow");
       formAssociated = webIDLConversions.boolean(formAssociatedValue);
-    } catch (err) {
+    } catch (_err) {
       caughtError = err;
     } finally {
       this._elementDefinitionIsRunning = false;

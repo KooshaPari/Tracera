@@ -16,7 +16,7 @@ function ItemRedirectComponent() {
 	useEffect(() => {
 		if (item) {
 			// Redirect to new URL format
-			navigate({
+			void navigate({
 				to: "/projects/$projectId/views/$viewType/$itemId",
 				params: {
 					projectId: item.projectId,

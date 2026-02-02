@@ -45,7 +45,7 @@ suite("concurrent", function () {
 	test(" failing in concurrent prerequisites", () => {
 		try {
 			exec(`${JAKE_CMD} -q concurrent:Cfail`);
-		} catch (err) {
+		} catch (_err) {
 			assert(err.message.indexOf("Command failed") > -1);
 		}
 	});

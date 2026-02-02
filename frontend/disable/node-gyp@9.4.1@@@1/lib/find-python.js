@@ -253,7 +253,7 @@ PythonFinder.prototype = {
       var valid = false
       try {
         valid = range.test(version)
-      } catch (err) {
+      } catch (_err) {
         this.log.silly('range.test() threw:\n%s', err.stack)
         this.addLog(`- "${execPath}" does not have a valid version`)
         this.addLog('- is it a Python executable?')
@@ -281,7 +281,7 @@ PythonFinder.prototype = {
     this.log.silly('execFile: opts = %j', opts)
     try {
       this.execFile(exec, args, opts, execFileCallback.bind(this))
-    } catch (err) {
+    } catch (_err) {
       this.log.silly('execFile: threw:\n%s', err.stack)
       return callback(err)
     }

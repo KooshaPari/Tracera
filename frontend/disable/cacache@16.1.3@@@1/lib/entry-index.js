@@ -92,7 +92,7 @@ async function compact(cache, key, matchFn, opts = {}) {
 		tmp.moved = true;
 		try {
 			await fixOwner.chownr(cache, bucket);
-		} catch (err) {
+		} catch (_err) {
 			if (err.code !== "ENOENT") {
 				throw err;
 			}
@@ -140,7 +140,7 @@ async function insert(cache, key, integrity, opts = {}) {
 		// this.
 		await fs.appendFile(bucket, `\n${hashEntry(stringified)}\t${stringified}`);
 		await fixOwner.chownr(cache, bucket);
-	} catch (err) {
+	} catch (_err) {
 		if (err.code === "ENOENT") {
 			return undefined;
 		}
@@ -172,7 +172,7 @@ function insertSync(cache, key, integrity, opts = {}) {
 	fs.appendFileSync(bucket, `\n${hashEntry(stringified)}\t${stringified}`);
 	try {
 		fixOwner.chownr.sync(cache, bucket);
-	} catch (err) {
+	} catch (_err) {
 		if (err.code !== "ENOENT") {
 			throw err;
 		}
@@ -193,7 +193,7 @@ async function find(cache, key) {
 				return latest;
 			}
 		}, null);
-	} catch (err) {
+	} catch (_err) {
 		if (err.code === "ENOENT") {
 			return null;
 		} else {
@@ -214,7 +214,7 @@ function findSync(cache, key) {
 				return latest;
 			}
 		}, null);
-	} catch (err) {
+	} catch (_err) {
 		if (err.code === "ENOENT") {
 			return null;
 		} else {
@@ -283,7 +283,7 @@ function lsStream(cache) {
 												stream.write(formatted);
 											}
 										}
-									} catch (err) {
+									} catch (_err) {
 										if (err.code === "ENOENT") {
 											return undefined;
 										}

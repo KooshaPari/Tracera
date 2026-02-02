@@ -1,18 +1,11 @@
 {
 	"$schema": "../../node_modules/oxlint/configuration_schema.json",
+	"extends": ["../../.oxlintrc.json"],
 	"ignorePatterns": [
 		"node_modules/**",
 		"dist/**",
 		"routeTree.gen.ts",
 		"src/api/schema.ts",
 		"**/*.gen.ts"
-	],
-	"categories": {
-		"correctness": "error",
-		"suspicious": "warn",
-		"pedantic": "off"
-	},
-	"rules": {
-		"react/react-in-jsx-scope": "off"
-	}
+	]
 }

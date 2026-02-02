@@ -62,7 +62,7 @@ export function groupByLinkTargets(
 		if (targets.size === 0 || !itemMap.has(itemId)) continue;
 
 		// Create a key from sorted targets
-		const targetKey = Array.from(targets).sort().join("|");
+		const targetKey = Array.from(targets).toSorted().join("|");
 
 		if (!groupMap.has(targetKey)) {
 			groupMap.set(targetKey, new Set());
@@ -130,7 +130,7 @@ export function groupByDependencies(
 	for (const [itemId, deps] of dependencyMap) {
 		if (deps.size === 0) continue;
 
-		const depKey = Array.from(deps).sort().join("|");
+		const depKey = Array.from(deps).toSorted().join("|");
 
 		if (!groupMap.has(depKey)) {
 			groupMap.set(depKey, new Set());
@@ -258,7 +258,7 @@ export function groupByPaths(
 export function groupBySemantic(
 	items: Item[],
 	minGroupSize: number = 2,
-	embeddingDistance: number = 0.3,
+	_embeddingDistance: number = 0.3,
 ): GroupResult[] {
 	const groups: GroupResult[] = [];
 	let groupIndex = 0;
@@ -314,9 +314,13 @@ function calculateTitleSimilarity(titles: string[]): number {
 
 	for (let i = 0; i < titles.length; i++) {
 		for (let j = i + 1; j < titles.length; j++) {
-			const similarity = stringSimilarity(titles[i], titles[j]);
-			totalSimilarity += similarity;
-			comparisons++;
+			const title1 = titles[i];
+			const title2 = titles[j];
+			if (title1 && title2) {
+				const similarity = stringSimilarity(title1, title2);
+				totalSimilarity += similarity;
+				comparisons++;
+			}
 		}
 	}
 
@@ -356,11 +360,11 @@ export function intersectGroupResults(
 	if (groupSets.length === 0) return [];
 
 	// Start with first set
-	let current = groupSets[0].map((g) => new Set(g.itemIds));
+	let current = groupSets[0]!.map((g) => new Set(g.itemIds));
 
 	// Intersect with subsequent sets
 	for (let i = 1; i < groupSets.length; i++) {
-		const nextSets = groupSets[i].map((g) => new Set(g.itemIds));
+		const nextSets = groupSets[i]!.map((g) => new Set(g.itemIds));
 
 		current = current.flatMap((currentSet) => {
 			const intersections: Set<string>[] = [];

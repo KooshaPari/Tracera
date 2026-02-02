@@ -18,6 +18,7 @@ vi.mock("../../api/endpoints", () => ({
 
 describe("ImportView", () => {
 	let queryClient: QueryClient;
+	let user: ReturnType<typeof userEvent.setup>;
 
 	beforeEach(() => {
 		queryClient = new QueryClient({
@@ -26,6 +27,7 @@ describe("ImportView", () => {
 				mutations: { retry: false },
 			},
 		});
+		user = userEvent.setup();
 		vi.clearAllMocks();
 	});
 
@@ -42,7 +44,6 @@ describe("ImportView", () => {
 	});
 
 	it("displays format options", async () => {
-		const user = userEvent.setup();
 		const { api } = await import("../../api/endpoints");
 		(api.projects.list as any).mockResolvedValue([]);
 
@@ -80,7 +81,6 @@ describe("ImportView", () => {
 			</QueryClientProvider>,
 		);
 
-		const user = userEvent.setup();
 		const formatSelect = document.getElementById("format-select");
 		expect(formatSelect).toBeInTheDocument();
 
@@ -108,7 +108,6 @@ describe("ImportView", () => {
 	});
 
 	it("handles file upload", async () => {
-		const user = userEvent.setup();
 		render(
 			<QueryClientProvider client={queryClient}>
 				<ImportView />
@@ -153,7 +152,6 @@ describe("ImportView", () => {
 	});
 
 	it("enables import button when data is provided", async () => {
-		const user = userEvent.setup();
 		const { api } = await import("../../api/endpoints");
 		(api.projects.list as any).mockResolvedValue([
 			{ id: "proj-1", name: "Test Project" },
@@ -192,7 +190,6 @@ describe("ImportView", () => {
 	});
 
 	it("shows success message after successful import", async () => {
-		const user = userEvent.setup();
 		const { api } = await import("../../api/endpoints");
 		(api.exportImport.import as any).mockResolvedValue({
 			success: true,
@@ -241,7 +238,6 @@ describe("ImportView", () => {
 	});
 
 	it("shows error message on import failure", async () => {
-		const user = userEvent.setup();
 		const { api } = await import("../../api/endpoints");
 		const alertMock = vi.spyOn(window, "alert").mockImplementation(() => {});
 
@@ -291,7 +287,6 @@ describe("ImportView", () => {
 	});
 
 	it("displays import errors when present", async () => {
-		const user = userEvent.setup();
 		const { api } = await import("../../api/endpoints");
 		(api.exportImport.import as any).mockResolvedValue({
 			success: true,

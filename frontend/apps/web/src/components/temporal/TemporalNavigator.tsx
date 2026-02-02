@@ -71,13 +71,44 @@ export interface TemporalNavigatorProps {
 	onMergeRequest?: (sourceBranchId: string, targetBranchId: string) => void;
 }
 
+function getStatusColor(
+	status: Branch["status"],
+): "default" | "secondary" | "destructive" | "outline" {
+	switch (status) {
+		case "active":
+			return "default";
+		case "review":
+			return "secondary";
+		case "merged":
+			return "outline";
+		case "abandoned":
+			return "destructive";
+		default:
+			return "default";
+	}
+}
+
+function getStatusIcon(status: Branch["status"]) {
+	switch (status) {
+		case "active":
+			return "●";
+		case "review":
+			return "◐";
+		case "merged":
+			return "✓";
+		case "abandoned":
+			return "✕";
+		default:
+			return "○";
+	}
+}
+
 export function TemporalNavigator({
 	projectId,
 	currentBranchId,
 	currentVersionId,
 	branches,
 	versions,
-	isLoading = false,
 	onBranchChange,
 	onVersionChange,
 	onBranchCreate,
@@ -100,38 +131,6 @@ export function TemporalNavigator({
 		() => versions.filter((v) => v.branchId === currentBranchId),
 		[versions, currentBranchId],
 	);
-
-	const getStatusColor = (
-		status: Branch["status"],
-	): "default" | "secondary" | "destructive" | "outline" => {
-		switch (status) {
-			case "active":
-				return "default";
-			case "review":
-				return "secondary";
-			case "merged":
-				return "outline";
-			case "abandoned":
-				return "destructive";
-			default:
-				return "default";
-		}
-	};
-
-	const getStatusIcon = (status: Branch["status"]) => {
-		switch (status) {
-			case "active":
-				return "●";
-			case "review":
-				return "◐";
-			case "merged":
-				return "✓";
-			case "abandoned":
-				return "✕";
-			default:
-				return "○";
-		}
-	};
 
 	return (
 		<div className="flex flex-col border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950">

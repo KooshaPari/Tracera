@@ -102,7 +102,7 @@ export class EnvManager {
 			return JSON.parse(value);
 		} catch (_error) {
 			throw new Error(
-				`Environment variable ${key} is not valid JSON: ${value}`,
+				`Environment variable ${key} is not valid JSON: ${value}`, { cause: _error },
 			);
 		}
 	}

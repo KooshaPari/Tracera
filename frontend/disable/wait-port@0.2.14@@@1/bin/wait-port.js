@@ -47,7 +47,7 @@ program
 
 			const open = await waitPort(params);
 			process.exit(open ? 0 : 1);
-		} catch (err) {
+		} catch (_err) {
 			//  Show validation errors in red.
 			if (err instanceof ValidationError) {
 				console.error(chalk.red(`\n  Validation Error: ${err.message}`));

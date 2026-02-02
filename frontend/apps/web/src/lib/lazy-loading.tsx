@@ -240,7 +240,6 @@ export const LazyComponents = {
 export function LazyComponentBoundary({
 	children,
 	fallback,
-	errorFallback,
 }: {
 	children: ReactNode;
 	fallback?: ReactNode;

@@ -8,59 +8,61 @@ import type {
 	ResolutionType,
 	RootCauseCategory,
 } from "@tracertm/types";
-import { getAuthHeaders } from "@/api/client";
+import client from "@/api/client";
+
+const { getAuthHeaders } = client;
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 // Transform API response (snake_case) to frontend format (camelCase)
-function transformProblem(data: any): Problem {
+function transformProblem(data: Record<string, unknown>): Problem {
 	return {
-		id: data.id,
-		problemNumber: data.problem_number,
-		projectId: data.project_id,
-		title: data.title,
-		description: data.description,
-		status: data.status,
-		resolutionType: data.resolution_type,
-		category: data.category,
-		subCategory: data.sub_category,
-		tags: data.tags,
-		impactLevel: data.impact_level,
-		urgency: data.urgency,
-		priority: data.priority,
-		affectedSystems: data.affected_systems,
-		affectedUsersEstimated: data.affected_users_estimated,
-		businessImpactDescription: data.business_impact_description,
-		rcaPerformed: data.rca_performed,
-		rcaMethod: data.rca_method,
-		rcaNotes: data.rca_notes,
-		rcaData: data.rca_data,
-		rootCauseIdentified: data.root_cause_identified,
-		rootCauseDescription: data.root_cause_description,
-		rootCauseCategory: data.root_cause_category,
-		rootCauseConfidence: data.root_cause_confidence,
-		rcaCompletedAt: data.rca_completed_at,
-		rcaCompletedBy: data.rca_completed_by,
-		workaroundAvailable: data.workaround_available,
-		workaroundDescription: data.workaround_description,
-		workaroundEffectiveness: data.workaround_effectiveness,
-		permanentFixAvailable: data.permanent_fix_available,
-		permanentFixDescription: data.permanent_fix_description,
-		permanentFixImplementedAt: data.permanent_fix_implemented_at,
-		permanentFixChangeId: data.permanent_fix_change_id,
-		knownErrorId: data.known_error_id,
-		knowledgeArticleId: data.knowledge_article_id,
-		assignedTo: data.assigned_to,
-		assignedTeam: data.assigned_team,
-		owner: data.owner,
-		closedBy: data.closed_by,
-		closedAt: data.closed_at,
-		closureNotes: data.closure_notes,
-		targetResolutionDate: data.target_resolution_date,
-		metadata: data.metadata,
-		version: data.version,
-		createdAt: data.created_at,
-		updatedAt: data.updated_at,
+		id: data['id'] as string,
+		problemNumber: data['problem_number'] as string,
+		projectId: data['project_id'] as string,
+		title: data['title'] as string,
+		description: data['description'] as string | undefined,
+		status: data.status as ProblemStatus,
+		resolutionType: data['resolution_type'] as ResolutionType | undefined,
+		category: data['category'] as string | undefined,
+		subCategory: data['sub_category'] as string | undefined,
+		tags: data['tags'] as string[] | undefined,
+		impactLevel: data['impact_level'] as ImpactLevel,
+		urgency: data['urgency'] as ImpactLevel,
+		priority: data['priority'] as ImpactLevel,
+		affectedSystems: data['affected_systems'] as string[] | undefined,
+		affectedUsersEstimated: data['affected_users_estimated'] as number | undefined,
+		businessImpactDescription: data['business_impact_description'] as string | undefined,
+		rcaPerformed: data['rca_performed'] as boolean,
+		rcaMethod: data['rca_method'] as RCAMethod | undefined,
+		rcaNotes: data['rca_notes'] as string | undefined,
+		rcaData: data['rca_data'] as Record<string, unknown> | undefined,
+		rootCauseIdentified: data['root_cause_identified'] as boolean,
+		rootCauseDescription: data['root_cause_description'] as string | undefined,
+		rootCauseCategory: data['root_cause_category'] as RootCauseCategory | undefined,
+		rootCauseConfidence: data['root_cause_confidence'] as number | undefined,
+		rcaCompletedAt: data['rca_completed_at'] as string | undefined,
+		rcaCompletedBy: data['rca_completed_by'] as string | undefined,
+		workaroundAvailable: data['workaround_available'] as boolean,
+		workaroundDescription: data['workaround_description'] as string | undefined,
+		workaroundEffectiveness: data['workaround_effectiveness'] as ImpactLevel | undefined,
+		permanentFixAvailable: data['permanent_fix_available'] as boolean,
+		permanentFixDescription: data['permanent_fix_description'] as string | undefined,
+		permanentFixImplementedAt: data['permanent_fix_implemented_at'] as string | undefined,
+		permanentFixChangeId: data['permanent_fix_change_id'] as string | undefined,
+		knownErrorId: data['known_error_id'] as string | undefined,
+		knowledgeArticleId: data['knowledge_article_id'] as string | undefined,
+		assignedTo: data['assigned_to'] as string | undefined,
+		assignedTeam: data['assigned_team'] as string | undefined,
+		owner: data['owner'] as string | undefined,
+		closedBy: data['closed_by'] as string | undefined,
+		closedAt: data['closed_at'] as string | undefined,
+		closureNotes: data['closure_notes'] as string | undefined,
+		targetResolutionDate: data['target_resolution_date'] as string | undefined,
+		metadata: data['metadata'] as Record<string, unknown> | undefined,
+		version: data['version'] as number,
+		createdAt: data['created_at'] as string,
+		updatedAt: data['updated_at'] as string,
 	};
 }
 
@@ -96,8 +98,8 @@ async function fetchProblems(
 	}
 	const data = await res.json();
 	return {
-		problems: (data.problems || []).map(transformProblem),
-		total: data.total || 0,
+		problems: (data['problems'] || []).map(transformProblem),
+		total: data['total'] || 0,
 	};
 }
 
@@ -134,33 +136,33 @@ async function createProblem(
 	data: CreateProblemData,
 ): Promise<{ id: string; problemNumber: string }> {
 	const res = await fetch(
-		`${API_URL}/api/v1/problems?project_id=${data.projectId}`,
+		`${API_URL}/api/v1/problems?project_id=${data['projectId']}`,
 		{
 			method: "POST",
 			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify({
-				title: data.title,
-				description: data.description,
-				category: data.category,
-				sub_category: data.subCategory,
-				tags: data.tags,
-				impact_level: data.impactLevel || "medium",
-				urgency: data.urgency || "medium",
-				priority: data.priority || "medium",
-				affected_systems: data.affectedSystems,
-				affected_users_estimated: data.affectedUsersEstimated,
-				business_impact_description: data.businessImpactDescription,
-				assigned_to: data.assignedTo,
-				assigned_team: data.assignedTeam,
-				owner: data.owner,
-				target_resolution_date: data.targetResolutionDate,
-				metadata: data.metadata || {},
+				title: data['title'],
+				description: data['description'],
+				category: data['category'],
+				sub_category: data['subCategory'],
+				tags: data['tags'],
+				impact_level: data['impactLevel'] || "medium",
+				urgency: data['urgency'] || "medium",
+				priority: data['priority'] || "medium",
+				affected_systems: data['affectedSystems'],
+				affected_users_estimated: data['affectedUsersEstimated'],
+				business_impact_description: data['businessImpactDescription'],
+				assigned_to: data['assignedTo'],
+				assigned_team: data['assignedTeam'],
+				owner: data['owner'],
+				target_resolution_date: data['targetResolutionDate'],
+				metadata: data['metadata'] || {},
 			}),
 		},
 	);
 	if (!res.ok) throw new Error("Failed to create problem");
 	const result = await res.json();
-	return { id: result.id, problemNumber: result.problem_number };
+	return { id: result['id'], problemNumber: result['problem_number'] };
 }
 
 async function updateProblem(
@@ -171,22 +173,22 @@ async function updateProblem(
 		method: "PUT",
 		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
-			title: data.title,
-			description: data.description,
-			category: data.category,
-			sub_category: data.subCategory,
-			tags: data.tags,
-			impact_level: data.impactLevel,
-			urgency: data.urgency,
-			priority: data.priority,
-			affected_systems: data.affectedSystems,
-			affected_users_estimated: data.affectedUsersEstimated,
-			business_impact_description: data.businessImpactDescription,
-			assigned_to: data.assignedTo,
-			assigned_team: data.assignedTeam,
-			owner: data.owner,
-			target_resolution_date: data.targetResolutionDate,
-			metadata: data.metadata,
+			title: data['title'],
+			description: data['description'],
+			category: data['category'],
+			sub_category: data['subCategory'],
+			tags: data['tags'],
+			impact_level: data['impactLevel'],
+			urgency: data['urgency'],
+			priority: data['priority'],
+			affected_systems: data['affectedSystems'],
+			affected_users_estimated: data['affectedUsersEstimated'],
+			business_impact_description: data['businessImpactDescription'],
+			assigned_to: data['assignedTo'],
+			assigned_team: data['assignedTeam'],
+			owner: data['owner'],
+			target_resolution_date: data['targetResolutionDate'],
+			metadata: data['metadata'],
 		}),
 	});
 	if (!res.ok) throw new Error("Failed to update problem");
@@ -235,21 +237,21 @@ async function recordRCA(
 		method: "POST",
 		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
-			rca_method: data.rcaMethod,
-			rca_notes: data.rcaNotes,
-			rca_data: data.rcaData,
-			root_cause_identified: data.rootCauseIdentified || false,
-			root_cause_description: data.rootCauseDescription,
-			root_cause_category: data.rootCauseCategory,
-			root_cause_confidence: data.rootCauseConfidence,
+			rca_method: data['rcaMethod'],
+			rca_notes: data['rcaNotes'],
+			rca_data: data['rcaData'],
+			root_cause_identified: data['rootCauseIdentified'] || false,
+			root_cause_description: data['rootCauseDescription'],
+			root_cause_category: data['rootCauseCategory'],
+			root_cause_confidence: data['rootCauseConfidence'],
 		}),
 	});
 	if (!res.ok) throw new Error("Failed to record RCA");
 	const result = await res.json();
 	return {
-		id: result.id,
-		rcaPerformed: result.rca_performed,
-		rootCauseIdentified: result.root_cause_identified,
+		id: result['id'],
+		rcaPerformed: result['rca_performed'],
+		rootCauseIdentified: result['root_cause_identified'],
 	};
 }
 
@@ -269,9 +271,9 @@ async function closeProblem(
 	if (!res.ok) throw new Error("Failed to close problem");
 	const result = await res.json();
 	return {
-		id: result.id,
+		id: result['id'],
 		status: result.status,
-		resolutionType: result.resolution_type,
+		resolutionType: result['resolution_type'],
 	};
 }
 
@@ -294,8 +296,8 @@ async function fetchProblemActivities(
 	if (!res.ok) throw new Error("Failed to fetch activities");
 	const data = await res.json();
 	return {
-		problemId: data.problem_id,
-		activities: (data.activities || []).map((a: any) => ({
+		problemId: data['problem_id'],
+		activities: (data['activities'] || []).map((a: Record<string, unknown>) => ({
 			id: a.id,
 			problemId: a.problem_id,
 			activityType: a.activity_type,
@@ -322,10 +324,10 @@ async function fetchProblemStats(projectId: string): Promise<{
 	if (!res.ok) throw new Error("Failed to fetch problem stats");
 	const data = await res.json();
 	return {
-		projectId: data.project_id,
-		byStatus: data.by_status || {},
-		byPriority: data.by_priority || {},
-		total: data.total || 0,
+		projectId: data['project_id'],
+		byStatus: data['by_status'] || {},
+		byPriority: data['by_priority'] || {},
+		total: data['total'] || 0,
 	};
 }
 
@@ -352,7 +354,7 @@ export function useCreateProblem() {
 	return useMutation({
 		mutationFn: createProblem,
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["problems"] });
+			void queryClient.invalidateQueries({ queryKey: ["problems"] });
 		},
 	});
 }
@@ -368,8 +370,8 @@ export function useUpdateProblem() {
 			data: Partial<CreateProblemData>;
 		}) => updateProblem(id, data),
 		onSuccess: (_, { id }) => {
-			queryClient.invalidateQueries({ queryKey: ["problems"] });
-			queryClient.invalidateQueries({ queryKey: ["problems", id] });
+			void queryClient.invalidateQueries({ queryKey: ["problems"] });
+			void queryClient.invalidateQueries({ queryKey: ["problems", id] });
 		},
 	});
 }
@@ -387,9 +389,9 @@ export function useTransitionProblemStatus() {
 			reason?: string;
 		}) => transitionProblemStatus(id, toStatus, reason),
 		onSuccess: (_, { id }) => {
-			queryClient.invalidateQueries({ queryKey: ["problems"] });
-			queryClient.invalidateQueries({ queryKey: ["problems", id] });
-			queryClient.invalidateQueries({ queryKey: ["problemActivities", id] });
+			void queryClient.invalidateQueries({ queryKey: ["problems"] });
+			void queryClient.invalidateQueries({ queryKey: ["problems", id] });
+			void queryClient.invalidateQueries({ queryKey: ["problemActivities", id] });
 		},
 	});
 }
@@ -400,8 +402,8 @@ export function useRecordRCA() {
 		mutationFn: ({ id, data }: { id: string; data: RCAData }) =>
 			recordRCA(id, data),
 		onSuccess: (_, { id }) => {
-			queryClient.invalidateQueries({ queryKey: ["problems", id] });
-			queryClient.invalidateQueries({ queryKey: ["problemActivities", id] });
+			void queryClient.invalidateQueries({ queryKey: ["problems", id] });
+			void queryClient.invalidateQueries({ queryKey: ["problemActivities", id] });
 		},
 	});
 }
@@ -419,9 +421,9 @@ export function useCloseProblem() {
 			closureNotes?: string;
 		}) => closeProblem(id, resolutionType, closureNotes),
 		onSuccess: (_, { id }) => {
-			queryClient.invalidateQueries({ queryKey: ["problems"] });
-			queryClient.invalidateQueries({ queryKey: ["problems", id] });
-			queryClient.invalidateQueries({ queryKey: ["problemActivities", id] });
+			void queryClient.invalidateQueries({ queryKey: ["problems"] });
+			void queryClient.invalidateQueries({ queryKey: ["problems", id] });
+			void queryClient.invalidateQueries({ queryKey: ["problemActivities", id] });
 		},
 	});
 }
@@ -431,7 +433,7 @@ export function useDeleteProblem() {
 	return useMutation({
 		mutationFn: deleteProblem,
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["problems"] });
+			void queryClient.invalidateQueries({ queryKey: ["problems"] });
 		},
 	});
 }

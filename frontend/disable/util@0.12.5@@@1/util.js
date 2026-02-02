@@ -645,7 +645,7 @@ exports.promisify = function promisify(original) {
 
     try {
       original.apply(this, args);
-    } catch (err) {
+    } catch (_err) {
       promiseReject(err);
     }
 

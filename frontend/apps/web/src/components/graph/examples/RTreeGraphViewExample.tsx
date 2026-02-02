@@ -33,7 +33,7 @@ import { logger } from '@/lib/logger';
 
 interface RTreeGraphViewExampleProps {
 	edges: Edge[];
-	nodes: any[];
+	nodes: Array<{ id: string; label: string; x: number; y: number }>;
 }
 
 /**
@@ -41,10 +41,15 @@ interface RTreeGraphViewExampleProps {
  *
  * Automatically switches between O(n) and O(log n) based on graph size.
  */
+function formatNumber(num: number) {
+	return num.toLocaleString();
+}
+
 export function RTreeGraphViewExample({
 	edges,
 	nodes,
 }: RTreeGraphViewExampleProps) {
+	// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- ReactFlowInstance from reactflow
 	const [reactFlowInstance, setReactFlowInstance] =
 		useState<ReactFlowInstance | null>(null);
 	const [showStats, setShowStats] = useState(true);
@@ -62,9 +67,6 @@ export function RTreeGraphViewExample({
 
 	// Detailed statistics
 	const stats = useRTreeCullingStats(cullingStats);
-
-	// Format large numbers
-	const formatNumber = (num: number) => num.toLocaleString();
 
 	return (
 		<div className="h-screen w-screen">
@@ -242,6 +244,7 @@ export function SimpleRTreeIntegration({
 	edges,
 	nodes,
 }: RTreeGraphViewExampleProps) {
+	// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- ReactFlowInstance from reactflow
 	const [reactFlowInstance, setReactFlowInstance] =
 		useState<ReactFlowInstance | null>(null);
 
@@ -272,10 +275,11 @@ export function RTreeWithMonitoring({
 	edges,
 	nodes,
 }: RTreeGraphViewExampleProps) {
+	// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- ReactFlowInstance from reactflow
 	const [reactFlowInstance, setReactFlowInstance] =
 		useState<ReactFlowInstance | null>(null);
 
-	const handleStatsChange = useCallback((stats: any) => {
+	const handleStatsChange = useCallback((stats: { nodeCount: number; edgeCount: number; fps: number }) => {
 		// Log to analytics
 		logger.info("Culling stats:", {
 			visible: stats.visibleEdges,
@@ -315,9 +319,9 @@ export function RTreeWithMonitoring({
  */
 export function generateLargeGraph(numEdges: number = 100000): {
 	edges: Edge[];
-	nodes: any[];
+	nodes: Array<{ id: string; label: string; x: number; y: number }>;
 } {
-	const nodes: any[] = [];
+	const nodes: Array<{ id: string; label: string; x: number; y: number }> = [];
 	const edges: Edge[] = [];
 
 	// Create nodes in a grid

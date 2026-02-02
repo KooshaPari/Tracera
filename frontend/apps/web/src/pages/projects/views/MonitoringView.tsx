@@ -110,15 +110,16 @@ export function MonitoringView({ projectId }: MonitoringViewProps) {
 					</Card>
 					{(["done", "in_progress", "blocked", "todo"] as const).map(
 						(status) => {
-							const c = statusConfig[status] ?? statusConfig.todo;
+							const c = statusConfig[status] ?? statusConfig['todo'];
 							const count = byStatus[status] ?? 0;
+							const Icon = c?.icon;
 							return (
 								<Card key={status}>
 									<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 										<CardTitle className="text-sm font-medium">
-											{c.label}
+											{c?.label ?? status}
 										</CardTitle>
-										<c.icon className="h-4 w-4 text-muted-foreground" />
+										{Icon ? <Icon className="h-4 w-4 text-muted-foreground" /> : null}
 									</CardHeader>
 									<CardContent>
 										{isLoading ? (

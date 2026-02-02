@@ -10,7 +10,7 @@
  * - Reports size reductions
  */
 
-import { readdir, stat, readFile, writeFile } from 'fs/promises';
+import { readdir, stat, writeFile } from 'fs/promises';
 import { join, extname } from 'path';
 import { exec } from 'child_process';
 import { promisify } from 'util';
@@ -87,7 +87,7 @@ async function optimizeSVG(filePath: string): Promise<AssetStats | null> {
     const originalSize = await getFileSize(filePath);
 
     // Run SVGO
-    await execAsync(`npx svgo --config=svgo.config.js "${filePath}" -o "${filePath}"`);
+    await execAsync(`bunx svgo --config=svgo.config.js "${filePath}" -o "${filePath}"`);
 
     const optimizedSize = await getFileSize(filePath);
     const reduction = originalSize - optimizedSize;
@@ -115,14 +115,12 @@ async function optimizeImage(filePath: string): Promise<AssetStats | null> {
 
     // For PNG/JPG, we can generate WebP and AVIF versions
     if (['.png', '.jpg', '.jpeg'].includes(ext)) {
-      const basePath = filePath.substring(0, filePath.lastIndexOf('.'));
-
       // Generate WebP (if sharp is available via bun)
       try {
         // Note: This requires sharp to be installed
         // For now, we'll document this as a manual step or use Next.js Image optimization
         console.log(`  WebP/AVIF generation for ${filePath} will be handled by Next.js Image`);
-      } catch (error) {
+      } catch {
         console.log(`  Skipping WebP/AVIF generation (will be handled by Next.js)`);
       }
     }

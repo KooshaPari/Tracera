@@ -82,7 +82,7 @@ describe("MobileMenu", () => {
 	});
 
 	it("closes menu when escape key is pressed", () => {
-		const { container } = render(<MobileMenu />);
+		render(<MobileMenu />);
 
 		const button = screen.getByLabelText("Open menu");
 		fireEvent.click(button);
@@ -112,7 +112,7 @@ describe("MobileMenu", () => {
 	});
 
 	it("displays logout button with proper styling", () => {
-		const { container } = render(<MobileMenu />);
+		render(<MobileMenu />);
 
 		const button = screen.getByLabelText("Open menu");
 		fireEvent.click(button);
@@ -123,7 +123,7 @@ describe("MobileMenu", () => {
 	});
 
 	it("hides menu on desktop (md: breakpoint)", () => {
-		const { container } = render(<MobileMenu />);
+		render(<MobileMenu />);
 
 		const button = screen.getByRole("button", {
 			name: /open menu|close menu/i,

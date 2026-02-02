@@ -50,7 +50,7 @@ function computeFullKey(signature) {
   let hooks
   try {
     hooks = signature.getCustomHooks()
-  } catch (err) {
+  } catch (_err) {
     // This can happen in an edge case, e.g. if expression like Foo.useSomething
     // depends on Foo which is lazily initialized during rendering.
     // In that case just assume we'll have to remount.
@@ -127,7 +127,7 @@ function resolveFamily(type) {
 function getProperty(object, property) {
   try {
     return object[property]
-  } catch (err) {
+  } catch (_err) {
     // Intentionally ignore.
     return undefined
   }
@@ -206,7 +206,7 @@ function performReactRefresh() {
       const element = rootElements.get(root)
       try {
         helpers.scheduleRoot(root, element)
-      } catch (err) {
+      } catch (_err) {
         if (!didError) {
           didError = true
           firstError = err
@@ -226,7 +226,7 @@ function performReactRefresh() {
       }
       try {
         helpers.scheduleRefresh(root, update)
-      } catch (err) {
+      } catch (_err) {
         if (!didError) {
           didError = true
           firstError = err

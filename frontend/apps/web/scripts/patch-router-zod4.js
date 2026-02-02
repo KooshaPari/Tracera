@@ -31,6 +31,9 @@ try {
 		console.log("ℹ️  No patching needed or already patched");
 	}
 } catch (error) {
-	console.error("❌ Failed to patch router-generator:", error.message);
+	console.error(
+		"❌ Failed to patch router-generator:",
+		error instanceof Error ? error.message : String(error),
+	);
 	process.exit(0); // Don't fail build
 }

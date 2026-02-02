@@ -242,7 +242,7 @@ function createClient(xhr) {
 			response.statusCode = 200;
 			response.rawHeaders = ["Content-Type", contentType];
 			response.headers = { "content-type": contentType };
-		} catch (err) {
+		} catch (_err) {
 			process.nextTick(() => client.emit("error", err));
 			return client;
 		}

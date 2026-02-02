@@ -1,22 +1,28 @@
 // Codex Agent API endpoints
 
-import { apiClient, handleApiResponse, safeApiCall } from "./client";
+/* oxlint-disable import/no-named-export */
+
+import client from "./client";
+
+const { apiClient, handleApiResponse, safeApiCall } = client;
 
 /**
  * Input data for Codex agent tasks
  */
-export interface CodexInputData {
-	[key: string]: string | number | boolean | object | null | undefined;
-}
+type CodexInputData = Record<
+	string,
+	string | number | boolean | object | null | undefined
+>;
 
 /**
  * Output data from Codex agent tasks
  */
-export interface CodexOutputData {
-	[key: string]: string | number | boolean | object | null | undefined;
-}
+type CodexOutputData = Record<
+	string,
+	string | number | boolean | object | null | undefined
+>;
 
-export interface CodexAgentTask {
+interface CodexAgentTask {
 	id: string;
 	project_id: string;
 	execution_id?: string;
@@ -37,50 +43,34 @@ export interface CodexAgentTask {
 	created_at: string;
 }
 
-export interface CodexReviewRequest {
+interface CodexReviewRequest {
 	artifact_id: string;
 	prompt?: string;
 	execution_id?: string;
 	max_frames?: number;
 }
 
-export interface CodexAuthStatus {
+interface CodexAuthStatus {
 	available: boolean;
 	version?: string;
 	authenticated: boolean;
 	status: string;
 }
 
-export const codexApi = {
-	reviewImage: async (
-		projectId: string,
-		data: CodexReviewRequest,
-	): Promise<CodexAgentTask> => {
-		return handleApiResponse(
+const get = apiClient.GET.bind(apiClient);
+const post = apiClient.POST.bind(apiClient);
+
+const codexApi = {
+	getAuthStatus: (projectId: string): Promise<CodexAuthStatus> =>
+		handleApiResponse(
 			safeApiCall(
-				apiClient.POST("/api/v1/projects/{project_id}/codex/review-image", {
+				get("/api/v1/projects/{project_id}/codex/auth-status", {
 					params: { path: { project_id: projectId } },
-					body: data,
 				}),
 			),
-		);
-	},
+		),
 
-	reviewVideo: async (
-		projectId: string,
-		data: CodexReviewRequest,
-	): Promise<CodexAgentTask> => {
-		return handleApiResponse(
-			safeApiCall(
-				apiClient.POST("/api/v1/projects/{project_id}/codex/review-video", {
-					params: { path: { project_id: projectId } },
-					body: data,
-				}),
-			),
-		);
-	},
-
-	listInteractions: async (
+	listInteractions: (
 		projectId: string,
 		params?: {
 			limit?: number;
@@ -88,26 +78,43 @@ export const codexApi = {
 			status?: string;
 			task_type?: string;
 		},
-	): Promise<{ tasks: CodexAgentTask[]; total: number }> => {
-		return handleApiResponse(
+	): Promise<{ tasks: CodexAgentTask[]; total: number }> =>
+		handleApiResponse(
 			safeApiCall(
-				apiClient.GET("/api/v1/projects/{project_id}/codex/interactions", {
+				get("/api/v1/projects/{project_id}/codex/interactions", {
 					params: {
 						path: { project_id: projectId },
 						query: params,
 					},
 				}),
 			),
-		);
-	},
+		),
 
-	getAuthStatus: async (projectId: string): Promise<CodexAuthStatus> => {
-		return handleApiResponse(
+	reviewImage: (
+		projectId: string,
+		data: CodexReviewRequest,
+	): Promise<CodexAgentTask> =>
+		handleApiResponse(
 			safeApiCall(
-				apiClient.GET("/api/v1/projects/{project_id}/codex/auth-status", {
+				post("/api/v1/projects/{project_id}/codex/review-image", {
+					body: data,
 					params: { path: { project_id: projectId } },
 				}),
 			),
-		);
-	},
+		),
+
+	reviewVideo: (
+		projectId: string,
+		data: CodexReviewRequest,
+	): Promise<CodexAgentTask> =>
+		handleApiResponse(
+			safeApiCall(
+				post("/api/v1/projects/{project_id}/codex/review-video", {
+					body: data,
+					params: { path: { project_id: projectId } },
+				}),
+			),
+		),
 };
+
+export { codexApi, type CodexAuthStatus, type CodexAgentTask, type CodexReviewRequest };

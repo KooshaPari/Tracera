@@ -26,15 +26,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@tracertm/ui/components/Select";
-import {
-	Download,
-	Maximize2,
-	Minimize2,
-	PlayCircle,
-	StopCircle,
-	ZoomIn,
-	ZoomOut,
-} from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 // NOTE: These imports will work after installing dependencies
@@ -236,6 +227,7 @@ function GraphEventController({
 // HELPERS
 // =============================================================================
 
+/*
 function getColorForType(type: string): string {
 	const colors: Record<string, string> = {
 		feature: "#3b82f6", // blue
@@ -247,6 +239,7 @@ function getColorForType(type: string): string {
 	};
 	return colors[type] || "#64748b";
 }
+*/
 
 // =============================================================================
 // PERFORMANCE MONITOR
@@ -303,12 +296,10 @@ function usePerformanceMonitor(
 export function SigmaGraphView({
 	items,
 	links,
-	onNodeClick,
-	onNodeHover,
-}: SigmaGraphViewProps) {
-	const [showPerformance, setShowPerformance] = useState(true);
-	const [layout, setLayout] = useState<LayoutAlgorithm>("random");
-	const [isRunningLayout, setIsRunningLayout] = useState(false);
+}: Omit<SigmaGraphViewProps, 'onNodeClick' | 'onNodeHover'>) {
+	const [showPerformance, _setShowPerformance] = useState(true);
+	const [_layout, _setLayout] = useState<LayoutAlgorithm>("random");
+	const [_isRunningLayout, _setIsRunningLayout] = useState(false);
 
 	const stats = usePerformanceMonitor(showPerformance);
 

@@ -70,7 +70,7 @@ class Extractor {
 					await this.extractEntry(entry);
 					debug("finished processing", entry.fileName);
 					this.zipfile.readEntry();
-				} catch (err) {
+				} catch (_err) {
 					this.canceled = true;
 					this.zipfile.close();
 					reject(err);

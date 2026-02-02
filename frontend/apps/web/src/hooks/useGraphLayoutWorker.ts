@@ -16,6 +16,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import * as Comlink from 'comlink';
+import { logger } from '@/lib/logger';
 import type { GraphLayoutWorkerAPI } from '@/workers/graphLayout.worker';
 import type {
 	LayoutNode,
@@ -110,7 +111,7 @@ function fallbackGridLayout(
  * const { computeLayout, isReady, isComputing } = useGraphLayoutWorker({
  *   progressive: true,
  *   onProgress: (result) => {
- *     logger.info(`Layout ${result.progress * 100}% complete`);
+ *     logger.info(`Layout ${result['progress'] * 100}% complete`);
  *   }
  * });
  *
@@ -119,7 +120,7 @@ function fallbackGridLayout(
  *     computeLayout(nodes, edges, { algorithm: 'elk' })
  *       .then(result => {
  *         // Apply layout positions
- *         applyPositions(result.positions);
+ *         applyPositions(result['positions']);
  *       });
  *   }
  * }, [isReady, nodes, edges]);
@@ -179,7 +180,7 @@ export function useGraphLayoutWorker(
 			}
 		}
 
-		initWorker();
+		void initWorker();
 
 		return () => {
 			mounted = false;
@@ -242,13 +243,13 @@ export function useGraphLayoutWorker(
 
 					let finalResult: LayoutResult | null = null;
 
-					// Consume async generator
-					for await (const result of generator) {
+					// Consume async generator (Comlink proxy is async iterable at runtime)
+					for await (const result of generator as AsyncIterable<LayoutResult>) {
 						finalResult = result;
-						setProgress(result.progress || 0);
+						setProgress(result['progress'] || 0);
 
 						// Notify progress callback
-						if (onProgress && result.isPartial) {
+						if (onProgress && result['isPartial']) {
 							onProgress(result);
 						}
 					}

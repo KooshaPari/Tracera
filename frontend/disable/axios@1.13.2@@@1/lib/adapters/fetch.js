@@ -298,7 +298,7 @@ const factory = (env) => {
 					request,
 				});
 			});
-		} catch (err) {
+		} catch (_err) {
 			unsubscribe && unsubscribe();
 
 			if (

@@ -14,7 +14,7 @@ class Thenable {
     try {
       this.result = unwrapSync(executor())
       this.state = constants.RESOLVED
-    } catch (err) {
+    } catch (_err) {
       this.result = err
       this.state = constants.REJECTED
     }

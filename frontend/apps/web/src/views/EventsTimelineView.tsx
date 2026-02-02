@@ -36,12 +36,12 @@ interface Event {
 }
 
 const eventConfigs = {
-	item_created: { icon: Plus, color: "bg-green-500", text: "Created node" },
-	item_updated: { icon: Edit, color: "bg-blue-500", text: "Modified node" },
-	link_created: { icon: Link2, color: "bg-purple-500", text: "Mapped link" },
+	item_created: { color: "bg-green-500", icon: Plus, text: "Created node" },
+	item_updated: { color: "bg-blue-500", icon: Edit, text: "Modified node" },
+	link_created: { color: "bg-purple-500", icon: Link2, text: "Mapped link" },
 	project_created: {
-		icon: Folder,
 		color: "bg-orange-500",
+		icon: Folder,
 		text: "Initialized project",
 	},
 };
@@ -54,45 +54,43 @@ export function EventsTimelineView() {
 	const events = useMemo<Event[]>(
 		() => [
 			{
-				id: "1",
-				type: "item_created",
-				title: "User Authentication",
 				description: "New security requirement initialized in Project Alpha.",
+				id: "1",
+				projectId: "alpha-1",
 				timestamp: new Date(),
+				title: "User Authentication",
+				type: "item_created",
 				user: "Admin",
-				projectId: "alpha-1",
 			},
 			{
-				id: "2",
-				type: "link_created",
-				title: "Traceability Link",
 				description: "Connected 'Auth Logic' to 'Security Spec v1'.",
-				timestamp: new Date(Date.now() - 3600000),
-				user: "Jane Doe",
+				id: "2",
 				projectId: "alpha-1",
+				timestamp: new Date(Date.now() - 3_600_000),
+				title: "Traceability Link",
+				type: "link_created",
+				user: "Jane Doe",
 			},
 			{
-				id: "3",
-				type: "item_updated",
-				title: "Database Schema",
 				description: "Field 'user_id' updated to UUID for higher integrity.",
-				timestamp: new Date(Date.now() - 86400000),
-				user: "System",
+				id: "3",
 				projectId: "beta-2",
+				timestamp: new Date(Date.now() - 86_400_000),
+				title: "Database Schema",
+				type: "item_updated",
+				user: "System",
 			},
 		],
 		[],
 	);
 
-	const filteredEvents = useMemo(() => {
-		return events.filter((e) => {
+	const filteredEvents = useMemo(() => events.filter((e) => {
 			const matchesQuery =
 				e.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
 				e.description.toLowerCase().includes(searchQuery.toLowerCase());
 			const matchesType = typeFilter === "all" || e.type === typeFilter;
 			return matchesQuery && matchesType;
-		});
-	}, [events, searchQuery, typeFilter]);
+		}), [events, searchQuery, typeFilter]);
 
 	return (
 		<div className="p-6 space-y-8 max-w-4xl mx-auto animate-in fade-in duration-500">

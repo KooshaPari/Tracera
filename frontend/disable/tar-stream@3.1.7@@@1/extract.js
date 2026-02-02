@@ -142,7 +142,7 @@ class Extract extends Writable {
 
     try {
       this._header = headers.decode(this._buffer.shift(512), this._filenameEncoding, this._allowUnknownFormat)
-    } catch (err) {
+    } catch (_err) {
       this._continueWrite(err)
       return false
     }
@@ -221,7 +221,7 @@ class Extract extends Writable {
 
     try {
       this._decodeLongHeader(buf)
-    } catch (err) {
+    } catch (_err) {
       this._continueWrite(err)
       return false
     }

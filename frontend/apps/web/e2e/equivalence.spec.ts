@@ -625,7 +625,7 @@ test.describe("Equivalence Panel", () => {
 					console.log(`${edgeCount} equivalence edges displayed`);
 				} else {
 					// Alternative: check all edges for equivalence styling
-					const allEdges = page.locator(".react-flow__edges g, svg path");
+					const _allEdges = page.locator(".react-flow__edges g, svg path");
 					console.log("Checking for equivalence edge visualization");
 				}
 			}

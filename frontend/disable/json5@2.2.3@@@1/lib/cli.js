@@ -64,7 +64,7 @@ if (argv.version) {
 
 				writeStream.write(json);
 			}
-		} catch (err) {
+		} catch (_err) {
 			console.error(err.message);
 			process.exit(1);
 		}

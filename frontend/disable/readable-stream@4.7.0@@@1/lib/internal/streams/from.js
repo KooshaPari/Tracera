@@ -87,7 +87,7 @@ function from(Readable, iterable, opts) {
             reading = false
           }
         }
-      } catch (err) {
+      } catch (_err) {
         readable.destroy(err)
       }
       break

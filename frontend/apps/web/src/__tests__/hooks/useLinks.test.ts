@@ -10,7 +10,7 @@ import { useCreateLink, useLinks } from "../../hooks/useLinks";
 
 // Mock fetch at module level
 const mockFetch = vi.fn();
-global.fetch = mockFetch as any;
+global.fetch = mockFetch as unknown as typeof fetch;
 
 const createWrapper = () => {
 	const queryClient = new QueryClient({

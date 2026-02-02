@@ -93,7 +93,7 @@ function upgrade (opts, callback) {
       method: opts.method || 'GET',
       upgrade: opts.protocol || 'Websocket'
     }, upgradeHandler)
-  } catch (err) {
+  } catch (_err) {
     if (typeof callback !== 'function') {
       throw err
     }

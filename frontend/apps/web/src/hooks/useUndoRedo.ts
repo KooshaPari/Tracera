@@ -53,7 +53,8 @@ export function useUndoRedo<T>(initialState: T): UseUndoRedoResult<T> {
 		setCurrentIndexState((prevIndex) => {
 			if (prevIndex > 0) {
 				const newIndex = prevIndex - 1;
-				setStateInternal(historyRef.current[newIndex].state);
+				const entry = historyRef.current[newIndex];
+				if (entry) setStateInternal(entry.state);
 				return newIndex;
 			}
 			return prevIndex;
@@ -64,7 +65,8 @@ export function useUndoRedo<T>(initialState: T): UseUndoRedoResult<T> {
 		setCurrentIndexState((prevIndex) => {
 			if (prevIndex < historyRef.current.length - 1) {
 				const newIndex = prevIndex + 1;
-				setStateInternal(historyRef.current[newIndex].state);
+				const entry = historyRef.current[newIndex];
+				if (entry) setStateInternal(entry.state);
 				return newIndex;
 			}
 			return prevIndex;

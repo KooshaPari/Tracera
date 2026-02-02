@@ -20,7 +20,7 @@ test.describe("Project to Items Workflow", () => {
 		await page.waitForLoadState("networkidle");
 
 		// Try multiple ways to create a project
-		let clicked = false;
+		let _clicked = false;
 
 		// Try clicking the "+ New Project" button
 		const newProjectBtn = page
@@ -29,7 +29,7 @@ test.describe("Project to Items Workflow", () => {
 			.first();
 		if (await newProjectBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
 			await newProjectBtn.click();
-			clicked = true;
+			_clicked = true;
 		} else {
 			// Try navigating with search param
 			await page.goto("/projects?action=create");

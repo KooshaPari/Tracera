@@ -9,6 +9,7 @@
  */
 
 import type { DefaultError, UseQueryOptions } from "@tanstack/react-query";
+import { logger } from '@/lib/logger';
 
 export interface CacheMetrics {
 	/** Size of the data in bytes */

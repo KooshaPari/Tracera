@@ -1,6 +1,16 @@
 import { render } from "@testing-library/react";
-import { memo, useCallback } from "react";
+import React, { memo, useCallback, useMemo } from "react";
 import { describe, expect, it, vi } from "vitest";
+
+interface TestItem {
+	id: string;
+	name?: string;
+	title?: string;
+	type?: string;
+	status?: string;
+	priority?: string;
+	owner?: string;
+}
 
 describe("React Memoization Optimizations", () => {
 	describe("ItemCard Memoization", () => {
@@ -10,13 +20,13 @@ describe("React Memoization Optimizations", () => {
 			const TestItemCard = memo(
 				({
 					item,
-					onDragStart,
+					onDragStart: _onDragStart,
 				}: {
-					item: any;
-					onDragStart: (item: any) => void;
+					item: TestItem;
+					onDragStart: (item: TestItem) => void;
 				}) => {
 					renderSpy();
-					return <div>{item.title}</div>;
+					return <div>{item.title ?? item.name}</div>;
 				},
 				(prev, next) => {
 					// Return true if props are equal (skip re-render)
@@ -85,10 +95,10 @@ describe("React Memoization Optimizations", () => {
 
 		it("should use useCallback for drag handlers to maintain reference equality", async () => {
 			const handleDragStartSpy = vi.fn();
-			let callbackReference: ((item: unknown) => void) | null = null;
+			let callbackReference: ((item: TestItem) => void) | null = null;
 
 			function TestComponent() {
-				const handleDragStart = useCallback((item: any) => {
+				const handleDragStart = useCallback((item: TestItem) => {
 					handleDragStartSpy(item);
 				}, []);
 
@@ -120,8 +130,8 @@ describe("React Memoization Optimizations", () => {
 			const TestTreeItem = memo(
 				({
 					nodeId,
-					expandedIds,
-					onToggle,
+					expandedIds: _expandedIds,
+					onToggle: _onToggle,
 				}: {
 					nodeId: string;
 					expandedIds: Set<string>;
@@ -183,7 +193,7 @@ describe("React Memoization Optimizations", () => {
 			let lastCallbackRef: ((id: string) => void) | null = null;
 
 			function TestComponent() {
-				const handleToggle = useCallback((id: string) => {
+				const handleToggle = useCallback((_id: string) => {
 					// Toggle logic
 				}, []);
 
@@ -209,17 +219,17 @@ describe("React Memoization Optimizations", () => {
 			const TestTableRow = memo(
 				({
 					item,
-					onDelete,
-					onNavigate,
+					onDelete: _onDelete,
+					onNavigate: _onNavigate,
 				}: {
-					item: any;
+					item: TestItem;
 					onDelete: (id: string) => void;
 					onNavigate: (path: string) => void;
 				}) => {
 					renderSpy();
 					return (
 						<tr>
-							<td>{item.title}</td>
+							<td>{item.title ?? item.name}</td>
 						</tr>
 					);
 				},
@@ -310,7 +320,7 @@ describe("React Memoization Optimizations", () => {
 				onDelete,
 				onNavigate,
 			}: {
-				item: any;
+				item: TestItem;
 				onDelete: (id: string) => void;
 				onNavigate: (path: string) => void;
 			}) {
@@ -328,7 +338,7 @@ describe("React Memoization Optimizations", () => {
 				return (
 					<tr>
 						<td>
-							<button onClick={handleNavigate}>{item.title}</button>
+							<button onClick={handleNavigate}>{item.title ?? item.name}</button>
 						</td>
 						<td>
 							<button onClick={handleDelete}>Delete</button>
@@ -378,20 +388,20 @@ describe("React Memoization Optimizations", () => {
 				items,
 				filter,
 			}: {
-				items: any[];
+				items: TestItem[];
 				filter: string;
 			}) {
 				const computed = useMemo(() => {
 					computeSpy();
 					return items.filter((item) =>
-						item.title.toLowerCase().includes(filter.toLowerCase()),
+						(item.title ?? item.name ?? "").toLowerCase().includes(filter.toLowerCase()),
 					);
 				}, [items, filter]);
 
 				return <div>{computed.length}</div>;
 			}
 
-			const items = [{ id: "1", title: "Test" }];
+			const items: TestItem[] = [{ id: "1", title: "Test" }];
 			const { rerender } = render(
 				<TestComponent items={items} filter="test" />,
 			);

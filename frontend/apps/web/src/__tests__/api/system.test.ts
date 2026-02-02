@@ -7,16 +7,21 @@ import { fetchSystemStatus } from "@/api/system";
 
 // Mock client
 vi.mock("@/api/client", () => ({
-	apiClient: {
-		GET: vi.fn(),
+	__esModule: true,
+	default: {
+		apiClient: {
+			GET: vi.fn(),
+		},
 	},
 }));
-vi.mock("@/api/mcpClient", () => ({
+vi.mock("@/api/mcp-config", () => ({
 	getMcpConfig: vi.fn(),
 }));
 
-import { apiClient } from "@/api/client";
-import { getMcpConfig } from "@/api/mcpClient";
+import client from "@/api/client";
+import { getMcpConfig } from "@/api/mcp-config";
+
+const { apiClient } = client;
 
 describe("System API", () => {
 	beforeEach(() => {

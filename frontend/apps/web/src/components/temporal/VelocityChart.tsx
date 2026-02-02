@@ -19,12 +19,47 @@ export interface VelocityChartProps {
 	height?: number;
 }
 
+function VelocityCustomTooltip({
+	active,
+	payload,
+}: {
+	active?: boolean;
+	payload?: Array<{ payload: { period: string; planned: number; completed: number; velocity: number } }>;
+}) {
+	if (active && payload && payload.length) {
+		const first = payload[0];
+		const data = first?.payload;
+		if (!data) return null;
+		return (
+			<div className="bg-white dark:bg-gray-800 p-3 rounded shadow-lg border border-gray-200 dark:border-gray-700">
+				<p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+					{data.period}
+				</p>
+				<p className="text-sm text-blue-600 dark:text-blue-400">
+					Planned: {data.planned} points
+				</p>
+				<p className="text-sm text-green-600 dark:text-green-400">
+					Completed: {data.completed} points
+				</p>
+				<p className="text-sm text-purple-600 dark:text-purple-400">
+					Velocity: {data.velocity} points
+				</p>
+			</div>
+		);
+	}
+	return null;
+}
+
 export const VelocityChart: React.FC<VelocityChartProps> = ({
-	projectId,
 	history = [],
 	height = 300,
 }) => {
-	const [data, setData] = useState<any[]>([]);
+	const [data, setData] = useState<Array<{
+		period: string;
+		planned: number;
+		completed: number;
+		velocity: number;
+	}>>([]);
 	const [trend, setTrend] = useState<"improving" | "stable" | "declining">(
 		"stable",
 	);
@@ -69,29 +104,6 @@ export const VelocityChart: React.FC<VelocityChartProps> = ({
 			}
 		}
 	}, [history]);
-
-	const CustomTooltip = ({ active, payload }: any) => {
-		if (active && payload && payload.length) {
-			const data = payload[0].payload;
-			return (
-				<div className="bg-white dark:bg-gray-800 p-3 rounded shadow-lg border border-gray-200 dark:border-gray-700">
-					<p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-						{data.period}
-					</p>
-					<p className="text-sm text-blue-600 dark:text-blue-400">
-						Planned: {data.planned} points
-					</p>
-					<p className="text-sm text-green-600 dark:text-green-400">
-						Completed: {data.completed} points
-					</p>
-					<p className="text-sm text-purple-600 dark:text-purple-400">
-						Velocity: {data.velocity} points
-					</p>
-				</div>
-			);
-		}
-		return null;
-	};
 
 	const trendColor =
 		trend === "improving"
@@ -146,7 +158,7 @@ export const VelocityChart: React.FC<VelocityChartProps> = ({
 						style={{ fontSize: "12px" }}
 						label={{ value: "Points", angle: -90, position: "insideLeft" }}
 					/>
-					<Tooltip content={<CustomTooltip />} />
+					<Tooltip content={<VelocityCustomTooltip />} />
 					<Legend wrapperStyle={{ paddingTop: "20px" }} />
 					<Bar
 						dataKey="planned"

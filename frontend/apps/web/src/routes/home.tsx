@@ -5,7 +5,7 @@ import { logger } from '@/lib/logger';
 
 const DashboardView = lazy(() =>
 	import("@/views/DashboardView").then((m) => {
-		const Comp = m.DashboardView ?? m.default;
+		const Comp = m.DashboardView;
 		if (Comp == null) {
 			logger.error("DashboardView module did not export a component", m);
 			return {
@@ -59,7 +59,7 @@ export const Route = createFileRoute("/home")({
 			]);
 
 			return { projects, recentItems, systemStatus };
-		} catch (_error) {
+		} catch {
 			// Return empty data on error to prevent page crash
 			return {
 				projects: [],

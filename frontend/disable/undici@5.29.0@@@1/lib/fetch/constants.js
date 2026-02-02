@@ -98,7 +98,7 @@ const DOMException = globalThis.DOMException ?? (() => {
   // but fetch supports >= v16.8.
   try {
     atob('~')
-  } catch (err) {
+  } catch (_err) {
     return Object.getPrototypeOf(err).constructor
   }
 })()

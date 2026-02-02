@@ -64,14 +64,14 @@ describe("PageHeader Component", () => {
 		});
 
 		it("should not render icon container when icon not provided", () => {
-			const { container } = render(<PageHeader title="Dashboard" />);
+			render(<PageHeader title="Dashboard" />);
 
 			const iconContainer = container.querySelector(".w-10.h-10");
 			expect(iconContainer).not.toBeInTheDocument();
 		});
 
 		it("should render icon with correct container styles", () => {
-			const { container } = render(
+			render(
 				<PageHeader
 					title="Documents"
 					icon={<FileText data-testid="header-icon" />}
@@ -87,7 +87,7 @@ describe("PageHeader Component", () => {
 		});
 
 		it("should render icon with proper color classes", () => {
-			const { container } = render(
+			render(
 				<PageHeader
 					title="Documents"
 					icon={<FileText data-testid="header-icon" />}
@@ -135,7 +135,7 @@ describe("PageHeader Component", () => {
 		});
 
 		it("should not render actions container when actions not provided", () => {
-			const { container } = render(<PageHeader title="Dashboard" />);
+			render(<PageHeader title="Dashboard" />);
 
 			const actionsContainer = container.querySelector(
 				".flex.items-center.space-x-2",
@@ -209,7 +209,7 @@ describe("PageHeader Component", () => {
 		});
 
 		it("should render breadcrumb separators", () => {
-			const { container } = render(
+			render(
 				<PageHeader
 					title="Project Details"
 					breadcrumbs={[
@@ -226,14 +226,14 @@ describe("PageHeader Component", () => {
 		});
 
 		it("should not render breadcrumbs when not provided", () => {
-			const { container } = render(<PageHeader title="Dashboard" />);
+			render(<PageHeader title="Dashboard" />);
 
 			const nav = container.querySelector('nav[aria-label="Breadcrumb"]');
 			expect(nav).not.toBeInTheDocument();
 		});
 
 		it("should not render breadcrumbs when empty array", () => {
-			const { container } = render(
+			render(
 				<PageHeader title="Dashboard" breadcrumbs={[]} />,
 			);
 
@@ -242,7 +242,7 @@ describe("PageHeader Component", () => {
 		});
 
 		it("should have proper breadcrumb styling", () => {
-			const { container } = render(
+			render(
 				<PageHeader
 					title="Project Details"
 					breadcrumbs={[{ label: "Home", href: "/" }, { label: "Projects" }]}
@@ -307,28 +307,28 @@ describe("PageHeader Component", () => {
 
 	describe("Layout and Styling", () => {
 		it("should have border at bottom", () => {
-			const { container } = render(<PageHeader title="Dashboard" />);
+			render(<PageHeader title="Dashboard" />);
 
 			const header = container.querySelector(".border-b");
 			expect(header).toBeInTheDocument();
 		});
 
 		it("should have correct background color", () => {
-			const { container } = render(<PageHeader title="Dashboard" />);
+			render(<PageHeader title="Dashboard" />);
 
 			const header = container.querySelector(".bg-white");
 			expect(header).toBeInTheDocument();
 		});
 
 		it("should have correct padding", () => {
-			const { container } = render(<PageHeader title="Dashboard" />);
+			render(<PageHeader title="Dashboard" />);
 
 			const contentContainer = container.querySelector(".px-6.py-4");
 			expect(contentContainer).toBeInTheDocument();
 		});
 
 		it("should have flex layout for title and actions", () => {
-			const { container } = render(
+			render(
 				<PageHeader title="Dashboard" actions={<button>Action</button>} />,
 			);
 
@@ -341,14 +341,14 @@ describe("PageHeader Component", () => {
 
 	describe("Dark Mode", () => {
 		it("should have dark mode classes for border", () => {
-			const { container } = render(<PageHeader title="Dashboard" />);
+			render(<PageHeader title="Dashboard" />);
 
 			const header = container.querySelector(".dark\\:border-gray-800");
 			expect(header).toBeInTheDocument();
 		});
 
 		it("should have dark mode classes for background", () => {
-			const { container } = render(<PageHeader title="Dashboard" />);
+			render(<PageHeader title="Dashboard" />);
 
 			const header = container.querySelector(".dark\\:bg-gray-900");
 			expect(header).toBeInTheDocument();
@@ -399,7 +399,7 @@ describe("PageHeader Component", () => {
 		it("should handle empty string title", () => {
 			render(<PageHeader title="" />);
 
-			const { container } = render(<PageHeader title="" />);
+			render(<PageHeader title="" />);
 			const title = container.querySelector(".text-2xl");
 			expect(title).toBeInTheDocument();
 		});
@@ -444,7 +444,7 @@ describe("PageHeader Component", () => {
 
 	describe("Accessibility", () => {
 		it("should have semantic heading element", () => {
-			const { container } = render(<PageHeader title="Dashboard" />);
+			render(<PageHeader title="Dashboard" />);
 
 			const heading = container.querySelector("h1");
 			expect(heading).toBeInTheDocument();
@@ -452,7 +452,7 @@ describe("PageHeader Component", () => {
 		});
 
 		it("should have proper breadcrumb navigation", () => {
-			const { container } = render(
+			render(
 				<PageHeader
 					title="Page"
 					breadcrumbs={[{ label: "Home", href: "/" }, { label: "Projects" }]}
@@ -464,7 +464,7 @@ describe("PageHeader Component", () => {
 		});
 
 		it("should have ordered list for breadcrumbs", () => {
-			const { container } = render(
+			render(
 				<PageHeader
 					title="Page"
 					breadcrumbs={[{ label: "Home", href: "/" }, { label: "Projects" }]}

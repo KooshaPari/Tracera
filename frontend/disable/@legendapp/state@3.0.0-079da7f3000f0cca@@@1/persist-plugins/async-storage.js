@@ -48,7 +48,7 @@ var ObservablePersistAsyncStorage = class {
 						values.forEach(([table2, value]) => {
 							this.data[table2] = value ? safeParse(value) : void 0;
 						});
-					} catch (err) {
+					} catch (_err) {
 						console.error(
 							"[legend-state] ObservablePersistLocalAsyncStorage failed to parse",
 							table,

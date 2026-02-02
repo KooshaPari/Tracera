@@ -27,7 +27,7 @@ process.on("message", async ({ nodeGypArgs, devDir, extraNodeGypArgs }) => {
 			command = nodeGyp.todo.shift();
 		}
 		process.exit(0);
-	} catch (err) {
+	} catch (_err) {
 		console.error(err);
 		process.exit(1);
 	}

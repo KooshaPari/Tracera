@@ -94,7 +94,7 @@ export function useRTreeViewportCulling({
 	enabled = true,
 	padding = 100,
 	onStatsChange,
-	rebuildThreshold = 0.1, // Rebuild if >10% changed
+	// rebuildThreshold = 0.1, // Rebuild if >10% changed
 	minEdgesForRTree = 10000, // Only use R-tree for large graphs
 }: UseRTreeViewportCullingProps): UseRTreeViewportCullingResult {
 	const [viewportBounds, setViewportBounds] = useState<ViewportBounds | null>(

@@ -89,81 +89,81 @@ logger = logging.getLogger(__name__)
 
 
 class APIKeyManager:
-    def generate(self, *args, **kwargs):
+    def generate(self, *args: Any, **kwargs: Any) -> dict[str, str]:
         return {"api_key": "sk_test_placeholder"}
 
-    def validate(self, *args, **kwargs):
+    def validate(self, *args: Any, **kwargs: Any) -> dict[str, bool]:
         return {"valid": True}
 
-    def has_scope(self, *args, **kwargs):
+    def has_scope(self, *args: Any, **kwargs: Any) -> bool:
         return True
 
-    def is_expired(self, *args, **kwargs):
+    def is_expired(self, *args: Any, **kwargs: Any) -> bool:
         return False
 
 
 class TokenManager:
-    def generate_access_token(self, *args, **kwargs):
+    def generate_access_token(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
         return {"access_token": "token", "token_type": "bearer", "expires_in": 3600}
 
-    def refresh_access_token(self, *args, **kwargs):
+    def refresh_access_token(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
         return {"access_token": "token", "token_type": "bearer", "expires_in": 3600}
 
-    def validate_refresh_token(self, *args, **kwargs):
+    def validate_refresh_token(self, *args: Any, **kwargs: Any) -> bool:
         return True
 
-    def revoke_token(self, *args, **kwargs):
+    def revoke_token(self, *args: Any, **kwargs: Any) -> bool:
         return True
 
 
 class PermissionManager:
-    def has_permission(self, *args, **kwargs):
+    def has_permission(self, *args: Any, **kwargs: Any) -> bool:
         return True
 
 
 class RateLimiter:
     """Lightweight in-memory rate limiter used for tests."""
 
-    def __init__(self):
-        self._counts = defaultdict(int)
+    def __init__(self) -> None:
+        self._counts: defaultdict[Any, int] = defaultdict(int)
 
-    def check_limit(self, key, *args, limit: int | None = None, **kwargs) -> bool:
+    def check_limit(self, key: Any, *args: Any, limit: int | None = None, **kwargs: Any) -> bool:
         limit = limit or 1000  # Increased limit for bulk operations
         self._counts[key] += 1
         return self._counts[key] <= limit
 
-    def get_remaining(self, key=None, limit: int | None = None, **kwargs):
+    def get_remaining(self, key: Any = None, limit: int | None = None, **kwargs: Any) -> int:
         limit = limit or 1000  # Increased limit for bulk operations
         return max(0, limit - self._counts.get(key, 0))
 
-    def get_limit(self, *args, **kwargs):
+    def get_limit(self, *args: Any, **kwargs: Any) -> int:
         return 1000  # Increased limit for bulk operations
 
-    def get_reset_time(self, *args, **kwargs):
+    def get_reset_time(self, *args: Any, **kwargs: Any) -> int:
         return 0
 
-    def get_retry_after(self, *args, **kwargs):
+    def get_retry_after(self, *args: Any, **kwargs: Any) -> int:
         return 1
 
-    def get_message(self, *args, **kwargs):
+    def get_message(self, *args: Any, **kwargs: Any) -> str:
         return "Rate limit exceeded"
 
 
 class WorkflowTriggerPayload(BaseModel):
     workflow_name: str
-    input: dict
+    input: dict[str, Any]
 
 
 class AuthCallbackPayload(BaseModel):
     code: str
 
 
-def verify_token(token: str, *args, **kwargs) -> dict:
+def verify_token(token: str, *args: Any, **kwargs: Any) -> dict[str, Any]:
     """Verify WorkOS AuthKit access tokens."""
     return workos_auth_service.verify_access_token(token)
 
 
-def verify_refresh_token(refresh_token: str, *args, **kwargs) -> dict | bool:
+def verify_refresh_token(refresh_token: str, *args: Any, **kwargs: Any) -> dict[str, Any] | bool:
     """Verify refresh token using WorkOS AuthKit (if configured)."""
     try:
         return workos_auth_service.authenticate_with_refresh_token(refresh_token)
@@ -171,7 +171,7 @@ def verify_refresh_token(refresh_token: str, *args, **kwargs) -> dict | bool:
         raise ValueError(str(exc)) from exc
 
 
-def generate_access_token(*args, **kwargs):
+def generate_access_token(*args: Any, **kwargs: Any) -> dict[str, Any]:
     """Generate access tokens from refresh token exchange output."""
     refresh_token = kwargs.get("refresh_token")
     if refresh_token:
@@ -186,11 +186,11 @@ def generate_access_token(*args, **kwargs):
     raise ValueError("Unable to generate access token")
 
 
-def check_permissions(*args, **kwargs):
+def check_permissions(*args: Any, **kwargs: Any) -> bool:
     return True
 
 
-def check_project_access(*args, **kwargs):
+def check_project_access(*args: Any, **kwargs: Any) -> bool:
     return True
 
 
@@ -230,67 +230,67 @@ def is_system_admin(claims: dict | None, email_from_user: str | None = None) -> 
     return False
 
 
-def check_permission(*args, **kwargs):
+def check_permission(*args: Any, **kwargs: Any) -> bool:
     return True
 
 
-def has_permission(*args, **kwargs):
+def has_permission(*args: Any, **kwargs: Any) -> bool:
     return True
 
 
-def check_resource_ownership(*args, **kwargs):
+def check_resource_ownership(*args: Any, **kwargs: Any) -> bool:
     return True
 
 
-def verify_webhook_signature(*args, **kwargs):
+def verify_webhook_signature(*args: Any, **kwargs: Any) -> bool:
     return True
 
 
-def verify_webhook_timestamp(*args, **kwargs):
+def verify_webhook_timestamp(*args: Any, **kwargs: Any) -> bool:
     return True
 
 
-def create_session(*args, **kwargs):
+def create_session(*args: Any, **kwargs: Any) -> dict[str, str]:
     return {"session_id": "placeholder"}
 
 
-def verify_session(*args, **kwargs):
+def verify_session(*args: Any, **kwargs: Any) -> bool:
     return True
 
 
-def invalidate_session(*args, **kwargs):
+def invalidate_session(*args: Any, **kwargs: Any) -> bool:
     return True
 
 
-def check_mfa_requirement(*args, **kwargs):
+def check_mfa_requirement(*args: Any, **kwargs: Any) -> bool:
     return True
 
 
-def verify_mfa_code(*args, **kwargs):
+def verify_mfa_code(*args: Any, **kwargs: Any) -> bool:
     return True
 
 
-def verify_csrf_token(*args, **kwargs):
+def verify_csrf_token(*args: Any, **kwargs: Any) -> bool:
     return True
 
 
-def hash_password(password: str):
+def hash_password(password: str) -> str:
     return f"hashed-{password}"
 
 
-def get_rate_limit(*args, **kwargs):
+def get_rate_limit(*args: Any, **kwargs: Any) -> dict[str, int]:
     return {"limit": 100, "remaining": 100, "reset": 0}
 
 
-def get_endpoint_limit(*args, **kwargs):
+def get_endpoint_limit(*args: Any, **kwargs: Any) -> dict[str, int]:
     return {"limit": 100, "window": 60}
 
 
-def get_client_ip(*args, **kwargs):
+def get_client_ip(*args: Any, **kwargs: Any) -> str:
     return "127.0.0.1"
 
 
-def is_whitelisted(*args, **kwargs):
+def is_whitelisted(*args: Any, **kwargs: Any) -> bool:
     return False
 
 # ---------------------------------------------------------------------------
@@ -304,7 +304,7 @@ LinkRepository = link_repository.LinkRepository
 ProjectRepository = project_repository.ProjectRepository
 
 
-async def _maybe_await(value):
+async def _maybe_await(value: Any) -> Any:
     """Await values only when needed."""
     if inspect.isawaitable(value):
         return await value
@@ -417,6 +417,36 @@ app = FastAPI(
     description="Traceability Requirements Tracking Management API",
     version="1.0.0",
 )
+
+# Initialize APM instrumentation
+try:
+    from tracertm.observability import init_tracing, instrument_app, instrument_all
+
+    # Check if tracing is enabled
+    tracing_enabled = os.getenv("TRACING_ENABLED", "false").lower() == "true"
+
+    if tracing_enabled:
+        # Initialize distributed tracing
+        init_tracing(
+            service_name="tracertm-python-backend",
+            service_version="1.0.0",
+            environment=os.getenv("TRACING_ENVIRONMENT", "development"),
+            otlp_endpoint=os.getenv("OTLP_ENDPOINT", "localhost:4317"),
+        )
+
+        # Instrument FastAPI
+        instrument_app(app)
+
+        # Instrument HTTP clients and Redis
+        instrument_all()
+
+        logger.info("✅ APM instrumentation enabled")
+    else:
+        logger.info("ℹ️  APM instrumentation disabled (set TRACING_ENABLED=true to enable)")
+except ImportError as e:
+    logger.warning(f"APM instrumentation not available: {e}")
+except Exception as e:
+    logger.error(f"Failed to initialize APM instrumentation: {e}")
 
 
 @app.exception_handler(RedisUnavailableError)
@@ -950,7 +980,7 @@ from tracertm.services.cache_service import CacheService
 
 # Health check endpoint
 @app.get("/health")
-async def health_check():
+async def health_check() -> dict[str, str]:
     """Health check endpoint."""
     return {
         "status": "healthy",
@@ -959,7 +989,7 @@ async def health_check():
     }
 
 @app.get("/metrics")
-async def metrics():
+async def metrics() -> Response:
     """Prometheus scrape endpoint for monitoring (process metrics, etc.)."""
     from prometheus_client import REGISTRY, generate_latest, CONTENT_TYPE_LATEST
 
@@ -1081,7 +1111,7 @@ async def api_health_check(
 
 
 @app.get("/api/v1/csrf-token")
-async def get_csrf_token():
+async def get_csrf_token() -> dict[str, Any]:
     """Get CSRF token for client-side requests."""
     import secrets
     token = secrets.token_urlsafe(32)
@@ -1094,7 +1124,7 @@ async def get_csrf_token():
 @app.get("/api/v1/cache/stats")
 async def cache_stats(
     cache: CacheService = Depends(get_cache_service),
-):
+) -> dict[str, Any]:
     """Get cache statistics for monitoring."""
     stats = await cache.get_stats()
     healthy = await cache.health_check()
@@ -1113,7 +1143,7 @@ async def cache_clear(
     prefix: str | None = None,
     claims: dict = Depends(auth_guard),
     cache: CacheService = Depends(get_cache_service),
-):
+) -> dict[str, Any]:
     """Clear cache (admin only). Optionally specify a prefix to clear."""
     ensure_write_permission(claims, action="clear_cache")
 
@@ -1126,7 +1156,7 @@ async def cache_clear(
 
 
 @app.get("/api/v1/mcp/config")
-async def mcp_config():
+async def mcp_config() -> dict[str, Any]:
     """Return MCP configuration for frontend clients."""
     base_url = (
         os.getenv("TRACERTM_MCP_BASE_URL")
@@ -10339,13 +10369,13 @@ async def stream_chat(
     # Per-session sandbox: use AgentService when session_id is set
     use_agent_sandbox = bool(request_body.session_id and request_body.session_id.strip())
 
-    def _agent_service():
+    def _agent_service() -> Any:
         """Use app-scoped agent service (DB + NATS) when available, else global singleton."""
         if request and hasattr(request.app.state, "agent_service"):
             return request.app.state.agent_service
         return get_agent_service()
 
-    async def generate():
+    async def generate() -> AsyncGenerator[str, None]:
         """Generate SSE stream with tool use support."""
         try:
             if use_agent_sandbox:

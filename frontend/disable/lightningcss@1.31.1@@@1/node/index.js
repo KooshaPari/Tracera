@@ -18,7 +18,7 @@ if (process.env.CSS_TRANSFORMER_WASM) {
 } else {
   try {
     module.exports = require(`lightningcss-${parts.join('-')}`);
-  } catch (err) {
+  } catch (_err) {
     module.exports = require(`../lightningcss.${parts.join('-')}.node`);
   }
 }

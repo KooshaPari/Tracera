@@ -26,9 +26,8 @@ export const SavedSearchesPanel = memo(function SavedSearchesPanelComponent({
 	savedSearches,
 	onLoadSearch,
 	onDeleteSearch,
-	onSaveSearch,
 	className,
-}: SavedSearchesPanelProps) {
+}: Omit<SavedSearchesPanelProps, 'onSaveSearch'>) {
 	if (savedSearches.length === 0) {
 		return (
 			<div className={cn("text-center text-muted-foreground py-4", className)}>
@@ -188,11 +187,10 @@ interface SearchMetricsProps {
  */
 export const SearchMetrics = memo(function SearchMetricsComponent({
 	results,
-	query,
 	executionTime,
 	cacheHit,
 	className,
-}: SearchMetricsProps) {
+}: Omit<SearchMetricsProps, 'query'>) {
 	const totalResults = results.reduce((sum, group) => sum + group.count, 0);
 	const perspectiveCount = results.length;
 
@@ -278,9 +276,8 @@ interface SaveSearchButtonProps {
 export const SaveSearchButton = memo(function SaveSearchButtonComponent({
 	query,
 	onSave,
-	className,
 	isSaved = false,
-}: SaveSearchButtonProps) {
+}: Omit<SaveSearchButtonProps, 'className'>) {
 	const [showFeedback, setShowFeedback] = useState(false);
 
 	const handleClick = useCallback(() => {

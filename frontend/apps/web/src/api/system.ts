@@ -1,6 +1,8 @@
 // System status API stub
-import { apiClient } from "./client";
-import { getMcpConfig } from "./mcpClient";
+import { getMcpConfig } from "./mcp-config";
+import client from "./client";
+
+const { apiClient } = client;
 
 export interface SystemStatus {
 	status: "healthy" | "degraded" | "unhealthy";
@@ -11,7 +13,7 @@ export interface SystemStatus {
 		baseUrl?: string | null;
 		authMode?: string | null;
 		requiresAuth?: boolean;
-	};
+	} | null;
 }
 
 export const fetchSystemStatus = async (): Promise<SystemStatus> => {
@@ -22,19 +24,22 @@ export const fetchSystemStatus = async (): Promise<SystemStatus> => {
 			getMcpConfig().catch(() => null),
 		]);
 		if (response.data) {
-			return {
+			const baseStatus: SystemStatus = {
 				status: "healthy",
 				uptime: 99.9,
 				queuedJobs: 0,
-				mcp: mcpConfig
-					? {
-							baseUrl: mcpConfig.mcp_base_url ?? null,
-							authMode: mcpConfig.auth_mode ?? null,
-							requiresAuth: mcpConfig.requires_auth ?? false,
-						}
-					: undefined,
-				...response.data,
 			};
+			const merged = Object.assign({}, baseStatus, response.data);
+			if (mcpConfig) {
+				merged.mcp = {
+					baseUrl: mcpConfig.mcp_base_url ?? null,
+					authMode: mcpConfig.auth_mode ?? null,
+					requiresAuth: mcpConfig.requires_auth ?? false,
+				};
+			} else {
+				merged.mcp = null;
+			}
+			return merged;
 		}
 	} catch {
 		// Return mock data if endpoint doesn't exist

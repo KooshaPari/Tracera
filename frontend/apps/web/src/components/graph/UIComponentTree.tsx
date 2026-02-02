@@ -18,7 +18,7 @@ import {
 	Monitor,
 	Search,
 } from "lucide-react";
-import { memo, useMemo, useState } from "react";
+import React, { memo, useCallback, useMemo, useState } from "react";
 import { ENHANCED_TYPE_COLORS } from "./types";
 
 interface UIComponentTreeProps {
@@ -29,14 +29,14 @@ interface UIComponentTreeProps {
 }
 
 // UI-related item types
-const UI_TYPES = [
+const UI_TYPES = new Set([
 	"wireframe",
 	"ui_component",
 	"page",
 	"component",
 	"screen",
 	"layout",
-];
+]);
 
 // Tree node structure
 interface TreeNode {
@@ -50,12 +50,13 @@ interface TreeNode {
 
 function buildUITree(items: Item[], links: Link[]): TreeNode[] {
 	// Filter to UI items only
-	const uiItems = items.filter(
-		(item) =>
-			UI_TYPES.includes(item.type?.toLowerCase() || "") ||
-			item.view?.toLowerCase().includes("ui") ||
-			item.view?.toLowerCase().includes("wireframe"),
-	);
+	const uiItems = items.filter((item) => {
+		const type = item.type ? item.type.toLowerCase() : "";
+		const view = item.view ? item.view.toLowerCase() : "";
+		return (
+			UI_TYPES.has(type) || view.includes("ui") || view.includes("wireframe")
+		);
+	});
 
 	// Build parent-child relationships
 	const itemMap = new Map(items.map((item) => [item.id, item]));
@@ -76,12 +77,9 @@ function buildUITree(items: Item[], links: Link[]): TreeNode[] {
 		if (link.type === "related_to" || link.type === "depends_on") {
 			const source = itemMap.get(link.sourceId);
 			const target = itemMap.get(link.targetId);
-			if (
-				source &&
-				target &&
-				UI_TYPES.includes(source.type?.toLowerCase() || "") &&
-				UI_TYPES.includes(target.type?.toLowerCase() || "")
-			) {
+			const srcType = source.type ? source.type.toLowerCase() : "";
+			const tgtType = target.type ? target.type.toLowerCase() : "";
+			if (source && target && UI_TYPES.has(srcType) && UI_TYPES.has(tgtType)) {
 				if (!interactionMap.has(source.id)) {
 					interactionMap.set(source.id, []);
 				}
@@ -99,7 +97,7 @@ function buildUITree(items: Item[], links: Link[]): TreeNode[] {
 			id: item.id,
 			item,
 			children: children
-				.sort((a, b) => (a.title || "").localeCompare(b.title || ""))
+				.toSorted((a, b) => (a.title || "").localeCompare(b.title || ""))
 				.map((child) => buildNode(child, depth + 1)),
 			depth,
 			hasInteraction: linkedPages.length > 0,
@@ -150,13 +148,99 @@ interface TreeItemProps {
 	itemMap: Map<string, Item>;
 }
 
+interface TreeToolbarProps {
+	onExpandAll: () => void;
+	onCollapseAll: () => void;
+}
+
+function TreeToolbar({ onExpandAll, onCollapseAll }: TreeToolbarProps) {
+	return (
+		<div className="flex gap-2 mb-2 px-2">
+			<Button
+				variant="ghost"
+				size="sm"
+				className="h-6 text-xs"
+				onClick={onExpandAll}
+			>
+				Expand All
+			</Button>
+			<Button
+				variant="ghost"
+				size="sm"
+				className="h-6 text-xs"
+				onClick={onCollapseAll}
+			>
+				Collapse All
+			</Button>
+		</div>
+	);
+}
+
+function EmptyTreeState() {
+	return (
+		<div className="text-center py-8 text-muted-foreground">
+			<LayoutGrid className="h-12 w-12 mx-auto mb-2 opacity-50" />
+			<p className="text-sm">No UI components found</p>
+			<p className="text-xs mt-1">
+				Add wireframes, pages, or components to see them here
+			</p>
+		</div>
+	);
+}
+
+function EmptyInteractionsState() {
+	return (
+		<div className="text-center py-8 text-muted-foreground">
+			<ExternalLink className="h-12 w-12 mx-auto mb-2 opacity-50" />
+			<p className="text-sm">No page interactions found</p>
+			<p className="text-xs mt-1">
+				Link UI items with &quot;related_to&quot; to map interactions
+			</p>
+		</div>
+	);
+}
+
+interface InteractionRowProps {
+	from: Item;
+	to: Item;
+	linkType: string;
+	onSelectItem: (itemId: string) => void;
+}
+
+function InteractionRow({ from, to, linkType, onSelectItem }: InteractionRowProps) {
+	return (
+		<div className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg text-sm">
+			<Button
+				variant="ghost"
+				size="sm"
+				className="h-6 px-2 text-xs"
+				onClick={() => onSelectItem(from.id)}
+			>
+				{from.title}
+			</Button>
+			<ChevronRight className="h-4 w-4 text-muted-foreground" />
+			<Badge variant="outline" className="text-[10px]">
+				{linkType.replaceAll("_", " ")}
+			</Badge>
+			<ChevronRight className="h-4 w-4 text-muted-foreground" />
+			<Button
+				variant="ghost"
+				size="sm"
+				className="h-6 px-2 text-xs"
+				onClick={() => onSelectItem(to.id)}
+			>
+				{to.title}
+			</Button>
+		</div>
+	);
+}
+
 function TreeItem({
 	node,
 	selectedId,
 	expandedIds,
 	onToggle,
 	onSelect,
-	itemMap,
 }: TreeItemProps) {
 	const isExpanded = expandedIds.has(node.id);
 	const isSelected = selectedId === node.id;
@@ -175,23 +259,53 @@ function TreeItem({
 
 	const Icon = typeIcon;
 
+	const paddingStyle = useMemo(
+		() => ({ paddingLeft: `${node.depth * 16 + 8}px` }),
+		[node.depth],
+	);
+
+	const handleKeyDown = useCallback(
+		(e: React.KeyboardEvent) => {
+			if (e.key === "Enter" || e.key === " ") {
+				e.preventDefault();
+				onSelect(node.id);
+			}
+		},
+		[node.id, onSelect],
+	);
+
+	const handleExpandClick = useCallback(
+		(e: React.MouseEvent) => {
+			e.stopPropagation();
+			onToggle(node.id);
+		},
+		[node.id, onToggle],
+	);
+
+	const iconBgStyle = useMemo(
+		() => ({ backgroundColor: `${bgColor}20` }),
+		[bgColor],
+	);
+	const iconColorStyle = useMemo(() => ({ color: bgColor }), [bgColor]);
+
 	return (
 		<div>
 			<div
+				role="button"
+				tabIndex={0}
 				className={`
           flex items-center gap-1.5 px-2 py-1.5 rounded-md cursor-pointer transition-colors
           ${isSelected ? "bg-primary/10 text-primary" : "hover:bg-muted"}
         `}
-				style={{ paddingLeft: `${node.depth * 16 + 8}px` }}
+				style={paddingStyle}
 				onClick={() => onSelect(node.id)}
+				onKeyDown={handleKeyDown}
 			>
 				{/* Expand/Collapse */}
 				{hasChildren ? (
 					<button
-						onClick={(e) => {
-							e.stopPropagation();
-							onToggle(node.id);
-						}}
+						type="button"
+						onClick={handleExpandClick}
 						className="p-0.5 hover:bg-muted-foreground/20 rounded"
 					>
 						{isExpanded ? (
@@ -205,11 +319,8 @@ function TreeItem({
 				)}
 
 				{/* Icon */}
-				<div
-					className="rounded p-1"
-					style={{ backgroundColor: `${bgColor}20` }}
-				>
-					<Icon className="h-3.5 w-3.5" style={{ color: bgColor }} />
+				<div className="rounded p-1" style={iconBgStyle}>
+					<Icon className="h-3.5 w-3.5" style={iconColorStyle} />
 				</div>
 
 				{/* Title */}
@@ -241,7 +352,7 @@ function TreeItem({
 							expandedIds={expandedIds}
 							onToggle={onToggle}
 							onSelect={onSelect}
-							itemMap={itemMap}
+							
 						/>
 					))}
 				</div>
@@ -269,23 +380,25 @@ function UIComponentTreeComponent({
 
 		const query = searchQuery.toLowerCase();
 
-		function filterNode(node: TreeNode): TreeNode | null {
+		function filterNode(node: TreeNode): TreeNode | undefined {
 			const matchesTitle = (node.item.title || "")
 				.toLowerCase()
 				.includes(query);
 			const matchesType = (node.item.type || "").toLowerCase().includes(query);
 
 			const filteredChildren = node.children
-				.map(filterNode)
-				.filter((n): n is TreeNode => n !== null);
+				.map((child) => filterNode(child))
+				.filter((n): n is TreeNode => n !== undefined);
 
 			if (matchesTitle || matchesType || filteredChildren.length > 0) {
-				return { ...node, children: filteredChildren };
+				return Object.assign({}, node, { children: filteredChildren });
 			}
-			return null;
+			return undefined;
 		}
 
-		return tree.map(filterNode).filter((n): n is TreeNode => n !== null);
+		return tree
+			.map((n) => filterNode(n))
+			.filter((n): n is TreeNode => n !== undefined);
 	}, [tree, searchQuery]);
 
 	// Build page interaction matrix
@@ -297,8 +410,10 @@ function UIComponentTreeComponent({
 			const target = itemMap.get(link.targetId);
 
 			if (source && target) {
-				const sourceIsUI = UI_TYPES.includes(source.type?.toLowerCase() || "");
-				const targetIsUI = UI_TYPES.includes(target.type?.toLowerCase() || "");
+				const srcType = source.type ? source.type.toLowerCase() : "";
+				const tgtType = target.type ? target.type.toLowerCase() : "";
+				const sourceIsUI = UI_TYPES.has(srcType);
+				const targetIsUI = UI_TYPES.has(tgtType);
 
 				if (sourceIsUI && targetIsUI) {
 					matrix.push({ from: source, to: target, linkType: link.type });
@@ -309,29 +424,28 @@ function UIComponentTreeComponent({
 		return matrix;
 	}, [links, itemMap]);
 
-	const handleToggle = (id: string) => {
-		const newExpanded = new Set(expandedIds);
-		if (newExpanded.has(id)) {
-			newExpanded.delete(id);
-		} else {
-			newExpanded.add(id);
-		}
-		setExpandedIds(newExpanded);
-	};
+	const handleToggle = useCallback((id: string) => {
+		setExpandedIds((prev) => {
+			const next = new Set(prev);
+			if (next.has(id)) next.delete(id);
+			else next.add(id);
+			return next;
+		});
+	}, []);
 
-	const expandAll = () => {
+	const expandAll = useCallback(() => {
 		const allIds = new Set<string>();
 		function collectIds(node: TreeNode) {
 			allIds.add(node.id);
-			node.children.forEach(collectIds);
+			for (const child of node.children) collectIds(child);
 		}
-		tree.forEach(collectIds);
+		for (const node of tree) collectIds(node);
 		setExpandedIds(allIds);
-	};
+	}, [tree]);
 
-	const collapseAll = () => {
+	const collapseAll = useCallback(() => {
 		setExpandedIds(new Set());
-	};
+	}, []);
 
 	// Count stats
 	const stats = useMemo(() => {
@@ -347,10 +461,10 @@ function UIComponentTreeComponent({
 			)
 				components++;
 			else if (node.item.type === "wireframe") wireframes++;
-			node.children.forEach(countNode);
+			for (const child of node.children) countNode(child);
 		}
 
-		tree.forEach(countNode);
+		for (const node of tree) countNode(node);
 		return {
 			pages,
 			components,
@@ -428,25 +542,7 @@ function UIComponentTreeComponent({
 			<ScrollArea className="flex-1">
 				{activeTab === "tree" ? (
 					<div className="p-2">
-						{/* Expand/Collapse Controls */}
-						<div className="flex gap-2 mb-2 px-2">
-							<Button
-								variant="ghost"
-								size="sm"
-								className="h-6 text-xs"
-								onClick={expandAll}
-							>
-								Expand All
-							</Button>
-							<Button
-								variant="ghost"
-								size="sm"
-								className="h-6 text-xs"
-								onClick={collapseAll}
-							>
-								Collapse All
-							</Button>
-						</div>
+						<TreeToolbar onExpandAll={expandAll} onCollapseAll={collapseAll} />
 
 						{/* Tree */}
 						{filteredTree.length > 0 ? (
@@ -462,13 +558,7 @@ function UIComponentTreeComponent({
 								/>
 							))
 						) : (
-							<div className="text-center py-8 text-muted-foreground">
-								<LayoutGrid className="h-12 w-12 mx-auto mb-2 opacity-50" />
-								<p className="text-sm">No UI components found</p>
-								<p className="text-xs mt-1">
-									Add wireframes, pages, or components to see them here
-								</p>
-							</div>
+							<EmptyTreeState />
 						)}
 					</div>
 				) : (
@@ -479,33 +569,14 @@ function UIComponentTreeComponent({
 						</h4>
 						{interactionMatrix.length > 0 ? (
 							<div className="space-y-2">
-								{interactionMatrix.slice(0, 20).map((interaction, idx) => (
-									<div
-										key={idx}
-										className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg text-sm"
-									>
-										<Button
-											variant="ghost"
-											size="sm"
-											className="h-6 px-2 text-xs"
-											onClick={() => onSelectItem(interaction.from.id)}
-										>
-											{interaction.from.title}
-										</Button>
-										<ChevronRight className="h-4 w-4 text-muted-foreground" />
-										<Badge variant="outline" className="text-[10px]">
-											{interaction.linkType.replace(/_/g, " ")}
-										</Badge>
-										<ChevronRight className="h-4 w-4 text-muted-foreground" />
-										<Button
-											variant="ghost"
-											size="sm"
-											className="h-6 px-2 text-xs"
-											onClick={() => onSelectItem(interaction.to.id)}
-										>
-											{interaction.to.title}
-										</Button>
-									</div>
+								{interactionMatrix.slice(0, 20).map((interaction) => (
+									<InteractionRow
+										key={`${interaction.from.id}-${interaction.to.id}-${interaction.linkType}`}
+										from={interaction.from}
+										to={interaction.to}
+										linkType={interaction.linkType}
+										onSelectItem={onSelectItem}
+									/>
 								))}
 								{interactionMatrix.length > 20 && (
 									<p className="text-xs text-muted-foreground text-center">
@@ -514,13 +585,7 @@ function UIComponentTreeComponent({
 								)}
 							</div>
 						) : (
-							<div className="text-center py-8 text-muted-foreground">
-								<ExternalLink className="h-12 w-12 mx-auto mb-2 opacity-50" />
-								<p className="text-sm">No page interactions found</p>
-								<p className="text-xs mt-1">
-									Link UI items with "related_to" to map interactions
-								</p>
-							</div>
+							<EmptyInteractionsState />
 						)}
 					</div>
 				)}

@@ -354,6 +354,7 @@ export function performCrossPerspectiveSearch(
 			results,
 			count: results.length,
 		}))
+		.slice()
 		.sort((a, b) => a.perspective.localeCompare(b.perspective));
 
 	return grouped;
@@ -429,12 +430,12 @@ export function useCrossPerspectiveSearch() {
 					grouped.set(result.perspective, existing);
 				}
 
-				return Array.from(grouped.entries())
+				return [...Array.from(grouped.entries())
 					.map(([perspective, results]) => ({
 						perspective,
 						results,
 						count: results.length,
-					}))
+					}))]
 					.sort((a, b) => a.perspective.localeCompare(b.perspective));
 			}
 

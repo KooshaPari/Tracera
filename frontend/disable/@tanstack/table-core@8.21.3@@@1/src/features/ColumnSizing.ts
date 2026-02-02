@@ -570,7 +570,7 @@ export function passiveEventSupported() {
 
 		window.addEventListener("test", noop, options);
 		window.removeEventListener("test", noop);
-	} catch (err) {
+	} catch (_err) {
 		supported = false;
 	}
 	passiveSupported = supported;

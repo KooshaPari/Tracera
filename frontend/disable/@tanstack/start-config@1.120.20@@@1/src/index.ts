@@ -533,7 +533,7 @@ function tsrRoutesManifest(opts: {
 					manifest = JSON.parse(
 						await readFile(clientViteManifestPath, "utf-8"),
 					);
-				} catch (err) {
+				} catch (_err) {
 					console.error(err);
 					throw new Error(
 						`Could not find the production client vite manifest at '${clientViteManifestPath}'!`,
@@ -545,7 +545,7 @@ function tsrRoutesManifest(opts: {
 				let routeTreeContent: string;
 				try {
 					routeTreeContent = readFileSync(routeTreePath, "utf-8");
-				} catch (err) {
+				} catch (_err) {
 					console.error(err);
 					throw new Error(
 						`Could not find the generated route tree at '${routeTreePath}'!`,

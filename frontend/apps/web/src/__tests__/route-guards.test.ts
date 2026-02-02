@@ -62,11 +62,15 @@ describe("Route Guards", () => {
 
 		it("should include returnTo parameter by default", () => {
 			const originalLocation = window.location;
-			delete (window as any).location;
-			window.location = {
+			const mockLocation = {
 				pathname: "/projects/123",
 				search: "?tab=features",
-			} as any;
+			};
+			Object.defineProperty(window, "location", {
+				value: mockLocation,
+				writable: true,
+				configurable: true,
+			});
 
 			try {
 				requireAuth();
@@ -77,7 +81,11 @@ describe("Route Guards", () => {
 				});
 			}
 
-			window.location = originalLocation;
+			Object.defineProperty(window, "location", {
+				value: originalLocation,
+				writable: true,
+				configurable: true,
+			});
 		});
 
 		it("should not include returnTo when disabled", () => {

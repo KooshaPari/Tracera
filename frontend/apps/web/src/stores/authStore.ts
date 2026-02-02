@@ -339,7 +339,7 @@ export const useAuthStore = create<AuthState>()(
 				// Start new timer to refresh token every 20 minutes (1200000ms)
 				const timer = setInterval(
 					() => {
-						get().refreshToken();
+						void get().refreshToken();
 					},
 					20 * 60 * 1000,
 				);

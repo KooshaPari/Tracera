@@ -39,7 +39,7 @@ async function build(gyp, argv) {
 		try {
 			const configPath = path.resolve("build", "config.gypi");
 			data = await fs.readFile(configPath, "utf8");
-		} catch (err) {
+		} catch (_err) {
 			if (err.code === "ENOENT") {
 				throw new Error("You must run `node-gyp configure` first!");
 			} else {
@@ -199,7 +199,7 @@ async function build(gyp, argv) {
 			const symlinkDestination = path.join(buildBinsDir, "python3");
 			try {
 				await fs.unlink(symlinkDestination);
-			} catch (err) {
+			} catch (_err) {
 				if (err.code !== "ENOENT") throw err;
 			}
 			await fs.symlink(python, symlinkDestination);

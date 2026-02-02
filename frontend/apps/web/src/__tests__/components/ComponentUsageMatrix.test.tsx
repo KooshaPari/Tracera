@@ -1,7 +1,6 @@
 // ComponentUsageMatrix.test.tsx - Tests for component usage matrix visualization
 
 import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import type { ComponentUsage, LibraryComponent } from "@tracertm/types";
 import { describe, expect, it, vi } from "vitest";
 import { ComponentUsageMatrix } from "../../components/graph/ComponentUsageMatrix";
@@ -218,7 +217,7 @@ describe("ComponentUsageMatrix", () => {
 	});
 
 	it("highlights unused components when highlightUnused is true", () => {
-		const { container } = render(
+		render(
 			<ComponentUsageMatrix
 				components={mockComponents}
 				usage={mockUsage}
@@ -247,7 +246,6 @@ describe("ComponentUsageMatrix", () => {
 	});
 
 	it("allows searching for components", async () => {
-		const user = userEvent.setup();
 		render(
 			<ComponentUsageMatrix
 				components={mockComponents}
@@ -269,7 +267,6 @@ describe("ComponentUsageMatrix", () => {
 	});
 
 	it("filters components by category", async () => {
-		const user = userEvent.setup();
 		render(
 			<ComponentUsageMatrix
 				components={mockComponents}
@@ -288,7 +285,6 @@ describe("ComponentUsageMatrix", () => {
 
 	it("calls onCategoryChange when category filter changes", async () => {
 		const onCategoryChange = vi.fn();
-		const user = userEvent.setup();
 
 		render(
 			<ComponentUsageMatrix
@@ -306,7 +302,6 @@ describe("ComponentUsageMatrix", () => {
 
 	it("calls onSelectComponent when a component row is clicked", async () => {
 		const onSelectComponent = vi.fn();
-		const user = userEvent.setup();
 
 		render(
 			<ComponentUsageMatrix
@@ -324,7 +319,6 @@ describe("ComponentUsageMatrix", () => {
 	});
 
 	it("shows props when showProps is true and component is expanded", async () => {
-		const user = userEvent.setup();
 
 		render(
 			<ComponentUsageMatrix
@@ -340,7 +334,6 @@ describe("ComponentUsageMatrix", () => {
 	});
 
 	it("shows variants when showVariants is true and component is expanded", async () => {
-		const user = userEvent.setup();
 
 		render(
 			<ComponentUsageMatrix
@@ -368,7 +361,6 @@ describe("ComponentUsageMatrix", () => {
 	});
 
 	it("shows deprecation message for deprecated components", async () => {
-		const user = userEvent.setup();
 
 		render(
 			<ComponentUsageMatrix
@@ -386,7 +378,6 @@ describe("ComponentUsageMatrix", () => {
 
 	it("calls onViewInCode when code button is clicked", async () => {
 		const onViewInCode = vi.fn();
-		const user = userEvent.setup();
 
 		render(
 			<ComponentUsageMatrix
@@ -422,7 +413,6 @@ describe("ComponentUsageMatrix", () => {
 	});
 
 	it("shows empty state when no components match filters", async () => {
-		const user = userEvent.setup();
 
 		render(
 			<ComponentUsageMatrix
@@ -516,7 +506,6 @@ describe("ComponentUsageMatrix", () => {
 	});
 
 	it("expands/collapses category sections", async () => {
-		const user = userEvent.setup();
 
 		render(
 			<ComponentUsageMatrix

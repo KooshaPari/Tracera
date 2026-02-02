@@ -543,7 +543,7 @@ class VisualStudioFinder {
 
       try {
         res = await this.regSearchKeys([`${regMSBuild}\\${info.version}`], 'MSBuildToolsPath', msBuildRegOpts)
-      } catch (err) {
+      } catch (_err) {
         this.addLog('- could not find MSBuild in registry for this version')
         return null
       }
@@ -559,7 +559,7 @@ class VisualStudioFinder {
       info.msBuild = msBuild
       info.sdk = null
       return info
-    } catch (err) {
+    } catch (_err) {
       this.addLog('- not found')
       return null
     }

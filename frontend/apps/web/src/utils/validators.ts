@@ -6,12 +6,7 @@ export function isEmail(email: string): boolean {
 }
 
 export function isUrl(url: string): boolean {
-	try {
-		new URL(url);
-		return true;
-	} catch {
-		return false;
-	}
+	return URL.canParse(url);
 }
 
 export function isValidProjectName(name: string): boolean {

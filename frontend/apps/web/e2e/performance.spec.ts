@@ -127,7 +127,7 @@ test.describe("Performance - Load Times", () => {
 		// Check script tags
 		const scripts = await page.evaluate(() => {
 			const scriptElements = document.querySelectorAll("script");
-			const blockingScripts = [];
+			const blockingScripts: string[] = [];
 
 			for (const script of scriptElements) {
 				const src = script.getAttribute("src");
@@ -180,9 +180,10 @@ test.describe("Performance - Runtime Performance", () => {
 
 		// Rapidly click through items
 		const startTime = Date.now();
+		const itemCards = page.locator('[data-testid="item-card"]');
 
 		for (let i = 0; i < 10; i++) {
-			await page.click('[data-testid="item-card"]').nth(i % 5);
+			await itemCards.nth(i % 5).click();
 			await page.waitForTimeout(100);
 		}
 
@@ -852,6 +853,8 @@ test.describe("Performance - Lighthouse Integration", () => {
 
 		// Get Core Web Vitals
 		const vitals = await page.evaluate(() => {
+			// Must stay inside evaluate (browser context); eslint-disable for consistent-function-scoping
+			// eslint-disable-next-line unicorn/consistent-function-scoping
 			const getCLS = () => {
 				let clsValue = 0;
 
@@ -888,10 +891,10 @@ test.describe("Performance - Lighthouse Integration", () => {
 		const accessibilityMetrics = await page.evaluate(() => {
 			const headings = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
 			const links = document.querySelectorAll("a");
-			const buttons = document.querySelectorAll("button");
+			const _buttons = document.querySelectorAll("button");
 			const inputs = document.querySelectorAll("input, textarea, select");
 
-			const ariaLabeled = 0;
+			const _ariaLabeled = 0;
 			let linkswithText = 0;
 			let labeledInputs = 0;
 
@@ -1030,7 +1033,8 @@ test.describe("Performance - Memory Management", () => {
 		const memoryProfile = await page.evaluate(async () => {
 			const readings: number[] = [];
 
-			// Force garbage collection if available
+			// Force garbage collection if available; must stay inside evaluate (browser context)
+			// eslint-disable-next-line unicorn/consistent-function-scoping
 			const forceGC = () => {
 				if ((window as any).gc) {
 					(window as any).gc();
@@ -1090,7 +1094,7 @@ test.describe("Performance - Memory Management", () => {
 
 		const timerCount = await page.evaluate(() => {
 			// Count active timers via performance API
-			const timers: any[] = [];
+			const _timers: any[] = [];
 
 			// Monitor setTimeout calls
 			const originalSetTimeout = window.setTimeout;

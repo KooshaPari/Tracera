@@ -298,7 +298,7 @@ var directiveHandlers = {
 
 		try {
 			prefix = decodeURIComponent(prefix);
-		} catch (err) {
+		} catch (_err) {
 			throwError(state, "tag prefix is malformed: " + prefix);
 		}
 
@@ -1440,7 +1440,7 @@ function readTagProperty(state) {
 
 	try {
 		tagName = decodeURIComponent(tagName);
-	} catch (err) {
+	} catch (_err) {
 		throwError(state, "tag name is malformed: " + tagName);
 	}
 

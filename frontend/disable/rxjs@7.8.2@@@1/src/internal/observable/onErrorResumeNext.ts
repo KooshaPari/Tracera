@@ -82,7 +82,7 @@ export function onErrorResumeNext<A extends readonly unknown[]>(
         let nextSource: Observable<A[number]>;
         try {
           nextSource = innerFrom(nextSources[sourceIndex++]);
-        } catch (err) {
+        } catch (_err) {
           subscribeNext();
           return;
         }

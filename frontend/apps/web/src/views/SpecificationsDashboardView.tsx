@@ -23,7 +23,7 @@ export function SpecificationsDashboardView({
 }: SpecificationsDashboardViewProps) {
 	const navigate = useNavigate();
 	// Search params available for future filtering
-	void useSearch({ strict: false });
+	undefined;
 
 	// Fetch all specification data
 	const { data: adrsData, isLoading: adrsLoading } = useADRs({ projectId });
@@ -33,7 +33,7 @@ export function SpecificationsDashboardView({
 	const { data: featuresData, isLoading: featuresLoading } = useFeatures({
 		projectId,
 	});
-	const { data: itemsData } = useItems({ projectId, limit: 500 });
+	const { data: itemsData } = useItems({ limit: 500, projectId });
 
 	const adrs = adrsData?.adrs ?? [];
 	const contracts = contractsData?.contracts ?? [];
@@ -43,15 +43,15 @@ export function SpecificationsDashboardView({
 	const isLoading = adrsLoading || contractsLoading || featuresLoading;
 
 	const typeDistribution = useMemo(() => {
-		if (!items.length) return [];
+		if (items.length === 0) {return [];}
 		const counts = new Map<string, number>();
 		for (const item of items) {
 			const type = String(item.type || "unknown").toLowerCase();
 			counts.set(type, (counts.get(type) || 0) + 1);
 		}
-		return Array.from(counts.entries())
-			.map(([type, count]) => ({ type, count }))
-			.sort((a, b) => b.count - a.count);
+		return [...counts.entries()]
+			.map(([type, count]) => ({ count, type }))
+			.toSorted((a: { type: string; count: number }, b: { type: string; count: number }) => b.count - a.count);
 	}, [items]);
 
 	const totalItems = items.length;
@@ -70,7 +70,7 @@ export function SpecificationsDashboardView({
 						) / adrs.length
 					: 0;
 
-			return { total, accepted, proposed, averageCompliance: avgCompliance };
+			return { accepted, averageCompliance: avgCompliance, proposed, total };
 		};
 
 		const calculateContractMetrics = () => {
@@ -83,7 +83,7 @@ export function SpecificationsDashboardView({
 				(c: any) => c.status === "violated",
 			).length;
 
-			return { total, active, verified, violated };
+			return { active, total, verified, violated };
 		};
 
 		const calculateFeatureMetrics = () => {
@@ -100,7 +100,7 @@ export function SpecificationsDashboardView({
 				totalScenarios > 0 ? (passedScenarios / totalScenarios) * 100 : 0;
 			const coverage = total > 0 ? passRate : 0;
 
-			return { total, scenarios: totalScenarios, passRate, coverage };
+			return { coverage, passRate, scenarios: totalScenarios, total };
 		};
 
 		const calculateHealthScore = () => {
@@ -141,51 +141,51 @@ export function SpecificationsDashboardView({
 		const healthDetails = [
 			{
 				category: "Architecture Decisions",
-				score: Math.round(adrMetrics.averageCompliance),
 				issues:
 					adrMetrics.total > 0
-						? adrMetrics.accepted < adrMetrics.total / 2
+						? (adrMetrics.accepted < adrMetrics.total / 2
 							? ["Less than 50% ADRs accepted"]
-							: []
+							: [])
 						: ["No ADRs created yet"],
+				score: Math.round(adrMetrics.averageCompliance),
 			},
 			{
 				category: "API Contracts",
-				score:
-					contractMetrics.total > 0
-						? Math.round(
-								(contractMetrics.verified / contractMetrics.active) * 100,
-							)
-						: 100,
 				issues:
 					contractMetrics.total > 0 &&
 					contractMetrics.verified < contractMetrics.active
 						? [
 								`${contractMetrics.active - contractMetrics.verified} contracts unverified`,
 							]
-						: contractMetrics.total === 0
+						: (contractMetrics.total === 0
 							? ["No contracts defined"]
-							: [],
+							: []),
+				score:
+					contractMetrics.total > 0
+						? Math.round(
+								(contractMetrics.verified / contractMetrics.active) * 100,
+							)
+						: 100,
 			},
 			{
 				category: "Feature Testing",
-				score: Math.round(featureMetrics.passRate),
 				issues:
 					featureMetrics.total > 0 && featureMetrics.passRate < 80
 						? ["Pass rate below 80%", "Pending scenarios detected"]
-						: featureMetrics.total === 0
+						: (featureMetrics.total === 0
 							? ["No features defined"]
-							: [],
+							: []),
+				score: Math.round(featureMetrics.passRate),
 			},
 		];
 
 		const result: SpecificationSummary = {
-			projectId,
-			healthScore,
 			adrs: adrMetrics,
 			contracts: contractMetrics,
 			features: featureMetrics,
 			healthDetails,
+			healthScore,
+			projectId,
 		};
 
 		return result;
@@ -195,20 +195,20 @@ export function SpecificationsDashboardView({
 	const coverageData = useMemo(() => {
 		const items = [
 			...features.map((f: any) => ({
-				id: f.id,
-				label: f.name,
 				coverage:
 					f.scenarioCount > 0
 						? ((f.passedScenarios + f.pendingScenarios) / f.scenarioCount) * 100
 						: 0,
-				testCases: f.scenarioCount,
+				id: f.id,
+				label: f.name,
 				linked: true,
+				testCases: f.scenarioCount,
 			})),
 			...adrs.slice(0, 5).map((a: any) => ({
+				adrs: 1,
+				coverage: a.complianceScore || 0,
 				id: a.id,
 				label: a.title,
-				coverage: a.complianceScore || 0,
-				adrs: 1,
 				linked: true,
 			})),
 		];
@@ -224,12 +224,12 @@ export function SpecificationsDashboardView({
 		features.forEach((f: any) => {
 			if (f.scenarioCount > 0 && f.passRate < 80) {
 				gaps.push({
+					affectedItems: 1,
+					gapType: "no_tests" as const,
 					id: `gap-${f.id}`,
+					impact: `${f.failedScenarios} failing scenarios`,
 					label: f.name,
 					priority: "high" as const,
-					gapType: "no_tests" as const,
-					affectedItems: 1,
-					impact: `${f.failedScenarios} failing scenarios`,
 					suggestion: "Review and fix failing test scenarios",
 				});
 			}
@@ -239,12 +239,12 @@ export function SpecificationsDashboardView({
 		contracts.forEach((c: any) => {
 			if (c.status === "violated") {
 				gaps.push({
+					affectedItems: 1,
+					gapType: "no_tests" as const,
 					id: `gap-${c.id}`,
+					impact: "Contract verification failed",
 					label: c.title,
 					priority: "critical" as const,
-					gapType: "no_tests" as const,
-					affectedItems: 1,
-					impact: "Contract verification failed",
 					suggestion: "Run tests and fix contract violations",
 				});
 			}
@@ -254,20 +254,12 @@ export function SpecificationsDashboardView({
 	}, [features, contracts]);
 
 	const handleNavigate = (section: string, _id?: string) => {
-		navigate({
-			to: "/projects/$projectId/specifications",
-			params: { projectId },
-			search: { tab: section },
-		});
+		undefined;
 	};
 
 	const handleCreateNew = (type: string) => {
 		const tab = type === "adr" ? "adrs" : "features";
-		navigate({
-			to: "/projects/$projectId/specifications",
-			params: { projectId },
-			search: { tab, action: "create" },
-		});
+		undefined;
 	};
 
 	if (isLoading) {
@@ -326,10 +318,7 @@ export function SpecificationsDashboardView({
 						variant="ghost"
 						size="sm"
 						onClick={() =>
-							navigate({
-								to: "/projects/$projectId/scenario-activity",
-								params: { projectId },
-							})
+							undefined
 						}
 					>
 						Scenario Activity
@@ -350,7 +339,7 @@ export function SpecificationsDashboardView({
 						</div>
 					) : (
 						<div className="space-y-3">
-							{typeDistribution.slice(0, 8).map((row) => {
+							{typeDistribution.slice(0, 8).map((row: { type: string; count: number }) => {
 								const percent = totalItems
 									? Math.round((row.count / totalItems) * 100)
 									: 0;

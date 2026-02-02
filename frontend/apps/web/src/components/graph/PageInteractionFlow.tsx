@@ -311,7 +311,7 @@ function PageInteractionFlowInner({
 			}
 		}
 
-		return matrix.sort((a, b) => b.interactions - a.interactions);
+		return matrix.toSorted((a, b) => b.interactions - a.interactions);
 	}, [uiPages, pageLinks]);
 
 	const createNodeData = useCallback(

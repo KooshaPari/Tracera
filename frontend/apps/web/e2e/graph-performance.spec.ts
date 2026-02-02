@@ -44,7 +44,7 @@ async function measureFrameRate(
 	page: Page,
 	duration: number = 1000,
 ): Promise<PerformanceMetrics> {
-	return await page.evaluate((measureDuration) => {
+	return page.evaluate((measureDuration) => {
 		return new Promise<PerformanceMetrics>((resolve) => {
 			const frameTimings: number[] = [];
 			let lastFrameTime = performance.now();
@@ -81,13 +81,21 @@ async function measureFrameRate(
 	}, duration);
 }
 
+/** Chrome non-standard performance.memory (optional) */
+interface PerformanceMemory {
+	usedJSHeapSize: number;
+	totalJSHeapSize: number;
+	jsHeapSizeLimit: number;
+}
+
 /**
  * Get current memory usage
  */
 async function getMemoryUsage(page: Page): Promise<MemoryMetrics | null> {
-	return await page.evaluate(() => {
-		const memory = (performance as any).memory;
-		if (!memory) return null;
+	return page.evaluate(() => {
+		const memory = (performance as Performance & { memory?: PerformanceMemory })
+			.memory;
+		if (memory == null) return null;
 
 		return {
 			usedJSHeapSize: memory.usedJSHeapSize,
@@ -97,13 +105,19 @@ async function getMemoryUsage(page: Page): Promise<MemoryMetrics | null> {
 	});
 }
 
+/** Window with optional gc (exposed by Node --expose-gc in Playwright) */
+interface WindowWithGC extends Window {
+	gc?: () => void;
+}
+
 /**
  * Force garbage collection if available
  */
 async function forceGC(page: Page): Promise<void> {
 	await page.evaluate(() => {
-		if ((window as any).gc) {
-			(window as any).gc();
+		const w = window as WindowWithGC;
+		if (typeof w.gc === "function") {
+			w.gc!();
 		}
 	});
 }
@@ -126,7 +140,7 @@ async function waitForGraphReady(page: Page): Promise<void> {
  * Get node count in the graph
  */
 async function getNodeCount(page: Page): Promise<number> {
-	return await page.evaluate(() => {
+	return page.evaluate(() => {
 		const nodes = document.querySelectorAll(".react-flow__node");
 		return nodes.length;
 	});
@@ -136,7 +150,7 @@ async function getNodeCount(page: Page): Promise<number> {
  * Get edge count in the graph
  */
 async function getEdgeCount(page: Page): Promise<number> {
-	return await page.evaluate(() => {
+	return page.evaluate(() => {
 		const edges = document.querySelectorAll(".react-flow__edge");
 		return edges.length;
 	});
@@ -153,13 +167,16 @@ async function measureInteractionTime(
 	await action();
 
 	// Wait for visual update
-	await page.evaluate(() => {
-		return new Promise((resolve) => {
-			requestAnimationFrame(() => {
-				requestAnimationFrame(resolve);
-			});
-		});
-	});
+	await page.evaluate(
+		() =>
+			new Promise<void>((resolve) => {
+				requestAnimationFrame(() => {
+					requestAnimationFrame(() => {
+						resolve();
+					});
+				});
+			}),
+	);
 
 	const endTime = await page.evaluate(() => performance.now());
 	return endTime - startTime;
@@ -167,9 +184,10 @@ async function measureInteractionTime(
 
 test.describe("Graph Performance - 500 Node Load", () => {
 	test.beforeEach(async ({ page }) => {
-		// Enable performance memory API
+		// Enable performance memory API (gc exposed by Node --expose-gc in Playwright)
 		await page.addInitScript(() => {
-			(window as any).gc = (window as any).gc || (() => {});
+			const w = window as WindowWithGC;
+			w.gc = w.gc ?? (() => {});
 		});
 
 		await authenticateAndNavigate(page, "/graph");
@@ -433,7 +451,7 @@ test.describe("Graph Performance - Edge Rendering", () => {
 		const graphPane = page.locator(".react-flow__pane");
 
 		// Measure stability during panning
-		const visualStability = await page.evaluate(() => {
+		const _visualStability = await page.evaluate(() => {
 			return new Promise<{ flickerCount: number }>((resolve) => {
 				let flickerCount = 0;
 				const edgeElements = document.querySelectorAll(".react-flow__edge");
@@ -482,7 +500,7 @@ test.describe("Graph Performance - Edge Rendering", () => {
 		const graphPane = page.locator(".react-flow__pane");
 
 		// Get initial edge count
-		const initialEdges = await getEdgeCount(page);
+		const _initialEdges = await getEdgeCount(page);
 
 		// Zoom operations
 		await graphPane.hover({ position: { x: 400, y: 300 } });
@@ -902,7 +920,7 @@ test.describe("Graph Performance - Network Requests", () => {
 
 		await waitForGraphReady(page);
 
-		const initialRequests = [...requests];
+		const _initialRequests = [...requests];
 
 		// Pan to different area
 		const graphPane = page.locator(".react-flow__pane");

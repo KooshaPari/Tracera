@@ -6,7 +6,7 @@ const callbackify = (fn, reducer) => {
     fn.apply(this, args).then((value) => {
       try {
         reducer ? cb(null, ...reducer(value)) : cb(null, value);
-      } catch (err) {
+      } catch (_err) {
         cb(err);
       }
     }, cb);

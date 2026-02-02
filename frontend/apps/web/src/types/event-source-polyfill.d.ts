@@ -1,8 +1,8 @@
-declare module 'event-source-polyfill' {
+declare module "event-source-polyfill" {
 	export interface EventSourceInit {
 		headers?: Record<string, string>;
 		heartbeatTimeout?: number;
-		[key: string]: any;
+		[key: string]: unknown;
 	}
 
 	export class EventSource extends EventTarget {
@@ -29,4 +29,7 @@ declare module 'event-source-polyfill' {
 	export const CONNECTING: number;
 	export const OPEN: number;
 	export const CLOSED: number;
+
+	/** Polyfill constructor (default export). */
+	export default EventSource;
 }

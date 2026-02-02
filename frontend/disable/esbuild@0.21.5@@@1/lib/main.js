@@ -2378,7 +2378,7 @@ var fsSync = {
 				fs2.unlinkSync(tempFile);
 			} catch {}
 			callback(null, contents);
-		} catch (err) {
+		} catch (_err) {
 			callback(err, null);
 		}
 	},
@@ -2402,7 +2402,7 @@ var fsAsync = {
 					callback(err, contents);
 				}
 			});
-		} catch (err) {
+		} catch (_err) {
 			callback(err, null);
 		}
 	},

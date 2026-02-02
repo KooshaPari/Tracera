@@ -3,7 +3,7 @@
  * Extracts component props, variants, and metadata using TypeScript AST
  */
 
-import { type Node, Project, type SourceFile, SyntaxKind } from "ts-morph";
+import { Project, type SourceFile, SyntaxKind } from "ts-morph";
 import type { PropInfo, VariantInfo } from "./config";
 
 export interface ComponentInfo {

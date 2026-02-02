@@ -28,6 +28,13 @@ const DEFAULT_CATEGORIES = [
 	{ name: "Poor", value: 0, color: "#ef4444" },
 ];
 
+function getScoreColor(value: number) {
+	if (value >= 90) return "#10b981"; // green
+	if (value >= 70) return "#3b82f6"; // blue
+	if (value >= 50) return "#f59e0b"; // amber
+	return "#ef4444"; // red
+}
+
 export function HealthScoreRing({
 	score,
 	categories,
@@ -63,14 +70,6 @@ export function HealthScoreRing({
 
 	// Use provided categories or generate from score
 	const data = categories || DEFAULT_CATEGORIES;
-
-	// Get color based on score
-	const getScoreColor = (value: number) => {
-		if (value >= 90) return "#10b981"; // green
-		if (value >= 70) return "#3b82f6"; // blue
-		if (value >= 50) return "#f59e0b"; // amber
-		return "#ef4444"; // red
-	};
 
 	const scoreColor = getScoreColor(animatedScore);
 

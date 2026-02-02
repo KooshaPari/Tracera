@@ -349,7 +349,7 @@ class RetryHandler {
     try {
       this.retryCountCheckpoint = this.retryCount
       this.dispatch(this.opts, this)
-    } catch (err) {
+    } catch (_err) {
       this.handler.onResponseError?.(controller, err)
     }
   }

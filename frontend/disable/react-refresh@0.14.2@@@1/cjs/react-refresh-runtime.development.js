@@ -56,7 +56,7 @@ function computeFullKey(signature) {
 
   try {
     hooks = signature.getCustomHooks();
-  } catch (err) {
+  } catch (_err) {
     // This can happen in an edge case, e.g. if expression like Foo.useSomething
     // depends on Foo which is lazily initialized during rendering.
     // In that case just assume we'll have to remount.
@@ -161,7 +161,7 @@ function cloneSet(set) {
 function getProperty(object, property) {
   try {
     return object[property];
-  } catch (err) {
+  } catch (_err) {
     // Intentionally ignore.
     return undefined;
   }
@@ -243,7 +243,7 @@ function performReactRefresh() {
 
       try {
         helpers.scheduleRoot(root, element);
-      } catch (err) {
+      } catch (_err) {
         if (!didError) {
           didError = true;
           firstError = err;
@@ -263,7 +263,7 @@ function performReactRefresh() {
 
       try {
         helpers.scheduleRefresh(root, update);
-      } catch (err) {
+      } catch (_err) {
         if (!didError) {
           didError = true;
           firstError = err;

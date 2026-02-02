@@ -879,7 +879,7 @@ function shouldUseNative() {
 		}
 
 		return true;
-	} catch (err) {
+	} catch (_err) {
 		// We don't expect any of the above to throw, but better to be safe.
 		return false;
 	}

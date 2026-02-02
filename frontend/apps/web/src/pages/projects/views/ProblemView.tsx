@@ -1,4 +1,4 @@
-import type { ImpactLevel, Problem, ProblemStatus } from "@tracertm/types";
+import type { ImpactLevel, Problem, ProblemStatus } from "../../../../../../packages/types/src/index";
 import {
 	AlertTriangle,
 	CheckCircle,
@@ -99,8 +99,8 @@ export function ProblemView({ projectId }: ProblemViewProps) {
 							Open Problems
 						</div>
 						<div className="mt-2 text-2xl font-bold">
-							{(stats.byStatus?.open || 0) +
-								(stats.byStatus?.in_investigation || 0)}
+							{(stats.byStatus?.['open'] ?? 0) +
+								(stats.byStatus?.['in_investigation'] ?? 0)}
 						</div>
 					</div>
 					<div className="rounded-lg border bg-card p-4">
@@ -109,7 +109,7 @@ export function ProblemView({ projectId }: ProblemViewProps) {
 							Known Errors
 						</div>
 						<div className="mt-2 text-2xl font-bold">
-							{stats.byStatus?.known_error || 0}
+							{stats.byStatus?.['known_error'] ?? 0}
 						</div>
 					</div>
 					<div className="rounded-lg border bg-card p-4">
@@ -118,7 +118,7 @@ export function ProblemView({ projectId }: ProblemViewProps) {
 							Resolved
 						</div>
 						<div className="mt-2 text-2xl font-bold">
-							{stats.byStatus?.closed || 0}
+							{stats.byStatus?.['closed'] ?? 0}
 						</div>
 					</div>
 					<div className="rounded-lg border bg-card p-4">
@@ -127,7 +127,7 @@ export function ProblemView({ projectId }: ProblemViewProps) {
 							Critical
 						</div>
 						<div className="mt-2 text-2xl font-bold">
-							{stats.byPriority?.critical || 0}
+							{stats.byPriority?.['critical'] ?? 0}
 						</div>
 					</div>
 				</div>

@@ -22,7 +22,10 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import type { Node, Edge } from "@xyflow/react";
-import { getAuthHeaders } from "@/api/client";
+import { logger } from "@/lib/logger";
+import client from "@/api/client";
+
+const { getAuthHeaders } = client;
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
@@ -225,8 +228,8 @@ export function useViewportGraph(
 						data.metadata.totalEdgesInRegion,
 					);
 				}
-			} catch (error) {
-				logger.error("[useViewportGraph] Failed to load viewport:", error);
+			} catch (err) {
+				logger.error("[useViewportGraph] Failed to load viewport:", err);
 				// Don't add to loadedRegions on error - allow retry
 			} finally {
 				// Remove from loading set
@@ -240,7 +243,7 @@ export function useViewportGraph(
 	// Auto-load on mount (initial viewport)
 	useEffect(() => {
 		// Load initial viewport (center of graph)
-		loadViewport({
+		void loadViewport({
 			minX: -1000,
 			minY: -1000,
 			maxX: 1000,
@@ -259,4 +262,3 @@ export function useViewportGraph(
 		loadedRegionCount: loadedRegions.size,
 	};
 }
-

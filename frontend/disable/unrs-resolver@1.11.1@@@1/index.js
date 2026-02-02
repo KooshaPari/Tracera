@@ -67,7 +67,7 @@ function requireNative() {
   if (process.env.NAPI_RS_NATIVE_LIBRARY_PATH) {
     try {
       nativeBinding = require(process.env.NAPI_RS_NATIVE_LIBRARY_PATH);
-    } catch (err) {
+    } catch (_err) {
       loadErrors.push(err)
     }
   } else if (process.platform === 'android') {
@@ -347,7 +347,7 @@ nativeBinding = requireNative()
 if (!nativeBinding || process.env.NAPI_RS_FORCE_WASI) {
   try {
     nativeBinding = require('./resolver.wasi.cjs')
-  } catch (err) {
+  } catch (_err) {
     if (process.env.NAPI_RS_FORCE_WASI) {
       loadErrors.push(err)
     }
@@ -355,7 +355,7 @@ if (!nativeBinding || process.env.NAPI_RS_FORCE_WASI) {
   if (!nativeBinding) {
     try {
       nativeBinding = require('@unrs/resolver-binding-wasm32-wasi')
-    } catch (err) {
+    } catch (_err) {
       if (process.env.NAPI_RS_FORCE_WASI) {
         loadErrors.push(err)
       }
@@ -366,7 +366,7 @@ if (!nativeBinding || process.env.NAPI_RS_FORCE_WASI) {
 if (!nativeBinding && process.env.SKIP_UNRS_RESOLVER_FALLBACK !== '1') {
   try {
     nativeBinding = require('napi-postinstall/fallback')(require.resolve('./package.json'), true)
-  } catch (err) {
+  } catch (_err) {
     loadErrors.push(err)
   }
 }

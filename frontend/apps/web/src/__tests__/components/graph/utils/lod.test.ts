@@ -42,7 +42,7 @@ describe("LOD utilities", () => {
 		});
 
 		it("caps at Medium when nodeCount >= threshold and zoom would give Close/VeryClose", () => {
-			const threshold = LOD_NODE_COUNT_THRESHOLD; // 100
+			const _threshold = LOD_NODE_COUNT_THRESHOLD; // 100
 			expect(determineLODLevel(1.0, { nodeCount: 100 })).toBe(LODLevel.Medium);
 			expect(determineLODLevel(1.5, { nodeCount: 150 })).toBe(LODLevel.Medium);
 			expect(determineLODLevel(2.0, { nodeCount: 200 })).toBe(LODLevel.Medium);

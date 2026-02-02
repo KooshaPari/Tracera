@@ -53,10 +53,6 @@ export function LayoutSelector({
 	variant = "select",
 	className,
 }: LayoutSelectorProps) {
-	const currentConfig =
-		LAYOUT_CONFIGS.find((c) => c.id === value) ?? LAYOUT_CONFIGS[0]!;
-	const CurrentIcon = ICON_MAP[currentConfig.icon] || Network;
-
 	if (variant === "buttons") {
 		return (
 			<TooltipProvider>

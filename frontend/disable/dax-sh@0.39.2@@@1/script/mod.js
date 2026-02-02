@@ -88,7 +88,7 @@ var require_dnt_polyfills = __commonJS({
 				try {
 					new prox();
 					return true;
-				} catch (err) {
+				} catch (_err) {
 					return false;
 				}
 			} else {
@@ -1330,7 +1330,7 @@ var require_empty_dir = __commonJS({
 						}
 					}),
 				);
-			} catch (err) {
+			} catch (_err) {
 				if (!(err instanceof dntShim2.Deno.errors.NotFound)) {
 					throw err;
 				}
@@ -1351,7 +1351,7 @@ var require_empty_dir = __commonJS({
 						dntShim2.Deno.removeSync(filepath, { recursive: true });
 					}
 				}
-			} catch (err) {
+			} catch (_err) {
 				if (!(err instanceof dntShim2.Deno.errors.NotFound)) {
 					throw err;
 				}
@@ -1441,14 +1441,14 @@ var require_ensure_dir = __commonJS({
 					);
 				}
 				return;
-			} catch (err) {
+			} catch (_err) {
 				if (!(err instanceof dntShim2.Deno.errors.NotFound)) {
 					throw err;
 				}
 			}
 			try {
 				await dntShim2.Deno.mkdir(dir, { recursive: true });
-			} catch (err) {
+			} catch (_err) {
 				if (!(err instanceof dntShim2.Deno.errors.AlreadyExists)) {
 					throw err;
 				}
@@ -1470,14 +1470,14 @@ var require_ensure_dir = __commonJS({
 					);
 				}
 				return;
-			} catch (err) {
+			} catch (_err) {
 				if (!(err instanceof dntShim2.Deno.errors.NotFound)) {
 					throw err;
 				}
 			}
 			try {
 				dntShim2.Deno.mkdirSync(dir, { recursive: true });
-			} catch (err) {
+			} catch (_err) {
 				if (!(err instanceof dntShim2.Deno.errors.AlreadyExists)) {
 					throw err;
 				}
@@ -1729,7 +1729,7 @@ var require_ensure_file = __commonJS({
 						`Ensure path exists, expected 'file', got '${(0, _get_file_info_type_js_1.getFileInfoType)(stat)}'`,
 					);
 				}
-			} catch (err) {
+			} catch (_err) {
 				if (err instanceof dntShim2.Deno.errors.NotFound) {
 					await (0, ensure_dir_js_1.ensureDir)(
 						(0, dirname_js_1.dirname)(
@@ -1751,7 +1751,7 @@ var require_ensure_file = __commonJS({
 						`Ensure path exists, expected 'file', got '${(0, _get_file_info_type_js_1.getFileInfoType)(stat)}'`,
 					);
 				}
-			} catch (err) {
+			} catch (_err) {
 				if (err instanceof dntShim2.Deno.errors.NotFound) {
 					(0, ensure_dir_js_1.ensureDirSync)(
 						(0, dirname_js_1.dirname)(
@@ -3347,7 +3347,7 @@ var require_walk = __commonJS({
 						yield { path, ...entry };
 					}
 				}
-			} catch (err) {
+			} catch (_err) {
 				throw wrapErrorWithPath(err, (0, normalize_js_1.normalize)(root));
 			}
 		}
@@ -3379,7 +3379,7 @@ var require_walk = __commonJS({
 			let entries;
 			try {
 				entries = dntShim2.Deno.readDirSync(root);
-			} catch (err) {
+			} catch (_err) {
 				throw wrapErrorWithPath(err, (0, normalize_js_1.normalize)(root));
 			}
 			for (const entry of entries) {
@@ -3957,7 +3957,7 @@ var require_copy = __commonJS({
 			let destStat;
 			try {
 				destStat = await dntShim2.Deno.lstat(dest);
-			} catch (err) {
+			} catch (_err) {
 				if (err instanceof dntShim2.Deno.errors.NotFound) {
 					return;
 				}
@@ -3979,7 +3979,7 @@ var require_copy = __commonJS({
 			let destStat;
 			try {
 				destStat = dntShim2.Deno.lstatSync(dest);
-			} catch (err) {
+			} catch (_err) {
 				if (err instanceof dntShim2.Deno.errors.NotFound) {
 					return;
 				}
@@ -4706,7 +4706,7 @@ var require_buf_reader = __commonJS({
 							}
 						}
 						bytesRead += rr;
-					} catch (err) {
+					} catch (_err) {
 						if (err instanceof PartialReadError) {
 							err.partial = p.subarray(0, bytesRead);
 						}
@@ -4768,7 +4768,7 @@ var require_buf_reader = __commonJS({
 				let line = null;
 				try {
 					line = await this.readSlice(LF);
-				} catch (err) {
+				} catch (_err) {
 					let partial;
 					if (err instanceof PartialReadError) {
 						partial = err.partial;
@@ -4858,7 +4858,7 @@ var require_buf_reader = __commonJS({
 					s = this.#w - this.#r;
 					try {
 						await this.#fill();
-					} catch (err) {
+					} catch (_err) {
 						if (err instanceof PartialReadError) {
 							err.partial = slice;
 						}
@@ -4886,7 +4886,7 @@ var require_buf_reader = __commonJS({
 				while (avail < n && avail < this.#buf.byteLength && !this.#eof) {
 					try {
 						await this.#fill();
-					} catch (err) {
+					} catch (_err) {
 						if (err instanceof PartialReadError) {
 							err.partial = this.#buf.subarray(this.#r, this.#w);
 						}
@@ -6410,7 +6410,7 @@ var require_mod5 = __commonJS({
 			try {
 				const result = await environment.stat(path);
 				return result.isFile;
-			} catch (err) {
+			} catch (_err) {
 				if (err instanceof dntShim2.Deno.errors.PermissionDenied) {
 					throw err;
 				}
@@ -6443,7 +6443,7 @@ var require_mod5 = __commonJS({
 			try {
 				const result = environment.statSync(path);
 				return result.isFile;
-			} catch (err) {
+			} catch (_err) {
 				if (err instanceof dntShim2.Deno.errors.PermissionDenied) {
 					throw err;
 				}
@@ -8682,7 +8682,7 @@ var require_common5 = __commonJS({
 		async function safeLstat(path) {
 			try {
 				return await dntShim2.Deno.lstat(path);
-			} catch (err) {
+			} catch (_err) {
 				if (err instanceof dntShim2.Deno.errors.NotFound) {
 					return void 0;
 				} else {
@@ -8707,7 +8707,7 @@ var require_common5 = __commonJS({
 						file.close();
 					} catch {}
 				}
-			} catch (err) {
+			} catch (_err) {
 				if (err instanceof dntShim2.Deno.errors.NotFound) {
 					return false;
 				}
@@ -8843,7 +8843,7 @@ var require_cd = __commonJS({
 						},
 					],
 				};
-			} catch (err) {
+			} catch (_err) {
 				return context.error(`cd: ${(0, common_js_12.errorToString)(err)}`);
 			}
 		}
@@ -8860,7 +8860,7 @@ var require_cd = __commonJS({
 			try {
 				const info = await dntShim2.Deno.stat(path);
 				return info.isDirectory;
-			} catch (err) {
+			} catch (_err) {
 				if (err instanceof dntShim2.Deno.errors.NotFound) {
 					return false;
 				} else {
@@ -8950,7 +8950,7 @@ var require_printenv = __commonJS({
 				} else {
 					return { code };
 				}
-			} catch (err) {
+			} catch (_err) {
 				return handleError(context, err);
 			}
 		}
@@ -9086,7 +9086,7 @@ var require_cp_mv = __commonJS({
 			try {
 				await executeCp(context.cwd, context.args);
 				return { code: 0 };
-			} catch (err) {
+			} catch (_err) {
 				return context.error(`cp: ${(0, common_js_12.errorToString)(err)}`);
 			}
 		}
@@ -9163,7 +9163,7 @@ var require_cp_mv = __commonJS({
 			try {
 				await executeMove(context.cwd, context.args);
 				return { code: 0 };
-			} catch (err) {
+			} catch (_err) {
 				return context.error(`mv: ${(0, common_js_12.errorToString)(err)}`);
 			}
 		}
@@ -9261,7 +9261,7 @@ var require_echo = __commonJS({
 				} else {
 					return { code: 0 };
 				}
-			} catch (err) {
+			} catch (_err) {
 				return handleFailure(context, err);
 			}
 		}
@@ -9329,7 +9329,7 @@ var require_cat = __commonJS({
 			try {
 				const code = await executeCat(context);
 				return { code };
-			} catch (err) {
+			} catch (_err) {
 				return context.error(`cat: ${(0, common_js_12.errorToString)(err)}`);
 			}
 		}
@@ -9376,7 +9376,7 @@ var require_cat = __commonJS({
 							}
 						}
 						exitCode = context.signal.abortedExitCode ?? 0;
-					} catch (err) {
+					} catch (_err) {
 						const maybePromise = context.stderr.writeLine(
 							`cat ${path}: ${(0, common_js_12.errorToString)(err)}`,
 						);
@@ -9422,7 +9422,7 @@ var require_exit = __commonJS({
 					kind: "exit",
 					code,
 				};
-			} catch (err) {
+			} catch (_err) {
 				return context.error(
 					2,
 					`exit: ${(0, common_js_12.errorToString)(err)}`,
@@ -9528,7 +9528,7 @@ var require_mkdir = __commonJS({
 			try {
 				await executeMkdir(context.cwd, context.args);
 				return { code: 0 };
-			} catch (err) {
+			} catch (_err) {
 				return context.error(`mkdir: ${(0, common_js_12.errorToString)(err)}`);
 			}
 		}
@@ -9632,7 +9632,7 @@ var require_rm = __commonJS({
 			try {
 				await executeRemove(context.cwd, context.args);
 				return { code: 0 };
-			} catch (err) {
+			} catch (_err) {
 				return context.error(`rm: ${(0, common_js_12.errorToString)(err)}`);
 			}
 		}
@@ -9732,7 +9732,7 @@ var require_pwd = __commonJS({
 				} else {
 					return result;
 				}
-			} catch (err) {
+			} catch (_err) {
 				return handleError(context, err);
 			}
 		}
@@ -9809,7 +9809,7 @@ var require_sleep = __commonJS({
 					return (0, result_js_1.getAbortedResult)();
 				}
 				return { code: 0 };
-			} catch (err) {
+			} catch (_err) {
 				return context.error(`sleep: ${(0, common_js_12.errorToString)(err)}`);
 			}
 		}
@@ -9870,7 +9870,7 @@ var require_test = __commonJS({
 						throw new Error("unsupported test type");
 				}
 				return { code: result ? 0 : 1 };
-			} catch (err) {
+			} catch (_err) {
 				return context.error(
 					2,
 					`test: ${(0, common_js_12.errorToString)(err)}`,
@@ -9947,7 +9947,7 @@ var require_touch = __commonJS({
 			try {
 				await executetouch(context.args);
 				return { code: 0 };
-			} catch (err) {
+			} catch (_err) {
 				return context.error(`touch: ${(0, common_js_12.errorToString)(err)}`);
 			}
 		}
@@ -9987,7 +9987,7 @@ var require_unset = __commonJS({
 						name,
 					})),
 				};
-			} catch (err) {
+			} catch (_err) {
 				return context.error(`unset: ${(0, common_js_12.errorToString)(err)}`);
 			}
 		}
@@ -10961,7 +10961,7 @@ var require_shell = __commonJS({
 					} else if (isDisposable(redirectPipe)) {
 						redirectPipe[Symbol.dispose]();
 					}
-				} catch (err) {
+				} catch (_err) {
 					if (result.code === 0) {
 						return context.error(
 							`failed disposing redirected pipe. ${(0, common_js_12.errorToString)(err)}`,
@@ -11067,7 +11067,7 @@ var require_shell = __commonJS({
 								kind: "input",
 								pipe: file,
 							};
-						} catch (err) {
+						} catch (_err) {
 							return handleFileOpenError(outputPath, err);
 						}
 					}
@@ -11094,7 +11094,7 @@ var require_shell = __commonJS({
 								pipe: file,
 								toFd,
 							};
-						} catch (err) {
+						} catch (_err) {
 							return handleFileOpenError(outputPath, err);
 						}
 					}
@@ -11202,7 +11202,7 @@ var require_shell = __commonJS({
 					clearEnv: true,
 					...pipeStringVals,
 				});
-			} catch (err) {
+			} catch (_err) {
 				throw checkMapCwdNotExistsError(cwd, err);
 			}
 			const listener = (signal) => p.kill(signal);
@@ -11727,7 +11727,7 @@ var require_path = __commonJS({
 			async stat() {
 				try {
 					return await dntShim2.Deno.stat(this.#path);
-				} catch (err) {
+				} catch (_err) {
 					if (err instanceof dntShim2.Deno.errors.NotFound) {
 						return void 0;
 					} else {
@@ -11740,7 +11740,7 @@ var require_path = __commonJS({
 			statSync() {
 				try {
 					return dntShim2.Deno.statSync(this.#path);
-				} catch (err) {
+				} catch (_err) {
 					if (err instanceof dntShim2.Deno.errors.NotFound) {
 						return void 0;
 					} else {
@@ -11753,7 +11753,7 @@ var require_path = __commonJS({
 			async lstat() {
 				try {
 					return await dntShim2.Deno.lstat(this.#path);
-				} catch (err) {
+				} catch (_err) {
 					if (err instanceof dntShim2.Deno.errors.NotFound) {
 						return void 0;
 					} else {
@@ -11766,7 +11766,7 @@ var require_path = __commonJS({
 			lstatSync() {
 				try {
 					return dntShim2.Deno.lstatSync(this.#path);
-				} catch (err) {
+				} catch (_err) {
 					if (err instanceof dntShim2.Deno.errors.NotFound) {
 						return void 0;
 					} else {
@@ -12161,7 +12161,7 @@ var require_path = __commonJS({
 			#parseJson(text) {
 				try {
 					return JSON.parse(text);
-				} catch (err) {
+				} catch (_err) {
 					throw new Error(`Failed parsing JSON in '${this.toString()}'.`, {
 						cause: err,
 					});
@@ -12290,7 +12290,7 @@ var require_path = __commonJS({
 				const resolvedPath = this.resolve();
 				try {
 					return await resolvedPath.open(options);
-				} catch (err) {
+				} catch (_err) {
 					if (err instanceof dntShim2.Deno.errors.NotFound) {
 						const parent = resolvedPath.parent();
 						if (parent != null) {
@@ -12344,7 +12344,7 @@ var require_path = __commonJS({
 			#openFileMaybeCreatingDirectorySync(options) {
 				try {
 					return this.openSync(options);
-				} catch (err) {
+				} catch (_err) {
 					if (err instanceof dntShim2.Deno.errors.NotFound) {
 						const parent = this.resolve().parent();
 						if (parent != null) {
@@ -12652,7 +12652,7 @@ var require_path = __commonJS({
 		async function notFoundToUndefined(action) {
 			try {
 				return await action();
-			} catch (err) {
+			} catch (_err) {
 				if (err instanceof dntShim2.Deno.errors.NotFound) {
 					return void 0;
 				} else {
@@ -12663,7 +12663,7 @@ var require_path = __commonJS({
 		function notFoundToUndefinedSync(action) {
 			try {
 				return action();
-			} catch (err) {
+			} catch (_err) {
 				if (err instanceof dntShim2.Deno.errors.NotFound) {
 					return void 0;
 				} else {
@@ -13199,7 +13199,7 @@ var require_request = __commonJS({
 						} catch {}
 						this.#abortController?.clearTimeout();
 					}
-				} catch (err) {
+				} catch (_err) {
 					await this.#response.body?.cancel();
 					throw err;
 				}
@@ -13219,7 +13219,7 @@ var require_request = __commonJS({
 			async #withReturnHandling(action) {
 				try {
 					return await action();
-				} catch (err) {
+				} catch (_err) {
 					if (err instanceof common_js_22.TimeoutError) {
 						Error.captureStackTrace(err);
 					}
@@ -14089,7 +14089,7 @@ var require_command = __commonJS({
 						} else {
 							resolve(result);
 						}
-					} catch (err) {
+					} catch (_err) {
 						finalizeCommandResultBufferForError(stdoutBuffer, err);
 						finalizeCommandResultBufferForError(stderrBuffer, err);
 						reject(await cleanupDisposablesAndMaybeGetError(err));
@@ -14115,7 +14115,7 @@ var require_command = __commonJS({
 				for (const disposable of disposables) {
 					try {
 						disposable[Symbol.dispose]();
-					} catch (err) {
+					} catch (_err) {
 						errors.push(err);
 					}
 				}
@@ -14124,7 +14124,7 @@ var require_command = __commonJS({
 						asyncDisposables.map(async (d) => {
 							try {
 								await d[Symbol.asyncDispose]();
-							} catch (err) {
+							} catch (_err) {
 								errors.push(err);
 							}
 						}),
@@ -14585,7 +14585,7 @@ var require_command = __commonJS({
 											);
 										}
 										return result;
-									} catch (err) {
+									} catch (_err) {
 										throw new Error(
 											`Error getting ReadableStream from function at expression ${i + 1}/${exprsCount}. ${(0, common_js_12.errorToString)(err)}`,
 										);
@@ -14639,7 +14639,7 @@ var require_command = __commonJS({
 											);
 										}
 										return result;
-									} catch (err) {
+									} catch (_err) {
 										throw new Error(
 											`Error getting WritableStream from function at expression ${i + 1}/${exprsCount}. ${(0, common_js_12.errorToString)(err)}`,
 										);
@@ -14657,7 +14657,7 @@ var require_command = __commonJS({
 						} else {
 							text += templateLiteralExprToString(expr, escape);
 						}
-					} catch (err) {
+					} catch (_err) {
 						const startMessage =
 							exprsCount === 1
 								? "Failed resolving expression in command."
@@ -14877,7 +14877,7 @@ async function withRetries($local, errorLogger, opts) {
 		}
 		try {
 			return await opts.action();
-		} catch (err) {
+		} catch (_err) {
 			errorLogger(err);
 		}
 	}

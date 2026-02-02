@@ -151,7 +151,7 @@ class DispatcherBase extends Dispatcher {
       }
 
       return this[kDispatch](opts, handler)
-    } catch (err) {
+    } catch (_err) {
       if (typeof handler.onError !== 'function') {
         throw err
       }

@@ -9,6 +9,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { logger } from '@/lib/logger';
 import {
 	createMCPClient,
 	type MCPClient,
@@ -98,9 +99,9 @@ export function useMCP(config: MCPClientConfig): UseMCPState {
 						isInitializing: false,
 						error: null,
 						serverInfo: {
-							name: response.serverInfo.name,
-							version: response.serverInfo.version,
-							protocolVersion: response.protocolVersion,
+							name: response['serverInfo'].name,
+							version: response['serverInfo'].version,
+							protocolVersion: response['protocolVersion'],
 						},
 					});
 				}
@@ -118,7 +119,7 @@ export function useMCP(config: MCPClientConfig): UseMCPState {
 			}
 		}
 
-		initializeClient();
+		void initializeClient();
 
 		return () => {
 			mounted = false;
@@ -202,16 +203,16 @@ export function useTools(client: MCPClient | null): {
 			setIsLoading(true);
 			setError(null);
 			const response = await client.listTools();
-			setTools(response.tools);
-		} catch (err) {
-			setError(err instanceof Error ? err : new Error("Failed to list tools"));
+			setTools(response['tools']);
+		} catch (error) {
+			setError(error instanceof Error ? error : new Error("Failed to list tools"));
 		} finally {
 			setIsLoading(false);
 		}
 	}, [client]);
 
 	useEffect(() => {
-		refresh();
+		void refresh();
 	}, [refresh]);
 
 	return { tools, isLoading, error, refresh };
@@ -240,10 +241,10 @@ export function useResources(client: MCPClient | null): {
 			setIsLoading(true);
 			setError(null);
 			const response = await client.listResources();
-			setResources(response.resources);
-		} catch (err) {
+			setResources(response['resources']);
+		} catch (error) {
 			setError(
-				err instanceof Error ? err : new Error("Failed to list resources"),
+				error instanceof Error ? error : new Error("Failed to list resources"),
 			);
 		} finally {
 			setIsLoading(false);
@@ -251,7 +252,7 @@ export function useResources(client: MCPClient | null): {
 	}, [client]);
 
 	useEffect(() => {
-		refresh();
+		void refresh();
 	}, [refresh]);
 
 	return { resources, isLoading, error, refresh };
@@ -280,10 +281,10 @@ export function usePrompts(client: MCPClient | null): {
 			setIsLoading(true);
 			setError(null);
 			const response = await client.listPrompts();
-			setPrompts(response.prompts);
-		} catch (err) {
+			setPrompts(response['prompts']);
+		} catch (error) {
 			setError(
-				err instanceof Error ? err : new Error("Failed to list prompts"),
+				error instanceof Error ? error : new Error("Failed to list prompts"),
 			);
 		} finally {
 			setIsLoading(false);
@@ -291,7 +292,7 @@ export function usePrompts(client: MCPClient | null): {
 	}, [client]);
 
 	useEffect(() => {
-		refresh();
+		void refresh();
 	}, [refresh]);
 
 	return { prompts, isLoading, error, refresh };

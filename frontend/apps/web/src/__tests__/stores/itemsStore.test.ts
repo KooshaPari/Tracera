@@ -136,7 +136,7 @@ describe("itemsStore", () => {
 		it("should optimistically create an item", () => {
 			const data = {
 				projectId: "proj-1",
-				type: "feature" as any,
+				type: "feature",
 				title: "New Item",
 			};
 
@@ -150,7 +150,7 @@ describe("itemsStore", () => {
 		it("should confirm optimistic create", () => {
 			const data = {
 				projectId: "proj-1",
-				type: "feature" as any,
+				type: "feature",
 				title: "New Item",
 			};
 			const realItem = createMockItem({ id: "real-1", ...data });
@@ -167,7 +167,7 @@ describe("itemsStore", () => {
 		it("should rollback optimistic create", () => {
 			const data = {
 				projectId: "proj-1",
-				type: "feature" as any,
+				type: "feature",
 				title: "New Item",
 			};
 

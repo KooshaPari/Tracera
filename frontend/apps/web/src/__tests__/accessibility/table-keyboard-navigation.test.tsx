@@ -3,11 +3,15 @@
  * Tests WCAG 2.1 AA compliance for data tables with keyboard support
  * Covers: Arrow key navigation, focus management, row selection
  */
+/// <reference path="../a11y/jest-axe.d.ts" />
 
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import React from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { axe } from "../a11y/setup";
+
+let user: ReturnType<typeof userEvent.setup>;
 
 // Mock table component for testing
 function MockDataTable({
@@ -97,9 +101,12 @@ function MockDataTable({
 }
 
 describe("Table Keyboard Navigation - Arrow Keys", () => {
+	beforeEach(() => {
+		user = userEvent.setup();
+	});
+
 	it("should support arrow down to move focus to next row", async () => {
-		const user = userEvent.setup();
-		const { container } = render(<MockDataTable />);
+		render(<MockDataTable />);
 
 		const rows = screen.getAllByRole("row");
 		const firstDataRow = rows[1]; // Skip header
@@ -116,8 +123,7 @@ describe("Table Keyboard Navigation - Arrow Keys", () => {
 	});
 
 	it("should support arrow up to move focus to previous row", async () => {
-		const user = userEvent.setup();
-		const { container } = render(<MockDataTable />);
+		render(<MockDataTable />);
 
 		const rows = screen.getAllByRole("row");
 		const secondDataRow = rows[2];
@@ -132,7 +138,6 @@ describe("Table Keyboard Navigation - Arrow Keys", () => {
 	});
 
 	it("should not navigate beyond first row with arrow up", async () => {
-		const user = userEvent.setup();
 		render(<MockDataTable />);
 
 		const rows = screen.getAllByRole("row");
@@ -146,7 +151,6 @@ describe("Table Keyboard Navigation - Arrow Keys", () => {
 	});
 
 	it("should not navigate beyond last row with arrow down", async () => {
-		const user = userEvent.setup();
 		render(<MockDataTable />);
 
 		const rows = screen.getAllByRole("row");
@@ -161,8 +165,11 @@ describe("Table Keyboard Navigation - Arrow Keys", () => {
 });
 
 describe("Table Keyboard Navigation - Home/End Keys", () => {
+	beforeEach(() => {
+		user = userEvent.setup();
+	});
+
 	it("should navigate to first row with Home key", async () => {
-		const user = userEvent.setup();
 		render(<MockDataTable />);
 
 		const rows = screen.getAllByRole("row");
@@ -178,7 +185,6 @@ describe("Table Keyboard Navigation - Home/End Keys", () => {
 	});
 
 	it("should navigate to last row with End key", async () => {
-		const user = userEvent.setup();
 		render(<MockDataTable />);
 
 		const rows = screen.getAllByRole("row");
@@ -195,9 +201,12 @@ describe("Table Keyboard Navigation - Home/End Keys", () => {
 });
 
 describe("Table Keyboard Navigation - Row Selection", () => {
+	beforeEach(() => {
+		user = userEvent.setup();
+	});
+
 	it("should select row with Space key", async () => {
 		const handleRowSelect = vi.fn();
-		const user = userEvent.setup();
 		render(<MockDataTable onRowSelect={handleRowSelect} />);
 
 		const firstRow = screen.getByTestId("table-row-1");
@@ -208,8 +217,7 @@ describe("Table Keyboard Navigation - Row Selection", () => {
 	});
 
 	it("should maintain selection after navigation", async () => {
-		const user = userEvent.setup();
-		const { container } = render(<MockDataTable />);
+		render(<MockDataTable />);
 
 		const firstRow = screen.getByTestId("table-row-1");
 		firstRow.focus();
@@ -273,20 +281,23 @@ describe("Table Accessibility - ARIA Attributes", () => {
 });
 
 describe("Table Focus Management", () => {
-	it("should have visible focus indicator on focused row", () => {
-		const { container } = render(<MockDataTable />);
+	beforeEach(() => {
+		user = userEvent.setup();
+	});
 
-		const firstRow = screen.getByTestId("table-row-1") as HTMLElement;
+	it("should have visible focus indicator on focused row", () => {
+		render(<MockDataTable />);
+
+		const firstRow = screen.getByTestId("table-row-1");
 		firstRow.focus();
 
 		// Check for visual focus indicator
-		const style = window.getComputedStyle(firstRow);
+		const _style = window.getComputedStyle(firstRow);
 		// Should have ring or outline
 		expect(firstRow.className).toContain("ring");
 	});
 
 	it("should trap focus within table for keyboard navigation", async () => {
-		const user = userEvent.setup();
 		render(<MockDataTable />);
 
 		const rows = screen.getAllByRole("row");
@@ -300,26 +311,31 @@ describe("Table Focus Management", () => {
 	});
 });
 
-describe("Table with Expandable Rows - Accessibility", () => {
-	it("should support expand/collapse with keyboard", async () => {
-		const user = userEvent.setup();
-		const ExpandableTableRow = () => (
-			<tr
-				tabIndex={0}
-				aria-expanded={false}
-				onKeyDown={(e) => {
-					if (e.key === "Enter") {
-						e.currentTarget.setAttribute("aria-expanded", "true");
-					}
-				}}
-			>
-				<td>
-					<button aria-label="Expand row">+</button>
-				</td>
-				<td>Expandable Item</td>
-			</tr>
-		);
+function ExpandableTableRow() {
+	return (
+		<tr
+			tabIndex={0}
+			aria-expanded={false}
+			onKeyDown={(e) => {
+				if (e.key === "Enter") {
+					e.currentTarget.setAttribute("aria-expanded", "true");
+				}
+			}}
+		>
+			<td>
+				<button aria-label="Expand row">+</button>
+			</td>
+			<td>Expandable Item</td>
+		</tr>
+	);
+}
 
+describe("Table with Expandable Rows - Accessibility", () => {
+	beforeEach(() => {
+		user = userEvent.setup();
+	});
+
+	it("should support expand/collapse with keyboard", async () => {
 		render(
 			<table>
 				<tbody>

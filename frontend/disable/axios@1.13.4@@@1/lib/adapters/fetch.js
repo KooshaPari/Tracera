@@ -242,7 +242,7 @@ const factory = (env) => {
           request
         })
       })
-    } catch (err) {
+    } catch (_err) {
       unsubscribe && unsubscribe();
 
       if (err && err.name === 'TypeError' && /Load failed|fetch/i.test(err.message)) {

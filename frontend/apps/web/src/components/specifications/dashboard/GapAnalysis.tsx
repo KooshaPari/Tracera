@@ -111,7 +111,7 @@ export function GapAnalysis({
 	className,
 }: GapAnalysisProps) {
 	const [sortBy, setSortBy] = useState<"priority" | "impact">("priority");
-	const [selectedGapType, setSelectedGapType] = useState<string | "all">("all");
+	const [selectedGapType, setSelectedGapType] = useState<"all" | string>("all");
 
 	const sortedItems = useMemo(() => {
 		let filtered = items;
@@ -120,7 +120,7 @@ export function GapAnalysis({
 			filtered = items.filter((item) => item.gapType === selectedGapType);
 		}
 
-		return [...filtered].sort((a, b) => {
+		return [...filtered].sort((a: GapItem, b: GapItem) => {
 			if (sortBy === "priority") {
 				const priorityOrder = {
 					critical: 0,
@@ -246,7 +246,7 @@ export function GapAnalysis({
 							</CardContent>
 						</Card>
 					) : (
-						sortedItems.map((item, idx) => (
+						sortedItems.map((item: GapItem, idx: number) => (
 							<motion.div
 								key={item.id}
 								initial={{ opacity: 0, x: -10 }}
@@ -274,7 +274,7 @@ export function GapAnalysis({
 							</CardContent>
 						</Card>
 					) : (
-						sortedItems.map((item, idx) => (
+						sortedItems.map((item: GapItem, idx: number) => (
 							<motion.div
 								key={item.id}
 								initial={{ opacity: 0, x: -10 }}
@@ -302,7 +302,7 @@ export function GapAnalysis({
 							</CardContent>
 						</Card>
 					) : (
-						sortedItems.map((item, idx) => (
+						sortedItems.map((item: GapItem, idx: number) => (
 							<motion.div
 								key={item.id}
 								initial={{ opacity: 0, x: -10 }}
@@ -330,7 +330,7 @@ export function GapAnalysis({
 							</CardContent>
 						</Card>
 					) : (
-						sortedItems.map((item, idx) => (
+						sortedItems.map((item: GapItem, idx: number) => (
 							<motion.div
 								key={item.id}
 								initial={{ opacity: 0, x: -10 }}
@@ -358,7 +358,7 @@ export function GapAnalysis({
 							</CardContent>
 						</Card>
 					) : (
-						sortedItems.map((item, idx) => (
+						sortedItems.map((item: GapItem, idx: number) => (
 							<motion.div
 								key={item.id}
 								initial={{ opacity: 0, x: -10 }}

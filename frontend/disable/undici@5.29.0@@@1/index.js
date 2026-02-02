@@ -107,7 +107,7 @@ if (util.nodeMajor > 16 || (util.nodeMajor === 16 && util.nodeMinor >= 8)) {
 
     try {
       return await fetchImpl(...arguments)
-    } catch (err) {
+    } catch (_err) {
       if (typeof err === 'object') {
         Error.captureStackTrace(err, this)
       }

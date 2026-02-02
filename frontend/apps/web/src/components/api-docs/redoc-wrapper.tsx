@@ -21,6 +21,25 @@ interface RedocWrapperProps {
 	expandSingleSchemaField?: boolean;
 }
 
+function downloadOpenApiJSON(data: unknown): void {
+	const blob = new Blob([JSON.stringify(data, null, 2)], {
+		type: "application/json",
+	});
+	const url = URL.createObjectURL(blob);
+	const a = document.createElement("a");
+	a.href = url;
+	a.download = "openapi-spec.json";
+	document.body.appendChild(a);
+	a.click();
+	document.body.removeChild(a);
+	URL.revokeObjectURL(url);
+}
+
+function openInSwagger(): void {
+	const swaggerUrl = `/api-docs/swagger`;
+	window.open(swaggerUrl, "_blank");
+}
+
 export function RedocWrapper({
 	specUrl = "/specs/openapi.json",
 	spec,
@@ -69,38 +88,19 @@ export function RedocWrapper({
 			if (specUrl) {
 				const response = await fetch(specUrl);
 				const data = await response.json();
-				downloadJSON(data);
+				downloadOpenApiJSON(data);
 			}
 			return;
 		}
-		downloadJSON(dataToDownload);
-	};
-
-	const downloadJSON = (data: any) => {
-		const blob = new Blob([JSON.stringify(data, null, 2)], {
-			type: "application/json",
-		});
-		const url = URL.createObjectURL(blob);
-		const a = document.createElement("a");
-		a.href = url;
-		a.download = "openapi-spec.json";
-		document.body.appendChild(a);
-		a.click();
-		document.body.removeChild(a);
-		URL.revokeObjectURL(url);
+		downloadOpenApiJSON(dataToDownload);
 	};
 
 	const copySpecUrl = () => {
 		const fullUrl = window.location.origin + specUrl;
-		navigator.clipboard.writeText(fullUrl).then(() => {
+		void navigator.clipboard.writeText(fullUrl).then(() => {
 			setCopied(true);
 			setTimeout(() => setCopied(false), 2000);
 		});
-	};
-
-	const openInSwagger = () => {
-		const swaggerUrl = `/api-docs/swagger`;
-		window.open(swaggerUrl, "_blank");
 	};
 
 	const redocOptions = {

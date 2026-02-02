@@ -4,7 +4,6 @@
  */
 
 import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import type { DimensionFilter } from "@tracertm/types";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
@@ -183,7 +182,6 @@ describe("DimensionFilters Component", () => {
 
 	describe("Filter Management", () => {
 		it("opens popover when clicking on dimension button", async () => {
-			const user = userEvent.setup();
 			render(
 				<DimensionFilters
 					activeFilters={[]}
@@ -203,7 +201,6 @@ describe("DimensionFilters Component", () => {
 		});
 
 		it("adds enum-type filter when selecting a value", async () => {
-			const user = userEvent.setup();
 			render(
 				<DimensionFilters
 					activeFilters={[]}
@@ -233,7 +230,6 @@ describe("DimensionFilters Component", () => {
 		});
 
 		it("supports multi-select for enum filters", async () => {
-			const user = userEvent.setup();
 			render(
 				<DimensionFilters
 					activeFilters={[]}
@@ -266,7 +262,6 @@ describe("DimensionFilters Component", () => {
 		});
 
 		it("removes a single value from multi-select", async () => {
-			const user = userEvent.setup();
 			const filters: DimensionFilter[] = [
 				{
 					dimension: "maturity",
@@ -303,7 +298,6 @@ describe("DimensionFilters Component", () => {
 		});
 
 		it("clears filter when all values are deselected", async () => {
-			const user = userEvent.setup();
 			const filters: DimensionFilter[] = [
 				{
 					dimension: "maturity",
@@ -333,7 +327,6 @@ describe("DimensionFilters Component", () => {
 		});
 
 		it("removes filter by clicking X button on pill", async () => {
-			const user = userEvent.setup();
 			render(
 				<DimensionFilters
 					activeFilters={mockDimensionFilters}
@@ -358,7 +351,6 @@ describe("DimensionFilters Component", () => {
 		});
 
 		it("clears all filters with Clear All button", async () => {
-			const user = userEvent.setup();
 			render(
 				<DimensionFilters
 					activeFilters={mockDimensionFilters}
@@ -377,7 +369,6 @@ describe("DimensionFilters Component", () => {
 
 	describe("Range Filters", () => {
 		it("renders slider for range-type dimensions", async () => {
-			const user = userEvent.setup();
 			render(
 				<DimensionFilters
 					activeFilters={[]}
@@ -399,7 +390,6 @@ describe("DimensionFilters Component", () => {
 		});
 
 		it("updates range filter value", async () => {
-			const user = userEvent.setup();
 			render(
 				<DimensionFilters
 					activeFilters={[]}
@@ -423,7 +413,6 @@ describe("DimensionFilters Component", () => {
 		});
 
 		it("shows clear button for active range filters", async () => {
-			const user = userEvent.setup();
 			const filters: DimensionFilter[] = [
 				{
 					dimension: "coverage",
@@ -466,7 +455,6 @@ describe("DimensionFilters Component", () => {
 		});
 
 		it("changes display mode when clicking mode button", async () => {
-			const user = userEvent.setup();
 			render(
 				<DimensionFilters
 					activeFilters={[]}
@@ -520,7 +508,6 @@ describe("DimensionFilters Component", () => {
 		});
 
 		it("opens full filters in popover when compact button clicked", async () => {
-			const user = userEvent.setup();
 			render(
 				<DimensionFilters
 					activeFilters={[]}

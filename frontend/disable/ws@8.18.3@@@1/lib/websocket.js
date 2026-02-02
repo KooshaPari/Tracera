@@ -980,7 +980,7 @@ function initAsClient(websocket, address, protocols, options) {
 
 			try {
 				extensions = parse(secWebSocketExtensions);
-			} catch (err) {
+			} catch (_err) {
 				const message = "Invalid Sec-WebSocket-Extensions header";
 				abortHandshake(websocket, socket, message);
 				return;
@@ -999,7 +999,7 @@ function initAsClient(websocket, address, protocols, options) {
 
 			try {
 				perMessageDeflate.accept(extensions[PerMessageDeflate.extensionName]);
-			} catch (err) {
+			} catch (_err) {
 				const message = "Invalid Sec-WebSocket-Extensions header";
 				abortHandshake(websocket, socket, message);
 				return;

@@ -121,7 +121,7 @@ var Extract = function (opts) {
     var header
     try {
       header = self._header = headers.decode(b.slice(0, 512), opts.filenameEncoding, opts.allowUnknownFormat)
-    } catch (err) {
+    } catch (_err) {
       self.emit('error', err)
     }
     b.consume(512)

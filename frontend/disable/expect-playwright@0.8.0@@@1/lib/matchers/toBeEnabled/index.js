@@ -9,7 +9,7 @@ const toBeEnabled = async function (...args) {
 			message: () =>
 				utils_1.getMessage(this, "toBeEnabled", true, isEnabled, ""),
 		};
-	} catch (err) {
+	} catch (_err) {
 		return {
 			pass: false,
 			message: () => err.toString(),

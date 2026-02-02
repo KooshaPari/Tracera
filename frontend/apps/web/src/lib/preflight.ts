@@ -310,7 +310,7 @@ async function checkHealth(
 					hint: "Blocked by CORS. Check allowed origins for this service.",
 				};
 			}
-		} catch (error) {
+		} catch {
 			const message =
 				error instanceof DOMException ? error.name : String(error);
 			if (message === "AbortError") {
@@ -357,7 +357,7 @@ async function fetchPythonInfra(baseUrl: string): Promise<Record<string, string>
 		if (integration.go_backend?.status) {
 			status.go_backend = integration.go_backend.status;
 		}
-	} catch (error) {
+	} catch {
 		return status;
 	}
 

@@ -15,7 +15,7 @@ function resolveCommandAttempt(parsed, withoutPathExt) {
 	if (shouldSwitchCwd) {
 		try {
 			process.chdir(parsed.options.cwd);
-		} catch (err) {
+		} catch (_err) {
 			/* Empty */
 		}
 	}

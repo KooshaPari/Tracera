@@ -43,7 +43,7 @@ interface ProjectState {
 	setCurrentProject: (project: Project | null) => void;
 	addRecentProject: (projectId: string) => void;
 	setRecentProjects: (projectIds: string[]) => void;
-	getProjectSettings: (projectId: string) => any;
+	getProjectSettings: (projectId: string) => Record<string, unknown>;
 	updateProjectSettings: (
 		projectId: string,
 		settings: Record<string, unknown>,

@@ -3,7 +3,9 @@
  * Sends Bearer token via getAuthHeaders() for backend auth.
  */
 
-import { getAuthHeaders } from "@/api/client";
+import client from "@/api/client";
+
+const { getAuthHeaders } = client;
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 

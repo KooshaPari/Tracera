@@ -106,7 +106,7 @@ internals.punycode = (domain) => {
 
 	try {
 		return new internals.URL(`http://${domain}`).host;
-	} catch (err) {
+	} catch (_err) {
 		return domain;
 	}
 };

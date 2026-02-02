@@ -111,6 +111,40 @@ dev-scale: ## Scale a service (make dev-scale SERVICE=worker REPLICAS=3)
 	@process-compose $(PC_CONFIG) scale $(SERVICE)=$(REPLICAS)
 
 #############################################################################
+# Development CLI Tools
+#############################################################################
+
+dev-health: ## Check health of all services
+	@./scripts/dev health
+
+dev-seed: ## Seed database with test data
+	@./scripts/dev seed
+
+dev-seed-full: ## Seed database with comprehensive test data
+	@./scripts/dev seed --comprehensive
+
+dev-reset: ## Reset database (WARNING: destructive)
+	@./scripts/dev reset
+
+dev-clear: ## Clear all caches
+	@./scripts/dev clear --all
+
+dev-clear-redis: ## Clear Redis cache only
+	@./scripts/dev clear --redis
+
+dev-clear-neo4j: ## Clear Neo4j graph data only
+	@./scripts/dev clear --neo4j
+
+dev-generate: ## Generate test data (make dev-generate USERS=10 PROJECTS=5 ITEMS=50)
+	@./scripts/dev generate $(if $(USERS),--users $(USERS)) $(if $(PROJECTS),--projects $(PROJECTS)) $(if $(ITEMS),--items $(ITEMS))
+
+dev-init: ## Initialize development environment
+	@./scripts/dev init
+
+dev-cli: ## Show dev CLI help
+	@./scripts/dev --help
+
+#############################################################################
 # Unified quality (lint, typecheck, build, tests) by codebase
 # quality = per-step parallel run + report (run-quality-split.sh). REFRESH_INTERVAL=2 refreshes report as logs arrive.
 # quality-pc = TUI (port 18080, fail reruns). quality-watch = file watcher re-runs quality (watchexec).
@@ -203,8 +237,12 @@ test-go: ## Run Go tests only
 test-integration: ## Run integration tests
 	PYTHONPATH="$(shell pwd)/src" $(PYTEST) tests/ -v -m integration
 
-test-unit: ## Run unit tests
-	PYTHONPATH="$(shell pwd)/src" $(PYTEST) tests/ -v -m unit
+test-unit: ## Run unit tests (fast, then slow)
+	PYTHONPATH="$(shell pwd)/src" $(PYTEST) tests/ -v -m "unit and not slow" --cov=src/tracertm --cov-report=html
+	PYTHONPATH="$(shell pwd)/src" $(PYTEST) tests/ -v -m "unit and slow" --cov=src/tracertm --cov-append --cov-report=html
+
+test-e2e: ## Run end-to-end tests
+	PYTHONPATH="$(shell pwd)/src" $(PYTEST) tests/ -v -m e2e
 
 #############################################################################
 # Code Quality (see also: quality, quality-go, quality-python, quality-frontend)

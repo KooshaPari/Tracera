@@ -57,7 +57,6 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
-// import { Checkbox } from '@/components/ui/checkbox' // Unused
 
 export interface DataTableProps<TData, TValue> {
 	columns: ColumnDef<TData, TValue>[];
@@ -524,7 +523,7 @@ export function createEnterpriseColumn<TData, TValue>({
 	enableFiltering?: boolean;
 	enableHiding?: boolean;
 	enableResizing?: boolean;
-	meta?: any;
+	meta?: Record<string, unknown>;
 }): ColumnDef<TData, TValue> {
 	return {
 		id,
@@ -537,7 +536,7 @@ export function createEnterpriseColumn<TData, TValue>({
 		enableColumnFilter: enableFiltering ?? undefined,
 		enableHiding: enableHiding ?? undefined,
 		enableResizing: enableResizing ?? undefined,
-		accessorFn: () => null as any, // Placeholder - cell function handles rendering
+		accessorFn: () => null as TValue, // Placeholder - cell function handles rendering
 		meta: {
 			...meta,
 			isSticky: meta?.isSticky,

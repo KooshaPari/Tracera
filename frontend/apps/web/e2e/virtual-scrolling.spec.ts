@@ -231,9 +231,9 @@ test.describe("Virtual Scrolling Edge Cases", () => {
 	});
 
 	test("should handle window resize", async ({ page }) => {
-		const virtualContainer = page.locator('[role="region"]').first();
+		const _virtualContainer = page.locator('[role="region"]').first();
 
-		const initialRowCount = await page.locator("table tbody tr").count();
+		const _initialRowCount = await page.locator("table tbody tr").count();
 
 		// Resize window
 		await page.setViewportSize({ width: 1200, height: 800 });

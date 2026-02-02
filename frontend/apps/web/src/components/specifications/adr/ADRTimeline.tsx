@@ -80,7 +80,7 @@ export function ADRTimeline({ adrs, onADRClick, className }: ADRTimelineProps) {
 				? adrs
 				: adrs.filter((a) => a.status === statusFilter);
 
-		const sorted = [...filtered].sort((a, b) => {
+		const sorted = [...filtered].toSorted((a, b) => {
 			const dateA = new Date(a.date || a.createdAt).getTime();
 			const dateB = new Date(b.date || b.createdAt).getTime();
 			return sortOrder === "desc" ? dateB - dateA : dateA - dateB;
@@ -108,7 +108,7 @@ export function ADRTimeline({ adrs, onADRClick, className }: ADRTimelineProps) {
 
 	const years = Object.keys(timelineData)
 		.map(Number)
-		.sort((a, b) => (sortOrder === "desc" ? b - a : a - b));
+		.toSorted((a, b) => (sortOrder === "desc" ? b - a : a - b));
 
 	const monthNames = [
 		"Jan",

@@ -125,7 +125,7 @@ if (!skipWeb && Uint8Array.fromBase64) {
       try {
         const padded = str.length % 4 > 0 ? `${str}${'='.repeat(4 - (str.length % 4))}` : str
         arr = Uint8Array.fromBase64(padded, { alphabet, lastChunkHandling: 'strict' })
-      } catch (err) {
+      } catch (_err) {
         // Normalize error: whitespace in input could have caused added padding to be invalid
         // But reporting that as a padding error would be confusing
         throw ASCII_WHITESPACE.test(str) ? new SyntaxError(E_CHAR) : err

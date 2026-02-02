@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/consistent-function-scoping -- test helpers defined inline for clarity */
 // Tests for hierarchy utilities
 
 import type { Item, Link } from "@tracertm/types";

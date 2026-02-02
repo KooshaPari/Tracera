@@ -1,6 +1,8 @@
 // Settings API stub
-import { apiClient, safeApiCall } from "./client";
 import { logger } from "@/lib/logger";
+import client from "./client";
+
+const { apiClient, safeApiCall } = client;
 
 export interface Settings {
 	general: {
@@ -59,10 +61,12 @@ export const updateSettings = async (
 	} catch {
 		// Return merged settings if endpoint doesn't exist
 	}
-	return {
-		general: {},
-		...settings,
-	} as Settings;
+	return Object.assign(
+		{
+			general: {},
+		},
+		settings,
+	) as Settings;
 };
 
 /**
@@ -81,6 +85,34 @@ interface NotificationSettingsMap {
 	inApp?: boolean;
 }
 
+const buildGeneralSettings = (settings: {
+	theme?: string;
+}): GeneralSettingsMap => {
+	const generalSettings: GeneralSettingsMap = {};
+	if (settings.theme) {
+		generalSettings.theme = settings.theme as "light" | "dark" | "system";
+	}
+	return generalSettings;
+};
+
+const buildNotificationSettings = (settings: {
+	emailNotifications?: boolean;
+	desktopNotifications?: boolean;
+	weeklySummary?: boolean;
+}): NotificationSettingsMap => {
+	const notificationSettings: NotificationSettingsMap = {};
+	if (typeof settings.emailNotifications !== "undefined") {
+		notificationSettings.email = settings.emailNotifications;
+	}
+	if (typeof settings.desktopNotifications !== "undefined") {
+		notificationSettings.push = settings.desktopNotifications;
+	}
+	if (typeof settings.weeklySummary !== "undefined") {
+		notificationSettings.inApp = settings.weeklySummary;
+	}
+	return notificationSettings;
+};
+
 // Simplified settings save function for SettingsView
 export const saveSettings = async (settings: {
 	displayName?: string;
@@ -92,27 +124,13 @@ export const saveSettings = async (settings: {
 	weeklySummary?: boolean;
 }): Promise<void> => {
 	try {
-		const generalSettings: GeneralSettingsMap = {};
-		if (settings.theme) {
-			generalSettings.theme = settings.theme as "light" | "dark" | "system";
-		}
-
-		const notificationSettings: NotificationSettingsMap = {};
-		if (settings.emailNotifications !== undefined) {
-			notificationSettings.email = settings.emailNotifications;
-		}
-		if (settings.desktopNotifications !== undefined) {
-			notificationSettings.push = settings.desktopNotifications;
-		}
-		if (settings.weeklySummary !== undefined) {
-			notificationSettings.inApp = settings.weeklySummary;
-		}
-
+		const generalSettings = buildGeneralSettings(settings);
+		const notificationSettings = buildNotificationSettings(settings);
 		await updateSettings({
 			general: generalSettings,
 			notifications: notificationSettings,
 		});
-	} catch (_error) {
+	} catch {
 		// Settings endpoint may not exist yet, that's okay
 		logger.info("Settings saved locally:", settings);
 	}

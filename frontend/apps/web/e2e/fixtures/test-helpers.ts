@@ -206,7 +206,7 @@ export class TestHelpers {
 		await this.page.click('button:has-text("Select")');
 
 		for (let i = 0; i < count; i++) {
-			await this.page.click(`[data-testid="item-checkbox"]`, { nth: i });
+			await this.page.locator(`[data-testid="item-checkbox"]`).nth(i).click();
 		}
 
 		const toolbar = this.page.locator('[data-testid="bulk-toolbar"]');
@@ -316,7 +316,7 @@ export class TestHelpers {
 	 */
 	async mockApiResponse(url: string, response: any, status = 200) {
 		await this.page.route(`**${url}**`, (route) => {
-			route.fulfill({
+			void route.fulfill({
 				status,
 				body: JSON.stringify(response),
 			});
@@ -329,7 +329,7 @@ export class TestHelpers {
 		message = "Internal Server Error",
 	) {
 		await this.page.route(`**${url}**`, (route) => {
-			route.fulfill({
+			void route.fulfill({
 				status,
 				body: JSON.stringify({ error: message }),
 			});

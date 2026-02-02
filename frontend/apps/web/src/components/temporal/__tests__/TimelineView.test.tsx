@@ -142,7 +142,6 @@ describe("TimelineView", () => {
 	});
 
 	it("handles zoom controls", async () => {
-		const user = userEvent.setup();
 		render(
 			<TimelineView
 				versions={mockVersions}

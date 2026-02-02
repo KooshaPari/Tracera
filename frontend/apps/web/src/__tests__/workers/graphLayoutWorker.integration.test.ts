@@ -13,7 +13,7 @@ describe('Graph Layout Worker Implementation', () => {
 	describe('Worker Module', () => {
 		it('should have graphLayout.worker.ts file', async () => {
 			// Verify the worker file can be imported as a module
-			const workerModule = await import('@/workers/graphLayout.worker');
+			const workerModule = await import('../../workers/graphLayout.worker');
 
 			expect(workerModule).toBeDefined();
 			expect(workerModule.computeLayout).toBeDefined();
@@ -22,7 +22,7 @@ describe('Graph Layout Worker Implementation', () => {
 		});
 
 		it('should export correct type definitions', async () => {
-			const workerModule = await import('@/workers/graphLayout.worker');
+			const workerModule = await import('../../workers/graphLayout.worker');
 
 			// Type definitions should be available
 			expect(typeof workerModule.computeLayout).toBe('function');
@@ -33,7 +33,7 @@ describe('Graph Layout Worker Implementation', () => {
 
 	describe('Hook Module', () => {
 		it('should have useGraphLayoutWorker hook', async () => {
-			const hookModule = await import('@/hooks/useGraphLayoutWorker');
+			const hookModule = await import('../../hooks/useGraphLayoutWorker');
 
 			expect(hookModule).toBeDefined();
 			expect(hookModule.useGraphLayoutWorker).toBeDefined();
@@ -41,7 +41,7 @@ describe('Graph Layout Worker Implementation', () => {
 		});
 
 		it('should export benchmark hook', async () => {
-			const hookModule = await import('@/hooks/useGraphLayoutWorker');
+			const hookModule = await import('../../hooks/useGraphLayoutWorker');
 
 			expect(hookModule.useGraphLayoutBenchmark).toBeDefined();
 			expect(typeof hookModule.useGraphLayoutBenchmark).toBe('function');
@@ -60,7 +60,7 @@ describe('Graph Layout Worker Implementation', () => {
 
 	describe('Layout Algorithm Support', () => {
 		it('should support multiple layout algorithms', async () => {
-			const { computeLayout } = await import('@/workers/graphLayout.worker');
+			const { computeLayout } = await import('../../workers/graphLayout.worker');
 
 			// Test with empty graph to verify function signatures
 			const emptyResult = await computeLayout([], [], { algorithm: 'dagre' });
@@ -71,7 +71,7 @@ describe('Graph Layout Worker Implementation', () => {
 		});
 
 		it('should support Dagre layout algorithm', async () => {
-			const { computeLayout } = await import('@/workers/graphLayout.worker');
+			const { computeLayout } = await import('../../workers/graphLayout.worker');
 
 			const nodes = [
 				{ id: '1', width: 100, height: 50 },
@@ -96,7 +96,7 @@ describe('Graph Layout Worker Implementation', () => {
 		it.skip('should support ELK layout algorithm (requires browser environment)', async () => {
 			// ELK requires Web Workers which are not fully supported in jsdom
 			// This test should be run in E2E tests or browser environment
-			const { computeLayout } = await import('@/workers/graphLayout.worker');
+			const { computeLayout } = await import('../../workers/graphLayout.worker');
 
 			const nodes = [
 				{ id: '1', width: 100, height: 50 },
@@ -117,7 +117,7 @@ describe('Graph Layout Worker Implementation', () => {
 		});
 
 		it('should support Grid layout algorithm', async () => {
-			const { computeLayout } = await import('@/workers/graphLayout.worker');
+			const { computeLayout } = await import('../../workers/graphLayout.worker');
 
 			const nodes = [
 				{ id: '1', width: 100, height: 50 },
@@ -134,7 +134,7 @@ describe('Graph Layout Worker Implementation', () => {
 		});
 
 		it('should support Circular layout algorithm', async () => {
-			const { computeLayout } = await import('@/workers/graphLayout.worker');
+			const { computeLayout } = await import('../../workers/graphLayout.worker');
 
 			const nodes = [
 				{ id: '1', width: 100, height: 50 },
@@ -150,7 +150,7 @@ describe('Graph Layout Worker Implementation', () => {
 		});
 
 		it('should support Force layout algorithm', async () => {
-			const { computeLayout } = await import('@/workers/graphLayout.worker');
+			const { computeLayout } = await import('../../workers/graphLayout.worker');
 
 			const nodes = [
 				{ id: '1', width: 100, height: 50 },
@@ -169,7 +169,7 @@ describe('Graph Layout Worker Implementation', () => {
 		});
 
 		it('should support Radial layout algorithm', async () => {
-			const { computeLayout } = await import('@/workers/graphLayout.worker');
+			const { computeLayout } = await import('../../workers/graphLayout.worker');
 
 			const nodes = [
 				{ id: '1', width: 100, height: 50 },
@@ -192,7 +192,7 @@ describe('Graph Layout Worker Implementation', () => {
 
 	describe('Progressive Layout', () => {
 		it('should support progressive layout', async () => {
-			const { computeLayoutProgressive } = await import('@/workers/graphLayout.worker');
+			const { computeLayoutProgressive } = await import('../../workers/graphLayout.worker');
 
 			const nodes = Array.from({ length: 100 }, (_, i) => ({
 				id: `${i}`,
@@ -217,7 +217,7 @@ describe('Graph Layout Worker Implementation', () => {
 
 	describe('Benchmark API', () => {
 		it('should support benchmarking', async () => {
-			const { benchmarkLayout } = await import('@/workers/graphLayout.worker');
+			const { benchmarkLayout } = await import('../../workers/graphLayout.worker');
 
 			const nodes = Array.from({ length: 10 }, (_, i) => ({
 				id: `${i}`,
@@ -242,7 +242,7 @@ describe('Graph Layout Worker Implementation', () => {
 
 	describe('Layout Options', () => {
 		it('should support different directions', async () => {
-			const { computeLayout } = await import('@/workers/graphLayout.worker');
+			const { computeLayout } = await import('../../workers/graphLayout.worker');
 
 			const nodes = [
 				{ id: '1', width: 100, height: 50 },
@@ -267,7 +267,7 @@ describe('Graph Layout Worker Implementation', () => {
 		});
 
 		it('should support custom spacing options', async () => {
-			const { computeLayout } = await import('@/workers/graphLayout.worker');
+			const { computeLayout } = await import('../../workers/graphLayout.worker');
 
 			const nodes = [
 				{ id: '1', width: 100, height: 50 },
@@ -290,7 +290,7 @@ describe('Graph Layout Worker Implementation', () => {
 
 	describe('Performance Characteristics', () => {
 		it('should complete layout quickly for small graphs', async () => {
-			const { computeLayout } = await import('@/workers/graphLayout.worker');
+			const { computeLayout } = await import('../../workers/graphLayout.worker');
 
 			const nodes = Array.from({ length: 50 }, (_, i) => ({
 				id: `${i}`,
@@ -313,7 +313,7 @@ describe('Graph Layout Worker Implementation', () => {
 		});
 
 		it('should handle large graphs efficiently with grid layout', async () => {
-			const { computeLayout } = await import('@/workers/graphLayout.worker');
+			const { computeLayout } = await import('../../workers/graphLayout.worker');
 
 			const nodes = Array.from({ length: 500 }, (_, i) => ({
 				id: `${i}`,

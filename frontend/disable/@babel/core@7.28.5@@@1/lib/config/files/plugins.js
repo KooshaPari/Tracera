@@ -240,7 +240,7 @@ function* requireModule(type, loader, name) {
 				"which is only supported when running Babel asynchronously.",
 			true,
 		);
-	} catch (err) {
+	} catch (_err) {
 		err.message = `[BABEL]: ${err.message} (While processing: ${name})`;
 		throw err;
 	} finally {

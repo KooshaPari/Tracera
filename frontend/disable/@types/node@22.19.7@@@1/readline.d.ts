@@ -543,7 +543,7 @@ declare module "readline" {
      *     await once(rl, 'close');
      *
      *     console.log('File processed.');
-     *   } catch (err) {
+     *   } catch (_err) {
      *     console.error(err);
      *   }
      * })();

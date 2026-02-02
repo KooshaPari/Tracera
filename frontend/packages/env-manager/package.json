@@ -24,10 +24,7 @@
 		"dev": "tsc --watch",
 		"test": "vitest",
 		"test:coverage": "vitest --coverage",
-		"lint": "oxlint .",
-		"lint:fix": "oxlint --fix .",
-		"format": "biome format --write src",
-		"typecheck": "tsc --noEmit"
+		"format": "biome format --write src"
 	},
 	"keywords": [
 		"environment",

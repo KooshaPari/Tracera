@@ -16,7 +16,7 @@ function Register() {
 			window.location.href = "/home";
 		} else {
 			// Not logged in, immediately redirect to WorkOS signup
-			signUp();
+			void signUp();
 		}
 	}, [user, signUp]);
 

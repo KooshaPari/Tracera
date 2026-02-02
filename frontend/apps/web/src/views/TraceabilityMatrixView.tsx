@@ -37,7 +37,7 @@ export function TraceabilityMatrixView({
 	const links = linksData?.links ?? [];
 
 	const matrix = useMemo(() => {
-		if (!items.length) return { requirements: [], features: [], coverage: {} };
+		if (items.length === 0) {return { coverage: {}, features: [], requirements: [] };}
 
 		const requirements = items.filter(
 			(i: any) =>
@@ -48,15 +48,15 @@ export function TraceabilityMatrixView({
 
 		const coverage: Record<string, Set<string>> = {};
 		links.forEach((link: any) => {
-			if (!coverage[link.sourceId]) coverage[link.sourceId] = new Set();
+			if (!coverage[link.sourceId]) {coverage[link.sourceId] = new Set();}
 			coverage[link.sourceId]?.add(link.targetId);
 		});
 
-		return { requirements, features, coverage };
+		return { coverage, features, requirements };
 	}, [items, links, searchQuery]);
 
 	const coveragePercent = useMemo(() => {
-		if (matrix.requirements.length === 0) return 0;
+		if (matrix.requirements.length === 0) {return 0;}
 		const covered = matrix.requirements.filter(
 			(r) => (matrix.coverage[r.id]?.size ?? 0) > 0,
 		).length;
@@ -104,23 +104,23 @@ export function TraceabilityMatrixView({
 			<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 				{[
 					{
+						color: "text-blue-500",
+						icon: FileText,
 						label: "High-Level REQS",
 						value: matrix.requirements.length,
-						icon: FileText,
-						color: "text-blue-500",
 					},
 					{
+						color: "text-purple-500",
+						icon: Box,
 						label: "Mapped Features",
 						value: matrix.features.length,
-						icon: Box,
-						color: "text-purple-500",
 					},
 					{
-						label: "Integrity Ratio",
-						value: `${coveragePercent}%`,
-						icon: Activity,
 						color: "text-green-500",
+						icon: Activity,
+						label: "Integrity Ratio",
 						progress: true,
+						value: `${coveragePercent}%`,
 					},
 				].map((s, i) => (
 					<Card

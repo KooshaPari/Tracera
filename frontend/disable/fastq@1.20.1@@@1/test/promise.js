@@ -198,7 +198,7 @@ test('push with worker throwing error', async function (t) {
   })
   try {
     await q.push(42)
-  } catch (err) {
+  } catch (_err) {
     t.ok(err instanceof Error, 'push callback should catch the error')
     t.match(err.message, /test error/, 'error message should be "test error"')
   }
@@ -211,7 +211,7 @@ test('unshift with worker throwing error', async function (t) {
   }, 1)
   try {
     await q.unshift(42)
-  } catch (err) {
+  } catch (_err) {
     t.ok(err instanceof Error, 'push callback should catch the error')
     t.match(err.message, /test error/, 'error message should be "test error"')
   }
@@ -309,7 +309,7 @@ test('abort rejects all pending promises', async function (t) {
     try {
       await promise
       t.fail('promise should have been rejected')
-    } catch (err) {
+    } catch (_err) {
       t.equal(err.message, 'abort', 'error message is abort')
       rejectedCount++
     }

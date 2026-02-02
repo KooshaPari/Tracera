@@ -8,7 +8,7 @@ try {
     // fs doesn't have all methods we need
     fs = null;
   }
-} catch (err) {
+} catch (_err) {
   /* nop */
 }
 

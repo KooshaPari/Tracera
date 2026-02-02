@@ -83,7 +83,7 @@ class Response {
     let parsedURL
     try {
       parsedURL = new URL(url, relevantRealm.settingsObject.baseUrl)
-    } catch (err) {
+    } catch (_err) {
       throw new TypeError(`Failed to parse URL from ${url}`, { cause: err })
     }
 

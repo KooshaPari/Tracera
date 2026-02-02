@@ -11,7 +11,7 @@ import {
 	type PerformanceMetrics,
 	type LODDistribution,
 } from "../useGraphPerformanceMonitor";
-import type { CacheStatistics } from "@/lib/graphCache";
+import type { CacheStatistics } from "../../lib/graphCache";
 
 // Mock data
 const mockNodes = Array.from({ length: 100 }, (_, i) => ({
@@ -107,8 +107,10 @@ describe("useGraphPerformanceMonitor", () => {
 		vi.spyOn(performance, "now").mockReturnValue(1000);
 
 		// Mock requestAnimationFrame
-		global.requestAnimationFrame = vi.fn((cb) => {
-			setTimeout(cb, 16);
+		global.requestAnimationFrame = vi.fn((cb: FrameRequestCallback) => {
+			setTimeout(() => {
+				cb(0);
+			}, 16);
 			return 1;
 		});
 		global.cancelAnimationFrame = vi.fn();

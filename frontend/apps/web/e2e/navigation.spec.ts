@@ -24,7 +24,7 @@ test.describe("Application Navigation", () => {
 		const errorHeading = page.getByRole("heading", { name: /system anomaly/i });
 
 		// Wait for either dashboard or error to appear
-		const hasContent = await Promise.race([
+		const _hasContent = await Promise.race([
 			dashboardHeading.isVisible({ timeout: 8000 }).catch(() => false),
 			errorHeading.isVisible({ timeout: 8000 }).catch(() => false),
 		]);

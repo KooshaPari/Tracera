@@ -218,8 +218,8 @@ describe("useLocalStorage Hook", () => {
 		});
 
 		it("should not match storage events with different key", () => {
-			const targetKey = "my-key";
-			const eventKey = "other-key";
+			const targetKey: string = "my-key";
+			const eventKey: string = "other-key";
 			const matches = eventKey === targetKey;
 			expect(matches).toBe(false);
 		});

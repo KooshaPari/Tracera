@@ -38,6 +38,8 @@ vi.mock("../../hooks/useProjects", () => ({
 	useUpdateProject: vi.fn(),
 }));
 
+const user = userEvent.setup();
+
 describe("ProjectDetailView", () => {
 	let queryClient: QueryClient;
 
@@ -125,7 +127,6 @@ describe("ProjectDetailView", () => {
 	});
 
 	it("handles tab switching", async () => {
-		const user = userEvent.setup();
 
 		vi.mocked(useProject).mockReturnValue({
 			data: {

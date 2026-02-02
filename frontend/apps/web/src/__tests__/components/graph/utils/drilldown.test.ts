@@ -1,6 +1,6 @@
 // Tests for drill-down navigation utilities
 
-import type { Item, Link } from "@tracertm/types";
+import type { Item, Link } from "../../../../../../../packages/types/src/index";
 import { beforeEach, describe, expect, it } from "vitest";
 import {
 	createBreadcrumbs,
@@ -18,11 +18,8 @@ import {
 } from "../../../../components/graph/utils/drilldown";
 import { buildHierarchy } from "../../../../components/graph/utils/hierarchy";
 
-describe("Drill-Down Navigation", () => {
-	let items: Item[];
-	let links: Link[];
-
-	const createItem = (id: string, title: string, type: string): Item => ({
+function createItem(id: string, title: string, type: string): Item {
+	return {
 		id,
 		projectId: "p1",
 		view: "technical",
@@ -34,9 +31,11 @@ describe("Drill-Down Navigation", () => {
 		version: 1,
 		createdAt: new Date().toISOString(),
 		updatedAt: new Date().toISOString(),
-	});
+	};
+}
 
-	const createParentOfLink = (parentId: string, childId: string): Link => ({
+function createParentOfLink(parentId: string, childId: string): Link {
+	return {
 		id: `link-${parentId}-${childId}`,
 		sourceId: parentId,
 		targetId: childId,
@@ -44,7 +43,12 @@ describe("Drill-Down Navigation", () => {
 		description: `${parentId} is parent of ${childId}`,
 		createdAt: new Date().toISOString(),
 		updatedAt: new Date().toISOString(),
-	});
+	};
+}
+
+describe("Drill-Down Navigation", () => {
+	let items: Item[];
+	let links: Link[];
 
 	beforeEach(() => {
 		// Hierarchy: Project → Repository → Module → File → Function

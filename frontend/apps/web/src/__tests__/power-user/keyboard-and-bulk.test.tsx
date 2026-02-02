@@ -6,7 +6,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock Keyboard Shortcuts Handler
 function MockKeyboardShortcuts({
@@ -276,10 +276,14 @@ function MockBulkSelection({
 	);
 }
 
+let user: ReturnType<typeof userEvent.setup>;
+beforeEach(() => {
+	user = userEvent.setup();
+});
+
 describe("Keyboard Shortcuts - Command Palette", () => {
 	it("should open command palette with Cmd/Ctrl + K", async () => {
 		const handleShortcut = vi.fn();
-		const user = userEvent.setup();
 
 		render(<MockKeyboardShortcuts onShortcut={handleShortcut} />);
 
@@ -290,7 +294,6 @@ describe("Keyboard Shortcuts - Command Palette", () => {
 
 	it("should trigger save with Cmd/Ctrl + S", async () => {
 		const handleShortcut = vi.fn();
-		const user = userEvent.setup();
 
 		render(<MockKeyboardShortcuts onShortcut={handleShortcut} />);
 
@@ -307,7 +310,6 @@ describe("Keyboard Shortcuts - Command Palette", () => {
 	});
 
 	it("should be accessible to keyboard-only users", async () => {
-		const user = userEvent.setup();
 
 		render(<MockKeyboardShortcuts />);
 
@@ -320,7 +322,6 @@ describe("Keyboard Shortcuts - Command Palette", () => {
 describe("Keyboard Shortcuts - Save and Delete", () => {
 	it("should trigger save action with Cmd/Ctrl + S", async () => {
 		const handleShortcut = vi.fn();
-		const user = userEvent.setup();
 
 		render(<MockKeyboardShortcuts onShortcut={handleShortcut} />);
 
@@ -331,7 +332,6 @@ describe("Keyboard Shortcuts - Save and Delete", () => {
 
 	it("should trigger delete with Delete key", async () => {
 		const handleShortcut = vi.fn();
-		const user = userEvent.setup();
 
 		render(<MockKeyboardShortcuts onShortcut={handleShortcut} />);
 
@@ -342,7 +342,6 @@ describe("Keyboard Shortcuts - Save and Delete", () => {
 
 	it("should select all with Cmd/Ctrl + A", async () => {
 		const handleShortcut = vi.fn();
-		const user = userEvent.setup();
 
 		render(<MockKeyboardShortcuts onShortcut={handleShortcut} />);
 
@@ -355,7 +354,6 @@ describe("Keyboard Shortcuts - Save and Delete", () => {
 describe("Undo/Redo Functionality", () => {
 	it("should undo previous action", async () => {
 		const handleStateChange = vi.fn();
-		const user = userEvent.setup();
 
 		render(<MockUndoRedoEditor onStateChange={handleStateChange} />);
 
@@ -370,7 +368,6 @@ describe("Undo/Redo Functionality", () => {
 
 	it("should redo after undo", async () => {
 		const handleStateChange = vi.fn();
-		const user = userEvent.setup();
 
 		render(<MockUndoRedoEditor onStateChange={handleStateChange} />);
 
@@ -394,7 +391,6 @@ describe("Undo/Redo Functionality", () => {
 	});
 
 	it("should disable redo when at latest state", async () => {
-		const user = userEvent.setup();
 
 		render(<MockUndoRedoEditor />);
 
@@ -406,7 +402,6 @@ describe("Undo/Redo Functionality", () => {
 	});
 
 	it("should clear redo history when new change made after undo", async () => {
-		const user = userEvent.setup();
 
 		render(<MockUndoRedoEditor />);
 
@@ -428,7 +423,6 @@ describe("Undo/Redo Functionality", () => {
 	});
 
 	it("should support keyboard shortcuts for undo/redo", async () => {
-		const user = userEvent.setup();
 
 		render(<MockUndoRedoEditor />);
 
@@ -452,7 +446,6 @@ describe("Bulk Selection and Operations", () => {
 
 	it("should select all items with select all checkbox", async () => {
 		const handleSelectChange = vi.fn();
-		const user = userEvent.setup();
 
 		render(<MockBulkSelection onSelectChange={handleSelectChange} />);
 
@@ -464,7 +457,6 @@ describe("Bulk Selection and Operations", () => {
 
 	it("should deselect all with select all checkbox", async () => {
 		const handleSelectChange = vi.fn();
-		const user = userEvent.setup();
 
 		render(<MockBulkSelection onSelectChange={handleSelectChange} />);
 
@@ -481,7 +473,6 @@ describe("Bulk Selection and Operations", () => {
 
 	it("should select individual items", async () => {
 		const handleSelectChange = vi.fn();
-		const user = userEvent.setup();
 
 		render(<MockBulkSelection onSelectChange={handleSelectChange} />);
 
@@ -492,7 +483,6 @@ describe("Bulk Selection and Operations", () => {
 	});
 
 	it("should show bulk action buttons when items selected", async () => {
-		const user = userEvent.setup();
 
 		render(<MockBulkSelection />);
 
@@ -507,7 +497,6 @@ describe("Bulk Selection and Operations", () => {
 
 	it("should perform bulk delete action", async () => {
 		const handleBulkAction = vi.fn();
-		const user = userEvent.setup();
 
 		render(<MockBulkSelection onBulkAction={handleBulkAction} />);
 
@@ -525,7 +514,6 @@ describe("Bulk Selection and Operations", () => {
 
 	it("should perform bulk complete action", async () => {
 		const handleBulkAction = vi.fn();
-		const user = userEvent.setup();
 
 		render(<MockBulkSelection onBulkAction={handleBulkAction} />);
 
@@ -541,7 +529,6 @@ describe("Bulk Selection and Operations", () => {
 	});
 
 	it("should update selection count", async () => {
-		const user = userEvent.setup();
 
 		render(<MockBulkSelection />);
 
@@ -556,7 +543,6 @@ describe("Bulk Selection and Operations", () => {
 	});
 
 	it("should clear selection after bulk action", async () => {
-		const user = userEvent.setup();
 
 		render(<MockBulkSelection />);
 
@@ -572,7 +558,6 @@ describe("Bulk Selection and Operations", () => {
 	});
 
 	it("should support keyboard selection (Shift + Click)", async () => {
-		const user = userEvent.setup();
 
 		render(<MockBulkSelection />);
 
@@ -588,7 +573,6 @@ describe("Bulk Selection and Operations", () => {
 	});
 
 	it("should support keyboard Ctrl + Click for multi-select", async () => {
-		const user = userEvent.setup();
 
 		render(<MockBulkSelection />);
 
@@ -646,7 +630,6 @@ describe("Bulk Export/Share Operations", () => {
 
 	it("should export selected items in chosen format", async () => {
 		const handleExport = vi.fn();
-		const user = userEvent.setup();
 
 		render(<MockBulkExport onExport={handleExport} />);
 
@@ -662,7 +645,6 @@ describe("Bulk Export/Share Operations", () => {
 
 describe("Keyboard Accessibility for Bulk Operations", () => {
 	it("should navigate list with arrow keys", async () => {
-		const user = userEvent.setup();
 
 		render(<MockBulkSelection />);
 
@@ -674,7 +656,6 @@ describe("Keyboard Accessibility for Bulk Operations", () => {
 	});
 
 	it("should support Space to toggle selection", async () => {
-		const user = userEvent.setup();
 
 		render(<MockBulkSelection />);
 

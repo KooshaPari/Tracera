@@ -165,9 +165,11 @@ describe("useOnClickOutside Hook", () => {
 		});
 
 		it("should include handler in dependencies", () => {
+			/* eslint-disable unicorn/consistent-function-scoping -- test intentionally uses inline handler */
 			const handler = () => {};
 			const deps = [{ current: null }, handler];
 			expect(deps[1]).toEqual(handler);
+			/* eslint-enable unicorn/consistent-function-scoping */
 		});
 	});
 });

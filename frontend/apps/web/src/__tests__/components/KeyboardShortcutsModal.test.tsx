@@ -40,7 +40,7 @@ describe("KeyboardShortcutsModal", () => {
 	});
 
 	it("does not render when closed", () => {
-		const { container } = render(
+		render(
 			<KeyboardShortcutsModal
 				isOpen={false}
 				onClose={mockOnClose}

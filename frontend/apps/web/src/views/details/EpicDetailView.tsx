@@ -6,7 +6,8 @@
  * Deep purple theme (#7c3aed) for epic-specific UI elements.
  */
 
-import { type EpicItem, isEpicItem } from "@tracertm/types";
+import { isEpicItem } from '@tracertm/types';
+import type { EpicItem } from '@tracertm/types';
 import {
 	Badge,
 	Card,
@@ -34,7 +35,8 @@ import {
 import { useMemo } from "react";
 import { useEpicSpecByItem } from "@/hooks/useItemSpecs";
 import { cn } from "@/lib/utils";
-import { BaseDetailView, type DetailTab } from "./BaseDetailView";
+import { BaseDetailView } from './BaseDetailView';
+import type { DetailTab } from './BaseDetailView';
 
 interface EpicDetailViewProps {
 	item: EpicItem;
@@ -43,29 +45,29 @@ interface EpicDetailViewProps {
 
 // Epic status colors
 const EPIC_STATUS_STYLES = {
+	archived: {
+		bg: "bg-slate-500/10",
+		icon: XCircle,
+		label: "Archived",
+		text: "text-slate-600",
+	},
 	backlog: {
 		bg: "bg-slate-500/10",
-		text: "text-slate-600",
 		icon: Clock,
 		label: "Backlog",
-	},
-	in_progress: {
-		bg: "bg-blue-500/10",
-		text: "text-blue-600",
-		icon: Zap,
-		label: "In Progress",
+		text: "text-slate-600",
 	},
 	completed: {
 		bg: "bg-green-500/10",
-		text: "text-green-600",
 		icon: CheckCircle2,
 		label: "Completed",
+		text: "text-green-600",
 	},
-	archived: {
-		bg: "bg-slate-500/10",
-		text: "text-slate-600",
-		icon: XCircle,
-		label: "Archived",
+	in_progress: {
+		bg: "bg-blue-500/10",
+		icon: Zap,
+		label: "In Progress",
+		text: "text-blue-600",
 	},
 } as const;
 
@@ -83,7 +85,7 @@ export function EpicDetailView({ item, projectId }: EpicDetailViewProps) {
 	const StatusIcon = statusStyle.icon;
 
 	const completionPercentage = useMemo(() => {
-		if (!epicSpec || epicSpec.child_stories_count === 0) return 0;
+		if (!epicSpec || epicSpec.child_stories_count === 0) {return 0;}
 		// This is a placeholder - in reality, you'd calculate based on completed stories
 		return Math.round(
 			(epicSpec.user_stories.length / epicSpec.child_stories_count) * 100,
@@ -91,7 +93,7 @@ export function EpicDetailView({ item, projectId }: EpicDetailViewProps) {
 	}, [epicSpec]);
 
 	const timelineProgress = useMemo(() => {
-		if (!epicSpec?.start_date || !epicSpec?.end_date) return 0;
+		if (!epicSpec?.start_date || !epicSpec?.end_date) {return 0;}
 		const now = new Date();
 		const start = new Date(epicSpec.start_date);
 		const end = new Date(epicSpec.end_date);
@@ -104,14 +106,12 @@ export function EpicDetailView({ item, projectId }: EpicDetailViewProps) {
 	const tabs: DetailTab[] = useMemo(() => {
 		const allTabs: DetailTab[] = [
 			{
-				id: "overview",
-				label: "Overview",
 				ariaLabel: "Epic overview and key metrics",
 				content: specLoading ? (
 					<div className="flex items-center justify-center py-12">
 						<div className="h-8 w-8 animate-spin rounded-full border-4 border-purple-600 border-t-transparent" />
 					</div>
-				) : !epicSpec ? (
+				) : (!epicSpec ? (
 					<Card className="border-none bg-card/50">
 						<CardContent className="pt-6">
 							<p className="text-sm text-muted-foreground text-center">
@@ -274,11 +274,11 @@ export function EpicDetailView({ item, projectId }: EpicDetailViewProps) {
 							</CardContent>
 						</Card>
 					</div>
-				),
+				)),
+				id: "overview",
+				label: "Overview",
 			},
 			{
-				id: "specification",
-				label: "Epic Specification",
 				ariaLabel: "Epic objectives and scope",
 				content: !epicSpec ? (
 					<Card className="border-none bg-card/50">
@@ -386,10 +386,10 @@ export function EpicDetailView({ item, projectId }: EpicDetailViewProps) {
 						</div>
 					</div>
 				),
+				id: "specification",
+				label: "Epic Specification",
 			},
 			{
-				id: "timeline",
-				label: "Timeline",
 				ariaLabel: "Epic timeline and milestones",
 				content: !epicSpec ? (
 					<Card className="border-none bg-card/50">
@@ -472,12 +472,12 @@ export function EpicDetailView({ item, projectId }: EpicDetailViewProps) {
 						</Card>
 					</div>
 				),
+				id: "timeline",
+				label: "Timeline",
 			},
 			{
-				id: "stories",
-				label: "Stories",
-				badge: epicSpec?.user_stories.length || 0,
 				ariaLabel: "User stories in this epic",
+				badge: epicSpec?.user_stories.length || 0,
 				content: !epicSpec ? (
 					<Card className="border-none bg-card/50">
 						<CardContent className="pt-6">
@@ -543,12 +543,12 @@ export function EpicDetailView({ item, projectId }: EpicDetailViewProps) {
 						)}
 					</div>
 				),
+				id: "stories",
+				label: "Stories",
 			},
 			{
-				id: "acceptance",
-				label: "Acceptance Criteria",
-				badge: epicSpec?.success_criteria.length || 0,
 				ariaLabel: "Epic acceptance criteria",
+				badge: epicSpec?.success_criteria.length || 0,
 				content: !epicSpec ? (
 					<Card className="border-none bg-card/50">
 						<CardContent className="pt-6">
@@ -653,6 +653,8 @@ export function EpicDetailView({ item, projectId }: EpicDetailViewProps) {
 						)}
 					</div>
 				),
+				id: "acceptance",
+				label: "Acceptance Criteria",
 			},
 		];
 

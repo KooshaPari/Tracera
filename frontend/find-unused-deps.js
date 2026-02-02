@@ -21,7 +21,7 @@ async function findPackageJsons(dir, depth = 0) {
 				files.push(fullPath);
 			}
 		}
-	} catch (err) {
+	} catch {
 		// Skip
 	}
 
@@ -70,7 +70,7 @@ async function main() {
 					});
 				}
 			}
-		} catch (err) {
+		} catch {
 			// Skip
 		}
 	}

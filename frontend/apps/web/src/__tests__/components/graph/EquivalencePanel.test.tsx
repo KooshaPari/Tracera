@@ -4,7 +4,6 @@
  */
 
 import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import type {
 	CanonicalConcept,
 	CanonicalProjection,
@@ -96,13 +95,13 @@ describe("EquivalencePanel Component", () => {
 	let onViewItem: ReturnType<typeof vi.fn>;
 	let onConfirmEquivalence: ReturnType<typeof vi.fn>;
 	let onRejectEquivalence: ReturnType<typeof vi.fn>;
-	let onCreateEquivalence: ReturnType<typeof vi.fn>;
+	let _onCreateEquivalence: ReturnType<typeof vi.fn>;
 
 	beforeEach(() => {
 		onViewItem = vi.fn();
 		onConfirmEquivalence = vi.fn();
 		onRejectEquivalence = vi.fn();
-		onCreateEquivalence = vi.fn();
+		_onCreateEquivalence = vi.fn();
 		vi.clearAllMocks();
 	});
 
@@ -243,7 +242,6 @@ describe("EquivalencePanel Component", () => {
 		});
 
 		it("navigates to item when clicking confirmed equivalence", async () => {
-			const user = userEvent.setup();
 			render(
 				<EquivalencePanel
 					selectedItem={mockItem}
@@ -318,7 +316,6 @@ describe("EquivalencePanel Component", () => {
 		});
 
 		it("hides suggestions when Hide button clicked", async () => {
-			const user = userEvent.setup();
 			render(
 				<EquivalencePanel
 					selectedItem={mockItem}
@@ -339,7 +336,6 @@ describe("EquivalencePanel Component", () => {
 		});
 
 		it("shows suggestions again when Show button clicked", async () => {
-			const user = userEvent.setup();
 			render(
 				<EquivalencePanel
 					selectedItem={mockItem}
@@ -369,7 +365,6 @@ describe("EquivalencePanel Component", () => {
 
 	describe("User Actions", () => {
 		it("calls onConfirmEquivalence when confirm button clicked", async () => {
-			const user = userEvent.setup();
 			render(
 				<EquivalencePanel
 					selectedItem={mockItem}
@@ -388,7 +383,6 @@ describe("EquivalencePanel Component", () => {
 		});
 
 		it("calls onRejectEquivalence when reject button clicked", async () => {
-			const user = userEvent.setup();
 			render(
 				<EquivalencePanel
 					selectedItem={mockItem}
@@ -405,8 +399,7 @@ describe("EquivalencePanel Component", () => {
 		});
 
 		it("stops event propagation when clicking action buttons", async () => {
-			const user = userEvent.setup();
-			const { container } = render(
+			render(
 				<EquivalencePanel
 					selectedItem={mockItem}
 					equivalenceLinks={[mockSuggestedLink]}
@@ -496,7 +489,7 @@ describe("EquivalencePanel Component", () => {
 
 	describe("Loading States", () => {
 		it("shows loading spinner when isLoading is true", () => {
-			const { container } = render(
+			render(
 				<EquivalencePanel
 					selectedItem={mockItem}
 					equivalenceLinks={[]}
@@ -541,7 +534,6 @@ describe("EquivalencePanel Component", () => {
 		});
 
 		it("collapses when collapse button clicked", async () => {
-			const user = userEvent.setup();
 			render(
 				<EquivalencePanel
 					selectedItem={mockItem}
@@ -564,7 +556,6 @@ describe("EquivalencePanel Component", () => {
 		});
 
 		it("expands again when expand button clicked", async () => {
-			const user = userEvent.setup();
 			render(
 				<EquivalencePanel
 					selectedItem={mockItem}
@@ -656,7 +647,6 @@ describe("EquivalencePanel Component", () => {
 		});
 
 		it("supports keyboard navigation", async () => {
-			const user = userEvent.setup();
 			render(
 				<EquivalencePanel
 					selectedItem={mockItem}
@@ -690,7 +680,6 @@ describe("EquivalencePanel Component", () => {
 		});
 
 		it("shows strategy in tooltip on hover", async () => {
-			const user = userEvent.setup();
 			render(
 				<EquivalencePanel
 					selectedItem={mockItem}

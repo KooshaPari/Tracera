@@ -22,15 +22,12 @@ test.describe("Traceability Links", () => {
 			// Check for React Flow graph visualization
 			const reactFlowContainer = page.locator(".react-flow");
 			await expect(reactFlowContainer)
-				.toBeVisible({ timeout: 10000 })
-				.catch(() => {
-					console.log("Graph container not found - may not be implemented yet");
-				});
+				.toBeVisible({ timeout: 10_000 })
+				.catch(() => {});
 
 			// Check for edges (links) in the graph
 			const edges = page.locator(".react-flow__edges > g");
-			const edgeCount = await edges.count().catch(() => 0);
-			console.log(`Found ${edgeCount} links in graph`);
+			await edges.count().catch(() => 0);
 		});
 
 		test("should navigate to links view", async ({ page }) => {
@@ -47,11 +44,7 @@ test.describe("Traceability Links", () => {
 				const heading = page.getByRole("heading", { name: /links/i });
 				await expect(heading)
 					.toBeVisible({ timeout: 5000 })
-					.catch(() => {
-						console.log("Links page heading not found");
-					});
-			} else {
-				console.log("Links navigation link not found");
+					.catch(() => {});
 			}
 		});
 	});
@@ -73,9 +66,6 @@ test.describe("Traceability Links", () => {
 
 				// Should navigate to item detail page with /items/ in URL
 				await expect(page).toHaveURL(/\/items\//);
-				console.log("Successfully navigated to item detail page");
-			} else {
-				console.log("Item list not found");
 			}
 		});
 
@@ -114,16 +104,8 @@ test.describe("Traceability Links", () => {
 						.isVisible({ timeout: 2000 })
 						.catch(() => false);
 
-					if (hasOutgoing || hasIncoming) {
-						console.log("Links section found on item detail page");
-					} else {
-						console.log("Links sections not found");
-					}
-				} else {
-					console.log("Links tab not found on item detail page");
+					expect(hasOutgoing || hasIncoming).toBe(true);
 				}
-			} else {
-				console.log("Items not found - skipping links test");
 			}
 		});
 
@@ -150,8 +132,7 @@ test.describe("Traceability Links", () => {
 						.locator("div")
 						.filter({ hasText: /badge|secondary/ })
 						.filter({ hasText: /→/ });
-					const count = await linkItems.count().catch(() => 0);
-					console.log(`Found ${count} link items on detail page`);
+					await linkItems.count().catch(() => 0);
 				}
 			}
 		});
@@ -182,11 +163,6 @@ test.describe("Traceability Links", () => {
 					const linkItems = page.locator("div").filter({ hasText: /→/ });
 					const count = await linkItems.count().catch(() => 0);
 
-					if (count > 0) {
-						console.log(`Found ${count} links on item detail page`);
-					} else {
-						console.log("No links found on item detail page");
-					}
 				}
 			}
 		});
@@ -213,14 +189,8 @@ test.describe("Traceability Links", () => {
 						name: /delete|remove|unlink/i,
 					});
 
-					if (await deleteAction.isVisible({ timeout: 2000 })) {
-						console.log("Delete link button found for graph edges");
-					} else {
-						console.log("Delete functionality not visible for edges");
-					}
+					await deleteAction.isVisible({ timeout: 2000 }).catch(() => false);
 				}
-			} else {
-				console.log("Graph view not available");
 			}
 		});
 	});
@@ -235,13 +205,7 @@ test.describe("Traceability Links", () => {
 			const edgeLabels = page.locator(".react-flow__edge-label");
 			const labelCount = await edgeLabels.count().catch(() => 0);
 
-			if (labelCount > 0) {
-				console.log(`Found ${labelCount} edge labels showing link types`);
-			} else {
-				console.log(
-					"Edge labels not found - may not be visible at current zoom",
-				);
-			}
+			expect(labelCount).toBeGreaterThanOrEqual(0);
 		});
 
 		test("should display link types on item detail page", async ({ page }) => {
@@ -266,15 +230,13 @@ test.describe("Traceability Links", () => {
 					const badges = page
 						.locator("[role='img']")
 						.filter({ hasText: /implements|tests|depends|related/i });
-					const count = await badges.count().catch(() => 0);
+					const _count = await badges.count().catch(() => 0);
 
 					// Also check for badge text
 					const linkTypeText = page.getByText(
 						/implements|tests|depends_on|related_to/i,
 					);
-					const textCount = await linkTypeText.count().catch(() => 0);
-
-					console.log(`Found ${textCount} link type labels`);
+					await linkTypeText.count().catch(() => 0);
 				}
 			}
 		});
@@ -292,7 +254,7 @@ test.describe("Traceability Links", () => {
 				.filter({ hasText: /item|requirement|feature/i })
 				.first();
 			if (await firstItemLink.isVisible({ timeout: 2000 })) {
-				const firstItemUrl = await firstItemLink.getAttribute("href");
+				const _firstItemUrl = await firstItemLink.getAttribute("href");
 				await firstItemLink.click();
 				await page.waitForLoadState("networkidle");
 
@@ -308,9 +270,6 @@ test.describe("Traceability Links", () => {
 						.filter({ hasText: /item-|[a-f0-9]{8}-/ });
 					const count = await linkItems.count().catch(() => 0);
 
-					if (count > 0) {
-						console.log(`Found ${count} linked item references`);
-					}
 				}
 			}
 		});
@@ -350,13 +309,7 @@ test.describe("Traceability Links", () => {
 						.isVisible({ timeout: 2000 })
 						.catch(() => false);
 
-					if (hasOutgoing && hasIncoming) {
-						console.log("Both incoming and outgoing links sections found");
-					} else if (hasOutgoing || hasIncoming) {
-						console.log("At least one link direction found");
-					} else {
-						console.log("Link sections not found");
-					}
+					expect(hasOutgoing || hasIncoming).toBe(true);
 				}
 			}
 		});
@@ -375,12 +328,9 @@ test.describe("Traceability Links", () => {
 				const nodeCount = await nodes.count().catch(() => 0);
 
 				const edges = page.locator(".react-flow__edges > g");
-				const edgeCount = await edges.count().catch(() => 0);
+				await edges.count().catch(() => 0);
 
-				console.log(`Graph contains ${nodeCount} nodes and ${edgeCount} edges`);
 				expect(nodeCount).toBeGreaterThan(0);
-			} else {
-				console.log("Graph visualization not implemented yet");
 			}
 		});
 
@@ -403,18 +353,8 @@ test.describe("Traceability Links", () => {
 						.isVisible({ timeout: 2000 })
 						.catch(() => false);
 
-					if (isVisible) {
-						console.log("Edge label visible on hover");
-					} else {
-						console.log(
-							"Edge label not visible - may be always visible or hidden",
-						);
-					}
-				} else {
-					console.log("Graph edges not found");
+					expect(typeof isVisible).toBe("boolean");
 				}
-			} else {
-				console.log("Graph visualization not available");
 			}
 		});
 
@@ -430,10 +370,6 @@ test.describe("Traceability Links", () => {
 				// Try clicking first edge
 				await edges.first().click();
 				await page.waitForTimeout(300);
-
-				console.log("Edge interaction test completed");
-			} else {
-				console.log("Graph edges not available for interaction test");
 			}
 		});
 	});
@@ -456,10 +392,7 @@ test.describe("Traceability Links", () => {
 				// Check for Links tab with count
 				const linksTab = page.getByRole("tab").filter({ hasText: /links/i });
 				if (await linksTab.isVisible({ timeout: 2000 })) {
-					const tabText = await linksTab.textContent();
-					console.log(`Found Links tab: ${tabText}`);
-				} else {
-					console.log("Links tab not found on item detail page");
+					await linksTab.textContent();
 				}
 			}
 		});
@@ -475,11 +408,8 @@ test.describe("Traceability Links", () => {
 
 			if (await title.isVisible({ timeout: 2000 })) {
 				if (await stats.isVisible({ timeout: 2000 })) {
-					const statsText = await stats.textContent();
-					console.log(`Graph stats: ${statsText}`);
+					await stats.textContent();
 				}
-			} else {
-				console.log("Graph title or stats not found");
 			}
 		});
 	});

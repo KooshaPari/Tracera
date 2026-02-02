@@ -9,7 +9,6 @@
 		"build": "next build",
 		"start": "next start --port 3001",
 		"lint": "next lint",
-		"typecheck": "tsc --noEmit",
 		"openapi": "bun run scripts/generate-openapi.ts",
 		"openapi:sync": "bash scripts/sync-openapi.sh",
 		"search:index": "bun run scripts/build-search-index.ts",

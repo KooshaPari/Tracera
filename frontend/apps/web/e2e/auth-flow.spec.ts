@@ -171,7 +171,7 @@ test.describe("Authentication Flow - Login", () => {
 		});
 
 		// If token exists, login succeeded with trimming
-		if (token) {
+		if (token != null && token !== "") {
 			expect(token).toBeTruthy();
 		}
 	});
@@ -293,7 +293,7 @@ test.describe("Authentication Flow - Session Management", () => {
 	});
 
 	test("should prevent access to protected routes without authentication", async ({
-		page,
+		page: _page,
 		context,
 	}) => {
 		// Given: New context without authentication
@@ -442,7 +442,7 @@ test.describe("Authentication Flow - Logout", () => {
 
 		// When: Get cookies before logout
 		const cookiesBefore = await context.cookies();
-		const hasAuthCookie = cookiesBefore.some((c) =>
+		const _hasAuthCookie = cookiesBefore.some((c) =>
 			c.name.toLowerCase().includes("auth"),
 		);
 
@@ -491,12 +491,12 @@ test.describe("Authentication Flow - Token Management", () => {
 		expect(token?.length).toBeGreaterThan(0);
 	});
 
-	test("should include token in API requests", async ({ page, context }) => {
+	test("should include token in API requests", async ({ page, context: _context }) => {
 		// Given: User is logged in
 		await expect(page).toHaveURL("/");
 
 		// When: Intercept API calls
-		let authHeaderFound = false;
+		let _authHeaderFound = false;
 		await page.route("**/api/**", async (route) => {
 			const headers = route.request().headers();
 
@@ -506,7 +506,7 @@ test.describe("Authentication Flow - Token Management", () => {
 				headers.Authorization ||
 				headers["x-auth-token"]
 			) {
-				authHeaderFound = true;
+				_authHeaderFound = true;
 			}
 
 			await route.continue();
@@ -720,7 +720,7 @@ test.describe("Authentication Flow - Error Handling", () => {
 
 		// When: Intercept login request to return error
 		await page.route("**/api/**/auth/login", (route) => {
-			route.abort("servererror");
+			void route.abort("servererror");
 		});
 
 		// And: Try to login
@@ -743,7 +743,7 @@ test.describe("Authentication Flow - Error Handling", () => {
 
 		// When: Intercept login to return invalid JSON
 		await page.route("**/api/**/auth/login", (route) => {
-			route.fulfill({
+			void route.fulfill({
 				status: 200,
 				body: "invalid json{",
 			});
@@ -776,7 +776,7 @@ test.describe("Authentication Flow - Error Handling", () => {
 
 		// Intercept to return server error
 		await page.route("**/api/**/auth/login", (route) => {
-			route.fulfill({
+			void route.fulfill({
 				status: 401,
 				contentType: "application/json",
 				body: JSON.stringify({
@@ -839,7 +839,7 @@ test.describe("Authentication Flow - Error Handling", () => {
 			attemptCount++;
 
 			if (attemptCount > 5) {
-				route.fulfill({
+				void route.fulfill({
 					status: 429, // Too Many Requests
 					contentType: "application/json",
 					body: JSON.stringify({
@@ -848,7 +848,7 @@ test.describe("Authentication Flow - Error Handling", () => {
 					}),
 				});
 			} else {
-				route.fulfill({
+				void route.fulfill({
 					status: 401,
 					contentType: "application/json",
 					body: JSON.stringify({ error: "Invalid credentials" }),

@@ -89,7 +89,7 @@ function fixOwnerSync(cache, filepath) {
 			typeof uid === "number" ? uid : self.uid,
 			typeof gid === "number" ? gid : self.gid,
 		);
-	} catch (err) {
+	} catch (_err) {
 		// only catch ENOENT, any other error is a problem.
 		if (err.code === "ENOENT") {
 			return null;
@@ -113,7 +113,7 @@ async function mkdirfix(cache, p, cb) {
 			await fixOwner(cache, made);
 			return made;
 		}
-	} catch (err) {
+	} catch (_err) {
 		if (err.code === "EEXIST") {
 			await fixOwner(cache, p);
 			return null;
@@ -132,7 +132,7 @@ function mkdirfixSync(cache, p) {
 			fixOwnerSync(cache, made);
 			return made;
 		}
-	} catch (err) {
+	} catch (_err) {
 		if (err.code === "EEXIST") {
 			fixOwnerSync(cache, p);
 			return null;

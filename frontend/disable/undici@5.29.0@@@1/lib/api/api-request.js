@@ -40,7 +40,7 @@ class RequestHandler extends AsyncResource {
       }
 
       super('UNDICI_REQUEST')
-    } catch (err) {
+    } catch (_err) {
       if (util.isStream(body)) {
         util.destroy(body.on('error', util.nop), err)
       }
@@ -167,7 +167,7 @@ function request (opts, callback) {
 
   try {
     this.dispatch(opts, new RequestHandler(opts, callback))
-  } catch (err) {
+  } catch (_err) {
     if (typeof callback !== 'function') {
       throw err
     }

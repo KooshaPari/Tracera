@@ -11,6 +11,6 @@ module.exports = (filepath) => {
 	try {
 		(fs.accessSync || fs.statSync)(filepath);
 		return true;
-	} catch (err) {}
+	} catch (_err) {}
 	return false;
 };

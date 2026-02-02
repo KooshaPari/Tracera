@@ -11,7 +11,7 @@ try {
     process.exit(0)
   }
   test = pkg.prebuild.test
-} catch (err) {
+} catch (_err) {
   //  do nothing
 }
 

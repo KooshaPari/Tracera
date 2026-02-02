@@ -90,7 +90,7 @@ function _destroy(self, err, cb) {
   }
   try {
     self._destroy(err || null, onDestroy)
-  } catch (err) {
+  } catch (_err) {
     onDestroy(err)
   }
 }
@@ -232,7 +232,7 @@ function constructNT(stream) {
     stream._construct((err) => {
       process.nextTick(onConstruct, err)
     })
-  } catch (err) {
+  } catch (_err) {
     process.nextTick(onConstruct, err)
   }
 }

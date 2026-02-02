@@ -119,7 +119,7 @@ var ObservablePersistMMKV = class {
     if (v !== void 0) {
       try {
         storage.set(table, safeStringify(v));
-      } catch (err) {
+      } catch (_err) {
         console.error(err);
       }
     } else {

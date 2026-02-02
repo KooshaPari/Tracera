@@ -181,7 +181,7 @@ export async function main(nodeProcess) {
 			try {
 				// try require for json
 				markedConfig = require(configFile);
-			} catch (err) {
+			} catch (_err) {
 				if (err.code !== "ERR_REQUIRE_ESM") {
 					throw err;
 				}
@@ -279,7 +279,7 @@ export async function main(nodeProcess) {
 	try {
 		await start(nodeProcess.argv.slice());
 		nodeProcess.exit(0);
-	} catch (err) {
+	} catch (_err) {
 		if (err.code === "ENOENT") {
 			nodeProcess.stderr.write(
 				"marked: " + err.path + ": No such file or directory",

@@ -16,7 +16,7 @@
       var fullKey = signature.ownKey;
       try {
         var hooks = signature.getCustomHooks();
-      } catch (err) {
+      } catch (_err) {
         return (signature.forceReset = !0), (signature.fullKey = fullKey);
       }
       for (var i = 0; i < hooks.length; i++) {
@@ -52,7 +52,7 @@
     function getProperty(object, property) {
       try {
         return object[property];
-      } catch (err) {}
+      } catch (_err) {}
     }
     function register(type, id) {
       if (
@@ -309,7 +309,7 @@
             var element = rootElements.get(root);
             try {
               helpers.scheduleRoot(root, element);
-            } catch (err) {
+            } catch (_err) {
               didError || ((didError = !0), (firstError = err));
             }
           }
@@ -323,7 +323,7 @@
           mountedRoots.has(root);
           try {
             helpers.scheduleRefresh(root, update);
-          } catch (err) {
+          } catch (_err) {
             didError || ((didError = !0), (firstError = err));
           }
         });

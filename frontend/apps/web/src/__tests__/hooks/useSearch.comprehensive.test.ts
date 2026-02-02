@@ -178,7 +178,7 @@ describe("useSearch - Comprehensive Coverage", () => {
 			const mockSuggestions = ["test"];
 			vi.mocked(api.search.suggest).mockResolvedValue(mockSuggestions);
 
-			const { result, rerender } = renderHook(
+			const { result: _result, rerender } = renderHook(
 				({ q }) => useSearchSuggestions(q, 10),
 				{
 					initialProps: { q: "test" },
@@ -202,7 +202,7 @@ describe("useSearch - Comprehensive Coverage", () => {
 			const mockSuggestions = ["test1", "test2", "test3"];
 			vi.mocked(api.search.suggest).mockResolvedValue(mockSuggestions);
 
-			const { result } = renderHook(() => useSearchSuggestions("test", 5), {
+			const { result: _result } = renderHook(() => useSearchSuggestions("test", 5), {
 				wrapper: createWrapper(),
 			});
 

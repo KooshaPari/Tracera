@@ -26,7 +26,7 @@ const tryReadFile = {
   sync (file) {
     try {
       return fs.readFileSync(file)
-    } catch (err) {
+    } catch (_err) {
       return null
     }
   }
@@ -42,7 +42,7 @@ const tryExecFile = {
   sync (file, args, options) {
     try {
       return cp.execFileSync(file, args, options)
-    } catch (err) {
+    } catch (_err) {
       return null
     }
   }
@@ -152,7 +152,7 @@ function run (zalgo, paths, salt) {
 module.exports = (paths, salt) => {
   try {
     return run(releaseZalgo.async(), paths, salt)
-  } catch (err) {
+  } catch (_err) {
     return Promise.reject(err)
   }
 }

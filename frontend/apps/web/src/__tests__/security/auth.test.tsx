@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/consistent-function-scoping -- test helpers defined inline for clarity */
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useAuthStore } from "@/stores/authStore";
@@ -129,7 +130,7 @@ describe("Authentication Security Tests", () => {
 		});
 
 		it("should extract user claims from token safely", () => {
-			const extractClaims = (token: string): any | null => {
+			const extractClaims = (token: string): Record<string, unknown> | null => {
 				try {
 					const parts = token.split(".");
 					if (parts.length !== 3) return null;
@@ -201,7 +202,7 @@ describe("Authentication Security Tests", () => {
 					// Mock API failure would happen here in real implementation
 					await result.current.login("test@example.com", "wrong-password");
 				});
-			} catch (_error) {
+			} catch {
 				// Expected to potentially throw in future implementation
 			}
 
@@ -451,9 +452,9 @@ describe("Authentication Security Tests", () => {
 		});
 
 		it("should use SameSite cookie attribute for CSRF protection", () => {
-			const setCookie = (name: string, value: string, options: any) => {
+			const setCookie = (name: string, value: string, options: Record<string, unknown>) => {
 				// Mock cookie setting
-				return `${name}=${value}; SameSite=${options.sameSite}; Secure=${options.secure}`;
+				return `${name}=${value}; SameSite=${String(options.sameSite)}; Secure=${String(options.secure)}`;
 			};
 
 			const cookie = setCookie("auth_token", "token-123", {

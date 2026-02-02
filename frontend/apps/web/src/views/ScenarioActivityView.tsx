@@ -44,7 +44,7 @@ export function ScenarioActivityView() {
 	const streamPageSize = 12;
 
 	const streamSince = useMemo(() => {
-		if (streamRange === "all") return undefined;
+		if (streamRange === "all") {return;}
 		const now = new Date();
 		const days =
 			streamRange === "24h"
@@ -79,12 +79,10 @@ export function ScenarioActivityView() {
 
 	const filteredScenarios = useMemo(() => {
 		const query = searchQuery.toLowerCase();
-		return scenarios.filter((scenario: Scenario) => {
-			return (
+		return scenarios.filter((scenario: Scenario) => (
 				scenario.title.toLowerCase().includes(query) ||
 				scenario.scenarioNumber.toLowerCase().includes(query)
-			);
-		});
+			));
 	}, [scenarios, searchQuery]);
 
 	const groupedScenarios = useMemo(() => {
@@ -95,7 +93,7 @@ export function ScenarioActivityView() {
 			list.push(scenario);
 			groups.set(key, list);
 		}
-		return Array.from(groups.entries()).sort((a, b) => {
+		return [...groups.entries()].toSorted((a, b) => {
 			const aLabel = featureMap.get(a[0]) || a[0];
 			const bLabel = featureMap.get(b[0]) || b[0];
 			return aLabel.localeCompare(bLabel);
@@ -104,8 +102,8 @@ export function ScenarioActivityView() {
 
 	const activitiesList = activities?.activities ?? [];
 	const sortedActivities = useMemo(() => {
-		if (!activitiesList.length) return [];
-		const sorted = [...activitiesList].sort((a, b) => {
+		if (activitiesList.length === 0) {return [];}
+		const sorted = [...activitiesList].toSorted((a, b) => {
 			const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
 			const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
 			return sortOrder === "recent" ? bTime - aTime : aTime - bTime;
@@ -190,15 +188,8 @@ export function ScenarioActivityView() {
 								const selected = scenarios.find(
 									(s) => s.id === selectedScenarioId,
 								);
-								if (!selected) return;
-								navigate({
-									to: "/projects/$projectId/features/$featureId/scenarios/$scenarioId",
-									params: {
-										projectId,
-										featureId: selected.featureId,
-										scenarioId: selectedScenarioId,
-									},
-								});
+								if (!selected) {return;}
+								undefined;
 							}}
 						>
 							Open scenario
@@ -215,8 +206,8 @@ export function ScenarioActivityView() {
 									onClick={() => {
 										setCollapsedGroups((prev) => {
 											const next = new Set(prev);
-											if (next.has(featureId)) next.delete(featureId);
-											else next.add(featureId);
+											if (next.has(featureId)) {next.delete(featureId);}
+											else {next.add(featureId);}
 											return next;
 										});
 									}}

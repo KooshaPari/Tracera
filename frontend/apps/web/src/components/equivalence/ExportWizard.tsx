@@ -1,7 +1,6 @@
 import { AlertCircle, Download, Loader2 } from "lucide-react";
 import { logger } from '@/lib/logger';
 import React, { useCallback, useState } from "react";
-import { getAuthHeaders } from "@/api/client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -15,8 +14,11 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import client from "@/api/client";
 
-interface ExportWizardProps {
+const { getAuthHeaders } = client;
+
+export interface ExportWizardProps {
 	projectId: string;
 	projectName: string;
 	isOpen: boolean;
@@ -24,7 +26,7 @@ interface ExportWizardProps {
 	onExport?: (config: ExportConfig) => Promise<void>;
 }
 
-interface ExportConfig {
+export interface ExportConfig {
 	format: "json" | "yaml";
 	includeEmbeddings: boolean;
 	includeMetadata: boolean;
@@ -43,6 +45,17 @@ interface ExportStats {
 	links: number;
 	perspectives: number;
 	averageConfidence: number;
+}
+
+function formatSize(bytes: number): string {
+	const units = ["B", "KB", "MB", "GB"];
+	let size = bytes;
+	let unitIndex = 0;
+	while (size >= 1024 && unitIndex < units.length - 1) {
+		size /= 1024;
+		unitIndex++;
+	}
+	return `${size.toFixed(2)} ${units[unitIndex]}`;
 }
 
 export const ExportWizard: React.FC<ExportWizardProps> = ({
@@ -80,7 +93,7 @@ export const ExportWizard: React.FC<ExportWizardProps> = ({
 	// Fetch statistics when dialog opens
 	React.useEffect(() => {
 		if (isOpen && !stats) {
-			fetchStats();
+			void fetchStats();
 		}
 	}, [isOpen, stats, fetchStats]);
 
@@ -141,17 +154,6 @@ export const ExportWizard: React.FC<ExportWizardProps> = ({
 		setStep("options");
 		setError(null);
 		onClose();
-	};
-
-	const formatSize = (bytes: number): string => {
-		const units = ["B", "KB", "MB", "GB"];
-		let size = bytes;
-		let unitIndex = 0;
-		while (size >= 1024 && unitIndex < units.length - 1) {
-			size /= 1024;
-			unitIndex++;
-		}
-		return `${size.toFixed(2)} ${units[unitIndex]}`;
 	};
 
 	const estimateSize = (): string => {
@@ -215,7 +217,7 @@ export const ExportWizard: React.FC<ExportWizardProps> = ({
 								</Label>
 								<RadioGroup
 									value={format}
-									onValueChange={(v) => setFormat(v as "json" | "yaml")}
+									onValueChange={(v: string) => setFormat(v as "json" | "yaml")}
 								>
 									<div className="flex items-center space-x-2 mb-2">
 										<RadioGroupItem value="json" id="json" />

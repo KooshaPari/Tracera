@@ -154,7 +154,7 @@ async function verifyContent(filepath, sri) {
 		contentInfo.size = size;
 		contentInfo.valid = true;
 		await ssri.checkStream(new fsm.ReadStream(filepath), sri);
-	} catch (err) {
+	} catch (_err) {
 		if (err.code === "ENOENT") {
 			return { size: 0, valid: false };
 		}
@@ -220,7 +220,7 @@ async function rebuildBucket(cache, bucket, stats, opts) {
 				size: entry.size,
 			});
 			stats.totalEntries++;
-		} catch (err) {
+		} catch (_err) {
 			if (err.code === "ENOENT") {
 				stats.rejectedEntries++;
 				stats.missingContent++;

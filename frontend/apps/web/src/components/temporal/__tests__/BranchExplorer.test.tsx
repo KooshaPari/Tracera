@@ -2,11 +2,16 @@
 
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { BranchExplorer } from "../BranchExplorer";
 import type { Branch } from "../TemporalNavigator";
 
 describe("BranchExplorer", () => {
+	let user: ReturnType<typeof userEvent.setup>;
+
+	beforeEach(() => {
+		user = userEvent.setup();
+	});
 	const mockBranches: Branch[] = [
 		{
 			id: "branch-1",
@@ -87,7 +92,6 @@ describe("BranchExplorer", () => {
 	});
 
 	it("calls onBranchChange when branch is clicked", async () => {
-		const user = userEvent.setup();
 		render(
 			<BranchExplorer
 				projectId="proj-1"
@@ -131,7 +135,6 @@ describe("BranchExplorer", () => {
 	});
 
 	it("calls onBranchCreate when create button is clicked", async () => {
-		const user = userEvent.setup();
 		render(
 			<BranchExplorer
 				projectId="proj-1"
@@ -189,7 +192,6 @@ describe("BranchExplorer", () => {
 	});
 
 	it("supports merge operations", async () => {
-		const user = userEvent.setup();
 		render(
 			<BranchExplorer
 				projectId="proj-1"

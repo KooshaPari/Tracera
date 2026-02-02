@@ -1,6 +1,5 @@
 import { createRequire } from "node:module";
 import { dirname } from "node:path";
-import { fileURLToPath } from "node:url";
 import type { StorybookConfig } from "@storybook/react-vite";
 
 const require = createRequire(import.meta.url);

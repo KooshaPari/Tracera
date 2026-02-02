@@ -48,7 +48,7 @@ describe("API View Route", () => {
 		];
 
 		expect(mockEndpoints).toHaveLength(3);
-		expect(mockEndpoints.every(ep => /^\/api\//.test(ep.path))).toBe(true);
+		expect(mockEndpoints.every(ep => ep.path.startsWith('/api/'))).toBe(true);
 	});
 
 	it("validates HTTP methods used in API definitions", () => {

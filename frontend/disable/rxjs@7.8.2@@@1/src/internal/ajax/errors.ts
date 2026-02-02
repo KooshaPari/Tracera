@@ -65,7 +65,7 @@ export const AjaxError: AjaxErrorCtor = createErrorClass(
         // This can throw in IE, because we have to do a JSON.parse of
         // the response in some cases to get the expected response property.
         response = getXHRResponse(xhr);
-      } catch (err) {
+      } catch (_err) {
         response = xhr.responseText;
       }
       this.response = response;

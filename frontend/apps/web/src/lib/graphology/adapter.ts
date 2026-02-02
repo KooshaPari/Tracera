@@ -20,16 +20,16 @@ export class GraphologyDataAdapter implements GraphologyAdapter {
     // Add nodes with all data as attributes
     nodes.forEach(node => {
       const attributes: GraphologyNodeAttributes = {
-        label: node.data?.label || node.id,
-        type: node.type || 'default',
-        x: node.position?.x || 0,
-        y: node.position?.y || 0,
+        label: node['data']?.label || node['id'],
+        type: node['type'] || 'default',
+        x: node['position']?.x || 0,
+        y: node['position']?.y || 0,
         size: 10,
-        color: node.data?.color || '#64748b',
-        ...node.data,
+        color: node['data']?.color || '#64748b',
+        ...node['data'],
       };
 
-      this.graph.addNode(node.id, attributes);
+      this.graph.addNode(node['id'], attributes);
     });
 
     // Add edges with attributes
@@ -50,7 +50,7 @@ export class GraphologyDataAdapter implements GraphologyAdapter {
         };
 
         this.graph.addEdge(edge.source, edge.target, attributes);
-      } catch (e) {
+      } catch (error) {
         // Edge already exists (shouldn't happen with multi: false, but catch anyway)
         logger.warn(`Edge ${edge.id} already exists or invalid`);
       }

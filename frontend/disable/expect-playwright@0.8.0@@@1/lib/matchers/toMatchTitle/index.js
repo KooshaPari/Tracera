@@ -10,7 +10,7 @@ const toMatchTitle = async function (page, expectedValue) {
 			message: () =>
 				utils_1.getMessage(this, "toMatchTitle", expectedValue, actualValue),
 		};
-	} catch (err) {
+	} catch (_err) {
 		return {
 			pass: false,
 			message: () => err.toString(),

@@ -4,6 +4,7 @@
  */
 
 import type { LinkType } from "@tracertm/types";
+import { logger } from '@/lib/logger';
 import {
 	type EdgeBase,
 	type EdgeSamplingConfig,

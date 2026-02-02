@@ -20,28 +20,14 @@ export function ProjectMappingGraphView() {
 	const { data: graphData, isLoading } = useGraphProjection(
 		projectId,
 		mappingGraph?.id,
-		undefined,
 	);
 
 	const items = useMemo(() => {
 		const nodes = graphData?.nodes || [];
-		return nodes.map((node: any) => ({
-			...node,
-			id: node.id,
-			title: node.title,
-			view: node.view,
-			type: node.item_type || node.itemType || node.view,
-		}));
+		return nodes.map((node: any) => (Object.assign(node, {id:node.id,title:node.title,view:node.view,type:node.item_type||node.itemType||node.view})));
 	}, [graphData]);
 
-	const links = useMemo(() => {
-		return (graphData?.links || []).map((link: any) => ({
-			...link,
-			sourceId: link.source_item_id || link.sourceId,
-			targetId: link.target_item_id || link.targetId,
-			type: link.link_type || link.type,
-		}));
-	}, [graphData]);
+	const links = useMemo(() => (graphData?.links || []).map((link: any) => (Object.assign(link, {sourceId:link.source_item_id||link.sourceId,targetId:link.target_item_id||link.targetId,type:link.link_type||link.type}))), [graphData]);
 
 	// ✅ NEW: Progressive edge loading
 	const visibleLinks = links.slice(0, visibleEdgeCount);
@@ -54,13 +40,10 @@ export function ProjectMappingGraphView() {
 		const item = items.find((node: any) => node.id === itemId);
 		const viewType = String(item?.view || "feature").toLowerCase();
 		if (!projectId) {
-			navigate({ to: "/projects" });
+			undefined;
 			return;
 		}
-		navigate({
-			to: "/projects/$projectId/views/$viewType/$itemId",
-			params: { projectId, viewType, itemId },
-		});
+		undefined;
 	};
 
 	return (

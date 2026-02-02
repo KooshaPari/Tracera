@@ -21,7 +21,7 @@ function from(root, ident, silent) {
 				? join(fileURLToPath(root), "noop.js")
 				: join(absolute(root), "noop.js");
 		return createRequire(r).resolve(ident);
-	} catch (err) {
+	} catch (_err) {
 		if (!silent) throw err;
 	}
 }

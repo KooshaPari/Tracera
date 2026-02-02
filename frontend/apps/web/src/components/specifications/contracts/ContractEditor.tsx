@@ -77,7 +77,7 @@ export function ContractEditor({
 	});
 	const [newState, setNewState] = useState("");
 
-	const handleChange = (field: keyof Contract, value: any) => {
+	const handleChange = (field: keyof Contract, value: Contract[typeof field]) => {
 		setFormData((prev) => ({ ...prev, [field]: value }));
 	};
 

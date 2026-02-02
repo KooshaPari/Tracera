@@ -254,7 +254,7 @@ class HttpRequestManager extends EventEmitter {
 		try {
 			this["http2"] = require("http2");
 			this.http2Support = true;
-		} catch (err) {
+		} catch (_err) {
 			//It will automatically fallback to http
 		}
 	}
@@ -327,7 +327,7 @@ class HttpRequestManager extends EventEmitter {
 			if (!client.closed) {
 				client.close();
 			}
-		} catch (err) {}
+		} catch (_err) {}
 		client.removeAllListeners("close");
 		client.removeAllListeners("error");
 		client.removeAllListeners("frameError");

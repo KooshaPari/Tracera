@@ -2,7 +2,6 @@
 // Tests integration with UnifiedGraphView and graph workflows
 
 import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import type { Item, Link } from "@tracertm/types";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
@@ -302,7 +301,6 @@ describe("JourneyExplorer - Integration Tests", () => {
 
 	describe("Journey Lifecycle Management", () => {
 		it("should create new journey with correct data", async () => {
-			const user = userEvent.setup();
 			const onJourneyCreate = vi.fn();
 
 			const journeys: DerivedJourney[] = [];
@@ -344,7 +342,6 @@ describe("JourneyExplorer - Integration Tests", () => {
 		});
 
 		it("should delete journey on confirmation", async () => {
-			const user = userEvent.setup();
 			const onJourneyDelete = vi.fn();
 
 			const journeys: DerivedJourney[] = [
@@ -378,7 +375,6 @@ describe("JourneyExplorer - Integration Tests", () => {
 		});
 
 		it("should update journey properties", async () => {
-			const user = userEvent.setup();
 			const onJourneyUpdate = vi.fn();
 
 			const journeys: DerivedJourney[] = [
@@ -415,7 +411,6 @@ describe("JourneyExplorer - Integration Tests", () => {
 
 	describe("Export Workflow", () => {
 		it("should export selected journeys as JSON", async () => {
-			const user = userEvent.setup();
 			const onExport = vi.fn();
 
 			const journeys: DerivedJourney[] = [
@@ -460,7 +455,6 @@ describe("JourneyExplorer - Integration Tests", () => {
 		});
 
 		it("should export selected journeys as CSV", async () => {
-			const user = userEvent.setup();
 			const onExport = vi.fn();
 
 			const journeys: DerivedJourney[] = [
@@ -501,7 +495,6 @@ describe("JourneyExplorer - Integration Tests", () => {
 		});
 
 		it("should export journeys as SVG visualization", async () => {
-			const user = userEvent.setup();
 			const onExport = vi.fn();
 
 			const journeys: DerivedJourney[] = [
@@ -555,7 +548,7 @@ describe("JourneyExplorer - Integration Tests", () => {
 				color: "#9333ea",
 			}));
 
-			const { container } = render(
+			render(
 				<JourneyExplorer
 					items={mockItems}
 					links={mockLinks}
@@ -568,7 +561,6 @@ describe("JourneyExplorer - Integration Tests", () => {
 		});
 
 		it("should filter large journey set efficiently", async () => {
-			const user = userEvent.setup();
 
 			const journeys: DerivedJourney[] = Array.from({ length: 50 }, (_, i) => ({
 				id: `j-${i}`,
@@ -610,7 +602,7 @@ describe("JourneyExplorer - Integration Tests", () => {
 				},
 			];
 
-			const { container } = render(
+			render(
 				<JourneyExplorer
 					items={mockItems}
 					links={mockLinks}

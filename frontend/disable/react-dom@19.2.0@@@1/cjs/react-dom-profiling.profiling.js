@@ -593,7 +593,7 @@ function setIsStrictModeForDevtools(newIsStrictMode) {
   if (injectedHook && "function" === typeof injectedHook.setStrictMode)
     try {
       injectedHook.setStrictMode(rendererID, newIsStrictMode);
-    } catch (err) {}
+    } catch (_err) {}
 }
 var clz32 = Math.clz32 ? Math.clz32 : clz32Fallback,
   log = Math.log,
@@ -2278,7 +2278,7 @@ function getActiveElementDeep(containerInfo) {
     try {
       var JSCompiler_inline_result =
         "string" === typeof element.contentWindow.location.href;
-    } catch (err) {
+    } catch (_err) {
       JSCompiler_inline_result = !1;
     }
     if (JSCompiler_inline_result) containerInfo = element.contentWindow;
@@ -9937,7 +9937,7 @@ function commitDeletionEffectsOnFiber(
   if (injectedHook && "function" === typeof injectedHook.onCommitFiberUnmount)
     try {
       injectedHook.onCommitFiberUnmount(rendererID, deletedFiber);
-    } catch (err) {}
+    } catch (_err) {}
   var prevEffectStart = pushComponentEffectStart(),
     prevEffectDuration = pushComponentEffectDuration(),
     prevEffectErrors = pushComponentEffectErrors(),
@@ -13442,7 +13442,7 @@ function flushSpawnedWork() {
           schedulerPriority,
           didError
         );
-      } catch (err) {}
+      } catch (_err) {}
     isDevToolsPresent && startViewTransitionStartTime.memoizedUpdaters.clear();
     if (null !== recoverableErrors) {
       didError = ReactSharedInternals.T;
@@ -13576,7 +13576,7 @@ function flushPassiveEffects() {
     )
       try {
         injectedHook.onPostCommitFiberRoot(rendererID, renderPriority);
-      } catch (err) {}
+      } catch (_err) {}
     var stateNode = renderPriority.current.stateNode;
     stateNode.effectDuration = 0;
     stateNode.passiveEffectDuration = 0;
@@ -17815,7 +17815,7 @@ if ("undefined" !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__) {
         internals$jscomp$inline_2658
       )),
         (injectedHook = hook$jscomp$inline_2659);
-    } catch (err) {}
+    } catch (_err) {}
 }
 function getCrossOriginStringAs(as, input) {
   if ("font" === as) return "";

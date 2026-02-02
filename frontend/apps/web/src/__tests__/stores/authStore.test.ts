@@ -10,7 +10,7 @@ describe("authStore", () => {
 	beforeEach(() => {
 		// Reset store state before each test
 		const { logout } = useAuthStore.getState();
-		logout();
+		void logout();
 		localStorage.clear();
 	});
 
@@ -118,7 +118,7 @@ describe("authStore", () => {
 
 			// Start login
 			act(() => {
-				result.current.login("test@example.com", "password");
+				void result.current.login("test@example.com", "password");
 			});
 
 			// Login should eventually complete
@@ -137,7 +137,7 @@ describe("authStore", () => {
 
 			// Then logout
 			act(() => {
-				result.current.logout();
+				void result.current.logout();
 			});
 
 			expect(result.current.user).toBeNull();

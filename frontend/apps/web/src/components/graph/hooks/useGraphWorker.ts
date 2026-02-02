@@ -173,7 +173,7 @@ export function useGraphWorker() {
                 data: result
               });
             }
-          } catch (err) {
+          } catch (error) {
             self.postMessage({
               id,
               type: 'error',
@@ -187,6 +187,7 @@ export function useGraphWorker() {
 			const workerUrl = URL.createObjectURL(blob);
 			const worker = new Worker(workerUrl);
 
+			/* eslint-disable unicorn/prefer-add-event-listener -- Worker API uses .onmessage/.onerror */
 			worker.onmessage = (event: MessageEvent<LayoutMessage>) => {
 				const { id, type, data, error: errorMsg } = event.data;
 
@@ -213,6 +214,7 @@ export function useGraphWorker() {
 				});
 				pendingRequestsRef.current.clear();
 			};
+			/* eslint-enable unicorn/prefer-add-event-listener */
 
 			workerRef.current = worker;
 			setIsReady(true);
@@ -221,8 +223,8 @@ export function useGraphWorker() {
 				worker.terminate();
 				URL.revokeObjectURL(workerUrl);
 			};
-		} catch (err) {
-			setError(err instanceof Error ? err : new Error(String(err)));
+		} catch (error) {
+			setError(error instanceof Error ? error : new Error(String(error)));
 		}
 	}, []);
 
@@ -263,7 +265,7 @@ export function useGraphWorker() {
 					nodes: LayoutNode[];
 					edges: LayoutEdge[];
 					options: LayoutOptions;
-				});
+				}, self.location.origin);
 			});
 		},
 		[],

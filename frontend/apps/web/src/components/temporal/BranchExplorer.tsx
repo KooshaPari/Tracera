@@ -24,8 +24,22 @@ export interface BranchExplorerProps {
 	onBranchCreate?: () => void;
 }
 
+function getStatusColor(status: Branch["status"]) {
+	switch (status) {
+		case "active":
+			return "bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300";
+		case "review":
+			return "bg-orange-100 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300";
+		case "merged":
+			return "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300";
+		case "abandoned":
+			return "bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-300";
+		default:
+			return "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300";
+	}
+}
+
 export function BranchExplorer({
-	projectId,
 	branches,
 	currentBranchId,
 	onBranchChange,
@@ -50,21 +64,6 @@ export function BranchExplorer({
 
 		return tree;
 	}, [branches]);
-
-	const getStatusColor = (status: Branch["status"]) => {
-		switch (status) {
-			case "active":
-				return "bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300";
-			case "review":
-				return "bg-orange-100 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300";
-			case "merged":
-				return "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300";
-			case "abandoned":
-				return "bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-300";
-			default:
-				return "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300";
-		}
-	};
 
 	const toggleExpanded = (branchId: string) => {
 		const newExpanded = new Set(expandedBranches);

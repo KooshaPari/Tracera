@@ -295,7 +295,7 @@ export class Generator {
 
 				try {
 					await this.generatorInternal();
-				} catch (err) {
+				} catch (_err) {
 					const errArray = !Array.isArray(err) ? [err] : err;
 
 					const recoverableErrors = errArray.filter((e) => isRerun(e));
@@ -1044,7 +1044,7 @@ ${acc.routeTree.map((child) => `${child.variableName}Route: typeof ${getResolved
 			) {
 				try {
 					await this.fs.chown(tmpPath, beforeStat.uid, beforeStat.gid);
-				} catch (err) {
+				} catch (_err) {
 					if (
 						typeof err === "object" &&
 						err !== null &&

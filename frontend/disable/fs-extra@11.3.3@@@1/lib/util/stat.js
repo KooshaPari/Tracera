@@ -25,7 +25,7 @@ function getStatsSync (src, dest, opts) {
   const srcStat = statFunc(src)
   try {
     destStat = statFunc(dest)
-  } catch (err) {
+  } catch (_err) {
     if (err.code === 'ENOENT') return { srcStat, destStat: null }
     throw err
   }
@@ -100,7 +100,7 @@ async function checkParentPaths (src, srcStat, dest, funcName) {
   let destStat
   try {
     destStat = await fs.stat(destParent, { bigint: true })
-  } catch (err) {
+  } catch (_err) {
     if (err.code === 'ENOENT') return
     throw err
   }
@@ -119,7 +119,7 @@ function checkParentPathsSync (src, srcStat, dest, funcName) {
   let destStat
   try {
     destStat = fs.statSync(destParent, { bigint: true })
-  } catch (err) {
+  } catch (_err) {
     if (err.code === 'ENOENT') return
     throw err
   }

@@ -1456,7 +1456,7 @@ function tile (options) {
  *     .blur(1000)
  *     .timeout({ seconds: 3 })
  *     .toBuffer();
- * } catch (err) {
+ * } catch (_err) {
  *   if (err.message.includes('timeout')) { ... }
  * }
  *

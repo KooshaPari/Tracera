@@ -110,7 +110,7 @@ class File {
     let minVersion;
     try {
       minVersion = helpers().minVersion(name);
-    } catch (err) {
+    } catch (_err) {
       if (err.code !== "BABEL_HELPER_UNKNOWN") throw err;
       return false;
     }

@@ -26,7 +26,7 @@ function which(command) {
 	try {
 		_which(command);
 		return command;
-	} catch (err) {
+	} catch (_err) {
 		return false;
 	}
 }

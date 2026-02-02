@@ -12,7 +12,7 @@
  * Run with: bun test src/__tests__/performance/benchmarks.test.ts
  */
 
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { generateSyntheticGraph } from '@/lib/test-utils/synthetic-graph';
 import { logger } from '@/lib/logger';
@@ -20,7 +20,6 @@ import { useHybridGraph } from '@/hooks/useHybridGraph';
 import { RBushSpatialIndex } from '@/lib/spatialIndex';
 import { GraphClustering } from '@/lib/graphology/clustering';
 import { GraphologyDataAdapter } from '@/lib/graphology/adapter';
-import type { Node, Edge } from '@xyflow/react';
 
 // Test results accumulator for reporting
 const benchmarkResults: {
@@ -79,9 +78,9 @@ describe('Performance Benchmarks', () => {
           // Simulate frame render work (simplified)
           // In real scenario, this would be React Flow or WebGL render
           const workAmount = Math.min(testNodes.length / 10, 1000);
-          let sum = 0;
+          let _sum = 0;
           for (let j = 0; j < workAmount; j++) {
-            sum += Math.sqrt(j);
+            _sum += Math.sqrt(j);
           }
 
           const frameEnd = performance.now();
@@ -163,7 +162,7 @@ describe('Performance Benchmarks', () => {
 
   describe('Interaction Latency', () => {
     it('should respond to click in <50ms (ReactFlow)', async () => {
-      const { nodes, edges } = generateSyntheticGraph(5000, 7500, { seed: 42 });
+      const { nodes, edges: _edges } = generateSyntheticGraph(5000, 7500, { seed: 42 });
 
       const startTime = performance.now();
 
@@ -190,8 +189,8 @@ describe('Performance Benchmarks', () => {
       const startTime = performance.now();
 
       // Simulate hover state change
-      const hoveredNodeId = 'test-node-123';
-      const isHovered = true;
+      const _hoveredNodeId = 'test-node-123';
+      const _isHovered = true;
 
       const endTime = performance.now();
       const latency = endTime - startTime;
@@ -213,7 +212,7 @@ describe('Performance Benchmarks', () => {
       // Simulate zoom change
       const oldZoom = 1.0;
       const newZoom = 1.5;
-      const zoomDelta = newZoom - oldZoom;
+      const _zoomDelta = newZoom - oldZoom;
 
       const endTime = performance.now();
       const latency = endTime - startTime;
@@ -235,7 +234,7 @@ describe('Performance Benchmarks', () => {
       // Simulate pan
       const deltaX = 100;
       const deltaY = 50;
-      const newPosition = { x: deltaX, y: deltaY };
+      const _newPosition = { x: deltaX, y: deltaY };
 
       const endTime = performance.now();
       const latency = endTime - startTime;
@@ -400,7 +399,7 @@ describe('Performance Benchmarks', () => {
 
   describe('Layout Computation', () => {
     it('should compute simulated layout for 5k nodes in <1s', () => {
-      const { nodes, edges } = generateSyntheticGraph(5000, 7500, { seed: 42 });
+      const { nodes, edges: _edges } = generateSyntheticGraph(5000, 7500, { seed: 42 });
 
       const startTime = performance.now();
 
@@ -437,7 +436,7 @@ describe('Performance Benchmarks', () => {
 
       logger.info('\n📊 FPS Benchmarks:');
       logger.info('─'.repeat(80));
-      benchmarkResults.fps.forEach(({ nodes, edges, fps, mode, renderTime }) => {
+      benchmarkResults.fps.forEach(({ nodes, edges: _edges, fps, mode, renderTime }) => {
         const status = fps >= 50 ? '✓' : '✗';
         logger.info(`  ${status} ${nodes.toLocaleString().padStart(7)} nodes (${mode.padEnd(9)}): ${fps.toFixed(1).padStart(5)} FPS (render: ${renderTime.toFixed(0)}ms)`);
       });
@@ -469,7 +468,7 @@ describe('Performance Benchmarks', () => {
 
       logger.info('\n🔗 Clustering (Louvain):');
       logger.info('─'.repeat(80));
-      benchmarkResults.clustering.forEach(({ nodes, edges, time, edgeReduction }) => {
+      benchmarkResults.clustering.forEach(({ nodes, edges: _edges, time, edgeReduction }) => {
         const status = edgeReduction > 95 ? '✓' : '✗';
         logger.info(`  ${status} ${nodes.toLocaleString().padStart(7)} nodes: ${time.toFixed(0).padStart(6)} ms (${edgeReduction.toFixed(1)}% edge reduction)`);
       });

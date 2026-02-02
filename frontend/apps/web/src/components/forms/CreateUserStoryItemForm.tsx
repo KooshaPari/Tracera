@@ -31,10 +31,15 @@ const userStorySchema = z.object({
 	i_want: z.string().max(500).optional(),
 	so_that: z.string().max(500).optional(),
 	acceptance_criteria: z.array(z.string().min(1, "Criteria cannot be empty")),
-	story_points: z.coerce
-		.number()
-		.min(1, "Story points must be at least 1")
-		.max(13, "Story points cannot exceed 13")
+	story_points: z
+		.union([z.number(), z.string()])
+		.transform((val) => (typeof val === "string" ? Number.parseFloat(val) : val))
+		.pipe(
+			z
+				.number()
+				.min(1, "Story points must be at least 1")
+				.max(13, "Story points cannot exceed 13"),
+		)
 		.optional(),
 });
 
@@ -74,10 +79,10 @@ export function CreateUserStoryItemForm({
 	const onSubmitWithAnnouncement = useCallback(
 		async (data: UserStoryFormData) => {
 			try {
-				await onSubmit(data);
+				await Promise.resolve(onSubmit(data));
 				announceToScreenReader("User story created successfully", "polite");
-			} catch (error) {
-				announceToScreenReader(
+} catch {
+                announceToScreenReader(
 					"Error creating user story. Please check the form and try again.",
 					"assertive",
 				);

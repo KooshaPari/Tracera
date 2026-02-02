@@ -13,7 +13,7 @@
  */
 
 import { fireEvent, render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ErrorBoundary } from "@/components/layout/ErrorBoundary";
 
 // Component that throws an error
@@ -185,7 +185,7 @@ describe("ErrorBoundary Component", () => {
 
 	describe("Error Reset", () => {
 		it("should reset error state when Try again is clicked", () => {
-			const { rerender } = render(
+			render(
 				<ErrorBoundary>
 					<ThrowError shouldThrow={true} />
 				</ErrorBoundary>,
@@ -611,7 +611,7 @@ describe("ErrorBoundary Component", () => {
 		});
 
 		it("should handle multiple sequential errors", () => {
-			const { rerender } = render(
+			render(
 				<ErrorBoundary>
 					<ThrowError message="Error 1" />
 				</ErrorBoundary>,

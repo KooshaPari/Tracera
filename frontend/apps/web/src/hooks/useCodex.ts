@@ -1,7 +1,7 @@
 // React hooks for Codex agent integration
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { type CodexReviewRequest, codexApi } from "../api/codex";
+import { codexApi, type CodexReviewRequest } from "../api/codex";
 
 export function useCodexInteractions(
 	projectId: string,
@@ -34,7 +34,7 @@ export function useCodexReviewImage(projectId: string) {
 		mutationFn: (data: CodexReviewRequest) =>
 			codexApi.reviewImage(projectId, data),
 		onSuccess: () => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: ["codex-interactions", projectId],
 			});
 		},
@@ -47,7 +47,7 @@ export function useCodexReviewVideo(projectId: string) {
 		mutationFn: (data: CodexReviewRequest) =>
 			codexApi.reviewVideo(projectId, data),
 		onSuccess: () => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: ["codex-interactions", projectId],
 			});
 		},

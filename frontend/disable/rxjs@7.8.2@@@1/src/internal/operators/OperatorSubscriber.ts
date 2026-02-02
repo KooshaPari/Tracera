@@ -68,7 +68,7 @@ export class OperatorSubscriber<T> extends Subscriber<T> {
       ? function (this: OperatorSubscriber<T>, value: T) {
           try {
             onNext(value);
-          } catch (err) {
+          } catch (_err) {
             destination.error(err);
           }
         }
@@ -77,7 +77,7 @@ export class OperatorSubscriber<T> extends Subscriber<T> {
       ? function (this: OperatorSubscriber<T>, err: any) {
           try {
             onError(err);
-          } catch (err) {
+          } catch (_err) {
             // Send any errors that occur down stream.
             destination.error(err);
           } finally {
@@ -90,7 +90,7 @@ export class OperatorSubscriber<T> extends Subscriber<T> {
       ? function (this: OperatorSubscriber<T>) {
           try {
             onComplete();
-          } catch (err) {
+          } catch (_err) {
             // Send any errors that occur down stream.
             destination.error(err);
           } finally {

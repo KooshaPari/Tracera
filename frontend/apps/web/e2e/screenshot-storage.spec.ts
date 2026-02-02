@@ -190,7 +190,7 @@ test.describe("Screenshot Storage", () => {
 	test("should persist screenshot across page reload", async ({ page }) => {
 		// Given: Item with uploaded screenshot
 		const itemLink = page.locator('[data-testid="item-row"]').first();
-		const itemId = await itemLink.getAttribute("data-item-id");
+		const _itemId = await itemLink.getAttribute("data-item-id");
 
 		if (await itemLink.isVisible()) {
 			await itemLink.click();

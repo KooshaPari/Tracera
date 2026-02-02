@@ -2443,7 +2443,7 @@ export class RouterCore<
               })
             },
           })
-        } catch (err) {
+        } catch (_err) {
           if (isRedirect(err)) {
             redirect = err
             if (!(isServer ?? this.isServer)) {
@@ -2772,7 +2772,7 @@ export class RouterCore<
       })
 
       return matches
-    } catch (err) {
+    } catch (_err) {
       if (isRedirect(err)) {
         if (err.options.reloadDocument) {
           return undefined

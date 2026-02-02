@@ -1,16 +1,22 @@
 import { RouterProvider } from "@tanstack/react-router";
 import { createRoot } from "react-dom/client";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { AppProviders } from "@/providers/AppProviders";
-import { ThemeProvider } from "@/providers/ThemeProvider";
+import { AppProviders } from "@/providers/app-providers";
+import { ThemeProvider } from "@/providers/theme-provider";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { createRetryFetch } from "@/lib/fetch-retry";
 import { renderPreflightFailure, runFrontendPreflight } from "@/lib/preflight";
+import { initSentry } from "@/lib/sentry";
 import { createRouter } from "./router";
 import "./index.css";
 
+// Initialize Sentry error tracking before anything else
+initSentry();
+
 // Patch global fetch with wait+retry so all API and preflight calls use robust retry
 if (typeof globalThis.fetch !== "undefined") {
-	(globalThis as Window & { fetch: typeof fetch }).fetch = createRetryFetch(
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- intentional global fetch override
+	(globalThis as unknown as Window & { fetch: typeof fetch }).fetch = createRetryFetch(
 		globalThis.fetch,
 		{ maxRetries: 3, timeoutMs: 15_000 },
 	);
@@ -19,19 +25,19 @@ if (typeof globalThis.fetch !== "undefined") {
 // Initialize MSW in development mode - DISABLED to use real backend
 const enableMocking = false; // Set to false to use real backend API
 
-async function prepare(): Promise<boolean> {
-	const preflight = await runFrontendPreflight();
-	if (!preflight.ok) {
-		renderPreflightFailure(preflight);
-		return false;
-	}
-
-	if (enableMocking) {
-		const { startMockServiceWorker } = await import("./mocks");
-		await startMockServiceWorker();
-	}
-
-	return true;
+function prepare(): Promise<boolean> {
+	return runFrontendPreflight().then((preflight) => {
+		if (!preflight.ok) {
+			renderPreflightFailure(preflight);
+			return false;
+		}
+		if (enableMocking) {
+			return import("./mocks").then(({ startMockServiceWorker }) =>
+				startMockServiceWorker().then(() => true),
+			);
+		}
+		return true;
+	});
 }
 
 // Create router
@@ -53,24 +59,27 @@ router.update({
 	),
 });
 
-prepare().then((ready) => {
-	if (!ready) {
-		return;
-	}
-
-	const rootElement = document.getElementById("root");
-	if (!rootElement) throw new Error("Root element not found");
-
-	// Create root and render
-	const root = createRoot(rootElement);
-
-	root.render(
-		<ThemeProvider>
-			<AppProviders>
-				<TooltipProvider>
-					<RouterProvider router={router} />
-				</TooltipProvider>
-			</AppProviders>
-		</ThemeProvider>,
-	);
-});
+void prepare()
+	.then((ready) => {
+		if (!ready) {
+			return undefined;
+		}
+		const rootElement = document.getElementById("root");
+		if (!rootElement) throw new Error("Root element not found");
+		const root = createRoot(rootElement);
+		root.render(
+			<ErrorBoundary name="AppRoot" showDetails={false}>
+				<ThemeProvider>
+					<AppProviders>
+						<TooltipProvider>
+							<RouterProvider router={router} />
+						</TooltipProvider>
+					</AppProviders>
+				</ThemeProvider>
+			</ErrorBoundary>,
+		);
+		return undefined;
+	})
+	.catch(() => {
+		// Preflight or render failed; preflight UI or error boundary handles it
+	});

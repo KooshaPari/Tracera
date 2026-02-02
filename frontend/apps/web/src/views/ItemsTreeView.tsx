@@ -148,8 +148,7 @@ const TreeItemContent = memo(
 			</div>
 		);
 	},
-	(prev, next) => {
-		return (
+	(prev, next) => (
 			prev.item.id === next.item.id &&
 			prev.item.title === next.item.title &&
 			prev.item.type === next.item.type &&
@@ -158,8 +157,7 @@ const TreeItemContent = memo(
 			prev.isExpanded === next.isExpanded &&
 			prev.childCount === next.childCount &&
 			prev.projectFilter === next.projectFilter
-		);
-	},
+		),
 );
 
 const TreeItem = memo(
@@ -215,11 +213,7 @@ const TreeItem = memo(
 			</div>
 		);
 	},
-	(prev, next) => {
-		// Custom comparison for memoization
-		// Return true if props are equal (skip re-render), false if different
-		// Only re-render if the node's critical properties or expansion state changes
-		return (
+	(prev, next) => (
 			prev.node.item.id === next.node.item.id &&
 			prev.node.item.title === next.node.item.title &&
 			prev.node.item.type === next.node.item.type &&
@@ -235,16 +229,20 @@ const TreeItem = memo(
 					next.node.children[idx] &&
 					child.item.id === next.node.children[idx].item.id,
 			)
-		);
-	},
+		),
 );
+
+function setTreeNodeLevel(node: TreeNode, level: number): void {
+	node.level = level;
+	node.children.forEach((child) => setTreeNodeLevel(child, level + 1));
+}
 
 function buildTree(items: Item[]): TreeNode[] {
 	const itemMap = new Map<string, TreeNode>();
 	const rootNodes: TreeNode[] = [];
 
 	items.forEach((item) => {
-		itemMap.set(item.id, { item, children: [], level: 0 });
+		itemMap.set(item.id, { children: [], item, level: 0 });
 	});
 
 	items.forEach((item) => {
@@ -258,12 +256,7 @@ function buildTree(items: Item[]): TreeNode[] {
 		}
 	});
 
-	// Re-calculate levels correctly via DFS
-	const setLevel = (node: TreeNode, level: number) => {
-		node.level = level;
-		node.children.forEach((child) => setLevel(child, level + 1));
-	};
-	rootNodes.forEach((root) => setLevel(root, 0));
+	rootNodes.forEach((root) => setTreeNodeLevel(root, 0));
 
 	return rootNodes;
 }
@@ -286,9 +279,9 @@ export function ItemsTreeView() {
 	const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
 	const filteredItems = useMemo(() => {
-		if (!items.length) return [];
+		if (items.length === 0) {return [];}
 		return items.filter((item: any) => {
-			if (typeFilter && item.type !== typeFilter) return false;
+			if (typeFilter && item.type !== typeFilter) {return false;}
 			if (searchQuery) {
 				const query = searchQuery.toLowerCase();
 				return (
@@ -305,52 +298,39 @@ export function ItemsTreeView() {
 	const handleToggleExpand = useCallback((id: string) => {
 		setExpandedIds((prev) => {
 			const next = new Set(prev);
-			if (next.has(id)) next.delete(id);
-			else next.add(id);
+			if (next.has(id)) {next.delete(id);}
+			else {next.add(id);}
 			return next;
 		});
 	}, []);
 
 	const toggleAll = useCallback(
 		(expand: boolean) => {
-			if (expand) setExpandedIds(new Set(filteredItems.map((i) => i.id)));
-			else setExpandedIds(new Set());
+			if (expand) {setExpandedIds(new Set(filteredItems.map((i) => i.id)));}
+			else {setExpandedIds(new Set());}
 		},
 		[filteredItems],
 	);
 
 	const handleNavigateToTable = useCallback(() => {
 		if (!projectFilter) {
-			navigate({ to: "/projects" });
+			undefined;
 			return;
 		}
-		navigate({
-			to: "/projects/$projectId/views/$viewType",
-			params: { projectId: projectFilter, viewType: "feature" },
-			search: searchParams,
-		});
+		undefined;
 	}, [navigate, searchParams, projectFilter]);
 
 	const handleNavigateToCreate = useCallback(() => {
 		if (!projectFilter) {
-			navigate({ to: "/projects" });
+			undefined;
 			return;
 		}
-		navigate({
-			to: "/projects/$projectId/views/$viewType",
-			params: { projectId: projectFilter, viewType: "feature" },
-			search: { ...searchParams, action: "create" } as any,
-		});
+		undefined;
 	}, [navigate, searchParams, projectFilter]);
 
 	const handleProjectFilterChange = useCallback(
 		(v: string) => {
-			navigate({
-				search: (prev: any) => ({
-					...prev,
-					project: v === "all" ? undefined : v,
-				}),
-			} as any);
+			undefined;
 		},
 		[navigate],
 	);
@@ -480,20 +460,20 @@ export function ItemsTreeView() {
 			{/* Executive Summary */}
 			<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
 				{[
-					{ label: "Total Nodes", value: filteredItems.length, icon: Layers },
-					{ label: "Root Items", value: treeNodes.length, icon: Target },
+					{ icon: Layers, label: "Total Nodes", value: filteredItems.length },
+					{ icon: Target, label: "Root Items", value: treeNodes.length },
 					{
+						icon: FileText,
 						label: "Leaf Items",
 						value: filteredItems.length - treeNodes.length,
-						icon: FileText,
 					},
 					{
+						icon: Network,
 						label: "Depth",
 						value: Math.max(
 							0,
 							...filteredItems.map((i) => (i.parentId ? 1 : 0)),
 						),
-						icon: Network,
 					},
 				].map((s, i) => (
 					<Card

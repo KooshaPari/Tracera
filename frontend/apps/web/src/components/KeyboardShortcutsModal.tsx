@@ -41,6 +41,7 @@ export function KeyboardShortcutsModal({
 			window.addEventListener("keydown", handler);
 			return () => window.removeEventListener("keydown", handler);
 		}
+		return undefined;
 	}, [isOpen, onClose]);
 
 	if (!isOpen) return null;

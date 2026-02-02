@@ -1,13 +1,16 @@
 // Execution API endpoints for QA Integration
 
-import { apiClient, handleApiResponse, safeApiCall } from "./client";
+import client from "./client";
+
+const { apiClient, handleApiResponse, safeApiCall } = client;
 
 /**
  * Configuration object for execution containers and tools
  */
-export interface ExecutionConfig {
-	[key: string]: string | number | boolean | object | null | undefined;
-}
+export type ExecutionConfig = Record<
+	string,
+	string | number | boolean | object | null | undefined
+>;
 
 /**
  * Size configuration for Playwright video recording
@@ -53,9 +56,10 @@ export interface Execution {
 /**
  * Artifact metadata for execution artifacts
  */
-export interface ArtifactMetadata {
-	[key: string]: string | number | boolean | object | null | undefined;
-}
+export type ArtifactMetadata = Record<
+	string,
+	string | number | boolean | object | null | undefined
+>;
 
 export interface ExecutionArtifact {
 	id: string;
@@ -156,7 +160,7 @@ export interface ExecutionEnvironmentConfigUpdate {
 }
 
 export const executionsApi = {
-	create: async (
+	create: (
 		projectId: string,
 		data: ExecutionCreate,
 	): Promise<Execution> => {
@@ -170,7 +174,7 @@ export const executionsApi = {
 		);
 	},
 
-	list: async (
+	list: (
 		projectId: string,
 		params?: {
 			status?: string;
@@ -191,7 +195,7 @@ export const executionsApi = {
 		);
 	},
 
-	get: async (projectId: string, executionId: string): Promise<Execution> => {
+	get: (projectId: string, executionId: string): Promise<Execution> => {
 		return handleApiResponse(
 			safeApiCall(
 				apiClient.GET(
@@ -209,7 +213,7 @@ export const executionsApi = {
 		);
 	},
 
-	start: async (
+	start: (
 		projectId: string,
 		executionId: string,
 	): Promise<{ started: boolean; execution_id: string }> => {
@@ -230,7 +234,7 @@ export const executionsApi = {
 		);
 	},
 
-	complete: async (
+	complete: (
 		projectId: string,
 		executionId: string,
 		data: ExecutionComplete,
@@ -253,7 +257,7 @@ export const executionsApi = {
 		);
 	},
 
-	listArtifacts: async (
+	listArtifacts: (
 		projectId: string,
 		executionId: string,
 		artifactType?: string,
@@ -284,7 +288,7 @@ export const executionsApi = {
 		return `${import.meta.env.VITE_API_URL || "http://localhost:4000"}/api/v1/projects/${projectId}/executions/${executionId}/artifacts/${artifactId}/download`;
 	},
 
-	getConfig: async (projectId: string): Promise<ExecutionEnvironmentConfig> => {
+	getConfig: (projectId: string): Promise<ExecutionEnvironmentConfig> => {
 		return handleApiResponse(
 			safeApiCall(
 				apiClient.GET("/api/v1/projects/{project_id}/execution-config", {
@@ -294,7 +298,7 @@ export const executionsApi = {
 		);
 	},
 
-	updateConfig: async (
+	updateConfig: (
 		projectId: string,
 		data: ExecutionEnvironmentConfigUpdate,
 	): Promise<ExecutionEnvironmentConfig> => {

@@ -105,7 +105,7 @@ invariant.as = (ErrorConstructor, predicate, message, ...positionals) => {
       error = Reflect.construct(ErrorConstructor, [
         formatMessage
       ]);
-    } catch (err) {
+    } catch (_err) {
       error = ErrorConstructor(formatMessage);
     }
     throw error;

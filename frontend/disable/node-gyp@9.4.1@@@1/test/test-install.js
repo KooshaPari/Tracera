@@ -47,7 +47,7 @@ describe('install', function () {
 
     try {
       await install(fs, Gyp, [])
-    } catch (err) {
+    } catch (_err) {
       assert.ok(true)
       if (/"pre" versions of node cannot be installed/.test(err.message)) {
         assert.ok(true)

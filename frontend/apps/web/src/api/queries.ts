@@ -1,9 +1,14 @@
-import {
-	type UseMutationOptions,
-	type UseQueryOptions,
-	useMutation,
-	useQuery,
-	useQueryClient,
+/* eslint-disable import/max-dependencies -- API surface file */
+/* eslint-disable max-lines -- cohesive query hooks module */
+/* eslint-disable new-cap -- apiClient.GET/POST/PUT/DELETE are HTTP method names */
+/* eslint-disable no-void -- void used to explicitly ignore promise in callbacks */
+/* eslint-disable oxc/no-rest-spread-properties -- options spread is idiomatic for React Query */
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type {
+	UseMutationOptions,
+	UseMutationResult,
+	UseQueryOptions,
+	UseQueryResult,
 } from "@tanstack/react-query";
 import type {
 	Item,
@@ -12,99 +17,109 @@ import type {
 	PaginatedResponse,
 	Project,
 } from "@tracertm/types";
-import { apiClient, handleApiResponse } from "./client";
+import client from "./client";
 
-// Query Keys
-export const queryKeys = {
-	projects: ["projects"] as const,
+const { apiClient, handleApiResponse } = client;
+
+// Query Keys (keys sorted alphabetically)
+const queryKeys = {
+	item: (id: string) => ["items", id] as const,
+	mutations: (filters?: Record<string, unknown>) =>
+		["mutations", filters] as const,
 	project: (id: string) => ["projects", id] as const,
 	projectItems: (projectId: string, filters?: Record<string, unknown>) =>
 		["projects", projectId, "items", filters] as const,
-	item: (id: string) => ["items", id] as const,
 	projectLinks: (projectId: string) =>
 		["projects", projectId, "links"] as const,
-	mutations: (filters?: Record<string, unknown>) =>
-		["mutations", filters] as const,
+	projects: ["projects"] as const,
 };
 
 // Projects
-export function useProjects(
+const useProjects = (
 	options?: UseQueryOptions<PaginatedResponse<Project>>,
-) {
-	return useQuery({
-		queryKey: queryKeys.projects,
-		queryFn: () => handleApiResponse(apiClient.GET("/api/v1/projects", {})),
+): UseQueryResult<PaginatedResponse<Project>, Error> =>
+	useQuery({
 		...options,
+		queryFn: () => handleApiResponse(apiClient.GET("/api/v1/projects", {})),
+		queryKey: queryKeys.projects,
 	});
-}
 
-export function useProject(
+const useProject = (
 	projectId: string,
 	options?: UseQueryOptions<Project>,
-) {
-	return useQuery({
-		queryKey: queryKeys.project(projectId),
+): UseQueryResult<Project, Error> =>
+	useQuery({
+		...options,
+		enabled: Boolean(projectId),
 		queryFn: () =>
 			handleApiResponse(
 				apiClient.GET("/api/v1/projects/{projectId}", {
 					params: { path: { projectId } },
 				}),
 			),
-		enabled: !!projectId,
-		...options,
+		queryKey: queryKeys.project(projectId),
 	});
-}
 
-export function useCreateProject(
+const useCreateProject = (
 	options?: UseMutationOptions<
 		Project,
 		Error,
 		{ name: string; description?: string }
 	>,
-) {
+): UseMutationResult<
+	Project,
+	Error,
+	{ name: string; description?: string },
+	unknown
+> => {
 	const queryClient = useQueryClient();
-
 	return useMutation({
+		...options,
 		mutationFn: (data) =>
 			handleApiResponse(apiClient.POST("/api/v1/projects", { body: data })),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: queryKeys.projects });
+			void queryClient.invalidateQueries({ queryKey: queryKeys.projects });
 		},
-		...options,
 	});
-}
+};
 
-export function useUpdateProject(
+const useUpdateProject = (
 	options?: UseMutationOptions<
 		Project,
 		Error,
 		{ projectId: string; data: Partial<Project> }
 	>,
-) {
+): UseMutationResult<
+	Project,
+	Error,
+	{ projectId: string; data: Partial<Project> },
+	unknown
+> => {
 	const queryClient = useQueryClient();
-
 	return useMutation({
+		...options,
 		mutationFn: ({ projectId, data }) =>
 			handleApiResponse(
 				apiClient.PUT("/api/v1/projects/{projectId}", {
-					params: { path: { projectId } },
 					body: data,
+					params: { path: { projectId } },
 				}),
 			),
-		onSuccess: (_, { projectId }) => {
-			queryClient.invalidateQueries({ queryKey: queryKeys.project(projectId) });
-			queryClient.invalidateQueries({ queryKey: queryKeys.projects });
+		onSuccess: (_res, { projectId }) => {
+			void queryClient.invalidateQueries({
+				queryKey: queryKeys.project(projectId),
+			});
+			void queryClient.invalidateQueries({ queryKey: queryKeys.projects });
 		},
-		...options,
 	});
-}
+};
 
-export function useDeleteProject(
+const useDeleteProject = (
 	options?: UseMutationOptions<void, Error, string>,
-) {
+): UseMutationResult<void, Error, string, unknown> => {
 	const queryClient = useQueryClient();
-
 	return useMutation({
+		...options,
 		mutationFn: (projectId) =>
 			handleApiResponse(
 				apiClient.DELETE("/api/v1/projects/{projectId}", {
@@ -112,26 +127,26 @@ export function useDeleteProject(
 				}),
 			),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: queryKeys.projects });
+			void queryClient.invalidateQueries({ queryKey: queryKeys.projects });
 		},
-		...options,
 	});
-}
+};
 
 // Items
-export function useProjectItems(
+const useProjectItems = (
 	projectId: string,
 	filters?: {
-		view?: string;
-		status?: string;
-		priority?: string;
 		page?: number;
 		pageSize?: number;
+		priority?: string;
+		status?: string;
+		view?: string;
 	},
 	options?: UseQueryOptions<PaginatedResponse<Item>>,
-) {
-	return useQuery({
-		queryKey: queryKeys.projectItems(projectId, filters),
+): UseQueryResult<PaginatedResponse<Item>, Error> =>
+	useQuery({
+		...options,
+		enabled: Boolean(projectId),
 		queryFn: () =>
 			handleApiResponse(
 				apiClient.GET("/api/v1/projects/{projectId}/items", {
@@ -141,202 +156,240 @@ export function useProjectItems(
 					},
 				}),
 			),
-		enabled: !!projectId,
-		...options,
+		queryKey: queryKeys.projectItems(projectId, filters),
 	});
-}
 
-export function useItem(itemId: string, options?: UseQueryOptions<Item>) {
-	return useQuery({
-		queryKey: queryKeys.item(itemId),
+const useItem = (
+	itemId: string,
+	options?: UseQueryOptions<Item>,
+): UseQueryResult<Item, Error> =>
+	useQuery({
+		...options,
+		enabled: Boolean(itemId),
 		queryFn: () =>
 			handleApiResponse(
 				apiClient.GET("/api/v1/items/{itemId}", {
 					params: { path: { itemId } },
 				}),
 			),
-		enabled: !!itemId,
-		...options,
+		queryKey: queryKeys.item(itemId),
 	});
-}
 
-export function useCreateItem(
+const useCreateItem = (
 	options?: UseMutationOptions<
 		Item,
 		Error,
 		{ projectId: string; data: Partial<Item> }
 	>,
-) {
+): UseMutationResult<
+	Item,
+	Error,
+	{ projectId: string; data: Partial<Item> },
+	unknown
+> => {
 	const queryClient = useQueryClient();
-
 	return useMutation({
+		...options,
 		mutationFn: ({ projectId, data }) =>
 			handleApiResponse(
 				apiClient.POST("/api/v1/projects/{projectId}/items", {
+					body: data as Record<string, unknown>,
 					params: { path: { projectId } },
-					body: data as any,
 				}),
 			),
-		onSuccess: (_, { projectId }) => {
-			queryClient.invalidateQueries({
+		onSuccess: (_res, { projectId }) => {
+			void queryClient.invalidateQueries({
 				queryKey: queryKeys.projectItems(projectId),
 			});
 		},
-		...options,
 	});
-}
+};
 
-export function useUpdateItem(
+const useUpdateItem = (
 	options?: UseMutationOptions<
 		Item,
 		Error,
 		{ itemId: string; data: Partial<Item> }
 	>,
-) {
+): UseMutationResult<
+	Item,
+	Error,
+	{ itemId: string; data: Partial<Item> },
+	unknown
+> => {
 	const queryClient = useQueryClient();
-
 	return useMutation({
+		...options,
 		mutationFn: ({ itemId, data }) =>
 			handleApiResponse(
 				apiClient.PUT("/api/v1/items/{itemId}", {
-					params: { path: { itemId } },
 					body: data,
+					params: { path: { itemId } },
 				}),
 			),
 		onSuccess: (data) => {
-			queryClient.invalidateQueries({ queryKey: queryKeys.item(data.id) });
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({ queryKey: queryKeys.item(data.id) });
+			void queryClient.invalidateQueries({
 				queryKey: queryKeys.projectItems(data.projectId),
 			});
 		},
-		...options,
 	});
-}
+};
 
-export function useDeleteItem(
+const useDeleteItem = (
 	options?: UseMutationOptions<
 		void,
 		Error,
 		{ itemId: string; projectId: string }
 	>,
-) {
+): UseMutationResult<
+	void,
+	Error,
+	{ itemId: string; projectId: string },
+	unknown
+> => {
 	const queryClient = useQueryClient();
-
 	return useMutation({
+		...options,
 		mutationFn: ({ itemId }) =>
 			handleApiResponse(
 				apiClient.DELETE("/api/v1/items/{itemId}", {
 					params: { path: { itemId } },
 				}),
 			),
-		onSuccess: (_, { projectId }) => {
-			queryClient.invalidateQueries({
+		onSuccess: (_res, { projectId }) => {
+			void queryClient.invalidateQueries({
 				queryKey: queryKeys.projectItems(projectId),
 			});
 		},
-		...options,
 	});
-}
+};
 
 // Links
-export function useProjectLinks(
+const useProjectLinks = (
 	projectId: string,
 	options?: UseQueryOptions<Link[]>,
-) {
-	return useQuery({
-		queryKey: queryKeys.projectLinks(projectId),
+): UseQueryResult<Link[], Error> =>
+	useQuery({
+		...options,
+		enabled: Boolean(projectId),
 		queryFn: () =>
 			handleApiResponse(
 				apiClient.GET("/api/v1/projects/{projectId}/links", {
 					params: { path: { projectId } },
 				}),
 			),
-		enabled: !!projectId,
-		...options,
+		queryKey: queryKeys.projectLinks(projectId),
 	});
-}
 
-export function useCreateLink(
+const useCreateLink = (
 	options?: UseMutationOptions<
 		Link,
 		Error,
 		{ projectId: string; data: Partial<Link> }
 	>,
-) {
+): UseMutationResult<
+	Link,
+	Error,
+	{ projectId: string; data: Partial<Link> },
+	unknown
+> => {
 	const queryClient = useQueryClient();
-
 	return useMutation({
+		...options,
 		mutationFn: ({ projectId, data }) =>
 			handleApiResponse(
 				apiClient.POST("/api/v1/projects/{projectId}/links", {
+					body: data as Record<string, unknown>,
 					params: { path: { projectId } },
-					body: data as any,
 				}),
 			),
-		onSuccess: (_, { projectId }) => {
-			queryClient.invalidateQueries({
+		onSuccess: (_res, { projectId }) => {
+			void queryClient.invalidateQueries({
 				queryKey: queryKeys.projectLinks(projectId),
 			});
 		},
-		...options,
 	});
-}
+};
 
-export function useDeleteLink(
+const useDeleteLink = (
 	options?: UseMutationOptions<
 		void,
 		Error,
 		{ linkId: string; projectId: string }
 	>,
-) {
+): UseMutationResult<
+	void,
+	Error,
+	{ linkId: string; projectId: string },
+	unknown
+> => {
 	const queryClient = useQueryClient();
-
 	return useMutation({
+		...options,
 		mutationFn: ({ linkId }) =>
 			handleApiResponse(
 				apiClient.DELETE("/api/v1/links/{linkId}", {
 					params: { path: { linkId } },
 				}),
 			),
-		onSuccess: (_, { projectId }) => {
-			queryClient.invalidateQueries({
+		onSuccess: (_res, { projectId }) => {
+			void queryClient.invalidateQueries({
 				queryKey: queryKeys.projectLinks(projectId),
 			});
 		},
-		...options,
 	});
-}
+};
 
 // Mutations (for sync)
-export function useMutations(
+const useMutations = (
 	filters?: { synced?: boolean; since?: string },
 	options?: UseQueryOptions<Mutation[]>,
-) {
-	return useQuery({
-		queryKey: queryKeys.mutations(filters),
+): UseQueryResult<Mutation[], Error> =>
+	useQuery({
+		...options,
 		queryFn: () =>
 			handleApiResponse(
 				apiClient.GET("/api/v1/mutations", {
 					params: { query: filters },
 				}),
 			),
-		...options,
+		queryKey: queryKeys.mutations(filters),
 	});
-}
 
-export function useCreateMutation(
+const useCreateMutation = (
 	options?: UseMutationOptions<Mutation, Error, Partial<Mutation>>,
-) {
+): UseMutationResult<Mutation, Error, Partial<Mutation>, unknown> => {
 	const queryClient = useQueryClient();
-
 	return useMutation({
+		...options,
 		mutationFn: (data) =>
 			handleApiResponse(
-				apiClient.POST("/api/v1/mutations", { body: data as any }),
+				apiClient.POST("/api/v1/mutations", {
+					body: data as Record<string, unknown>,
+				}),
 			),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: queryKeys.mutations() });
+			void queryClient.invalidateQueries({ queryKey: queryKeys.mutations() });
 		},
-		...options,
 	});
-}
+};
+
+export {
+	queryKeys,
+	useCreateItem,
+	useCreateLink,
+	useCreateMutation,
+	useCreateProject,
+	useDeleteItem,
+	useDeleteLink,
+	useDeleteProject,
+	useItem,
+	useMutations,
+	useProject,
+	useProjectItems,
+	useProjectLinks,
+	useProjects,
+	useUpdateItem,
+	useUpdateProject,
+};

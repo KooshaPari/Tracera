@@ -168,7 +168,7 @@ module.exports = function httpAdapter(config) {
 					/^\?/,
 					"",
 				);
-			} catch (err) {
+			} catch (_err) {
 				var customErr = new Error(err.message);
 				customErr.config = config;
 				customErr.url = config.url;
@@ -395,7 +395,7 @@ module.exports = function httpAdapter(config) {
 								}
 							}
 							response.data = responseData;
-						} catch (err) {
+						} catch (_err) {
 							reject(
 								AxiosError.from(err, null, config, response.request, response),
 							);

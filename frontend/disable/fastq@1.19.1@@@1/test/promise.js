@@ -198,7 +198,7 @@ test("push with worker throwing error", async (t) => {
 	});
 	try {
 		await q.push(42);
-	} catch (err) {
+	} catch (_err) {
 		t.ok(err instanceof Error, "push callback should catch the error");
 		t.match(err.message, /test error/, 'error message should be "test error"');
 	}
@@ -211,7 +211,7 @@ test("unshift with worker throwing error", async (t) => {
 	}, 1);
 	try {
 		await q.unshift(42);
-	} catch (err) {
+	} catch (_err) {
 		t.ok(err instanceof Error, "push callback should catch the error");
 		t.match(err.message, /test error/, 'error message should be "test error"');
 	}

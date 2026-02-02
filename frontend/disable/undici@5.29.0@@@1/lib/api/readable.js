@@ -161,7 +161,7 @@ module.exports = class BodyReadable extends Readable {
           throw new InvalidArgumentError('signal must be an AbortSignal')
         }
         util.throwIfAborted(signal)
-      } catch (err) {
+      } catch (_err) {
         return Promise.reject(err)
       }
     }
@@ -292,7 +292,7 @@ function consumeEnd (consume) {
     }
 
     consumeFinish(consume)
-  } catch (err) {
+  } catch (_err) {
     stream.destroy(err)
   }
 }

@@ -150,11 +150,11 @@ export const useItemsStore = create<ItemsState>((set, get) => ({
 		const tempItem: Item = {
 			id: tempId,
 			projectId: data.projectId,
-			view: "FEATURE" as any, // Default view type
+			view: "FEATURE" as ViewType, // Default view type
 			type: data.type,
 			title: data.title,
 			...(data.description !== undefined && { description: data.description }),
-			status: (data.status || "todo") as any,
+			status: (data.status || "todo") as ItemStatus,
 			priority: data.priority || "medium",
 			...(data.parentId !== undefined && { parentId: data.parentId }),
 			version: 1,

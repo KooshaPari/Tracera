@@ -25,19 +25,22 @@ const epicSchema = z.object({
 	description: z.string().max(5000).optional(),
 	status: z.enum(statusOptions),
 	priority: z.enum(priorityOptions),
-	business_value: z.coerce
-		.number()
-		.min(0, "Business value must be non-negative")
+	business_value: z
+		.union([z.number(), z.string()])
+		.transform((val) => (typeof val === "string" ? Number.parseFloat(val) : val))
+		.pipe(z.number().min(0, "Business value must be non-negative"))
 		.optional(),
 	timeline_start: z.string().optional(),
 	timeline_end: z.string().optional(),
-	story_count: z.coerce
-		.number()
-		.min(0, "Story count must be non-negative")
+	story_count: z
+		.union([z.number(), z.string()])
+		.transform((val) => (typeof val === "string" ? Number.parseFloat(val) : val))
+		.pipe(z.number().min(0, "Story count must be non-negative"))
 		.optional(),
-	completed_story_count: z.coerce
-		.number()
-		.min(0, "Completed story count must be non-negative")
+	completed_story_count: z
+		.union([z.number(), z.string()])
+		.transform((val) => (typeof val === "string" ? Number.parseFloat(val) : val))
+		.pipe(z.number().min(0, "Completed story count must be non-negative"))
 		.optional(),
 });
 
@@ -72,9 +75,9 @@ export function CreateEpicItemForm({
 	const onSubmitWithAnnouncement = useCallback(
 		async (data: EpicFormData) => {
 			try {
-				await onSubmit(data);
+				await Promise.resolve(onSubmit(data));
 				announceToScreenReader("Epic created successfully", "polite");
-			} catch (error) {
+			} catch {
 				announceToScreenReader(
 					"Error creating epic. Please check the form and try again.",
 					"assertive",

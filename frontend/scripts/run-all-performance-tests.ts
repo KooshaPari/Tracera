@@ -5,7 +5,6 @@
  */
 
 import { spawn } from "bun";
-import { existsSync } from "fs";
 
 interface TestSuite {
 	name: string;

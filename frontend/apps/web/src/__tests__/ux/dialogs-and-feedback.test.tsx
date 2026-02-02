@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/consistent-function-scoping -- test helpers and mocks defined inline for clarity */
 /**
  * UX Tests: Confirmation Dialogs, Toasts, and Error Boundaries
  * Tests user feedback mechanisms and error handling UX
@@ -6,7 +7,9 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+let user: ReturnType<typeof userEvent.setup>;
 
 // Mock ConfirmDialog component
 function MockConfirmDialog({
@@ -199,9 +202,12 @@ describe("Confirmation Dialogs - Structure and Accessibility", () => {
 });
 
 describe("Confirmation Dialogs - User Interactions", () => {
+	beforeEach(() => {
+		user = userEvent.setup();
+	});
+
 	it("should call onConfirm when confirm button clicked", async () => {
 		const handleConfirm = vi.fn();
-		const user = userEvent.setup();
 
 		render(
 			<MockConfirmDialog
@@ -217,7 +223,6 @@ describe("Confirmation Dialogs - User Interactions", () => {
 
 	it("should call onCancel when cancel button clicked", async () => {
 		const handleCancel = vi.fn();
-		const user = userEvent.setup();
 
 		render(
 			<MockConfirmDialog
@@ -233,20 +238,18 @@ describe("Confirmation Dialogs - User Interactions", () => {
 
 	it("should close dialog when backdrop clicked", async () => {
 		const handleCancel = vi.fn();
-		const user = userEvent.setup();
 
 		const { container } = render(
 			<MockConfirmDialog open={true} onCancel={handleCancel} />,
 		);
 
 		const backdrop = container.querySelector("[aria-hidden='true']");
-		await user.click(backdrop!);
+		if (backdrop) await user.click(backdrop);
 		expect(handleCancel).toHaveBeenCalled();
 	});
 
 	it("should support keyboard navigation (Tab, Enter, Escape)", async () => {
 		const handleCancel = vi.fn();
-		const user = userEvent.setup();
 
 		render(
 			<MockConfirmDialog
@@ -274,7 +277,7 @@ describe("Confirmation Dialogs - User Interactions", () => {
 
 describe("Confirmation Dialogs - Destructive Actions", () => {
 	it("should style destructive actions distinctly", () => {
-		const { container } = render(
+		render(
 			<MockConfirmDialog open={true} isDestructive={true} />,
 		);
 
@@ -317,7 +320,7 @@ describe("Success Toast - Display and Behavior", () => {
 
 	it("should auto-dismiss after duration", async () => {
 		const handleClose = vi.fn();
-		const { rerender } = render(
+		render(
 			<MockToast
 				open={true}
 				type="success"
@@ -415,7 +418,15 @@ describe("Toast Types and Variants", () => {
 			const { container, unmount } = render(
 				<MockToast
 					open={true}
-					type={type as "success" | "error" | "warning" | "info"}
+					type={
+					type === "success"
+						? "success"
+						: type === "error"
+							? "error"
+							: type === "warning"
+								? "warning"
+								: "info"
+				}
 					message={type}
 				/>,
 			);
@@ -429,6 +440,7 @@ describe("Toast Types and Variants", () => {
 
 describe("Error Boundary - Error Catching", () => {
 	it("should catch errors from child components", () => {
+		/* eslint-disable-next-line unicorn/consistent-function-scoping -- test component that throws */
 		const ErrorComponent = () => {
 			throw new Error("Test error");
 		};
@@ -446,6 +458,7 @@ describe("Error Boundary - Error Catching", () => {
 	});
 
 	it("should display error message to user", () => {
+		/* eslint-disable-next-line unicorn/consistent-function-scoping -- test component that throws */
 		const ErrorComponent = () => {
 			throw new Error("Database connection failed");
 		};
@@ -464,7 +477,6 @@ describe("Error Boundary - Error Catching", () => {
 			throw new Error("Fatal error");
 		};
 
-		const user = userEvent.setup();
 		render(
 			<MockErrorBoundary>
 				<ErrorComponent />
@@ -496,7 +508,7 @@ describe("Error Boundary - Error Catching", () => {
 			throw new Error("Click handler error");
 		});
 
-		const { container } = render(
+		render(
 			<MockErrorBoundary>
 				<button onClick={handleClick}>Click me</button>
 			</MockErrorBoundary>,
@@ -509,6 +521,10 @@ describe("Error Boundary - Error Catching", () => {
 });
 
 describe("Empty States - User Feedback", () => {
+	beforeEach(() => {
+		user = userEvent.setup();
+	});
+
 	function MockEmptyState({
 		icon = "📭",
 		title = "No items",
@@ -550,7 +566,6 @@ describe("Empty States - User Feedback", () => {
 
 	it("should provide action to create item", async () => {
 		const handleAction = vi.fn();
-		const user = userEvent.setup();
 
 		render(
 			<MockEmptyState actionLabel="Create Item" onAction={handleAction} />,

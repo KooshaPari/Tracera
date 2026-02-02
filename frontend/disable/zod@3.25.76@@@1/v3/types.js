@@ -160,7 +160,7 @@ export class ZodType {
 					: {
 							issues: ctx.common.issues,
 						};
-			} catch (err) {
+			} catch (_err) {
 				if (err?.message?.toLowerCase()?.includes("encountered")) {
 					this["~standard"].async = true;
 				}

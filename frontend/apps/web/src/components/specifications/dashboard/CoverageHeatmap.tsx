@@ -25,6 +25,23 @@ interface CoverageHeatmapProps {
 	className?: string;
 }
 
+function getCoverageColor(coverage: number): string {
+	if (coverage >= 90) return "bg-emerald-600"; // Full coverage
+	if (coverage >= 70) return "bg-emerald-500";
+	if (coverage >= 50) return "bg-amber-500";
+	if (coverage >= 30) return "bg-orange-500";
+	if (coverage >= 10) return "bg-red-500";
+	return "bg-slate-300"; // No coverage
+}
+
+function getCoverageOpacity(coverage: number): string {
+	if (coverage === 0) return "opacity-30";
+	if (coverage < 20) return "opacity-40";
+	if (coverage < 40) return "opacity-60";
+	if (coverage < 60) return "opacity-75";
+	return "opacity-100";
+}
+
 export function CoverageHeatmap({
 	data,
 	onCellClick,
@@ -35,25 +52,6 @@ export function CoverageHeatmap({
 	const [hoveredDetails, setHoveredDetails] = useState<CoverageCell | null>(
 		null,
 	);
-
-	// Get color intensity based on coverage
-	const getCoverageColor = (coverage: number): string => {
-		if (coverage >= 90) return "bg-emerald-600"; // Full coverage
-		if (coverage >= 70) return "bg-emerald-500";
-		if (coverage >= 50) return "bg-amber-500";
-		if (coverage >= 30) return "bg-orange-500";
-		if (coverage >= 10) return "bg-red-500";
-		return "bg-slate-300"; // No coverage
-	};
-
-	// Get opacity for the coverage level
-	const getCoverageOpacity = (coverage: number): string => {
-		if (coverage === 0) return "opacity-30";
-		if (coverage < 20) return "opacity-40";
-		if (coverage < 40) return "opacity-60";
-		if (coverage < 60) return "opacity-75";
-		return "opacity-100";
-	};
 
 	return (
 		<motion.div

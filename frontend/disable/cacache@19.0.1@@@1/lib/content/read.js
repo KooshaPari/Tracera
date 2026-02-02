@@ -88,7 +88,7 @@ async function hasContent (cache, integrity) {
       const stat = await fs.stat(cpath)
       return { size: stat.size, sri, stat }
     })
-  } catch (err) {
+  } catch (_err) {
     if (err.code === 'ENOENT') {
       return false
     }
@@ -120,7 +120,7 @@ async function withContentSri (cache, integrity, fn) {
     const results = await Promise.all(digests.map(async (meta) => {
       try {
         return await withContentSri(cache, meta, fn)
-      } catch (err) {
+      } catch (_err) {
         if (err.code === 'ENOENT') {
           return Object.assign(
             new Error('No matching content found for ' + sri.toString()),

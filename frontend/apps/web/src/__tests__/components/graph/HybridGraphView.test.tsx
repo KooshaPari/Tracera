@@ -5,7 +5,7 @@ import { HybridGraphView } from '@/components/graph/HybridGraphView';
 
 // Mock child components
 vi.mock('@/components/graph/FlowGraphViewInner', () => ({
-  FlowGraphViewInner: ({ nodes }: any) => (
+  FlowGraphViewInner: ({ nodes }: { nodes: unknown[] }) => (
     <div data-testid="reactflow-mode">ReactFlow: {nodes.length} nodes</div>
   ),
 }));
@@ -15,7 +15,7 @@ vi.mock('@/components/graph/SigmaGraphView', () => ({
 }));
 
 vi.mock('@/components/graph/sigma/RichNodeDetailPanel', () => ({
-  RichNodeDetailPanel: ({ node, onClose }: any) => (
+  RichNodeDetailPanel: ({ node, onClose: _onClose }: { node: unknown; onClose: () => void }) => (
     node ? <div data-testid="detail-panel">{node.label}</div> : null
   ),
 }));

@@ -47,7 +47,7 @@ function AsyncGenerator(gen) {
       }, function (err) {
         resume("throw", err);
       });
-    } catch (err) {
+    } catch (_err) {
       settle("throw", err);
     }
   }

@@ -25,8 +25,8 @@ export function ImportView() {
 	const [_file, setFile] = useState<File | null>(null);
 
 	const projectsQuery = useQuery({
-		queryKey: ["projects"],
 		queryFn: () => api.projects.list(),
+		queryKey: ["projects"],
 	});
 
 	const importMutation = useMutation({
@@ -38,8 +38,10 @@ export function ImportView() {
 			projectId: string;
 			format: ImportFormat;
 			data: string;
-		}) => {
-			return api.exportImport.import(projectId, format, data);
+		}) => api.exportImport.import(projectId, format, data),
+		onError: (error) => {
+			logger.error("Import failed:", error);
+			alert("Import failed. Please check your data format and try again.");
 		},
 		onSuccess: (result) => {
 			alert(
@@ -51,18 +53,15 @@ export function ImportView() {
 			setData("");
 			setFile(null);
 		},
-		onError: (error) => {
-			logger.error("Import failed:", error);
-			alert("Import failed. Please check your data format and try again.");
-		},
 	});
 
 	const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const selectedFile = event.target.files?.[0];
-		if (!selectedFile) return;
+		if (!selectedFile) {return;}
 
 		setFile(selectedFile);
 		const reader = new FileReader();
+		/* eslint-disable-next-line unicorn/prefer-add-event-listener -- FileReader API uses .onload */
 		reader.onload = (e) => {
 			const content = e.target?.result as string;
 			setData(content);
@@ -81,7 +80,7 @@ export function ImportView() {
 			return;
 		}
 
-		importMutation.mutate({ projectId, format, data });
+		importMutation.mutate({ data, format, projectId });
 	};
 
 	return (

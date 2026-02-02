@@ -760,7 +760,7 @@ export function findRouteMatch<
       processedTree.segmentTree,
       fuzzy,
     ) as RouteMatch<T> | null
-  } catch (err) {
+  } catch (_err) {
     if (err instanceof URIError) {
       result = null
     } else {

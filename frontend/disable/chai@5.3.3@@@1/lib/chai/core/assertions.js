@@ -605,7 +605,7 @@ function include(val, msg) {
 
 				try {
 					propAssertion.property(prop, val[prop]);
-				} catch (err) {
+				} catch (_err) {
 					if (!_.checkError.compatibleConstructor(err, AssertionError)) {
 						throw err;
 					}
@@ -1778,7 +1778,7 @@ function assertInstanceOf(constructor, msg) {
 
 	try {
 		isInstanceOf = target instanceof constructor;
-	} catch (err) {
+	} catch (_err) {
 		if (err instanceof TypeError) {
 			flagMsg = flagMsg ? flagMsg + ": " : "";
 			throw new AssertionError(
@@ -2762,7 +2762,7 @@ function assertThrows(errorLike, errMsgMatcher, msg) {
 	let errorWasThrown = false;
 	try {
 		obj();
-	} catch (err) {
+	} catch (_err) {
 		errorWasThrown = true;
 		caughtErr = err;
 	}

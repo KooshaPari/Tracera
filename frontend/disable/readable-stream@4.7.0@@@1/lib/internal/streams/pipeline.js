@@ -133,7 +133,7 @@ async function pumpToNode(iterable, writable, finish, { end }) {
       await wait()
     }
     finish()
-  } catch (err) {
+  } catch (_err) {
     finish(error !== err ? aggregateTwoErrors(error, err) : err)
   } finally {
     cleanup()
@@ -156,11 +156,11 @@ async function pumpToWeb(readable, writable, finish, { end }) {
       await writer.close()
     }
     finish()
-  } catch (err) {
+  } catch (_err) {
     try {
       await writer.abort(err)
       finish(err)
-    } catch (err) {
+    } catch (_err) {
       finish(err)
     }
   }

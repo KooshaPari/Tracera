@@ -299,7 +299,7 @@ describe("Dashboard Page", () => {
 			});
 
 			// Trigger refetch
-			queryClient.invalidateQueries({ queryKey: ["projects"] });
+			void queryClient.invalidateQueries({ queryKey: ["projects"] });
 
 			vi.mocked(fetchProjects).mockResolvedValue({
 				data: [{ id: "1", name: "Project 1 Updated" }],
@@ -734,7 +734,7 @@ describe("Dashboard Page", () => {
 				status: "healthy",
 			});
 
-			queryClient.invalidateQueries({ queryKey: ["system-status"] });
+			void queryClient.invalidateQueries({ queryKey: ["system-status"] });
 
 			await waitFor(() => {
 				expect(screen.getByText(/10/)).toBeInTheDocument();

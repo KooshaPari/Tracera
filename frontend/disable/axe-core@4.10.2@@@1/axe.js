@@ -398,7 +398,7 @@
           for (_iterator.s(); !(_step = _iterator.n()).done; ) {
             _loop();
           }
-        } catch (err) {
+        } catch (_err) {
           _iterator.e(err);
         } finally {
           _iterator.f();
@@ -9538,7 +9538,7 @@
           var distance2 = pointDistance(targetCenter, closestPoint);
           minDistance = Math.min(minDistance, distance2);
         }
-      } catch (err) {
+      } catch (_err) {
         _iterator2.e(err);
       } finally {
         _iterator2.f();
@@ -9601,7 +9601,7 @@
         for (_iterator3.s(); !(_step3 = _iterator3.n()).done; ) {
           _loop3();
         }
-      } catch (err) {
+      } catch (_err) {
         _iterator3.e(err);
       } finally {
         _iterator3.f();
@@ -9975,7 +9975,7 @@
               neighbors.push(vNeighbor);
             }
           }
-        } catch (err) {
+        } catch (_err) {
           _iterator4.e(err);
         } finally {
           _iterator4.f();
@@ -14102,7 +14102,7 @@
             return true;
           }
         }
-      } catch (err) {
+      } catch (_err) {
         _iterator5.e(err);
       } finally {
         _iterator5.f();
@@ -14389,7 +14389,7 @@
                 var c4 = _step6.value;
                 ret += row * c4;
               }
-            } catch (err) {
+            } catch (_err) {
               _iterator6.e(err);
             } finally {
               _iterator6.f();
@@ -14774,7 +14774,7 @@
                 var alias = _step7.value;
                 this.register(alias, space);
               }
-            } catch (err) {
+            } catch (_err) {
               _iterator7.e(err);
             } finally {
               _iterator7.f();
@@ -15025,7 +15025,7 @@
                 return _ret2.v;
               }
             }
-          } catch (err) {
+          } catch (_err) {
             _iterator8.e(err);
           } finally {
             _iterator8.f();
@@ -15089,7 +15089,7 @@
                 return _ret3.v;
               }
             }
-          } catch (err) {
+          } catch (_err) {
             _iterator9.e(err);
           } finally {
             _iterator9.f();
@@ -15116,7 +15116,7 @@
               }
             }
           }
-        } catch (err) {
+        } catch (_err) {
           _iterator10.e(err);
         } finally {
           _iterator10.f();
@@ -18709,7 +18709,7 @@
           }
           normalizedSelectors.push(selector);
         }
-      } catch (err) {
+      } catch (_err) {
         _iterator11.e(err);
       } finally {
         _iterator11.f();
@@ -19052,7 +19052,7 @@
             deepest = node;
           }
         }
-      } catch (err) {
+      } catch (_err) {
         _iterator12.e(err);
       } finally {
         _iterator12.f();
@@ -19862,7 +19862,7 @@
             selected.push.apply(selected, _toConsumableArray(selectAllRecursive(restSelector, elm.shadowRoot)));
           }
         }
-      } catch (err) {
+      } catch (_err) {
         _iterator13.e(err);
       } finally {
         _iterator13.f();
@@ -20682,7 +20682,7 @@
                 idRefs.get(token).push(node);
               }
             }
-          } catch (err) {
+          } catch (_err) {
             _iterator14.e(err);
           } finally {
             _iterator14.f();
@@ -23171,7 +23171,7 @@
               break;
             }
           }
-        } catch (err) {
+        } catch (_err) {
           _iterator15.e(err);
         } finally {
           _iterator15.f();
@@ -23685,7 +23685,7 @@
             borders.top.push(-offsetY);
           }
         }
-      } catch (err) {
+      } catch (_err) {
         _iterator16.e(err);
       } finally {
         _iterator16.f();
@@ -23800,7 +23800,7 @@
           });
           shadowColors.push(_color3);
         }
-      } catch (err) {
+      } catch (_err) {
         _iterator17.e(err);
       } finally {
         _iterator17.f();
@@ -24144,7 +24144,7 @@
             return found;
           }
         }
-      } catch (err) {
+      } catch (_err) {
         _iterator18.e(err);
       } finally {
         _iterator18.f();
@@ -24503,7 +24503,7 @@
             }
           }
         }
-      } catch (err) {
+      } catch (_err) {
         _iterator19.e(err);
       } finally {
         _iterator19.f();
@@ -24610,7 +24610,7 @@
           closestOffset = Math.min(closestOffset, offset);
           closeNeighbors.push(vNeighbor);
         }
-      } catch (err) {
+      } catch (_err) {
         _iterator20.e(err);
       } finally {
         _iterator20.f();
@@ -26825,7 +26825,7 @@
             invalid.push(attrName);
           }
         }
-      } catch (err) {
+      } catch (_err) {
         _iterator21.e(err);
       } finally {
         _iterator21.f();
@@ -28201,7 +28201,7 @@
                 this.allowedOrigins.push(defaultOrigin);
               }
             }
-          } catch (err) {
+          } catch (_err) {
             _iterator22.e(err);
           } finally {
             _iterator22.f();
@@ -29006,7 +29006,7 @@
           var frameSpecs = getMergedFrameSpecs(partialResult);
           frameStack.unshift.apply(frameStack, _toConsumableArray(frameSpecs));
         }
-      } catch (err) {
+      } catch (_err) {
         _iterator23.e(err);
       } finally {
         _iterator23.f();

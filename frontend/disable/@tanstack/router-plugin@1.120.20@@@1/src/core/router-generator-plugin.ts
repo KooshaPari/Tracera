@@ -34,7 +34,7 @@ export const unpluginRouterGeneratorFactory: UnpluginFactory<
 
 		try {
 			await generator(userConfig, process.cwd());
-		} catch (err) {
+		} catch (_err) {
 			console.error(err);
 			console.info();
 		} finally {

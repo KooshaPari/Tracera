@@ -534,7 +534,7 @@ function consumeEnd (consume, encoding) {
     }
 
     consumeFinish(consume)
-  } catch (err) {
+  } catch (_err) {
     stream.destroy(err)
   }
 }

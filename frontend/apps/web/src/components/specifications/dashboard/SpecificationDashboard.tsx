@@ -69,8 +69,34 @@ interface SpecificationDashboardProps {
 	}>;
 	onNavigate?: (section: string, id?: string) => void;
 	onCreateNew?: (type: string) => void;
-	onGapAction?: (gap: any, action: string) => void;
+	onGapAction?: (gap: { id: string; [key: string]: unknown }, resourceType: string) => void;
 	className?: string;
+}
+
+function getHealthStatus(score: number) {
+	if (score >= 90)
+		return {
+			text: "Excellent",
+			color: "text-green-600",
+			bg: "bg-green-50 dark:bg-green-900/20",
+		};
+	if (score >= 70)
+		return {
+			text: "Good",
+			color: "text-blue-600",
+			bg: "bg-blue-50 dark:bg-blue-900/20",
+		};
+	if (score >= 50)
+		return {
+			text: "Fair",
+			color: "text-amber-600",
+			bg: "bg-amber-50 dark:bg-amber-900/20",
+		};
+	return {
+		text: "Poor",
+		color: "text-red-600",
+		bg: "bg-red-50 dark:bg-red-900/20",
+	};
 }
 
 export function SpecificationDashboard({
@@ -93,33 +119,6 @@ export function SpecificationDashboard({
 		const uncovered = coverageData.filter((c) => c.coverage === 0).length;
 		return { avgCoverage, fullyCovered, uncovered };
 	}, [coverageData]);
-
-	// Determine overall health status
-	const getHealthStatus = (score: number) => {
-		if (score >= 90)
-			return {
-				text: "Excellent",
-				color: "text-green-600",
-				bg: "bg-green-50 dark:bg-green-900/20",
-			};
-		if (score >= 70)
-			return {
-				text: "Good",
-				color: "text-blue-600",
-				bg: "bg-blue-50 dark:bg-blue-900/20",
-			};
-		if (score >= 50)
-			return {
-				text: "Fair",
-				color: "text-amber-600",
-				bg: "bg-amber-50 dark:bg-amber-900/20",
-			};
-		return {
-			text: "Poor",
-			color: "text-red-600",
-			bg: "bg-red-50 dark:bg-red-900/20",
-		};
-	};
 
 	const healthStatus = getHealthStatus(summary.healthScore);
 
@@ -390,7 +389,7 @@ export function SpecificationDashboard({
 					<div className="mt-6 space-y-4">
 						<h3 className="text-lg font-semibold">Issues by Category</h3>
 						<div className="grid gap-4 md:grid-cols-2">
-							{summary.healthDetails.map((detail, i) => (
+							{summary.healthDetails.map((detail: { category: string; score: number; issues: string[] }, i: number) => (
 								<motion.div
 									key={i}
 									initial={{ opacity: 0, y: 10 }}
@@ -431,7 +430,7 @@ export function SpecificationDashboard({
 										<CardContent>
 											{detail.issues.length > 0 ? (
 												<ul className="space-y-2">
-													{detail.issues.map((issue, j) => (
+													{detail.issues.map((issue: string, j: number) => (
 														<li
 															key={j}
 															className="text-sm text-muted-foreground flex items-start gap-2"

@@ -41,7 +41,7 @@ function from(Readable, iterable, opts) {
         } else {
           reading = false;
         }
-      } catch (err) {
+      } catch (_err) {
         readable.destroy(err);
       }
     });

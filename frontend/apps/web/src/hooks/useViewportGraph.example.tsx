@@ -11,6 +11,7 @@ import ReactFlow, {
 	type OnViewportChange,
 } from "@xyflow/react";
 import { useViewportGraph } from "./useViewportGraph";
+import { logger } from '@/lib/logger';
 
 /**
  * Example 1: Basic viewport-based loading
@@ -37,7 +38,7 @@ export function BasicViewportGraphExample({ projectId }: { projectId: string }) 
 			const maxY = minY + height / zoom;
 
 			// Load data for this viewport
-			loadViewport({ minX, minY, maxX, maxY, zoom });
+			void loadViewport({ minX, minY, maxX, maxY, zoom });
 		},
 		[reactFlowInstance, loadViewport],
 	);
@@ -105,7 +106,7 @@ export function ViewportGraphWithCallbackExample({
 		totalEdges: 0,
 	});
 
-	const { nodes, edges, _loadViewport, loadedRegionCount } = useViewportGraph(
+	const { nodes, edges, loadedRegionCount } = useViewportGraph(
 		projectId,
 		{
 			bufferPx: 1000, // Larger buffer for smoother panning
@@ -183,7 +184,7 @@ export function ManualViewportLoadExample({ projectId }: { projectId: string }) 
 				break;
 		}
 
-		loadViewport({ minX, minY, maxX, maxY, zoom });
+		void loadViewport({ minX, minY, maxX, maxY, zoom });
 	};
 
 	return (

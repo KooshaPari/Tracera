@@ -19,8 +19,8 @@ vi.mock("@tanstack/react-router", async () => {
 	};
 });
 
-// Mock fetch
-global.fetch = vi.fn();
+// Mock fetch (cast to satisfy typeof fetch which may include preconnect in some envs)
+(global as any).fetch = vi.fn();
 
 describe("AdvancedSearchView", () => {
 	let queryClient: QueryClient;
@@ -92,7 +92,7 @@ describe("AdvancedSearchView", () => {
 
 	it("shows loading state", async () => {
 		const user = userEvent.setup();
-		(global.fetch as any).mockImplementation(
+		(global as any).fetch.mockImplementation(
 			() =>
 				new Promise((resolve) =>
 					setTimeout(
@@ -175,7 +175,7 @@ describe("AdvancedSearchView", () => {
 
 	it("displays empty state when no results", async () => {
 		const user = userEvent.setup();
-		(global.fetch as any).mockResolvedValue({
+		(global as any).fetch.mockResolvedValue({
 			ok: true,
 			json: async () => ({
 				project_id: "test",
@@ -256,9 +256,8 @@ describe("AdvancedSearchView", () => {
 
 	it("displays error message on search failure", async () => {
 		const user = userEvent.setup();
-
 		// Mock fetch BEFORE rendering to ensure error is ready
-		(global.fetch as any).mockRejectedValue(new Error("Search failed"));
+		(global as any).fetch.mockRejectedValue(new Error("Search failed"));
 
 		render(
 			<QueryClientProvider client={queryClient}>

@@ -5,6 +5,7 @@
 
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
+import { logger } from '@/lib/logger';
 
 export interface DeleteConfig {
 	/** Item identifier (for logging) */

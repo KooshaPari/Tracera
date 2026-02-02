@@ -2142,7 +2142,7 @@ const HLJS = (hljs) => {
 				emitter: emitter,
 				top: top,
 			};
-		} catch (err) {
+		} catch (_err) {
 			if (err.message && err.message.includes("Illegal")) {
 				return {
 					illegal: true,

@@ -35,20 +35,18 @@ export function ImpactAnalysisView({ projectId }: ImpactAnalysisViewProps) {
 	const items = itemsData?.items ?? [];
 	const links = linksData?.links ?? [];
 
-	const filteredItems = useMemo(() => {
-		return items.filter((i) =>
+	const filteredItems = useMemo(() => items.filter((i) =>
 			i.title.toLowerCase().includes(searchQuery.toLowerCase()),
-		);
-	}, [items, searchQuery]);
+		), [items, searchQuery]);
 
 	const analyzeImpact = (itemId: string) => {
-		if (!links.length) return { direct: [], indirect: [] };
+		if (links.length === 0) {return { direct: [], indirect: [] };}
 
 		const direct = new Set<string>();
 		const indirect = new Set<string>();
 
 		links.forEach((link: any) => {
-			if (link.sourceId === itemId) direct.add(link.targetId);
+			if (link.sourceId === itemId) {direct.add(link.targetId);}
 		});
 
 		direct.forEach((directId) => {
@@ -64,8 +62,8 @@ export function ImpactAnalysisView({ projectId }: ImpactAnalysisViewProps) {
 		});
 
 		return {
-			direct: Array.from(direct),
-			indirect: Array.from(indirect),
+			direct: [...direct],
+			indirect: [...indirect],
 		};
 	};
 

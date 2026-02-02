@@ -949,7 +949,7 @@
         );
       try {
         (rendererID = hook.inject(internals)), (injectedHook = hook);
-      } catch (err) {
+      } catch (_err) {
         console.error("React instrumentation encountered an error: %o.", err);
       }
       return hook.checkDCE ? !0 : !1;
@@ -960,7 +960,7 @@
       if (injectedHook && "function" === typeof injectedHook.setStrictMode)
         try {
           injectedHook.setStrictMode(rendererID, newIsStrictMode);
-        } catch (err) {
+        } catch (_err) {
           hasLoggedError ||
             ((hasLoggedError = !0),
             console.error(
@@ -3670,7 +3670,7 @@
         try {
           var JSCompiler_inline_result =
             "string" === typeof element.contentWindow.location.href;
-        } catch (err) {
+        } catch (_err) {
           JSCompiler_inline_result = !1;
         }
         if (JSCompiler_inline_result) containerInfo = element.contentWindow;
@@ -14238,7 +14238,7 @@
       )
         try {
           injectedHook.onCommitFiberUnmount(rendererID, deletedFiber);
-        } catch (err) {
+        } catch (_err) {
           hasLoggedError ||
             ((hasLoggedError = !0),
             console.error(
@@ -18282,7 +18282,7 @@
               schedulerPriority,
               didError
             );
-          } catch (err) {
+          } catch (_err) {
             hasLoggedError ||
               ((hasLoggedError = !0),
               console.error(
@@ -18486,7 +18486,7 @@
         )
           try {
             injectedHook.onPostCommitFiberRoot(rendererID, priority);
-          } catch (err) {
+          } catch (_err) {
             hasLoggedError ||
               ((hasLoggedError = !0),
               console.error(
@@ -23473,7 +23473,7 @@
       )
         try {
           injectedHook.onScheduleFiberRoot(rendererID, container, element);
-        } catch (err) {
+        } catch (_err) {
           hasLoggedError ||
             ((hasLoggedError = !0),
             console.error(

@@ -31,7 +31,8 @@ export function buildHierarchy(
 	items: Item[],
 	links: Link[],
 ): Map<string, HierarchyNode> {
-	const itemMap = new Map(items.map((i) => [i.id, i]));
+	// Map items by ID for quick lookup (currently unused but kept for future use)
+	// const itemMap = new Map(items.map((i) => [i.id, i]));
 	const childMap = new Map<string, Set<string>>();
 	const parentMap = new Map<string, string>();
 
@@ -333,8 +334,8 @@ export function findCommonAncestor(
 	if (!node1 || !node2) return undefined;
 
 	// Build reversed ancestor arrays (from leaf to root for easier finding)
-	const ancestors1 = [...node1.ancestors].reverse();
-	const ancestors2 = [...node2.ancestors].reverse();
+	const ancestors1 = [...node1.ancestors].toReversed();
+	const ancestors2 = [...node2.ancestors].toReversed();
 
 	// Find first match going from immediate parent upward (closest common ancestor)
 	for (const ancestorId of ancestors1) {

@@ -200,7 +200,7 @@ test.describe('Documentation Site E2E Tests', () => {
       expect(newTheme).not.toBe(initialTheme);
     });
 
-    test('should persist theme preference', async ({ page, context }) => {
+    test('should persist theme preference', async ({ page }) => {
       await page.goto(BASE_URL);
 
       // Toggle to dark mode

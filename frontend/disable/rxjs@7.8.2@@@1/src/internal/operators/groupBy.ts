@@ -228,7 +228,7 @@ export function groupBy<T, K, R>(
 
           // Send the value to our group.
           group.next(element ? element(value) : value);
-        } catch (err) {
+        } catch (_err) {
           handleError(err);
         }
       },

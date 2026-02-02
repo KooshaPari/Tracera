@@ -768,7 +768,7 @@ function event_innerInvoke(
 			if (listener.passive) event._inPassiveListenerFlag = true;
 			try {
 				listener.callback.handleEvent.call(event._currentTarget, event);
-			} catch (err) {
+			} catch (_err) {
 				/**
 				 * If this throws an exception, then:
 				 * 2.10.1. Report the exception.

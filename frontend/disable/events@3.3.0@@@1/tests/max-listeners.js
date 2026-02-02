@@ -27,7 +27,7 @@ var e = new events.EventEmitter();
 var hasDefineProperty = !!Object.defineProperty;
 try {
 	Object.defineProperty({}, "x", { value: 0 });
-} catch (err) {
+} catch (_err) {
 	hasDefineProperty = false;
 }
 

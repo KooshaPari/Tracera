@@ -1,7 +1,7 @@
 /**
  * Tests for OpenAPI Schema Types
  */
-
+/* eslint-disable @typescript-eslint/no-unsafe-type-assertion -- compile-time path type checks */
 import type {
 	Item,
 	Link,

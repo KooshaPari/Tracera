@@ -6,7 +6,8 @@
  */
 
 import Graph from 'graphology';
-import { createClustering, type ClusteringResult } from './clustering';
+import { createClustering, type _ClusteringResult } from './clustering';
+import { logger } from '@/lib/logger';
 
 // Example 1: Basic clustering workflow
 export function basicClusteringExample() {

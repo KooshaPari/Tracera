@@ -61,7 +61,7 @@ module.exports = class PerDocumentResourceLoader {
           .catch(err => {
             return onErrorWrapped(err);
           });
-      } catch (err) {
+      } catch (_err) {
         return onErrorWrapped(err);
       }
     };

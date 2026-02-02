@@ -103,7 +103,7 @@ function makeFunctionAPI(genFn) {
 			let gen;
 			try {
 				gen = genFn.apply(this, args);
-			} catch (err) {
+			} catch (_err) {
 				cb(err);
 				return;
 			}
@@ -231,7 +231,7 @@ function buildOperation({ name, arity, sync, async }) {
 					resume();
 				},
 			);
-		} catch (err) {
+		} catch (_err) {
 			result = { err };
 			resume();
 		}
@@ -287,7 +287,7 @@ function evaluateAsync(gen, resolve, reject) {
 			}
 
 			return resolve(value);
-		} catch (err) {
+		} catch (_err) {
 			return reject(err);
 		}
 	})();

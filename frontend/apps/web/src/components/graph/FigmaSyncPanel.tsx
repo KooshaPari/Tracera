@@ -33,6 +33,7 @@ import {
 	Unlink,
 } from "lucide-react";
 import { memo, useCallback, useState } from "react";
+import { logger } from '@/lib/logger';
 
 // =============================================================================
 // TYPES
@@ -165,9 +166,11 @@ function FigmaSyncPanelComponent({
 		(c) => c.figmaStatus === "synced",
 	).length;
 	// Track unlinked count for future use
-	const _unlinkedCount = enrichedComponents.filter(
+	/*
+	const unlinkedCount = enrichedComponents.filter(
 		(c) => c.figmaStatus === "unlinked",
 	).length;
+	*/
 
 	if (!syncState) {
 		return (

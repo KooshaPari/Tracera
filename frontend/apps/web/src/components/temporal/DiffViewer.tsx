@@ -21,16 +21,14 @@ interface DiffViewerProps {
 }
 
 export function DiffViewer({
-	item,
 	fieldChanges,
-	viewerState,
 	compact = false,
 }: DiffViewerProps) {
 	const [copiedField, setCopiedField] = useState<string | null>(null);
 
 	const handleCopyValue = (value: unknown, field: string) => {
 		const text = formatValueForCopy(value);
-		navigator.clipboard.writeText(text).then(() => {
+		void navigator.clipboard.writeText(text).then(() => {
 			setCopiedField(field);
 			setTimeout(() => setCopiedField(null), 2000);
 		});
@@ -65,6 +63,19 @@ interface FieldChangeRowProps {
 	compact?: boolean;
 }
 
+function getChangeTypeColor(changeType: string) {
+	switch (changeType) {
+		case "added":
+			return "bg-green-50 border-l-green-500 text-green-900";
+		case "removed":
+			return "bg-red-50 border-l-red-500 text-red-900";
+		case "modified":
+			return "bg-blue-50 border-l-blue-500 text-blue-900";
+		default:
+			return "bg-gray-50 border-l-gray-500";
+	}
+}
+
 function FieldChangeRow({
 	change,
 	onCopy,
@@ -72,19 +83,6 @@ function FieldChangeRow({
 	compact = false,
 }: FieldChangeRowProps) {
 	const [expanded, setExpanded] = useState(!compact);
-
-	const getChangeTypeColor = (changeType: string) => {
-		switch (changeType) {
-			case "added":
-				return "bg-green-50 border-l-green-500 text-green-900";
-			case "removed":
-				return "bg-red-50 border-l-red-500 text-red-900";
-			case "modified":
-				return "bg-blue-50 border-l-blue-500 text-blue-900";
-			default:
-				return "bg-gray-50 border-l-gray-500";
-		}
-	};
 
 	return (
 		<div
@@ -218,6 +216,8 @@ function ValueDisplay({
 					<span className="italic opacity-60">null</span>
 				) : typeof value === "boolean" ? (
 					<span>{value ? "true" : "false"}</span>
+				) : typeof value === "object" ? (
+					<span>{JSON.stringify(value)}</span>
 				) : (
 					<span>{String(value)}</span>
 				)}

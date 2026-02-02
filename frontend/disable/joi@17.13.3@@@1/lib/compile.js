@@ -10,7 +10,7 @@ exports.schema = (Joi, config, options = {}) => {
 
 	try {
 		return internals.schema(Joi, config, options);
-	} catch (err) {
+	} catch (_err) {
 		if (options.appendPath && err.path !== undefined) {
 			err.message = `${err.message} (${err.path})`;
 		}

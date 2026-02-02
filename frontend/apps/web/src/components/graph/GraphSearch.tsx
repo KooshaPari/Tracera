@@ -152,9 +152,10 @@ function GraphSearchComponent({
 	const [isExpanded, setIsExpanded] = useState(false);
 	const [selectedResultIndex, setSelectedResultIndex] = useState(0);
 
-	const results = useMemo(() => {
-		return performSearch(items, query, filter);
-	}, [items, query, filter]);
+	const results = useMemo(
+		() => performSearch(items, query, filter),
+		[items, query, filter],
+	);
 
 	const handleSearch = useCallback(
 		(newQuery: string) => {
@@ -190,7 +191,9 @@ function GraphSearchComponent({
 
 	const handleKeyDown = useCallback(
 		(e: React.KeyboardEvent) => {
-			if (!results.length) return;
+			if (!results.length) {
+				return;
+			}
 
 			switch (e.key) {
 				case "ArrowDown":
@@ -212,6 +215,8 @@ function GraphSearchComponent({
 				case "Escape":
 					e.preventDefault();
 					handleClear();
+					break;
+				default:
 					break;
 			}
 		},
@@ -400,7 +405,7 @@ function GraphSearchComponent({
 			) : query ? (
 				<div className="p-8 text-center text-muted-foreground">
 					<Search className="w-8 h-8 mx-auto mb-2 opacity-50" />
-					<p className="text-sm">No items found matching "{query}"</p>
+					<p className="text-sm">No items found matching &quot;{query}&quot;</p>
 				</div>
 			) : (
 				<div className="p-8 text-center text-muted-foreground">

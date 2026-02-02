@@ -4,7 +4,6 @@
  */
 
 import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
 
@@ -202,7 +201,7 @@ function MockSwipeableListItem({
 
 describe("Responsive Card Views - Viewport Sizes", () => {
 	it("should render card with responsive padding", () => {
-		const { container } = render(<MockResponsiveCard title="Test Card" />);
+		render(<MockResponsiveCard title="Test Card" />);
 
 		const card = container.querySelector(".p-4");
 		expect(card).toBeInTheDocument();
@@ -212,7 +211,7 @@ describe("Responsive Card Views - Viewport Sizes", () => {
 	});
 
 	it("should have appropriate max-width for card", () => {
-		const { container } = render(<MockResponsiveCard />);
+		render(<MockResponsiveCard />);
 
 		const card = container.querySelector(".max-w-sm");
 		expect(card).toBeInTheDocument();
@@ -228,7 +227,7 @@ describe("Responsive Card Views - Viewport Sizes", () => {
 
 describe("Touch Target Sizes", () => {
 	it("should have minimum 44x44px touch targets", () => {
-		const { container } = render(<MockResponsiveCard actionLabel="Click Me" />);
+		render(<MockResponsiveCard actionLabel="Click Me" />);
 
 		const button = screen.getByRole("button");
 		const rect = button.getBoundingClientRect();
@@ -240,8 +239,8 @@ describe("Touch Target Sizes", () => {
 	it("should have sufficient padding on buttons for touch", () => {
 		render(<MockResponsiveCard />);
 
-		const button = screen.getByRole("button") as HTMLElement;
-		const styles = window.getComputedStyle(button);
+        const button = screen.getByRole("button");
+        const _styles = window.getComputedStyle(button);
 
 		// Should have visible padding
 		expect(button.className).toContain("px-4");
@@ -265,32 +264,26 @@ describe("Touch Target Sizes", () => {
 	});
 
 	it("should have adequate spacing around form inputs", () => {
-		const { container } = render(<MockMobileForm />);
+		render(<MockMobileForm />);
 
-		const input = container.querySelector("input[type='email']") as HTMLElement;
+		const input = container.querySelector("input[type='email']");
 		expect(input).toBeInTheDocument();
-		expect(input.className).toContain("px-4");
-		expect(input.className).toContain("py-3");
-	});
-});
-
-describe("Mobile Forms - Input Sizing", () => {
-	it("should render form with full-width inputs", () => {
-		const { container } = render(<MockMobileForm />);
-
-		const inputs = container.querySelectorAll("input, textarea");
-		inputs.forEach((input) => {
-			expect(input.className).toContain("w-full");
-		});
+		if (input instanceof HTMLElement) {
+			expect(input.className).toContain("px-4");
+			expect(input.className).toContain("py-3");
+		}
 	});
 
 	it("should use large text size for mobile inputs", () => {
-		const { container } = render(<MockMobileForm />);
+		render(<MockMobileForm />);
 
 		const emailInput = container.querySelector(
 			"input[type='email']",
-		) as HTMLElement;
-		expect(emailInput.className).toContain("text-base");
+		);
+		expect(emailInput).toBeInTheDocument();
+		if (emailInput instanceof HTMLElement) {
+			expect(emailInput.className).toContain("text-base");
+		}
 	});
 
 	it("should show appropriate keyboard for email input", () => {
@@ -298,15 +291,25 @@ describe("Mobile Forms - Input Sizing", () => {
 
 		const emailInput = screen.getByPlaceholderText(
 			"your@email.com",
-		) as HTMLInputElement;
-		expect(emailInput.type).toBe("email");
+		);
+		expect(emailInput).toHaveAttribute("type", "email");
+	});
+});
+
+describe("Mobile Forms - Input Sizing", () => {
+	it("should render form with full-width inputs", () => {
+		render(<MockMobileForm />);
+
+		const inputs = container.querySelectorAll("input, textarea");
+		inputs.forEach((input) => {
+			expect(input.className).toContain("w-full");
+		});
 	});
 
 	it("should allow focusing on form inputs without zoom", async () => {
 		render(<MockMobileForm />);
 
 		const emailInput = screen.getByPlaceholderText("your@email.com");
-		const user = userEvent.setup();
 
 		await user.click(emailInput);
 		expect(emailInput).toHaveFocus();
@@ -314,7 +317,6 @@ describe("Mobile Forms - Input Sizing", () => {
 
 	it("should submit form with valid data", async () => {
 		const handleSubmit = vi.fn();
-		const user = userEvent.setup();
 
 		render(<MockMobileForm onSubmit={handleSubmit} />);
 
@@ -362,23 +364,21 @@ describe("Bottom Sheet - Mobile Pattern", () => {
 
 	it("should close on backdrop click", async () => {
 		const handleClose = vi.fn();
-		const user = userEvent.setup();
 
-		const { container } = render(
+		render(
 			<MockBottomSheet isOpen={true} title="Menu" onClose={handleClose}>
 				Content
 			</MockBottomSheet>,
 		);
 
 		const backdrop = container.querySelector(".bg-black\\/50");
-		await user.click(backdrop!);
+		if (backdrop) await user.click(backdrop);
 
 		expect(handleClose).toHaveBeenCalled();
 	});
 
 	it("should close on close button click", async () => {
 		const handleClose = vi.fn();
-		const user = userEvent.setup();
 
 		render(
 			<MockBottomSheet isOpen={true} title="Menu" onClose={handleClose}>
@@ -394,16 +394,15 @@ describe("Bottom Sheet - Mobile Pattern", () => {
 
 	it("should not close when clicking content", async () => {
 		const handleClose = vi.fn();
-		const user = userEvent.setup();
 
-		const { container } = render(
+		render(
 			<MockBottomSheet isOpen={true} title="Menu" onClose={handleClose}>
 				<button>Option</button>
 			</MockBottomSheet>,
 		);
 
 		const content = container.querySelector(".bg-white");
-		await user.click(content!);
+		if (content) await user.click(content);
 
 		expect(handleClose).not.toHaveBeenCalled();
 	});
@@ -413,7 +412,7 @@ describe("Swipe Gestures - Touch Interactions", () => {
 	it("should detect swipe left gesture", async () => {
 		const handleSwipeLeft = vi.fn();
 
-		const { container } = render(
+		render(
 			<MockSwipeableListItem label="Item" onSwipeLeft={handleSwipeLeft} />,
 		);
 
@@ -421,6 +420,8 @@ describe("Swipe Gestures - Touch Interactions", () => {
 
 		// Simulate swipe left
 		const touchStart = new TouchEvent("touchstart", {
+			// Minimal touch for test; Touch type is narrow
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
 			touches: [{ clientX: 100 } as Touch],
 		});
 		const touchEnd = new TouchEvent("touchend");
@@ -429,6 +430,7 @@ describe("Swipe Gestures - Touch Interactions", () => {
 
 		// Simulate moving to x=30 (swipe left)
 		const touchMove = new TouchEvent("touchmove", {
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
 			touches: [{ clientX: 30 } as Touch],
 		});
 		item?.dispatchEvent(touchMove);
@@ -436,7 +438,7 @@ describe("Swipe Gestures - Touch Interactions", () => {
 	});
 
 	it("should have smooth touch interaction", () => {
-		const { container } = render(<MockSwipeableListItem label="Item" />);
+		render(<MockSwipeableListItem label="Item" />);
 
 		const item = container.querySelector(".touch-pan-y");
 		expect(item).toBeInTheDocument();
@@ -500,7 +502,6 @@ describe("Responsive Navigation", () => {
 	});
 
 	it("should toggle menu visibility", async () => {
-		const user = userEvent.setup();
 		render(<MockMobileNav />);
 
 		const menuBtn = screen.getByRole("button", { name: /Toggle menu/i });
@@ -517,7 +518,6 @@ describe("Responsive Navigation", () => {
 
 	it("should close menu when item clicked", async () => {
 		const handleNavigate = vi.fn();
-		const user = userEvent.setup();
 
 		render(<MockMobileNav onNavigate={handleNavigate} />);
 
@@ -534,7 +534,7 @@ describe("Responsive Navigation", () => {
 
 describe("Portrait/Landscape Orientation", () => {
 	it("should adapt layout for different orientations", () => {
-		const { container } = render(
+		render(
 			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 				<div>Item 1</div>
 				<div>Item 2</div>
@@ -552,7 +552,7 @@ describe("Portrait/Landscape Orientation", () => {
 
 describe("Mobile Accessibility", () => {
 	it("should have sufficient color contrast for mobile", () => {
-		const { container } = render(
+		render(
 			<div className="bg-white text-gray-900">
 				<h1>Accessible Heading</h1>
 			</div>,
@@ -562,7 +562,7 @@ describe("Mobile Accessibility", () => {
 	});
 
 	it("should have readable font sizes on mobile", () => {
-		const { container } = render(
+		render(
 			<div>
 				<p className="text-sm sm:text-base">Text</p>
 			</div>,
@@ -573,7 +573,7 @@ describe("Mobile Accessibility", () => {
 	});
 
 	it("should have adequate line height for readability", () => {
-		const { container } = render(
+		render(
 			<p className="leading-relaxed text-base">
 				Lorem ipsum dolor sit amet, consectetur adipiscing elit.
 			</p>,
@@ -586,7 +586,7 @@ describe("Mobile Accessibility", () => {
 
 describe("Orientation Change Handling", () => {
 	it("should handle viewport resize", () => {
-		const { container } = render(
+		render(
 			<div className="w-full sm:max-w-md">Content</div>,
 		);
 
@@ -596,7 +596,7 @@ describe("Orientation Change Handling", () => {
 
 describe("Fixed/Sticky Element Safety", () => {
 	it("should avoid fixed elements that interfere with input", () => {
-		const { container } = render(
+		render(
 			<div>
 				<div className="sticky top-0 bg-white shadow z-10">Header</div>
 				<input className="px-4 py-3 w-full" placeholder="Input" />

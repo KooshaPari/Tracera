@@ -40,7 +40,7 @@ const getElementHandle = async (args, valueArgCount = 1) => {
 		const selector = (_b = args[1]) !== null && _b !== void 0 ? _b : "body";
 		try {
 			handle = await handle.waitForSelector(selector, options);
-		} catch (err) {
+		} catch (_err) {
 			throw new Error(`Timeout exceed for element ${exports.quote(selector)}`);
 		}
 	}

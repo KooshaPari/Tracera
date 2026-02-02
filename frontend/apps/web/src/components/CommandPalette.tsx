@@ -26,7 +26,7 @@ interface CommandItem {
 	id: string;
 	title: string;
 	description?: string;
-	icon: any;
+	icon: React.ComponentType<{ className?: string }>;
 	action: () => void;
 	keywords?: string[];
 	category: "NAVIGATE" | "VIEWS" | "SYSTEM" | "ACTIONS" | "SPECS";

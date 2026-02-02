@@ -115,7 +115,7 @@ class ProxyAgent extends DispatcherBase {
             servername = opts.servername
           }
           this[kConnectEndpoint]({ ...opts, servername, httpSocket: socket }, callback)
-        } catch (err) {
+        } catch (_err) {
           callback(err)
         }
       }

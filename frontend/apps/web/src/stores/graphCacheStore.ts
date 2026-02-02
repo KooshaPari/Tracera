@@ -250,14 +250,14 @@ export const useGraphCacheStore = create<GraphCacheStoreState>()(
 
 			set((draft) => {
 				// Invalidate direct caches
-				draft.layouts.forEach((layout, key) => {
+				draft.layouts.forEach((layout: LayoutData, key: string) => {
 					if (layout.graphId.includes(itemId)) {
 						draft.layouts.delete(key);
 					}
 				});
 
-				draft.groupings.forEach((grouping, key) => {
-					if (grouping.groups.some((g) => g.items.includes(itemId))) {
+				draft.groupings.forEach((grouping: GroupingData, key: string) => {
+					if (grouping.groups.some((g: { items: string[] }) => g.items.includes(itemId))) {
 						draft.groupings.delete(key);
 					}
 				});
@@ -284,7 +284,7 @@ export const useGraphCacheStore = create<GraphCacheStoreState>()(
 
 					// Clear caches for all affected items
 					itemsToInvalidate.forEach((id) => {
-						draft.layouts.forEach((layout, key) => {
+						draft.layouts.forEach((layout: LayoutData, key: string) => {
 							if (layout.graphId.includes(id)) {
 								draft.layouts.delete(key);
 							}
@@ -300,13 +300,13 @@ export const useGraphCacheStore = create<GraphCacheStoreState>()(
 		// Invalidation - Project level
 		invalidateByProject: (projectId: string) => {
 			set((draft) => {
-				draft.layouts.forEach((_, key) => {
+				draft.layouts.forEach((_: LayoutData, key: string) => {
 					if (key.includes(projectId)) {
 						draft.layouts.delete(key);
 					}
 				});
 
-				draft.groupings.forEach((_, key) => {
+				draft.groupings.forEach((_: GroupingData, key: string) => {
 					if (key.includes(projectId)) {
 						draft.groupings.delete(key);
 					}
@@ -328,7 +328,7 @@ export const useGraphCacheStore = create<GraphCacheStoreState>()(
 				);
 
 				// Invalidate layouts
-				draft.layouts.forEach((_, key) => {
+				draft.layouts.forEach((_: LayoutData, key: string) => {
 					if (regex.test(key)) {
 						draft.layouts.delete(key);
 						count++;
@@ -336,7 +336,7 @@ export const useGraphCacheStore = create<GraphCacheStoreState>()(
 				});
 
 				// Invalidate groupings
-				draft.groupings.forEach((_, key) => {
+				draft.groupings.forEach((_: GroupingData, key: string) => {
 					if (regex.test(key)) {
 						draft.groupings.delete(key);
 						count++;
@@ -344,7 +344,7 @@ export const useGraphCacheStore = create<GraphCacheStoreState>()(
 				});
 
 				// Invalidate search results
-				draft.searchResults.forEach((_, key) => {
+				draft.searchResults.forEach((_: SearchResult, key: string) => {
 					if (regex.test(key)) {
 						draft.searchResults.delete(key);
 						count++;
@@ -361,7 +361,7 @@ export const useGraphCacheStore = create<GraphCacheStoreState>()(
 		// Invalidation - Layout only
 		invalidateLayout: (graphId: string) => {
 			set((draft) => {
-				draft.layouts.forEach((_, key) => {
+				draft.layouts.forEach((_: LayoutData, key: string) => {
 					if (key.includes(graphId)) {
 						draft.layouts.delete(key);
 					}
@@ -373,7 +373,7 @@ export const useGraphCacheStore = create<GraphCacheStoreState>()(
 		// Invalidation - Grouping only
 		invalidateGrouping: (graphId: string) => {
 			set((draft) => {
-				draft.groupings.forEach((_, key) => {
+				draft.groupings.forEach((_: GroupingData, key: string) => {
 					if (key.includes(graphId)) {
 						draft.groupings.delete(key);
 					}
@@ -385,7 +385,7 @@ export const useGraphCacheStore = create<GraphCacheStoreState>()(
 		// Invalidation - Search only
 		invalidateSearch: (graphId: string) => {
 			set((draft) => {
-				draft.searchResults.forEach((_, key) => {
+				draft.searchResults.forEach((_: SearchResult, key: string) => {
 					if (key.includes(graphId)) {
 						draft.searchResults.delete(key);
 					}

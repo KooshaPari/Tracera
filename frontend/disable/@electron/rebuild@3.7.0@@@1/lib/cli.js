@@ -160,7 +160,7 @@ if (process.argv.length === 3 && process.argv[2] === "--version") {
 			"Electron Rebuild Version:",
 			require(path.resolve(__dirname, "../../package.json")).version,
 		);
-	} catch (err) {
+	} catch (_err) {
 		console.log(
 			"Electron Rebuild Version:",
 			require(path.resolve(__dirname, "../package.json")).version,
@@ -269,7 +269,7 @@ process.on("unhandledRejection", handler);
 	});
 	try {
 		await rebuilder;
-	} catch (err) {
+	} catch (_err) {
 		rebuildSpinner.text = "Rebuild Failed";
 		rebuildSpinner.fail();
 		throw err;

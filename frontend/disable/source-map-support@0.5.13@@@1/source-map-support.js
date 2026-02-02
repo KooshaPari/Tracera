@@ -8,7 +8,7 @@ try {
     // fs doesn't have all methods we need
     fs = null;
   }
-} catch (err) {
+} catch (_err) {
   /* nop */
 }
 
@@ -509,7 +509,7 @@ exports.install = function(options) {
     var Module;
     try {
       Module = require('module');
-    } catch (err) {
+    } catch (_err) {
       // NOP: Loading in catch block to convert webpack error to warning.
     }
     var $compile = Module.prototype._compile;

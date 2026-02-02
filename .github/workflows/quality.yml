@@ -40,11 +40,14 @@ jobs:
       - name: Install pytest-xdist for parallelization
         run: uv pip install pytest-xdist
 
-      - name: Format check
+      - name: Ruff format check
         run: uv run ruff format --check .
 
-      - name: Lint
+      - name: Ruff lint
         run: uv run ruff check .
+
+      - name: Check for unused imports (pycln)
+        run: uv run pycln --check src/
 
       - name: Type check (mypy)
         run: uv run mypy src/
@@ -60,14 +63,18 @@ jobs:
 
       - name: Install Semgrep (binary; project does not depend on semgrep package)
         run: pip install semgrep
-      - name: Security scan (Semgrep)
+      - name: Security scan (Semgrep - community rules)
         run: semgrep --config=p/security-audit src/
+      - name: Security scan (Semgrep - project rules)
+        run: |
+          if [ -f .semgrep.yml ]; then
+            semgrep --config=.semgrep.yml src/
+          else
+            echo "No .semgrep.yml found, skipping project-specific rules"
+          fi
 
       - name: Docstring coverage
         run: uv run interrogate -vv --fail-under=80 src/
-
-      - name: Unused imports
-        run: uv run pycln --check src/
 
       - name: Upload quality report
         if: always()

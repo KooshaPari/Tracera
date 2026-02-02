@@ -1764,7 +1764,7 @@
 
 							try {
 								obj();
-							} catch (err) {
+							} catch (_err) {
 								// first, check desired error
 								if (desiredError) {
 									this.assert(
@@ -2247,7 +2247,7 @@
 
 							try {
 								isExtensible = Object.isExtensible(obj);
-							} catch (err) {
+							} catch (_err) {
 								if (err instanceof TypeError) isExtensible = false;
 								else throw err;
 							}
@@ -2289,7 +2289,7 @@
 
 							try {
 								isSealed = Object.isSealed(obj);
-							} catch (err) {
+							} catch (_err) {
 								if (err instanceof TypeError) isSealed = true;
 								else throw err;
 							}
@@ -2329,7 +2329,7 @@
 
 							try {
 								isFrozen = Object.isFrozen(obj);
-							} catch (err) {
+							} catch (_err) {
 								if (err instanceof TypeError) isFrozen = true;
 								else throw err;
 							}
@@ -5263,7 +5263,7 @@
 										container.innerHTML = "";
 										return html;
 									}
-								} catch (err) {
+								} catch (_err) {
 									// This could be a non-native DOM implementation,
 									//   continue with the normal flow:
 									//   printing the element as if it is an object.

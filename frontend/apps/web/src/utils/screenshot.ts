@@ -2,8 +2,11 @@
 // Handles component screenshots, thumbnail generation, versioning, and S3 upload
 // Features: image compression, presigned URL upload, progress tracking, error handling
 
-import { getAuthHeaders } from "@/api/client";
 import type { Item } from "@tracertm/types";
+import { logger } from '@/lib/logger';
+import client from "@/api/client";
+
+const { getAuthHeaders } = client;
 
 /**
  * Screenshot metadata including versions and timestamps
@@ -96,7 +99,7 @@ async function compressImage(
 ): Promise<string> {
 	return new Promise((resolve, reject) => {
 		const img = new Image();
-
+		/* eslint-disable unicorn/prefer-add-event-listener -- Image API uses .onload/.onerror */
 		img.onload = () => {
 			const canvas = document.createElement("canvas");
 
@@ -151,6 +154,7 @@ async function compressImage(
 				}),
 			);
 		};
+		/* eslint-enable unicorn/prefer-add-event-listener */
 
 		img.src = dataUrl;
 	});
@@ -173,12 +177,16 @@ export async function captureComponentScreenshot(
 	try {
 		// Dynamically import html2canvas (note: requires npm install html2canvas)
 		// For now, use a mock implementation or rely on server-side screenshots
-		let html2canvas: any;
+		let html2canvas: ((element: HTMLElement, options?: Record<string, unknown>) => Promise<HTMLCanvasElement>) | undefined;
 		try {
-			// @ts-expect-error - html2canvas is optional dependency
-			html2canvas = (await import("html2canvas")).default;
+			// any: external library with incomplete type definitions
+			html2canvas = (await import("html2canvas")).default as any;
 		} catch {
 			// Fallback: return mock data URL if html2canvas not available
+			return `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==`;
+		}
+
+		if (!html2canvas) {
 			return `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==`;
 		}
 
@@ -194,7 +202,7 @@ export async function captureComponentScreenshot(
 		return canvas.toDataURL("image/png");
 	} catch (error) {
 		logger.error("Failed to capture screenshot:", error);
-		throw new Error("Screenshot capture failed");
+		throw new Error("Screenshot capture failed", { cause: error });
 	}
 }
 
@@ -221,6 +229,7 @@ export async function generateThumbnail(
 		img.crossOrigin = "anonymous";
 
 		const promise = new Promise<string>((resolve, reject) => {
+			/* eslint-disable unicorn/prefer-add-event-listener -- Image API uses .onload/.onerror */
 			img.onload = () => {
 				const canvas = document.createElement("canvas");
 				const { width, height } = THUMBNAIL_SIZES[size];
@@ -275,6 +284,7 @@ export async function generateThumbnail(
 			img.onerror = () => {
 				reject(new Error("Failed to load image"));
 			};
+			/* eslint-enable unicorn/prefer-add-event-listener */
 
 			img.src = screenshotUrl;
 		});
@@ -291,8 +301,8 @@ export async function generateThumbnail(
  */
 function dataUrlToFile(dataUrl: string, filename: string): File {
 	const arr = dataUrl.split(",");
-	const mime = arr[0].match(/:(.*?);/)?.[1] || "image/png";
-	const bstr = atob(arr[1]);
+	const mime = arr[0]?.match(/:(.*?);/)?.[1] ?? "image/png";
+	const bstr = atob(arr[1] ?? "");
 	const n = bstr.length;
 	const u8arr = new Uint8Array(n);
 
@@ -552,8 +562,9 @@ export function getComponentScreenshots(
 		}
 	}
 
-	return screenshots.sort(
-		(a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+	return screenshots.toSorted(
+		(a: ScreenshotMetadata, b: ScreenshotMetadata) =>
+			new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
 	);
 }
 
@@ -643,7 +654,7 @@ export function updateItemWithScreenshot(
 	return {
 		...item,
 		metadata: {
-			...(item.metadata || {}),
+			...item.metadata,
 			screenshotUrl: screenshot.url,
 			thumbnailUrl: screenshot.thumbnailUrl,
 			screenshotVersion: screenshot.version,
@@ -683,7 +694,9 @@ export async function batchCaptureScreenshots(
 	const totalElements = elements.length;
 
 	for (let i = 0; i < elements.length; i++) {
-		const { element, componentId, version } = elements[i];
+		const entry = elements[i];
+		if (!entry) continue;
+		const { element, componentId, version } = entry;
 
 		try {
 			// Create progress callback that updates for this specific element

@@ -9,7 +9,7 @@ describe("node-fetch", function () {
       const signal = controller.signal;
       setTimeout(() => controller.abort(), 5);
       await fetch("https://www.google.com/", { signal });
-    } catch (err) {
+    } catch (_err) {
       expect(err.name).toBe("AbortError");
     }
   });
@@ -20,7 +20,7 @@ describe("node-fetch", function () {
       const signal = controller.signal;
       controller.abort();
       await fetch("https://www.google.com/", { signal });
-    } catch (err) {
+    } catch (_err) {
       expect(err.name).toBe("AbortError");
     }
   });

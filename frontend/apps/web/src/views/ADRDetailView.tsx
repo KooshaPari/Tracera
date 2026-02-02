@@ -34,45 +34,45 @@ import { useADR, useADRActivities } from "@/hooks/useSpecifications";
 
 // Mock data - replace with actual API call
 const mockADR: ADR = {
-	id: "adr-1",
-	projectId: "proj-1",
 	adrNumber: "ADR-0001",
-	title: "Use PostgreSQL for Data Persistence",
-	status: "accepted",
-	context:
-		"The team needs a reliable, scalable database solution that supports complex queries and transactions. Current in-memory storage is insufficient for production workloads.",
-	decision:
-		"We will use PostgreSQL as our primary database. It provides ACID compliance, excellent query performance, and rich extension ecosystem.",
+	complianceScore: 85,
 	consequences:
 		"PostgreSQL introduces operational overhead for maintenance and backups. Schema migrations must be carefully managed. Performance tuning may be required for large datasets.",
-	date: "2025-01-15",
-	tags: ["database", "infrastructure", "persistence"],
-	version: 1,
-	createdAt: "2025-01-15T10:00:00Z",
-	updatedAt: "2025-01-15T10:00:00Z",
-	complianceScore: 85,
-	relatedRequirements: ["REQ-001", "REQ-042"],
-	decisionDrivers: ["scalability", "reliability", "cost"],
 	consideredOptions: [
 		{
-			id: "opt-1",
-			title: "MongoDB",
 			description: "NoSQL flexibility for unstructured data",
+			id: "opt-1",
 			isChosen: false,
+			title: "MongoDB",
 		},
 		{
-			id: "opt-2",
-			title: "MySQL",
 			description: "Similar to PostgreSQL but fewer features",
+			id: "opt-2",
 			isChosen: false,
+			title: "MySQL",
 		},
 		{
-			id: "opt-3",
-			title: "PostgreSQL",
 			description: "Best overall fit for requirements",
+			id: "opt-3",
 			isChosen: true,
+			title: "PostgreSQL",
 		},
 	],
+	context:
+		"The team needs a reliable, scalable database solution that supports complex queries and transactions. Current in-memory storage is insufficient for production workloads.",
+	createdAt: "2025-01-15T10:00:00Z",
+	date: "2025-01-15",
+	decision:
+		"We will use PostgreSQL as our primary database. It provides ACID compliance, excellent query performance, and rich extension ecosystem.",
+	decisionDrivers: ["scalability", "reliability", "cost"],
+	id: "adr-1",
+	projectId: "proj-1",
+	relatedRequirements: ["REQ-001", "REQ-042"],
+	status: "accepted",
+	tags: ["database", "infrastructure", "persistence"],
+	title: "Use PostgreSQL for Data Persistence",
+	updatedAt: "2025-01-15T10:00:00Z",
+	version: 1,
 };
 
 interface ADRDetailViewProps {
@@ -80,10 +80,7 @@ interface ADRDetailViewProps {
 }
 
 export function ADRDetailView({ adrId }: ADRDetailViewProps) {
-	const params = useParams({ strict: false }) as {
-		projectId?: string;
-		adrId?: string;
-	};
+	const params = useParams({ strict: false });
 	const navigate = useNavigate();
 	const effectiveAdrId = adrId || params?.adrId || "";
 	const { data: adrData, isLoading: adrLoading } = useADR(effectiveAdrId);
@@ -120,35 +117,31 @@ export function ADRDetailView({ adrId }: ADRDetailViewProps) {
 			setAdr(editedADR);
 			setIsEditing(false);
 			toast.success("ADR updated successfully");
-		} catch {
-			toast.error("Failed to update ADR");
+        } catch {
+            toast.error("Failed to update ADR");
 		} finally {
 			setIsLoading(false);
 		}
 	};
 
 	const handleDelete = async () => {
-		if (!confirm("Are you sure you want to delete this ADR?")) return;
+		if (!confirm("Are you sure you want to delete this ADR?")) {return;}
 		try {
 			// API call would go here
 			await new Promise((resolve) => setTimeout(resolve, 500));
 			toast.success("ADR deleted");
-			navigate({
-				to: "/projects/$projectId/specifications",
-				params: { projectId: params.projectId },
-				search: { tab: "adrs" },
-			});
-		} catch {
-			toast.error("Failed to delete ADR");
+			undefined;
+        } catch {
+            toast.error("Failed to delete ADR");
 		}
 	};
 
 	const statusColors = {
-		proposed: "bg-yellow-500/10 text-yellow-600",
 		accepted: "bg-green-500/10 text-green-600",
 		deprecated: "bg-gray-500/10 text-gray-600",
-		superseded: "bg-orange-500/10 text-orange-600",
+		proposed: "bg-yellow-500/10 text-yellow-600",
 		rejected: "bg-red-500/10 text-red-600",
+		superseded: "bg-orange-500/10 text-orange-600",
 	};
 
 	return (
@@ -157,11 +150,7 @@ export function ADRDetailView({ adrId }: ADRDetailViewProps) {
 			<div className="flex items-center justify-between gap-4">
 				<button
 					onClick={() =>
-						navigate({
-							to: "/projects/$projectId/specifications",
-							params: { projectId: params.projectId },
-							search: { tab: "adrs" },
-						})
+						undefined
 					}
 					className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
 				>
@@ -454,7 +443,7 @@ export function ADRDetailView({ adrId }: ADRDetailViewProps) {
 								<ComplianceGauge
 									score={adr.complianceScore}
 									size={120}
-									showLabel={true}
+									showLabel
 								/>
 							</CardContent>
 						</Card>

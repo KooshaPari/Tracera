@@ -45,7 +45,7 @@ import { getProjectDisplayName } from "@/lib/project-name-utils";
 import { cn } from "@/lib/utils";
 
 function formatProjectDate(value: string | null | undefined): string {
-	if (value == null || value === "") return "—";
+	if (value == null || value === "") {return "—";}
 	const d = new Date(value);
 	return Number.isNaN(d.getTime()) ? "—" : d.toLocaleDateString();
 }
@@ -58,21 +58,19 @@ import { AgentWorkflowView } from "./AgentWorkflowView";
 /**
  * Type icon component mapping
  */
-interface TypeIconMap {
-	[key: string]: any;
-}
+type TypeIconMap = Record<string, any>;
 
 const typeIcons: TypeIconMap = {
-	requirement: FileText,
-	feature: Code,
-	test: TestTube,
 	api: Network,
-	database: Database,
 	component: Layout,
-	documentation: BookOpen,
-	security: Shield,
-	performance: Zap,
+	database: Database,
 	deployment: Rocket,
+	documentation: BookOpen,
+	feature: Code,
+	performance: Zap,
+	requirement: FileText,
+	security: Shield,
+	test: TestTube,
 };
 
 export function ProjectDetailView() {
@@ -109,7 +107,7 @@ export function ProjectDetailView() {
 			}
 			return;
 		}
-		if (lastSyncedProjectIdRef.current === project.id) return;
+		if (lastSyncedProjectIdRef.current === project.id) {return;}
 		lastSyncedProjectIdRef.current = project.id;
 		setCurrentProject(project);
 	}, [project?.id, project, setCurrentProject]);
@@ -137,11 +135,11 @@ export function ProjectDetailView() {
 		}));
 
 		const radarData = [
-			{ subject: "Reqs", A: byType["requirement"] || 0, fullMark: 20 },
-			{ subject: "Features", A: byType["feature"] || 0, fullMark: 20 },
-			{ subject: "Tests", A: byType["test"] || 0, fullMark: 20 },
-			{ subject: "Docs", A: byType["documentation"] || 0, fullMark: 20 },
-			{ subject: "Bugs", A: byType["bug"] || 0, fullMark: 20 },
+			{ A: byType["requirement"] || 0, fullMark: 20, subject: "Reqs" },
+			{ A: byType["feature"] || 0, fullMark: 20, subject: "Features" },
+			{ A: byType["test"] || 0, fullMark: 20, subject: "Tests" },
+			{ A: byType["documentation"] || 0, fullMark: 20, subject: "Docs" },
+			{ A: byType["bug"] || 0, fullMark: 20, subject: "Bugs" },
 		];
 
 		const completionRate =
@@ -149,7 +147,7 @@ export function ProjectDetailView() {
 				? Math.round(((byStatus["done"] || 0) / itemsTotal) * 100)
 				: 0;
 
-		return { typeData, radarData, completionRate, byStatus, byType };
+		return { byStatus, byType, completionRate, radarData, typeData };
 	}, [items, itemsTotal]);
 
 	if (projectLoading || itemsLoading || linksLoading) {
@@ -226,9 +224,9 @@ export function ProjectDetailView() {
 						className="gap-2 rounded-full px-4"
 						onClick={() =>
 							navigate({
-								to: "/projects/$projectId/views/$viewType",
 								params: { projectId: project.id, viewType: "feature" },
 								search: { action: "create" } as any,
+								to: "/projects/$projectId/views/$viewType",
 							})
 						}
 						aria-label="New Feature"
@@ -243,32 +241,32 @@ export function ProjectDetailView() {
 			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 				{[
 					{
-						label: "Completion",
-						value: `${stats.completionRate}%`,
-						icon: Target,
 						color: "text-blue-500",
+						icon: Target,
+						label: "Completion",
 						progress: stats.completionRate,
+						value: `${stats.completionRate}%`,
 					},
 					{
-						label: "Active Links",
-						value: typeof linksTotal === "number" ? linksTotal.toLocaleString() : String(linksTotal),
-						icon: Network,
 						color: "text-purple-500",
+						icon: Network,
+						label: "Active Links",
 						sub: "Traceability links",
+						value: typeof linksTotal === "number" ? linksTotal.toLocaleString() : String(linksTotal),
 					},
 					{
-						label: "Total Items",
-						value: typeof itemsTotal === "number" ? itemsTotal.toLocaleString() : String(itemsTotal),
-						icon: Layers,
 						color: "text-green-500",
+						icon: Layers,
+						label: "Total Items",
 						sub: "Across all types",
+						value: typeof itemsTotal === "number" ? itemsTotal.toLocaleString() : String(itemsTotal),
 					},
 					{
-						label: "Risk Level",
-						value: stats.byStatus["blocked"] ? "High" : "Low",
-						icon: AlertCircle,
 						color: stats.byStatus["blocked"] ? "text-red-500" : "text-emerald-500",
+						icon: AlertCircle,
+						label: "Risk Level",
 						sub: `${stats.byStatus["blocked"] || 0} Blockers`,
+						value: stats.byStatus["blocked"] ? "High" : "Low",
 					},
 				].map((card, i) => (
 					<Card
@@ -442,46 +440,46 @@ export function ProjectDetailView() {
 				<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
 					{[
 						{
-							label: "Features",
-							icon: Layers,
-							href: "feature",
 							color: "text-blue-500",
+							href: "feature",
+							icon: Layers,
+							label: "Features",
 						},
 						{
-							label: "Traceability",
-							icon: Network,
-							href: "graph",
 							color: "text-purple-500",
+							href: "graph",
+							icon: Network,
+							label: "Traceability",
 						},
 						{
-							label: "Test Suite",
-							icon: TestTube,
-							href: "test",
 							color: "text-green-500",
+							href: "test",
+							icon: TestTube,
+							label: "Test Suite",
 						},
 						{
-							label: "API Docs",
-							icon: Globe,
-							href: "api",
 							color: "text-orange-500",
+							href: "api",
+							icon: Globe,
+							label: "API Docs",
 						},
 						{
-							label: "Database",
-							icon: Database,
-							href: "database",
 							color: "text-cyan-500",
+							href: "database",
+							icon: Database,
+							label: "Database",
 						},
 						{
-							label: "Matrix",
-							icon: BarChart3,
-							href: "matrix",
 							color: "text-pink-500",
+							href: "matrix",
+							icon: BarChart3,
+							label: "Matrix",
 						},
 						{
-							label: "Workflows",
-							icon: Activity,
-							href: "workflows",
 							color: "text-amber-500",
+							href: "workflows",
+							icon: Activity,
+							label: "Workflows",
 						},
 					].map((v, i) => (
 						<Link
@@ -521,8 +519,8 @@ export function ProjectDetailView() {
 							className="text-[10px] font-black uppercase tracking-widest"
 							onClick={() =>
 								navigate({
-									to: "/projects/$projectId/views/$viewType",
 									params: { projectId: project.id, viewType: "feature" },
+									to: "/projects/$projectId/views/$viewType",
 								})
 							}
 						>

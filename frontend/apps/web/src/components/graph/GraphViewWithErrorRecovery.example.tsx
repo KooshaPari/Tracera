@@ -15,6 +15,7 @@ import { RecoveryProgress } from './RecoveryProgress';
 import { useAutoRecovery } from '@/hooks/useAutoRecovery';
 import { GraphSkeleton } from './GraphSkeleton';
 import { FlowGraphView } from './FlowGraphView';
+import { logger } from '@/lib/logger';
 
 // Example API function
 async function fetchGraphData(projectId: string) {

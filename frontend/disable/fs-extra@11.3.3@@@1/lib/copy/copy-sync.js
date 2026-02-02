@@ -139,7 +139,7 @@ function onLink (destStat, src, dest, opts) {
     let resolvedDest
     try {
       resolvedDest = fs.readlinkSync(dest)
-    } catch (err) {
+    } catch (_err) {
       // dest exists and is a regular file or directory,
       // Windows may throw UNKNOWN error. If dest already exists,
       // fs throws error anyway, so no need to guard against it here.

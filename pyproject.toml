@@ -155,6 +155,12 @@ observability = [
     "opentelemetry-api>=1.39.1",
     "opentelemetry-sdk>=1.39.1",
     "opentelemetry-exporter-prometheus>=0.60b1",
+    "opentelemetry-exporter-otlp-proto-grpc>=1.39.1",
+    "opentelemetry-instrumentation-fastapi>=0.52b0",
+    "opentelemetry-instrumentation-sqlalchemy>=0.52b0",
+    "opentelemetry-instrumentation-httpx>=0.52b0",
+    "opentelemetry-instrumentation-requests>=0.52b0",
+    "opentelemetry-instrumentation-redis>=0.52b0",
     "prometheus-client>=0.24.1",
     "structlog>=25.5.0",
 ]
@@ -402,7 +408,6 @@ module = [
     "tracertm.services.chaos_mode_service",
     "tracertm.services.agent_performance_service",
     "tracertm.services.advanced_analytics_service",
-    "tracertm.api.main",
 ]
 ignore_errors = true
 

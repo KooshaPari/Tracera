@@ -1,3 +1,4 @@
+/* eslint-disable id-length, no-magic-numbers -- OpenAPI generics and status literals */
 // API Types - Re-exported from @tracertm/types with additional types
 
 import type {
@@ -85,10 +86,10 @@ export type ApiPathParams<
  * Complete parameter set for an operation
  * @example type ListItemsParams = ApiAllParams<"/api/v1/items", "get">;
  */
-export type ApiAllParams<P extends ApiPaths, M extends PathOperations<P>> = {
+export interface ApiAllParams<P extends ApiPaths, M extends PathOperations<P>> {
 	query?: ApiQueryParams<P, M>;
 	path?: ApiPathParams<P, M>;
-};
+}
 
 // Additional input types for API mutations
 export interface CreateProjectInput {
@@ -152,7 +153,15 @@ export interface SearchResult {
 
 export interface PaginationParams {
 	limit?: number;
-	offset?: number;
+	offset?: number; // Deprecated: Use cursor instead
+	cursor?: string; // Cursor for cursor-based pagination
+}
+
+export interface CursorPaginationResponse<T> {
+	items: T[];
+	next_cursor?: string;
+	has_more: boolean;
+	count: number;
 }
 
 export interface ImpactAnalysis {
@@ -210,9 +219,10 @@ export interface PaginatedResponse<T> {
 	hasMore: boolean;
 }
 
-export interface ErrorDetails {
-	[key: string]: string | number | boolean | object | null | undefined;
-}
+export type ErrorDetails = Record<
+	string,
+	string | number | boolean | object | null | undefined
+>;
 
 export interface ApiError {
 	code: string;

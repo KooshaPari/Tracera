@@ -2,7 +2,7 @@
 	"$schema": "https://json.schemastore.org/tsconfig",
 	"compilerOptions": {
 		"target": "ES2022",
-		"lib": ["ES2022", "DOM", "DOM.Iterable"],
+		"lib": ["ES2023", "DOM", "DOM.Iterable"],
 		"module": "ESNext",
 		"skipLibCheck": true,
 		"moduleResolution": "bundler",
@@ -40,11 +40,15 @@
 
 		"noUncheckedSideEffectImports": true,
 
+		"baseUrl": ".",
 		"paths": {
 			"@/*": ["./src/*"],
-			"@atoms/types": ["../../packages/types/src/index.ts"]
-		}
+			"@atoms/types": ["../../packages/types/src/index.ts"],
+			"@tracertm/types": ["../../packages/types/src/index.ts"],
+			"@repo/types": ["../../packages/types/src/index.ts"]
+		},
+		"types": ["vitest/globals"]
 	},
 	"include": ["src"],
-	"exclude": ["src/__tests__", "**/*.test.ts", "**/*.test.tsx"]
+	"exclude": []
 }

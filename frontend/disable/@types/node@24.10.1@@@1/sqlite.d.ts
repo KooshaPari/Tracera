@@ -380,7 +380,7 @@ declare module "node:sqlite" {
 		 * // This will throw an error due to authorization denial
 		 * try {
 		 *   db.exec('CREATE TABLE blocked (id INTEGER)');
-		 * } catch (err) {
+		 * } catch (_err) {
 		 *   console.log('Operation blocked:', err.message);
 		 * }
 		 * ```

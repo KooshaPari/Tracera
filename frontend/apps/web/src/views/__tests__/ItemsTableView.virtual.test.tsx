@@ -5,7 +5,6 @@ import {
 	RouterProvider,
 } from "@tanstack/react-router";
 import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ItemsTableView } from "../ItemsTableView";
 
@@ -58,7 +57,7 @@ describe("ItemsTableView - Virtual Scrolling", () => {
 	});
 
 	it("should render virtual table with 1000 items", async () => {
-		const { container } = render(
+		render(
 			<QueryClientProvider client={queryClient}>
 				<RouterProvider router={router}>
 					<ItemsTableView />
@@ -75,7 +74,7 @@ describe("ItemsTableView - Virtual Scrolling", () => {
 	});
 
 	it("should only render visible rows (not all 1000)", async () => {
-		const { container } = render(
+		render(
 			<QueryClientProvider client={queryClient}>
 				<RouterProvider router={router}>
 					<ItemsTableView />
@@ -94,8 +93,7 @@ describe("ItemsTableView - Virtual Scrolling", () => {
 	});
 
 	it("should handle search filtering with virtual scrolling", async () => {
-		const user = userEvent.setup();
-		const { container } = render(
+		render(
 			<QueryClientProvider client={queryClient}>
 				<RouterProvider router={router}>
 					<ItemsTableView />
@@ -118,7 +116,6 @@ describe("ItemsTableView - Virtual Scrolling", () => {
 	});
 
 	it("should handle sorting with virtual scrolling", async () => {
-		const user = userEvent.setup();
 		render(
 			<QueryClientProvider client={queryClient}>
 				<RouterProvider router={router}>
@@ -138,7 +135,6 @@ describe("ItemsTableView - Virtual Scrolling", () => {
 	});
 
 	it("should display empty state when no items match filter", async () => {
-		const user = userEvent.setup();
 		render(
 			<QueryClientProvider client={queryClient}>
 				<RouterProvider router={router}>

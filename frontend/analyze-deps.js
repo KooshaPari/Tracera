@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
-import { readdir, readFile } from "fs/promises";
-import { join } from "path";
+import { readdir, readFile } from "node:fs/promises";
+import { join } from "node:path";
 
 async function findPackageJsons(dir, depth = 0, maxDepth = 3) {
 	if (depth > maxDepth) return [];
@@ -21,7 +21,7 @@ async function findPackageJsons(dir, depth = 0, maxDepth = 3) {
 				files.push(fullPath);
 			}
 		}
-	} catch (err) {
+	} catch {
 		// Skip directories we can't read
 	}
 
@@ -36,7 +36,7 @@ async function analyzeDependencies() {
 
 	for (const pkgPath of packageJsons) {
 		try {
-			const content = await readFile(pkgPath, "utf-8");
+			const content = await readFile(pkgPath, "utf8");
 			const pkg = JSON.parse(content);
 			const relativePath = pkgPath.replace(process.cwd(), ".");
 
@@ -54,7 +54,7 @@ async function analyzeDependencies() {
 				allDeps.get(name).add(version);
 				locations.get(name).push({ path: relativePath, version });
 			}
-		} catch (err) {
+		} catch {
 			// Skip invalid JSON
 		}
 	}
@@ -68,7 +68,7 @@ async function analyzeDependencies() {
 		if (versions.size > 1) {
 			duplicates.push({
 				name,
-				versions: Array.from(versions),
+				versions: [...versions],
 				locations: locations.get(name),
 			});
 		}
@@ -76,7 +76,7 @@ async function analyzeDependencies() {
 		if (name.includes("react") || name.includes("@types/react")) {
 			reactDeps.push({
 				name,
-				versions: Array.from(versions),
+				versions: [...versions],
 				locations: locations.get(name),
 			});
 		}
@@ -84,7 +84,7 @@ async function analyzeDependencies() {
 		if (name.includes("typescript") || name === "ts-node" || name === "tsx") {
 			typescriptDeps.push({
 				name,
-				versions: Array.from(versions),
+				versions: [...versions],
 				locations: locations.get(name),
 			});
 		}
@@ -96,7 +96,7 @@ async function analyzeDependencies() {
 
 	console.log("=== TOP 20 DUPLICATE DEPENDENCIES ===");
 	duplicates
-		.sort((a, b) => b.versions.length - a.versions.length)
+		.toSorted((a, b) => b.versions.length - a.versions.length)
 		.slice(0, 20)
 		.forEach(({ name, versions, locations }) => {
 			console.log(`\n${name}:`);
@@ -136,8 +136,13 @@ async function analyzeDependencies() {
 		typescriptDeps,
 	};
 
-	await Bun.write("dependency-analysis.json", JSON.stringify(report, null, 2));
+	await Bun.write("dependency-analysis.json", JSON.stringify(report, undefined, 2));
 	console.log("\n\nDetailed report saved to: dependency-analysis.json");
 }
 
-analyzeDependencies().catch(console.error);
+try {
+	await analyzeDependencies();
+} catch (err) {
+	console.error(err);
+	process.exitCode = 1;
+}

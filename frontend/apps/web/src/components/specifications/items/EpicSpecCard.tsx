@@ -74,7 +74,7 @@ export function EpicSpecCard({
 
 	// Calculate progress based on objectives completed (if tracked in metrics)
 	const storiesCompleted =
-		(spec.metrics as Record<string, number>)?.stories_completed ?? 0;
+		(spec.metrics as Record<string, number>)?.["stories_completed"] ?? 0;
 	const storiesTotal =
 		spec.child_stories_count || spec.user_stories.length || 1;
 	const progressPercent = Math.min(

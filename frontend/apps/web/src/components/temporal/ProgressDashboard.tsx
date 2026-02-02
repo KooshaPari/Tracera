@@ -645,10 +645,8 @@ function VelocityBarChart({ metrics }: VelocityChartProps) {
 // ============================================================================
 
 export function ProgressDashboard({
-	projectId,
 	milestones,
 	sprints,
-	currentSnapshot,
 	velocityMetrics,
 	isLoading = false,
 	onMilestoneClick,

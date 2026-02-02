@@ -361,7 +361,7 @@ class Parser {
           throw new HTTPParserError(message, constants.ERROR[ret], data)
         }
       }
-    } catch (err) {
+    } catch (_err) {
       util.destroy(socket, err)
     }
   }
@@ -508,7 +508,7 @@ class Parser {
 
     try {
       request.onUpgrade(statusCode, headers, socket)
-    } catch (err) {
+    } catch (_err) {
       util.destroy(socket, err)
     }
 
@@ -1074,7 +1074,7 @@ function writeH1 (client, request) {
 
   try {
     request.onConnect(abort)
-  } catch (err) {
+  } catch (_err) {
     util.errorRequest(client, request, err)
   }
 
@@ -1195,7 +1195,7 @@ function writeStream (abort, body, client, request, socket, contentLength, heade
       if (!writer.write(chunk) && this.pause) {
         this.pause()
       }
-    } catch (err) {
+    } catch (_err) {
       util.destroy(this, err)
     }
   }
@@ -1338,7 +1338,7 @@ function writeBuffer (abort, body, client, request, socket, contentLength, heade
     request.onRequestSent()
 
     client[kResume]()
-  } catch (err) {
+  } catch (_err) {
     abort(err)
   }
 }
@@ -1377,7 +1377,7 @@ async function writeBlob (abort, body, client, request, socket, contentLength, h
     }
 
     client[kResume]()
-  } catch (err) {
+  } catch (_err) {
     abort(err)
   }
 }
@@ -1433,7 +1433,7 @@ async function writeIterable (abort, body, client, request, socket, contentLengt
     }
 
     writer.end()
-  } catch (err) {
+  } catch (_err) {
     writer.destroy(err)
   } finally {
     socket

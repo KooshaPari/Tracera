@@ -22,7 +22,7 @@ export function operate<T, R>(
       return source.lift(function (this: Subscriber<R>, liftedSource: Observable<T>) {
         try {
           return init(liftedSource, this);
-        } catch (err) {
+        } catch (_err) {
           this.error(err);
         }
       });

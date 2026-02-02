@@ -1,26 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
-interface VirtualScrollPerformanceMetrics {
-	initialRenderTime: number;
-	scrollRenderTime: number;
-	filterRenderTime: number;
-	sortRenderTime: number;
-	memoryUsed: number;
-	domNodesRendered: number;
-}
-
-// Utility function to measure render performance
-function measureRenderPerformance(): VirtualScrollPerformanceMetrics {
-	return {
-		initialRenderTime: 0,
-		scrollRenderTime: 0,
-		filterRenderTime: 0,
-		sortRenderTime: 0,
-		memoryUsed: (performance as any).memory?.usedJSHeapSize || 0,
-		domNodesRendered: document.querySelectorAll("table tbody tr").length,
-	};
-}
-
 describe("Virtual Scrolling Performance Benchmarks", () => {
 	beforeEach(() => {
 		// Setup would happen here if we had a test environment

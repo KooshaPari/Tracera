@@ -113,7 +113,9 @@ Hooks for managing component libraries and design systems.
 ### Basic Query
 
 ```typescript
-import { useCanonicalConcepts } from "@/api/canonical";
+import canonicalApi from "@/api/canonical";
+
+const { useCanonicalConcepts } = canonicalApi;
 
 function ConceptList({ projectId }: { projectId: string }) {
   const { data: concepts, isLoading, error } = useCanonicalConcepts(projectId);

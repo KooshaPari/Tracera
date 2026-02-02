@@ -132,7 +132,7 @@ export function crossSerializeStream<T>(
 
       try {
         serialized = serializeTopCross(serial, node);
-      } catch (err) {
+      } catch (_err) {
         if (options.onError) {
           options.onError(err);
         }

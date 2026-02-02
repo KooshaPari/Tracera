@@ -471,7 +471,7 @@ Readable.prototype.read = function (n) {
     // Call internal read method
     try {
       this._read(state.highWaterMark)
-    } catch (err) {
+    } catch (_err) {
       errorOrDestroy(this, err)
     }
     state.state &= ~kSync
@@ -1031,7 +1031,7 @@ async function* createAsyncIterator(stream, options) {
         await new Promise(next)
       }
     }
-  } catch (err) {
+  } catch (_err) {
     error = aggregateTwoErrors(error, err)
     throw error
   } finally {

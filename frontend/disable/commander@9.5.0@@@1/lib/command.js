@@ -537,7 +537,7 @@ Expecting one of '${allowedValues.join("', '")}'`);
       if (val !== null && option.parseArg) {
         try {
           val = option.parseArg(val, oldValue);
-        } catch (err) {
+        } catch (_err) {
           if (err.code === 'commander.invalidArgument') {
             const message = `${invalidValueMessage} ${err.message}`;
             this.error(message, { exitCode: err.exitCode, code: err.code });
@@ -974,7 +974,7 @@ Expecting one of '${allowedValues.join("', '")}'`);
       let resolvedScriptPath; // resolve possible symlink for installed npm binary
       try {
         resolvedScriptPath = fs.realpathSync(this._scriptPath);
-      } catch (err) {
+      } catch (_err) {
         resolvedScriptPath = this._scriptPath;
       }
       executableDir = path.resolve(path.dirname(resolvedScriptPath), executableDir);
@@ -1119,7 +1119,7 @@ Expecting one of '${allowedValues.join("', '")}'`);
       if (value !== null && argument.parseArg) {
         try {
           parsedValue = argument.parseArg(value, previous);
-        } catch (err) {
+        } catch (_err) {
           if (err.code === 'commander.invalidArgument') {
             const message = `error: command-argument value '${value}' is invalid for argument '${argument.name()}'. ${err.message}`;
             this.error(message, { exitCode: err.exitCode, code: err.code });

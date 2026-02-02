@@ -21,7 +21,7 @@ const config: StorybookConfig = {
 	},
 	docs: {
 		autodocs: true,
-	},
+	} as Record<string, unknown>,
 };
 
 export default config;

@@ -15,36 +15,59 @@ import {
  * Generates visual test parameters for a component
  * Automatically applies viewport and theme configurations
  */
+type ConfigKey = keyof typeof COMPONENT_VISUAL_CONFIGS;
+type ViewportKey = keyof typeof VIEWPORTS;
+
+function getComponentConfig(
+	componentName: string,
+): (typeof COMPONENT_VISUAL_CONFIGS)[ConfigKey] | undefined {
+	return Object.prototype.hasOwnProperty.call(
+		COMPONENT_VISUAL_CONFIGS,
+		componentName,
+	)
+		? (COMPONENT_VISUAL_CONFIGS[componentName as ConfigKey] as (typeof COMPONENT_VISUAL_CONFIGS)[ConfigKey])
+		: undefined;
+}
+
+const DEFAULT_VISUAL_CONFIG = {
+	viewports: ["desktop", "tablet"] as ViewportKey[],
+	themes: ["light", "dark"] as (keyof typeof THEMES)[],
+	delay: 300,
+};
+
 export function generateVisualTestParameters(
 	componentName: string,
 	config?: Partial<
 		(typeof COMPONENT_VISUAL_CONFIGS)[keyof typeof COMPONENT_VISUAL_CONFIGS]
 	>,
 ) {
-	const defaultConfig = COMPONENT_VISUAL_CONFIGS[
-		componentName as keyof typeof COMPONENT_VISUAL_CONFIGS
-	] || {
-		viewports: ["desktop", "tablet"],
-		themes: ["light", "dark"],
-		delay: 300,
-	};
+	const fromMap = getComponentConfig(componentName);
+	const defaultConfig = fromMap ?? DEFAULT_VISUAL_CONFIG;
 
 	const mergedConfig = { ...defaultConfig, ...config };
+	const mergedWithChromatic = mergedConfig as typeof defaultConfig & {
+		pauseAnimationAtEnd?: boolean;
+	};
 
 	return {
 		chromatic: {
-			modes: mergedConfig.themes.reduce(
+			modes: mergedConfig.themes.reduce<Record<string, { query: string }>>(
 				(acc, theme) => {
-					const themeConfig = THEMES[theme as keyof typeof THEMES];
-					if (themeConfig) {
+					const themeConfig = Object.prototype.hasOwnProperty.call(
+						THEMES,
+						theme,
+					)
+						? THEMES[theme as keyof typeof THEMES]
+						: undefined;
+					if (themeConfig != null) {
 						acc[theme] = { query: themeConfig.query };
 					}
 					return acc;
 				},
-				{} as Record<string, { query: string }>,
+				{},
 			),
-			delay: mergedConfig.delay || 300,
-			pauseAnimationAtEnd: mergedConfig.pauseAnimationAtEnd ?? true,
+			delay: mergedConfig.delay ?? 300,
+			pauseAnimationAtEnd: mergedWithChromatic.pauseAnimationAtEnd ?? true,
 		},
 	};
 }
@@ -56,14 +79,15 @@ export function generateVisualTestParameters(
 export function createViewportStories<T extends { [key: string]: any }>(
 	componentName: string,
 	baseArgs: T,
-	viewportsToTest?: (keyof typeof VIEWPORTS)[],
+	viewportsToTest?: ViewportKey[],
 ) {
-	const config =
-		COMPONENT_VISUAL_CONFIGS[
-			componentName as keyof typeof COMPONENT_VISUAL_CONFIGS
-		];
-	const viewports =
-		viewportsToTest || (config?.viewports as (keyof typeof VIEWPORTS)[]);
+	const config = getComponentConfig(componentName);
+	const viewports: ViewportKey[] =
+		viewportsToTest ??
+		(config != null
+			? (Array.from(config.viewports) as ViewportKey[])
+			: undefined) ??
+		DEFAULT_VISUAL_CONFIG.viewports;
 
 	return Object.fromEntries(
 		viewports.map((viewport) => [
@@ -148,9 +172,13 @@ export function createInteractionStories<T extends { [key: string]: any }>(
 		},
 		Active: {
 			args: baseArgs,
-			play: async ({ canvasElement }: any) => {
-				const element = canvasElement.querySelector(selector);
-				if (element) {
+			play: ({
+				canvasElement,
+			}: {
+				canvasElement: HTMLElement;
+			}) => {
+				const element = canvasElement.querySelector(selector) as Element | null;
+				if (element !== null && element !== undefined) {
 					element.classList.add("active");
 					element.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
 				}
@@ -191,7 +219,7 @@ export function generateSnapshotName(
 	state?: string,
 ) {
 	const parts = [componentName, variant, viewport, theme];
-	if (state) {
+	if (state != null && state !== "") {
 		parts.push(state);
 	}
 	return parts.join("-").toLowerCase().replace(/\s+/g, "-");
@@ -212,15 +240,15 @@ export class VisualRegressionTracker {
 	}
 
 	getChanges(componentName?: string) {
-		if (componentName) {
-			return this.changes.get(componentName) || [];
+		if (componentName != null && componentName !== "") {
+			return this.changes.get(componentName) ?? [];
 		}
 		return Array.from(this.changes.entries());
 	}
 
 	hasChanges(componentName?: string) {
-		if (componentName) {
-			return (this.changes.get(componentName) || []).length > 0;
+		if (componentName != null && componentName !== "") {
+			return (this.changes.get(componentName) ?? []).length > 0;
 		}
 		return this.changes.size > 0;
 	}
@@ -239,36 +267,31 @@ export function validateComponentVisualTests(
 	requiredViewports: (keyof typeof VIEWPORTS)[] = ["desktop", "tablet"],
 	requiredThemes: (keyof typeof THEMES)[] = ["light", "dark"],
 ) {
-	const config =
-		COMPONENT_VISUAL_CONFIGS[
-			componentName as keyof typeof COMPONENT_VISUAL_CONFIGS
-		];
-
-	if (!config) {
+	const config = getComponentConfig(componentName);
+	if (config === undefined) {
 		console.warn(`No visual test configuration found for ${componentName}`);
 		return false;
 	}
 
+	const viewportList = Array.from(
+		config.viewports,
+	) as (keyof typeof VIEWPORTS)[];
 	const missingViewports = requiredViewports.filter(
-		(v) => !config.viewports.includes(v),
+		(v) => !viewportList.includes(v),
 	);
 	const missingThemes = requiredThemes.filter(
 		(t) => !config.themes.includes(t),
 	);
 
-	if (missingViewports.length > 0) {
+	if (missingViewports.length > 0 || missingThemes.length > 0) {
 		console.warn(
-			`${componentName} missing viewports: ${missingViewports.join(", ")}`,
+			`Missing visual test config for ${componentName}:`,
+			{ missingViewports, missingThemes },
 		);
+		return false;
 	}
 
-	if (missingThemes.length > 0) {
-		console.warn(
-			`${componentName} missing themes: ${missingThemes.join(", ")}`,
-		);
-	}
-
-	return missingViewports.length === 0 && missingThemes.length === 0;
+	return true;
 }
 
 /**

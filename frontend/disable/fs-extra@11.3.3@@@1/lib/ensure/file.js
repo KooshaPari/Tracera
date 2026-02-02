@@ -17,7 +17,7 @@ async function createFile (file) {
   let dirStats = null
   try {
     dirStats = await fs.stat(dir)
-  } catch (err) {
+  } catch (_err) {
     // if the directory doesn't exist, make it
     if (err.code === 'ENOENT') {
       await mkdir.mkdirs(dir)
@@ -51,7 +51,7 @@ function createFileSync (file) {
       // This is just to cause an internal ENOTDIR error to be thrown
       fs.readdirSync(dir)
     }
-  } catch (err) {
+  } catch (_err) {
     // If the stat call above failed because the directory doesn't exist, create it
     if (err && err.code === 'ENOENT') mkdir.mkdirsSync(dir)
     else throw err

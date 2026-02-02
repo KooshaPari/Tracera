@@ -487,7 +487,7 @@ export function fromAjax<T>(init: AjaxConfig): Observable<AjaxResponse<T>> {
             // of the response in some cases to produce object we'd expect from
             // modern browsers.
             response = createResponse(DOWNLOAD, event);
-          } catch (err) {
+          } catch (_err) {
             destination.error(err);
             return;
           }

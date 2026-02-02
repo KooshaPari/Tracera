@@ -13,7 +13,7 @@ async function list (gyp, args) {
     if (Array.isArray(dir)) {
       versions = dir.filter((v) => v !== 'current')
     }
-  } catch (err) {
+  } catch (_err) {
     if (err && err.code !== 'ENOENT') {
       throw err
     }

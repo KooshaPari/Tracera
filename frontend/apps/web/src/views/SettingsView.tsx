@@ -59,24 +59,22 @@ export function SettingsView() {
 	}, [integrationProjectId, projects]);
 
 	const saveSettingsMutation = useMutation({
-		mutationFn: async (settings: any) => {
-			return saveSettings(settings);
+		mutationFn: async (settings: any) => saveSettings(settings),
+		onError: (error: any) => {
+			toast.error(`Sync failure: ${error.message}`);
 		},
 		onSuccess: () => {
 			toast.success("Identity parameters synchronized");
-		},
-		onError: (error: any) => {
-			toast.error(`Sync failure: ${error.message}`);
 		},
 	});
 
 	const handleSave = () => {
 		saveSettingsMutation.mutate({
+			desktopNotifications,
 			displayName,
 			email,
-			theme,
 			emailNotifications,
-			desktopNotifications,
+			theme,
 			weeklySummary,
 		});
 	};
@@ -106,12 +104,12 @@ export function SettingsView() {
 				<div className="lg:col-span-1 space-y-4">
 					<TabsList className="flex flex-col bg-transparent h-auto space-y-1 items-stretch">
 						{[
-							{ id: "profile", label: "Identity", icon: User },
-							{ id: "appearance", label: "Visuals", icon: Monitor },
-							{ id: "api", label: "Engine Access", icon: Key },
-							{ id: "notifications", label: "Comms", icon: Bell },
-							{ id: "security", label: "Safety", icon: Shield },
-							{ id: "integrations", label: "Integrations", icon: Link2 },
+							{ icon: User, id: "profile", label: "Identity" },
+							{ icon: Monitor, id: "appearance", label: "Visuals" },
+							{ icon: Key, id: "api", label: "Engine Access" },
+							{ icon: Bell, id: "notifications", label: "Comms" },
+							{ icon: Shield, id: "security", label: "Safety" },
+							{ icon: Link2, id: "integrations", label: "Integrations" },
 						].map((tab) => (
 							<TabsTrigger
 								key={tab.id}
@@ -317,23 +315,23 @@ export function SettingsView() {
 								{
 									id: "e",
 									label: "Email Dispatches",
-									sub: "System status and daily digests",
-									state: emailNotifications,
 									set: setEmailNotifications,
+									state: emailNotifications,
+									sub: "System status and daily digests",
 								},
 								{
 									id: "d",
 									label: "Desktop Stream",
-									sub: "Real-time push alerts for link changes",
-									state: desktopNotifications,
 									set: setDesktopNotifications,
+									state: desktopNotifications,
+									sub: "Real-time push alerts for link changes",
 								},
 								{
 									id: "w",
 									label: "Executive Weekly",
-									sub: "Intelligence summary of project health",
-									state: weeklySummary,
 									set: setWeeklySummary,
+									state: weeklySummary,
+									sub: "Intelligence summary of project health",
 								},
 							].map((n) => (
 								<div

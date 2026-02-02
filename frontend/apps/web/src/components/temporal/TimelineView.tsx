@@ -19,6 +19,19 @@ export interface TimelineViewProps {
 	onVersionChange: (versionId: string) => void;
 }
 
+function getDaysAgo(timestamp: Date): string {
+	const now = new Date();
+	const diff = now.getTime() - timestamp.getTime();
+	const days = Math.floor(diff / 86400000);
+
+	if (days === 0) return "Today";
+	if (days === 1) return "Yesterday";
+	if (days < 7) return `${days} days ago`;
+	if (days < 30) return `${Math.floor(days / 7)} weeks ago`;
+	if (days < 365) return `${Math.floor(days / 30)} months ago`;
+	return `${Math.floor(days / 365)} years ago`;
+}
+
 export function TimelineView({
 	versions,
 	currentVersionId,
@@ -30,32 +43,20 @@ export function TimelineView({
 	const sortedVersions = useMemo(
 		() =>
 			[...versions].sort(
-				(a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
+				(a: { timestamp: Date }, b: { timestamp: Date }) =>
+					a.timestamp.getTime() - b.timestamp.getTime(),
 			),
 		[versions],
 	);
 
-	const timeRange = useMemo(() => {
-		if (sortedVersions.length === 0) {
-			return { min: 0, max: 0, span: 1 };
-		}
-		const min = sortedVersions[0].timestamp.getTime();
-		const max = sortedVersions[sortedVersions.length - 1].timestamp.getTime();
-		return { min, max, span: max - min };
-	}, [sortedVersions]);
-
-	const getDaysAgo = (timestamp: Date): string => {
-		const now = new Date();
-		const diff = now.getTime() - timestamp.getTime();
-		const days = Math.floor(diff / 86400000);
-
-		if (days === 0) return "Today";
-		if (days === 1) return "Yesterday";
-		if (days < 7) return `${days} days ago`;
-		if (days < 30) return `${Math.floor(days / 7)} weeks ago`;
-		if (days < 365) return `${Math.floor(days / 30)} months ago`;
-		return `${Math.floor(days / 365)} years ago`;
-	};
+	// const timeRange = useMemo(() => {
+	// 	if (sortedVersions.length === 0) {
+	// 		return { min: 0, max: 0, span: 1 };
+	// 	}
+	// 	const min = sortedVersions[0].timestamp.getTime();
+	// 	const max = sortedVersions[sortedVersions.length - 1].timestamp.getTime();
+	// 	return { min, max, span: max - min };
+	// }, [sortedVersions]);
 
 	const handleScroll = (direction: "left" | "right") => {
 		const delta = 100;
@@ -122,7 +123,7 @@ export function TimelineView({
 						transition: "transform 0.3s ease-out",
 					}}
 				>
-					{sortedVersions.map((version) => {
+					{sortedVersions.map((version: { id: string; timestamp: Date }) => {
 						const isCurrentVersion = version.id === currentVersionId;
 
 						return (

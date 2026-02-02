@@ -84,7 +84,7 @@ describe("ItemsTreeView Performance", () => {
 
 		// Find expand buttons
 		const expandButtons = container.querySelectorAll("button");
-		const chevronButtons = Array.from(expandButtons).filter((btn) =>
+		const chevronButtons = Array.from(expandButtons).filter((btn: Element) =>
 			btn.querySelector("svg"),
 		);
 
@@ -169,11 +169,11 @@ describe("ItemsTreeView Performance", () => {
 
 		// Get initial state
 		const initialItems = container.querySelectorAll('[style*="marginLeft"]');
-		const initialCount = initialItems.length;
+		const _initialCount = initialItems.length;
 
 		// Toggle expand state
 		const expandButtons = container.querySelectorAll("button");
-		const chevronButtons = Array.from(expandButtons).filter((btn) =>
+		const chevronButtons = Array.from(expandButtons).filter((btn: Element) =>
 			btn.querySelector("svg"),
 		);
 

@@ -98,7 +98,7 @@ export class RealtimeClient {
 			try {
 				const message: WebSocketMessage = JSON.parse(event.data);
 				this.handleMessage(message);
-			} catch (err) {
+			} catch (error) {
 				logger.error("Failed to parse WebSocket message:", err);
 			}
 		};

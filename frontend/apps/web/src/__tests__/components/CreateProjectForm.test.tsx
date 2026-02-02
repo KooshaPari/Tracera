@@ -2,7 +2,6 @@
  * Tests for CreateProjectForm
  */
 
-import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { CreateProjectForm } from "../../components/forms/CreateProjectForm";
 import { render, screen, waitFor } from "../utils/test-utils";
@@ -12,7 +11,7 @@ describe("CreateProjectForm", () => {
 		const onSubmit = vi.fn();
 		const onCancel = vi.fn();
 
-		const { container } = render(
+		render(
 			<CreateProjectForm onSubmit={onSubmit} onCancel={onCancel} />,
 		);
 
@@ -22,7 +21,6 @@ describe("CreateProjectForm", () => {
 	});
 
 	it("should call onCancel when cancel button is clicked", async () => {
-		const user = userEvent.setup();
 		const onSubmit = vi.fn();
 		const onCancel = vi.fn();
 
@@ -34,7 +32,6 @@ describe("CreateProjectForm", () => {
 	});
 
 	it("should show validation errors for empty required fields", async () => {
-		const user = userEvent.setup();
 		const onSubmit = vi.fn();
 		const onCancel = vi.fn();
 
@@ -50,11 +47,10 @@ describe("CreateProjectForm", () => {
 	});
 
 	it("should submit form with valid data", async () => {
-		const user = userEvent.setup();
 		const onSubmit = vi.fn();
 		const onCancel = vi.fn();
 
-		const { container } = render(
+		render(
 			<CreateProjectForm onSubmit={onSubmit} onCancel={onCancel} />,
 		);
 
@@ -62,8 +58,8 @@ describe("CreateProjectForm", () => {
 		const nameInput =
 			container.querySelector('input[type="text"]') ||
 			screen.queryByLabelText(/name/i);
-		if (nameInput) {
-			await user.type(nameInput as HTMLInputElement, "Test Project");
+		if (nameInput instanceof HTMLInputElement) {
+			await user.type(nameInput, "Test Project");
 		}
 
 		// Find and click submit button

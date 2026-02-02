@@ -79,19 +79,20 @@ function runElkLayout(
 	});
 }
 
+/* eslint-disable unicorn/prefer-add-event-listener -- Worker API uses self.onmessage */
 self.onmessage = (ev: MessageEvent<LayoutRequest>) => {
 	const msg = ev.data;
 	if (msg.type !== "layout") return;
 
 	runElkLayout(msg.nodes, msg.edges, msg.options)
 		.then((positions) => {
-			(self as Worker).postMessage({
+			self.postMessage({
 				type: "result",
 				positions,
 			} satisfies LayoutResponse);
 		})
 		.catch((err) => {
-			(self as Worker).postMessage({
+			self.postMessage({
 				type: "error",
 				error: err instanceof Error ? err.message : String(err),
 			});

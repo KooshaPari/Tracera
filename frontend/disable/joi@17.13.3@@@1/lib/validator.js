@@ -191,7 +191,7 @@ exports.entryAsync = async (value, schema, prefs) => {
 					);
 					root = output;
 				}
-			} catch (err) {
+			} catch (_err) {
 				if (settings.errors.label) {
 					err.message += ` (${external.label})`; // Change message to include path
 				}
@@ -777,7 +777,7 @@ internals.default = (flag, value, errors, helpers) => {
 
 		try {
 			return source(...args);
-		} catch (err) {
+		} catch (_err) {
 			errors.push(
 				schema.$_createError(`any.${flag}`, null, { error: err }, state, prefs),
 			);

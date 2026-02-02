@@ -13,7 +13,7 @@ class TestVisualStudioFinder extends VisualStudioFinder {
 	async findVisualStudio() {
 		try {
 			return { err: null, info: await super.findVisualStudio() };
-		} catch (err) {
+		} catch (_err) {
 			return { err, info: null };
 		}
 	}

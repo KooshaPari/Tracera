@@ -36,7 +36,7 @@ class Axios {
 	async request(configOrUrl, config) {
 		try {
 			return await this._request(configOrUrl, config);
-		} catch (err) {
+		} catch (_err) {
 			if (err instanceof Error) {
 				let dummy = {};
 

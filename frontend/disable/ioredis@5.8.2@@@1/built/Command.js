@@ -234,7 +234,7 @@ class Command {
 				}
 				resolve(this.transformReply(value));
 				this.isResolved = true;
-			} catch (err) {
+			} catch (_err) {
 				this.reject(err);
 			}
 			return this.promise;

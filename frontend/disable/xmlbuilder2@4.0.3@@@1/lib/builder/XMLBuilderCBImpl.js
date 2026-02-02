@@ -106,7 +106,7 @@ class XMLBuilderCBImpl extends events_1.EventEmitter {
 			const frag = (0, BuilderFunctions_1.fragment)().set(this._options);
 			try {
 				frag.ele(p1);
-			} catch (err) {
+			} catch (_err) {
 				this.emit("error", err);
 				return this;
 			}
@@ -131,7 +131,7 @@ class XMLBuilderCBImpl extends events_1.EventEmitter {
 			this._currentElement = (0, BuilderFunctions_1.fragment)(
 				this._builderOptions,
 			).ele(p1, p2, p3);
-		} catch (err) {
+		} catch (_err) {
 			this.emit("error", err);
 			return this;
 		}
@@ -168,7 +168,7 @@ class XMLBuilderCBImpl extends events_1.EventEmitter {
 		}
 		try {
 			this._currentElement.att(p1, p2, p3);
-		} catch (err) {
+		} catch (_err) {
 			this.emit("error", err);
 			return this;
 		}
@@ -182,7 +182,7 @@ class XMLBuilderCBImpl extends events_1.EventEmitter {
 			node = (0, BuilderFunctions_1.fragment)(this._builderOptions)
 				.com(content)
 				.first().node;
-		} catch (err) {
+		} catch (_err) {
 			/* istanbul ignore next */
 			this.emit("error", err);
 			/* istanbul ignore next */
@@ -220,7 +220,7 @@ class XMLBuilderCBImpl extends events_1.EventEmitter {
 			node = (0, BuilderFunctions_1.fragment)(this._builderOptions)
 				.txt(content)
 				.first().node;
-		} catch (err) {
+		} catch (_err) {
 			/* istanbul ignore next */
 			this.emit("error", err);
 			/* istanbul ignore next */
@@ -258,7 +258,7 @@ class XMLBuilderCBImpl extends events_1.EventEmitter {
 			node = (0, BuilderFunctions_1.fragment)(this._builderOptions)
 				.ins(target, content)
 				.first().node;
-		} catch (err) {
+		} catch (_err) {
 			/* istanbul ignore next */
 			this.emit("error", err);
 			/* istanbul ignore next */
@@ -299,7 +299,7 @@ class XMLBuilderCBImpl extends events_1.EventEmitter {
 			node = (0, BuilderFunctions_1.fragment)(this._builderOptions)
 				.dat(content)
 				.first().node;
-		} catch (err) {
+		} catch (_err) {
 			this.emit("error", err);
 			return this;
 		}
@@ -352,7 +352,7 @@ class XMLBuilderCBImpl extends events_1.EventEmitter {
 		let node;
 		try {
 			node = (0, BuilderFunctions_1.create)().dtd(options).first().node;
-		} catch (err) {
+		} catch (_err) {
 			this.emit("error", err);
 			return this;
 		}
@@ -393,7 +393,7 @@ class XMLBuilderCBImpl extends events_1.EventEmitter {
 		const frag = (0, BuilderFunctions_1.fragment)().set(this._options);
 		try {
 			frag.import(node);
-		} catch (err) {
+		} catch (_err) {
 			this.emit("error", err);
 			return this;
 		}

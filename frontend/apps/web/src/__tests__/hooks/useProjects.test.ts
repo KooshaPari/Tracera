@@ -12,8 +12,9 @@ import {
 	useProjects,
 } from "../../hooks/useProjects";
 
-// Mock fetch
+// Mock fetch (vi.fn() compatible with fetch at runtime)
 const mockFetch = vi.fn();
+// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- test mock
 global.fetch = mockFetch as unknown as typeof fetch;
 
 const createWrapper = () => {

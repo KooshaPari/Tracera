@@ -13,6 +13,7 @@
  */
 
 import type { Edge, Node } from "@xyflow/react";
+import { logger } from '@/lib/logger';
 
 // ============================================================================
 // TYPES
@@ -71,7 +72,7 @@ export async function detectGPUBackend(): Promise<GPUBackend> {
 				cachedBackend = "webgpu";
 				return "webgpu";
 			}
-		} catch (err) {
+		} catch (error) {
 			logger.warn("WebGPU detection failed:", err);
 		}
 	}
@@ -84,7 +85,7 @@ export async function detectGPUBackend(): Promise<GPUBackend> {
 			cachedBackend = "webgl";
 			return "webgl";
 		}
-	} catch (err) {
+	} catch (error) {
 		logger.warn("WebGL detection failed:", err);
 	}
 
@@ -407,7 +408,7 @@ export async function getGPUBackendInfo(): Promise<{
 			try {
 				const adapter = await (navigator as any).gpu.requestAdapter();
 				available.webgpu = !!adapter;
-			} catch {
+			} catch (error) {
 				// Not available
 			}
 		}
@@ -416,7 +417,7 @@ export async function getGPUBackendInfo(): Promise<{
 			const canvas = document.createElement("canvas");
 			const gl = canvas.getContext("webgl2");
 			available.webgl = !!gl;
-		} catch {
+		} catch (error) {
 			// Not available
 		}
 	}

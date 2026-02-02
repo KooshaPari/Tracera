@@ -8,7 +8,7 @@ import {
 	Shield,
 } from "lucide-react";
 import { ItemSpecsOverview } from "@/components/specifications/items";
-import { ADRListView } from "@/views/ADRListView";
+import { ADRListView } from "@/views/adr-list-view";
 import { ComplianceView } from "@/views/ComplianceView";
 import { ContractListView } from "@/views/ContractListView";
 import { FeatureListView } from "@/views/FeatureListView";
@@ -18,7 +18,7 @@ import { requireAuth } from "@/lib/route-guards";
 export const Route = createFileRoute("/projects/$projectId/specifications")({
 	beforeLoad: () => requireAuth(),
 	validateSearch: (search: Record<string, unknown>) => ({
-		tab: typeof search.tab === "string" ? search.tab : "overview",
+		tab: typeof search["tab"] === "string" ? search["tab"] : "overview",
 	}),
 	component: SpecificationsRoute,
 });
@@ -38,8 +38,8 @@ function SpecificationsRoute() {
 	const currentTab = allowedTabs.has(tab) ? tab : "overview";
 
 	const handleTabChange = (value: string) => {
-		navigate({
-			search: (prev) => ({ ...prev, tab: value }),
+		void navigate({
+			search: (prev: { tab?: string }) => ({ ...prev, tab: value }),
 		});
 	};
 

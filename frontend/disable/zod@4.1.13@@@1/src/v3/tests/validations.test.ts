@@ -6,7 +6,7 @@ import * as z from "zod/v3";
 test("array min", async () => {
 	try {
 		await z.array(z.string()).min(4).parseAsync([]);
-	} catch (err) {
+	} catch (_err) {
 		expect((err as z.ZodError).issues[0].message).toEqual(
 			"Array must contain at least 4 element(s)",
 		);
@@ -16,7 +16,7 @@ test("array min", async () => {
 test("array max", async () => {
 	try {
 		await z.array(z.string()).max(2).parseAsync(["asdf", "asdf", "asdf"]);
-	} catch (err) {
+	} catch (_err) {
 		expect((err as z.ZodError).issues[0].message).toEqual(
 			"Array must contain at most 2 element(s)",
 		);
@@ -26,7 +26,7 @@ test("array max", async () => {
 test("array length", async () => {
 	try {
 		await z.array(z.string()).length(2).parseAsync(["asdf", "asdf", "asdf"]);
-	} catch (err) {
+	} catch (_err) {
 		expect((err as z.ZodError).issues[0].message).toEqual(
 			"Array must contain exactly 2 element(s)",
 		);
@@ -34,7 +34,7 @@ test("array length", async () => {
 
 	try {
 		await z.array(z.string()).length(2).parseAsync(["asdf"]);
-	} catch (err) {
+	} catch (_err) {
 		expect((err as z.ZodError).issues[0].message).toEqual(
 			"Array must contain exactly 2 element(s)",
 		);
@@ -44,7 +44,7 @@ test("array length", async () => {
 test("string length", async () => {
 	try {
 		await z.string().length(4).parseAsync("asd");
-	} catch (err) {
+	} catch (_err) {
 		expect((err as z.ZodError).issues[0].message).toEqual(
 			"String must contain exactly 4 character(s)",
 		);
@@ -52,7 +52,7 @@ test("string length", async () => {
 
 	try {
 		await z.string().length(4).parseAsync("asdaa");
-	} catch (err) {
+	} catch (_err) {
 		expect((err as z.ZodError).issues[0].message).toEqual(
 			"String must contain exactly 4 character(s)",
 		);
@@ -62,7 +62,7 @@ test("string length", async () => {
 test("string min", async () => {
 	try {
 		await z.string().min(4).parseAsync("asd");
-	} catch (err) {
+	} catch (_err) {
 		expect((err as z.ZodError).issues[0].message).toEqual(
 			"String must contain at least 4 character(s)",
 		);
@@ -72,7 +72,7 @@ test("string min", async () => {
 test("string max", async () => {
 	try {
 		await z.string().max(4).parseAsync("aasdfsdfsd");
-	} catch (err) {
+	} catch (_err) {
 		expect((err as z.ZodError).issues[0].message).toEqual(
 			"String must contain at most 4 character(s)",
 		);
@@ -82,7 +82,7 @@ test("string max", async () => {
 test("number min", async () => {
 	try {
 		await z.number().gte(3).parseAsync(2);
-	} catch (err) {
+	} catch (_err) {
 		expect((err as z.ZodError).issues[0].message).toEqual(
 			"Number must be greater than or equal to 3",
 		);
@@ -92,7 +92,7 @@ test("number min", async () => {
 test("number max", async () => {
 	try {
 		await z.number().lte(3).parseAsync(4);
-	} catch (err) {
+	} catch (_err) {
 		expect((err as z.ZodError).issues[0].message).toEqual(
 			"Number must be less than or equal to 3",
 		);
@@ -102,7 +102,7 @@ test("number max", async () => {
 test("number nonnegative", async () => {
 	try {
 		await z.number().nonnegative().parseAsync(-1);
-	} catch (err) {
+	} catch (_err) {
 		expect((err as z.ZodError).issues[0].message).toEqual(
 			"Number must be greater than or equal to 0",
 		);
@@ -112,7 +112,7 @@ test("number nonnegative", async () => {
 test("number nonpositive", async () => {
 	try {
 		await z.number().nonpositive().parseAsync(1);
-	} catch (err) {
+	} catch (_err) {
 		expect((err as z.ZodError).issues[0].message).toEqual(
 			"Number must be less than or equal to 0",
 		);
@@ -122,7 +122,7 @@ test("number nonpositive", async () => {
 test("number negative", async () => {
 	try {
 		await z.number().negative().parseAsync(1);
-	} catch (err) {
+	} catch (_err) {
 		expect((err as z.ZodError).issues[0].message).toEqual(
 			"Number must be less than 0",
 		);
@@ -132,7 +132,7 @@ test("number negative", async () => {
 test("number positive", async () => {
 	try {
 		await z.number().positive().parseAsync(-1);
-	} catch (err) {
+	} catch (_err) {
 		expect((err as z.ZodError).issues[0].message).toEqual(
 			"Number must be greater than 0",
 		);

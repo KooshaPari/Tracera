@@ -245,7 +245,7 @@ Body.prototype = {
 		return consumeBody.call(this).then(function (buffer) {
 			try {
 				return JSON.parse(buffer.toString());
-			} catch (err) {
+			} catch (_err) {
 				return Body.Promise.reject(new FetchError(`invalid json response body at ${_this2.url} reason: ${err.message}`, 'invalid-json'));
 			}
 		});
@@ -394,7 +394,7 @@ function consumeBody() {
 
 			try {
 				resolve(Buffer.concat(accum));
-			} catch (err) {
+			} catch (_err) {
 				// handle streams that have accumulated too much data (issue #414)
 				reject(new FetchError(`Could not create Buffer from response body for ${_this4.url}: ${err.message}`, 'system', err));
 			}
@@ -1430,7 +1430,7 @@ function fetch(url, opts) {
 							// handle corrupted header
 							try {
 								headers.set('Location', locationURL);
-							} catch (err) {
+							} catch (_err) {
 								// istanbul ignore next: nodejs server prevent invalid response headers, we can't test this through normal request
 								reject(err);
 							}

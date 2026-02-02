@@ -34,6 +34,12 @@ vi.mock("../../api/endpoints", () => ({
 }));
 
 import { api } from "../../api/endpoints";
+import type {
+	DependencyAnalysis,
+	GraphData,
+	ImpactAnalysis,
+	Item,
+} from "../../api/types";
 
 describe("useGraph - Comprehensive Coverage", () => {
 	beforeEach(() => {
@@ -85,7 +91,7 @@ describe("useGraph - Comprehensive Coverage", () => {
 
 	describe("useAncestors", () => {
 		it("should fetch ancestors with id and depth", async () => {
-			const mockAncestors = [{ id: "ancestor-1" }];
+			const mockAncestors: GraphData = { nodes: [], edges: [] };
 			vi.mocked(api.graph.getAncestors).mockResolvedValue(mockAncestors);
 
 			const { result } = renderHook(() => useAncestors("item-1", 5), {
@@ -99,7 +105,7 @@ describe("useGraph - Comprehensive Coverage", () => {
 		});
 
 		it("should fetch ancestors without depth", async () => {
-			const mockAncestors = [{ id: "ancestor-1" }];
+			const mockAncestors: GraphData = { nodes: [], edges: [] };
 			vi.mocked(api.graph.getAncestors).mockResolvedValue(mockAncestors);
 
 			const { result } = renderHook(() => useAncestors("item-1"), {
@@ -135,7 +141,7 @@ describe("useGraph - Comprehensive Coverage", () => {
 
 	describe("useDescendants", () => {
 		it("should fetch descendants with id and depth", async () => {
-			const mockDescendants = [{ id: "descendant-1" }];
+			const mockDescendants: GraphData = { nodes: [], edges: [] };
 			vi.mocked(api.graph.getDescendants).mockResolvedValue(mockDescendants);
 
 			const { result } = renderHook(() => useDescendants("item-1", 5), {
@@ -172,10 +178,10 @@ describe("useGraph - Comprehensive Coverage", () => {
 
 	describe("useImpactAnalysis", () => {
 		it("should fetch impact analysis with depth", async () => {
-			const mockAnalysis = {
-				item_id: "item-1",
-				affected_items: [],
-				affected_count: 0,
+			const mockAnalysis: ImpactAnalysis = {
+				itemId: "item-1",
+				affectedItems: [],
+				affectedCount: 0,
 				depth: 5,
 			};
 			vi.mocked(api.graph.getImpactAnalysis).mockResolvedValue(mockAnalysis);
@@ -202,10 +208,10 @@ describe("useGraph - Comprehensive Coverage", () => {
 
 	describe("useDependencyAnalysis", () => {
 		it("should fetch dependency analysis with depth", async () => {
-			const mockAnalysis = {
-				item_id: "item-1",
+			const mockAnalysis: DependencyAnalysis = {
+				itemId: "item-1",
 				dependencies: [],
-				dependency_count: 0,
+				dependencyCount: 0,
 				depth: 5,
 			};
 			vi.mocked(api.graph.getDependencyAnalysis).mockResolvedValue(
@@ -234,7 +240,11 @@ describe("useGraph - Comprehensive Coverage", () => {
 
 	describe("useFindPath", () => {
 		it("should find path between two items", async () => {
-			const mockPath = { path: ["item-1", "item-2", "item-3"] };
+			const mockPath = [
+				{ id: "item-1", title: "", type: "requirement", status: "todo", projectId: "p1", createdAt: "", updatedAt: "" },
+				{ id: "item-2", title: "", type: "requirement", status: "todo", projectId: "p1", createdAt: "", updatedAt: "" },
+				{ id: "item-3", title: "", type: "requirement", status: "todo", projectId: "p1", createdAt: "", updatedAt: "" },
+			] as Item[];
 			vi.mocked(api.graph.findPath).mockResolvedValue(mockPath);
 
 			const { result } = renderHook(() => useFindPath("item-1", "item-3"), {
@@ -280,7 +290,7 @@ describe("useGraph - Comprehensive Coverage", () => {
 
 	describe("useDetectCycles", () => {
 		it("should detect cycles with projectId", async () => {
-			const mockCycles = [{ cycle: ["item-1", "item-2", "item-1"] }];
+			const mockCycles: string[][] = [["item-1", "item-2", "item-1"]];
 			vi.mocked(api.graph.detectCycles).mockResolvedValue(mockCycles);
 
 			const { result } = renderHook(() => useDetectCycles("proj-1"), {
@@ -294,7 +304,7 @@ describe("useGraph - Comprehensive Coverage", () => {
 		});
 
 		it("should detect cycles without projectId", async () => {
-			const mockCycles = [];
+			const mockCycles: string[][] = [];
 			vi.mocked(api.graph.detectCycles).mockResolvedValue(mockCycles);
 
 			const { result } = renderHook(() => useDetectCycles(), {

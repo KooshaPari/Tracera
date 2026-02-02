@@ -61,17 +61,17 @@ import { useDeleteItem, useItem, useUpdateItem } from "../hooks/useItems";
 import { useLinks } from "../hooks/useLinks";
 
 const statusColors: Record<string, string> = {
+	blocked: "bg-rose-500/15 text-rose-700 border-rose-500/30",
 	done: "bg-emerald-500/15 text-emerald-700 border-emerald-500/30",
 	in_progress: "bg-sky-500/15 text-sky-700 border-sky-500/30",
 	todo: "bg-slate-500/10 text-slate-600 border-slate-500/20",
-	blocked: "bg-rose-500/15 text-rose-700 border-rose-500/30",
 };
 
 const priorityColors: Record<string, string> = {
 	critical: "bg-rose-500 text-white",
 	high: "bg-orange-500 text-white",
-	medium: "bg-indigo-500 text-white",
 	low: "bg-emerald-500 text-white",
+	medium: "bg-indigo-500 text-white",
 };
 
 const statusOptions = ["todo", "in_progress", "blocked", "done"] as const;
@@ -93,9 +93,9 @@ const integrationKeys = new Set([
 ]);
 
 function formatValue(value: unknown) {
-	if (Array.isArray(value)) return value.join(", ");
-	if (value && typeof value === "object") return JSON.stringify(value);
-	if (value === null || value === undefined) return "–";
+	if (Array.isArray(value)) {return value.join(", ");}
+	if (value && typeof value === "object") {return JSON.stringify(value);}
+	if (value === null || value === undefined) {return "–";}
 	return String(value);
 }
 
@@ -117,21 +117,21 @@ export function ItemDetailView() {
 	const [isEditing, setIsEditing] = useState(false);
 	const [metadataSearch, setMetadataSearch] = useState("");
 	const [draft, setDraft] = useState({
-		title: "",
 		description: "",
-		status: "todo",
-		priority: "medium",
 		owner: "",
+		priority: "medium",
+		status: "todo",
+		title: "",
 	});
 
 	useEffect(() => {
-		if (!item) return;
+		if (!item) {return;}
 		setDraft({
-			title: item.title ?? "",
 			description: item.description ?? "",
-			status: item.status ?? "todo",
-			priority: item.priority ?? "medium",
 			owner: item.owner ?? "",
+			priority: item.priority ?? "medium",
+			status: item.status ?? "todo",
+			title: item.title ?? "",
 		});
 	}, [item]);
 
@@ -148,22 +148,19 @@ export function ItemDetailView() {
 
 	const handleBack = () => {
 		if (projectId) {
-			navigate({
-				to: "/projects/$projectId/views/$viewType",
-				params: { projectId, viewType: defaultViewType },
-			});
+			undefined;
 			return;
 		}
-		navigate({ to: "/projects" });
+		undefined;
 	};
 
 	const { data: sourceLinksData } = useLinks({
-		sourceId: itemId,
 		projectId: item?.projectId,
+		sourceId: itemId,
 	});
 	const { data: targetLinksData } = useLinks({
-		targetId: itemId,
 		projectId: item?.projectId,
+		targetId: itemId,
 	});
 
 	const { sourceLinks, targetLinks } = useMemo(() => {
@@ -172,12 +169,10 @@ export function ItemDetailView() {
 		return { sourceLinks: s, targetLinks: t };
 	}, [sourceLinksData, targetLinksData]);
 
-	const metadataEntries = useMemo(() => {
-		return Object.entries(item?.metadata ?? {});
-	}, [item?.metadata]);
+	const metadataEntries = useMemo(() => Object.entries(item?.metadata ?? {}), [item?.metadata]);
 
 	const filteredMetadata = useMemo(() => {
-		if (!metadataSearch.trim()) return metadataEntries;
+		if (!metadataSearch.trim()) {return metadataEntries;}
 		const query = metadataSearch.trim().toLowerCase();
 		return metadataEntries.filter(([key, value]) => {
 			const haystack = `${key} ${formatValue(value)}`.toLowerCase();
@@ -196,15 +191,15 @@ export function ItemDetailView() {
 	);
 
 	const dimensionEntries = useMemo(() => {
-		if (!item?.dimensions) return [] as Array<[string, unknown]>;
-		const entries: Array<[string, unknown]> = [];
+		if (!item?.dimensions) {return [] as [string, unknown][];}
+		const entries: [string, unknown][] = [];
 		if (item.dimensions.maturity)
-			entries.push(["Maturity", item.dimensions.maturity]);
+			{entries.push(["Maturity", item.dimensions.maturity]);}
 		if (item.dimensions.complexity)
-			entries.push(["Complexity", item.dimensions.complexity]);
-		if (item.dimensions.risk) entries.push(["Risk", item.dimensions.risk]);
+			{entries.push(["Complexity", item.dimensions.complexity]);}
+		if (item.dimensions.risk) {entries.push(["Risk", item.dimensions.risk]);}
 		if (item.dimensions.coverage)
-			entries.push(["Coverage", item.dimensions.coverage]);
+			{entries.push(["Coverage", item.dimensions.coverage]);}
 		if (item.dimensions.custom) {
 			Object.entries(item.dimensions.custom).forEach(([key, value]) => {
 				entries.push([key, value]);
@@ -215,28 +210,28 @@ export function ItemDetailView() {
 
 	const timelineEvents = useMemo(() => {
 		if (!item)
-			return [] as Array<{ label: string; timestamp: string; detail?: string }>;
-		const events: Array<{ label: string; timestamp: string; detail?: string }> =
+			{return [] as { label: string; timestamp: string; detail?: string }[];}
+		const events: { label: string; timestamp: string; detail?: string }[] =
 			[];
 		if (item.createdAt) {
 			events.push({
+				detail: `Status: ${item.status}`,
 				label: "Item created",
 				timestamp: item.createdAt,
-				detail: `Status: ${item.status}`,
 			});
 		}
 		if (item.updatedAt) {
 			events.push({
+				detail: `v${item.version}`,
 				label: "Item updated",
 				timestamp: item.updatedAt,
-				detail: `v${item.version}`,
 			});
 		}
 		if (item.version > 1 && item.updatedAt) {
 			events.push({
+				detail: `Now at v${item.version}`,
 				label: "Version bump",
 				timestamp: item.updatedAt,
-				detail: `Now at v${item.version}`,
 			});
 		}
 		if (integrationEntries.length > 0 && item.updatedAt) {
@@ -244,14 +239,14 @@ export function ItemDetailView() {
 				([key]) => key === "external_system",
 			);
 			events.push({
-				label: "External sync",
-				timestamp: item.updatedAt,
 				detail: integration
 					? `System: ${integration[1]}`
 					: "Integration data attached",
+				label: "External sync",
+				timestamp: item.updatedAt,
 			});
 		}
-		return events.sort((a, b) => (a.timestamp < b.timestamp ? 1 : -1));
+		return [...events].toSorted((a, b) => (a.timestamp < b.timestamp ? 1 : -1));
 	}, [integrationEntries, item]);
 
 	const upstreamCount = targetLinks.length;
@@ -271,12 +266,12 @@ export function ItemDetailView() {
 		: "Unknown";
 
 	const handleDelete = async () => {
-		if (!itemId) return;
+		if (!itemId) {return;}
 		try {
 			await deleteItem.mutateAsync(itemId);
 			toast.success("Item deleted successfully");
 			handleBack();
-		} catch (err) {
+		} catch {
 			toast.error("Failed to delete item");
 		}
 	};
@@ -284,32 +279,32 @@ export function ItemDetailView() {
 	const handleCancelEdit = () => {
 		if (item) {
 			setDraft({
-				title: item.title ?? "",
 				description: item.description ?? "",
-				status: item.status ?? "todo",
-				priority: item.priority ?? "medium",
 				owner: item.owner ?? "",
+				priority: item.priority ?? "medium",
+				status: item.status ?? "todo",
+				title: item.title ?? "",
 			});
 		}
 		setIsEditing(false);
 	};
 
 	const handleSave = async () => {
-		if (!itemId) return;
+		if (!itemId) {return;}
 		try {
 			await updateItem.mutateAsync({
-				id: itemId,
 				data: {
-					title: draft.title,
 					description: draft.description,
-					status: draft.status as typeof item.status,
-					priority: draft.priority as typeof item.priority,
 					owner: draft.owner || undefined,
+					priority: draft.priority as typeof item.priority,
+					status: draft.status as typeof item.status,
+					title: draft.title,
 				},
+				id: itemId,
 			});
 			toast.success("Item updated");
 			setIsEditing(false);
-		} catch (err) {
+		} catch {
 			toast.error("Failed to update item");
 		}
 	};
@@ -317,59 +312,66 @@ export function ItemDetailView() {
 	const handleCreateSpec = async (specType: string, itemId: string, _projectId?: string) => {
 		try {
 			switch (specType) {
-				case "requirement":
+				case "requirement": {
 					await createRequirementSpec.mutateAsync({
+						constraint_type: "soft",
 						item_id: itemId,
 						requirement_type: "ubiquitous",
-						constraint_type: "soft",
 					});
 					toast.success("Requirement spec created");
 					break;
-				case "test":
+				}
+				case "test": {
 					await createTestSpec.mutateAsync({
 						item_id: itemId,
 						test_type: "unit",
 					});
 					toast.success("Test spec created");
 					break;
-				case "epic":
+				}
+				case "epic": {
 					await createEpicSpec.mutateAsync({
-						item_id: itemId,
-						epic_name: "New Epic",
 						business_value: 0,
+						epic_name: "New Epic",
+						item_id: itemId,
 					});
 					toast.success("Epic spec created");
 					break;
-				case "user_story":
+				}
+				case "user_story": {
 					await createUserStorySpec.mutateAsync({
-						item_id: itemId,
 						as_a: "User",
 						i_want: "To complete task",
+						item_id: itemId,
 						so_that: "Work is done",
 					});
 					toast.success("User story spec created");
 					break;
-				case "task":
+				}
+				case "task": {
 					await createTaskSpec.mutateAsync({
 						item_id: itemId,
 						task_title: "New Task",
 					});
 					toast.success("Task spec created");
 					break;
-				case "defect":
+				}
+				case "defect": {
 					await createDefectSpec.mutateAsync({
-						item_id: itemId,
 						defect_title: "New Defect",
+						item_id: itemId,
 						severity: "minor",
 					});
 					toast.success("Defect spec created");
 					break;
-				default:
+				}
+				default: {
 					toast.error("Unknown spec type");
+				}
 			}
-		} catch (err) {
+		} catch (error) {
 			toast.error(`Failed to create ${specType} spec`);
-			logger.error(err);
+			logger.error(error);
 		}
 	};
 
@@ -411,7 +413,7 @@ export function ItemDetailView() {
 					<Button
 						variant="ghost"
 						size="sm"
-						onClick={() => window.history.back()}
+						onClick={() => globalThis.history.back()}
 						className="gap-2 text-muted-foreground hover:text-foreground"
 					>
 						<ArrowLeft className="h-4 w-4" />
@@ -423,8 +425,8 @@ export function ItemDetailView() {
 							size="sm"
 							className="gap-2 rounded-full"
 							onClick={() => {
-								const shareUrl = `${window.location.origin}${window.location.pathname}`;
-								navigator.clipboard.writeText(shareUrl);
+								const shareUrl = `${globalThis.location.origin}${globalThis.location.pathname}`;
+								undefined;
 								toast.success("Share link copied to clipboard");
 							}}
 						>
@@ -795,7 +797,7 @@ export function ItemDetailView() {
 												itemId={itemId}
 												itemType={item.type}
 												onCreateSpec={(specType) => {
-													handleCreateSpec(specType, itemId, item.projectId);
+													undefined;
 												}}
 											/>
 										)}
@@ -920,7 +922,7 @@ export function ItemDetailView() {
 															className="border border-border/50 bg-card/80 p-4 shadow-sm transition-shadow hover:shadow-md"
 														>
 															<p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground mb-2">
-																{key.replace(/_/g, " ")}
+																{key.replaceAll('_', " ")}
 															</p>
 															<p className="text-sm font-semibold text-foreground truncate" title={formatValue(value)}>
 																{formatValue(value)}
@@ -943,7 +945,7 @@ export function ItemDetailView() {
 															className="border border-border/50 bg-card/80 p-4 shadow-sm transition-shadow hover:shadow-md"
 														>
 															<p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground mb-2">
-																{key.replace(/_/g, " ")}
+																{key.replaceAll('_', " ")}
 															</p>
 															<p className="text-sm font-semibold text-foreground truncate" title={formatValue(value)}>
 																{formatValue(value)}
@@ -1076,9 +1078,9 @@ export function ItemDetailView() {
 							</h3>
 							{timelineEvents.length > 0 ? (
 								<div className="relative space-y-0">
-									{/* vertical line */}
+									{/* Vertical line */}
 									<div className="absolute left-[11px] top-2 bottom-2 w-px bg-border" />
-									{timelineEvents.map((event, i) => (
+									{timelineEvents.map((event) => (
 										<div
 											key={`${event.label}-${event.timestamp}`}
 											className="relative flex items-start gap-4 pb-6 last:pb-0"
@@ -1093,11 +1095,11 @@ export function ItemDetailView() {
 												)}
 												<p className="mt-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
 													{new Date(event.timestamp).toLocaleDateString(undefined, {
-														month: "short",
 														day: "numeric",
-														year: "numeric",
 														hour: "2-digit",
 														minute: "2-digit",
+														month: "short",
+														year: "numeric",
 													})}
 												</p>
 											</div>

@@ -68,7 +68,7 @@ async function prompt(questions=[], { onSubmit=noop, onCancel=noop }={}) {
       answer = prompt._injected ? getInjectedAnswer(prompt._injected, question.initial) : await prompts[type](question);
       answers[name] = answer = await getFormattedAnswer(question, answer, true);
       quit = await onSubmit(question, answer, answers);
-    } catch (err) {
+    } catch (_err) {
       quit = !(await onCancel(question, answers));
     }
 

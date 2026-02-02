@@ -321,7 +321,7 @@ picomatch.toRegex = (source, options) => {
   try {
     const opts = options || {};
     return new RegExp(source, opts.flags || (opts.nocase ? 'i' : ''));
-  } catch (err) {
+  } catch (_err) {
     if (options && options.debug === true) throw err;
     return /$^/;
   }

@@ -97,9 +97,9 @@ export function CreateItemForm({
 	const onSubmitWithAnnouncement = useCallback(
 		async (data: ItemFormData) => {
 			try {
-				await onSubmit(data);
+				await Promise.resolve(onSubmit(data));
 				announceToScreenReader("Item created successfully", "polite");
-			} catch (error) {
+			} catch {
 				announceToScreenReader(
 					"Error creating item. Please check the form and try again.",
 					"assertive",

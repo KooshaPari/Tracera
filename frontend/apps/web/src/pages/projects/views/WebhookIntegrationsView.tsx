@@ -84,6 +84,10 @@ const statusIcons: Record<WebhookStatus, React.ReactNode> = {
 	disabled: <XCircle className="h-4 w-4" />,
 };
 
+function copyToClipboard(text: string): void {
+	void navigator.clipboard.writeText(text);
+}
+
 export function WebhookIntegrationsView({
 	projectId,
 }: WebhookIntegrationsViewProps) {
@@ -146,10 +150,6 @@ export function WebhookIntegrationsView({
 			autoCompleteRun: true,
 			verifySignatures: true,
 		});
-	};
-
-	const copyToClipboard = (text: string) => {
-		navigator.clipboard.writeText(text);
 	};
 
 	const toggleSecretVisibility = (id: string) => {

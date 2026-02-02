@@ -147,7 +147,7 @@ SubscriptionObserver.prototype = defineBuiltIns(
 					var errorMethod = getMethod(observer, "error");
 					if (errorMethod) call(errorMethod, observer, value);
 					else hostReportErrors(value);
-				} catch (err) {
+				} catch (_err) {
 					hostReportErrors(err);
 				}
 				subscriptionState.clean();

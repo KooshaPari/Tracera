@@ -530,7 +530,7 @@ function setIsStrictModeForDevtools(newIsStrictMode) {
   if (injectedHook && "function" === typeof injectedHook.setStrictMode)
     try {
       injectedHook.setStrictMode(rendererID, newIsStrictMode);
-    } catch (err) {}
+    } catch (_err) {}
 }
 var clz32 = Math.clz32 ? Math.clz32 : clz32Fallback,
   log = Math.log,
@@ -2185,7 +2185,7 @@ function getActiveElementDeep(containerInfo) {
     try {
       var JSCompiler_inline_result =
         "string" === typeof element.contentWindow.location.href;
-    } catch (err) {
+    } catch (_err) {
       JSCompiler_inline_result = !1;
     }
     if (JSCompiler_inline_result) containerInfo = element.contentWindow;
@@ -9164,7 +9164,7 @@ function commitDeletionEffectsOnFiber(
   if (injectedHook && "function" === typeof injectedHook.onCommitFiberUnmount)
     try {
       injectedHook.onCommitFiberUnmount(rendererID, deletedFiber);
-    } catch (err) {}
+    } catch (_err) {}
   switch (deletedFiber.tag) {
     case 26:
       offscreenSubtreeWasHidden ||
@@ -11693,7 +11693,7 @@ function flushSpawnedWork() {
           void 0,
           128 === (finishedWork.current.flags & 128)
         );
-      } catch (err) {}
+      } catch (_err) {}
     if (null !== recoverableErrors) {
       finishedWork = ReactSharedInternals.T;
       remainingLanes = ReactDOMSharedInternals.p;
@@ -11774,7 +11774,7 @@ function flushPassiveEffects() {
     )
       try {
         injectedHook.onPostCommitFiberRoot(rendererID, root$jscomp$0);
-      } catch (err) {}
+      } catch (_err) {}
     return !0;
   } finally {
     (ReactDOMSharedInternals.p = previousPriority),
@@ -15961,7 +15961,7 @@ if ("undefined" !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__) {
         internals$jscomp$inline_2347
       )),
         (injectedHook = hook$jscomp$inline_2348);
-    } catch (err) {}
+    } catch (_err) {}
 }
 exports.createRoot = function (container, options) {
   if (!isValidContainer(container)) throw Error(formatProdErrorMessage(299));

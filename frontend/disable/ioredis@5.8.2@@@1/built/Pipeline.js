@@ -62,7 +62,7 @@ class Pipeline extends Commander_1.default {
 				const cmd = this._queue[position - (execLength - i)];
 				try {
 					value[1][i] = cmd.transformReply(value[1][i]);
-				} catch (err) {
+				} catch (_err) {
 					value[1][i] = err;
 				}
 			}

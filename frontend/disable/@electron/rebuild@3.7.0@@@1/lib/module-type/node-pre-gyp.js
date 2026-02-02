@@ -48,7 +48,7 @@ class NodePreGyp extends _1.NativeModule {
 			try {
 				await this.run(nodePreGypPath);
 				return true;
-			} catch (err) {
+			} catch (_err) {
 				d("failed to use node-pre-gyp:", err);
 				if (
 					(_a = err === null || err === void 0 ? void 0 : err.message) ===

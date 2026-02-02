@@ -20,6 +20,7 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { logger } from '@/lib/logger';
 import {
 	QuadTreeNodeIndex,
 	type QuadTreeNode,

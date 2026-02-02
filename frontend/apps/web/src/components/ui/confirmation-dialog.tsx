@@ -286,7 +286,7 @@ export const BulkConfirmationDialog = React.forwardRef<
 		{
 			actionType,
 			itemCount,
-			actionLabel,
+			actionLabel: _actionLabel,
 			open,
 			onOpenChange,
 			confirmText,

@@ -25,9 +25,9 @@ import { useSearch } from "../hooks/useSearch";
 export function SearchView() {
 	const [query, setQuery] = useState("");
 	const [filters, setFilters] = useState({
-		type: "",
-		status: "",
 		project: "",
+		status: "",
+		type: "",
 	});
 
 	const { results, isLoading } = useSearch({ q: query, ...filters });
@@ -62,7 +62,7 @@ export function SearchView() {
 							value={query}
 							onChange={(e) => setQuery(e.target.value)}
 							className="pl-14 h-14 border-none bg-transparent focus-visible:ring-0 text-lg font-medium"
-							autoFocus
+							
 						/>
 					</div>
 					<div className="flex items-center gap-2 px-2 w-full md:w-auto">

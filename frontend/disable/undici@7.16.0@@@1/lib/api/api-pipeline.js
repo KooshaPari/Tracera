@@ -184,7 +184,7 @@ class PipelineHandler extends AsyncResource {
         body: this.res,
         context
       })
-    } catch (err) {
+    } catch (_err) {
       this.res.on('error', noop)
       throw err
     }
@@ -244,7 +244,7 @@ function pipeline (opts, handler) {
     const pipelineHandler = new PipelineHandler(opts, handler)
     this.dispatch({ ...opts, body: pipelineHandler.req }, pipelineHandler)
     return pipelineHandler.ret
-  } catch (err) {
+  } catch (_err) {
     return new PassThrough().destroy(err)
   }
 }

@@ -156,7 +156,7 @@ class PythonFinder {
       }
       try {
         return await check.check()
-      } catch (err) {
+      } catch (_err) {
         this.log.silly('runChecks: err = %j', (err && err.stack) || err)
       }
     }
@@ -187,7 +187,7 @@ class PythonFinder {
       const execPath = await this.run(exec, args, shell)
       this.addLog(`- executable path is "${execPath}"`)
       return this.checkExecPath(execPath)
-    } catch (err) {
+    } catch (_err) {
       this.addLog(`- "${command}" is not in PATH or produced an error`)
       throw err
     }
@@ -210,7 +210,7 @@ class PythonFinder {
       const execPath = await this.run(this.pyLauncher, ['-3', ...this.argsExecutable], false)
       this.addLog(`- executable path is "${execPath}"`)
       return this.checkExecPath(execPath)
-    } catch (err) {
+    } catch (_err) {
       this.addLog(`- "${this.pyLauncher}" is not in PATH or produced an error`)
       throw err
     }
@@ -234,7 +234,7 @@ class PythonFinder {
       let valid = false
       try {
         valid = range.test(version)
-      } catch (err) {
+      } catch (_err) {
         this.log.silly('range.test() threw:\n%s', err.stack)
         this.addLog(`- "${execPath}" does not have a valid version`)
         this.addLog('- is it a Python executable?')
@@ -246,7 +246,7 @@ class PythonFinder {
         throw new Error(`Found unsupported Python version ${version}`)
       }
       return this.succeed(execPath, version)
-    } catch (err) {
+    } catch (_err) {
       this.addLog(`- "${execPath}" could not be run`)
       throw err
     }
@@ -267,7 +267,7 @@ class PythonFinder {
       this.log.silly('execFile result: stdout = %j', stdout)
       this.log.silly('execFile result: stderr = %j', stderr)
       return stdout.trim()
-    } catch (err) {
+    } catch (_err) {
       this.log.silly('execFile: threw:\n%s', err.stack)
       throw err
     }

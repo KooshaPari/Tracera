@@ -24,7 +24,7 @@ interface VerificationBadgeProps {
 
 const statusConfig: Record<
 	VerificationStatus,
-	{ icon: any; color: string; bgColor: string; label: string }
+	{ icon: React.ComponentType<{ className?: string }>; color: string; bgColor: string; label: string }
 > = {
 	pass: {
 		icon: CheckCircle,

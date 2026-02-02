@@ -496,7 +496,7 @@ const executeBeforeLoad = (
         })
         .then(updateContext)
     }
-  } catch (err) {
+  } catch (_err) {
     pending()
     handleSerialError(inner, index, err, 'BEFORE_LOAD')
   }
@@ -733,7 +733,7 @@ const runLoader = async (
         isFetching: false,
       }))
     }
-  } catch (err) {
+  } catch (_err) {
     const match = inner.router.getMatch(matchId)
     // in case of a redirecting match during preload, the match does not exist
     if (match) {
@@ -822,7 +822,7 @@ const loadRouteMatch = async (
             match._nonReactive.loaderPromise?.resolve()
             match._nonReactive.loadPromise?.resolve()
             match._nonReactive.loaderPromise = undefined
-          } catch (err) {
+          } catch (_err) {
             if (isRedirect(err)) {
               await inner.router.navigate(err.options)
             }
@@ -927,7 +927,7 @@ export async function loadMatches(arg: {
             ...head,
           }))
         }
-      } catch (err) {
+      } catch (_err) {
         // Log error but continue executing other head functions
         console.error(`Error executing head for route ${routeId}:`, err)
       }
@@ -940,7 +940,7 @@ export async function loadMatches(arg: {
 
     const readyPromise = triggerOnReady(inner)
     if (isPromise(readyPromise)) await readyPromise
-  } catch (err) {
+  } catch (_err) {
     if (isNotFound(err) && !inner.preload) {
       const readyPromise = triggerOnReady(inner)
       if (isPromise(readyPromise)) await readyPromise

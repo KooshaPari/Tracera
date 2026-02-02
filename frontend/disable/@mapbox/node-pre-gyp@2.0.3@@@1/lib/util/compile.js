@@ -21,7 +21,7 @@ function which_node_gyp() {
 			if (existsSync(node_gyp_bin)) {
 				return node_gyp_bin;
 			}
-		} catch (err) {
+		} catch (_err) {
 			// do nothing
 		}
 	}
@@ -34,7 +34,7 @@ function which_node_gyp() {
 		if (existsSync(node_gyp_bin)) {
 			return node_gyp_bin;
 		}
-	} catch (err) {
+	} catch (_err) {
 		// do nothing
 	}
 	if (process.execPath.indexOf("iojs") === -1) {
@@ -47,7 +47,7 @@ function which_node_gyp() {
 			if (existsSync(node_gyp_bin)) {
 				return node_gyp_bin;
 			}
-		} catch (err) {
+		} catch (_err) {
 			// do nothing
 		}
 	}

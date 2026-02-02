@@ -4,8 +4,6 @@
  * Central configuration for Figma design sync and generation
  */
 
-import * as path from "path";
-
 export interface FigmaConfig {
 	// API Configuration
 	api: {

@@ -13,7 +13,7 @@ function repeat(string, times) {
 
 try {
 	var blns = require("./vendor/big-list-of-naughty-strings/blns.json");
-} catch (err) {
+} catch (_err) {
 	console.error(
 		"Error: Cannot load file './vendor/big-list-of-naughty-strings/blns.json'",
 	);

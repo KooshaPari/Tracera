@@ -898,7 +898,6 @@ export function UnifiedGraphView({
 	onLoadMore,
 
 	// Multi-perspective controls
-	activePerspectives = ["all"],
 	displayMode: externalDisplayMode,
 	onDisplayModeChange,
 
@@ -978,7 +977,7 @@ export function UnifiedGraphView({
 	);
 
 	const handlePivot = useCallback(
-		(perspectiveId: GraphPerspective, itemId: string) => {
+		(_perspectiveId: GraphPerspective, itemId: string) => {
 			if (onFocusedItemChange) {
 				onFocusedItemChange(itemId);
 			}

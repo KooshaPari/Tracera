@@ -69,15 +69,16 @@ export function TemporalView() {
 			}
 		};
 
-		loadTemporalData();
+		void loadTemporalData();
 	}, []);
 
 	const handleBranchChange = (branchId: string) => {
 		setCurrentBranchId(branchId);
 		// Reset version to first in branch
 		const branchVersions = versions.filter((v) => v.branchId === branchId);
-		if (branchVersions.length > 0) {
-			setCurrentVersionId(branchVersions[0].id);
+		const first = branchVersions[0];
+		if (first) {
+			setCurrentVersionId(first.id);
 		}
 	};
 

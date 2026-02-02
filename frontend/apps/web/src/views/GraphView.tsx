@@ -24,21 +24,19 @@ export function GraphView({ projectId }: GraphViewProps) {
 
 	const { data: graphsData } = useGraphs(projectId);
 	const [selectedGraphId, setSelectedGraphId] = useState<string | undefined>(
-		undefined,
-	);
+		);
 	const [overlayMapping, setOverlayMapping] = useState(false);
 
 	const selectedGraph = useMemo(() => {
-		if (!graphsData?.length) return undefined;
+		if (!graphsData?.length) {return;}
 		if (selectedGraphId)
-			return graphsData.find((g) => g.id === selectedGraphId);
+			{return graphsData.find((g) => g.id === selectedGraphId);}
 		return graphsData[0];
 	}, [graphsData, selectedGraphId]);
 
 	const { data: graphData, isLoading: graphLoading } = useGraphProjection(
 		projectId,
 		selectedGraph?.id,
-		undefined,
 	);
 
 	const mappingGraph = useMemo(
@@ -49,27 +47,15 @@ export function GraphView({ projectId }: GraphViewProps) {
 	const { data: mappingData } = useGraphProjection(
 		projectId,
 		overlayMapping ? mappingGraph?.id : undefined,
-		undefined,
 	);
 
 	const items = useMemo(() => {
 		const nodes = graphData?.nodes || [];
-		return nodes.map((node: any) => ({
-			...node,
-			id: node.id,
-			title: node.title,
-			view: node.view,
-			type: node.item_type || node.itemType || node.view,
-		}));
+		return nodes.map((node: any) => (Object.assign(node, {id:node.id,title:node.title,view:node.view,type:node.item_type||node.itemType||node.view})));
 	}, [graphData]);
 
 	const links = useMemo(() => {
-		const baseLinks = (graphData?.links || []).map((link: any) => ({
-			...link,
-			sourceId: link.source_item_id || link.sourceId,
-			targetId: link.target_item_id || link.targetId,
-			type: link.link_type || link.type,
-		}));
+		const baseLinks = (graphData?.links || []).map((link: any) => (Object.assign(link, {sourceId:link.source_item_id||link.sourceId,targetId:link.target_item_id||link.targetId,type:link.link_type||link.type})));
 
 		if (!overlayMapping || !mappingData?.links) {
 			return baseLinks;
@@ -100,10 +86,7 @@ export function GraphView({ projectId }: GraphViewProps) {
 	const handleNavigateToItem = (itemId: string) => {
 		const item = items.find((node: any) => node.id === itemId);
 		const viewType = String(item?.view || "feature").toLowerCase();
-		navigate({
-			to: "/projects/$projectId/views/$viewType/$itemId",
-			params: { projectId, viewType, itemId },
-		});
+		undefined;
 	};
 
 	return (

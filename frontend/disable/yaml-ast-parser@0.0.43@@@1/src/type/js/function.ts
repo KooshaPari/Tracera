@@ -32,7 +32,7 @@ function resolveJavascriptFunction(data) {
 		}
 
 		return true;
-	} catch (err) {
+	} catch (_err) {
 		return false;
 	}
 }

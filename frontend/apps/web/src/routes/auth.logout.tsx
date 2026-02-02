@@ -24,23 +24,23 @@ function LogoutPage() {
 
 				// Sign out from WorkOS
 				// This will clear the WorkOS session and redirect to login
-				await signOut();
+				await Promise.resolve(signOut());
 
 				// Navigate to login page as fallback
 				// (WorkOS signOut may handle redirect automatically)
 				setTimeout(() => {
-					navigate({ to: AUTH_ROUTES.LOGIN });
+					void navigate({ to: AUTH_ROUTES.LOGIN });
 				}, 500);
 			} catch (error) {
 				logger.error("Logout error:", error);
 				// Even if there's an error, navigate to login
-				navigate({ to: AUTH_ROUTES.LOGIN });
+				void navigate({ to: AUTH_ROUTES.LOGIN });
 			} finally {
 				setIsLoggingOut(false);
 			}
 		};
 
-		performLogout();
+		void performLogout();
 	}, [logout, signOut, navigate]);
 
 	return (

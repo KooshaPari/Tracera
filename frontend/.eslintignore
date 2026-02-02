@@ -1,0 +1,12 @@
+# Generated/minified code
+apps/storybook/storybook-static/
+.next/
+dist/
+build/
+*.min.js
+node_modules/
+.turbo/
+coverage/
+.cache/
+out/
+

@@ -15,10 +15,12 @@ const meta: Meta<typeof PerspectiveSelector> = {
 		},
 	},
 	argTypes: {
-		onPerspectiveChange: { action: "perspective changed" },
-		disabled: {
-			control: "boolean",
+		currentPerspective: {
+			control: "select",
+			options: ["all", "product", "business", "technical", "ui", "security", "performance"],
 		},
+		onPerspectiveChange: { action: "perspective changed" },
+		itemCounts: { control: "object" },
 	},
 };
 
@@ -30,16 +32,20 @@ type Story = StoryObj<typeof meta>;
  */
 export const Default: Story = {
 	args: {
-		disabled: false,
+		currentPerspective: "all",
+		onPerspectiveChange: () => {},
+		itemCounts: undefined,
 	},
 };
 
 /**
- * Disabled state
+ * With item counts
  */
-export const Disabled: Story = {
+export const WithCounts: Story = {
 	args: {
-		disabled: true,
+		currentPerspective: "all",
+		onPerspectiveChange: () => {},
+		itemCounts: { all: 42, technical: 20, product: 12 },
 	},
 };
 
@@ -48,7 +54,9 @@ export const Disabled: Story = {
  */
 export const Tablet: Story = {
 	args: {
-		disabled: false,
+		currentPerspective: "all",
+		onPerspectiveChange: () => {},
+		itemCounts: undefined,
 	},
 	parameters: {
 		viewport: {
@@ -62,7 +70,9 @@ export const Tablet: Story = {
  */
 export const Mobile: Story = {
 	args: {
-		disabled: false,
+		currentPerspective: "all",
+		onPerspectiveChange: () => {},
+		itemCounts: undefined,
 	},
 	parameters: {
 		viewport: {
@@ -76,7 +86,9 @@ export const Mobile: Story = {
  */
 export const DarkMode: Story = {
 	args: {
-		disabled: false,
+		currentPerspective: "all",
+		onPerspectiveChange: () => {},
+		itemCounts: undefined,
 	},
 	decorators: [
 		(Story) => (
@@ -99,7 +111,9 @@ export const DarkMode: Story = {
  */
 export const Focused: Story = {
 	args: {
-		disabled: false,
+		currentPerspective: "all",
+		onPerspectiveChange: () => {},
+		itemCounts: undefined,
 	},
 	play: async ({ canvasElement }) => {
 		const selector = canvasElement.querySelector("button");
@@ -114,7 +128,9 @@ export const Focused: Story = {
  */
 export const Hovered: Story = {
 	args: {
-		disabled: false,
+		currentPerspective: "all",
+		onPerspectiveChange: () => {},
+		itemCounts: undefined,
 	},
 	play: async ({ canvasElement }) => {
 		const selector = canvasElement.querySelector("button");

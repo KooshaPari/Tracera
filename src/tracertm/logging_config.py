@@ -1,19 +1,50 @@
 """
-Loguru configuration for TraceRTM.
+Logging configuration for TraceRTM.
 
-Provides structured logging with JSON output, file rotation, and filtering.
+Provides structured logging with both Loguru (for backwards compatibility)
+and structlog (for structured log aggregation with Loki).
 """
 
 import sys
+import logging
+from pathlib import Path
 
 from loguru import logger
+import structlog
 
 from tracertm.config import get_settings
 
 
 def setup_logging() -> None:
-    """Configure loguru for TraceRTM."""
+    """Configure logging for TraceRTM with both Loguru and structlog."""
     settings = get_settings()
+
+    # Create log directory
+    log_dir = settings.data_dir / "logs"
+    log_dir.mkdir(parents=True, exist_ok=True)
+
+    # ========================================================================
+    # Configure structlog for structured logging (Loki integration)
+    # ========================================================================
+
+    structlog.configure(
+        processors=[
+            structlog.contextvars.merge_contextvars,
+            structlog.processors.add_log_level,
+            structlog.processors.StackInfoRenderer(),
+            structlog.dev.set_exc_info,
+            structlog.processors.TimeStamper(fmt="iso"),
+            structlog.processors.JSONRenderer()
+        ],
+        wrapper_class=structlog.make_filtering_bound_logger(logging.NOTSET),
+        context_class=dict,
+        logger_factory=structlog.PrintLoggerFactory(),
+        cache_logger_on_first_use=False,
+    )
+
+    # ========================================================================
+    # Configure Loguru (backwards compatibility)
+    # ========================================================================
 
     # Remove default handler
     logger.remove()
@@ -31,9 +62,6 @@ def setup_logging() -> None:
     )
 
     # File handler with rotation
-    log_dir = settings.data_dir / "logs"
-    log_dir.mkdir(parents=True, exist_ok=True)
-
     logger.add(
         log_dir / "tracertm.log",
         format="{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {name}:{function}:{line} - {message}",
@@ -68,5 +96,18 @@ def setup_logging() -> None:
 
 
 def get_logger(name: str) -> "logger":
-    """Get a logger instance for a module."""
+    """Get a Loguru logger instance for a module."""
     return logger.bind(module=name)
+
+
+def get_structlog_logger(name: str = None):
+    """
+    Get a structlog logger instance for structured logging.
+
+    Usage:
+        logger = get_structlog_logger(__name__)
+        logger.info("user_login", user_id=user.id, ip=request.client.host)
+    """
+    if name:
+        return structlog.get_logger(name)
+    return structlog.get_logger()

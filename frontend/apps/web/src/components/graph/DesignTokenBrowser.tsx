@@ -199,7 +199,7 @@ function DesignTokenBrowserComponent({
 	}, []);
 
 	const copyToClipboard = useCallback((text: string, tokenId: string) => {
-		navigator.clipboard.writeText(text).then(() => {
+		void navigator.clipboard.writeText(text).then(() => {
 			setCopiedTokenId(tokenId);
 			setTimeout(() => setCopiedTokenId(null), 2000);
 		});

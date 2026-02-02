@@ -228,7 +228,7 @@ export function createStartHandler<TRegister = Register>(
                 })
 
                 return response
-              } catch (err) {
+              } catch (_err) {
                 if (err instanceof Response) {
                   return err
                 }

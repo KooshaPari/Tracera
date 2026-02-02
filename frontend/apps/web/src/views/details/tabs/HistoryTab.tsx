@@ -36,21 +36,21 @@ interface TimelineEvent {
 export function HistoryTab({ item, className }: HistoryTabProps) {
 	const createdAtLabel = item.createdAt
 		? new Date(item.createdAt).toLocaleString(undefined, {
-				year: "numeric",
-				month: "long",
 				day: "numeric",
 				hour: "2-digit",
 				minute: "2-digit",
+				month: "long",
+				year: "numeric",
 			})
 		: "Unknown";
 
 	const updatedAtLabel = item.updatedAt
 		? new Date(item.updatedAt).toLocaleString(undefined, {
-				year: "numeric",
-				month: "long",
 				day: "numeric",
 				hour: "2-digit",
 				minute: "2-digit",
+				month: "long",
+				year: "numeric",
 			})
 		: "Unknown";
 
@@ -59,50 +59,50 @@ export function HistoryTab({ item, className }: HistoryTabProps) {
 
 		if (item.createdAt) {
 			events.push({
-				label: "Item Created",
-				timestamp: item.createdAt,
+				color: "text-emerald-500",
 				detail: `Status: ${item.status}`,
 				icon: CalendarClock,
-				color: "text-emerald-500",
+				label: "Item Created",
+				timestamp: item.createdAt,
 			});
 		}
 
 		if (item.updatedAt && item.updatedAt !== item.createdAt) {
 			events.push({
-				label: "Last Updated",
-				timestamp: item.updatedAt,
+				color: "text-sky-500",
 				detail: `Version ${item.version}`,
 				icon: CircleDot,
-				color: "text-sky-500",
+				label: "Last Updated",
+				timestamp: item.updatedAt,
 			});
 		}
 
 		if (item.version > 1 && item.updatedAt) {
 			events.push({
-				label: "Version Bumped",
-				timestamp: item.updatedAt,
+				color: "text-violet-500",
 				detail: `Now at v${item.version}`,
 				icon: GitBranch,
-				color: "text-violet-500",
+				label: "Version Bumped",
+				timestamp: item.updatedAt,
 			});
 		}
 
 		// Sort events by timestamp (newest first)
-		return events.sort((a, b) => (a.timestamp > b.timestamp ? -1 : 1));
+		return [...events].toSorted((a, b) => (a.timestamp > b.timestamp ? -1 : 1));
 	}, [item]);
 
 	const timeSinceUpdate = useMemo(() => {
-		if (!item.updatedAt) return "Unknown";
+		if (!item.updatedAt) {return "Unknown";}
 
 		const now = new Date();
 		const updated = new Date(item.updatedAt);
 		const diffMs = now.getTime() - updated.getTime();
-		const diffMins = Math.floor(diffMs / 60000);
-		const diffHours = Math.floor(diffMs / 3600000);
-		const diffDays = Math.floor(diffMs / 86400000);
+		const diffMins = Math.floor(diffMs / 60_000);
+		const diffHours = Math.floor(diffMs / 3_600_000);
+		const diffDays = Math.floor(diffMs / 86_400_000);
 
-		if (diffMins < 60) return `${diffMins} minutes ago`;
-		if (diffHours < 24) return `${diffHours} hours ago`;
+		if (diffMins < 60) {return `${diffMins} minutes ago`;}
+		if (diffHours < 24) {return `${diffHours} hours ago`;}
 		return `${diffDays} days ago`;
 	}, [item.updatedAt]);
 
@@ -217,8 +217,8 @@ export function HistoryTab({ item, className }: HistoryTabProps) {
 													{new Date(event.timestamp).toLocaleDateString(
 														undefined,
 														{
-															month: "short",
 															day: "numeric",
+															month: "short",
 															year: "numeric",
 														},
 													)}

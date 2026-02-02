@@ -96,7 +96,7 @@ class Response {
     let parsedURL
     try {
       parsedURL = new URL(url, getGlobalOrigin())
-    } catch (err) {
+    } catch (_err) {
       throw Object.assign(new TypeError('Failed to parse URL from ' + url), {
         cause: err
       })

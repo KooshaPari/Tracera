@@ -15,18 +15,18 @@ import { CalendarClock, CircleDot, Hash, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const statusColors: Record<string, string> = {
+	blocked: "bg-rose-500/15 text-rose-700 border-rose-500/30",
+	cancelled: "bg-gray-500/15 text-gray-700 border-gray-500/30",
 	done: "bg-emerald-500/15 text-emerald-700 border-emerald-500/30",
 	in_progress: "bg-sky-500/15 text-sky-700 border-sky-500/30",
 	todo: "bg-slate-500/10 text-slate-600 border-slate-500/20",
-	blocked: "bg-rose-500/15 text-rose-700 border-rose-500/30",
-	cancelled: "bg-gray-500/15 text-gray-700 border-gray-500/30",
 };
 
 const priorityColors: Record<string, string> = {
 	critical: "bg-rose-500 text-white",
 	high: "bg-orange-500 text-white",
-	medium: "bg-indigo-500 text-white",
 	low: "bg-emerald-500 text-white",
+	medium: "bg-indigo-500 text-white",
 };
 
 export interface OverviewTabProps {
@@ -46,21 +46,21 @@ export interface OverviewTabProps {
 export function OverviewTab({ item, children, className }: OverviewTabProps) {
 	const createdAtLabel = item.createdAt
 		? new Date(item.createdAt).toLocaleDateString(undefined, {
-				year: "numeric",
-				month: "long",
 				day: "numeric",
 				hour: "2-digit",
 				minute: "2-digit",
+				month: "long",
+				year: "numeric",
 			})
 		: "Unknown";
 
 	const updatedAtLabel = item.updatedAt
 		? new Date(item.updatedAt).toLocaleDateString(undefined, {
-				year: "numeric",
-				month: "long",
 				day: "numeric",
 				hour: "2-digit",
 				minute: "2-digit",
+				month: "long",
+				year: "numeric",
 			})
 		: "Unknown";
 
@@ -91,7 +91,7 @@ export function OverviewTab({ item, children, className }: OverviewTabProps) {
 							<Badge
 								className={cn(
 									"text-[10px] font-black uppercase tracking-widest",
-									statusColors[item.status] || statusColors.todo,
+									statusColors[item.status] || statusColors["todo"],
 								)}
 							>
 								{item.status.replace("_", " ")}
@@ -99,7 +99,7 @@ export function OverviewTab({ item, children, className }: OverviewTabProps) {
 							<Badge
 								className={cn(
 									"text-[10px] font-black uppercase tracking-widest",
-									priorityColors[item.priority] || priorityColors.medium,
+									priorityColors[item.priority] || priorityColors["medium"],
 								)}
 							>
 								{item.priority}

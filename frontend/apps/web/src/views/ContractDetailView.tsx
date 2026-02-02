@@ -34,9 +34,9 @@ export function ContractDetailView() {
 					variant="ghost"
 					onClick={() =>
 						navigate({
-							to: "/projects/$projectId/specifications",
 							params: { projectId: params.projectId || "" },
 							search: { tab: "contracts" },
+							to: "/projects/$projectId/specifications",
 						})
 					}
 				>
@@ -62,9 +62,9 @@ export function ContractDetailView() {
 					variant="ghost"
 					onClick={() =>
 						navigate({
-							to: "/projects/$projectId/specifications",
 							params: { projectId: params.projectId || "" },
 							search: { tab: "contracts" },
+							to: "/projects/$projectId/specifications",
 						})
 					}
 				>
@@ -107,28 +107,28 @@ export function ContractDetailView() {
 						: [
 								contract.createdAt
 									? {
-											label: "Created",
-											detail: `Contract ${contract.contractNumber}`,
 											date: contract.createdAt,
+											detail: `Contract ${contract.contractNumber}`,
+											label: "Created",
 										}
 									: null,
 								contract.updatedAt
 									? {
-											label: "Updated",
-											detail: "Metadata updated",
 											date: contract.updatedAt,
+											detail: "Metadata updated",
+											label: "Updated",
 										}
 									: null,
 								contract.lastVerifiedAt
 									? {
-											label: "Verified",
+											date: contract.lastVerifiedAt,
 											detail:
 												contract.verificationResult?.status === "pass"
 													? "All conditions passed"
-													: contract.verificationResult?.status === "fail"
+													: (contract.verificationResult?.status === "fail"
 														? "Verification failed"
-														: "Verification run",
-											date: contract.lastVerifiedAt,
+														: "Verification run"),
+											label: "Verified",
 										}
 									: null,
 							]

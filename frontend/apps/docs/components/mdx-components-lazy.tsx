@@ -7,7 +7,6 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import type { ComponentProps } from 'react';
 
 // Loading skeleton component
 const LoadingSkeleton = () => (

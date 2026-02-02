@@ -13,7 +13,7 @@
  * - Standard `cullEdgesEnhanced` remains O(n) for compatibility
  */
 
-import { RBushSpatialIndex, createSpatialIndex } from "./spatialIndex";
+import { RBushSpatialIndex } from "./spatialIndex";
 
 /**
  * FNV-1a hash function for deterministic edge culling

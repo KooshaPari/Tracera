@@ -20,7 +20,7 @@ import {
 // Mock react-hotkeys-hook
 const mockUseHotkeys = vi.fn();
 vi.mock("react-hotkeys-hook", () => ({
-	useHotkeys: (...args: any[]) => mockUseHotkeys(...args),
+	useHotkeys: (...args: unknown[]) => mockUseHotkeys(...args),
 }));
 
 // Mock date-fns
@@ -32,7 +32,7 @@ vi.mock("date-fns", () => ({
 
 // Mock zustand persist
 vi.mock("zustand/middleware", () => ({
-	persist: (fn: any) => fn,
+	persist: <T>(fn: () => T) => fn,
 }));
 
 describe("enterprise-optimizations", () => {

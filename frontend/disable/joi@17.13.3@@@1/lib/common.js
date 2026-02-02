@@ -152,7 +152,7 @@ exports.preferences = (target, source) => {
 exports.tryWithPath = (fn, key, options = {}) => {
 	try {
 		return fn();
-	} catch (err) {
+	} catch (_err) {
 		if (err.path !== undefined) {
 			err.path = key + "." + err.path;
 		} else {

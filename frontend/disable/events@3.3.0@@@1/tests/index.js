@@ -24,7 +24,7 @@ var require = (file) => {
 				}, t.fail);
 				return;
 			}
-		} catch (err) {
+		} catch (_err) {
 			t.fail(err);
 		}
 		t.end();

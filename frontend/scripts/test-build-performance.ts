@@ -58,8 +58,8 @@ async function getDirectorySize(dirPath: string): Promise<number> {
 			if (stats.isFile()) {
 				totalSize += stats.size;
 			}
-		} catch (err) {
-			// Skip files that can't be accessed
+        } catch {
+            // Skip files that can't be accessed
 		}
 	}
 
@@ -90,7 +90,7 @@ async function buildApp(app: string): Promise<BuildMetrics> {
 			stderr: "pipe",
 		});
 
-		const output = await new Response(proc.stdout).text();
+		const _output = await new Response(proc.stdout).text();
 		const errorOutput = await new Response(proc.stderr).text();
 
 		const exitCode = await proc.exited;

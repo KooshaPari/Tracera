@@ -1,4 +1,4 @@
-import { useNavigate, useSearch, useLocation } from "@tanstack/react-router";
+import { useLocation, useNavigate, useSearch } from "@tanstack/react-router";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type { ItemStatus, Priority, ViewType } from "@tracertm/types";
 import {
@@ -46,7 +46,8 @@ import {
 import { toast } from "sonner";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ListLoadingSkeleton } from "@/lib/lazy-loading";
-import { type CardItem, ResponsiveCardView } from "@/components/mobile";
+import { ResponsiveCardView } from '@/components/mobile';
+import type { CardItem } from '@/components/mobile';
 import {
 	Table,
 	TableBody,
@@ -61,6 +62,14 @@ import { useProjects } from "../hooks/useProjects";
 
 function getStatusBadge(status: ItemStatus) {
 	const config = {
+		blocked: {
+			color: "bg-red-500/10 text-red-600 border-red-500/20",
+			icon: AlertCircle,
+		},
+		cancelled: {
+			color: "bg-orange-500/10 text-orange-600 border-orange-500/20",
+			icon: X,
+		},
 		done: {
 			color: "bg-green-500/10 text-green-600 border-green-500/20",
 			icon: CheckCircle2,
@@ -69,15 +78,7 @@ function getStatusBadge(status: ItemStatus) {
 			color: "bg-blue-500/10 text-blue-600 border-blue-500/20",
 			icon: Clock,
 		},
-		blocked: {
-			color: "bg-red-500/10 text-red-600 border-red-500/20",
-			icon: AlertCircle,
-		},
 		todo: { color: "bg-muted text-muted-foreground", icon: Terminal },
-		cancelled: {
-			color: "bg-orange-500/10 text-orange-600 border-orange-500/20",
-			icon: X,
-		},
 	};
 	const c = config[status] || config.todo;
 	return (
@@ -98,8 +99,8 @@ function getPriorityDot(priority?: Priority) {
 	const colors = {
 		critical: "bg-red-500",
 		high: "bg-orange-500",
-		medium: "bg-blue-500",
 		low: "bg-green-500",
+		medium: "bg-blue-500",
 	};
 	return (
 		<div
@@ -125,7 +126,6 @@ const VirtualTableRow = memo(
 		onNavigate,
 		rowIndex,
 		onCellKeyDown,
-		isVisible = true,
 	}: VirtualTableRowProps) => {
 		const handleNavigate = useCallback(() => {
 			onNavigate(item);
@@ -284,10 +284,7 @@ const VirtualTableRow = memo(
 			</TableRow>
 		);
 	},
-	(prev, next) => {
-		// Custom comparison for memoization
-		// Return true if props are equal (skip re-render), false if different
-		return (
+	(prev, next) => (
 			prev.item.id === next.item.id &&
 			prev.item.title === next.item.title &&
 			prev.item.type === next.item.type &&
@@ -296,8 +293,7 @@ const VirtualTableRow = memo(
 			prev.item.owner === next.item.owner &&
 			prev.rowIndex === next.rowIndex &&
 			prev.isVisible === next.isVisible
-		);
-	},
+		),
 );
 
 /** View-specific titles and empty-state copy for list/table views */
@@ -313,149 +309,149 @@ const VIEW_LABELS: Record<
 		newButtonLabel?: string;
 	}
 > = {
-	feature: {
-		title: "Features",
-		description: "Manage feature requirements and user stories",
-		emptyTitle: "No features yet",
-		emptyDescription: "Create your first feature or epic to get started.",
-		createModalTitle: "Create Feature",
-		createButtonLabel: "Create Feature",
-		newButtonLabel: "New Feature",
-	},
 	api: {
-		title: "API Endpoints",
-		description: "REST API contracts and specifications",
-		emptyTitle: "No API endpoints yet",
-		emptyDescription: "Add an endpoint or schema to document your API.",
-		createModalTitle: "Create API Endpoint",
 		createButtonLabel: "Create Endpoint",
+		createModalTitle: "Create API Endpoint",
+		description: "REST API contracts and specifications",
+		emptyDescription: "Add an endpoint or schema to document your API.",
+		emptyTitle: "No API endpoints yet",
 		newButtonLabel: "New Endpoint",
-	},
-	code: {
-		title: "Code",
-		description: "Code and component traceability",
-		emptyTitle: "No code items yet",
-		emptyDescription: "Add modules, files, or functions to trace.",
-		createModalTitle: "Create Code Item",
-		createButtonLabel: "Create Item",
-		newButtonLabel: "New Item",
-	},
-	test: {
-		title: "Tests",
-		description: "Test cases and scenarios",
-		emptyTitle: "No tests yet",
-		emptyDescription: "Create a test case or scenario to get started.",
-		createModalTitle: "Create Test",
-		createButtonLabel: "Create Test",
-		newButtonLabel: "New Test",
-	},
-	database: {
-		title: "Database",
-		description: "Schema and table-level artifacts",
-		emptyTitle: "No database items yet",
-		emptyDescription: "Add tables or schema artifacts to trace.",
-		createModalTitle: "Create Database Item",
-		createButtonLabel: "Create Item",
-		newButtonLabel: "New Item",
-	},
-	domain: {
-		title: "Domain",
-		description: "Domain model and concepts",
-		emptyTitle: "No domain items yet",
-		emptyDescription: "Add entities or concepts to build your domain model.",
-		createModalTitle: "Create Domain Item",
-		createButtonLabel: "Create Item",
-		newButtonLabel: "New Item",
-	},
-	wireframe: {
-		title: "Wireframes",
-		description: "UI wireframes and mockups",
-		emptyTitle: "No wireframes yet",
-		emptyDescription: "Add a wireframe to get started.",
-		createModalTitle: "Create Wireframe",
-		createButtonLabel: "Create Wireframe",
-		newButtonLabel: "New Wireframe",
+		title: "API Endpoints",
 	},
 	architecture: {
-		title: "Architecture",
-		description: "Architecture decisions and components",
-		emptyTitle: "No architecture items yet",
-		emptyDescription: "Add an architecture artifact to get started.",
+		createButtonLabel: "Create Item",
 		createModalTitle: "Create Architecture Item",
-		createButtonLabel: "Create Item",
+		description: "Architecture decisions and components",
+		emptyDescription: "Add an architecture artifact to get started.",
+		emptyTitle: "No architecture items yet",
 		newButtonLabel: "New Item",
+		title: "Architecture",
 	},
-	infrastructure: {
-		title: "Infrastructure",
-		description: "Infrastructure and deployment",
-		emptyTitle: "No infrastructure items yet",
-		emptyDescription: "Add infrastructure or deployment artifacts.",
-		createModalTitle: "Create Infrastructure Item",
+	code: {
 		createButtonLabel: "Create Item",
+		createModalTitle: "Create Code Item",
+		description: "Code and component traceability",
+		emptyDescription: "Add modules, files, or functions to trace.",
+		emptyTitle: "No code items yet",
 		newButtonLabel: "New Item",
-	},
-	dataflow: {
-		title: "Dataflow",
-		description: "Data flows and pipelines",
-		emptyTitle: "No dataflow items yet",
-		emptyDescription: "Add a data flow or pipeline to get started.",
-		createModalTitle: "Create Dataflow",
-		createButtonLabel: "Create Item",
-		newButtonLabel: "New Item",
-	},
-	dependency: {
-		title: "Dependencies",
-		description: "Dependency and relationship view",
-		emptyTitle: "No dependencies yet",
-		emptyDescription: "Add items and links to see dependencies.",
-		createModalTitle: "Create Item",
-		createButtonLabel: "Create Item",
-		newButtonLabel: "New Item",
-	},
-	security: {
-		title: "Security",
-		description: "Security requirements and controls",
-		emptyTitle: "No security items yet",
-		emptyDescription: "Add security requirements or controls.",
-		createModalTitle: "Create Security Item",
-		createButtonLabel: "Create Item",
-		newButtonLabel: "New Item",
-	},
-	performance: {
-		title: "Performance",
-		description: "Performance requirements and metrics",
-		emptyTitle: "No performance items yet",
-		emptyDescription: "Add performance requirements or metrics.",
-		createModalTitle: "Create Performance Item",
-		createButtonLabel: "Create Item",
-		newButtonLabel: "New Item",
-	},
-	monitoring: {
-		title: "Monitoring",
-		description: "Monitoring and observability",
-		emptyTitle: "No monitoring items yet",
-		emptyDescription: "Add monitoring or observability artifacts.",
-		createModalTitle: "Create Monitoring Item",
-		createButtonLabel: "Create Item",
-		newButtonLabel: "New Item",
-	},
-	journey: {
-		title: "Journey",
-		description: "User journeys and flows",
-		emptyTitle: "No journey items yet",
-		emptyDescription: "Add a user journey or flow to get started.",
-		createModalTitle: "Create Journey",
-		createButtonLabel: "Create Item",
-		newButtonLabel: "New Journey",
+		title: "Code",
 	},
 	configuration: {
-		title: "Configuration",
-		description: "Configuration and settings",
-		emptyTitle: "No configuration items yet",
-		emptyDescription: "Add configuration artifacts.",
-		createModalTitle: "Create Configuration Item",
 		createButtonLabel: "Create Item",
+		createModalTitle: "Create Configuration Item",
+		description: "Configuration and settings",
+		emptyDescription: "Add configuration artifacts.",
+		emptyTitle: "No configuration items yet",
 		newButtonLabel: "New Item",
+		title: "Configuration",
+	},
+	database: {
+		createButtonLabel: "Create Item",
+		createModalTitle: "Create Database Item",
+		description: "Schema and table-level artifacts",
+		emptyDescription: "Add tables or schema artifacts to trace.",
+		emptyTitle: "No database items yet",
+		newButtonLabel: "New Item",
+		title: "Database",
+	},
+	dataflow: {
+		createButtonLabel: "Create Item",
+		createModalTitle: "Create Dataflow",
+		description: "Data flows and pipelines",
+		emptyDescription: "Add a data flow or pipeline to get started.",
+		emptyTitle: "No dataflow items yet",
+		newButtonLabel: "New Item",
+		title: "Dataflow",
+	},
+	dependency: {
+		createButtonLabel: "Create Item",
+		createModalTitle: "Create Item",
+		description: "Dependency and relationship view",
+		emptyDescription: "Add items and links to see dependencies.",
+		emptyTitle: "No dependencies yet",
+		newButtonLabel: "New Item",
+		title: "Dependencies",
+	},
+	domain: {
+		createButtonLabel: "Create Item",
+		createModalTitle: "Create Domain Item",
+		description: "Domain model and concepts",
+		emptyDescription: "Add entities or concepts to build your domain model.",
+		emptyTitle: "No domain items yet",
+		newButtonLabel: "New Item",
+		title: "Domain",
+	},
+	feature: {
+		createButtonLabel: "Create Feature",
+		createModalTitle: "Create Feature",
+		description: "Manage feature requirements and user stories",
+		emptyDescription: "Create your first feature or epic to get started.",
+		emptyTitle: "No features yet",
+		newButtonLabel: "New Feature",
+		title: "Features",
+	},
+	infrastructure: {
+		createButtonLabel: "Create Item",
+		createModalTitle: "Create Infrastructure Item",
+		description: "Infrastructure and deployment",
+		emptyDescription: "Add infrastructure or deployment artifacts.",
+		emptyTitle: "No infrastructure items yet",
+		newButtonLabel: "New Item",
+		title: "Infrastructure",
+	},
+	journey: {
+		createButtonLabel: "Create Item",
+		createModalTitle: "Create Journey",
+		description: "User journeys and flows",
+		emptyDescription: "Add a user journey or flow to get started.",
+		emptyTitle: "No journey items yet",
+		newButtonLabel: "New Journey",
+		title: "Journey",
+	},
+	monitoring: {
+		createButtonLabel: "Create Item",
+		createModalTitle: "Create Monitoring Item",
+		description: "Monitoring and observability",
+		emptyDescription: "Add monitoring or observability artifacts.",
+		emptyTitle: "No monitoring items yet",
+		newButtonLabel: "New Item",
+		title: "Monitoring",
+	},
+	performance: {
+		createButtonLabel: "Create Item",
+		createModalTitle: "Create Performance Item",
+		description: "Performance requirements and metrics",
+		emptyDescription: "Add performance requirements or metrics.",
+		emptyTitle: "No performance items yet",
+		newButtonLabel: "New Item",
+		title: "Performance",
+	},
+	security: {
+		createButtonLabel: "Create Item",
+		createModalTitle: "Create Security Item",
+		description: "Security requirements and controls",
+		emptyDescription: "Add security requirements or controls.",
+		emptyTitle: "No security items yet",
+		newButtonLabel: "New Item",
+		title: "Security",
+	},
+	test: {
+		createButtonLabel: "Create Test",
+		createModalTitle: "Create Test",
+		description: "Test cases and scenarios",
+		emptyDescription: "Create a test case or scenario to get started.",
+		emptyTitle: "No tests yet",
+		newButtonLabel: "New Test",
+		title: "Tests",
+	},
+	wireframe: {
+		createButtonLabel: "Create Wireframe",
+		createModalTitle: "Create Wireframe",
+		description: "UI wireframes and mockups",
+		emptyDescription: "Add a wireframe to get started.",
+		emptyTitle: "No wireframes yet",
+		newButtonLabel: "New Wireframe",
+		title: "Wireframes",
 	},
 };
 
@@ -463,13 +459,13 @@ function getViewLabels(view?: ViewType | string) {
 	const key = typeof view === "string" ? view.toLowerCase() : "";
 	return (
 		VIEW_LABELS[key] ?? {
-			title: "Item Registry",
-			description: "Manage project items and artifacts in a unified registry.",
-			emptyTitle: "No items yet",
-			emptyDescription: "Create your first item to get started.",
-			createModalTitle: "Create Item",
 			createButtonLabel: "Create Item",
+			createModalTitle: "Create Item",
+			description: "Manage project items and artifacts in a unified registry.",
+			emptyDescription: "Create your first item to get started.",
+			emptyTitle: "No items yet",
 			newButtonLabel: "New Item",
+			title: "Item Registry",
 		}
 	);
 }
@@ -504,25 +500,25 @@ const VirtualTableContainer = forwardRef<VirtualTableHandle, any>(
 		useImperativeHandle(
 			ref,
 			() => ({
-				scrollToItem: (index: number, behavior: "smooth" | "auto" = "auto") => {
-					if (parentRef.current && index >= 0) {
-						rowVirtualizer.scrollToIndex(index, { align: "center", behavior });
-					}
+				getScrollPercentage: () => {
+					const element = parentRef.current;
+					if (!element) {return 0;}
+					const scrollHeight = element.scrollHeight - element.clientHeight;
+					return scrollHeight > 0 ? element.scrollTop / scrollHeight : 0;
 				},
 				getVisibleRange: () => {
 					const items = rowVirtualizer.getVirtualItems();
 					return items.length > 0
 						? {
-								start: items[0]?.index ?? 0,
 								end: items[items.length - 1]?.index ?? 0,
+								start: items[0]?.index ?? 0,
 							}
 						: null;
 				},
-				getScrollPercentage: () => {
-					const element = parentRef.current;
-					if (!element) return 0;
-					const scrollHeight = element.scrollHeight - element.clientHeight;
-					return scrollHeight > 0 ? element.scrollTop / scrollHeight : 0;
+				scrollToItem: (index: number, behavior: "smooth" | "auto" = "auto") => {
+					if (parentRef.current && index >= 0) {
+						rowVirtualizer.scrollToIndex(index, { align: "center", behavior });
+					}
 				},
 			}),
 			[rowVirtualizer, parentRef],
@@ -539,24 +535,24 @@ const VirtualTableContainer = forwardRef<VirtualTableHandle, any>(
 					<div
 						style={{
 							height: `${rowVirtualizer.getTotalSize()}px`,
-							width: "100%",
 							position: "relative",
+							width: "100%",
 						}}
 					>
 						{rowVirtualizer.getVirtualItems().map((virtualRow) => {
 							const item = filteredAndSortedItems[virtualRow.index];
-							if (!item) return null;
+							if (!item) {return null;}
 
 							return (
 								<div
 									key={item.id}
 									style={{
+										height: `${virtualRow.size}px`,
+										left: 0,
 										position: "absolute",
 										top: 0,
-										left: 0,
-										width: "100%",
-										height: `${virtualRow.size}px`,
 										transform: `translateY(${virtualRow.start}px)`,
+										width: "100%",
 									}}
 									data-item-id={item.id}
 									data-index={virtualRow.index}
@@ -574,7 +570,7 @@ const VirtualTableContainer = forwardRef<VirtualTableHandle, any>(
 													onNavigate={onNavigate}
 													rowIndex={virtualRow.index}
 													onCellKeyDown={onCellKeyDown}
-													isVisible={true}
+													isVisible
 												/>
 											</TableBody>
 										</Table>
@@ -658,12 +654,7 @@ export function ItemsTableView({
 	const closeCreateModal = useCallback(() => {
 		setShowCreateModal(false);
 		setFormError(null);
-		navigate({
-			search: (prev: any) => {
-				const { action, ...rest } = prev || {};
-				return rest;
-			},
-		} as any);
+		undefined;
 		if (lastFocusedRef.current) {
 			lastFocusedRef.current.focus();
 		}
@@ -673,27 +664,14 @@ export function ItemsTableView({
 		(item: any) => {
 			const viewType = String(item?.view || view || "feature").toLowerCase();
 			if (location.pathname.startsWith("/items")) {
-				navigate({
-					to: "/items/$itemId",
-					params: { itemId: item.id },
-				});
+				undefined;
 				return;
 			}
 			if (!effectiveProjectId) {
-				navigate({
-					to: "/items/$itemId",
-					params: { itemId: item.id },
-				});
+				undefined;
 				return;
 			}
-			navigate({
-				to: "/projects/$projectId/views/$viewType/$itemId",
-				params: {
-					projectId: effectiveProjectId,
-					viewType,
-					itemId: item.id,
-				},
-			});
+			undefined;
 		},
 		[navigate, effectiveProjectId, view, location.pathname],
 	);
@@ -711,13 +689,13 @@ export function ItemsTableView({
 		}
 		try {
 			await createItem.mutateAsync({
-				projectId: effectiveProjectId,
-				view: (view as any) || "feature",
-				type: newType || (view as any) || "feature",
-				title: newTitle.trim(),
 				description: newDescription.trim() || undefined,
-				status: newStatus,
 				priority: newPriority,
+				projectId: effectiveProjectId,
+				status: newStatus,
+				title: newTitle.trim(),
+				type: newType || (view as any) || "feature",
+				view: (view as any) || "feature",
 			});
 			toast.success("Node created");
 			setLiveMessage("Item created.");
@@ -745,7 +723,7 @@ export function ItemsTableView({
 	const handleRefresh = useCallback(() => {
 		setShowLoadingState(true);
 		setLiveMessage("Loading items...");
-		window.setTimeout(() => {
+		globalThis.setTimeout(() => {
 			setShowLoadingState(false);
 			setLiveMessage("Items loaded.");
 		}, 250);
@@ -761,14 +739,14 @@ export function ItemsTableView({
 			return matchesType && matchesQuery;
 		});
 
-		return filtered.sort((a, b) => {
+		return filtered.toSorted((a, b) => {
 			const dir = sortOrder === "asc" ? 1 : -1;
-			if (sortColumn === "title") return a.title.localeCompare(b.title) * dir;
+			if (sortColumn === "title") {return a.title.localeCompare(b.title) * dir;}
 			if (sortColumn === "created")
-				return (
+				{return (
 					(new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) *
 					dir
-				);
+				);}
 			return 0;
 		});
 	}, [items, effectiveTypeFilter, searchQuery, sortColumn, sortOrder]);
@@ -780,7 +758,7 @@ export function ItemsTableView({
 		estimateSize: () => 68, // Base row height (TableRow with padding)
 		overscan: 15, // Render 15 extra rows outside viewport for smoother scrolling
 		measureElement:
-			typeof window !== "undefined" &&
+			typeof globalThis.window !== "undefined" &&
 			navigator.userAgent.indexOf("Firefox") === -1
 				? (element) => element?.getBoundingClientRect().height
 				: undefined,
@@ -823,11 +801,11 @@ export function ItemsTableView({
 
 	const handleCellKeyDown = useCallback(
 		(event: React.KeyboardEvent<HTMLElement>) => {
-			if (event.target !== event.currentTarget) return;
+			if (event.target !== event.currentTarget) {return;}
 			const target = event.currentTarget as HTMLElement;
 			const rowAttr = target.getAttribute("data-row-index");
 			const colAttr = target.getAttribute("data-col-index");
-			if (rowAttr == null || colAttr == null) return;
+			if (rowAttr == null || colAttr == null) {return;}
 
 			const rowIndex = Number.parseInt(rowAttr, 10);
 			const colIndex = Number.parseInt(colAttr, 10);
@@ -838,45 +816,55 @@ export function ItemsTableView({
 
 			switch (event.key) {
 				case "Enter":
-				case " ":
+				case " ": {
 					event.preventDefault();
 					const item = filteredAndSortedItems[rowIndex];
 					if (item) {
 						handleItemNavigate(item);
 					}
 					return;
-				case "ArrowRight":
+				}
+				case "ArrowRight": {
 					nextCol = Math.min(maxCol, colIndex + 1);
 					break;
-				case "ArrowLeft":
+				}
+				case "ArrowLeft": {
 					nextCol = Math.max(0, colIndex - 1);
 					break;
-				case "ArrowDown":
+				}
+				case "ArrowDown": {
 					nextRow = Math.min(maxRow, rowIndex + 1);
 					break;
-				case "ArrowUp":
+				}
+				case "ArrowUp": {
 					nextRow = Math.max(0, rowIndex - 1);
 					break;
-				case "Home":
+				}
+				case "Home": {
 					nextCol = 0;
 					if (event.ctrlKey) {
 						nextRow = 0;
 					}
 					break;
-				case "End":
+				}
+				case "End": {
 					nextCol = maxCol;
 					if (event.ctrlKey) {
 						nextRow = maxRow;
 					}
 					break;
-				case "PageDown":
+				}
+				case "PageDown": {
 					nextRow = Math.min(maxRow, rowIndex + 5);
 					break;
-				case "PageUp":
+				}
+				case "PageUp": {
 					nextRow = Math.max(0, rowIndex - 5);
 					break;
-				default:
+				}
+				default: {
 					return;
+				}
 			}
 
 			event.preventDefault();
@@ -890,10 +878,10 @@ export function ItemsTableView({
 	);
 
 	useEffect(() => {
-		if (!showCreateModal) return;
+		if (!showCreateModal) {return;}
 		lastFocusedRef.current = document.activeElement as HTMLElement | null;
 		hasTabbedInModalRef.current = false;
-		const timer = window.setTimeout(() => {
+		const timer = globalThis.setTimeout(() => {
 			titleInputRef.current?.focus();
 		}, 0);
 
@@ -903,7 +891,7 @@ export function ItemsTableView({
 				closeCreateModal();
 				return;
 			}
-			if (event.key !== "Tab") return;
+			if (event.key !== "Tab") {return;}
 			if (
 				document.activeElement === titleInputRef.current &&
 				!hasTabbedInModalRef.current
@@ -913,21 +901,17 @@ export function ItemsTableView({
 				return;
 			}
 			const modal = modalRef.current;
-			if (!modal) return;
-			const focusable = Array.from(
-				modal.querySelectorAll<HTMLElement>(
-					[
-						"button",
-						"input",
-						"textarea",
-						"select",
-						"[tabindex]:not([tabindex='-1'])",
-					].join(","),
-				),
-			).filter((el) => !el.hasAttribute("disabled") && el.tabIndex !== -1);
-			if (focusable.length === 0) return;
+			if (!modal) {return;}
+			const focusable = [...modal.querySelectorAll<HTMLElement>([
+	'button',
+	'input',
+	'textarea',
+	'select',
+	'[tabindex]:not([tabindex=\'-1\'])'
+].join(','))].filter((el) => !el.hasAttribute("disabled") && el.tabIndex !== -1);
+			if (focusable.length === 0) {return;}
 			const first = focusable[0];
-			const last = focusable[focusable.length - 1];
+			const last = focusable.at(-1);
 			const active = document.activeElement as HTMLElement | null;
 			if (!active || !modal.contains(active)) {
 				event.preventDefault();
@@ -947,11 +931,11 @@ export function ItemsTableView({
 				first.focus();
 			}
 		};
-		window.addEventListener("keydown", handleKeyDown);
+		globalThis.addEventListener("keydown", handleKeyDown);
 
 		return () => {
-			window.clearTimeout(timer);
-			window.removeEventListener("keydown", handleKeyDown);
+			globalThis.clearTimeout(timer);
+			globalThis.removeEventListener("keydown", handleKeyDown);
 		};
 	}, [showCreateModal, closeCreateModal]);
 
@@ -977,9 +961,7 @@ export function ItemsTableView({
 					label: labels.newButtonLabel ?? "New Item",
 					onClick: () => {
 						setShowCreateModal(true);
-						navigate({
-							search: (prev: any) => ({ ...prev, action: "create" }),
-						} as any);
+						undefined;
 					},
 				},
 			]}
@@ -989,36 +971,6 @@ export function ItemsTableView({
 
 	// Build card items for mobile view
 	const cardItems: CardItem[] = filteredAndSortedItems.map((item) => ({
-		id: item.id,
-		title: item.title,
-		subtitle: item.id.slice(0, 12),
-		badge: (
-			<Badge
-				variant="outline"
-				className="text-[8px] font-black uppercase tracking-tighter px-1.5 h-5"
-			>
-				{item.type}
-			</Badge>
-		),
-		status: getStatusBadge(item.status),
-		priority: (
-			<div className="flex items-center gap-1">
-				{getPriorityDot(item.priority)}
-				<span className="text-[10px] font-bold uppercase text-muted-foreground">
-					{item.priority || "medium"}
-				</span>
-			</div>
-		),
-		owner: (
-			<div className="flex items-center gap-2">
-				<div className="h-5 w-5 rounded-full bg-muted flex items-center justify-center text-[8px] font-black uppercase">
-					{item.owner?.charAt(0) || "?"}
-				</div>
-				<span className="text-[10px] font-bold uppercase text-muted-foreground">
-					{item.owner || "Unassigned"}
-				</span>
-			</div>
-		),
 		actions: (
 			<div className="flex items-center gap-2 w-full">
 				<Button
@@ -1043,7 +995,37 @@ export function ItemsTableView({
 				</Button>
 			</div>
 		),
+		badge: (
+			<Badge
+				variant="outline"
+				className="text-[8px] font-black uppercase tracking-tighter px-1.5 h-5"
+			>
+				{item.type}
+			</Badge>
+		),
+		id: item.id,
 		onClick: () => handleItemNavigate(item),
+		owner: (
+			<div className="flex items-center gap-2">
+				<div className="h-5 w-5 rounded-full bg-muted flex items-center justify-center text-[8px] font-black uppercase">
+					{item.owner?.charAt(0) || "?"}
+				</div>
+				<span className="text-[10px] font-bold uppercase text-muted-foreground">
+					{item.owner || "Unassigned"}
+				</span>
+			</div>
+		),
+		priority: (
+			<div className="flex items-center gap-1">
+				{getPriorityDot(item.priority)}
+				<span className="text-[10px] font-bold uppercase text-muted-foreground">
+					{item.priority || "medium"}
+				</span>
+			</div>
+		),
+		status: getStatusBadge(item.status),
+		subtitle: item.id.slice(0, 12),
+		title: item.title,
 	}));
 
 	return (
@@ -1084,9 +1066,7 @@ export function ItemsTableView({
 						size="sm"
 						onClick={() => {
 							setShowCreateModal(true);
-							navigate({
-								search: (prev: any) => ({ ...prev, action: "create" }),
-							} as any);
+							undefined;
 						}}
 						aria-label={labels.newButtonLabel ?? "Create new item"}
 						className="gap-2 rounded-xl shadow-lg shadow-primary/20 min-h-[44px]"
@@ -1133,12 +1113,7 @@ export function ItemsTableView({
 					<Select
 						value={projectFilter || "all"}
 						onValueChange={(v) =>
-							navigate({
-								search: (prev: any) => ({
-									...prev,
-									project: v === "all" ? undefined : v,
-								}),
-							} as any)
+							undefined
 						}
 					>
 						<SelectTrigger
@@ -1164,12 +1139,7 @@ export function ItemsTableView({
 					<Select
 						value={effectiveTypeFilter || "all"}
 						onValueChange={(v) =>
-							navigate({
-								search: (prev: any) => ({
-									...prev,
-									type: v === "all" ? undefined : v,
-								}),
-							} as any)
+							undefined
 						}
 					>
 						<SelectTrigger
@@ -1206,7 +1176,7 @@ export function ItemsTableView({
 						<div className="flex min-h-[400px] items-center justify-center p-6">
 							{emptyStateNode}
 						</div>
-					) : filteredAndSortedItems.length <= 200 ? (
+					) : (filteredAndSortedItems.length <= 200 ? (
 						<div className="overflow-x-auto custom-scrollbar">
 							<Table
 								role="table"
@@ -1222,9 +1192,9 @@ export function ItemsTableView({
 											colIndex={1}
 											sortDirection={
 												sortColumn === "title"
-													? sortOrder === "asc"
+													? (sortOrder === "asc"
 														? "ascending"
-														: "descending"
+														: "descending")
 													: "none"
 											}
 											className="w-[400px] h-14 px-6 text-[10px] font-black uppercase tracking-widest sticky top-0 bg-card/50 z-10"
@@ -1307,9 +1277,9 @@ export function ItemsTableView({
 												colIndex={1}
 												sortDirection={
 													sortColumn === "title"
-														? sortOrder === "asc"
+														? (sortOrder === "asc"
 															? "ascending"
-															: "descending"
+															: "descending")
 														: "none"
 												}
 												className="w-[400px] h-14 px-6 text-[10px] font-black uppercase tracking-widest sticky top-0 bg-card/50 z-10"
@@ -1374,7 +1344,7 @@ export function ItemsTableView({
 								emptyState={emptyStateNode}
 							/>
 						</>
-					)}
+					))}
 				</Card>
 			</div>
 

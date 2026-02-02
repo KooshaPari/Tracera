@@ -14,8 +14,22 @@ interface SwaggerUIWrapperProps {
 	displayRequestDuration?: boolean;
 	filter?: boolean;
 	deepLinking?: boolean;
-	requestInterceptor?: (request: any) => any;
-	responseInterceptor?: (response: any) => any;
+	requestInterceptor?: (request: Request) => Request;
+	responseInterceptor?: (response: Response) => Response;
+}
+
+function downloadOpenApiJSON(data: unknown): void {
+	const blob = new Blob([JSON.stringify(data, null, 2)], {
+		type: "application/json",
+	});
+	const url = URL.createObjectURL(blob);
+	const a = document.createElement("a");
+	a.href = url;
+	a.download = "openapi-spec.json";
+	document.body.appendChild(a);
+	a.click();
+	document.body.removeChild(a);
+	URL.revokeObjectURL(url);
 }
 
 export function SwaggerUIWrapper({
@@ -62,37 +76,23 @@ export function SwaggerUIWrapper({
 			if (specUrl) {
 				const response = await fetch(specUrl);
 				const data = await response.json();
-				downloadJSON(data);
+				downloadOpenApiJSON(data);
 			}
 			return;
 		}
-		downloadJSON(dataToDownload);
-	};
-
-	const downloadJSON = (data: any) => {
-		const blob = new Blob([JSON.stringify(data, null, 2)], {
-			type: "application/json",
-		});
-		const url = URL.createObjectURL(blob);
-		const a = document.createElement("a");
-		a.href = url;
-		a.download = "openapi-spec.json";
-		document.body.appendChild(a);
-		a.click();
-		document.body.removeChild(a);
-		URL.revokeObjectURL(url);
+		downloadOpenApiJSON(dataToDownload);
 	};
 
 	const copySpecUrl = () => {
 		const fullUrl = window.location.origin + specUrl;
-		navigator.clipboard.writeText(fullUrl).then(() => {
+		void navigator.clipboard.writeText(fullUrl).then(() => {
 			setCopied(true);
 			setTimeout(() => setCopied(false), 2000);
 		});
 	};
 
 	// Default request interceptor to add authentication (SSR-safe)
-	const defaultRequestInterceptor = (req: any) => {
+	const defaultRequestInterceptor = (req: Request): Promise<Request> | Request => {
 		// Check for stored token (SSR-safe)
 		const isStorageAvailable =
 			typeof localStorage !== "undefined" &&
@@ -101,22 +101,21 @@ export function SwaggerUIWrapper({
 		const apiKey = isStorageAvailable ? localStorage.getItem("api_key") : null;
 
 		if (token) {
-			req.headers.Authorization = `Bearer ${token}`;
+			req.headers.set("Authorization", `Bearer ${token}`);
 		}
 		if (apiKey) {
-			req.headers["X-API-Key"] = apiKey;
+			req.headers.set("X-API-Key", apiKey);
 		}
 
 		return requestInterceptor ? requestInterceptor(req) : req;
 	};
 
 	// Default response interceptor for logging
-	const defaultResponseInterceptor = (res: any) => {
+	const defaultResponseInterceptor = (res: Response): Promise<Response> | Response => {
 		// Log response for debugging
 		logger.info("API Response:", {
 			url: res.url,
 			status: res.status,
-			duration: res.duration,
 		});
 
 		return responseInterceptor ? responseInterceptor(res) : res;

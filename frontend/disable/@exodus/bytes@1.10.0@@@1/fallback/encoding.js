@@ -127,7 +127,7 @@ export class TextDecoder {
         // "BOM seen" is set on the current decode call only if it did not error, in "serialize I/O queue" after decoding
         if (stream && (seenBOM || res.length > 0)) this.#canBOM = false
         return res
-      } catch (err) {
+      } catch (_err) {
         this.#chunk = null // reset unfinished chunk on errors
         // The correct way per spec seems to be not destroying the decoder state (aka BOM here) in stream mode
         // See also multi-byte.js

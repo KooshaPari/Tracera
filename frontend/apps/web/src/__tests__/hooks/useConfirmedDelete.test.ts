@@ -122,7 +122,7 @@ describe("useConfirmedDelete", () => {
 			});
 		});
 
-		const deletePromise = act(async () => {
+		void act(async () => {
 			await result.current.executeDelete(deleteFunction);
 		});
 

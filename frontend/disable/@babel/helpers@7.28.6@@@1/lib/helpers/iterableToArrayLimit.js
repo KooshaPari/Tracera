@@ -22,7 +22,7 @@ function _iterableToArrayLimit(arr, i) {
         if (_arr.length === i) break;
       }
     }
-  } catch (err) {
+  } catch (_err) {
     didIteratorError = true;
     iteratorError = err;
   } finally {

@@ -27,6 +27,8 @@ import { expect, test, type Page } from "@playwright/test";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 
+const logger = { info: (msg: string) => console.log(msg) };
+
 /**
  * Performance metrics captured during benchmarking
  */

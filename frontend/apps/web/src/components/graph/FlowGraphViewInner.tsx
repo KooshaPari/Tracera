@@ -33,10 +33,6 @@ import {
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useGraphPerformanceMonitor } from "@/hooks/useGraphPerformanceMonitor";
 import { useGraphCache } from "@/lib/graphCache";
-import {
-	cullEdgesEnhanced,
-	type ViewportBounds as EnhancedViewportBounds,
-} from "@/lib/enhancedViewportCulling";
 import { getEdgeLODTier, calculateEdgeMidpoint } from "@/lib/edgeLOD";
 import { buildGraphIndices, getRelatedItems } from "@/lib/graphIndexing";
 import { GraphSpatialIndex, type SpatialNode, type SpatialEdge } from "@/lib/spatialIndex";
@@ -715,7 +711,7 @@ function FlowGraphViewInnerComponent({
 	useEffect(() => {
 		if (autoFit && nodes.length > 0) {
 			const timer = setTimeout(() => {
-				fitView({ padding: 0.2, duration: 300 });
+				void fitView({ padding: 0.2, duration: 300 });
 			}, 100);
 			return () => clearTimeout(timer);
 		}
@@ -775,7 +771,7 @@ function FlowGraphViewInnerComponent({
 
 	// Handlers (stable refs for ReactFlow / Panel children — A1 perf)
 	const handleFit = useCallback(() => {
-		fitView({ padding: 0.2, duration: 300 });
+		void fitView({ padding: 0.2, duration: 300 });
 	}, [fitView]);
 
 	const handleReset = useCallback(() => {
@@ -790,7 +786,7 @@ function FlowGraphViewInnerComponent({
 			setSelectedNodeId(nodeId);
 			const node = nodes.find((n: Node) => n.id === nodeId);
 			if (node) {
-				fitView({ nodes: [node], padding: 0.5, duration: 300 });
+				void fitView({ nodes: [node], padding: 0.5, duration: 300 });
 			}
 		},
 		[nodes, fitView],

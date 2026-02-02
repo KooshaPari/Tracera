@@ -345,7 +345,7 @@ async function getPackageMeta() {
 			version: parsed.version,
 		};
 		return cachedPackageMeta;
-	} catch (err) {
+	} catch (_err) {
 		cachedPackageMeta = {
 			version: "error-fetching-version",
 		};

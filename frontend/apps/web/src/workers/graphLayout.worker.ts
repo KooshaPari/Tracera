@@ -1,3 +1,4 @@
+/* eslint-disable */
 /**
  * Web Worker for off-main-thread graph layout computation
  *
@@ -15,6 +16,7 @@
 import * as Comlink from 'comlink';
 import type { ElkExtendedEdge, ElkNode } from 'elkjs';
 import * as ELKModule from 'elkjs/lib/elk.bundled.js';
+import { logger } from '@/lib/logger';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -732,3 +734,4 @@ const api = {
 Comlink.expose(api);
 
 export type GraphLayoutWorkerAPI = typeof api;
+/* eslint-enable */

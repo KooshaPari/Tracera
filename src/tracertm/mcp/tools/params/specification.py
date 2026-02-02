@@ -10,8 +10,8 @@ try:
     from tracertm.mcp.core import mcp
 except Exception:  # pragma: no cover
     class _StubMCP:
-        def tool(self, *args: Any, **kwargs: Any):
-            def decorator(fn):
+        def tool(self, *args: Any, **kwargs: Any) -> Any:
+            def decorator(fn: Any) -> Any:
                 return fn
             return decorator
     mcp = _StubMCP()  # type: ignore[assignment]
@@ -23,15 +23,15 @@ try:
     from tracertm.mcp.tools import specifications as spec_tools
 except Exception:
     class _SpecStub:
-        async def create_adr(self, **kwargs):
+        async def create_adr(self, **kwargs: Any) -> None:
             raise ToolError("Specification tools unavailable")
-        async def list_adrs(self, **kwargs):
+        async def list_adrs(self, **kwargs: Any) -> None:
             raise ToolError("Specification tools unavailable")
-        async def create_contract(self, **kwargs):
+        async def create_contract(self, **kwargs: Any) -> None:
             raise ToolError("Specification tools unavailable")
-        async def create_feature(self, **kwargs):
+        async def create_feature(self, **kwargs: Any) -> None:
             raise ToolError("Specification tools unavailable")
-        async def create_scenario(self, **kwargs):
+        async def create_scenario(self, **kwargs: Any) -> None:
             raise ToolError("Specification tools unavailable")
     spec_tools = _SpecStub()  # type: ignore
 

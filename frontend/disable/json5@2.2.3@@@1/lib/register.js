@@ -6,7 +6,7 @@ require.extensions[".json5"] = (module, filename) => {
 	const content = fs.readFileSync(filename, "utf8");
 	try {
 		module.exports = JSON5.parse(content);
-	} catch (err) {
+	} catch (_err) {
 		err.message = filename + ": " + err.message;
 		throw err;
 	}

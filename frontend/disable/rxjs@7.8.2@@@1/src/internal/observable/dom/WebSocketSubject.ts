@@ -230,7 +230,7 @@ export class WebSocketSubject<T> extends AnonymousSubject<T> {
     return new Observable((observer: Observer<T>) => {
       try {
         self.next(subMsg());
-      } catch (err) {
+      } catch (_err) {
         observer.error(err);
       }
 
@@ -240,7 +240,7 @@ export class WebSocketSubject<T> extends AnonymousSubject<T> {
             if (messageFilter(x)) {
               observer.next(x);
             }
-          } catch (err) {
+          } catch (_err) {
             observer.error(err);
           }
         },
@@ -251,7 +251,7 @@ export class WebSocketSubject<T> extends AnonymousSubject<T> {
       return () => {
         try {
           self.next(unsubMsg());
-        } catch (err) {
+        } catch (_err) {
           observer.error(err);
         }
         subscription.unsubscribe();
@@ -358,7 +358,7 @@ export class WebSocketSubject<T> extends AnonymousSubject<T> {
       try {
         const { deserializer } = this._config;
         observer.next(deserializer!(e));
-      } catch (err) {
+      } catch (_err) {
         observer.error(err);
       }
     };

@@ -573,7 +573,7 @@ Expecting one of '${allowedValues.join("', '")}'`);
 	_callParseArg(target, value, previous, invalidArgumentMessage) {
 		try {
 			return target.parseArg(value, previous);
-		} catch (err) {
+		} catch (_err) {
 			if (err.code === "commander.invalidArgument") {
 				const message = `${invalidArgumentMessage} ${err.message}`;
 				this.error(message, { exitCode: err.exitCode, code: err.code });
@@ -1134,7 +1134,7 @@ Expecting one of '${allowedValues.join("', '")}'`);
 			let resolvedScriptPath; // resolve possible symlink for installed npm binary
 			try {
 				resolvedScriptPath = fs.realpathSync(this._scriptPath);
-			} catch (err) {
+			} catch (_err) {
 				resolvedScriptPath = this._scriptPath;
 			}
 			executableDir = path.resolve(

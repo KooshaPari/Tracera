@@ -21,11 +21,11 @@ export function ADRView() {
 				<ADREditor
 					onSave={async (data) => {
 						await createADR.mutateAsync({
-							projectId: projectId || "",
-							title: data.title || "",
+							consequences: data.consequences || "",
 							context: data.context || "",
 							decision: data.decision || "",
-							consequences: data.consequences || "",
+							projectId: projectId || "",
+							title: data.title || "",
 						});
 						setIsEditing(false);
 					}}

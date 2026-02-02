@@ -18,7 +18,7 @@ const toEqualText = async function (...args) {
 					actualTextContent,
 				),
 		};
-	} catch (err) {
+	} catch (_err) {
 		return {
 			pass: false,
 			message: () => err.toString(),

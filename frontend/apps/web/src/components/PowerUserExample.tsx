@@ -162,8 +162,6 @@ export function PowerUserExample() {
 		isShortcutsModalOpen,
 		setIsShortcutsModalOpen,
 		allShortcuts,
-		register,
-		unregister,
 	} = useKeyboardShortcuts(shortcuts);
 
 	// Handle item toggle

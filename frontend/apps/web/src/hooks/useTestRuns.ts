@@ -8,77 +8,79 @@ import type {
 	TestRunStatus,
 	TestRunType,
 } from "@tracertm/types";
-import { getAuthHeaders } from "@/api/client";
+import client from "@/api/client";
+
+const { getAuthHeaders } = client;
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 // Transform API response (snake_case) to frontend format (camelCase)
-function transformTestRun(data: any): TestRun {
+function transformTestRun(data: Record<string, unknown>): TestRun {
 	return {
-		id: data.id,
-		runNumber: data.run_number,
-		projectId: data.project_id,
-		suiteId: data.suite_id,
+		id: data['id'],
+		runNumber: data['run_number'],
+		projectId: data['project_id'],
+		suiteId: data['suite_id'],
 		name: data.name,
-		description: data.description,
+		description: data['description'],
 		status: data.status,
-		runType: data.run_type,
-		environment: data.environment,
-		buildNumber: data.build_number,
-		buildUrl: data.build_url,
-		branch: data.branch,
-		commitSha: data.commit_sha,
-		scheduledAt: data.scheduled_at,
-		startedAt: data.started_at,
-		completedAt: data.completed_at,
-		durationSeconds: data.duration_seconds,
-		initiatedBy: data.initiated_by,
-		executedBy: data.executed_by,
-		totalTests: data.total_tests,
-		passedCount: data.passed_count,
-		failedCount: data.failed_count,
-		skippedCount: data.skipped_count,
-		blockedCount: data.blocked_count,
-		errorCount: data.error_count,
-		passRate: data.pass_rate,
-		notes: data.notes,
-		failureSummary: data.failure_summary,
-		tags: data.tags,
-		externalRunId: data.external_run_id,
-		webhookId: data.webhook_id,
-		metadata: data.run_metadata,
-		version: data.version,
-		createdAt: data.created_at,
-		updatedAt: data.updated_at,
+		runType: data['run_type'],
+		environment: data['environment'],
+		buildNumber: data['build_number'],
+		buildUrl: data['build_url'],
+		branch: data['branch'],
+		commitSha: data['commit_sha'],
+		scheduledAt: data['scheduled_at'],
+		startedAt: data['started_at'],
+		completedAt: data['completed_at'],
+		durationSeconds: data['duration_seconds'],
+		initiatedBy: data['initiated_by'],
+		executedBy: data['executed_by'],
+		totalTests: data['total_tests'],
+		passedCount: data['passed_count'],
+		failedCount: data['failed_count'],
+		skippedCount: data['skipped_count'],
+		blockedCount: data['blocked_count'],
+		errorCount: data['error_count'],
+		passRate: data['pass_rate'],
+		notes: data['notes'],
+		failureSummary: data['failure_summary'],
+		tags: data['tags'],
+		externalRunId: data['external_run_id'],
+		webhookId: data['webhook_id'],
+		metadata: data['run_metadata'],
+		version: data['version'],
+		createdAt: data['created_at'],
+		updatedAt: data['updated_at'],
 	};
 }
 
-function transformTestResult(data: any): TestResult {
+function transformTestResult(data: Record<string, unknown>): TestResult {
 	return {
-		id: data.id,
-		runId: data.run_id,
-		testCaseId: data.test_case_id,
+		id: data['id'],
+		runId: data['run_id'],
+		testCaseId: data['test_case_id'],
 		status: data.status,
-		startedAt: data.started_at,
-		completedAt: data.completed_at,
-		durationSeconds: data.duration_seconds,
-		executedBy: data.executed_by,
-		actualResult: data.actual_result,
-		failureReason: data.failure_reason,
-		errorMessage: data.error_message,
-		stackTrace: data.stack_trace,
-		screenshots: data.screenshots,
-		logsUrl: data.logs_url,
-		attachments: data.attachments,
-		stepResults: data.step_results,
-		linkedDefectIds: data.linked_defect_ids,
-		createdDefectId: data.created_defect_id,
-		retryCount: data.retry_count,
-		isFlaky: data.is_flaky,
-		notes: data.notes,
-		metadata: data.run_metadata,
-		createdAt: data.created_at,
-		updatedAt: data.updated_at,
+		startedAt: data['started_at'],
+		completedAt: data['completed_at'],
+		durationSeconds: data['duration_seconds'],
+		executedBy: data['executed_by'],
+		actualResult: data['actual_result'],
+		failureReason: data['failure_reason'],
+		errorMessage: data['error_message'],
+		stackTrace: data['stack_trace'],
+		screenshots: data['screenshots'],
+		logsUrl: data['logs_url'],
+		attachments: data['attachments'],
+		stepResults: data['step_results'],
+		linkedDefectIds: data['linked_defect_ids'],
+		createdDefectId: data['created_defect_id'],
+		retryCount: data['retry_count'],
+		isFlaky: data['is_flaky'],
+		notes: data['notes'],
+		metadata: data['run_metadata'],
+		createdAt: data['created_at'],
+		updatedAt: data['updated_at'],
 	};
 }
 
@@ -120,8 +122,8 @@ async function fetchTestRuns(
 	}
 	const data = await res.json();
 	return {
-		testRuns: (data.test_runs || []).map(transformTestRun),
-		total: data.total || 0,
+		testRuns: (data['test_runs'] || []).map(transformTestRun),
+		total: data['total'] || 0,
 	};
 }
 
@@ -157,32 +159,32 @@ async function createTestRun(
 	data: CreateTestRunData,
 ): Promise<{ id: string; runNumber: string }> {
 	const res = await fetch(
-		`${API_URL}/api/v1/test-runs?project_id=${data.projectId}`,
+		`${API_URL}/api/v1/test-runs?project_id=${data['projectId']}`,
 		{
 			method: "POST",
 			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify({
 				name: data.name,
-				description: data.description,
-				suite_id: data.suiteId,
-				run_type: data.runType || "manual",
-				environment: data.environment,
-				build_number: data.buildNumber,
-				build_url: data.buildUrl,
-				branch: data.branch,
-				commit_sha: data.commitSha,
-				scheduled_at: data.scheduledAt,
-				initiated_by: data.initiatedBy,
-				notes: data.notes,
-				tags: data.tags,
-				external_run_id: data.externalRunId,
-				metadata: data.metadata || {},
+				description: data['description'],
+				suite_id: data['suiteId'],
+				run_type: data['runType'] || "manual",
+				environment: data['environment'],
+				build_number: data['buildNumber'],
+				build_url: data['buildUrl'],
+				branch: data['branch'],
+				commit_sha: data['commitSha'],
+				scheduled_at: data['scheduledAt'],
+				initiated_by: data['initiatedBy'],
+				notes: data['notes'],
+				tags: data['tags'],
+				external_run_id: data['externalRunId'],
+				metadata: data['metadata'] || {},
 			}),
 		},
 	);
 	if (!res.ok) throw new Error("Failed to create test run");
 	const result = await res.json();
-	return { id: result.id, runNumber: result.run_number };
+	return { id: result['id'], runNumber: result['run_number'] };
 }
 
 async function updateTestRun(
@@ -194,15 +196,15 @@ async function updateTestRun(
 		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
 			name: data.name,
-			description: data.description,
-			environment: data.environment,
-			build_number: data.buildNumber,
-			build_url: data.buildUrl,
-			branch: data.branch,
-			commit_sha: data.commitSha,
-			notes: data.notes,
-			tags: data.tags,
-			metadata: data.metadata,
+			description: data['description'],
+			environment: data['environment'],
+			build_number: data['buildNumber'],
+			build_url: data['buildUrl'],
+			branch: data['branch'],
+			commit_sha: data['commitSha'],
+			notes: data['notes'],
+			tags: data['tags'],
+			metadata: data['metadata'],
 		}),
 	});
 	if (!res.ok) throw new Error("Failed to update test run");
@@ -226,9 +228,9 @@ async function startTestRun(
 	}
 	const result = await res.json();
 	return {
-		id: result.id,
+		id: result['id'],
 		status: result.status,
-		startedAt: result.started_at,
+		startedAt: result['started_at'],
 	};
 }
 
@@ -256,10 +258,10 @@ async function completeTestRun(
 	}
 	const result = await res.json();
 	return {
-		id: result.id,
+		id: result['id'],
 		status: result.status,
-		passRate: result.pass_rate,
-		completedAt: result.completed_at,
+		passRate: result['pass_rate'],
+		completedAt: result['completed_at'],
 	};
 }
 
@@ -322,22 +324,22 @@ async function submitTestResult(
 		method: "POST",
 		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
-			test_case_id: data.testCaseId,
+			test_case_id: data['testCaseId'],
 			status: data.status,
-			executed_by: data.executedBy,
-			actual_result: data.actualResult,
-			failure_reason: data.failureReason,
-			error_message: data.errorMessage,
-			stack_trace: data.stackTrace,
-			screenshots: data.screenshots,
-			logs_url: data.logsUrl,
-			attachments: data.attachments,
-			step_results: data.stepResults,
-			notes: data.notes,
-			is_flaky: data.isFlaky || false,
-			linked_defect_ids: data.linkedDefectIds,
-			created_defect_id: data.createdDefectId,
-			metadata: data.metadata,
+			executed_by: data['executedBy'],
+			actual_result: data['actualResult'],
+			failure_reason: data['failureReason'],
+			error_message: data['errorMessage'],
+			stack_trace: data['stackTrace'],
+			screenshots: data['screenshots'],
+			logs_url: data['logsUrl'],
+			attachments: data['attachments'],
+			step_results: data['stepResults'],
+			notes: data['notes'],
+			is_flaky: data['isFlaky'] || false,
+			linked_defect_ids: data['linkedDefectIds'],
+			created_defect_id: data['createdDefectId'],
+			metadata: data['metadata'],
 		}),
 	});
 	if (!res.ok) throw new Error("Failed to submit test result");
@@ -377,11 +379,11 @@ async function submitBulkTestResults(
 	if (!res.ok) throw new Error("Failed to submit bulk test results");
 	const result = await res.json();
 	return {
-		submitted: result.submitted,
-		passed: result.passed,
-		failed: result.failed,
-		runStatus: result.run_status,
-		passRate: result.pass_rate,
+		submitted: result['submitted'],
+		passed: result['passed'],
+		failed: result['failed'],
+		runStatus: result['run_status'],
+		passRate: result['pass_rate'],
 	};
 }
 
@@ -391,7 +393,7 @@ async function fetchTestRunResults(runId: string): Promise<TestResult[]> {
 	});
 	if (!res.ok) throw new Error("Failed to fetch test run results");
 	const data = await res.json();
-	return (data.results || []).map(transformTestResult);
+	return (data['results'] || []).map(transformTestResult);
 }
 
 async function fetchTestRunActivities(
@@ -405,8 +407,8 @@ async function fetchTestRunActivities(
 	if (!res.ok) throw new Error("Failed to fetch activities");
 	const data = await res.json();
 	return {
-		runId: data.run_id,
-		activities: (data.activities || []).map((a: any) => ({
+		runId: data['run_id'],
+		activities: (data['activities'] as unknown[] || []).map((a: Record<string, unknown>) => ({
 			id: a.id,
 			runId: a.run_id,
 			activityType: a.activity_type,
@@ -428,13 +430,13 @@ async function fetchTestRunStats(projectId: string): Promise<TestRunStats> {
 	if (!res.ok) throw new Error("Failed to fetch test run stats");
 	const data = await res.json();
 	return {
-		projectId: data.project_id,
-		totalRuns: data.total_runs || 0,
-		byStatus: data.by_status || {},
-		byType: data.by_type || {},
-		averagePassRate: data.average_pass_rate || 0,
-		averageDurationSeconds: data.average_duration_seconds || 0,
-		recentRuns: (data.recent_runs || []).map(transformTestRun),
+		projectId: data['project_id'],
+		totalRuns: data['total_runs'] || 0,
+		byStatus: data['by_status'] || {},
+		byType: data['by_type'] || {},
+		averagePassRate: data['average_pass_rate'] || 0,
+		averageDurationSeconds: data['average_duration_seconds'] || 0,
+		recentRuns: (data['recent_runs'] || []).map(transformTestRun),
 	};
 }
 

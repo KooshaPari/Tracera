@@ -326,7 +326,7 @@ describe("ItemsStore", () => {
 
 		it("should set default status if not provided", () => {
 			const { optimisticCreate } = useItemsStore.getState();
-			const { status, ...dataWithoutStatus } = createData;
+			const { status: _status, ...dataWithoutStatus } = createData;
 			optimisticCreate("temp-1", dataWithoutStatus);
 
 			const { items } = useItemsStore.getState();

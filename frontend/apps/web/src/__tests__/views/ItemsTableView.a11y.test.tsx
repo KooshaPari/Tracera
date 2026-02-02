@@ -45,8 +45,10 @@ vi.mock("../../hooks/useProjects", () => ({
 
 describe("ItemsTableViewA11y - Accessibility", () => {
 	let queryClient: QueryClient;
+	let user: ReturnType<typeof userEvent.setup>;
 
 	beforeEach(() => {
+		user = userEvent.setup();
 		queryClient = new QueryClient({
 			defaultOptions: {
 				queries: { retry: false },
@@ -224,7 +226,6 @@ describe("ItemsTableViewA11y - Accessibility", () => {
 		});
 
 		it("should manage focus when items are deleted", async () => {
-			const user = userEvent.setup();
 			renderTable();
 
 			const deleteButtons = screen.getAllByLabelText(/Delete item/i);
@@ -297,7 +298,7 @@ describe("ItemsTableViewA11y - Accessibility", () => {
 			expect(instructions).toHaveClass("sr-only");
 
 			// Verify it's visually hidden but accessible
-			const styles = window.getComputedStyle(instructions!);
+			const _styles = window.getComputedStyle(instructions!);
 			// sr-only class should hide element from view
 		});
 
@@ -326,7 +327,6 @@ describe("ItemsTableViewA11y - Accessibility", () => {
 
 	describe("Modal Accessibility", () => {
 		it("should have dialog role on create modal", async () => {
-			const user = userEvent.setup();
 			renderTable();
 
 			const createButton = screen.getByLabelText(/Create new node/i);
@@ -338,7 +338,6 @@ describe("ItemsTableViewA11y - Accessibility", () => {
 		});
 
 		it("should have aria-labelledby on modal", async () => {
-			const user = userEvent.setup();
 			renderTable();
 
 			const createButton = screen.getByLabelText(/Create new node/i);
@@ -349,7 +348,6 @@ describe("ItemsTableViewA11y - Accessibility", () => {
 		});
 
 		it("should have labels on form inputs", async () => {
-			const user = userEvent.setup();
 			renderTable();
 
 			const createButton = screen.getByLabelText(/Create new node/i);
@@ -362,7 +360,6 @@ describe("ItemsTableViewA11y - Accessibility", () => {
 		});
 
 		it("should have close button with aria-label", async () => {
-			const user = userEvent.setup();
 			renderTable();
 
 			const createButton = screen.getByLabelText(/Create new node/i);
@@ -406,7 +403,6 @@ describe("ItemsTableViewA11y - Accessibility", () => {
 
 	describe("Error Handling and States", () => {
 		it("should announce when items are deleted", async () => {
-			const user = userEvent.setup();
 
 			vi.mocked(useDeleteItem).mockReturnValue({
 				mutateAsync: vi.fn().mockResolvedValue({}),

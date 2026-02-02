@@ -39,7 +39,7 @@ class StreamHandler extends AsyncResource {
       }
 
       super('UNDICI_STREAM')
-    } catch (err) {
+    } catch (_err) {
       if (util.isStream(body)) {
         util.destroy(body.on('error', noop), err)
       }
@@ -197,7 +197,7 @@ function stream (opts, factory, callback) {
     const handler = new StreamHandler(opts, factory, callback)
 
     this.dispatch(opts, handler)
-  } catch (err) {
+  } catch (_err) {
     if (typeof callback !== 'function') {
       throw err
     }

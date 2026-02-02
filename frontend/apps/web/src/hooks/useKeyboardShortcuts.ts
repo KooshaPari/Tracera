@@ -41,7 +41,7 @@ export function useKeyboardShortcuts(
 	unregister: (id: string) => void;
 } {
 	const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
-	const [registeredShortcuts, setRegisteredShortcuts] = useState<
+	const [_registeredShortcuts, setRegisteredShortcuts] = useState<
 		RegisteredShortcut[]
 	>([]);
 

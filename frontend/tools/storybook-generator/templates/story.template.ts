@@ -119,36 +119,6 @@ ${params.join(",\n")}
 }
 
 /**
- * Generate default story
- */
-function generateDefaultStory(
-	componentName: string,
-	variants: VariantInfo[],
-): string {
-	const defaultArgs: string[] = [];
-
-	// Add children for components that accept them
-	if (componentName !== "Input" && componentName !== "Card") {
-		defaultArgs.push("children: 'Default'");
-	}
-
-	// Add default variant values
-	for (const variant of variants) {
-		if (variant.defaultValue) {
-			defaultArgs.push(`${variant.name}: '${variant.defaultValue}'`);
-		}
-	}
-
-	const argsContent =
-		defaultArgs.length > 0 ? `\n    ${defaultArgs.join(",\n    ")}\n  ` : "";
-
-	return `export const Default: Story = {
-  args: {${argsContent}},
-}
-`;
-}
-
-/**
  * Generate stories for each variant option
  */
 function generateVariantStories(

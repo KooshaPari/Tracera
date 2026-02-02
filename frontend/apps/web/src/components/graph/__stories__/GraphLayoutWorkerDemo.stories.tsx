@@ -16,6 +16,7 @@ import {
 	type BenchmarkResult,
 } from '@/lib/graphLayoutBenchmark';
 import type { LayoutOptions } from '@/workers/graphLayout.worker';
+import { logger } from '@/lib/logger';
 
 // ============================================================================
 // DEMO COMPONENT

@@ -609,10 +609,10 @@ export function useGraphPerformanceMonitor({
 		if (!enabled) return;
 
 		// Listen for viewport changes to detect pan/zoom
-		const handleViewportChange = () => {
-			// Start interaction tracking (will be handled by viewport change listeners in FlowGraphViewInner)
-			timingMarkers.current.viewportLoadStart = performance.now();
-		};
+		// const handleViewportChange = () => {
+		// 	// Start interaction tracking (will be handled by viewport change listeners in FlowGraphViewInner)
+		// 	timingMarkers.current.viewportLoadStart = performance.now();
+		// };
 
 		// Add event listeners if needed
 		// Note: This is simplified - actual implementation would integrate with ReactFlow events
@@ -688,8 +688,8 @@ export function createProfilerCallback(
 				// Keep only last 50 entries
 				const trimmed = history.slice(-50);
 				sessionStorage.setItem(key, JSON.stringify(trimmed));
-			} catch (error) {
-				// Ignore storage errors
+            } catch {
+                // Ignore storage errors
 			}
 		}
 	};
@@ -717,8 +717,8 @@ export const perfMark = {
 						`${measure.duration.toFixed(2)}ms`,
 					);
 				}
-			} catch (error) {
-				// Ignore measurement errors
+            } catch {
+                // Ignore measurement errors
 			}
 		}
 	},

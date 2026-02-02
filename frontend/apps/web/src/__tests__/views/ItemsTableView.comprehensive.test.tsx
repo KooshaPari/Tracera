@@ -4,7 +4,6 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useDeleteItem, useItems, useUpdateItem } from "../../hooks/useItems";
 import { useProjects } from "../../hooks/useProjects";
@@ -101,7 +100,6 @@ describe("ItemsTableView", () => {
 	});
 
 	it("handles sorting", async () => {
-		const user = userEvent.setup();
 		const mockItems = [
 			{
 				id: "item-1",
@@ -163,7 +161,6 @@ describe("ItemsTableView", () => {
 	});
 
 	it("handles filtering", async () => {
-		const user = userEvent.setup();
 		const mockItems = [
 			{
 				id: "item-1",
@@ -225,7 +222,6 @@ describe("ItemsTableView", () => {
 	});
 
 	it("handles bulk selection", async () => {
-		const user = userEvent.setup();
 		const mockItems = [
 			{
 				id: "item-1",

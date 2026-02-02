@@ -422,7 +422,7 @@ const setFsWatchListener = (path, fullPath, options, handlers) => {
 					const fd = await open(path, "r");
 					await fd.close();
 					broadcastErr(error);
-				} catch (err) {
+				} catch (_err) {
 					// do nothing
 				}
 			} else {

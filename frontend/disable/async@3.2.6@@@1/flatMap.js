@@ -90,7 +90,7 @@ function _interopRequireDefault(obj) {
  *         let results = await async.concat(directoryList, fs.readdir);
  *         console.log(results);
  *         // [ 'file1.txt', 'file2.txt', 'file3.txt', 'file4.txt', file5.txt ]
- *     } catch (err) {
+ *     } catch (_err) {
  *         console.log(err);
  *     }
  * }
@@ -100,7 +100,7 @@ function _interopRequireDefault(obj) {
  *     try {
  *         let results = await async.concat(withMissingDirectoryList, fs.readdir);
  *         console.log(results);
- *     } catch (err) {
+ *     } catch (_err) {
  *         console.log(err);
  *         // [ Error: ENOENT: no such file or directory ]
  *         // since dir4 does not exist

@@ -95,7 +95,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 				whileHover={{ scale: 1.02 }}
 				whileTap={{ scale: 0.98 }}
 				transition={{ type: "spring", stiffness: 400, damping: 17 }}
-				{...(props.style ? { style: props.style as any } : {})}
+				{...(props.style ? { style: props.style as React.CSSProperties } : {})}
 				{...(Object.fromEntries(
 					Object.entries(props).filter(([key]) => key !== "style"),
 				) as any)}
@@ -167,7 +167,7 @@ export interface ButtonGroupProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export const ButtonGroup = React.forwardRef<HTMLDivElement, ButtonGroupProps>(
 	(
-		{ children, variant = "default", size = "default", className, ...props },
+		{ children, variant = "default", size: _size = "default", className, ...props },
 		ref,
 	) => {
 		return (

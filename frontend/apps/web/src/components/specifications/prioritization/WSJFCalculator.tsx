@@ -23,6 +23,13 @@ interface WSJFCalculatorProps {
 
 const fibonacciScale = [1, 2, 3, 5, 8, 13, 21];
 
+function getScoreColor(score: number): string {
+	if (score >= 5) return "text-green-600";
+	if (score >= 3) return "text-blue-600";
+	if (score >= 1) return "text-yellow-600";
+	return "text-gray-600";
+}
+
 export function WSJFCalculator({
 	initialValues,
 	onCalculate,
@@ -54,13 +61,6 @@ export function WSJFCalculator({
 				wsjf_score: wsjfScore,
 			});
 		}
-	};
-
-	const getScoreColor = (score: number): string => {
-		if (score >= 5) return "text-green-600";
-		if (score >= 3) return "text-blue-600";
-		if (score >= 1) return "text-yellow-600";
-		return "text-gray-600";
 	};
 
 	return (

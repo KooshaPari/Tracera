@@ -54,10 +54,12 @@ const mockItems = [
 describe("CreateLinkForm Component", () => {
 	const mockOnSubmit = vi.fn();
 	const mockOnCancel = vi.fn();
+	let user: ReturnType<typeof userEvent.setup>;
 
 	beforeEach(() => {
 		mockOnSubmit.mockClear();
 		mockOnCancel.mockClear();
+		user = userEvent.setup();
 	});
 
 	describe("Basic Rendering", () => {
@@ -164,7 +166,7 @@ describe("CreateLinkForm Component", () => {
 
 	describe("Source Item Selection", () => {
 		it("should display all items grouped by view in source select", () => {
-			const { container } = render(
+			render(
 				<CreateLinkForm
 					onSubmit={mockOnSubmit}
 					onCancel={mockOnCancel}
@@ -305,7 +307,7 @@ describe("CreateLinkForm Component", () => {
 
 			// Should not include the source item
 			const hasSourceInTarget = Array.from(targetOptions).some(
-				(opt: any) => opt.value === "1",
+				opt => opt.value === "1",
 			);
 			expect(hasSourceInTarget).toBe(false);
 		});
@@ -431,7 +433,7 @@ describe("CreateLinkForm Component", () => {
 		});
 
 		it("should display all link type options", () => {
-			const { container } = render(
+			render(
 				<CreateLinkForm
 					onSubmit={mockOnSubmit}
 					onCancel={mockOnCancel}
@@ -470,7 +472,6 @@ describe("CreateLinkForm Component", () => {
 				/>,
 			);
 
-			const user = userEvent.setup();
 			const descriptionTextarea = screen.getByPlaceholderText(
 				/why are these items linked/i,
 			);
@@ -575,7 +576,6 @@ describe("CreateLinkForm Component", () => {
 				/>,
 			);
 
-			const user = userEvent.setup();
 			const sourceSelect = screen.getAllByRole("combobox")[0];
 			const targetSelect = screen.getAllByRole("combobox")[1];
 			const descriptionTextarea = screen.getByPlaceholderText(
@@ -644,7 +644,6 @@ describe("CreateLinkForm Component", () => {
 				/>,
 			);
 
-			const user = userEvent.setup();
 			const sourceSelect = screen.getAllByRole("combobox")[0];
 			const targetSelect = screen.getAllByRole("combobox")[1];
 			const descriptionTextarea = screen.getByPlaceholderText(
@@ -893,7 +892,7 @@ describe("CreateLinkForm Component", () => {
 			const sourceSelect = screen.getAllByRole("combobox")[0];
 			expect(sourceSelect).toBeInTheDocument();
 			// The value will either be the invalid-id (if controlled) or empty string
-			expect(sourceSelect.value).toBeDefined();
+			expect((sourceSelect as HTMLSelectElement).value).toBeDefined();
 		});
 	});
 

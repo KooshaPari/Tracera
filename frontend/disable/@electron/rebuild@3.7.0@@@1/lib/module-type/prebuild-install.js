@@ -48,7 +48,7 @@ class PrebuildInstall extends _1.NativeModule {
 			try {
 				await this.run(prebuildInstallPath);
 				return true;
-			} catch (err) {
+			} catch (_err) {
 				d("failed to use prebuild-install:", err);
 				if (
 					(_a = err === null || err === void 0 ? void 0 : err.message) ===

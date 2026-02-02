@@ -19,7 +19,7 @@ const toMatchComputedStyle = async function (...args) {
 					actualValue,
 				),
 		};
-	} catch (err) {
+	} catch (_err) {
 		return {
 			pass: false,
 			message: () => err.toString(),

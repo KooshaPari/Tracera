@@ -6,7 +6,7 @@ if (!globalThis.DOMException) {
     port = new MessageChannel().port1,
     ab = new ArrayBuffer()
     port.postMessage(ab, [ab, ab])
-  } catch (err) {
+  } catch (_err) {
     console.log(err.code, err.name, err.message)
     err.constructor.name === 'DOMException' && (
       globalThis.DOMException = err.constructor

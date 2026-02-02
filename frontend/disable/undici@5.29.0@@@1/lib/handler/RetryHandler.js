@@ -326,7 +326,7 @@ class RetryHandler {
 
       try {
         this.dispatch(this.opts, this)
-      } catch (err) {
+      } catch (_err) {
         this.handler.onError(err)
       }
     }

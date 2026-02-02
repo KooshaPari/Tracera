@@ -270,19 +270,19 @@ function EnhancedGraphViewComponent({
 					style: {
 						// Block pill shape (rounded rectangle)
 						shape: "round-rectangle",
-						width: (ele: any) => {
+						width: (ele: cytoscape.NodeSingular) => {
 							const label = ele.data("label") || "";
 							return Math.max(100, Math.min(180, label.length * 6 + 40));
 						},
 						height: 50,
-						"background-color": (ele: any) =>
+						"background-color": (ele: cytoscape.NodeSingular) =>
 							ENHANCED_TYPE_COLORS[ele.data("type")] || "#64748b",
-						"background-opacity": (ele: any) =>
+						"background-opacity": (ele: cytoscape.NodeSingular) =>
 							STATUS_OPACITY[ele.data("status")] || 1,
 						// Label styling
 						label: "data(label)",
 						color: "#fff",
-						"text-outline-color": (ele: any) =>
+						"text-outline-color": (ele: cytoscape.NodeSingular) =>
 							ENHANCED_TYPE_COLORS[ele.data("type")] || "#64748b",
 						"text-outline-width": 2,
 						"font-size": 11,
@@ -293,7 +293,7 @@ function EnhancedGraphViewComponent({
 						"text-max-width": "140px",
 						// Border for visual depth
 						"border-width": 2,
-						"border-color": (ele: any) => {
+						"border-color": (ele: cytoscape.NodeSingular) => {
 							const color = ENHANCED_TYPE_COLORS[ele.data("type")] || "#64748b";
 							return color;
 						},
@@ -304,13 +304,13 @@ function EnhancedGraphViewComponent({
 					selector: "edge",
 					style: {
 						width: 2,
-						"line-color": (ele: any) =>
+						"line-color": (ele: cytoscape.EdgeSingular) =>
 							LINK_STYLES[ele.data("type")]?.color || "#94a3b8",
-						"target-arrow-color": (ele: any) =>
+						"target-arrow-color": (ele: cytoscape.EdgeSingular) =>
 							LINK_STYLES[ele.data("type")]?.color || "#94a3b8",
-						"target-arrow-shape": (ele: any) =>
+						"target-arrow-shape": (ele: cytoscape.EdgeSingular) =>
 							LINK_STYLES[ele.data("type")]?.arrow ? "triangle" : "none",
-						"line-style": (ele: any) =>
+						"line-style": (ele: cytoscape.EdgeSingular) =>
 							LINK_STYLES[ele.data("type")]?.dashed ? "dashed" : "solid",
 						"curve-style": "bezier",
 						opacity: 0.6,

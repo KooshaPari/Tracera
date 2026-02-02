@@ -127,7 +127,6 @@ const ResultItem = memo(function ResultItemComponent({
 	isSelected,
 	perspectiveColor,
 	onSelect,
-	onHighlight,
 	onMouseEnter,
 }: ResultItemProps) {
 	return (

@@ -4,11 +4,13 @@
 
 import { useCallback, useRef } from "react";
 import { createAgentSession } from "@/api/agent";
-import { getAuthHeaders } from "@/api/client";
 import { buildSystemPrompt } from "@/lib/ai/systemPrompt";
 import { logger } from '@/lib/logger';
 import type { SSEEvent, ToolCall } from "@/lib/ai/types";
 import { useChatStore } from "@/stores/chatStore";
+import client from "@/api/client";
+
+const { getAuthHeaders } = client;
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
@@ -71,7 +73,7 @@ export function useChat() {
 					});
 					setConversationSessionId(conversationId, session.session_id);
 					conversation = { ...conversation!, sessionId: session.session_id };
-				} catch (_e) {
+				} catch {
 					// Proceed without session_id; backend will run without sandbox
 				}
 			}
@@ -142,7 +144,7 @@ export function useChat() {
 					throw new Error(`HTTP error! status: ${response.status}`);
 				}
 
-				const reader = response.body?.getReader();
+				const reader = response['body']?.getReader();
 				if (!reader) {
 					throw new Error("No response body");
 				}
@@ -167,8 +169,8 @@ export function useChat() {
 						const event: SSEEvent = JSON.parse(data);
 						switch (event.type) {
 							case "text":
-								if (event.data.content) {
-									accumulatedContent.current += event.data.content;
+								if (event.data['content']) {
+									accumulatedContent.current += event.data['content'];
 									updateMessage(
 										conversationId,
 										assistantMessageId,
@@ -177,18 +179,18 @@ export function useChat() {
 											toolCalls.current,
 										),
 									);
-									options?.onChunk?.(event.data.content);
+									options?.onChunk?.(event.data['content']);
 								}
 								break;
 							case "tool_use_start":
-								if (event.data.tool_name && event.data.tool_use_id) {
+								if (event.data['tool_name'] && event.data['tool_use_id']) {
 									const toolCall: ToolCall = {
-										id: event.data.tool_use_id,
-										name: event.data.tool_name,
+										id: event.data['tool_use_id'],
+										name: event.data['tool_name'],
 										input: {},
 										isExecuting: true,
 									};
-									toolCalls.current.set(event.data.tool_use_id, toolCall);
+									toolCalls.current.set(event.data['tool_use_id'], toolCall);
 									updateMessage(
 										conversationId,
 										assistantMessageId,
@@ -203,20 +205,20 @@ export function useChat() {
 										Array.from(toolCalls.current.values()),
 									);
 									options?.onToolStart?.(
-										event.data.tool_name,
-										event.data.tool_use_id,
+										event.data['tool_name'],
+										event.data['tool_use_id'],
 									);
 								}
 								break;
 							case "tool_use_input":
-								if (event.data.tool_use_id && event.data.input) {
+								if (event.data['tool_use_id'] && event.data['input']) {
 									const existingCall = toolCalls.current.get(
-										event.data.tool_use_id,
+										event.data['tool_use_id'],
 									);
 									if (existingCall) {
-										existingCall.input = event.data.input;
+										existingCall.input = event.data['input'];
 										toolCalls.current.set(
-											event.data.tool_use_id,
+											event.data['tool_use_id'],
 											existingCall,
 										);
 										updateMessage(
@@ -236,15 +238,15 @@ export function useChat() {
 								}
 								break;
 							case "tool_result":
-								if (event.data.tool_use_id && event.data.result) {
+								if (event.data['tool_use_id'] && event.data['result']) {
 									const existingCall = toolCalls.current.get(
-										event.data.tool_use_id,
+										event.data['tool_use_id'],
 									);
 									if (existingCall) {
-										existingCall.result = event.data.result;
+										existingCall.result = event.data['result'];
 										existingCall.isExecuting = false;
 										toolCalls.current.set(
-											event.data.tool_use_id,
+											event.data['tool_use_id'],
 											existingCall,
 										);
 										updateMessage(
@@ -261,15 +263,15 @@ export function useChat() {
 											Array.from(toolCalls.current.values()),
 										);
 										options?.onToolResult?.(
-											event.data.tool_use_id,
-											event.data.result,
+											event.data['tool_use_id'],
+											event.data['result'],
 										);
 									}
 								}
 								break;
 							case "error":
-								if (event.data.error) {
-									throw new Error(event.data.error);
+								if (event.data['error']) {
+									throw new Error(event.data['error']);
 								}
 								break;
 							case "done":
@@ -286,7 +288,7 @@ export function useChat() {
 								options?.onComplete?.(accumulatedContent.current);
 								break;
 						}
-					} catch (parseError) {
+					} catch {
 						try {
 							const legacyData = JSON.parse(data);
 							if (legacyData.content) {
@@ -483,13 +485,13 @@ function formatMessageContent(
 		}
 
 		if (toolCall.result) {
-			if (toolCall.result.success) {
+			if (toolCall.result['success']) {
 				parts.push("**Result:**");
 				parts.push("```json");
-				parts.push(JSON.stringify(toolCall.result.result, null, 2));
+				parts.push(JSON.stringify(toolCall.result['result'], null, 2));
 				parts.push("```");
 			} else {
-				parts.push(`**Error:** ${toolCall.result.error}`);
+				parts.push(`**Error:** ${toolCall.result['error']}`);
 			}
 		}
 	}

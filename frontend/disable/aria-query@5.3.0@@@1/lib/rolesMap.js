@@ -131,7 +131,7 @@ function _iterableToArrayLimit(arr, i) {
 			_arr.push(_s.value);
 			if (i && _arr.length === i) break;
 		}
-	} catch (err) {
+	} catch (_err) {
 		_d = true;
 		_e = err;
 	} finally {
@@ -195,13 +195,13 @@ roles.forEach((_ref) => {
 				for (_iterator2.s(); !(_step2 = _iterator2.n()).done; ) {
 					_loop();
 				}
-			} catch (err) {
+			} catch (_err) {
 				_iterator2.e(err);
 			} finally {
 				_iterator2.f();
 			}
 		}
-	} catch (err) {
+	} catch (_err) {
 		_iterator.e(err);
 	} finally {
 		_iterator.f();
@@ -223,7 +223,7 @@ var rolesMap = {
 					values = _step3$value[1];
 				fn.call(thisArg, values, key, roles);
 			}
-		} catch (err) {
+		} catch (_err) {
 			_iterator3.e(err);
 		} finally {
 			_iterator3.f();

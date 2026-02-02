@@ -1,6 +1,6 @@
 declare module "jsdom" {
 	export class JSDOM {
-		constructor(html?: string, options?: any);
+		constructor(html?: string, options?: Record<string, unknown>);
 		window: Window & typeof globalThis;
 	}
 }

@@ -1,7 +1,6 @@
 // TemporalNavigator component tests
 
 import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
 	type Branch,
@@ -106,7 +105,6 @@ describe("TemporalNavigator", () => {
 	});
 
 	it("calls onBranchCreate when create button is clicked", async () => {
-		const user = userEvent.setup();
 		render(
 			<TemporalNavigator
 				projectId="proj-1"

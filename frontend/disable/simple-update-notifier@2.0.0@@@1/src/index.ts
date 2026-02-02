@@ -23,7 +23,7 @@ Current Version: ${args.pkg.version}
 Latest Version: ${latestVersion}`)
       );
     }
-  } catch (err) {
+  } catch (_err) {
     // Catch any network errors or cache writing errors so module doesn't cause a crash
     if (args.debug && err instanceof Error) {
       console.error('Unexpected error in simpleUpdateNotifier():', err);

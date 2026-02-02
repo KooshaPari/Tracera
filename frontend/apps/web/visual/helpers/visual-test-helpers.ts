@@ -46,7 +46,9 @@ export async function disableAnimations(page: Page): Promise<void> {
  * Wait for fonts to load before taking screenshots
  */
 export async function waitForFonts(page: Page): Promise<void> {
-	await page.evaluate(() => document.fonts.ready);
+	await page.evaluate(async () => {
+		await document.fonts.ready;
+	});
 }
 
 /**
@@ -270,7 +272,9 @@ export async function hideFlakeyElements(
 		await page.evaluate((sel) => {
 			const elements = document.querySelectorAll(sel);
 			elements.forEach((el) => {
-				(el as HTMLElement).style.visibility = "hidden";
+				if (el instanceof HTMLElement) {
+					el.style.visibility = "hidden";
+				}
 			});
 		}, selector);
 	}

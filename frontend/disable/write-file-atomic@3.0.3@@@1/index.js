@@ -238,7 +238,7 @@ function writeFileSync(filename, data, options) {
 		if (options.chown) {
 			try {
 				fs.chownSync(tmpfile, options.chown.uid, options.chown.gid);
-			} catch (err) {
+			} catch (_err) {
 				if (!isChownErrOk(err)) {
 					throw err;
 				}
@@ -248,7 +248,7 @@ function writeFileSync(filename, data, options) {
 		if (options.mode) {
 			try {
 				fs.chmodSync(tmpfile, options.mode);
-			} catch (err) {
+			} catch (_err) {
 				if (!isChownErrOk(err)) {
 					throw err;
 				}

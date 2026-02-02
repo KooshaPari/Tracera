@@ -502,7 +502,7 @@ var require_copy_to_clipboard = __commonJS({
         if (!successful)
           throw new Error("copy command was unsuccessful");
         success = !0;
-      } catch (err) {
+      } catch (_err) {
         debug && console.error("unable to copy using execCommand: ", err), debug && console.warn("trying IE specific stuff");
         try {
           window.clipboardData.setData(options2.format || "text", text), options2.onCopy && options2.onCopy(window.clipboardData), success = !0;
@@ -925,7 +925,7 @@ Computing score:
           } }, { key: "_sort", value: function(e4) {
             this._log(`
 
-Sorting....`), e4.sort(this.options.sortFn);
+Sorting....`), e4.toSorted(this.options.sortFn);
           } }, { key: "_format", value: function(e4) {
             var t4 = [];
             if (this.options.verbose) {
@@ -999,7 +999,7 @@ Output:
         })();
         e2.exports = s2;
       }, function(e2, t2) {
-        var r3 = /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g;
+        var r3 = /[-[\]/{}()*+?.\\^$|]/g;
         e2.exports = function(e3, t3) {
           var n3 = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : / +/g, o3 = new RegExp(t3.replace(r3, "\\$&").replace(n3, "|")), i2 = e3.match(o3), a2 = !!i2, s2 = [];
           if (a2) for (var c2 = 0, h2 = i2.length; c2 < h2; c2 += 1) {
@@ -2050,7 +2050,7 @@ var l = { BASE: "base", BODY: "body", HEAD: "head", HTML: "html", LINK: "link", 
     return t3[l.BASE] !== void 0;
   }).map(function(t3) {
     return t3[l.BASE];
-  }).reverse().reduce(function(e3, r3) {
+  }).toReversed().reduce(function(e3, r3) {
     if (!e3.length) for (var n3 = Object.keys(r3), i2 = 0; i2 < n3.length; i2 += 1) {
       var o3 = n3[i2].toLowerCase();
       if (t2.indexOf(o3) !== -1 && r3[o3]) return e3.concat(r3);
@@ -2063,7 +2063,7 @@ var l = { BASE: "base", BODY: "body", HEAD: "head", HTML: "html", LINK: "link", 
     return !!Array.isArray(e3[t2]) || (e3[t2] !== void 0 && console && typeof console.warn == "function" && console.warn("Helmet: " + t2 + ' should be of type "Array". Instead found type "' + typeof e3[t2] + '"'), !1);
   }).map(function(e3) {
     return e3[t2];
-  }).reverse().reduce(function(t3, r4) {
+  }).toReversed().reduce(function(t3, r4) {
     var i2 = {};
     r4.filter(function(t4) {
       for (var r5, o4 = Object.keys(t4), a2 = 0; a2 < o4.length; a2 += 1) {
@@ -2073,7 +2073,7 @@ var l = { BASE: "base", BODY: "body", HEAD: "head", HTML: "html", LINK: "link", 
       if (!r5 || !t4[r5]) return !1;
       var u3 = t4[r5].toLowerCase();
       return n3[r5] || (n3[r5] = {}), i2[r5] || (i2[r5] = {}), !n3[r5][u3] && (i2[r5][u3] = !0, !0);
-    }).reverse().forEach(function(e3) {
+    }).toReversed().forEach(function(e3) {
       return t3.push(e3);
     });
     for (var o3 = Object.keys(i2), s2 = 0; s2 < o3.length; s2 += 1) {
@@ -2081,7 +2081,7 @@ var l = { BASE: "base", BODY: "body", HEAD: "head", HTML: "html", LINK: "link", 
       n3[c2] = u2;
     }
     return t3;
-  }, []).reverse();
+  }, []).toReversed();
 }, O = function(t2, e2) {
   if (Array.isArray(t2) && t2.length) {
     for (var r3 = 0; r3 < t2.length; r3 += 1) if (t2[r3][e2]) return !0;
@@ -4225,7 +4225,7 @@ var MobileMenuDrawer = ({
 
 // src/manager/components/mobile/navigation/MobileNavigation.tsx
 function combineIndexes(rootIndex, refs) {
-  let combinedIndex = { ...rootIndex || {} };
+  let combinedIndex = { ...rootIndex };
   return Object.values(refs).forEach((ref) => {
     ref.index && Object.assign(combinedIndex, ref.index);
   }), combinedIndex;
@@ -5160,7 +5160,7 @@ var Wrapper = styled.div(
   useImperativeHandle(forwardedRef, () => inputRef.current);
   let parseValue = useCallback(
     (value2) => {
-      let [, inputValue2, unit = fixedUnit || baseUnit || ""] = value2.match(/(-?\d+(?:\.\d+)?)(\%|[a-z]{1,4})?$/) || [];
+      let [, inputValue2, unit = fixedUnit || baseUnit || ""] = value2.match(/(-?\d+(?:\.\d+)?)(%|[a-z]{1,4})?$/) || [];
       return { number: Math.max(minValue, Math.min(parseFloat(inputValue2), maxValue)), unit };
     },
     [minValue, maxValue, fixedUnit, baseUnit]
@@ -5368,7 +5368,7 @@ var ViewportWrapper = styled.div(({ active, isDefault, theme }) => ({
   height: 28,
   minHeight: 28
 }), parseNumber = (value) => {
-  let [match, number, unit] = value.match(/^(\d+(?:\.\d+)?)(\%|[a-z]{0,4})?$/) || [];
+  let [match, number, unit] = value.match(/^(\d+(?:\.\d+)?)(%|[a-z]{0,4})?$/) || [];
   return match ? { number: Number(number), unit } : void 0;
 }, Viewport = ({
   active,
@@ -6025,7 +6025,7 @@ function filterTabs(panels, parameters) {
     return panels.filter((panel) => {
       let t2 = arrTabs.find((tab) => tab.id === panel.id);
       return t2 === void 0 || t2.id === "canvas" || !t2.hidden;
-    }).map((panel, index) => ({ ...panel, index })).sort((p1, p2) => {
+    }).map((panel, index) => ({ ...panel, index })).toSorted((p1, p2) => {
       let tab_1 = arrTabs.find((tab) => tab.id === p1.id), index_1 = tab_1 ? tab_1.index : arrTabs.length + p1.index, tab_2 = arrTabs.find((tab) => tab.id === p2.id), index_2 = tab_2 ? tab_2.index : arrTabs.length + p2.index;
       return index_1 - index_2;
     }).map((panel) => {
@@ -6688,7 +6688,7 @@ var qrcodegen;
       return result;
     }
   };
-  _QrSegment.NUMERIC_REGEX = /^[0-9]*$/, _QrSegment.ALPHANUMERIC_REGEX = /^[A-Z0-9 $%*+.\/:-]*$/, _QrSegment.ALPHANUMERIC_CHARSET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
+  _QrSegment.NUMERIC_REGEX = /^[0-9]*$/, _QrSegment.ALPHANUMERIC_REGEX = /^[A-Z0-9 $%*+./:-]*$/, _QrSegment.ALPHANUMERIC_CHARSET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
   let QrSegment = _QrSegment;
   qrcodegen2.QrSegment = _QrSegment;
 })(qrcodegen || (qrcodegen = {}));
@@ -8060,7 +8060,7 @@ function computeAutoPlacement(placement, refRect, popper, reference, boundariesE
     }, rects[key], {
       area: getArea(rects[key])
     });
-  }).sort(function(a2, b2) {
+  }).toSorted(function(a2, b2) {
     return b2.area - a2.area;
   }), filteredAreas = sortedAreas.filter(function(_ref2) {
     var width = _ref2.width, height = _ref2.height;
@@ -8255,7 +8255,7 @@ function getOppositeVariation(variation) {
 var placements = ["auto-start", "auto", "auto-end", "top-start", "top", "top-end", "right-start", "right", "right-end", "bottom-end", "bottom", "bottom-start", "left-end", "left", "left-start"], validPlacements = placements.slice(3);
 function clockwise(placement) {
   var counter = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : !1, index = validPlacements.indexOf(placement), arr = validPlacements.slice(index + 1).concat(validPlacements.slice(0, index));
-  return counter ? arr.reverse() : arr;
+  return counter ? arr.toReversed() : arr;
 }
 var BEHAVIORS = {
   FLIP: "flip",
@@ -8292,7 +8292,7 @@ function keepTogether(data) {
   return popper[side] < floor(reference[opSide]) && (data.offsets.popper[opSide] = floor(reference[opSide]) - popper[measurement]), popper[opSide] > floor(reference[side]) && (data.offsets.popper[opSide] = floor(reference[side])), data;
 }
 function toValue(str, measurement, popperOffsets, referenceOffsets) {
-  var split = str.match(/((?:\-|\+)?\d*\.?\d*)(.*)/), value = +split[1], unit = split[2];
+  var split = str.match(/((?:-|\+)?\d*\.?\d*)(.*)/), value = +split[1], unit = split[2];
   if (!value)
     return str;
   if (unit.indexOf("%") === 0) {
@@ -8315,7 +8315,7 @@ function toValue(str, measurement, popperOffsets, referenceOffsets) {
     return value;
 }
 function parseOffset(offset2, popperOffsets, referenceOffsets, basePlacement) {
-  var offsets = [0, 0], useHeight = ["right", "left"].indexOf(basePlacement) !== -1, fragments = offset2.split(/(\+|\-)/).map(function(frag) {
+  var offsets = [0, 0], useHeight = ["right", "left"].indexOf(basePlacement) !== -1, fragments = offset2.split(/(\+|-)/).map(function(frag) {
     return frag.trim();
   }), divider = fragments.indexOf(find(fragments, function(frag) {
     return frag.search(/,|\s/) !== -1;
@@ -8762,7 +8762,7 @@ var modifiers = {
       return _extends2({
         name
       }, _this.options.modifiers[name]);
-    }).sort(function(a2, b2) {
+    }).toSorted(function(a2, b2) {
       return a2.order - b2.order;
     }), this.modifiers.forEach(function(modifierOptions) {
       modifierOptions.enabled && isFunction2(modifierOptions.onLoad) && modifierOptions.onLoad(_this.reference, _this.popper, _this.options, modifierOptions, _this.state);
@@ -9940,7 +9940,7 @@ function getDocumentHeight(median = !1) {
       documentElement.clientHeight,
       documentElement.scrollHeight,
       documentElement.offsetHeight
-    ].sort((a2, b2) => a2 - b2), middle = Math.floor(heights.length / 2);
+    ].toSorted((a2, b2) => a2 - b2), middle = Math.floor(heights.length / 2);
     return heights.length % 2 === 0 ? (heights[middle - 1] + heights[middle]) / 2 : heights[middle];
   }
   return Math.max(
@@ -12438,7 +12438,7 @@ var subscriptions = /* @__PURE__ */ new Map(), useStoryIndex = () => {
   }), [itemsById, items, widget, api, index]), itemCollections = useMemo(() => {
     let availableItems = allItems.filter((item) => item.isAvailable), openItems = availableItems.filter((item) => item.isOpen), readyItems = openItems.filter((item) => item.isReady), nextItems = Object.values(
       readyItems.reduce((acc, item) => (acc[item.sectionId] ??= [], acc[item.sectionId].push({ ...item, itemIndex: acc[item.sectionId].length }), acc), {})
-    ).flat().sort((a2, b2) => a2.itemIndex - b2.itemIndex).slice(0, 3).sort((a2, b2) => a2.sectionIndex - b2.sectionIndex), progress = availableItems.length ? Math.round((availableItems.length - openItems.length) / availableItems.length * 100) : 100;
+    ).flat().toSorted((a2, b2) => a2.itemIndex - b2.itemIndex).slice(0, 3).toSorted((a2, b2) => a2.sectionIndex - b2.sectionIndex), progress = availableItems.length ? Math.round((availableItems.length - openItems.length) / availableItems.length * 100) : 100;
     return { availableItems, openItems, readyItems, nextItems, progress };
   }, [allItems]);
   return useEffect(() => {
@@ -12993,7 +12993,7 @@ var elementScroll = (offset2, {
         if (previousFurthestMeasurement == null || measurement.end > previousFurthestMeasurement.end ? furthestMeasurements.set(measurement.lane, measurement) : measurement.end < previousFurthestMeasurement.end && furthestMeasurementsFound.set(measurement.lane, !0), furthestMeasurementsFound.size === this.options.lanes)
           break;
       }
-      return furthestMeasurements.size === this.options.lanes ? Array.from(furthestMeasurements.values()).sort((a2, b2) => a2.end === b2.end ? a2.index - b2.index : a2.end - b2.end)[0] : void 0;
+      return furthestMeasurements.size === this.options.lanes ? Array.from(furthestMeasurements.values()).toSorted((a2, b2) => a2.end === b2.end ? a2.index - b2.index : a2.end - b2.end)[0] : void 0;
     }, this.getMeasurementOptions = memo2(
       () => [
         this.options.count,
@@ -13556,7 +13556,7 @@ var TreeExpandIconStyled = styled(ChevronSmallRightIcon)(({ theme }) => ({
   onNewStory,
   errorItemId
 }) {
-  let [selectedItem, setSelectedItem] = useState(null), parentRef = react_default.useRef(), sortedSearchResults = useMemo(() => [...searchResults ?? []].sort((a2, b2) => {
+  let [selectedItem, setSelectedItem] = useState(null), parentRef = react_default.useRef(), sortedSearchResults = useMemo(() => [...searchResults ?? []].toSorted((a2, b2) => {
     let isALowPriority = a2.exportedComponents === null || a2.exportedComponents?.length === 0, hasAStory = a2.storyFileExists, isBLowPriority = b2.exportedComponents === null || b2.exportedComponents?.length === 0, hasBStory = b2.storyFileExists;
     return hasAStory && !hasBStory ? -1 : hasBStory && !hasAStory || isALowPriority && !isBLowPriority ? 1 : !isALowPriority && isBLowPriority ? -1 : 0;
   }), [searchResults]), count = searchResults?.length || 0, rowVirtualizer = useVirtualizer({
@@ -15011,7 +15011,7 @@ var statusOrder = [
   } = props, theme = useTheme(), { isDesktop, isMobile: isMobile2, setMobileMenuOpen } = useLayout();
   if (!isDisplayed)
     return null;
-  let statusLinks = useMemo(() => item.type === "story" || item.type === "docs" ? Object.entries(statuses).filter(([, status]) => status.sidebarContextMenu !== !1).sort((a2, b2) => statusOrder.indexOf(a2[1].value) - statusOrder.indexOf(b2[1].value)).map(([typeId, status]) => ({
+  let statusLinks = useMemo(() => item.type === "story" || item.type === "docs" ? Object.entries(statuses).filter(([, status]) => status.sidebarContextMenu !== !1).toSorted((a2, b2) => statusOrder.indexOf(a2[1].value) - statusOrder.indexOf(b2[1].value)).map(([typeId, status]) => ({
     id: typeId,
     title: status.title,
     description: status.description,
@@ -18495,7 +18495,7 @@ var DEFAULT_HEIGHT = 500, HoverCard2 = styled(Card)({
       outlineAttrs: landmarkProps
     },
     react_default.createElement("h2", { id: "storybook-testing-widget-heading", className: "sb-sr-only" }, "Component tests"),
-    react_default.createElement(Bar2, { ...hasTestProviders ? { onClick: (e2) => toggleCollapsed(e2) } : {} }, react_default.createElement(Action, null, hasTestProviders && react_default.createElement(
+    react_default.createElement(Bar2, hasTestProviders ? { onClick: (e2) => toggleCollapsed(e2) } : {}, react_default.createElement(Action, null, hasTestProviders && react_default.createElement(
       Optional,
       {
         content: react_default.createElement(RunButton, { isRunning, onRunAll }, isRunning ? "Running..." : "Run tests"),
@@ -18737,7 +18737,7 @@ var groupByType = (filters) => filters.reduce(
         ))
       };
   }, groups = groupByType(Object.values(filtersById)), links = Object.values(groups).map(
-    (group) => group.sort((a2, b2) => a2.id.localeCompare(b2.id)).map((filter) => renderLink(filter)).filter((value) => !!value)
+    (group) => group.toSorted((a2, b2) => a2.id.localeCompare(b2.id)).map((filter) => renderLink(filter)).filter((value) => !!value)
   ).filter((value) => value.length > 0), hasItems = links.length > 0, hasUserTags = Object.values(filtersById).some(({ type }) => type === "tag"), isNothingSelectedYet = includedFilters.size === 0 && excludedFilters.size === 0;
   return react_default.createElement(Wrapper7, { ref }, hasItems && react_default.createElement(ActionList, { as: "div" }, react_default.createElement(ActionList.Item, { as: "div" }, isNothingSelectedYet ? react_default.createElement(
     ActionList.Button,

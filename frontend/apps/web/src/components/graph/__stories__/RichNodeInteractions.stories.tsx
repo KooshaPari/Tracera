@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { logger } from '@/lib/logger';
-import { fn } from "@storybook/test";
+import { logger } from "@/lib/logger";
 import { useState } from "react";
 import {
 	NodeActions,
@@ -17,9 +16,9 @@ const NodeActionsMeta: Meta<typeof NodeActions> = {
 	args: {
 		nodeId: "node-123",
 		isExpanded: false,
-		onExpand: fn(),
-		onNavigate: fn(),
-		onShowMenu: fn(),
+		onExpand: () => {},
+		onNavigate: () => {},
+		onShowMenu: () => {},
 	},
 };
 
@@ -56,10 +55,10 @@ export const ContextMenuStory: Meta<typeof NodeContextMenu> = {
 	args: {
 		nodeId: "node-123",
 		nodeType: "requirement",
-		onCopyId: fn(),
-		onDuplicate: fn(),
-		onDelete: fn(),
-		onViewDetails: fn(),
+		onCopyId: () => {},
+		onDuplicate: () => {},
+		onDelete: () => {},
+		onViewDetails: () => {},
 	},
 	render: (args) => (
 		<NodeContextMenu {...args}>
@@ -153,9 +152,9 @@ export const QuickActionsStory: Meta<typeof NodeQuickActions> = {
 	tags: ["autodocs"],
 	args: {
 		nodeId: "node-123",
-		onAddLink: fn(),
-		onAddTag: fn(),
-		onEditNote: fn(),
+		onAddLink: () => {},
+		onAddTag: () => {},
+		onEditNote: () => {},
 	},
 };
 

@@ -18,12 +18,14 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { getAuthHeaders } from "@/api/client";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import client from "@/api/client";
 
-interface ImportWizardProps {
+const { getAuthHeaders } = client;
+
+export interface ImportWizardProps {
 	projectId: string;
 	projectName: string;
 	isOpen: boolean;
@@ -31,7 +33,7 @@ interface ImportWizardProps {
 	onImport?: (file: File, strategy: ConflictStrategy) => Promise<void>;
 }
 
-type ConflictStrategy = "skip" | "replace" | "merge";
+export type ConflictStrategy = "skip" | "replace" | "merge";
 
 interface ValidationError {
 	field: string;
@@ -114,8 +116,8 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
 
 			setValidation(data);
 			setStep("validate");
-		} catch (err) {
-			setError(err instanceof Error ? err.message : "Validation failed");
+		} catch (error) {
+			setError(error instanceof Error ? error.message : "Validation failed");
 		} finally {
 			setIsLoading(false);
 		}
@@ -162,8 +164,8 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
 				setImportResult(data);
 				setStep("complete");
 			}
-		} catch (err) {
-			setError(err instanceof Error ? err.message : "Import failed");
+		} catch (error) {
+			setError(error instanceof Error ? error.message : "Import failed");
 		} finally {
 			setIsLoading(false);
 		}
@@ -329,7 +331,7 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
 				</Label>
 				<RadioGroup
 					value={conflictStrategy}
-					onValueChange={(v) => setConflictStrategy(v as ConflictStrategy)}
+					onValueChange={(v: string) => setConflictStrategy(v as ConflictStrategy)}
 				>
 					<div className="space-y-3">
 						<div className="flex items-start space-x-2">

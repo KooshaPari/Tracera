@@ -75,7 +75,7 @@ function observer_notifyMutationObservers() {
 		if (!infra_1.list.isEmpty(records)) {
 			try {
 				mo._callback.call(mo, records, mo);
-			} catch (err) {
+			} catch (_err) {
 				// TODO: Report the exception
 			}
 		}

@@ -313,7 +313,7 @@ function MatrixRow({ item }: { item: TraceabilityMatrixItem }) {
 			<td className="px-4 py-3">
 				<span
 					className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
-						statusColors[item.overallStatus] || statusColors.not_tested
+						statusColors[item.overallStatus] || statusColors["not_tested"]
 					}`}
 				>
 					{statusLabels[item.overallStatus] || "Unknown"}

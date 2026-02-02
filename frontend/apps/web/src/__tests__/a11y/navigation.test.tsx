@@ -4,7 +4,6 @@
  */
 
 import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { CommandPalette } from "@/components/CommandPalette";
 import {
@@ -36,7 +35,7 @@ vi.mock("@tanstack/react-router", async () => {
 
 describe("Command Palette Keyboard Navigation", () => {
 	it("should not have accessibility violations", async () => {
-		const { container } = render(<CommandPalette />);
+		render(<CommandPalette />);
 
 		// Open command palette
 		pressKey("k", { metaKey: true });
@@ -138,7 +137,6 @@ describe("Command Palette Keyboard Navigation", () => {
 	});
 
 	it("should filter commands as user types", async () => {
-		const user = userEvent.setup();
 		render(<CommandPalette />);
 
 		pressKey("k", { metaKey: true });
@@ -151,7 +149,7 @@ describe("Command Palette Keyboard Navigation", () => {
 
 describe("Skip Links", () => {
 	it("should provide skip to main content link", async () => {
-		const { container } = render(
+		render(
 			<div>
 				<a href="#main-content" className="sr-only focus:not-sr-only">
 					Skip to main content
@@ -197,7 +195,6 @@ describe("Skip Links", () => {
 
 describe("Focus Management", () => {
 	it("should maintain focus within modal/dialog", async () => {
-		const user = userEvent.setup();
 		render(
 			<div>
 				<button>Outside Button</button>
@@ -229,7 +226,7 @@ describe("Focus Management", () => {
 	});
 
 	it("should restore focus after dialog closes", async () => {
-		const { rerender } = render(
+		render(
 			<div>
 				<button>Open Dialog</button>
 			</div>,
@@ -269,7 +266,6 @@ describe("Focus Management", () => {
 
 describe("Focus Indicators", () => {
 	it("should show visible focus indicator on interactive elements", async () => {
-		const user = userEvent.setup();
 		render(
 			<div>
 				<button className="focus-visible:ring-2">Button</button>
@@ -300,7 +296,7 @@ describe("Focus Indicators", () => {
 
 describe("Landmark Regions", () => {
 	it("should have proper landmark structure", async () => {
-		const { container } = render(
+		render(
 			<div>
 				<header>
 					<nav aria-label="Main navigation">
@@ -333,7 +329,7 @@ describe("Landmark Regions", () => {
 	});
 
 	it("should label multiple navigation regions", async () => {
-		const { container } = render(
+		render(
 			<div>
 				<nav aria-label="Main navigation">
 					<a href="/">Home</a>
@@ -360,7 +356,6 @@ describe("Landmark Regions", () => {
 
 describe("Tab Navigation Order", () => {
 	it("should follow logical tab order", async () => {
-		const user = userEvent.setup();
 		render(
 			<div>
 				<button>First</button>
@@ -389,7 +384,6 @@ describe("Tab Navigation Order", () => {
 	});
 
 	it("should skip disabled elements", async () => {
-		const user = userEvent.setup();
 		render(
 			<div>
 				<button>Enabled 1</button>
@@ -411,7 +405,6 @@ describe("Tab Navigation Order", () => {
 
 describe("Custom Controls Keyboard Support", () => {
 	it("should support Space and Enter for custom buttons", async () => {
-		const user = userEvent.setup();
 		const handleClick = vi.fn();
 
 		render(
@@ -441,7 +434,6 @@ describe("Custom Controls Keyboard Support", () => {
 	});
 
 	it("should support arrow keys for custom select", async () => {
-		const user = userEvent.setup();
 		render(
 			<div role="listbox" aria-label="Options">
 				<div role="option" aria-selected="true" tabIndex={0}>

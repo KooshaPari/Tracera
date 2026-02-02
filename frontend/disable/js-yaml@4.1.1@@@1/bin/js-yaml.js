@@ -85,7 +85,7 @@ readFile(options.file, "utf8", (error, input) => {
 	try {
 		output = JSON.parse(input);
 		isYaml = false;
-	} catch (err) {
+	} catch (_err) {
 		if (err instanceof SyntaxError) {
 			try {
 				output = [];

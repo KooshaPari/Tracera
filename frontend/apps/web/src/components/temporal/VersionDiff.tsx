@@ -500,7 +500,17 @@ function ValueDisplay({ value }: { value: unknown }) {
 			</span>
 		);
 	}
-	return <span>{String(value)}</span>;
+	// Primitives only here (object already handled above)
+	const s =
+		typeof value === "string"
+			? value
+			: typeof value === "number" ||
+					typeof value === "boolean" ||
+					typeof value === "symbol" ||
+					typeof value === "bigint"
+				? String(value)
+				: "";
+	return <span>{s}</span>;
 }
 
 function getTypeIcon(type: string): React.ReactNode {

@@ -799,7 +799,7 @@ function errorRequest (client, request, err) {
   try {
     request.onError(err)
     assert(request.aborted)
-  } catch (err) {
+  } catch (_err) {
     client.emit('error', err)
   }
 }

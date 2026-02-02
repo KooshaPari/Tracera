@@ -196,7 +196,7 @@ async function checkParentPaths(src, srcStat, dest) {
 	let destStat;
 	try {
 		destStat = await stat(destParent, { bigint: true });
-	} catch (err) {
+	} catch (_err) {
 		// istanbul ignore else: not sure when this would occur
 		if (err.code === "ENOENT") {
 			return;
@@ -384,7 +384,7 @@ async function onLink(destStat, src, dest) {
 	let resolvedDest;
 	try {
 		resolvedDest = await readlink(dest);
-	} catch (err) {
+	} catch (_err) {
 		// Dest exists and is a regular file or directory,
 		// Windows may throw UNKNOWN error. If dest already exists,
 		// fs throws error anyway, so no need to guard against it here.

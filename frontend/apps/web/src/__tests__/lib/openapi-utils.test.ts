@@ -50,8 +50,8 @@ global.URL = {
 
 global.Blob = class Blob {
 	constructor(
-		public parts: any[],
-		public options: any,
+		public parts: unknown[],
+		public options: Record<string, unknown>,
 	) {}
 } as any;
 

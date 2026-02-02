@@ -61,12 +61,12 @@ async function install (fs, gyp, argv) {
     log.verbose('install', '--ensure was passed, so won\'t reinstall if already installed')
     try {
       await fs.promises.stat(devDir)
-    } catch (err) {
+    } catch (_err) {
       if (err.code === 'ENOENT') {
         log.verbose('install', 'version not already installed, continuing with install', release.version)
         try {
           return await go()
-        } catch (err) {
+        } catch (_err) {
           return rollback(err)
         }
       } else if (err.code === 'EACCES') {
@@ -80,7 +80,7 @@ async function install (fs, gyp, argv) {
     try {
       const ver = await fs.promises.readFile(installVersionFile, 'ascii')
       installVersion = parseInt(ver, 10) || 0
-    } catch (err) {
+    } catch (_err) {
       if (err.code !== 'ENOENT') {
         throw err
       }
@@ -91,7 +91,7 @@ async function install (fs, gyp, argv) {
       log.verbose('install', 'version is no good; reinstalling')
       try {
         return await go()
-      } catch (err) {
+      } catch (_err) {
         return rollback(err)
       }
     }
@@ -101,13 +101,13 @@ async function install (fs, gyp, argv) {
       const nodeLibPath = path.resolve(devDir, arch, 'node.lib')
       try {
         await fs.promises.stat(nodeLibPath)
-      } catch (err) {
+      } catch (_err) {
         if (err.code === 'ENOENT') {
           log.verbose('install', `version not already installed for ${arch}, continuing with install`, release.version)
           try {
             shouldDownloadTarball = false
             return await go()
-          } catch (err) {
+          } catch (_err) {
             return rollback(err)
           }
         } else if (err.code === 'EACCES') {
@@ -119,7 +119,7 @@ async function install (fs, gyp, argv) {
   } else {
     try {
       return await go()
-    } catch (err) {
+    } catch (_err) {
       return rollback(err)
     }
   }
@@ -141,7 +141,7 @@ async function install (fs, gyp, argv) {
         await backOff(async () => {
           try {
             await fs.promises.copyFile(path.join(src, entry.name), path.join(dest, entry.name))
-          } catch (err) {
+          } catch (_err) {
             // if ensure, check if file already exists and that's good enough
             if (gyp.opts.ensure && err.code === 'EBUSY') {
               try {
@@ -168,7 +168,7 @@ async function install (fs, gyp, argv) {
       if (created) {
         log.verbose('created devDir', created)
       }
-    } catch (err) {
+    } catch (_err) {
       if (err.code === 'EACCES') {
         return eaccesFallback(err)
       }
@@ -243,7 +243,7 @@ async function install (fs, gyp, argv) {
                 onwarn
               })
             )
-          } catch (err) {
+          } catch (_err) {
           // something went wrong downloading the tarball?
             if (err.code === 'ENOTFOUND') {
               throw new Error('This is most likely not a problem with node-gyp or the package itself and\n' +

@@ -15,7 +15,7 @@ vi.mock("@tanstack/react-router", () => ({
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Header } from "../../../components/layout/Header";
-import { ThemeProvider } from "../../../providers/ThemeProvider";
+import { ThemeProvider } from "../../../providers/theme-provider";
 
 describe("Header", () => {
 	beforeEach(() => {

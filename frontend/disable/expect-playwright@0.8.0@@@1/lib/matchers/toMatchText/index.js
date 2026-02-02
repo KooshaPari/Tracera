@@ -12,7 +12,7 @@ const toMatchText = async function (...args) {
 			message: () =>
 				utils_1.getMessage(this, "toMatchText", expectedValue, actualValue),
 		};
-	} catch (err) {
+	} catch (_err) {
 		return {
 			pass: false,
 			message: () => err.toString(),

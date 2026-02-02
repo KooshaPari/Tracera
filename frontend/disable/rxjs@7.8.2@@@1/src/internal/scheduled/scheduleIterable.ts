@@ -29,7 +29,7 @@ export function scheduleIterable<T>(input: Iterable<T>, scheduler: SchedulerLike
           try {
             // Pull the value out of the iterator
             ({ value, done } = iterator.next());
-          } catch (err) {
+          } catch (_err) {
             // We got an error while pulling from the iterator
             subscriber.error(err);
             return;

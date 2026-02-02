@@ -9,6 +9,7 @@ import type {
 	EquivalenceStrategy,
 } from "@tracertm/types";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 // =============================================================================
 // VALIDATION SCHEMAS
@@ -262,7 +263,7 @@ export function deserializeLinksFromCSV(csv: string): EquivalenceLink[] {
 			};
 			EquivalenceLinkSchema.parse(link);
 			links.push(link);
-		} catch (error) {
+		} catch {
 			logger.warn(`Failed to parse CSV line ${i}:`, error);
 		}
 	}
@@ -291,34 +292,34 @@ export function deserializeConceptsFromCSV(csv: string): CanonicalConcept[] {
 
 		try {
 			const concept: CanonicalConcept = {
-				id: record.id,
-				projectId: record.projectId,
-				name: record.name,
-				slug: record.slug,
-				description: record.description,
-				domain: record.domain,
-				category: record.category,
-				tags: record.tags ? record.tags.split("|") : undefined,
-				embedding: record.embedding ? JSON.parse(record.embedding) : undefined,
-				embeddingModel: record.embeddingModel,
-				embeddingUpdatedAt: record.embeddingUpdatedAt,
-				projectionCount: parseInt(record.projectionCount, 10),
-				projectionIds: record.projectionIds
-					? record.projectionIds.split("|")
+				id: record['id']!,
+				projectId: record['projectId']!,
+				name: record['name']!,
+				slug: record['slug']!,
+				description: record['description'],
+				domain: record['domain']!,
+				category: record['category'],
+				tags: record['tags'] ? record['tags'].split("|") : undefined,
+				embedding: record['embedding'] ? JSON.parse(record['embedding']) : undefined,
+				embeddingModel: record['embeddingModel'],
+				embeddingUpdatedAt: record['embeddingUpdatedAt'],
+				projectionCount: parseInt(record['projectionCount']!, 10),
+				projectionIds: record['projectionIds']
+					? record['projectionIds'].split("|")
 					: undefined,
-				relatedConceptIds: record.relatedConceptIds
-					? record.relatedConceptIds.split("|")
+				relatedConceptIds: record['relatedConceptIds']
+					? record['relatedConceptIds'].split("|")
 					: undefined,
-				parentConceptId: record.parentConceptId,
-				childConceptIds: record.childConceptIds
-					? record.childConceptIds.split("|")
+				parentConceptId: record['parentConceptId'],
+				childConceptIds: record['childConceptIds']
+					? record['childConceptIds'].split("|")
 					: undefined,
-				confidence: parseFloat(record.confidence),
-				source: record.source as "manual" | "inferred" | "imported",
-				createdBy: record.createdBy,
-				createdAt: record.createdAt,
-				updatedAt: record.updatedAt,
-				version: parseInt(record.version, 10),
+				confidence: parseFloat(record['confidence']!),
+				source: record['source'] as "manual" | "inferred" | "imported",
+				createdBy: record['createdBy'],
+				createdAt: record['createdAt']!,
+				updatedAt: record['updatedAt']!,
+				version: parseInt(record['version']!, 10),
 			};
 			CanonicalConceptSchema.parse(concept);
 			concepts.push(concept);
@@ -353,20 +354,20 @@ export function deserializeProjectionsFromCSV(
 
 		try {
 			const projection: CanonicalProjection = {
-				id: record.id,
-				canonicalId: record.canonicalId,
-				itemId: record.itemId,
-				projectId: record.projectId,
-				perspective: record.perspective,
-				confidence: parseFloat(record.confidence),
-				strategy: record.strategy as EquivalenceStrategy,
-				isConfirmed: record.isConfirmed === "true",
-				isRejected: record.isRejected === "true",
-				confirmedBy: record.confirmedBy,
-				confirmedAt: record.confirmedAt,
-				metadata: record.metadata ? JSON.parse(record.metadata) : undefined,
-				createdAt: record.createdAt,
-				updatedAt: record.updatedAt,
+				id: record['id']!,
+				canonicalId: record['canonicalId']!,
+				itemId: record['itemId']!,
+				projectId: record['projectId']!,
+				perspective: record['perspective']!,
+				confidence: parseFloat(record['confidence']!),
+				strategy: record['strategy'] as EquivalenceStrategy,
+				isConfirmed: record['isConfirmed'] === "true",
+				isRejected: record['isRejected'] === "true",
+				confirmedBy: record['confirmedBy'],
+				confirmedAt: record['confirmedAt'],
+				metadata: record['metadata'] ? JSON.parse(record['metadata']) : undefined,
+				createdAt: record['createdAt']!,
+				updatedAt: record['updatedAt']!,
 			};
 			CanonicalProjectionSchema.parse(projection);
 			projections.push(projection);
@@ -588,7 +589,7 @@ export function validateExportPackage(data: unknown): {
 	try {
 		EquivalenceExportPackageSchema.parse(data);
 		return { valid: true, errors: [] };
-	} catch (error) {
+	} catch {
 		if (error instanceof z.ZodError) {
 			return {
 				valid: false,
@@ -611,7 +612,7 @@ export function validateImportOptions(options: unknown): {
 	try {
 		EquivalenceImportOptionsSchema.parse(options);
 		return { valid: true, errors: [] };
-	} catch (error) {
+	} catch {
 		if (error instanceof z.ZodError) {
 			return {
 				valid: false,
@@ -738,7 +739,7 @@ export function createExportSummary(data: EquivalenceExportPackage): {
 	const suggestedCount = links.filter((l) => l.status === "suggested").length;
 	const rejectedCount = links.filter((l) => l.status === "rejected").length;
 
-	const confidences = [...links.map((l) => l.confidence)];
+	const confidences = links.map((l) => l.confidence);
 	const domainBreakdown: Record<string, number> = {};
 	const strategyBreakdown: Record<string, number> = {};
 

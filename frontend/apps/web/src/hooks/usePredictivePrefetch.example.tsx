@@ -167,7 +167,7 @@ export function ExampleReactFlowIntegration() {
  * Adjusts prediction horizon based on system performance
  */
 export function ExampleAdaptivePrefetching() {
-	const [viewport, setViewport] = useState<Viewport>({
+	const [viewport, _setViewport] = useState<Viewport>({
 		x: 0,
 		y: 0,
 		zoom: 1,
@@ -247,7 +247,7 @@ export function ExampleAdaptivePrefetching() {
  * Prefetches different data types at different horizons
  */
 export function ExampleMultiLayerPrefetching() {
-	const [viewport, setViewport] = useState<Viewport>({
+	const [viewport, _setViewport] = useState<Viewport>({
 		x: 0,
 		y: 0,
 		zoom: 1,
@@ -300,7 +300,7 @@ export function ExampleMultiLayerPrefetching() {
  * Prefetches more aggressively in the direction of movement
  */
 export function ExampleDirectionalPrefetching() {
-	const [viewport, setViewport] = useState<Viewport>({
+	const [viewport, _setViewport] = useState<Viewport>({
 		x: 0,
 		y: 0,
 		zoom: 1,

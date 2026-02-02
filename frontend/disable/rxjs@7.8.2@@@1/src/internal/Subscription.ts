@@ -78,7 +78,7 @@ export class Subscription implements SubscriptionLike {
         for (const finalizer of _finalizers) {
           try {
             execFinalizer(finalizer);
-          } catch (err) {
+          } catch (_err) {
             errors = errors ?? [];
             if (err instanceof UnsubscriptionError) {
               errors = [...errors, ...err.errors];

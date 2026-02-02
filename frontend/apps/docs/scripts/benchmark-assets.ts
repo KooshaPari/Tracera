@@ -84,7 +84,7 @@ async function findFiles(dir: string, extensions: string[]): Promise<string[]> {
         }
       }
     }
-  } catch (error) {
+  } catch {
     // Directory doesn't exist or can't be read
   }
 

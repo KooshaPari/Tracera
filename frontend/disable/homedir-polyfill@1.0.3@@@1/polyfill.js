@@ -74,7 +74,7 @@ function getuid() {
 function tryReadFileSync(fp) {
 	try {
 		return fs.readFileSync(fp, "utf8");
-	} catch (err) {
+	} catch (_err) {
 		return "";
 	}
 }

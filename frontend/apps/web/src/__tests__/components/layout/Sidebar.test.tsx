@@ -20,8 +20,8 @@ vi.mock("@tanstack/react-router", async () => {
 		useRouter: () => ({ navigate: vi.fn() }),
 		useLocation: () => ({ pathname: mockPathname }),
 		useParams: () => mockParams,
-		Link: ({ children, to, ...props }: any) => (
-			<a href={typeof to === "string" ? to : to?.toString?.()} {...props}>
+		Link: ({ children, to, ...props }: { children: React.ReactNode; to: string | { toString(): string }; [key: string]: unknown }) => (
+			<a href={typeof to === "string" ? to : String(to)} {...props}>
 				{children}
 			</a>
 		),
@@ -45,6 +45,8 @@ vi.mock("../../../hooks/useProjects", () => ({
 }));
 
 import { Sidebar } from "../../../components/layout/Sidebar";
+
+const user = userEvent.setup();
 
 describe("Sidebar Navigation", () => {
 	beforeEach(() => {
@@ -262,7 +264,7 @@ describe("Sidebar Navigation", () => {
 	describe("Active State Highlighting", () => {
 		it("highlights Dashboard when on dashboard page", () => {
 			mockPathname = "/";
-			const { container } = render(<Sidebar />);
+			render(<Sidebar />);
 
 			// Get the first Dashboard link in the sidebar
 			const dashboardLinks = screen.getAllByText("Dashboard");
@@ -319,7 +321,6 @@ describe("Sidebar Navigation", () => {
 		});
 
 		it("persists state in localStorage", async () => {
-			const user = userEvent.setup();
 			const { rerender } = render(<Sidebar />);
 
 			// Interact with sidebar
@@ -329,7 +330,7 @@ describe("Sidebar Navigation", () => {
 			// Check that localStorage may be updated
 			const savedGroups = localStorage.getItem("sidebar-collapsed-groups");
 			// localStorage may or may not be set depending on interactions
-			expect(typeof savedGroups).toBe("string" || "null");
+			expect(["string", "object"]).toContain(typeof savedGroups);
 
 			// Rerender and verify component still works
 			rerender(<Sidebar />);
@@ -350,7 +351,6 @@ describe("Sidebar Navigation", () => {
 		});
 
 		it("filters views by search query", async () => {
-			const user = userEvent.setup();
 			render(<Sidebar />);
 
 			const searchInput = screen.getByPlaceholderText("Search navigation...");
@@ -363,7 +363,6 @@ describe("Sidebar Navigation", () => {
 		});
 
 		it("filters views by API keyword", async () => {
-			const user = userEvent.setup();
 			render(<Sidebar />);
 
 			const searchInput = screen.getByPlaceholderText("Search navigation...");
@@ -373,15 +372,14 @@ describe("Sidebar Navigation", () => {
 		});
 
 		it("clears search input when Escape key is pressed", async () => {
-			const user = userEvent.setup();
 			render(<Sidebar />);
 
 			const searchInput = screen.getByPlaceholderText(
 				"Search navigation...",
-			) as HTMLInputElement;
+			);
 			await user.type(searchInput, "test");
 
-			expect(searchInput.value).toBe("test");
+			expect(searchInput).toHaveValue("test");
 
 			// Press Escape to clear
 			await user.keyboard("{Escape}");
@@ -391,7 +389,6 @@ describe("Sidebar Navigation", () => {
 		});
 
 		it("shows no results message when search has no matches", async () => {
-			const user = userEvent.setup();
 			render(<Sidebar />);
 
 			const searchInput = screen.getByPlaceholderText("Search navigation...");
@@ -413,8 +410,7 @@ describe("Sidebar Navigation", () => {
 		});
 
 		it("collapses and expands sidebar", async () => {
-			const user = userEvent.setup();
-			const { container } = render(<Sidebar />);
+			render(<Sidebar />);
 
 			const collapseButton = screen.getByRole("button", {
 				name: /collapse sidebar/i,
@@ -426,7 +422,6 @@ describe("Sidebar Navigation", () => {
 		});
 
 		it("persists collapsed state", async () => {
-			const user = userEvent.setup();
 			const { rerender } = render(<Sidebar />);
 
 			const collapseButton = screen.getByRole("button", {
@@ -492,7 +487,6 @@ describe("Sidebar Navigation", () => {
 		});
 
 		it("keyboard navigation works with arrow keys", async () => {
-			const user = userEvent.setup();
 			render(<Sidebar />);
 
 			const searchInput = screen.getByPlaceholderText("Search navigation...");
@@ -503,7 +497,6 @@ describe("Sidebar Navigation", () => {
 		});
 
 		it("Escape key clears search", async () => {
-			const user = userEvent.setup();
 			render(<Sidebar />);
 
 			const searchInput = screen.getByPlaceholderText("Search navigation...");
@@ -521,7 +514,6 @@ describe("Sidebar Navigation", () => {
 		});
 
 		it("shows tooltip for Features view", async () => {
-			const user = userEvent.setup();
 			const { container } = render(<Sidebar />);
 
 			const featuresLink = screen.getByText("Features");

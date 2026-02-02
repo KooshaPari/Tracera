@@ -202,7 +202,7 @@ export async function hydrate(router: AnyRouter): Promise<any> {
         match.headScripts = headFnContent?.scripts
         match.styles = headFnContent?.styles
         match.scripts = scripts
-      } catch (err) {
+      } catch (_err) {
         if (isNotFound(err)) {
           match.error = { isNotFound: true }
           console.error(

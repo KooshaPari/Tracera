@@ -123,7 +123,7 @@ export function mergeInternals<T, R>(
               }
               // Check to see if we can complete, and complete if so.
               checkComplete();
-            } catch (err) {
+            } catch (_err) {
               subscriber.error(err);
             }
           }

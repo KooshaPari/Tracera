@@ -29,10 +29,7 @@ export const HybridGraphView = memo(function HybridGraphView({
   const {
     useWebGL,
     nodeCount,
-    edgeCount,
     graphologyGraph,
-    performanceMode,
-    selectedNodeId,
     setSelectedNodeId,
   } = useHybridGraph(nodes, edges, config);
 

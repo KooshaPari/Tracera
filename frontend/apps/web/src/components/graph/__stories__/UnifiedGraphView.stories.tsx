@@ -5,6 +5,10 @@ const meta: Meta<typeof UnifiedGraphView> = {
 	title: "Components/Graph/UnifiedGraphView",
 	component: UnifiedGraphView,
 	tags: ["autodocs"],
+	args: {
+		items: [],
+		links: [],
+	},
 	parameters: {
 		layout: "fullscreen",
 		chromatic: {
@@ -28,9 +32,13 @@ type Story = StoryObj<typeof meta>;
  * Default unified graph view with standard layout
  */
 export const Default: Story = {
-	render: () => (
+	args: {
+		items: [],
+		links: [],
+	},
+	render: (args) => (
 		<div className="w-full h-screen">
-			<UnifiedGraphView />
+			<UnifiedGraphView {...args} />
 		</div>
 	),
 	parameters: {
@@ -44,9 +52,10 @@ export const Default: Story = {
  * Graph view optimized for tablet viewing
  */
 export const TabletView: Story = {
-	render: () => (
+	args: { items: [], links: [] },
+	render: (args) => (
 		<div className="w-full h-screen">
-			<UnifiedGraphView />
+			<UnifiedGraphView {...args} />
 		</div>
 	),
 	parameters: {
@@ -60,9 +69,10 @@ export const TabletView: Story = {
  * Graph view optimized for mobile devices
  */
 export const MobileView: Story = {
-	render: () => (
+	args: { items: [], links: [] },
+	render: (args) => (
 		<div className="w-full h-screen">
-			<UnifiedGraphView />
+			<UnifiedGraphView {...args} />
 		</div>
 	),
 	parameters: {
@@ -76,9 +86,10 @@ export const MobileView: Story = {
  * Graph view with expanded layout for large screens
  */
 export const WidescreenView: Story = {
-	render: () => (
+	args: { items: [], links: [] },
+	render: (args) => (
 		<div className="w-full h-screen">
-			<UnifiedGraphView />
+			<UnifiedGraphView {...args} />
 		</div>
 	),
 	parameters: {
@@ -92,9 +103,10 @@ export const WidescreenView: Story = {
  * Dark mode variant
  */
 export const DarkMode: Story = {
-	render: () => (
+	args: { items: [], links: [] },
+	render: (args) => (
 		<div className="w-full h-screen dark" data-theme="dark">
-			<UnifiedGraphView />
+			<UnifiedGraphView {...args} />
 		</div>
 	),
 	parameters: {
@@ -110,9 +122,10 @@ export const DarkMode: Story = {
  * Light mode variant
  */
 export const LightMode: Story = {
-	render: () => (
+	args: { items: [], links: [] },
+	render: (args) => (
 		<div className="w-full h-screen" data-theme="light">
-			<UnifiedGraphView />
+			<UnifiedGraphView {...args} />
 		</div>
 	),
 	parameters: {

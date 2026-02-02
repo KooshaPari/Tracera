@@ -64,21 +64,24 @@ export function useGraphKeyboardShortcuts({
 			// Zoom in: Cmd/Ctrl + Plus/Equal
 			if (isMod && (event.key === "+" || event.key === "=")) {
 				event.preventDefault();
-				onZoomIn?.() || zoomIn({ duration: 200 });
+				if (onZoomIn) onZoomIn();
+				else void zoomIn({ duration: 200 });
 				return;
 			}
 
 			// Zoom out: Cmd/Ctrl + Minus
 			if (isMod && event.key === "-") {
 				event.preventDefault();
-				onZoomOut?.() || zoomOut({ duration: 200 });
+				if (onZoomOut) onZoomOut();
+				else void zoomOut({ duration: 200 });
 				return;
 			}
 
 			// Fit view: Cmd/Ctrl + 0
 			if (isMod && event.key === "0") {
 				event.preventDefault();
-				onFitView?.() || fitView({ padding: 0.2, duration: 300 });
+				if (onFitView) onFitView();
+				else void fitView({ padding: 0.2, duration: 300 });
 				return;
 			}
 

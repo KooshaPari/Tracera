@@ -11,7 +11,7 @@ export interface FormArrayFieldProps<T extends FieldValues> {
 	label: string;
 	helpText?: string;
 	renderField: (index: number) => React.ReactNode;
-	defaultValue?: any;
+	defaultValue?: unknown;
 	addButtonLabel?: string;
 	removeButtonLabel?: string;
 	minItems?: number;

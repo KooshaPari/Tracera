@@ -421,7 +421,7 @@
           for (_iterator.s(); !(_step = _iterator.n()).done; ) {
             _loop();
           }
-        } catch (err) {
+        } catch (_err) {
           _iterator.e(err);
         } finally {
           _iterator.f();
@@ -7630,7 +7630,7 @@
                 var c4 = _step2.value;
                 ret += row * c4;
               }
-            } catch (err) {
+            } catch (_err) {
               _iterator2.e(err);
             } finally {
               _iterator2.f();
@@ -8015,7 +8015,7 @@
                 var alias = _step3.value;
                 this.register(alias, space);
               }
-            } catch (err) {
+            } catch (_err) {
               _iterator3.e(err);
             } finally {
               _iterator3.f();
@@ -8266,7 +8266,7 @@
                 return _ret.v;
               }
             }
-          } catch (err) {
+          } catch (_err) {
             _iterator4.e(err);
           } finally {
             _iterator4.f();
@@ -8330,7 +8330,7 @@
                 return _ret2.v;
               }
             }
-          } catch (err) {
+          } catch (_err) {
             _iterator5.e(err);
           } finally {
             _iterator5.f();
@@ -8357,7 +8357,7 @@
               }
             }
           }
-        } catch (err) {
+        } catch (_err) {
           _iterator6.e(err);
         } finally {
           _iterator6.f();
@@ -11675,7 +11675,7 @@
           var distance2 = pointDistance(targetCenter, closestPoint);
           minDistance = Math.min(minDistance, distance2);
         }
-      } catch (err) {
+      } catch (_err) {
         _iterator7.e(err);
       } finally {
         _iterator7.f();
@@ -11738,7 +11738,7 @@
         for (_iterator8.s(); !(_step8 = _iterator8.n()).done; ) {
           _loop6();
         }
-      } catch (err) {
+      } catch (_err) {
         _iterator8.e(err);
       } finally {
         _iterator8.f();
@@ -12115,7 +12115,7 @@
               neighbors.push(vNeighbor);
             }
           }
-        } catch (err) {
+        } catch (_err) {
           _iterator9.e(err);
         } finally {
           _iterator9.f();
@@ -16232,7 +16232,7 @@
             return true;
           }
         }
-      } catch (err) {
+      } catch (_err) {
         _iterator0.e(err);
       } finally {
         _iterator0.f();
@@ -17033,7 +17033,7 @@
             };
             attrString += ' '.concat(attr.name, '="').concat(attr.value, '"');
           }
-        } catch (err) {
+        } catch (_err) {
           _iterator1.e(err);
         } finally {
           _iterator1.f();
@@ -17061,7 +17061,7 @@
           strLen += (' ' + strAttr).length;
           attributeStrList.push(strAttr);
         }
-      } catch (err) {
+      } catch (_err) {
         _iterator10.e(err);
       } finally {
         _iterator10.f();
@@ -18798,7 +18798,7 @@
           }
           normalizedSelectors.push(selector);
         }
-      } catch (err) {
+      } catch (_err) {
         _iterator11.e(err);
       } finally {
         _iterator11.f();
@@ -19141,7 +19141,7 @@
             deepest = node;
           }
         }
-      } catch (err) {
+      } catch (_err) {
         _iterator12.e(err);
       } finally {
         _iterator12.f();
@@ -19974,7 +19974,7 @@
             serial[prop] = err2[prop];
           }
         }
-      } catch (err) {
+      } catch (_err) {
         _iterator13.e(err);
       } finally {
         _iterator13.f();
@@ -20066,7 +20066,7 @@
             selected.push.apply(selected, _toConsumableArray(selectAllRecursive(restSelector, elm.shadowRoot)));
           }
         }
-      } catch (err) {
+      } catch (_err) {
         _iterator14.e(err);
       } finally {
         _iterator14.f();
@@ -20792,7 +20792,7 @@
                 idRefs.get(token).push(node);
               }
             }
-          } catch (err) {
+          } catch (_err) {
             _iterator15.e(err);
           } finally {
             _iterator15.f();
@@ -22982,7 +22982,7 @@
             return false;
           }
         }
-      } catch (err) {
+      } catch (_err) {
         _iterator16.e(err);
       } finally {
         _iterator16.f();
@@ -23386,7 +23386,7 @@
               break;
             }
           }
-        } catch (err) {
+        } catch (_err) {
           _iterator17.e(err);
         } finally {
           _iterator17.f();
@@ -23900,7 +23900,7 @@
             borders.top.push(-offsetY);
           }
         }
-      } catch (err) {
+      } catch (_err) {
         _iterator18.e(err);
       } finally {
         _iterator18.f();
@@ -24015,7 +24015,7 @@
           });
           shadowColors.push(_color3);
         }
-      } catch (err) {
+      } catch (_err) {
         _iterator19.e(err);
       } finally {
         _iterator19.f();
@@ -24357,7 +24357,7 @@
             return found;
           }
         }
-      } catch (err) {
+      } catch (_err) {
         _iterator20.e(err);
       } finally {
         _iterator20.f();
@@ -24716,7 +24716,7 @@
             }
           }
         }
-      } catch (err) {
+      } catch (_err) {
         _iterator21.e(err);
       } finally {
         _iterator21.f();
@@ -24823,7 +24823,7 @@
           closestOffset = Math.min(closestOffset, offset);
           closeNeighbors.push(vNeighbor);
         }
-      } catch (err) {
+      } catch (_err) {
         _iterator22.e(err);
       } finally {
         _iterator22.f();
@@ -27042,7 +27042,7 @@
             invalid.push(attrName);
           }
         }
-      } catch (err) {
+      } catch (_err) {
         _iterator23.e(err);
       } finally {
         _iterator23.f();
@@ -28441,7 +28441,7 @@
                 this.allowedOrigins.push(defaultOrigin);
               }
             }
-          } catch (err) {
+          } catch (_err) {
             _iterator24.e(err);
           } finally {
             _iterator24.f();
@@ -29269,7 +29269,7 @@
           var frameSpecs = getMergedFrameSpecs(partialResult);
           frameStack.unshift.apply(frameStack, _toConsumableArray(frameSpecs));
         }
-      } catch (err) {
+      } catch (_err) {
         _iterator25.e(err);
       } finally {
         _iterator25.f();

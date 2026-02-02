@@ -2,6 +2,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { BranchExplorer } from "../BranchExplorer";
 import type { Branch } from "../TemporalNavigator";
+import { logger } from '@/lib/logger';
 
 const meta = {
 	title: "Temporal/BranchExplorer",

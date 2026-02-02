@@ -1,6 +1,7 @@
 // MSW browser setup for TraceRTM
 import { setupWorker } from "msw/browser";
 import { handlers } from "./handlers";
+import { logger } from '@/lib/logger';
 
 // This configures a Service Worker with the given request handlers.
 export const worker = setupWorker(...handlers);

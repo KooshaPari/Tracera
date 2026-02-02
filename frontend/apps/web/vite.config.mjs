@@ -1,19 +1,84 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
-import tailwindcss from "@tailwindcss/postcss";
+import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
-import autoprefixer from "autoprefixer";
 import { defineConfig } from "vite";
+import { checker } from "vite-plugin-checker";
 import { ViteImageOptimizer } from "vite-plugin-image-optimizer";
+import { sentryVitePlugin } from "@sentry/vite-plugin";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Conditionally load React Compiler plugin (available for production builds)
 const ReactCompilerConfig = {};
 
+/** @type {Array<[(id: string) => boolean, string]>} */
+const VENDOR_CHUNK_RULES = [
+	[(id) => id.includes("/react-dom/") || id.includes("/react/"), "vendor-react"],
+	[
+		(id) =>
+			id.includes("@tanstack/react-router") ||
+			id.includes("@tanstack/react-query") ||
+			id.includes("/zustand/"),
+		"vendor-router",
+	],
+	[(id) => id.includes("/elkjs/"), "vendor-graph-elk"],
+	[(id) => id.includes("@xyflow/") || id.includes("/cytoscape"), "vendor-graph-core"],
+	[(id) => id.includes("/recharts/") || id.includes("/d3-"), "vendor-charts"],
+	[(id) => id.includes("monaco"), "vendor-monaco"],
+	[(id) => id.includes("swagger-ui") || id.includes("/redoc/"), "vendor-api-docs"],
+	[(id) => id.includes("html2canvas"), "vendor-canvas"],
+	[(id) => id.includes("framer-motion"), "vendor-motion"],
+	[(id) => id.includes("@radix-ui/"), "vendor-radix"],
+	[(id) => id.includes("lucide-react"), "vendor-icons"],
+	[
+		(id) =>
+			id.includes("react-hook-form") ||
+			id.includes("@hookform/") ||
+			id.includes("/zod/"),
+		"vendor-forms",
+	],
+	[
+		(id) =>
+			id.includes("@tanstack/react-table") ||
+			id.includes("@tanstack/react-virtual"),
+		"vendor-table",
+	],
+	[(id) => id.includes("@dnd-kit/"), "vendor-dnd"],
+	[(id) => id.includes("/sonner/"), "vendor-notifications"],
+	[
+		(id) =>
+			id.includes("/date-fns/") ||
+			id.includes("/dompurify/") ||
+			id.includes("tailwind-merge") ||
+			id.includes("class-variance-authority"),
+		"vendor-utils",
+	],
+];
+
+function getManualChunkName(id) {
+	if (!id.includes("node_modules")) return undefined;
+	for (const [test, name] of VENDOR_CHUNK_RULES) {
+		if (test(id)) return name;
+	}
+	return undefined;
+}
+
 export default defineConfig({
 	plugins: [
+		// Tailwind v4 via Vite plugin (uses Lightning CSS in production; no PostCSS)
+		tailwindcss(),
+		// Run oxlint (type-aware) in worker thread; show errors in overlay and terminal
+		checker({
+			oxlint: {
+				lintCommand: "oxlint --type-aware .",
+				dev: { logLevel: "warn" },
+			},
+			overlay: true,
+			terminal: true,
+		}),
+		// eslint-disable-next-line @typescript-eslint/no-deprecated -- Router plugin API; migrate when TanStack provides replacement
 		TanStackRouterVite({
 			routesDirectory: "./src/routes",
 			generatedRouteTree: "./src/routeTree.gen.ts",
@@ -55,8 +120,31 @@ export default defineConfig({
 				lossless: true,
 			},
 		}),
+		// Sentry plugin for source maps and release tracking (production only)
+		...(process.env.NODE_ENV === "production" &&
+		process.env.VITE_SENTRY_AUTH_TOKEN != null &&
+		process.env.VITE_SENTRY_AUTH_TOKEN !== ""
+			? [
+					sentryVitePlugin({
+						org: process.env.VITE_SENTRY_ORG,
+						project: process.env.VITE_SENTRY_PROJECT,
+						authToken: process.env.VITE_SENTRY_AUTH_TOKEN,
+						sourcemaps: {
+							assets: "./dist/assets/**",
+						},
+						telemetry: false,
+						// Automatically inject release information
+						release: {
+							name: process.env.VITE_APP_VERSION ?? "unknown",
+							dist: process.env.VITE_BUILD_ID ?? "local",
+						},
+					}),
+				]
+			: []),
 	],
 	resolve: {
+		// Fewer extensions = fewer filesystem checks (Vite Performance Guide)
+		extensions: [".mjs", ".js", ".mts", ".ts", ".jsx", ".tsx", ".json"],
 		alias: [
 			{ find: "@", replacement: path.resolve(__dirname, "./src") },
 			{
@@ -65,6 +153,17 @@ export default defineConfig({
 					__dirname,
 					"../../packages/types/src/index.ts",
 				),
+			},
+			{
+				find: "@tracertm/types",
+				replacement: path.resolve(
+					__dirname,
+					"../../packages/types/src/index.ts",
+				),
+			},
+			{
+				find: "@tracertm/ui",
+				replacement: path.resolve(__dirname, "../../packages/ui/src/index.ts"),
 			},
 			{
 				find: /^react-is$/,
@@ -126,11 +225,13 @@ export default defineConfig({
 	},
 	server: {
 		port: 5173,
-		host: true,
-		// Optimize HMR for faster updates
+		// Bind to loopback only; Caddy (4000) is the single dev entrypoint. Do not open 5173 in the browser.
+		host: "127.0.0.1",
+		// open: true or use vite --open to warm up entry and improve first load (Vite Performance Guide)
+		// Optimize HMR for faster updates; client connects via gateway so HMR works when using http://localhost:4000
 		hmr: {
 			overlay: true,
-			clientPort: 5173,
+			clientPort: 4000,
 		},
 		// Optimize watch settings
 		watch: {
@@ -232,6 +333,8 @@ export default defineConfig({
 		chunkSizeWarningLimit: 2500, // Lazy-loaded vendor chunks (graph, api-docs) are expected to be large
 		// Minify JS and CSS - can be 'terser', 'esbuild', or false
 		minify: "esbuild",
+		// Lightning CSS for faster CSS minification (Vite Performance Guide)
+		cssMinify: "lightningcss",
 		// Target modern browsers for better minification and tree-shaking
 		target: "esnext",
 		// Disable CSS code splitting for better caching
@@ -270,98 +373,16 @@ export default defineConfig({
 				// Improve module format
 				format: "es",
 				manualChunks(id) {
-					if (id.includes("node_modules")) {
-						// Core React - should always be loaded first
-						if (id.includes("/react-dom/") || id.includes("/react/")) {
-							return "vendor-react";
-						}
-						// Router & state - needed early for navigation
-						if (
-							id.includes("@tanstack/react-router") ||
-							id.includes("@tanstack/react-query") ||
-							id.includes("/zustand/")
-						) {
-							return "vendor-router";
-						}
-						// Graph visualization (very heavy: ~400KB+)
-						// elkjs alone is 200-300KB - make it lazy
-						if (id.includes("/elkjs/")) {
-							return "vendor-graph-elk";
-						}
-						// XyFlow and cytoscape are also heavy
-						if (id.includes("@xyflow/") || id.includes("/cytoscape")) {
-							return "vendor-graph-core";
-						}
-						// Charts (heavy: ~150KB)
-						if (id.includes("/recharts/") || id.includes("/d3-")) {
-							return "vendor-charts";
-						}
-						// Monaco editor (very heavy: 1-2MB!)
-						// Should only load when user navigates to code view
-						if (id.includes("monaco")) {
-							return "vendor-monaco";
-						}
-						// API documentation (heavy: ~300KB)
-						// Swagger UI and Redoc are large
-						if (id.includes("swagger-ui") || id.includes("/redoc/")) {
-							return "vendor-api-docs";
-						}
-						// HTML2Canvas and canvas-related (heavy)
-						if (id.includes("html2canvas")) {
-							return "vendor-canvas";
-						}
-						// Animation
-						if (id.includes("framer-motion")) {
-							return "vendor-motion";
-						}
-						// UI Framework
-						if (id.includes("@radix-ui/")) {
-							return "vendor-radix";
-						}
-						// Icons
-						if (id.includes("lucide-react")) {
-							return "vendor-icons";
-						}
-						// Forms & validation
-						if (
-							id.includes("react-hook-form") ||
-							id.includes("@hookform/") ||
-							id.includes("/zod/")
-						) {
-							return "vendor-forms";
-						}
-						// Tables & virtualization
-						if (
-							id.includes("@tanstack/react-table") ||
-							id.includes("@tanstack/react-virtual")
-						) {
-							return "vendor-table";
-						}
-						// Drag & drop
-						if (id.includes("@dnd-kit/")) {
-							return "vendor-dnd";
-						}
-						// Notifications
-						if (id.includes("/sonner/")) {
-							return "vendor-notifications";
-						}
-						// Miscellaneous utilities
-						if (
-							id.includes("/date-fns/") ||
-							id.includes("/dompurify/") ||
-							id.includes("tailwind-merge") ||
-							id.includes("class-variance-authority")
-						) {
-							return "vendor-utils";
-						}
-					}
+					return getManualChunkName(id);
 				},
 			},
 		},
 	},
 	css: {
-		postcss: {
-			plugins: [tailwindcss({}), autoprefixer({})],
+		// Lightning CSS for transform (nesting, autoprefix) and minify; replaces PostCSS (Vite Performance Guide)
+		transformer: "lightningcss",
+		lightningcss: {
+			// Targets derived from build.target "esnext" by default; override here if needed
 		},
 	},
 });

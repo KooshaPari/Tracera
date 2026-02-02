@@ -252,7 +252,7 @@ Test coverage:
 - `/src/components/auth/AuthKitSync.tsx` - Token sync logic
 - `/src/stores/authStore.ts` - Auth state management
 - `/src/lib/auth-utils.ts` - Helper functions
-- `/src/providers/AppProviders.tsx` - WorkOS provider setup
+- `/src/providers/app-providers.tsx` - WorkOS provider setup
 - `/src/config/constants.ts` - Auth route constants
 
 ## API Endpoints (Backend)

@@ -12,7 +12,6 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import type React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -28,7 +27,7 @@ vi.mock("@tanstack/react-router", async () => {
 		}),
 		useLocation: () => ({ pathname: "/" }),
 		useParams: () => ({}),
-		Link: ({ children, to, ...props }: any) => (
+		Link: ({ children, to, ...props }: { children: React.ReactNode; to: string; [key: string]: unknown }) => (
 			<a href={typeof to === "string" ? to : to?.toString?.()} {...props}>
 				{children}
 			</a>
@@ -146,7 +145,7 @@ const setupQueryClient = () => {
 
 const renderWithProviders = (
 	ui: React.ReactElement,
-	{ queryClient = setupQueryClient(), route = "/" } = {},
+	{ queryClient = setupQueryClient(), route: _route = "/" } = {},
 ) => {
 	return render(
 		<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
@@ -755,7 +754,6 @@ describe("View Integration Tests", () => {
 		it.skip("should allow format selection", async () => {
 			vi.spyOn(api.projects, "list").mockResolvedValue([]);
 
-			const user = userEvent.setup();
 			renderWithProviders(<ReportsView />);
 
 			await waitFor(() => {
@@ -775,7 +773,6 @@ describe("View Integration Tests", () => {
 			vi.spyOn(api.projects, "list").mockResolvedValue([mockProject]);
 			vi.spyOn(api.exportImport, "export").mockResolvedValue(new Blob());
 
-			const user = userEvent.setup();
 			renderWithProviders(<ReportsView />);
 
 			await waitFor(() => {
@@ -808,7 +805,6 @@ describe("View Integration Tests", () => {
 		});
 
 		it("should switch between tabs", async () => {
-			const user = userEvent.setup();
 			renderWithProviders(<SettingsView />);
 
 			// Click Appearance tab
@@ -820,7 +816,6 @@ describe("View Integration Tests", () => {
 		});
 
 		it("should handle form input changes", async () => {
-			const user = userEvent.setup();
 			renderWithProviders(<SettingsView />);
 
 			const nameInput = screen.getByPlaceholderText("Your name");
@@ -830,7 +825,6 @@ describe("View Integration Tests", () => {
 		});
 
 		it("should save settings", async () => {
-			const user = userEvent.setup();
 			renderWithProviders(<SettingsView />);
 
 			const nameInput = screen.getByPlaceholderText("Your name");
@@ -844,7 +838,6 @@ describe("View Integration Tests", () => {
 		});
 
 		it("should toggle notification settings", async () => {
-			const user = userEvent.setup();
 			renderWithProviders(<SettingsView />);
 
 			const notificationsTab = screen.getByText("Notifications");
@@ -875,7 +868,6 @@ describe("View Integration Tests", () => {
 
 			vi.spyOn(api.search, "search").mockResolvedValue(mockResults);
 
-			const user = userEvent.setup();
 			renderWithProviders(<SearchView />);
 
 			const searchInput = screen.getByPlaceholderText("Search everything...");
@@ -887,7 +879,6 @@ describe("View Integration Tests", () => {
 		});
 
 		it("should filter by type", async () => {
-			const user = userEvent.setup();
 			renderWithProviders(<SearchView />);
 
 			const typeSelect = screen.getByDisplayValue("All Types");
@@ -901,7 +892,6 @@ describe("View Integration Tests", () => {
 				createMockSearchResult([]),
 			);
 
-			const user = userEvent.setup();
 			renderWithProviders(<SearchView />);
 
 			const searchInput = screen.getByPlaceholderText("Search everything...");
@@ -1068,7 +1058,7 @@ describe("End-to-End Workflow Tests", () => {
 	});
 
 	it("should handle project switching workflow", () => {
-		const { setCurrentProject, addRecentProject } = useProjectStore.getState();
+		const { setCurrentProject, addRecentProject: _addRecentProject } = useProjectStore.getState();
 		const { addItems, getItemsByProject } = useItemsStore.getState();
 
 		const project1 = createMockProject({ id: "p1", name: "Project 1" });

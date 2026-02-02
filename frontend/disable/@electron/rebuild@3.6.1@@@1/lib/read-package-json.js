@@ -45,7 +45,7 @@ const path = __importStar(require("path"));
 async function readPackageJson(dir, safe = false) {
 	try {
 		return await fs.readJson(path.resolve(dir, "package.json"));
-	} catch (err) {
+	} catch (_err) {
 		if (safe) {
 			return {};
 		} else {

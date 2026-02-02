@@ -80,7 +80,7 @@ describe("addon", () => {
 		const configPath = path.join(addonPath, "build", "config.gypi");
 		try {
 			data = fs.readFileSync(configPath, "utf8");
-		} catch (err) {
+		} catch (_err) {
 			return assert.fail(err);
 		}
 		const config = JSON.parse(data.replace(/#.+\n/, ""));
@@ -89,7 +89,7 @@ describe("addon", () => {
 		// Create symbol link to path with non-ascii characters
 		try {
 			fs.symlinkSync(nodeDir, testNodeDir, "dir");
-		} catch (err) {
+		} catch (_err) {
 			switch (err.code) {
 				case "EEXIST":
 					break;
@@ -115,7 +115,7 @@ describe("addon", () => {
 		const [err, logLines] = await execFile(cmd);
 		try {
 			fs.unlink(testNodeDir);
-		} catch (err) {
+		} catch (_err) {
 			assert.fail(err);
 		}
 		const lastLine = logLines[logLines.length - 1];

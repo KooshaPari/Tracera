@@ -17,7 +17,7 @@ export function LostConnectionBanner() {
 	const isConnecting = status === "connecting";
 	const isReconnecting = status === "reconnecting";
 	const isWaiting = isConnecting || isReconnecting;
-	const isLost = !isWaiting;
+// 	const _isLost = !isWaiting;
 
 	// Same palette as preflight: connecting = amber, lost = red (unhealthy)
 	const stripStyle = isWaiting

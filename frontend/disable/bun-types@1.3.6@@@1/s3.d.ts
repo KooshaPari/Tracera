@@ -493,7 +493,7 @@ declare module "bun" {
      *     try {
      *       writer.write(data);
      *       await writer.end();
-     *     } catch (err) {
+     *     } catch (_err) {
      *       console.error('Upload failed:', err);
      *       // Writer will automatically abort multipart upload on error
      *     }
@@ -569,7 +569,7 @@ declare module "bun" {
      *    if (!exists) {
      *      console.log("File not found");
      *    }
-     *  } catch (err) {
+     *  } catch (_err) {
      *    console.error("Error checking file:", err);
      *  }
      */
@@ -669,7 +669,7 @@ declare module "bun" {
      *     try {
      *       await file.delete();
      *       console.log("File deleted successfully");
-     *     } catch (err) {
+     *     } catch (_err) {
      *       console.error("Failed to delete file:", err);
      *     }
      */
@@ -1064,7 +1064,7 @@ declare module "bun" {
      *     try {
      *       await bucket.unlink("file.dat");
      *       console.log("File deleted");
-     *     } catch (err) {
+     *     } catch (_err) {
      *       console.error("Delete failed:", err);
      *     }
      */
@@ -1085,7 +1085,7 @@ declare module "bun" {
      *     try {
      *       await S3Client.unlink("file.dat", credentials);
      *       console.log("File deleted");
-     *     } catch (err) {
+     *     } catch (_err) {
      *       console.error("Delete failed:", err);
      *     }
      */
@@ -1107,7 +1107,7 @@ declare module "bun" {
      *     try {
      *       await bucket.delete("file.dat");
      *       console.log("File deleted");
-     *     } catch (err) {
+     *     } catch (_err) {
      *       console.error("Delete failed:", err);
      *     }
      */
@@ -1129,7 +1129,7 @@ declare module "bun" {
      *     try {
      *       await S3Client.delete("file.dat", credentials);
      *       console.log("File deleted");
-     *     } catch (err) {
+     *     } catch (_err) {
      *       console.error("Delete failed:", err);
      *     }
      */
@@ -1195,7 +1195,7 @@ declare module "bun" {
      *       if (!await bucket.exists("required.txt")) {
      *         throw new Error("Required file missing");
      *       }
-     *     } catch (err) {
+     *     } catch (_err) {
      *       console.error("Check failed:", err);
      *     }
      */
@@ -1221,7 +1221,7 @@ declare module "bun" {
      *       if (!await S3Client.exists("required.txt", credentials)) {
      *         throw new Error("Required file missing");
      *       }
-     *     } catch (err) {
+     *     } catch (_err) {
      *       console.error("Check failed:", err);
      *     }
      */

@@ -138,7 +138,7 @@ export async function createProject(
 
 	await nameInput.fill(project.name);
 
-	if (project.description) {
+	if (project.description != null && project.description !== "") {
 		const descInput = page
 			.getByLabel(/description/i)
 			.or(page.getByPlaceholder(/description/i))
@@ -163,7 +163,7 @@ export async function createProject(
 
 	// Verify creation
 	const projectText = page.getByText(project.name);
-	return await projectText.isVisible({ timeout: 5000 }).catch(() => false);
+	return projectText.isVisible({ timeout: 5000 }).catch(() => false);
 }
 
 /**
@@ -195,7 +195,7 @@ export async function createItem(page: Page, item: TestItem): Promise<boolean> {
 	await titleInput.fill(item.title);
 
 	// Fill optional fields
-	if (item.description) {
+	if (item.description != null && item.description !== "") {
 		const descInput = page
 			.getByLabel(/description/i)
 			.or(page.getByPlaceholder(/description/i))
@@ -206,7 +206,7 @@ export async function createItem(page: Page, item: TestItem): Promise<boolean> {
 		}
 	}
 
-	if (item.type) {
+	if (item.type != null && item.type !== "") {
 		const typeSelect = page.getByLabel(/type/i).first();
 		if (await typeSelect.isVisible({ timeout: 1000 }).catch(() => false)) {
 			await typeSelect.click();
@@ -233,7 +233,7 @@ export async function createItem(page: Page, item: TestItem): Promise<boolean> {
 
 	// Verify
 	const itemText = page.getByText(item.title);
-	return await itemText.isVisible({ timeout: 5000 }).catch(() => false);
+	return itemText.isVisible({ timeout: 5000 }).catch(() => false);
 }
 
 export async function updateItemStatus(
@@ -372,7 +372,7 @@ export async function searchItems(page: Page, query: string): Promise<number> {
 	await page.waitForTimeout(500);
 
 	const results = page.getByText(new RegExp(query, "i"));
-	return await results.count().catch(() => 0);
+	return results.count().catch(() => 0);
 }
 
 export async function filterByType(page: Page, type: string): Promise<boolean> {
@@ -483,11 +483,11 @@ export async function waitForLoadComplete(page: Page): Promise<void> {
 	await page.waitForTimeout(500);
 }
 
-export async function generateUniqueId(prefix: string = ""): string {
-	return `${prefix}${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+export function generateUniqueId(prefix: string = ""): string {
+	return `${prefix}${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
 }
 
-export async function generateProject(
+export function generateProject(
 	overrides?: Partial<TestProject>,
 ): TestProject {
 	return {
@@ -497,7 +497,7 @@ export async function generateProject(
 	};
 }
 
-export async function generateItem(overrides?: Partial<TestItem>): TestItem {
+export function generateItem(overrides?: Partial<TestItem>): TestItem {
 	return {
 		title: `Test Item ${Date.now()}`,
 		type: "Requirement",
@@ -514,12 +514,12 @@ export async function generateItem(overrides?: Partial<TestItem>): TestItem {
 
 export async function getTableRowCount(page: Page): Promise<number> {
 	const rows = page.locator("tbody tr").or(page.locator("[role='row']"));
-	return await rows.count().catch(() => 0);
+	return rows.count().catch(() => 0);
 }
 
 export async function getTableHeaderCount(page: Page): Promise<number> {
 	const headers = page.locator("thead [role='columnheader']");
-	return await headers.count().catch(() => 0);
+	return headers.count().catch(() => 0);
 }
 
 export async function clickTableRowByText(
@@ -544,7 +544,7 @@ export async function clickTableRowByText(
 
 export async function expectDialogOpen(page: Page): Promise<boolean> {
 	const dialog = page.getByRole("dialog").first();
-	return await dialog.isVisible({ timeout: 2000 }).catch(() => false);
+	return dialog.isVisible({ timeout: 2000 }).catch(() => false);
 }
 
 export async function closeDialog(page: Page): Promise<boolean> {

@@ -85,7 +85,7 @@ Y18N.prototype._readLocaleFile = function () {
 
   try {
     localeLookup = JSON.parse(fs.readFileSync(languageFile, 'utf-8'))
-  } catch (err) {
+  } catch (_err) {
     if (err instanceof SyntaxError) {
       err.message = 'syntax error in ' + languageFile
     }
@@ -112,7 +112,7 @@ Y18N.prototype._resolveLocaleFile = function (directory, locale) {
 Y18N.prototype._fileExistsSync = (file) => {
   try {
     return fs.statSync(file).isFile()
-  } catch (err) {
+  } catch (_err) {
     return false
   }
 }

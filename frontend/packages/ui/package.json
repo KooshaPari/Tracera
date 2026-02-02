@@ -14,10 +14,7 @@
 	"scripts": {
 		"build": "tsc --build",
 		"clean": "tsc --build --clean",
-		"lint": "oxlint .",
-		"lint:fix": "oxlint --fix .",
-		"format": "biome format --write src/",
-		"typecheck": "tsc --noEmit"
+		"format": "biome format --write src/"
 	},
 	"dependencies": {
 		"@radix-ui/react-accordion": "^1.2.1",

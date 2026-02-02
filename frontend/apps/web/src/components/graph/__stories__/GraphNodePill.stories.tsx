@@ -1,5 +1,47 @@
 import type { Meta, StoryObj } from "@storybook/react";
+import type { Item } from "@tracertm/types";
 import { GraphNodePill } from "../GraphNodePill";
+import type { EnhancedNodeData } from "../types";
+
+function makeNode(
+	overrides: Partial<{
+		id: string;
+		label: string;
+		type: string;
+		status: Item["status"];
+	}> = {},
+): EnhancedNodeData {
+	const item: Item = {
+		id: overrides.id ?? "item-1",
+		projectId: "proj-1",
+		view: "technical",
+		type: (overrides.type as Item["type"]) ?? "feature",
+		title: overrides.label ?? "Button Component",
+		description: "",
+		status: overrides.status ?? "todo",
+		priority: "medium",
+		version: 1,
+		createdAt: new Date().toISOString(),
+		updatedAt: new Date().toISOString(),
+	};
+	return {
+		id: item.id,
+		item,
+		type: overrides.type ?? "component",
+		status: overrides.status ?? "todo",
+		label: overrides.label ?? "Button Component",
+		perspective: ["technical"],
+		connections: { incoming: 0, outgoing: 0, total: 0, byType: {} },
+		depth: 0,
+		hasChildren: false,
+	};
+}
+
+const defaultNode = makeNode({ label: "Button Component", type: "component" });
+const viewNode = makeNode({ label: "Dashboard View", type: "view" });
+const routeNode = makeNode({ label: "/components", type: "route" });
+const stateNode = makeNode({ label: "Loading", type: "state" });
+const eventNode = makeNode({ label: "onClick", type: "event" });
 
 const meta: Meta<typeof GraphNodePill> = {
 	title: "Components/Graph/GraphNodePill",
@@ -15,13 +57,11 @@ const meta: Meta<typeof GraphNodePill> = {
 		},
 	},
 	argTypes: {
-		onClick: { action: "clicked" },
+		onSelect: { action: "select" },
+		onExpand: { action: "expand" },
 		isSelected: { control: "boolean" },
 		isHighlighted: { control: "boolean" },
-		variant: {
-			control: "select",
-			options: ["component", "view", "route", "state", "event"],
-		},
+		showPreview: { control: "boolean" },
 	},
 };
 
@@ -33,10 +73,12 @@ type Story = StoryObj<typeof meta>;
  */
 export const Default: Story = {
 	args: {
-		label: "Button Component",
-		variant: "component",
+		node: defaultNode,
 		isSelected: false,
 		isHighlighted: false,
+		onSelect: () => {},
+		onExpand: () => {},
+		showPreview: false,
 	},
 };
 
@@ -45,10 +87,12 @@ export const Default: Story = {
  */
 export const Selected: Story = {
 	args: {
-		label: "Button Component",
-		variant: "component",
+		node: defaultNode,
 		isSelected: true,
 		isHighlighted: false,
+		onSelect: () => {},
+		onExpand: () => {},
+		showPreview: false,
 	},
 };
 
@@ -57,10 +101,12 @@ export const Selected: Story = {
  */
 export const Highlighted: Story = {
 	args: {
-		label: "Button Component",
-		variant: "component",
+		node: defaultNode,
 		isSelected: false,
 		isHighlighted: true,
+		onSelect: () => {},
+		onExpand: () => {},
+		showPreview: false,
 	},
 };
 
@@ -69,10 +115,12 @@ export const Highlighted: Story = {
  */
 export const ViewVariant: Story = {
 	args: {
-		label: "Dashboard View",
-		variant: "view",
+		node: viewNode,
 		isSelected: false,
 		isHighlighted: false,
+		onSelect: () => {},
+		onExpand: () => {},
+		showPreview: false,
 	},
 };
 
@@ -81,10 +129,12 @@ export const ViewVariant: Story = {
  */
 export const RouteVariant: Story = {
 	args: {
-		label: "/components",
-		variant: "route",
+		node: routeNode,
 		isSelected: false,
 		isHighlighted: false,
+		onSelect: () => {},
+		onExpand: () => {},
+		showPreview: false,
 	},
 };
 
@@ -93,10 +143,12 @@ export const RouteVariant: Story = {
  */
 export const StateVariant: Story = {
 	args: {
-		label: "Loading",
-		variant: "state",
+		node: stateNode,
 		isSelected: false,
 		isHighlighted: false,
+		onSelect: () => {},
+		onExpand: () => {},
+		showPreview: false,
 	},
 };
 
@@ -105,10 +157,12 @@ export const StateVariant: Story = {
  */
 export const EventVariant: Story = {
 	args: {
-		label: "onClick",
-		variant: "event",
+		node: eventNode,
 		isSelected: false,
 		isHighlighted: false,
+		onSelect: () => {},
+		onExpand: () => {},
+		showPreview: false,
 	},
 };
 
@@ -117,10 +171,12 @@ export const EventVariant: Story = {
  */
 export const DarkMode: Story = {
 	args: {
-		label: "Button Component",
-		variant: "component",
+		node: defaultNode,
 		isSelected: false,
 		isHighlighted: false,
+		onSelect: () => {},
+		onExpand: () => {},
+		showPreview: false,
 	},
 	decorators: [
 		(Story) => (
@@ -142,13 +198,51 @@ export const DarkMode: Story = {
  * All variants together
  */
 export const AllVariants: Story = {
-	render: () => (
-		<div className="flex gap-2 flex-wrap p-4">
-			<GraphNodePill label="Button" variant="component" />
-			<GraphNodePill label="Dashboard" variant="view" />
-			<GraphNodePill label="/route" variant="route" />
-			<GraphNodePill label="loading" variant="state" />
-			<GraphNodePill label="onClick" variant="event" />
-		</div>
-	),
+	render: () => {
+		const noop = () => {};
+		return (
+			<div className="flex gap-2 flex-wrap p-4">
+				<GraphNodePill
+					node={defaultNode}
+					isSelected={false}
+					isHighlighted={false}
+					onSelect={noop}
+					onExpand={noop}
+					showPreview={false}
+				/>
+				<GraphNodePill
+					node={viewNode}
+					isSelected={false}
+					isHighlighted={false}
+					onSelect={noop}
+					onExpand={noop}
+					showPreview={false}
+				/>
+				<GraphNodePill
+					node={routeNode}
+					isSelected={false}
+					isHighlighted={false}
+					onSelect={noop}
+					onExpand={noop}
+					showPreview={false}
+				/>
+				<GraphNodePill
+					node={stateNode}
+					isSelected={false}
+					isHighlighted={false}
+					onSelect={noop}
+					onExpand={noop}
+					showPreview={false}
+				/>
+				<GraphNodePill
+					node={eventNode}
+					isSelected={false}
+					isHighlighted={false}
+					onSelect={noop}
+					onExpand={noop}
+					showPreview={false}
+				/>
+			</div>
+		);
+	},
 };

@@ -4813,7 +4813,7 @@ function injectInternals(internals) {
     rendererID = hook.inject(internals); // We have successfully injected, so now it is safe to set up hooks.
 
     injectedHook = hook;
-  } catch (err) {
+  } catch (_err) {
     // Catch all errors because it is unsafe to throw during initialization.
     {
       error('React instrumentation encountered an error: %s.', err);
@@ -4833,7 +4833,7 @@ function onScheduleRoot(root, children) {
     if (injectedHook && typeof injectedHook.onScheduleFiberRoot === 'function') {
       try {
         injectedHook.onScheduleFiberRoot(rendererID, root, children);
-      } catch (err) {
+      } catch (_err) {
         if ( !hasLoggedError) {
           hasLoggedError = true;
 
@@ -4877,7 +4877,7 @@ function onCommitRoot(root, eventPriority) {
       } else {
         injectedHook.onCommitFiberRoot(rendererID, root, undefined, didError);
       }
-    } catch (err) {
+    } catch (_err) {
       {
         if (!hasLoggedError) {
           hasLoggedError = true;
@@ -4892,7 +4892,7 @@ function onPostCommitRoot(root) {
   if (injectedHook && typeof injectedHook.onPostCommitFiberRoot === 'function') {
     try {
       injectedHook.onPostCommitFiberRoot(rendererID, root);
-    } catch (err) {
+    } catch (_err) {
       {
         if (!hasLoggedError) {
           hasLoggedError = true;
@@ -4907,7 +4907,7 @@ function onCommitUnmount(fiber) {
   if (injectedHook && typeof injectedHook.onCommitFiberUnmount === 'function') {
     try {
       injectedHook.onCommitFiberUnmount(rendererID, fiber);
-    } catch (err) {
+    } catch (_err) {
       {
         if (!hasLoggedError) {
           hasLoggedError = true;
@@ -4931,7 +4931,7 @@ function setIsStrictModeForDevtools(newIsStrictMode) {
     if (injectedHook && typeof injectedHook.setStrictMode === 'function') {
       try {
         injectedHook.setStrictMode(rendererID, newIsStrictMode);
-      } catch (err) {
+      } catch (_err) {
         {
           if (!hasLoggedError) {
             hasLoggedError = true;
@@ -8433,7 +8433,7 @@ function isSameOriginFrame(iframe) {
     // Which might result in "SecurityError" DOM Exception and it is compatible to Safari.
     // https://html.spec.whatwg.org/multipage/browsers.html#integration-with-idl
     return typeof iframe.contentWindow.location.href === 'string';
-  } catch (err) {
+  } catch (_err) {
     return false;
   }
 }

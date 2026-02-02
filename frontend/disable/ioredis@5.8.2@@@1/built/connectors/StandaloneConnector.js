@@ -50,7 +50,7 @@ class StandaloneConnector extends AbstractConnector_1.default {
 					} else {
 						this.stream = (0, net_1.createConnection)(connectionOptions);
 					}
-				} catch (err) {
+				} catch (_err) {
 					reject(err);
 					return;
 				}

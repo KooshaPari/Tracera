@@ -65,7 +65,7 @@ function killAll (tree, signal, callback) {
                 killed[pid] = 1;
             }
         });
-    } catch (err) {
+    } catch (_err) {
         if (callback) {
             return callback(err);
         } else {

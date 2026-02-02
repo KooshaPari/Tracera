@@ -16,7 +16,7 @@ test.describe("Table Accessibility - Keyboard Navigation", () => {
 
 	test("should have proper ARIA roles on table", async ({ page }) => {
 		// Check table structure
-		const table = await page.locator('[role="table"]').first();
+		const table = page.locator('[role="table"]').first();
 		await expect(table).toBeVisible();
 
 		// Check for aria-label
@@ -42,7 +42,7 @@ test.describe("Table Accessibility - Keyboard Navigation", () => {
 
 	test("should support arrow key navigation left/right", async ({ page }) => {
 		// Focus first cell
-		const firstCell = await page.locator('[role="gridcell"]').first();
+		const firstCell = page.locator('[role="gridcell"]').first();
 		await firstCell.focus();
 
 		// Press Right arrow
@@ -74,7 +74,7 @@ test.describe("Table Accessibility - Keyboard Navigation", () => {
 
 		// Verify navigation occurred
 		const focused = await page.evaluate(() =>
-			(document.activeElement as HTMLElement)?.getAttribute("data-row-index"),
+			document.activeElement?.getAttribute("data-row-index"),
 		);
 		expect(focused).toBeTruthy();
 	});
@@ -93,7 +93,7 @@ test.describe("Table Accessibility - Keyboard Navigation", () => {
 		await page.waitForTimeout(100);
 
 		const focused = await page.evaluate(() =>
-			(document.activeElement as HTMLElement)?.getAttribute("data-col-index"),
+			document.activeElement?.getAttribute("data-col-index"),
 		);
 		expect(focused).toBeTruthy();
 	});
@@ -130,7 +130,7 @@ test.describe("Table Accessibility - Keyboard Navigation", () => {
 		await page.waitForTimeout(100);
 
 		const position = await page.evaluate(() =>
-			(document.activeElement as HTMLElement)?.getAttribute("data-row-index"),
+			document.activeElement?.getAttribute("data-row-index"),
 		);
 		// Should be at first row
 		expect(position).toBe("0");
@@ -143,7 +143,7 @@ test.describe("Table Accessibility - Keyboard Navigation", () => {
 		}
 
 		// Focus first cell
-		const firstCell = await page.locator('[role="gridcell"]').first();
+		const firstCell = page.locator('[role="gridcell"]').first();
 		await firstCell.focus();
 
 		// Press Ctrl+End
@@ -169,14 +169,14 @@ test.describe("Table Accessibility - Keyboard Navigation", () => {
 		await page.waitForTimeout(100);
 
 		const position = await page.evaluate(() =>
-			(document.activeElement as HTMLElement)?.getAttribute("data-row-index"),
+			document.activeElement?.getAttribute("data-row-index"),
 		);
 		expect(position).toBeTruthy();
 	});
 
 	test("should support PageDown to jump down 5 rows", async ({ page }) => {
 		// Focus first cell
-		const firstCell = await page.locator('[role="gridcell"]').first();
+		const firstCell = page.locator('[role="gridcell"]').first();
 		await firstCell.focus();
 
 		// Press PageDown
@@ -188,12 +188,12 @@ test.describe("Table Accessibility - Keyboard Navigation", () => {
 	});
 
 	test("should maintain focus visibility when navigating", async ({ page }) => {
-		const cell = await page.locator('[role="gridcell"]').first();
+		const cell = page.locator('[role="gridcell"]').first();
 		await cell.focus();
 
 		// Element should have visible focus indicator
-		const hasFocusClass = await cell.evaluate((el) => {
-			const classes = el.className || "";
+		const hasFocusClass = await cell.evaluate((el: Element) => {
+			const classes = (el as HTMLElement).getAttribute("class") ?? "";
 			return (
 				classes.includes("focus:ring") || classes.includes("focus-visible")
 			);
@@ -204,9 +204,9 @@ test.describe("Table Accessibility - Keyboard Navigation", () => {
 
 	test("should announce navigation to screen readers", async ({ page }) => {
 		// Check for aria-live region
-		const liveRegion = await page
-			.locator('[role="status"][aria-live="polite"]')
-			.first();
+			const liveRegion = page
+				.locator('[role="status"][aria-live="polite"]')
+				.first();
 		await expect(liveRegion).toBeInTheDocument();
 
 		// Should have aria-atomic for announcement
@@ -215,12 +215,12 @@ test.describe("Table Accessibility - Keyboard Navigation", () => {
 	});
 
 	test("should have sr-only table instructions", async ({ page }) => {
-		const instructions = await page.locator("#table-instructions");
+		const instructions = page.locator("#table-instructions");
 		await expect(instructions).toBeInTheDocument();
 
 		// Should be screen-reader only (sr-only class)
-		const isHidden = await instructions.evaluate((el) => {
-			const classes = el.className || "";
+		const isHidden = await instructions.evaluate((el: Element) => {
+			const classes = (el as HTMLElement).getAttribute("class") ?? "";
 			return classes.includes("sr-only");
 		});
 		expect(isHidden).toBe(true);
@@ -274,28 +274,28 @@ test.describe("Table Accessibility - Screen Reader Support", () => {
 			// Should contain priority text (low, medium, high, critical)
 			const text = await cell.textContent();
 			const hasPriorityText =
-				text?.includes("low") ||
-				text?.includes("medium") ||
-				text?.includes("high") ||
-				text?.includes("critical");
+				(text?.includes("low") ?? false) ||
+				(text?.includes("medium") ?? false) ||
+				(text?.includes("high") ?? false) ||
+				(text?.includes("critical") ?? false);
 			expect(hasPriorityText).toBe(true);
 		}
 	});
 
 	test("should have accessible search input", async ({ page }) => {
-		const searchInput = await page.locator('input[aria-label*="Search items"]');
+		const searchInput = page.locator('input[aria-label*="Search items"]');
 		await expect(searchInput).toBeInTheDocument();
 	});
 
 	test("should have accessible create button", async ({ page }) => {
-		const createButton = await page.locator(
-			'button[aria-label*="Create new node"]',
-		);
+			const createButton = page.locator(
+				'button[aria-label*="Create new node"]',
+			);
 		await expect(createButton).toBeInTheDocument();
 	});
 
 	test("should have sortable column headers", async ({ page }) => {
-		const sortButton = await page.locator('button[aria-label*="sorted"]');
+		const sortButton = page.locator('button[aria-label*="sorted"]');
 
 		// Should have indication of sort state
 		if (await sortButton.isVisible()) {
@@ -310,7 +310,7 @@ test.describe("Table Accessibility - Screen Reader Support", () => {
 		await page.waitForTimeout(300);
 
 		// Modal should have dialog role
-		const modal = await page.locator('[role="dialog"]');
+		const modal = page.locator('[role="dialog"]');
 		await expect(modal).toBeInTheDocument();
 
 		// Should have aria-modal
@@ -419,7 +419,7 @@ test.describe("Table Accessibility - Focus Management", () => {
 
 	test("should have logical focus order", async ({ page }) => {
 		// Tab through elements - they should appear in logical order
-		const initialFocus = await page.evaluate(
+		const _initialFocus = await page.evaluate(
 			() => document.activeElement?.tagName,
 		);
 
@@ -444,12 +444,14 @@ test.describe("Table Accessibility - Focus Management", () => {
 
 		// Check for focus indicator
 		const hasOutline = await page.evaluate(() => {
-			const focused = document.activeElement as HTMLElement;
+			const focused = document.activeElement;
+			if (!focused) return false;
 			const styles = window.getComputedStyle(focused);
+			const className = "className" in focused ? String(focused.className) : "";
 			return (
 				styles.outline !== "none" ||
-				focused.className.includes("ring") ||
-				focused.className.includes("focus")
+				className.includes("ring") ||
+				className.includes("focus")
 			);
 		});
 
@@ -462,7 +464,7 @@ test.describe("Table Accessibility - Focus Management", () => {
 		await page.waitForTimeout(300);
 
 		// Tab through modal - focus should stay within
-		const initialElement = await page.evaluate(
+		const _initialElement = await page.evaluate(
 			() => document.activeElement?.id,
 		);
 
@@ -473,7 +475,7 @@ test.describe("Table Accessibility - Focus Management", () => {
 		const finalElement = await page.evaluate(() => document.activeElement?.id);
 
 		// Element should still be in modal context
-		const inModal = await page
+		const _inModal = await page
 			.locator('[role="dialog"]')
 			.locator(`#${finalElement}`)
 			.isVisible();
@@ -495,7 +497,8 @@ test.describe("Table Accessibility - WCAG 2.1 AA Compliance", () => {
 
 		for (const button of buttons) {
 			const box = await button.boundingBox();
-			if (box && button.isVisible()) {
+			const visible = await button.isVisible();
+			if (box !== null && visible) {
 				// Should meet minimum size requirement
 				expect(box.width + box.height).toBeGreaterThan(40);
 			}
@@ -509,7 +512,7 @@ test.describe("Table Accessibility - WCAG 2.1 AA Compliance", () => {
 		});
 
 		// Content should still be visible and usable
-		const table = await page.locator('[role="table"]').first();
+		const table = page.locator('[role="table"]').first();
 		await expect(table).toBeVisible();
 
 		// Reset zoom
@@ -530,15 +533,16 @@ test.describe("Table Accessibility - WCAG 2.1 AA Compliance", () => {
 	});
 
 	test("should maintain focus visibility", async ({ page }) => {
-		const cell = await page.locator('[role="gridcell"]').first();
+		const cell = page.locator('[role="gridcell"]').first();
 		await cell.focus();
 
-		const isFocusVisible = await cell.evaluate((el) => {
+		const isFocusVisible = await cell.evaluate((el: Element) => {
 			const styles = window.getComputedStyle(el);
+			const className = (el as HTMLElement).getAttribute("class") ?? "";
 			return (
 				styles.outline !== "none" ||
 				styles.boxShadow !== "none" ||
-				el.className.includes("ring")
+				className.includes("ring")
 			);
 		});
 

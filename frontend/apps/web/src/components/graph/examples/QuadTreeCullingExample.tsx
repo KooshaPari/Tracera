@@ -16,6 +16,7 @@ import { determineLODLevel } from '@/components/graph/utils/lod';
 import { getNodeType } from '@/components/graph/nodeRegistry';
 import type { Node } from '@xyflow/react';
 import type { RichNodeData } from '@/components/graph/types';
+import { logger } from '@/lib/logger';
 
 interface QuadTreeCullingExampleProps {
 	items: Array<{
@@ -58,7 +59,7 @@ export function QuadTreeCullingExample({
 	// QUAD-TREE CULLING: Replace O(n) with O(log n)
 	// ============================================
 
-	const { visibleNodes, visibleNodeIds, stats } = useQuadTreeCulling({
+	const { visibleNodes, stats } = useQuadTreeCulling({
 		nodes: allNodes,
 		viewport,
 		bufferZone: 200,
@@ -151,6 +152,9 @@ export function QuadTreeCullingExample({
 			} as Node<RichNodeData>;
 		});
 	}, [visibleNodes, allNodes.length, viewport, selectedNodeId]);
+
+	// For demonstration purposes - showing the optimized processing
+	void nodesForLayout;
 
 	// Performance comparison
 	const performanceGain = useMemo(() => {

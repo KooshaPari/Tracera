@@ -1,5 +1,7 @@
 // Events API stub
-import { apiClient, safeApiCall } from "./client";
+import client from "./client";
+
+const { apiClient, safeApiCall } = client;
 
 export interface Event {
 	id: string;
@@ -19,8 +21,8 @@ export const fetchEvents = async (params?: {
 			apiClient.GET("/api/v1/events", { params: { query: params } }),
 		);
 		return (response.data as Event[]) || [];
-	} catch {
-		return [];
+    } catch {
+        return [];
 	}
 };
 
@@ -30,7 +32,7 @@ export const fetchEvent = async (id: string): Promise<Event | null> => {
 			apiClient.GET("/api/v1/events/{id}", { params: { path: { id } } }),
 		);
 		return (response.data as Event) || null;
-	} catch {
-		return null;
+    } catch {
+        return null;
 	}
 };

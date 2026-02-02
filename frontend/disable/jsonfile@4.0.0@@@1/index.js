@@ -61,7 +61,7 @@ function readFileSync(file, options) {
 		var content = fs.readFileSync(file, options);
 		content = stripBom(content);
 		return JSON.parse(content, options.reviver);
-	} catch (err) {
+	} catch (_err) {
 		if (shouldThrow) {
 			err.message = file + ": " + err.message;
 			throw err;
@@ -99,7 +99,7 @@ function writeFile(file, obj, options, callback) {
 	var str = "";
 	try {
 		str = stringify(obj, options);
-	} catch (err) {
+	} catch (_err) {
 		// Need to return whether a callback was passed or not
 		if (callback) callback(err, null);
 		return;

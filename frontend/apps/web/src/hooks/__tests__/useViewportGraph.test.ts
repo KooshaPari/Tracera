@@ -7,13 +7,12 @@
  * - Performance with large datasets
  */
 
-import { describe, it, expect, beforeEach } from "bun:test";
-import { renderHook, act, waitFor } from "@testing-library/react";
+import { describe, it, expect } from "bun:test";
 import type { ViewportBounds } from "../useViewportGraph";
 
 // Simple test to verify hook structure without complex mocking
 describe("useViewportGraph", () => {
-	const projectId = "test-project-123";
+	const _projectId = "test-project-123";
 
 	it("should export required types", () => {
 		// Type check - will fail at compile time if types are missing

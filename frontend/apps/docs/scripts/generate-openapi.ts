@@ -119,7 +119,7 @@ async function main() {
 
     console.log('✨ Done! API documentation is ready to build.\n');
     process.exit(0);
-  } catch (error) {
+  } catch {
     console.error('💥 Generation failed\n');
     process.exit(1);
   }

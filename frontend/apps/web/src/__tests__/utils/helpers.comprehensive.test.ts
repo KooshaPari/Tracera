@@ -228,7 +228,7 @@ describe("shuffle", () => {
 	it("should contain all original elements", () => {
 		const arr = [1, 2, 3, 4, 5];
 		const result = shuffle(arr);
-		expect(result.sort()).toEqual(arr.sort());
+		expect(result.toSorted((a, b) => (a < b ? -1 : a > b ? 1 : 0))).toEqual(arr.toSorted((a, b) => (a < b ? -1 : a > b ? 1 : 0)));
 	});
 
 	it("should not mutate original array", () => {
@@ -490,7 +490,7 @@ describe("sleep", () => {
 		vi.advanceTimersByTime(500);
 		// Promise should still be pending
 		let resolved = false;
-		promise.then(() => {
+		void promise.then(() => {
 			resolved = true;
 		});
 		await Promise.resolve(); // Flush microtasks
@@ -900,10 +900,10 @@ describe("downloadFile", () => {
 		const createElementSpy = vi.spyOn(document, "createElement");
 		const appendChildSpy = vi
 			.spyOn(document.body, "appendChild")
-			.mockImplementation(() => null as any);
+			.mockImplementation((): Node => (null as unknown as Node));
 		const removeChildSpy = vi
 			.spyOn(document.body, "removeChild")
-			.mockImplementation(() => null as any);
+			.mockImplementation((): Node => (null as unknown as Node));
 
 		downloadFile("test content", "test.txt", "text/plain");
 
@@ -919,10 +919,10 @@ describe("downloadFile", () => {
 	it("should handle different file types", () => {
 		const appendChildSpy = vi
 			.spyOn(document.body, "appendChild")
-			.mockImplementation(() => null as any);
+			.mockImplementation((): Node => (null as unknown as Node));
 		const removeChildSpy = vi
 			.spyOn(document.body, "removeChild")
-			.mockImplementation(() => null as any);
+			.mockImplementation((): Node => (null as unknown as Node));
 
 		downloadFile('{"test": true}', "data.json", "application/json");
 		expect(appendChildSpy).toHaveBeenCalled();

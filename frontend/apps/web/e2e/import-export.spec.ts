@@ -75,7 +75,7 @@ test.describe("Export Functionality", () => {
 
 					const download = await downloadPromise.catch(() => null);
 					if (download) {
-						const filename = await download.suggestedFilename();
+						const filename = download.suggestedFilename();
 						expect(filename).toMatch(/\.json$/);
 						console.log(`Items exported as JSON: ${filename}`);
 					} else {
@@ -130,7 +130,7 @@ test.describe("Export Functionality", () => {
 					const download = await downloadPromise.catch(() => null);
 					if (download) {
 						console.log(
-							`Filtered items exported: ${await download.suggestedFilename()}`,
+							`Filtered items exported: ${download.suggestedFilename()}`,
 						);
 					}
 				}
@@ -197,7 +197,7 @@ test.describe("Export Functionality", () => {
 
 					const download = await downloadPromise.catch(() => null);
 					if (download) {
-						const filename = await download.suggestedFilename();
+						const filename = download.suggestedFilename();
 						expect(filename).toMatch(/\.csv$/);
 						console.log(`Items exported as CSV: ${filename}`);
 					}
@@ -289,7 +289,7 @@ test.describe("Export Functionality", () => {
 
 					const download = await downloadPromise.catch(() => null);
 					if (download) {
-						const filename = await download.suggestedFilename();
+						const filename = download.suggestedFilename();
 						expect(filename).toMatch(/\.json$/);
 						console.log(`Project exported: ${filename}`);
 					}
@@ -319,7 +319,7 @@ test.describe("Export Functionality", () => {
 
 					const download = await downloadPromise.catch(() => null);
 					if (download) {
-						const filename = await download.suggestedFilename();
+						const filename = download.suggestedFilename();
 						expect(filename).toMatch(/\.csv$/);
 						console.log(`Project exported as CSV: ${filename}`);
 					}
@@ -1077,7 +1077,7 @@ test.describe("Export/Import Edge Cases", () => {
 					const download = await downloadPromise.catch(() => null);
 					if (download) {
 						console.log(
-							`Empty project export: ${await download.suggestedFilename()}`,
+							`Empty project export: ${download.suggestedFilename()}`,
 						);
 					}
 				}

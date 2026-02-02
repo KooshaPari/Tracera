@@ -97,7 +97,7 @@ const remoteFetch = (request, options) => {
       }
 
       return res
-    } catch (err) {
+    } catch (_err) {
       const code = (err.code === 'EPROMISERETRY')
         ? err.retried.code
         : err.code

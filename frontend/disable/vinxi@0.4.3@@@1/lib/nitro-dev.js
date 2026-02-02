@@ -213,7 +213,7 @@ export async function createDevServer(nitro) {
 	// 	if (address.socketPath) {
 	// 		try {
 	// 			accessSync(address.socketPath);
-	// 		} catch (err) {
+	// 		} catch (_err) {
 	// 			if (!lastError) {
 	// 				lastError = err;
 	// 			}

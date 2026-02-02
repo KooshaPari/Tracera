@@ -15,8 +15,18 @@
 
 import { fetchCSRFToken, getCSRFToken } from "../lib/csrf";
 import { useAuthStore } from "../stores/authStore";
-import { ApiError, apiClient, handleApiResponse, safeApiCall } from "./client";
-import type { ErrorDetails } from "./types";
+import client from "./client";
+
+const { ApiError, apiClient, handleApiResponse, safeApiCall } = client;
+
+/** HTTP 401 Unauthorized */
+const HTTP_UNAUTHORIZED = 401;
+/** HTTP 403 Forbidden */
+const HTTP_FORBIDDEN = 403;
+/** HTTP 429 Too Many Requests */
+const HTTP_TOO_MANY_REQUESTS = 429;
+/** Minimum status for server errors (5xx) */
+const HTTP_SERVER_ERROR_MIN = 500;
 
 // ============================================================================
 // TYPES
@@ -25,9 +35,7 @@ import type { ErrorDetails } from "./types";
 /**
  * User metadata that can contain arbitrary attributes
  */
-export interface UserMetadata {
-	[key: string]: string | number | boolean | object | null | undefined;
-}
+export type UserMetadata = Record<string, unknown>;
 
 /**
  * User authentication representation
@@ -103,9 +111,7 @@ export interface UpdateUserProfileRequest {
 /**
  * Authentication error details structure
  */
-export interface AuthErrorDetails {
-	[key: string]: string | number | boolean | object | null | undefined;
-}
+export type AuthErrorDetails = Record<string, unknown>;
 
 /**
  * Authentication error with detailed information
@@ -133,47 +139,154 @@ async function ensureCSRFToken(): Promise<string> {
 		try {
 			token = await fetchCSRFToken();
 		} catch (error) {
+			const originalError =
+				error instanceof Error ? error.message : String(error);
 			throw new AuthError(
 				"Failed to fetch CSRF token",
-				403,
+				HTTP_FORBIDDEN,
 				"CSRF_TOKEN_MISSING",
-				{
-					originalError: error instanceof Error ? error.message : String(error),
-				},
+				{ originalError },
 			);
 		}
 	}
 	if (!token) {
-		throw new AuthError("CSRF token not available", 403, "CSRF_TOKEN_MISSING");
+		throw new AuthError(
+			"CSRF token not available",
+			HTTP_FORBIDDEN,
+			"CSRF_TOKEN_MISSING",
+		);
 	}
 	return token;
 }
 
 /**
+ * Parse API error data into message, code, and details using runtime checks.
+ */
+const isRecordObject = (value: unknown): value is Record<string, unknown> =>
+	value !== null && typeof value === "object";
+
+const readStringField = (
+	obj: Record<string, unknown>,
+	key: string,
+): string | null => {
+	const value = obj[key];
+	if (typeof value === "string") {
+		return value;
+	}
+	return null;
+};
+
+const readDetailsField = (
+	obj: Record<string, unknown>,
+): AuthErrorDetails | null => {
+	const value = obj["details"];
+	if (value !== null && typeof value === "object") {
+		return value as AuthErrorDetails;
+	}
+	return null;
+};
+
+const buildErrorResult = (
+	data: Record<string, unknown>,
+): { message: string; code?: string; details?: AuthErrorDetails } => {
+	const message = readStringField(data, "message") ?? "";
+	const code = readStringField(data, "code");
+	const details = readDetailsField(data);
+	const result: {
+		message: string;
+		code?: string;
+		details?: AuthErrorDetails;
+	} = { message };
+	if (code) {
+		result.code = code;
+	}
+	if (details) {
+		result.details = details;
+	}
+	return result;
+};
+
+function parseErrorData(data: unknown): {
+	message: string;
+	code?: string;
+	details?: AuthErrorDetails;
+} {
+	if (!isRecordObject(data)) {
+		return { message: "" };
+	}
+	return buildErrorResult(data);
+}
+
+/**
  * Helper to handle auth API responses and convert errors
  */
-async function handleAuthResponse<T>(
+async function handleAuthResponse<TResponse>(
 	promise:
-		| Promise<{ data?: T; error?: unknown; response: Response }>
+		| Promise<{ data?: TResponse; error?: unknown; response: Response }>
 		| null
 		| undefined,
-): Promise<T> {
+): Promise<TResponse> {
 	try {
 		return await handleApiResponse(promise);
 	} catch (error) {
 		if (error instanceof ApiError) {
-			// Convert ApiError to AuthError
-			const data = error.data as ErrorDetails | undefined;
+			const { message, code, details } = parseErrorData(error.data);
 			throw new AuthError(
-				(data?.['message'] as string) || error.message,
+				message || error.message,
 				error.status,
-				data?.['code'] as string | undefined,
-				data?.['details'] as AuthErrorDetails | undefined,
+				code,
+				details,
 			);
 		}
 		throw error;
 	}
 }
+
+const AUTH_ERROR_MESSAGES: Record<string, string> = {
+	INVALID_CREDENTIALS: "Invalid email or password",
+	USER_NOT_FOUND: "User not found",
+	USER_DISABLED: "This account has been disabled",
+	INVALID_PASSWORD: "Current password is incorrect",
+	PASSWORD_MISMATCH: "Passwords do not match",
+	INVALID_TOKEN: "Invalid or expired token",
+	CSRF_TOKEN_MISSING: "Security token missing, please refresh the page",
+};
+
+const EMPTY_LENGTH = 0;
+
+const hasWindow = (): boolean => "window" in globalThis;
+
+const normalizeToken = (value: unknown): string | null => {
+	if (value === null || value === globalThis.undefined) {
+		return null;
+	}
+	const trimmed = String(value).trim();
+	if (trimmed.length === EMPTY_LENGTH) {
+		return null;
+	}
+	return trimmed;
+};
+
+const getStoredToken = (): string | null => {
+	if (hasWindow()) {
+		const storage = globalThis.window.localStorage;
+		const fromStorage = storage ? storage.getItem("auth_token") : null;
+		const fromStore = useAuthStore.getState().token;
+		const raw = fromStorage ?? fromStore;
+		return normalizeToken(raw);
+	}
+	const storedToken = useAuthStore.getState().token;
+	return normalizeToken(storedToken);
+};
+
+const fetchCurrentUser = (): Promise<User> =>
+	handleAuthResponse(
+		safeApiCall(
+			apiClient.GET("/api/v1/auth/me", {
+				params: { query: {} },
+			}),
+		),
+	);
 
 // ============================================================================
 // AUTHENTICATION API
@@ -319,25 +432,17 @@ export const authApi = {
 	 * ```
 	 */
 	getCurrentUser: async (): Promise<User | null> => {
-		const token =
-			typeof globalThis.window !== "undefined"
-				? (globalThis.window.localStorage?.getItem("auth_token") ??
-						useAuthStore.getState().token)?.trim()
-				: useAuthStore.getState().token?.trim();
-		if (!token) {
+		const token = getStoredToken();
+		if (token === null) {
 			return null;
 		}
 		try {
-			return await handleAuthResponse(
-				safeApiCall(
-					apiClient.GET("/api/v1/auth/me", {
-						params: { query: {} },
-					}),
-				),
-			);
+			return await fetchCurrentUser();
 		} catch (error) {
-			if (error instanceof AuthError && error.statusCode === 401) {
-				// Not authenticated
+			if (
+				error instanceof AuthError &&
+				error.statusCode === HTTP_UNAUTHORIZED
+			) {
 				return null;
 			}
 			throw error;
@@ -627,31 +732,14 @@ export function isAuthError(error: unknown): error is AuthError {
  * @returns User-friendly error message
  */
 export function getAuthErrorMessage(error: AuthError): string {
-	if (error.code === "INVALID_CREDENTIALS") {
-		return "Invalid email or password";
+	const codeMessage = error.code ? AUTH_ERROR_MESSAGES[error.code] : null;
+	if (codeMessage) {
+		return codeMessage;
 	}
-	if (error.code === "USER_NOT_FOUND") {
-		return "User not found";
-	}
-	if (error.code === "USER_DISABLED") {
-		return "This account has been disabled";
-	}
-	if (error.code === "INVALID_PASSWORD") {
-		return "Current password is incorrect";
-	}
-	if (error.code === "PASSWORD_MISMATCH") {
-		return "Passwords do not match";
-	}
-	if (error.code === "INVALID_TOKEN") {
-		return "Invalid or expired token";
-	}
-	if (error.code === "CSRF_TOKEN_MISSING") {
-		return "Security token missing, please refresh the page";
-	}
-	if (error.statusCode === 429) {
+	if (error.statusCode === HTTP_TOO_MANY_REQUESTS) {
 		return "Too many login attempts, please try again later";
 	}
-	if (error.statusCode >= 500) {
+	if (error.statusCode >= HTTP_SERVER_ERROR_MIN) {
 		return "Server error, please try again later";
 	}
 	return error.message || "Authentication failed";
@@ -674,33 +762,41 @@ export function getAuthErrorMessage(error: AuthError): string {
  *     authStore.getState().setUser(res.user);
  *     authStore.getState().setToken(res.token);
  *     navigate({ to: "/home" });
- *   } catch {
+ *   } catch (error) {
  *     // Toast already shown; optionally focus form
  *   }
  * };
  * ```
  */
+function getLoginErrorMessage(error: unknown): string {
+	if (isAuthError(error)) {
+		return getAuthErrorMessage(error);
+	}
+	if (error instanceof ApiError) {
+		const { message, code, details } = parseErrorData(error.data);
+		return getAuthErrorMessage(
+			new AuthError(
+				message || error.statusText,
+				error.status,
+				code,
+				details,
+			),
+		);
+	}
+	if (error instanceof Error) {
+		return error.message;
+	}
+	return "Login failed";
+}
+
 export async function loginWithToast(
 	credentials: LoginRequest,
 ): Promise<AuthResponse> {
 	try {
 		return await authApi.login(credentials);
 	} catch (error) {
-		const message = isAuthError(error)
-			? getAuthErrorMessage(error)
-			: error instanceof ApiError
-				? getAuthErrorMessage(
-						new AuthError(
-							((error.data as ErrorDetails)?.['message'] as string) ?? error.statusText,
-							error.status,
-							(error.data as ErrorDetails)?.['code'] as string | undefined,
-							error.data as AuthErrorDetails,
-						),
-					)
-				: error instanceof Error
-					? error.message
-					: "Login failed";
-		if (typeof globalThis.window !== "undefined") {
+		const message = getLoginErrorMessage(error);
+		if (hasWindow()) {
 			const { toast } = await import("sonner");
 			toast.error("Login failed", { description: message });
 		}
@@ -723,7 +819,7 @@ export async function loginWithToast(
  *   try {
  *     await loginWithToastStore(email, password);
  *     navigate({ to: "/home" });
- *   } catch {
+ *   } catch (error) {
  *     // Toast already shown
  *   }
  * };
@@ -736,9 +832,12 @@ export async function loginWithToastStore(
 	try {
 		await useAuthStore.getState().login(email, password);
 	} catch (error) {
-		const message =
-			error instanceof Error ? error.message : "Login failed";
-		if (typeof globalThis.window !== "undefined") {
+		let message = "Login failed";
+		if (error instanceof Error) {
+			const { message: errorMessage } = error;
+			message = errorMessage;
+		}
+		if (hasWindow()) {
 			const { toast } = await import("sonner");
 			toast.error("Login failed", { description: message });
 		}
@@ -755,7 +854,7 @@ export async function loginWithToastStore(
 export function shouldLogoutOnError(error: AuthError): boolean {
 	// Logout on invalid credentials or session errors
 	return (
-		error.statusCode === 401 ||
+		error.statusCode === HTTP_UNAUTHORIZED ||
 		error.code === "SESSION_EXPIRED" ||
 		error.code === "INVALID_TOKEN"
 	);

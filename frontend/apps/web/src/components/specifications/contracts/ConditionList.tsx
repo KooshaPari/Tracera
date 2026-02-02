@@ -24,7 +24,7 @@ interface ConditionListProps {
 interface SeverityStyle {
 	bg: string;
 	text: string;
-	icon: any;
+	icon: React.ComponentType<{ className?: string }>;
 }
 
 /**
@@ -42,11 +42,11 @@ interface ConditionSeverityStyleMap {
  * Verification status icon map
  */
 interface VerificationStatusIconMap {
-	pass: any;
-	fail: any;
-	skip: any;
-	undefined: any;
-	[key: string]: any;
+	pass: React.ComponentType<{ className?: string }>;
+	fail: React.ComponentType<{ className?: string }>;
+	skip: React.ComponentType<{ className?: string }>;
+	undefined: React.ComponentType<{ className?: string }>;
+	[key: string]: React.ComponentType<{ className?: string }>;
 }
 
 const conditionSeverityStyles: ConditionSeverityStyleMap = {
@@ -93,7 +93,7 @@ interface ConditionItemProps {
 }
 
 function ConditionItem({ condition, type, onClick }: ConditionItemProps) {
-	const severity = (condition as any).severity || "medium";
+	const severity = (condition as ContractCondition & { severity?: string }).severity || "medium";
 	const status = condition.lastVerifiedResult || "undefined";
 	const StatusIcon = verificationStatusIcons[status] || Circle;
 	const severityStyle = conditionSeverityStyles[severity];

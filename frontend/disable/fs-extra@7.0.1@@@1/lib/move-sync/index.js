@@ -25,7 +25,7 @@ function moveSync (src, dest, options) {
     if (overwrite) {
       try {
         return fs.renameSync(src, dest)
-      } catch (err) {
+      } catch (_err) {
         if (err.code === 'ENOTEMPTY' || err.code === 'EEXIST' || err.code === 'EPERM') {
           removeSync(dest)
           options.overwrite = false // just overwriteed it, no need to do it again
@@ -39,7 +39,7 @@ function moveSync (src, dest, options) {
       try {
         fs.linkSync(src, dest)
         return fs.unlinkSync(src)
-      } catch (err) {
+      } catch (_err) {
         if (err.code === 'EXDEV' || err.code === 'EISDIR' || err.code === 'EPERM' || err.code === 'ENOTSUP') {
           return moveSyncAcrossDevice(src, dest, overwrite)
         }

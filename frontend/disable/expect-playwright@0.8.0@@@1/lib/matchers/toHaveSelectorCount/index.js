@@ -27,7 +27,7 @@ const toHaveSelectorCount = async function (
 					actualCount,
 				),
 		};
-	} catch (err) {
+	} catch (_err) {
 		return {
 			pass: false,
 			message: () =>

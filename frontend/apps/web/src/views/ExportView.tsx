@@ -22,8 +22,8 @@ export function ExportView() {
 	const [isExporting, setIsExporting] = useState(false);
 
 	const projectsQuery = useQuery({
-		queryKey: ["projects"],
 		queryFn: () => api.projects.list(),
+		queryKey: ["projects"],
 	});
 
 	const handleExport = async () => {
@@ -35,13 +35,13 @@ export function ExportView() {
 		setIsExporting(true);
 		try {
 			const blob = await api.exportImport.export(projectId, format);
-			const url = window.URL.createObjectURL(blob);
+			const url = globalThis.URL.createObjectURL(blob);
 			const a = document.createElement("a");
 			a.href = url;
 			a.download = `project-${projectId}-export.${format === "markdown" ? "md" : format}`;
-			document.body.appendChild(a);
+			document.body.append(a);
 			a.click();
-			window.URL.revokeObjectURL(url);
+			globalThis.URL.revokeObjectURL(url);
 			document.body.removeChild(a);
 		} catch (error) {
 			logger.error("Export failed:", error);

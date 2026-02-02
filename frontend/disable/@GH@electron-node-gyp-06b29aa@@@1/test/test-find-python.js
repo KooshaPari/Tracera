@@ -18,7 +18,7 @@ class TestPythonFinder extends PythonFinder {
 	async findPython() {
 		try {
 			return { err: null, python: await super.findPython() };
-		} catch (err) {
+		} catch (_err) {
 			return { err, python: null };
 		}
 	}
@@ -48,7 +48,7 @@ describe("find-python", () => {
 
 		try {
 			fs.symlinkSync(found, testFilePath);
-		} catch (err) {
+		} catch (_err) {
 			switch (err.code) {
 				case "EPERM":
 					return assert.fail(

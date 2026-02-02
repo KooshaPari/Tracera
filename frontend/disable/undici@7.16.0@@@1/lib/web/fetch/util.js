@@ -985,7 +985,7 @@ function readableStreamClose (controller) {
   try {
     controller.close()
     controller.byobRequest?.respond(0)
-  } catch (err) {
+  } catch (_err) {
     // TODO: add comment explaining why this error occurs.
     if (!err.message.includes('Controller is already closed') && !err.message.includes('ReadableStream is already closed')) {
       throw err

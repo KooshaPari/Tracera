@@ -133,11 +133,13 @@ describe("PageDecompositionView Component", () => {
 	let onSelectItem: ReturnType<typeof vi.fn>;
 	let onViewInCode: ReturnType<typeof vi.fn>;
 	let onViewInDesign: ReturnType<typeof vi.fn>;
+	let user: ReturnType<typeof userEvent.setup>;
 
 	beforeEach(() => {
 		onSelectItem = vi.fn();
 		onViewInCode = vi.fn();
 		onViewInDesign = vi.fn();
+		user = userEvent.setup();
 		vi.clearAllMocks();
 	});
 
@@ -214,7 +216,6 @@ describe("PageDecompositionView Component", () => {
 
 	describe("Hierarchical Expansion", () => {
 		it("expands items when clicking expand button", async () => {
-			const user = userEvent.setup();
 			render(
 				<PageDecompositionView
 					items={mockItems}
@@ -243,7 +244,6 @@ describe("PageDecompositionView Component", () => {
 		});
 
 		it("collapses items when clicking collapse button", async () => {
-			const user = userEvent.setup();
 			const { rerender } = render(
 				<PageDecompositionView
 					items={mockItems}
@@ -297,7 +297,6 @@ describe("PageDecompositionView Component", () => {
 		});
 
 		it("expands all items when Expand All clicked", async () => {
-			const user = userEvent.setup();
 			render(
 				<PageDecompositionView
 					items={mockItems}
@@ -313,7 +312,6 @@ describe("PageDecompositionView Component", () => {
 		});
 
 		it("collapses all items when Collapse All clicked", async () => {
-			const user = userEvent.setup();
 			render(
 				<PageDecompositionView
 					items={mockItems}
@@ -330,7 +328,6 @@ describe("PageDecompositionView Component", () => {
 
 	describe("Search Functionality", () => {
 		it("filters items by search query", async () => {
-			const user = userEvent.setup();
 			render(
 				<PageDecompositionView
 					items={mockItems}
@@ -349,7 +346,6 @@ describe("PageDecompositionView Component", () => {
 		});
 
 		it("case-insensitive search", async () => {
-			const user = userEvent.setup();
 			render(
 				<PageDecompositionView
 					items={mockItems}
@@ -368,7 +364,6 @@ describe("PageDecompositionView Component", () => {
 		});
 
 		it("clears search results when query is cleared", async () => {
-			const user = userEvent.setup();
 			render(
 				<PageDecompositionView
 					items={mockItems}
@@ -395,7 +390,6 @@ describe("PageDecompositionView Component", () => {
 		});
 
 		it("shows no results message when no matches", async () => {
-			const user = userEvent.setup();
 			render(
 				<PageDecompositionView
 					items={mockItems}
@@ -415,7 +409,6 @@ describe("PageDecompositionView Component", () => {
 
 	describe("Item Selection", () => {
 		it("calls onSelectItem when item clicked", async () => {
-			const user = userEvent.setup();
 			render(
 				<PageDecompositionView
 					items={mockItems}
@@ -464,7 +457,6 @@ describe("PageDecompositionView Component", () => {
 
 	describe("View Modes", () => {
 		it("switches to tree view", async () => {
-			const user = userEvent.setup();
 			render(
 				<PageDecompositionView
 					items={mockItems}
@@ -483,7 +475,6 @@ describe("PageDecompositionView Component", () => {
 		});
 
 		it("switches to outline view", async () => {
-			const user = userEvent.setup();
 			render(
 				<PageDecompositionView
 					items={mockItems}
@@ -502,7 +493,6 @@ describe("PageDecompositionView Component", () => {
 		});
 
 		it("switches to visual view", async () => {
-			const user = userEvent.setup();
 			render(
 				<PageDecompositionView
 					items={mockItems}
@@ -523,7 +513,6 @@ describe("PageDecompositionView Component", () => {
 
 	describe("Depth Control", () => {
 		it("expands to specific depth", async () => {
-			const user = userEvent.setup();
 			render(
 				<PageDecompositionView
 					items={mockItems}
@@ -690,7 +679,6 @@ describe("PageDecompositionView Component", () => {
 
 	describe("Accessibility", () => {
 		it("supports keyboard navigation", async () => {
-			const user = userEvent.setup();
 			render(
 				<PageDecompositionView
 					items={mockItems}

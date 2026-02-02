@@ -2,10 +2,10 @@
 // Provides options to export graph in various formats (PNG, SVG, JSON, CSV)
 
 import { Button } from "@tracertm/ui/components/Button";
-import { Badge } from "@tracertm/ui/components/Badge";
+import { _Badge } from "@tracertm/ui/components/Badge";
 import { Alert } from "@tracertm/ui/components/Alert";
 import {
-	Download,
+	_Download,
 	FileImage,
 	FileJson,
 	FileSpreadsheet,
@@ -14,8 +14,9 @@ import {
 	Loader2,
 } from "lucide-react";
 import { useCallback, useState } from "react";
-import { useReactFlow, getNodesBounds, getViewportForBounds } from "@xyflow/react";
+import { useReactFlow, _getNodesBounds, _getViewportForBounds } from "@xyflow/react";
 import { toPng, toSvg } from "html-to-image";
+import { logger } from '@/lib/logger';
 
 interface ExportControlsProps {
 	onExport?: (format: "png" | "svg" | "json" | "csv") => void;
@@ -60,8 +61,8 @@ export function ExportControls({
 			link.click();
 
 			onExport?.("png");
-		} catch (err) {
-			logger.error("Export PNG failed:", err);
+		} catch (error) {
+			logger.error("Export PNG failed:", error);
 			setError("Failed to export PNG. Please try again.");
 		} finally {
 			setExporting(false);
@@ -92,8 +93,8 @@ export function ExportControls({
 			link.click();
 
 			onExport?.("svg");
-		} catch (err) {
-			logger.error("Export SVG failed:", err);
+		} catch (error) {
+			logger.error("Export SVG failed:", error);
 			setError("Failed to export SVG. Please try again.");
 		} finally {
 			setExporting(false);
@@ -143,8 +144,8 @@ export function ExportControls({
 			URL.revokeObjectURL(url);
 
 			onExport?.("json");
-		} catch (err) {
-			logger.error("Export JSON failed:", err);
+		} catch (error) {
+			logger.error("Export JSON failed:", error);
 			setError("Failed to export JSON. Please try again.");
 		} finally {
 			setExporting(false);
@@ -187,7 +188,16 @@ export function ExportControls({
 			]);
 			const edgeCSV = [
 				edgeHeaders.join(","),
-				...edgeRows.map((row) => row.map((cell) => `"${cell}"`).join(",")),
+				...edgeRows.map((row) =>
+				row
+					.map((cell) => {
+						const s =
+							typeof cell === "object" && cell !== null
+								? JSON.stringify(cell)
+								: String(cell);
+						return `"${s}"`;
+					})
+					.join(",")),
 			].join("\n");
 
 			// Combine both CSVs
@@ -202,8 +212,8 @@ export function ExportControls({
 			URL.revokeObjectURL(url);
 
 			onExport?.("csv");
-		} catch (err) {
-			logger.error("Export CSV failed:", err);
+		} catch (error) {
+			logger.error("Export CSV failed:", error);
 			setError("Failed to export CSV. Please try again.");
 		} finally {
 			setExporting(false);

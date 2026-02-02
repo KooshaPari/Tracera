@@ -29,13 +29,13 @@ describe("FdSlicer", () => {
 	beforeEach(() => {
 		try {
 			fs.unlinkSync(testOutBlobFile);
-		} catch (err) {}
+		} catch (_err) {}
 	});
 	after(() => {
 		try {
 			fs.unlinkSync(testBlobFile);
 			fs.unlinkSync(testOutBlobFile);
-		} catch (err) {}
+		} catch (_err) {}
 	});
 	it("reads a 20MB file (autoClose on)", (done) => {
 		fs.open(testBlobFile, "r", (err, fd) => {

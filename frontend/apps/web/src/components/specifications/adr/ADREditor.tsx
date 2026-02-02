@@ -52,7 +52,7 @@ export function ADREditor({
 	const [newTag, setNewTag] = useState("");
 	const [newRequirement, setNewRequirement] = useState("");
 
-	const handleChange = (field: keyof ADR, value: any) => {
+	const handleChange = (field: keyof ADR, value: ADR[typeof field]) => {
 		setFormData((prev) => ({ ...prev, [field]: value }));
 	};
 

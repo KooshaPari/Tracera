@@ -8,7 +8,7 @@
  * - TypeScript type safety
  */
 
-import { EventSourcePolyfill } from "event-source-polyfill";
+import EventSourcePolyfill from "event-source-polyfill";
 
 /**
  * JSON-RPC 2.0 request structure
@@ -17,7 +17,7 @@ export interface JsonRpcRequest {
 	jsonrpc: "2.0";
 	id: string | number;
 	method: string;
-	params?: Record<string, unknown>;
+	params?: Record<string, unknown> | undefined;
 }
 
 /**
@@ -123,13 +123,13 @@ export class MCPClient {
 	/**
 	 * Build headers for MCP requests
 	 */
-	private buildHeaders(): HeadersInit {
-		const headers: HeadersInit = {
+	private buildHeaders(): Record<string, string> {
+		const headers: Record<string, string> = {
 			"Content-Type": "application/json",
 		};
 
 		if (this.token) {
-			headers.Authorization = `Bearer ${this.token}`;
+			headers['Authorization'] = `Bearer ${this.token}`;
 		}
 
 		return headers;
@@ -263,7 +263,7 @@ export class MCPClient {
 	): () => void {
 		const headers: Record<string, string> = {};
 		if (this.token) {
-			headers.Authorization = `Bearer ${this.token}`;
+			headers['Authorization'] = `Bearer ${this.token}`;
 		}
 
 		const eventSource = new EventSourcePolyfill(
@@ -273,7 +273,8 @@ export class MCPClient {
 			},
 		);
 
-		eventSource.onmessage = (event) => {
+		/* eslint-disable unicorn/prefer-add-event-listener -- EventSource API uses .onmessage/.onerror */
+		eventSource.onmessage = (event: MessageEvent) => {
 			try {
 				const notification = JSON.parse(event.data) as ProgressNotification;
 				onProgress(notification);
@@ -288,11 +289,12 @@ export class MCPClient {
 			}
 		};
 
-		eventSource.onerror = (error) => {
+		eventSource.onerror = (_error: Event) => {
 			if (onError) {
 				onError(new Error("SSE connection error"));
 			}
 		};
+		/* eslint-enable unicorn/prefer-add-event-listener */
 
 		// Return cleanup function
 		return () => {

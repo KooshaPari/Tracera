@@ -320,7 +320,7 @@ function install(gyp, argv, callback) {
 		let opts;
 		try {
 			opts = versioning.evaluate(package_json, gyp.opts, napi_build_version);
-		} catch (err) {
+		} catch (_err) {
 			return callback(err);
 		}
 

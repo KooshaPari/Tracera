@@ -1,9 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Link, LinkType } from "@tracertm/types";
 import { useState } from "react";
-import { getAuthHeaders } from "@/api/client";
 import { useAuthStore } from "@/stores/authStore";
 import { QUERY_CONFIGS, queryKeys } from "@/lib/queryConfig";
+import client from "@/api/client";
+
+const { getAuthHeaders } = client;
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
@@ -42,7 +44,7 @@ async function fetchLinks(
 	if (!res.ok) throw new Error("Failed to fetch links");
 	const data = await res.json();
 	// API returns { total: number, links: Link[] } or array
-	const linksArray = Array.isArray(data) ? data : data.links || [];
+	const linksArray = Array.isArray(data) ? data : data['links'] || [];
 	// Transform snake_case to camelCase for frontend compatibility
 	const transformedLinks = linksArray.map((link: any) => ({
 		...link,
@@ -53,7 +55,7 @@ async function fetchLinks(
 	return {
 		links: transformedLinks,
 		total:
-			data.total || (Array.isArray(data) ? data.length : linksArray.length),
+			data['total'] || (Array.isArray(data) ? data.length : linksArray.length),
 	};
 }
 
@@ -70,11 +72,11 @@ async function createLink(data: CreateLinkData): Promise<Link> {
 		method: "POST",
 		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
-			project_id: data.projectId,
-			source_id: data.sourceId,
-			target_id: data.targetId,
+			project_id: data['projectId'],
+			source_id: data['sourceId'],
+			target_id: data['targetId'],
 			type: data.type,
-			description: data.description,
+			description: data['description'],
 		}),
 	});
 	if (!res.ok) throw new Error("Failed to create link");
@@ -121,7 +123,7 @@ export function useCreateLink() {
 	return useMutation({
 		mutationFn: createLink,
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["links"] });
+			void void queryClient.invalidateQueries({ queryKey: ["links"] });
 		},
 	});
 }
@@ -131,7 +133,7 @@ export function useDeleteLink() {
 	return useMutation({
 		mutationFn: deleteLink,
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["links"] });
+			void void queryClient.invalidateQueries({ queryKey: ["links"] });
 		},
 	});
 }

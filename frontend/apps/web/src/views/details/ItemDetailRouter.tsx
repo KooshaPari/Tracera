@@ -5,15 +5,8 @@
  * Uses type guards to determine the correct view component to render.
  */
 
-import {
-	isDefectItem,
-	isEpicItem,
-	isRequirementItem,
-	isTaskItem,
-	isTestItem,
-	isUserStoryItem,
-	type TypedItem,
-} from "@tracertm/types";
+import { isDefectItem, isEpicItem, isRequirementItem, isTaskItem, isTestItem, isUserStoryItem } from '@tracertm/types';
+import type { TypedItem } from '@tracertm/types';
 import { Card, CardContent } from "@tracertm/ui";
 import { AlertTriangle } from "lucide-react";
 import { ItemDetailView } from "@/views/ItemDetailView";

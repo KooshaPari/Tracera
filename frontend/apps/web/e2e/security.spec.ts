@@ -193,9 +193,11 @@ test.describe("Security - CSRF Protection", () => {
 			const metaTag = document.querySelector('meta[name="csrf-token"]');
 			const inputField = document.querySelector('input[name="_csrf"]');
 
+			const inputValue =
+				inputField instanceof HTMLInputElement ? inputField.value : undefined;
 			return {
 				meta: metaTag?.getAttribute("content"),
-				input: (inputField as HTMLInputElement)?.value,
+				input: inputValue,
 			};
 		});
 
@@ -429,7 +431,9 @@ test.describe("Security - Content Security Policy", () => {
 				script.textContent = "window.inlineScriptExecuted = true";
 				document.body.appendChild(script);
 
-				return !!(window as any).inlineScriptExecuted;
+				return !!(
+				window as Window & { inlineScriptExecuted?: boolean }
+			).inlineScriptExecuted;
 			} catch {
 				return false;
 			}
@@ -604,7 +608,7 @@ test.describe("Security - API Security", () => {
 
 		// Simulate 401 response
 		await page.route("**/api/**", (route) => {
-			route.fulfill({
+			void route.fulfill({
 				status: 401,
 				body: JSON.stringify({ error: "Unauthorized" }),
 			});

@@ -15,6 +15,7 @@ import { useState } from 'react';
 import type { Node, Edge } from '@xyflow/react';
 import { HybridGraphView } from './HybridGraphView';
 import { Button } from '@/components/ui/button';
+import { logger } from '@/lib/logger';
 
 export function HybridGraphViewExample() {
   const [nodeCount, setNodeCount] = useState(5000);

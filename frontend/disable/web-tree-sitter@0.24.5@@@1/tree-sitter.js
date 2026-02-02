@@ -1043,7 +1043,7 @@ var TreeSitter = (function () {
 					// Grow the table
 					try {
 						wasmTable.grow(1);
-					} catch (err) {
+					} catch (_err) {
 						if (!(err instanceof RangeError)) {
 							throw err;
 						}
@@ -1071,7 +1071,7 @@ var TreeSitter = (function () {
 					try {
 						// Attempting to call this with JS function will cause of table.set() to fail
 						setWasmTableEntry(ret, func);
-					} catch (err) {
+					} catch (_err) {
 						if (!(err instanceof TypeError)) {
 							throw err;
 						}

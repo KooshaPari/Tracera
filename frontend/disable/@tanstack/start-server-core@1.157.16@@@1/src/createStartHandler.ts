@@ -163,7 +163,7 @@ function executeMiddleware(middlewares: Array<TODO>, ctx: TODO): Promise<TODO> {
     let result: TODO
     try {
       result = await middleware({ ...ctx, next })
-    } catch (err) {
+    } catch (_err) {
       if (isSpecialResponse(err)) {
         ctx.response = err
         return ctx
@@ -388,7 +388,7 @@ export function createStartHandler<TRegister = Register>(
                 context,
                 executedRequestMiddlewares,
               })
-            } catch (err) {
+            } catch (_err) {
               if (err instanceof Response) {
                 return err
               }

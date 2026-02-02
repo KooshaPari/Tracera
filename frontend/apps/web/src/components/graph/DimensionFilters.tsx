@@ -630,7 +630,11 @@ export function getDimensionColor(
 	const value = dimensions[colorDimension];
 	if (value === undefined) return undefined;
 
-	return getDimensionValueColor(colorDimension, String(value));
+	const safeStr =
+		typeof value === "object" && value !== null
+			? JSON.stringify(value)
+			: String(value);
+	return getDimensionValueColor(colorDimension, safeStr);
 }
 
 /**

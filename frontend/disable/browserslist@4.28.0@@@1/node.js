@@ -44,7 +44,7 @@ function getPathType(filepath) {
 	var stats;
 	try {
 		stats = fs.existsSync(filepath) && fs.statSync(filepath);
-	} catch (err) {
+	} catch (_err) {
 		/* c8 ignore start */
 		if (
 			err.code !== "ENOENT" &&

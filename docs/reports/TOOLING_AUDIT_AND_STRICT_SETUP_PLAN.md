@@ -50,7 +50,7 @@ Audit of all lint, format, type-check, test, and build tooling with configs and 
 
 | Tool | Config | Current strictness | Gaps / strict options |
 |------|--------|--------------------|------------------------|
-| **Tach** | `tach.toml` (root) | **Strict** | Set `exact = true`, `forbid_circular_dependencies = true`; `[rules]` with `unused_ignore_directives = "error"`, `require_ignore_directive_reasons = "error"`; expand `exclude` (tests, build, dist, docs). Optional: `root_module = "forbid"`; `[[interfaces]]` / `layers`. Pre-commit hook present. |
+| **Tach** | `tach.toml` (root) | **Strict** | Already has `exact = true`, `forbid_circular_dependencies = true`, `[rules]` with `unused_ignore_directives = "error"`, `require_ignore_directive_reasons = "error"`; pre-commit hook present. Optional: `root_module = "forbid"` or `"dependenciesonly"` if all code in modules; `[[interfaces]]` for public API; `layers` for layering. |
 | **Ruff** | `pyproject.toml` `[tool.ruff]` | Medium | **Strict:** Add RSE, PERF, LOG, S; reduce per-file-ignores; use `extend` for strict base; enable `--preview` in CI if desired. Current: E, W, F, I, B, C4, UP, N, PT, SIM, RUF; ignore E501, B008, SIM105; per-file for `__init__.py`, tests, conftest. |
 | **Ruff format** | `pyproject.toml` `[tool.ruff.format]` | Standard | line-length 120, quote-style double, skip-magic-trailing-comma false. Optional: docstring-code-format. |
 | **Mypy** | `pyproject.toml` `[tool.mypy]` | Strict in principle | **Strict:** Remove or narrow `ignore_errors = true` overrides (api.main, services.*, repositories.*); fix types incrementally. |
@@ -63,12 +63,12 @@ Audit of all lint, format, type-check, test, and build tooling with configs and 
 
 ### 1.3 Go
 
-| Tool | Config | Current strictness | Gaps |
-|------|--------|--------------------|------|
+| Tool | Config | Current strictness | Gaps / strict options |
+|------|--------|--------------------|------------------------|
 | **gofmt** | N/A | Standard | `-s -l` in Makefile; `-s -w` in pre-commit. |
 | **go vet** | N/A | Standard | In Makefile. |
-| **golangci-lint** | `backend/.golangci.yml` | High | 18 linters enabled; max-issues-per-linter: 0; test and generated code excluded. No linters disabled for strictness; could add more linters (revive, gocritic, etc.) for “full strict”. |
-| **Buf** | `buf.yaml` | Medium | DEFAULT lint; except FIELD_NO_DEPRECATED, SYNTAX_PROTO3; enum/rpc rules. breaking FILE only. |
+| **golangci-lint** | `backend/.golangci.yml` | High | 18 linters enabled; max-issues-per-linter: 0; test and generated code excluded. No linters disabled for strictness; **Strict:** Enable revive, gocritic, gocyclo, gosec (and optionally funlen, exhaustruct, wrapcheck); set gocyclo.min-complexity, gocritic enabled-checks; keep max-issues-per-linter: 0; limit exclude-rules to generated/tests. Current: 18 linters; test/generated excluded. (Previously: could add more linters  |
+| **Buf** | `buf.yaml` | Medium | DEFAULT lint; except FIELD_NO_DEPRECATED, SYNTAX_PROTO3; breaking FILE. **Strict:** Optional tighter breaking rules; document proto conventions. |
 
 ### 1.4 Frontend (TypeScript/React)
 
@@ -93,7 +93,7 @@ Audit of all lint, format, type-check, test, and build tooling with configs and 
 ## 2. Gaps Summary (for full strict depth)
 
 1. **Python**
-   - **Tach**: set `exact = true`, `forbid_circular_dependencies = true`; add `[rules]` with `unused_ignore_directives = "error"`, `require_ignore_directive_reasons = "error"`; expand `exclude` (tests, build, dist, docs); add pre-commit hook (`tach check`); ensure all packages under `src/tracertm` are in `[[modules]]` or set `root_module` appropriately.
+   - **Tach**: Already at strict depth (exact, forbid_circular_dependencies, rules, pre-commit). Optional: `root_module = "forbid"` or `"dependenciesonly"`; `[[interfaces]]`; `layers`.
    - Ruff: add stricter rule sets (e.g. RSE, PERF, LOG); reduce per-file ignores; consider fail-fast or CI strict profile.
    - Mypy: remove or narrow `ignore_errors = true` overrides so more of codebase is strictly checked.
    - Bandit: raise to HIGH severity / HIGH confidence; add config file for inline skips policy.
@@ -223,7 +223,7 @@ Audit of all lint, format, type-check, test, and build tooling with configs and 
 - [ ] **Pre-commit** pins and optional strict hook set
 - [ ] **CI** jobs for Python and frontend strict lint/typecheck
 - [ ] **STRICT_LINT_CHECKLIST.md** and QUALITY_QUICK_REFERENCE update
-- [ ] **Tach** exact + forbid_circular_dependencies + rules; pre-commit hook; full module coverage
+- [x] **Tach** exact + forbid_circular_dependencies + rules; pre-commit hook; full module coverage (optional: root_module forbid, interfaces, layers)
 
 ---
 
@@ -237,8 +237,8 @@ Audit of all lint, format, type-check, test, and build tooling with configs and 
 | Mypy | `pyproject.toml` [tool.mypy] | — |
 | Basedpyright | `pyproject.toml` [tool.basedpyright] | — |
 | Bandit | `.bandit` | — |
-| Interrogate | (pre-commit args) | → add pyproject [tool.interrogate] |
-| Semgrep | pre-commit: `--config=p/security-audit` | → add .semgrep or semgrep/rules |
+| Interrogate | `pyproject.toml` [tool.interrogate] | pre-commit args |
+| Semgrep | pre-commit: `p/security-audit` + `.semgrep.yml` | — |
 | golangci-lint | `backend/.golangci.yml` | — |
 | Buf | `buf.yaml` | — |
 | Oxlint | `frontend/.oxlintrc.json`, `frontend/apps/web/.oxlintrc.json` | — |

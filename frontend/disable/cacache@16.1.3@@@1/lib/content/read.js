@@ -122,7 +122,7 @@ async function hasContent(cache, integrity) {
 			const stat = await fs.stat(cpath);
 			return { size: stat.size, sri, stat };
 		});
-	} catch (err) {
+	} catch (_err) {
 		if (err.code === "ENOENT") {
 			return false;
 		}
@@ -149,7 +149,7 @@ function hasContentSync(cache, integrity) {
 		try {
 			const stat = fs.statSync(cpath);
 			return { size: stat.size, sri, stat };
-		} catch (err) {
+		} catch (_err) {
 			if (err.code === "ENOENT") {
 				return false;
 			}
@@ -183,7 +183,7 @@ async function withContentSri(cache, integrity, fn) {
 			digests.map(async (meta) => {
 				try {
 					return await withContentSri(cache, meta, fn);
-				} catch (err) {
+				} catch (_err) {
 					if (err.code === "ENOENT") {
 						return Object.assign(
 							new Error("No matching content found for " + sri.toString()),
@@ -225,7 +225,7 @@ function withContentSriSync(cache, integrity, fn) {
 		for (const meta of digests) {
 			try {
 				return withContentSriSync(cache, meta, fn);
-			} catch (err) {
+			} catch (_err) {
 				lastErr = err;
 			}
 		}

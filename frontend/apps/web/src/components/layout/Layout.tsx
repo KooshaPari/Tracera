@@ -44,7 +44,7 @@ export function Layout() {
 
 	// 404 check - If only the root route matches, it's a global 404
 	// (Root route is always matches[0])
-	const isGlobal404 = matches.length === 1 && matches[0].routeId === "__root__";
+	const isGlobal404 = matches.length === 1 && matches[0]?.routeId === "__root__";
 
 	if (isGlobal404) {
 		return (

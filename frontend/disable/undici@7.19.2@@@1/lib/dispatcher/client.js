@@ -467,7 +467,7 @@ function connect (client) {
       client[kHTTPContext] = socket.alpnProtocol === 'h2'
         ? connectH2(client, socket)
         : connectH1(client, socket)
-    } catch (err) {
+    } catch (_err) {
       socket.destroy().on('error', noop)
       handleConnectError(client, err, { host, hostname, protocol, port })
       client[kResume]()

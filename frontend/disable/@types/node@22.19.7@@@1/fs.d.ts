@@ -267,7 +267,7 @@ declare module "fs" {
      *   const dir = await opendir('./');
      *   for await (const dirent of dir)
      *     console.log(dirent.name);
-     * } catch (err) {
+     * } catch (_err) {
      *   console.error(err);
      * }
      * ```
@@ -655,7 +655,7 @@ declare module "fs" {
      *       closeFd(fd);
      *       if (err) throw err;
      *     });
-     *   } catch (err) {
+     *   } catch (_err) {
      *     closeFd(fd);
      *     if (err) throw err;
      *   }
@@ -3118,7 +3118,7 @@ declare module "fs" {
      *       closeFd(fd);
      *       if (err) throw err;
      *     });
-     *   } catch (err) {
+     *   } catch (_err) {
      *     closeFd(fd);
      *     throw err;
      *   }
@@ -3171,7 +3171,7 @@ declare module "fs" {
      * try {
      *   appendFileSync('message.txt', 'data to append');
      *   console.log('The "data to append" was appended to file!');
-     * } catch (err) {
+     * } catch (_err) {
      *   // Handle the error
      * }
      * ```
@@ -3196,7 +3196,7 @@ declare module "fs" {
      * try {
      *   fd = openSync('message.txt', 'a');
      *   appendFileSync(fd, 'data to append', 'utf8');
-     * } catch (err) {
+     * } catch (_err) {
      *   // Handle the error
      * } finally {
      *   if (fd !== undefined)
@@ -3856,7 +3856,7 @@ declare module "fs" {
      * try {
      *   accessSync('etc/passwd', constants.R_OK | constants.W_OK);
      *   console.log('can read/write');
-     * } catch (err) {
+     * } catch (_err) {
      *   console.error('no access!');
      * }
      * ```

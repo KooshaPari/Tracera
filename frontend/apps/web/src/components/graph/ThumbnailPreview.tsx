@@ -22,6 +22,7 @@ import {
 } from "@tracertm/ui/components/Tooltip";
 import { Code, ExternalLink, Image as ImageIcon } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { logger } from '@/lib/logger';
 import {
 	generateThumbnail,
 	type ScreenshotMetadata,
@@ -109,7 +110,7 @@ function ThumbnailPreviewComponent({
 			}
 		}
 
-		generateAndSetThumbnail();
+		void generateAndSetThumbnail();
 
 		return () => {
 			cancelled = true;

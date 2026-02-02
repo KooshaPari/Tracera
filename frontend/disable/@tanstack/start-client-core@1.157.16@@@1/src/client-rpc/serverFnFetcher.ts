@@ -346,7 +346,7 @@ async function processServerFnResponse({
           break
         }
       }
-    } catch (err) {
+    } catch (_err) {
       onError?.('Stream processing error:', err)
     }
   })()
@@ -393,7 +393,7 @@ async function processFramedResponse({
           }
         }
       }
-    } catch (err) {
+    } catch (_err) {
       onError?.('Stream processing error:', err)
     }
   })()

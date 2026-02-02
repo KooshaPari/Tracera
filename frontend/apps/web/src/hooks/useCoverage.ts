@@ -7,32 +7,34 @@ import type {
 	CoverageType,
 	TestCoverage,
 	TraceabilityMatrix,
-} from "@tracertm/types";
-import { getAuthHeaders } from "@/api/client";
+} from "../../../../packages/types/src/index";
+import client from "@/api/client";
+
+const { getAuthHeaders } = client;
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 // Transform API response (snake_case) to frontend format (camelCase)
-function transformCoverage(data: any): TestCoverage {
+function transformCoverage(data: Record<string, unknown>): TestCoverage {
 	return {
-		id: data.id,
-		projectId: data.project_id,
-		testCaseId: data.test_case_id,
-		requirementId: data.requirement_id,
-		coverageType: data.coverage_type,
-		status: data.status,
-		coveragePercentage: data.coverage_percentage,
-		rationale: data.rationale,
-		notes: data.notes,
-		lastVerifiedAt: data.last_verified_at,
-		verifiedBy: data.verified_by,
-		lastTestResult: data.last_test_result,
-		lastTestedAt: data.last_tested_at,
-		createdBy: data.created_by,
-		metadata: data.coverage_metadata,
-		version: data.version,
-		createdAt: data.created_at,
-		updatedAt: data.updated_at,
+		id: data['id'] as string,
+		projectId: data['project_id'] as string,
+		testCaseId: data['test_case_id'] as string,
+		requirementId: data['requirement_id'] as string,
+		coverageType: data['coverage_type'] as CoverageType,
+		status: data['status'] as CoverageStatus,
+		coveragePercentage: data['coverage_percentage'] as number | undefined,
+		rationale: data['rationale'] as string | undefined,
+		notes: data['notes'] as string | undefined,
+		lastVerifiedAt: data['last_verified_at'] as string | undefined,
+		verifiedBy: data['verified_by'] as string | undefined,
+		lastTestResult: data['last_test_result'] as string | undefined,
+		lastTestedAt: data['last_tested_at'] as string | undefined,
+		createdBy: data['created_by'] as string | undefined,
+		metadata: data['coverage_metadata'] as Record<string, unknown> | undefined,
+		version: data['version'] as number,
+		createdAt: data['created_at'] as string,
+		updatedAt: data['updated_at'] as string,
 	};
 }
 
@@ -71,8 +73,8 @@ async function fetchCoverages(
 	}
 	const data = await res.json();
 	return {
-		coverages: (data.coverages || []).map(transformCoverage),
-		total: data.total || 0,
+		coverages: (data['coverages'] || []).map(transformCoverage),
+		total: data['total'] || 0,
 	};
 }
 
@@ -100,15 +102,15 @@ async function createCoverage(
 	data: CreateCoverageData,
 ): Promise<{ id: string; coverageType: string; status: string }> {
 	const params = new URLSearchParams();
-	params.set("project_id", data.projectId);
-	params.set("test_case_id", data.testCaseId);
-	params.set("requirement_id", data.requirementId);
-	if (data.coverageType) params.set("coverage_type", data.coverageType);
-	if (data.coveragePercentage !== undefined) {
-		params.set("coverage_percentage", String(data.coveragePercentage));
+	params.set("project_id", data['projectId']);
+	params.set("test_case_id", data['testCaseId']);
+	params.set("requirement_id", data['requirementId']);
+	if (data['coverageType']) params.set("coverage_type", data['coverageType']);
+	if (data['coveragePercentage'] !== undefined) {
+		params.set("coverage_percentage", String(data['coveragePercentage']));
 	}
-	if (data.rationale) params.set("rationale", data.rationale);
-	if (data.notes) params.set("notes", data.notes);
+	if (data['rationale']) params.set("rationale", data['rationale']);
+	if (data['notes']) params.set("notes", data['notes']);
 
 	const res = await fetch(`${API_URL}/api/v1/coverage?${params}`, {
 		method: "POST",
@@ -117,8 +119,8 @@ async function createCoverage(
 	if (!res.ok) throw new Error("Failed to create coverage");
 	const result = await res.json();
 	return {
-		id: result.id,
-		coverageType: result.coverage_type,
+		id: result['id'],
+		coverageType: result['coverage_type'],
 		status: result.status,
 	};
 }
@@ -134,13 +136,13 @@ async function updateCoverage(
 	}>,
 ): Promise<{ id: string; version: number }> {
 	const params = new URLSearchParams();
-	if (data.coverageType) params.set("coverage_type", data.coverageType);
+	if (data['coverageType']) params.set("coverage_type", data['coverageType']);
 	if (data.status) params.set("status", data.status);
-	if (data.coveragePercentage !== undefined) {
-		params.set("coverage_percentage", String(data.coveragePercentage));
+	if (data['coveragePercentage'] !== undefined) {
+		params.set("coverage_percentage", String(data['coveragePercentage']));
 	}
-	if (data.rationale) params.set("rationale", data.rationale);
-	if (data.notes) params.set("notes", data.notes);
+	if (data['rationale']) params.set("rationale", data['rationale']);
+	if (data['notes']) params.set("notes", data['notes']);
 
 	const res = await fetch(`${API_URL}/api/v1/coverage/${id}?${params}`, {
 		method: "PUT",
@@ -172,9 +174,9 @@ async function verifyCoverage(
 	if (!res.ok) throw new Error("Failed to verify coverage");
 	const result = await res.json();
 	return {
-		id: result.id,
-		lastVerifiedAt: result.last_verified_at,
-		verifiedBy: result.verified_by,
+		id: result['id'],
+		lastVerifiedAt: result['last_verified_at'],
+		verifiedBy: result['verified_by'],
 	};
 }
 
@@ -193,27 +195,33 @@ async function fetchTraceabilityMatrix(
 	const data = await res.json();
 
 	return {
-		projectId: data.project_id,
-		totalRequirements: data.total_requirements,
-		coveredRequirements: data.covered_requirements,
-		uncoveredRequirements: data.uncovered_requirements,
-		coveragePercentage: data.coverage_percentage,
-		matrix: (data.matrix || []).map((item: any) => ({
-			requirementId: item.requirement_id,
-			requirementTitle: item.requirement_title,
-			requirementView: item.requirement_view,
-			requirementStatus: item.requirement_status,
-			isCovered: item.is_covered,
-			testCount: item.test_count,
-			testCases: (item.test_cases || []).map((tc: any) => ({
-				testCaseId: tc.test_case_id,
-				coverageType: tc.coverage_type,
-				coveragePercentage: tc.coverage_percentage,
-				lastTestResult: tc.last_test_result,
-				lastTestedAt: tc.last_tested_at,
-			})),
-			overallStatus: item.overall_status,
-		})),
+		projectId: data['project_id'],
+		totalRequirements: data['total_requirements'],
+		coveredRequirements: data['covered_requirements'],
+		uncoveredRequirements: data['uncovered_requirements'],
+		coveragePercentage: data['coverage_percentage'],
+		matrix: (data['matrix'] as unknown[] || []).map((value: unknown) => {
+			const item = (typeof value === "object" && value !== null ? value : {}) as Record<string, unknown>;
+			return {
+				requirementId: item['requirement_id'],
+				requirementTitle: item['requirement_title'],
+				requirementView: item['requirement_view'],
+				requirementStatus: item['requirement_status'],
+				isCovered: item['is_covered'],
+				testCount: item['test_count'],
+				testCases: (item['test_cases'] as unknown[] || []).map((tcValue: unknown) => {
+					const tc = (typeof tcValue === "object" && tcValue !== null ? tcValue : {}) as Record<string, unknown>;
+					return {
+						testCaseId: tc['test_case_id'],
+						coverageType: tc['coverage_type'],
+						coveragePercentage: tc['coverage_percentage'],
+						lastTestResult: tc['last_test_result'],
+						lastTestedAt: tc['last_tested_at'],
+					};
+				}),
+				overallStatus: item['overall_status'],
+			};
+		}),
 	};
 }
 
@@ -232,17 +240,20 @@ async function fetchCoverageGaps(
 	const data = await res.json();
 
 	return {
-		projectId: data.project_id,
-		totalRequirements: data.total_requirements,
-		uncoveredCount: data.uncovered_count,
-		coveragePercentage: data.coverage_percentage,
-		gaps: (data.gaps || []).map((gap: any) => ({
-			requirementId: gap.requirement_id,
-			requirementTitle: gap.requirement_title,
-			requirementView: gap.requirement_view,
-			requirementStatus: gap.requirement_status,
-			priority: gap.priority,
-		})),
+		projectId: data['project_id'],
+		totalRequirements: data['total_requirements'],
+		uncoveredCount: data['uncovered_count'],
+		coveragePercentage: data['coverage_percentage'],
+		gaps: (data['gaps'] as unknown[] || []).map((value: unknown) => {
+			const gap = (typeof value === "object" && value !== null ? value : {}) as Record<string, unknown>;
+			return {
+				requirementId: gap['requirement_id'],
+				requirementTitle: gap['requirement_title'],
+				requirementView: gap['requirement_view'],
+				requirementStatus: gap['requirement_status'],
+				priority: gap['priority'],
+			};
+		}),
 	};
 }
 
@@ -255,12 +266,12 @@ async function fetchCoverageStats(projectId: string): Promise<CoverageStats> {
 	const data = await res.json();
 
 	return {
-		projectId: data.project_id,
-		totalMappings: data.total_mappings || 0,
-		byType: data.by_type || {},
-		byStatus: data.by_status || {},
-		uniqueTestCases: data.unique_test_cases || 0,
-		uniqueRequirements: data.unique_requirements || 0,
+		projectId: data['project_id'],
+		totalMappings: data['total_mappings'] || 0,
+		byType: data['by_type'] || {},
+		byStatus: data['by_status'] || {},
+		uniqueTestCases: data['unique_test_cases'] || 0,
+		uniqueRequirements: data['unique_requirements'] || 0,
 	};
 }
 
@@ -276,18 +287,21 @@ async function fetchCoverageActivities(
 	const data = await res.json();
 
 	return {
-		coverageId: data.coverage_id,
-		activities: (data.activities || []).map((a: any) => ({
-			id: a.id,
-			coverageId: a.coverage_id,
-			activityType: a.activity_type,
-			fromValue: a.from_value,
-			toValue: a.to_value,
-			description: a.description,
-			performedBy: a.performed_by,
-			metadata: a.activity_metadata,
-			createdAt: a.created_at,
-		})),
+		coverageId: data['coverage_id'],
+		activities: (data['activities'] as unknown[] || []).map((value: unknown) => {
+			const a = (typeof value === "object" && value !== null ? value : {}) as Record<string, unknown>;
+			return {
+				id: a['id'],
+				coverageId: a['coverage_id'],
+				activityType: a['activity_type'],
+				fromValue: a['from_value'],
+				toValue: a['to_value'],
+				description: a['description'],
+				performedBy: a['performed_by'],
+				metadata: a['activity_metadata'],
+				createdAt: a['created_at'],
+			};
+		}),
 	};
 }
 

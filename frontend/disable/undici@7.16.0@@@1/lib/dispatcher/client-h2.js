@@ -356,7 +356,7 @@ function writeH2 (client, request) {
     // We are already connected, streams are pending.
     // We can call on connect, and wait for abort
     request.onConnect(abort)
-  } catch (err) {
+  } catch (_err) {
     util.errorRequest(client, request, err)
   }
 
@@ -742,7 +742,7 @@ async function writeBlob (abort, h2stream, body, client, request, socket, conten
     }
 
     client[kResume]()
-  } catch (err) {
+  } catch (_err) {
     abort(err)
   }
 }
@@ -796,7 +796,7 @@ async function writeIterable (abort, h2stream, body, client, request, socket, co
     }
 
     client[kResume]()
-  } catch (err) {
+  } catch (_err) {
     abort(err)
   } finally {
     h2stream

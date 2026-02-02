@@ -150,7 +150,7 @@ var XMLBuilderCBImpl = /** @class */ (function (_super) {
 			var frag = BuilderFunctions_1.fragment().set(this._options);
 			try {
 				frag.ele(p1);
-			} catch (err) {
+			} catch (_err) {
 				this.emit("error", err);
 				return this;
 			}
@@ -190,7 +190,7 @@ var XMLBuilderCBImpl = /** @class */ (function (_super) {
 			this._currentElement = BuilderFunctions_1.fragment(
 				this._builderOptions,
 			).ele(p1, p2, p3);
-		} catch (err) {
+		} catch (_err) {
 			this.emit("error", err);
 			return this;
 		}
@@ -227,7 +227,7 @@ var XMLBuilderCBImpl = /** @class */ (function (_super) {
 		}
 		try {
 			this._currentElement.att(p1, p2, p3);
-		} catch (err) {
+		} catch (_err) {
 			this.emit("error", err);
 			return this;
 		}
@@ -241,7 +241,7 @@ var XMLBuilderCBImpl = /** @class */ (function (_super) {
 			node = BuilderFunctions_1.fragment(this._builderOptions)
 				.com(content)
 				.first().node;
-		} catch (err) {
+		} catch (_err) {
 			/* istanbul ignore next */
 			this.emit("error", err);
 			/* istanbul ignore next */
@@ -279,7 +279,7 @@ var XMLBuilderCBImpl = /** @class */ (function (_super) {
 			node = BuilderFunctions_1.fragment(this._builderOptions)
 				.txt(content)
 				.first().node;
-		} catch (err) {
+		} catch (_err) {
 			/* istanbul ignore next */
 			this.emit("error", err);
 			/* istanbul ignore next */
@@ -312,7 +312,7 @@ var XMLBuilderCBImpl = /** @class */ (function (_super) {
 			node = BuilderFunctions_1.fragment(this._builderOptions)
 				.ins(target, content)
 				.first().node;
-		} catch (err) {
+		} catch (_err) {
 			/* istanbul ignore next */
 			this.emit("error", err);
 			/* istanbul ignore next */
@@ -350,7 +350,7 @@ var XMLBuilderCBImpl = /** @class */ (function (_super) {
 			node = BuilderFunctions_1.fragment(this._builderOptions)
 				.dat(content)
 				.first().node;
-		} catch (err) {
+		} catch (_err) {
 			this.emit("error", err);
 			return this;
 		}
@@ -406,7 +406,7 @@ var XMLBuilderCBImpl = /** @class */ (function (_super) {
 		var node;
 		try {
 			node = BuilderFunctions_1.create().dtd(options).first().node;
-		} catch (err) {
+		} catch (_err) {
 			this.emit("error", err);
 			return this;
 		}
@@ -448,7 +448,7 @@ var XMLBuilderCBImpl = /** @class */ (function (_super) {
 		var frag = BuilderFunctions_1.fragment().set(this._options);
 		try {
 			frag.import(node);
-		} catch (err) {
+		} catch (_err) {
 			this.emit("error", err);
 			return this;
 		}

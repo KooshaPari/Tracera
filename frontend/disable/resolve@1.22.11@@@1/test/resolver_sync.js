@@ -319,14 +319,14 @@ test('missing index', function (t) {
     try {
         resolve.sync('./missing_index', { basedir: resolverDir });
         t.fail('did not fail');
-    } catch (err) {
+    } catch (_err) {
         t.equal(err && err.code, 'MODULE_NOT_FOUND', 'error has correct error code');
     }
     if (requireResolveSupportsPaths) {
         try {
             require.resolve('./missing_index', { basedir: resolverDir });
             t.fail('require.resolve did not fail');
-        } catch (err) {
+        } catch (_err) {
             t.equal(err && err.code, 'MODULE_NOT_FOUND', 'error has correct error code');
         }
     }
@@ -338,14 +338,14 @@ test('missing main', function (t) {
     try {
         resolve.sync('./missing_main', { basedir: resolverDir });
         t.fail('require.resolve did not fail');
-    } catch (err) {
+    } catch (_err) {
         t.equal(err && err.code, 'MODULE_NOT_FOUND', 'error has correct error code');
     }
     if (requireResolveSupportsPaths) {
         try {
             resolve.sync('./missing_main', { basedir: resolverDir });
             t.fail('require.resolve did not fail');
-        } catch (err) {
+        } catch (_err) {
             t.equal(err && err.code, 'MODULE_NOT_FOUND', 'error has correct error code');
         }
     }
@@ -359,14 +359,14 @@ test('null main', function (t) {
     try {
         resolve.sync('./null_main', { basedir: resolverDir });
         t.fail('require.resolve did not fail');
-    } catch (err) {
+    } catch (_err) {
         t.equal(err && err.code, 'MODULE_NOT_FOUND', 'error has correct error code');
     }
     if (requireResolveSupportsPaths) {
         try {
             resolve.sync('./null_main', { basedir: resolverDir });
             t.fail('require.resolve did not fail');
-        } catch (err) {
+        } catch (_err) {
             t.equal(err && err.code, 'MODULE_NOT_FOUND', 'error has correct error code');
         }
     }
@@ -564,7 +564,7 @@ test('not a directory', function (t) {
     try {
         resolve.sync(path, { basedir: __filename });
         t.fail();
-    } catch (err) {
+    } catch (_err) {
         t.ok(err, 'a non-directory errors');
         t.equal(err && err.message, 'Cannot find module \'' + path + "' from '" + __filename + "'");
         t.equal(err && err.code, 'MODULE_NOT_FOUND');
@@ -578,7 +578,7 @@ test('non-string "main" field in package.json', function (t) {
         var result = resolve.sync('./invalid_main', { basedir: dir });
         t.equal(result, undefined, 'result should not exist');
         t.fail('should not get here');
-    } catch (err) {
+    } catch (_err) {
         t.ok(err, 'errors on non-string main');
         t.equal(err.message, 'package “invalid_main” `main` must be a string');
         t.equal(err.code, 'INVALID_PACKAGE_MAIN');
@@ -592,7 +592,7 @@ test('non-string "main" field in package.json', function (t) {
         var result = resolve.sync('./invalid_main', { basedir: dir });
         t.equal(result, undefined, 'result should not exist');
         t.fail('should not get here');
-    } catch (err) {
+    } catch (_err) {
         t.ok(err, 'errors on non-string main');
         t.equal(err.message, 'package “invalid_main” `main` must be a string');
         t.equal(err.code, 'INVALID_PACKAGE_MAIN');

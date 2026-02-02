@@ -387,7 +387,7 @@ function relativeIfPossible(rootURL, targetURL) {
 
   try {
     new URL("", target.toString());
-  } catch (err) {
+  } catch (_err) {
     // Bail if the URL doesn't support things being relative to it,
     // For example, data: and blob: URLs.
     return null;

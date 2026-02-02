@@ -360,7 +360,7 @@ test.describe("Mobile Optimization - Phase 12 & 13", () => {
 		await page.waitForTimeout(300);
 
 		// Click backdrop or close button to close
-		const backdrop = page.locator("#mobile-menu ~ div[aria-hidden='true']");
+		const _backdrop = page.locator("#mobile-menu ~ div[aria-hidden='true']");
 
 		// Try to close via backdrop
 		const menuPanel = page.locator("#mobile-menu");

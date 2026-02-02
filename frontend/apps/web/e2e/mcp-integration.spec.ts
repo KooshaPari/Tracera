@@ -15,8 +15,8 @@ import { expect, test } from "@playwright/test";
 // Test Configuration
 // ============================================================================
 
-const MCP_BASE_URL = process.env.MCP_BASE_URL || "http://localhost:4000";
-const TEST_TOKEN = process.env.TEST_TOKEN || "test-e2e-key";
+const MCP_BASE_URL = process.env.MCP_BASE_URL ?? "http://localhost:4000";
+const TEST_TOKEN = process.env.TEST_TOKEN ?? "test-e2e-key";
 
 // ============================================================================
 // Test MCP Client Authentication
@@ -83,7 +83,7 @@ test.describe("MCP Client Operations", () => {
 		await page.waitForSelector('[data-testid="user-menu"]', { timeout: 5000 });
 	});
 
-	test("should list available MCP tools", async ({ page, request }) => {
+	test("should list available MCP tools", async ({ page: _page, request }) => {
 		// Make direct API request to test MCP tools/list
 		const response = await request.post(`${MCP_BASE_URL}/messages`, {
 			headers: {
@@ -99,7 +99,7 @@ test.describe("MCP Client Operations", () => {
 		});
 
 		expect(response.ok()).toBeTruthy();
-		const data = await response.json();
+		const data = (await response.json()) as { result?: unknown };
 		expect(data).toHaveProperty("result");
 	});
 
@@ -324,7 +324,9 @@ test.describe("Performance", () => {
 		await expect(page.locator('[data-testid="items-table"]')).toBeVisible();
 
 		// Scroll through items
-		await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+		await page.evaluate(() => {
+			window.scrollTo(0, document.body.scrollHeight);
+		});
 
 		// Verify items load progressively
 		expect(true).toBe(true);

@@ -7,21 +7,24 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+/** Minimal location-like object for tests (no spread of Location class). */
+interface MockLocation {
+	href: string;
+	search: string;
+}
+
 describe("OAuth Callback Route", () => {
 	let originalLocation: Location;
 
 	beforeEach(() => {
 		vi.clearAllMocks();
-		// Save original location
 		originalLocation = window.location;
-
-		// Mock window.location
-		delete (window as any).location;
-		window.location = {
-			...originalLocation,
-			href: "",
-			search: "",
-		} as any;
+		const mockLocation: MockLocation = { href: "", search: "" };
+		Object.defineProperty(window, "location", {
+			value: mockLocation,
+			writable: true,
+			configurable: true,
+		});
 	});
 
 	afterEach(() => {

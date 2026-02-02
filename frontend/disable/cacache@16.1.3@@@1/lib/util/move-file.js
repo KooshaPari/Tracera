@@ -18,7 +18,7 @@ async function moveFile(src, dest) {
 	// Note that, as the name suggests, this strictly only supports file moves.
 	try {
 		await fs.link(src, dest);
-	} catch (err) {
+	} catch (_err) {
 		if (isWindows && err.code === "EPERM") {
 			// XXX This is a really weird way to handle this situation, as it
 			// results in the src file being deleted even though the dest

@@ -197,7 +197,7 @@ function notarizeAndWaitForNotaryTool(opts) {
 				let parsed;
 				try {
 					parsed = JSON.parse(rawOut);
-				} catch (err) {
+				} catch (_err) {
 					throw new Error(
 						`Failed to notarize via notarytool.  Failed with unexpected result: \n\n${rawOut}`,
 					);

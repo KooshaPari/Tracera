@@ -17,7 +17,7 @@ async function rm(...args) {
 		} else {
 			await promises.unlink(pathToRemove);
 		}
-	} catch (err) {
+	} catch (_err) {
 		if (err.code === "ENOENT" && options.force) {
 			return;
 		}

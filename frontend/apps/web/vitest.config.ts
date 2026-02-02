@@ -61,13 +61,7 @@ export default defineConfig({
 				lines: 95,
 			},
 			all: true,
-			lines: 95,
-			functions: 95,
-			branches: 95,
-			statements: 95,
-			// Use 'all' mode for coverage
 			sourceMap: true,
-			// Properly handle transform mode for jsdom
 			transformMode: {
 				web: [/\.[jt]sx?$/],
 			},
@@ -86,6 +80,8 @@ export default defineConfig({
 				"./src/__tests__/mocks/routeTree.mock.ts",
 			),
 			"@": path.resolve(__dirname, "./src"),
+			"@tracertm/types": path.resolve(__dirname, "../../packages/types/src/index.ts"),
+			"@repo/types": path.resolve(__dirname, "../../packages/types/src/index.ts"),
 			// Mock elkjs to avoid worker issues in tests
 			"elkjs/lib/elk.bundled.js": path.resolve(
 				__dirname,

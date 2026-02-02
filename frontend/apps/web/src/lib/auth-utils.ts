@@ -26,7 +26,7 @@ function isAuthRoute(url: string): boolean {
 		const urlObj = new URL(url, window.location.origin);
 		const pathname = urlObj.pathname;
 		return pathname.startsWith("/auth/");
-	} catch {
+	} catch (error) {
 		// If URL parsing fails, check if it starts with /auth/
 		return url.startsWith("/auth/");
 	}
@@ -55,7 +55,7 @@ export function getReturnTo(
 		try {
 			const params = new URLSearchParams(searchParams);
 			returnTo = params.get("returnTo");
-		} catch {
+		} catch (error) {
 			return DEFAULT_RETURN_TO;
 		}
 	} else if (typeof searchParams === "object" && searchParams !== null) {
@@ -92,7 +92,7 @@ export function getReturnTo(
 
 		// Return just the pathname (ignore query params to avoid including auth codes)
 		return pathname;
-	} catch {
+	} catch (error) {
 		// If URL parsing fails, check if it's an auth route
 		if (isAuthRoute(returnTo)) {
 			return DEFAULT_RETURN_TO;

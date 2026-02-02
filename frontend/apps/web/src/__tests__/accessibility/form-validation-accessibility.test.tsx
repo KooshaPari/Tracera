@@ -2,12 +2,39 @@
  * Accessibility Tests: Form Validation and Error Handling
  * Tests WCAG 2.1 AA compliance for form validation and error messaging
  */
+/// <reference path="../a11y/jest-axe.d.ts" />
 
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { axe } from "../a11y/setup";
+
+let user: ReturnType<typeof userEvent.setup>;
+
+beforeEach(() => {
+	user = userEvent.setup();
+});
+
+function validateFormData(formData: Record<string, string>): Record<string, string> {
+	const newErrors: Record<string, string> = {};
+
+	if (!formData.email) {
+		newErrors.email = "Email is required";
+	} else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+		newErrors.email = "Please enter a valid email address";
+	}
+
+	if (!formData.name || formData.name.trim().length < 2) {
+		newErrors.name = "Name must be at least 2 characters";
+	}
+
+	if (!formData.message || formData.message.trim().length < 10) {
+		newErrors.message = "Message must be at least 10 characters";
+	}
+
+	return newErrors;
+}
 
 // Mock Form with Validation
 function MockAccessibleForm({
@@ -18,26 +45,6 @@ function MockAccessibleForm({
 	const [errors, setErrors] = React.useState<Record<string, string>>({});
 	const [touched, setTouched] = React.useState<Record<string, boolean>>({});
 	const [isSubmitting, setIsSubmitting] = React.useState(false);
-
-	const validateForm = (formData: Record<string, string>) => {
-		const newErrors: Record<string, string> = {};
-
-		if (!formData.email) {
-			newErrors.email = "Email is required";
-		} else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-			newErrors.email = "Please enter a valid email address";
-		}
-
-		if (!formData.name || formData.name.trim().length < 2) {
-			newErrors.name = "Name must be at least 2 characters";
-		}
-
-		if (!formData.message || formData.message.trim().length < 10) {
-			newErrors.message = "Message must be at least 10 characters";
-		}
-
-		return newErrors;
-	};
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -50,7 +57,7 @@ function MockAccessibleForm({
 			message: formData.get("message"),
 		};
 
-		const validationErrors = validateForm(data as Record<string, string>);
+		const validationErrors = validateFormData(data as Record<string, string>);
 		setErrors(validationErrors);
 		setTouched({
 			name: true,
@@ -82,7 +89,7 @@ function MockAccessibleForm({
 				message: formData.get("message") || "",
 			};
 
-			const fieldErrors = validateForm(data as Record<string, string>);
+			const fieldErrors = validateFormData(data as Record<string, string>);
 			const fieldError = fieldErrors[fieldName];
 
 			if (fieldError) {
@@ -241,12 +248,12 @@ function MockAccessibleForm({
 
 describe("Form Validation - Field-Level Errors", () => {
 	it("should show error on invalid email", async () => {
-		const user = userEvent.setup();
 		const { container } = render(<MockAccessibleForm />);
 
 		const emailInput = screen.getByPlaceholderText("your@email.com");
 		await user.type(emailInput, "invalid");
-		await user.click(container.querySelector("button")!); // Focus away
+		const focusAway = container.querySelector("button");
+		if (focusAway) await user.click(focusAway);
 
 		await waitFor(() => {
 			const error = screen.getByText("Please enter a valid email address");
@@ -255,8 +262,7 @@ describe("Form Validation - Field-Level Errors", () => {
 	});
 
 	it("should show error on missing required field", async () => {
-		const user = userEvent.setup();
-		const { container } = render(<MockAccessibleForm />);
+		render(<MockAccessibleForm />);
 
 		const submitBtn = screen.getByRole("button", { name: "Send Message" });
 		await user.click(submitBtn);
@@ -270,7 +276,6 @@ describe("Form Validation - Field-Level Errors", () => {
 	});
 
 	it("should clear error when field becomes valid", async () => {
-		const user = userEvent.setup();
 		render(<MockAccessibleForm />);
 
 		const emailInput = screen.getByPlaceholderText("your@email.com");
@@ -300,7 +305,6 @@ describe("Form Validation - Field-Level Errors", () => {
 
 describe("Form Validation - ARIA Attributes", () => {
 	it("should have aria-invalid on invalid fields", async () => {
-		const user = userEvent.setup();
 		render(<MockAccessibleForm />);
 
 		const emailInput = screen.getByPlaceholderText("your@email.com");
@@ -320,7 +324,6 @@ describe("Form Validation - ARIA Attributes", () => {
 	});
 
 	it("should have aria-describedby for error messages", async () => {
-		const user = userEvent.setup();
 		render(<MockAccessibleForm />);
 
 		const emailInput = screen.getByPlaceholderText("your@email.com");
@@ -363,7 +366,6 @@ describe("Form Validation - ARIA Attributes", () => {
 
 describe("Form Validation - Error Announcements", () => {
 	it("should announce errors with role='alert'", async () => {
-		const user = userEvent.setup();
 		render(<MockAccessibleForm />);
 
 		const emailInput = screen.getByPlaceholderText("your@email.com");
@@ -377,7 +379,6 @@ describe("Form Validation - Error Announcements", () => {
 	});
 
 	it("should announce form-level errors", async () => {
-		const user = userEvent.setup();
 		render(<MockAccessibleForm />);
 
 		const submitBtn = screen.getByRole("button", { name: "Send Message" });
@@ -390,7 +391,6 @@ describe("Form Validation - Error Announcements", () => {
 	});
 
 	it("should have aria-live region for error announcements", async () => {
-		const user = userEvent.setup();
 		const { container } = render(<MockAccessibleForm />);
 
 		const submitBtn = screen.getByRole("button", { name: "Send Message" });
@@ -405,7 +405,6 @@ describe("Form Validation - Error Announcements", () => {
 
 describe("Form Validation - Field Focus Management", () => {
 	it("should focus first invalid field on submit", async () => {
-		const user = userEvent.setup();
 		render(<MockAccessibleForm />);
 
 		const nameInput = screen.getByPlaceholderText("Your name");
@@ -420,7 +419,6 @@ describe("Form Validation - Field Focus Management", () => {
 	});
 
 	it("should validate field on blur", async () => {
-		const user = userEvent.setup();
 		render(<MockAccessibleForm />);
 
 		const emailInput = screen.getByPlaceholderText("your@email.com");
@@ -433,7 +431,6 @@ describe("Form Validation - Field Focus Management", () => {
 	});
 
 	it("should maintain focus during validation", async () => {
-		const user = userEvent.setup();
 		render(<MockAccessibleForm />);
 
 		const nameInput = screen.getByPlaceholderText("Your name");
@@ -452,7 +449,6 @@ describe("Form Validation - Field Focus Management", () => {
 describe("Form Validation - Error Recovery", () => {
 	it("should allow resubmission after fixing errors", async () => {
 		const handleSubmit = vi.fn();
-		const user = userEvent.setup();
 
 		render(<MockAccessibleForm onSubmit={handleSubmit} />);
 
@@ -484,16 +480,13 @@ describe("Form Validation - Error Recovery", () => {
 	});
 
 	it("should clear form on reset button click", async () => {
-		const user = userEvent.setup();
 		render(<MockAccessibleForm />);
 
-		const nameInput = screen.getByPlaceholderText(
-			"Your name",
-		) as HTMLInputElement;
+		const nameInput = screen.getByPlaceholderText("Your name");
 		const resetBtn = screen.getByRole("button", { name: "Clear" });
 
 		await user.type(nameInput, "John");
-		expect(nameInput.value).toBe("John");
+		expect(nameInput instanceof HTMLInputElement ? nameInput.value : "").toBe("John");
 
 		await user.click(resetBtn);
 
@@ -501,7 +494,6 @@ describe("Form Validation - Error Recovery", () => {
 	});
 
 	it("should clear error messages on reset", async () => {
-		const user = userEvent.setup();
 		render(<MockAccessibleForm />);
 
 		const submitBtn = screen.getByRole("button", { name: "Send Message" });
@@ -574,7 +566,6 @@ describe("Form Accessibility - WCAG Compliance", () => {
 
 describe("Form Validation - Inline Validation", () => {
 	it("should show validation as user types", async () => {
-		const user = userEvent.setup();
 		render(<MockAccessibleForm />);
 
 		const messageInput = screen.getByPlaceholderText("Your message here...");
@@ -602,7 +593,6 @@ describe("Form Validation - Inline Validation", () => {
 
 describe("Form Validation - Submission State", () => {
 	it("should show loading state during submission", async () => {
-		const user = userEvent.setup();
 		render(<MockAccessibleForm />);
 
 		const nameInput = screen.getByPlaceholderText("Your name");
@@ -620,7 +610,6 @@ describe("Form Validation - Submission State", () => {
 	});
 
 	it("should disable submit button during submission", async () => {
-		const user = userEvent.setup();
 		render(<MockAccessibleForm />);
 
 		const nameInput = screen.getByPlaceholderText("Your name");
@@ -655,7 +644,6 @@ describe("Form Validation - Field Types", () => {
 
 describe("Form Validation - Error Summary", () => {
 	it("should display summary of all errors", async () => {
-		const user = userEvent.setup();
 		render(<MockAccessibleForm />);
 
 		const submitBtn = screen.getByRole("button", { name: "Send Message" });
@@ -673,7 +661,6 @@ describe("Form Validation - Error Summary", () => {
 	});
 
 	it("should update error summary as user fixes errors", async () => {
-		const user = userEvent.setup();
 		render(<MockAccessibleForm />);
 
 		const submitBtn = screen.getByRole("button", { name: "Send Message" });

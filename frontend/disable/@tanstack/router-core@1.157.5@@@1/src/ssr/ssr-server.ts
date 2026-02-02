@@ -277,7 +277,7 @@ export function attachRouterServerSsrUtils({
         try {
           serializationFinishedListeners.forEach((l) => l())
           router.emit({ type: 'onSerializationFinished' })
-        } catch (err) {
+        } catch (_err) {
           console.error('Serialization listener error:', err)
         } finally {
           serializationFinishedListeners.length = 0
@@ -322,7 +322,7 @@ export function attachRouterServerSsrUtils({
       // Wrap in try-catch to ensure scriptBuffer.liftBarrier() is always called
       try {
         renderFinishedListeners.forEach((l) => l())
-      } catch (err) {
+      } catch (_err) {
         console.error('Error in render finished listener:', err)
       } finally {
         // Clear listeners after calling them to prevent memory leaks

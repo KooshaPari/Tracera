@@ -58,8 +58,14 @@ export function GitHubAppInstall({
 		try {
 			await deleteInstallation.mutateAsync(installationId);
 			toast.success("GitHub App installation removed");
-		} catch (error: any) {
-			toast.error(error.message || "Failed to remove installation");
+		} catch (error) {
+			const message =
+				error instanceof Error
+					? error.message
+					: (error && typeof error === "object" && "message" in error && typeof (error as { message?: string }).message === "string")
+						? (error as { message: string }).message
+						: "Failed to remove installation";
+			toast.error(message);
 		}
 	};
 

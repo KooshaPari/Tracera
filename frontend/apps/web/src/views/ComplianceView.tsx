@@ -33,8 +33,8 @@ export function ComplianceView() {
 								onClick={() =>
 									projectId
 										? navigate({
-												to: "/projects/$projectId/views/$viewType",
 												params: { projectId, viewType: "feature" },
+												to: "/projects/$projectId/views/$viewType",
 											})
 										: navigate({ to: "/projects" })
 								}

@@ -69,7 +69,7 @@ function replaceWithSourceString(replacement) {
   try {
     replacement = `(${replacement})`;
     ast = (0, _parser.parse)(replacement);
-  } catch (err) {
+  } catch (_err) {
     const loc = err.loc;
     if (loc) {
       err.message += " - make sure this is an expression.\n" + (0, _codeFrame.codeFrameColumns)(replacement, {

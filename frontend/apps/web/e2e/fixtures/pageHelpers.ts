@@ -78,7 +78,7 @@ export async function fillProjectForm(
 	data: { name: string; description?: string },
 ): Promise<void> {
 	await page.getByLabel(/name/i).fill(data.name);
-	if (data.description) {
+	if (data.description != null && data.description !== "") {
 		await page.getByLabel(/description/i).fill(data.description);
 	}
 }
@@ -95,21 +95,21 @@ export async function fillItemForm(
 ): Promise<void> {
 	await page.getByLabel(/title/i).fill(data.title);
 
-	if (data.type) {
+	if (data.type != null && data.type !== "") {
 		await page.getByLabel(/type/i).click();
 		await page.getByText(new RegExp(data.type, "i")).click();
 	}
 
-	if (data.description) {
+	if (data.description != null && data.description !== "") {
 		await page.getByLabel(/description/i).fill(data.description);
 	}
 
-	if (data.status) {
+	if (data.status != null && data.status !== "") {
 		await page.getByLabel(/status/i).click();
 		await page.getByText(new RegExp(data.status, "i")).click();
 	}
 
-	if (data.priority) {
+	if (data.priority != null && data.priority !== "") {
 		await page.getByLabel(/priority/i).click();
 		await page.getByText(new RegExp(data.priority, "i")).click();
 	}
@@ -249,7 +249,10 @@ export async function assertSuccessMessage(
 	page: Page,
 	message?: string | RegExp,
 ): Promise<void> {
-	const pattern = message || /success|created|updated|deleted/i;
+	const pattern =
+		message != null && (typeof message !== "string" || message !== "")
+			? message
+			: /success|created|updated|deleted/i;
 	const successMsg = page.getByText(pattern);
 	await successMsg.waitFor({ state: "visible", timeout: 5000 });
 }
@@ -258,7 +261,10 @@ export async function assertErrorMessage(
 	page: Page,
 	message?: string | RegExp,
 ): Promise<void> {
-	const pattern = message || /error|failed|invalid/i;
+	const pattern =
+		message != null && (typeof message !== "string" || message !== "")
+			? message
+			: /error|failed|invalid/i;
 	const errorMsg = page.getByText(pattern);
 	await errorMsg.waitFor({ state: "visible", timeout: 5000 });
 }
@@ -304,12 +310,16 @@ export async function waitForNavigation(
  * Scroll Helpers
  */
 export async function scrollToBottom(page: Page): Promise<void> {
-	await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+	await page.evaluate(() => {
+		window.scrollTo(0, document.body.scrollHeight);
+	});
 	await page.waitForTimeout(300);
 }
 
 export async function scrollToTop(page: Page): Promise<void> {
-	await page.evaluate(() => window.scrollTo(0, 0));
+	await page.evaluate(() => {
+		window.scrollTo(0, 0);
+	});
 	await page.waitForTimeout(300);
 }
 
@@ -361,7 +371,8 @@ export async function getTableCellValue(
 	const cell = page.locator(
 		`${tableSelector} tbody tr:nth-child(${row}) td:nth-child(${column})`,
 	);
-	return cell.textContent() || "";
+	const text = await cell.textContent();
+	return text ?? "";
 }
 
 export async function sortTableByColumn(
@@ -443,14 +454,18 @@ export async function setLocalStorageItem(
 	key: string,
 	value: string,
 ): Promise<void> {
-	await page.evaluate(({ k, v }) => localStorage.setItem(k, v), {
-		k: key,
-		v: value,
-	});
+	await page.evaluate(
+		({ k, v }) => {
+			localStorage.setItem(k, v);
+		},
+		{ k: key, v: value },
+	);
 }
 
 export async function clearLocalStorage(page: Page): Promise<void> {
-	await page.evaluate(() => localStorage.clear());
+	await page.evaluate(() => {
+		localStorage.clear();
+	});
 }
 
 /**

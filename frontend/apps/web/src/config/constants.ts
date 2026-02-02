@@ -1,35 +1,35 @@
 // Application constants
 
-export const APP_NAME = "TraceRTM";
-export const APP_VERSION = "0.1.0";
+const APP_NAME = "TraceRTM";
+const APP_VERSION = "0.1.0";
 
-// Authentication Routes (managed by WorkOS AuthKit)
-export const AUTH_ROUTES = {
-	LOGIN: "/auth/login",
-	REGISTER: "/auth/register",
-	LOGOUT: "/auth/logout",
+// Authentication routes (managed by WorkOS AuthKit)
+const AUTH_ROUTES = {
 	CALLBACK: "/auth/callback",
+	LOGIN: "/auth/login",
+	LOGOUT: "/auth/logout",
+	REGISTER: "/auth/register",
 	RESET_PASSWORD: "/auth/reset-password",
 } as const;
 
-// API Configuration (gateway-only; no direct backend URLs)
-export const API_BASE_URL =
-	import.meta.env?.VITE_API_URL || "http://localhost:4000";
-export const WS_BASE_URL =
-	import.meta.env?.VITE_WS_URL || "ws://localhost:4000";
-export const API_TIMEOUT = 30000; // 30 seconds
+// API configuration (gateway-only; no direct backend URLs)
+const { VITE_API_URL, VITE_WS_URL } = import.meta.env || {};
+const API_BASE_URL = VITE_API_URL || "http://localhost:4000";
+const WS_BASE_URL = VITE_WS_URL || "ws://localhost:4000";
+// 30 seconds
+const API_TIMEOUT = 30_000;
 
 // Pagination
-export const DEFAULT_PAGE_SIZE = 20;
-export const MAX_PAGE_SIZE = 100;
+const DEFAULT_PAGE_SIZE = 20;
+const MAX_PAGE_SIZE = 100;
 
-// UI Configuration
-export const SIDEBAR_WIDTH = 240;
-export const SIDEBAR_COLLAPSED_WIDTH = 64;
-export const HEADER_HEIGHT = 64;
+// UI configuration
+const HEADER_HEIGHT = 64;
+const SIDEBAR_COLLAPSED_WIDTH = 64;
+const SIDEBAR_WIDTH = 240;
 
-// View Types
-export const VIEW_TYPES = [
+// View types
+const VIEW_TYPES = [
 	"FEATURE",
 	"CODE",
 	"TEST",
@@ -40,120 +40,121 @@ export const VIEW_TYPES = [
 	"DEPLOYMENT",
 ] as const;
 
-export const VIEW_CONFIG = {
-	FEATURE: {
-		id: "FEATURE" as const,
-		name: "Feature",
-		icon: "Layers",
-		description: "Product features and user stories",
-		color: "blue",
-		itemTypes: ["epic", "story", "task"],
+const VIEW_CONFIG = {
+	API: {
+		color: "orange",
+		description: "API endpoints and contracts",
+		icon: "Network",
+		id: "API" as const,
+		itemTypes: ["endpoint", "schema", "contract"],
+		name: "API",
 	},
 	CODE: {
-		id: "CODE" as const,
-		name: "Code",
-		icon: "Code",
-		description: "Code implementation and modules",
 		color: "purple",
+		description: "Code implementation and modules",
+		icon: "Code",
+		id: "CODE" as const,
 		itemTypes: ["module", "class", "function", "file"],
-	},
-	TEST: {
-		id: "TEST" as const,
-		name: "Test",
-		icon: "TestTube",
-		description: "Test cases and coverage",
-		color: "green",
-		itemTypes: ["suite", "case", "scenario"],
-	},
-	API: {
-		id: "API" as const,
-		name: "API",
-		icon: "Network",
-		description: "API endpoints and contracts",
-		color: "orange",
-		itemTypes: ["endpoint", "schema", "contract"],
+		name: "Code",
 	},
 	DATABASE: {
-		id: "DATABASE" as const,
-		name: "Database",
-		icon: "Database",
-		description: "Database schema and migrations",
 		color: "teal",
+		description: "Database schema and migrations",
+		icon: "Database",
+		id: "DATABASE" as const,
 		itemTypes: ["table", "migration", "index"],
-	},
-	WIREFRAME: {
-		id: "WIREFRAME" as const,
-		name: "Wireframe",
-		icon: "Layout",
-		description: "UI mockups and designs",
-		color: "pink",
-		itemTypes: ["screen", "component", "flow"],
-	},
-	DOCUMENTATION: {
-		id: "DOCUMENTATION" as const,
-		name: "Documentation",
-		icon: "FileText",
-		description: "Project documentation",
-		color: "yellow",
-		itemTypes: ["guide", "reference", "tutorial"],
+		name: "Database",
 	},
 	DEPLOYMENT: {
-		id: "DEPLOYMENT" as const,
-		name: "Deployment",
-		icon: "Rocket",
-		description: "Deployment and infrastructure",
 		color: "red",
+		description: "Deployment and infrastructure",
+		icon: "Rocket",
+		id: "DEPLOYMENT" as const,
 		itemTypes: ["environment", "pipeline", "config"],
+		name: "Deployment",
+	},
+	DOCUMENTATION: {
+		color: "yellow",
+		description: "Project documentation",
+		icon: "FileText",
+		id: "DOCUMENTATION" as const,
+		itemTypes: ["guide", "reference", "tutorial"],
+		name: "Documentation",
+	},
+	FEATURE: {
+		color: "blue",
+		description: "Product features and user stories",
+		icon: "Layers",
+		id: "FEATURE" as const,
+		itemTypes: ["epic", "story", "task"],
+		name: "Feature",
+	},
+	TEST: {
+		color: "green",
+		description: "Test cases and coverage",
+		icon: "TestTube",
+		id: "TEST" as const,
+		itemTypes: ["suite", "case", "scenario"],
+		name: "Test",
+	},
+	WIREFRAME: {
+		color: "pink",
+		description: "UI mockups and designs",
+		icon: "Layout",
+		id: "WIREFRAME" as const,
+		itemTypes: ["screen", "component", "flow"],
+		name: "Wireframe",
 	},
 } as const;
 
-// Item Status
-export const ITEM_STATUSES = [
-	{ value: "todo", label: "To Do", color: "gray" },
-	{ value: "in_progress", label: "In Progress", color: "blue" },
-	{ value: "done", label: "Done", color: "green" },
-	{ value: "blocked", label: "Blocked", color: "red" },
-	{ value: "cancelled", label: "Cancelled", color: "gray" },
+// Item status
+const ITEM_STATUSES = [
+	{ color: "gray", label: "To Do", value: "todo" },
+	{ color: "blue", label: "In Progress", value: "in_progress" },
+	{ color: "green", label: "Done", value: "done" },
+	{ color: "red", label: "Blocked", value: "blocked" },
+	{ color: "gray", label: "Cancelled", value: "cancelled" },
 ] as const;
 
-// Item Priority
-export const ITEM_PRIORITIES = [
-	{ value: "low", label: "Low", color: "green" },
-	{ value: "medium", label: "Medium", color: "yellow" },
-	{ value: "high", label: "High", color: "orange" },
-	{ value: "critical", label: "Critical", color: "red" },
+// Item priority
+const ITEM_PRIORITIES = [
+	{ color: "green", label: "Low", value: "low" },
+	{ color: "yellow", label: "Medium", value: "medium" },
+	{ color: "orange", label: "High", value: "high" },
+	{ color: "red", label: "Critical", value: "critical" },
 ] as const;
 
-// Link Types
-export const LINK_TYPES = [
-	{ value: "implements", label: "Implements", icon: "ArrowRight" },
-	{ value: "tests", label: "Tests", icon: "TestTube" },
-	{ value: "depends_on", label: "Depends On", icon: "Link" },
-	{ value: "related_to", label: "Related To", icon: "Link2" },
-	{ value: "blocks", label: "Blocks", icon: "Ban" },
-	{ value: "parent_of", label: "Parent Of", icon: "GitBranch" },
+// Link types
+const LINK_TYPES = [
+	{ icon: "ArrowRight", label: "Implements", value: "implements" },
+	{ icon: "TestTube", label: "Tests", value: "tests" },
+	{ icon: "Link", label: "Depends On", value: "depends_on" },
+	{ icon: "Link2", label: "Related To", value: "related_to" },
+	{ icon: "Ban", label: "Blocks", value: "blocks" },
+	{ icon: "GitBranch", label: "Parent Of", value: "parent_of" },
 ] as const;
 
-// Keyboard Shortcuts
-export const KEYBOARD_SHORTCUTS = {
+// Keyboard shortcuts
+const KEYBOARD_SHORTCUTS = {
 	COMMAND_PALETTE: { key: "k", meta: true },
-	SEARCH: { key: "/", shift: false },
-	NEW_ITEM: { key: "n", meta: true },
-	SAVE: { key: "s", meta: true },
-	UNDO: { key: "z", meta: true },
-	REDO: { key: "z", meta: true, shift: true },
 	DELETE: { key: "Delete" },
 	ESCAPE: { key: "Escape" },
+	NEW_ITEM: { key: "n", meta: true },
+	REDO: { key: "z", meta: true, shift: true },
+	SAVE: { key: "s", meta: true },
+	SEARCH: { key: "/", shift: false },
+	UNDO: { key: "z", meta: true },
 } as const;
 
-// Date/Time Formats
-export const DATE_FORMAT = "MMM d, yyyy";
-export const TIME_FORMAT = "h:mm a";
-export const DATETIME_FORMAT = "MMM d, yyyy h:mm a";
+// Date/time formats
+const DATE_FORMAT = "MMM d, yyyy";
+const TIME_FORMAT = "h:mm a";
+const DATETIME_FORMAT = "MMM d, yyyy h:mm a";
 
-// File Upload
-export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-export const ALLOWED_FILE_TYPES = [
+// File upload
+// 10 MB
+const MAX_FILE_SIZE = 10_485_760;
+const ALLOWED_FILE_TYPES = [
 	"image/png",
 	"image/jpeg",
 	"image/gif",
@@ -163,44 +164,86 @@ export const ALLOWED_FILE_TYPES = [
 	"text/markdown",
 ];
 
-// Local Storage Keys
-export const STORAGE_KEYS = {
+// Local storage keys
+const STORAGE_KEYS = {
 	AUTH_TOKEN: "tracertm_auth_token",
-	USER_PREFERENCES: "tracertm_user_preferences",
 	RECENT_PROJECTS: "tracertm_recent_projects",
-	UI_STATE: "tracertm_ui_state",
 	THEME: "tracertm_theme",
+	UI_STATE: "tracertm_ui_state",
+	USER_PREFERENCES: "tracertm_user_preferences",
 } as const;
 
-// Graph Layout
-export const GRAPH_CONFIG = {
-	NODE_WIDTH: 200,
+// Graph layout
+const GRAPH_CONFIG = {
+	ANIMATION_DURATION: 300,
+	EDGE_TYPE: "smoothstep",
 	NODE_HEIGHT: 80,
 	NODE_SPACING: 50,
-	EDGE_TYPE: "smoothstep",
-	ANIMATION_DURATION: 300,
+	NODE_WIDTH: 200,
 } as const;
 
-// Debounce/Throttle Timings
-export const DEBOUNCE_DELAY = 300; // ms
-export const SEARCH_DEBOUNCE_DELAY = 500; // ms
-export const AUTOSAVE_DELAY = 1000; // ms
+// Debounce/throttle timings
+// Ms
+const DEBOUNCE_DELAY = 300;
+// Ms
+const SEARCH_DEBOUNCE_DELAY = 500;
+// Ms
+const AUTOSAVE_DELAY = 1000;
 
-// Sync Configuration
-export const SYNC_INTERVAL = 5000; // 5 seconds
-export const SYNC_RETRY_DELAY = 2000; // 2 seconds
-export const MAX_SYNC_RETRIES = 3;
+// Sync configuration
+// 5 seconds
+const SYNC_INTERVAL = 5000;
+// 2 seconds
+const SYNC_RETRY_DELAY = 2000;
+const MAX_SYNC_RETRIES = 3;
 
-// Toast Configuration
-export const TOAST_DURATION = 4000; // 4 seconds
-export const TOAST_POSITION = "bottom-right" as const;
+// Toast configuration
+// 4 seconds
+const TOAST_DURATION = 4000;
+const TOAST_POSITION = "bottom-right" as const;
 
-// Feature Flags (for development)
-export const FEATURE_FLAGS = {
-	ENABLE_GRAPH_VIEW: true,
-	ENABLE_REALTIME_SYNC: true,
+// Feature flags (for development)
+const FEATURE_FLAGS = {
 	ENABLE_AI_SUGGESTIONS: false,
-	ENABLE_EXPORT: true,
-	ENABLE_IMPORT: true,
 	ENABLE_COLLABORATION: false,
+	ENABLE_EXPORT: true,
+	ENABLE_GRAPH_VIEW: true,
+	ENABLE_IMPORT: true,
+	ENABLE_REALTIME_SYNC: true,
 } as const;
+
+export {
+	ALLOWED_FILE_TYPES,
+	API_BASE_URL,
+	API_TIMEOUT,
+	APP_NAME,
+	APP_VERSION,
+	AUTH_ROUTES,
+	AUTOSAVE_DELAY,
+	DATETIME_FORMAT,
+	DATE_FORMAT,
+	DEBOUNCE_DELAY,
+	DEFAULT_PAGE_SIZE,
+	FEATURE_FLAGS,
+	GRAPH_CONFIG,
+	HEADER_HEIGHT,
+	ITEM_PRIORITIES,
+	ITEM_STATUSES,
+	KEYBOARD_SHORTCUTS,
+	LINK_TYPES,
+	MAX_FILE_SIZE,
+	MAX_PAGE_SIZE,
+	MAX_SYNC_RETRIES,
+	SEARCH_DEBOUNCE_DELAY,
+	SIDEBAR_COLLAPSED_WIDTH,
+	SIDEBAR_WIDTH,
+	STORAGE_KEYS,
+	SYNC_INTERVAL,
+	SYNC_RETRY_DELAY,
+	TIME_FORMAT,
+	TOAST_DURATION,
+	TOAST_POSITION,
+	VIEW_CONFIG,
+	VIEW_TYPES,
+	WS_BASE_URL,
+};

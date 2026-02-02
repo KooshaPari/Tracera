@@ -1,5 +1,4 @@
 import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as hooks from "../../hooks/useItems";
 import * as projectHooks from "../../hooks/useProjects";
@@ -38,6 +37,7 @@ const mockItems = Array.from({ length: 100 }, (_, i) => ({
 	updatedAt: new Date(),
 }));
 
+/* eslint-disable @typescript-eslint/no-unsafe-type-assertion -- mock return values for useItems/useProjects */
 describe("ItemsKanbanView Performance", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -64,7 +64,7 @@ describe("ItemsKanbanView Performance", () => {
 			return <OriginalItemsKanbanView />;
 		};
 
-		const { rerender } = render(<WrappedView />);
+		render(<WrappedView />);
 
 		// Initial render
 		expect(renderSpy).toHaveBeenCalledTimes(1);
@@ -75,7 +75,7 @@ describe("ItemsKanbanView Performance", () => {
 	});
 
 	it("memoizes ItemCard components effectively", () => {
-		const { container } = render(<ItemsKanbanView />);
+		render(<ItemsKanbanView />);
 
 		// Check that ItemCard elements are present
 		const cards = container.querySelectorAll('[draggable="true"]');
@@ -84,7 +84,6 @@ describe("ItemsKanbanView Performance", () => {
 	});
 
 	it("handles drag operations without performance degradation", async () => {
-		const user = userEvent.setup();
 		render(<ItemsKanbanView />);
 
 		const cards = screen
@@ -102,8 +101,7 @@ describe("ItemsKanbanView Performance", () => {
 	});
 
 	it("filters items efficiently with memoization", async () => {
-		const user = userEvent.setup();
-		const { container } = render(<ItemsKanbanView />);
+		render(<ItemsKanbanView />);
 
 		const searchInput = container.querySelector(
 			'input[placeholder="Filter items..."]',
@@ -121,7 +119,7 @@ describe("ItemsKanbanView Performance", () => {
 	});
 
 	it("maintains performance with column re-arrangement", () => {
-		const { rerender, container } = render(<ItemsKanbanView />);
+		render(<ItemsKanbanView />);
 
 		// Get initial column count
 		const initialColumns = container.querySelectorAll(".min-w-\\[320px\\]");

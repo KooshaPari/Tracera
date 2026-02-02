@@ -410,7 +410,8 @@ test.describe("Accessibility - Visual and Color", () => {
 
 		// Get focused element's outline
 		const focusedOutline = await page.evaluate(() => {
-			const el = document.activeElement as HTMLElement;
+			const el = document.activeElement;
+			if (!el) return { outline: "", outlineWidth: "0px", outlineColor: "", boxShadow: "none" };
 			const styles = window.getComputedStyle(el);
 			return {
 				outline: styles.outline,
@@ -523,11 +524,12 @@ test.describe("Accessibility - Focus Management", () => {
 				return el?.tagName + (el?.getAttribute("data-testid") || "");
 			});
 
-			if (focusedElements.includes(focused!) && focusedElements.length > 5) {
+			const f = focused ?? "";
+			if (focusedElements.includes(f) && focusedElements.length > 5) {
 				break;
 			}
 
-			focusedElements.push(focused!);
+			focusedElements.push(f);
 			tabCount++;
 		}
 
@@ -544,7 +546,8 @@ test.describe("Accessibility - Focus Management", () => {
 		for (let i = 0; i < 10; i++) {
 			await page.keyboard.press("Tab");
 			const position = await page.evaluate(() => {
-				const el = document.activeElement as HTMLElement;
+				const el = document.activeElement;
+				if (!el || !("getBoundingClientRect" in el)) return { x: 0, y: 0 };
 				const rect = el.getBoundingClientRect();
 				return { x: rect.left, y: rect.top };
 			});

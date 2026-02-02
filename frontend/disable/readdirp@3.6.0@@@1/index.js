@@ -179,7 +179,7 @@ class ReaddirpStream extends Readable {
       const fullPath = sysPath.resolve(sysPath.join(path, basename));
       entry = { path: sysPath.relative(this._root, fullPath), fullPath, basename };
       entry[this._statsProp] = this._isDirent ? dirent : await this._stat(fullPath);
-    } catch (err) {
+    } catch (_err) {
       this._onError(err);
     }
     return entry;

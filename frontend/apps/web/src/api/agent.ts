@@ -3,7 +3,9 @@
  * Used by chat to run tools in a scoped filesystem per conversation.
  */
 
-import { getAuthHeaders } from "./client";
+import client from "./client";
+
+const { getAuthHeaders } = client;
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 

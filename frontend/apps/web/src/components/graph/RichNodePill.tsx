@@ -45,6 +45,7 @@ import { NodeActions } from "./NodeActions";
 import { NodeContextMenu } from "./NodeContextMenu";
 import { NodeQuickActions } from "./NodeQuickActions";
 import { ENHANCED_TYPE_COLORS, STATUS_OPACITY } from "./types";
+import { logger } from '@/lib/logger';
 
 // Node data structure for React Flow
 export interface RichNodeData {

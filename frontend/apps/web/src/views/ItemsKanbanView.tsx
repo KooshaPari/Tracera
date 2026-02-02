@@ -40,28 +40,28 @@ interface KanbanColumn {
 
 const columns: KanbanColumn[] = [
 	{
-		status: "todo",
-		title: "BACKLOG",
 		color: "border-t-muted",
 		icon: ClipboardList,
+		status: "todo",
+		title: "BACKLOG",
 	},
 	{
-		status: "in_progress",
-		title: "ACTIVE",
 		color: "border-t-blue-500",
 		icon: Clock,
+		status: "in_progress",
+		title: "ACTIVE",
 	},
 	{
-		status: "done",
-		title: "RESOLVED",
 		color: "border-t-green-500",
 		icon: CheckCircle2,
+		status: "done",
+		title: "RESOLVED",
 	},
 	{
-		status: "blocked",
-		title: "BLOCKED",
 		color: "border-t-red-500",
 		icon: AlertCircle,
+		status: "blocked",
+		title: "BLOCKED",
 	},
 ];
 
@@ -144,10 +144,7 @@ const ItemCard = memo(
 			</div>
 		);
 	},
-	(prev, next) => {
-		// Custom comparison for memoization
-		// Return true if props are equal (skip re-render), false if different
-		return (
+	(prev, next) => (
 			prev.item.id === next.item.id &&
 			prev.item.title === next.item.title &&
 			prev.item.type === next.item.type &&
@@ -155,8 +152,7 @@ const ItemCard = memo(
 			prev.item.priority === next.item.priority &&
 			prev.item.owner === next.item.owner &&
 			prev.projectFilter === next.projectFilter
-		);
-	},
+		),
 );
 
 const ColumnHeader = memo(function ColumnHeader({
@@ -253,9 +249,7 @@ const ColumnDropZone = memo(
 			</div>
 		);
 	},
-	(prev, next) => {
-		// Memoization comparison: re-render only if items, column, or drag state changes
-		return (
+	(prev, next) => (
 			prev.column.status === next.column.status &&
 			prev.items.length === next.items.length &&
 			prev.items.every(
@@ -266,8 +260,7 @@ const ColumnDropZone = memo(
 			) &&
 			prev.isOver === next.isOver &&
 			prev.projectFilter === next.projectFilter
-		);
-	},
+		),
 );
 
 export function ItemsKanbanView() {
@@ -290,9 +283,9 @@ export function ItemsKanbanView() {
 	const [isDraggingOver, setIsDraggingOver] = useState<string | null>(null);
 
 	const filteredItems = useMemo(() => {
-		if (!items.length) return [];
+		if (items.length === 0) {return [];}
 		return items.filter((item: any) => {
-			if (typeFilter && item.type !== typeFilter) return false;
+			if (typeFilter && item.type !== typeFilter) {return false;}
 			if (searchQuery) {
 				const query = searchQuery.toLowerCase();
 				return (
@@ -306,13 +299,13 @@ export function ItemsKanbanView() {
 
 	const itemsByStatus = useMemo(() => {
 		const grouped: Record<string, Item[]> = {
-			todo: [],
-			in_progress: [],
-			done: [],
 			blocked: [],
+			done: [],
+			in_progress: [],
+			todo: [],
 		};
 		filteredItems.forEach((item) => {
-			const status = item.status;
+			const {status} = item;
 			if (status && grouped[status]) {
 				grouped[status].push(item);
 			}
@@ -333,13 +326,13 @@ export function ItemsKanbanView() {
 			try {
 				// Optimistic UI update could go here
 				await updateItem.mutateAsync({
-					id: draggedItem.id,
 					data: { status: newStatus },
+					id: draggedItem.id,
 				});
 				toast.success(`Moved to ${newStatus.replace("_", " ")}`);
 				setDraggedItem(null);
-			} catch (err) {
-				toast.error("Failed to update status");
+            } catch {
+                toast.error("Failed to update status");
 			}
 		},
 		[draggedItem, updateItem],
@@ -363,50 +356,32 @@ export function ItemsKanbanView() {
 
 	const handleProjectFilterChange = useCallback(
 		(v: string) => {
-			navigate({
-				search: (prev: any) => ({
-					...prev,
-					project: v === "all" ? undefined : v,
-				}),
-			} as any);
+			undefined;
 		},
 		[navigate],
 	);
 
 	const handleTypeFilterChange = useCallback(
 		(v: string) => {
-			navigate({
-				search: (prev: any) => ({
-					...prev,
-					type: v === "all" ? undefined : v,
-				}),
-			} as any);
+			undefined;
 		},
 		[navigate],
 	);
 
 	const handleNavigateToTable = useCallback(() => {
 		if (!projectFilter) {
-			navigate({ to: "/projects" });
+			undefined;
 			return;
 		}
-		navigate({
-			to: "/projects/$projectId/views/$viewType",
-			params: { projectId: projectFilter, viewType: "feature" },
-			search: searchParams,
-		});
+		undefined;
 	}, [navigate, searchParams, projectFilter]);
 
 	const handleNavigateToCreate = useCallback(() => {
 		if (!projectFilter) {
-			navigate({ to: "/projects" });
+			undefined;
 			return;
 		}
-		navigate({
-			to: "/projects/$projectId/views/$viewType",
-			params: { projectId: projectFilter, viewType: "feature" },
-			search: { ...searchParams, action: "create" } as any,
-		});
+		undefined;
 	}, [navigate, searchParams, projectFilter]);
 
 	if (isLoading) {

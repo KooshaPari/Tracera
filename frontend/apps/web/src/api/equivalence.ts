@@ -5,7 +5,9 @@ import {
 	useQuery,
 	useQueryClient,
 } from "@tanstack/react-query";
-import { apiClient, handleApiResponse } from "./client";
+import client from "./client";
+
+const { apiClient, handleApiResponse } = client;
 
 // Types for equivalence API
 export interface EquivalenceLink {
@@ -103,7 +105,7 @@ export function useDetectEquivalences(
 				}),
 			),
 		onSuccess: (_, { projectId }) => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: equivalenceQueryKeys.list(projectId),
 			});
 		},
@@ -126,10 +128,10 @@ export function useConfirmEquivalence(
 				}),
 			),
 		onSuccess: (data) => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: equivalenceQueryKeys.detail(data.id),
 			});
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: equivalenceQueryKeys.lists(),
 			});
 		},
@@ -152,10 +154,10 @@ export function useRejectEquivalence(
 				}),
 			),
 		onSuccess: (_, { equivalenceId }) => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: equivalenceQueryKeys.detail(equivalenceId),
 			});
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: equivalenceQueryKeys.lists(),
 			});
 		},
@@ -177,7 +179,7 @@ export function useBatchConfirmEquivalences(
 				}),
 			),
 		onSuccess: () => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: equivalenceQueryKeys.lists(),
 			});
 		},
@@ -199,7 +201,7 @@ export function useBatchRejectEquivalences(
 				}),
 			),
 		onSuccess: () => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: equivalenceQueryKeys.lists(),
 			});
 		},

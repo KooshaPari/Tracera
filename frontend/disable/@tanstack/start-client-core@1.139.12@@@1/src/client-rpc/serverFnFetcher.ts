@@ -307,7 +307,7 @@ async function processServerFnResponse({
 					break;
 				}
 			}
-		} catch (err) {
+		} catch (_err) {
 			onError?.("Stream processing error:", err);
 		}
 	})();

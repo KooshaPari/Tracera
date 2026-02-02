@@ -87,7 +87,7 @@ export function windowWhen<T>(closingSelector: () => ObservableInput<any>): Oper
       let closingNotifier: Observable<any>;
       try {
         closingNotifier = innerFrom(closingSelector());
-      } catch (err) {
+      } catch (_err) {
         handleError(err);
         return;
       }

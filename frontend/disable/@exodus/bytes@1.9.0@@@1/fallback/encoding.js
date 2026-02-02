@@ -137,7 +137,7 @@ export class TextDecoder {
 
         if (!stream) this.#canBOM = !this.ignoreBOM
         return res
-      } catch (err) {
+      } catch (_err) {
         this.#chunk = null // reset unfinished chunk on errors
         throw err
       }

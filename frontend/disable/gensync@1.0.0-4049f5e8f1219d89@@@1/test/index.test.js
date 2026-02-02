@@ -68,7 +68,7 @@ describe("gensync({})", () => {
 				});
 
 				throwTestError();
-			} catch (err) {
+			} catch (_err) {
 				expect(err.message).toMatch(
 					/Expected one of either opts.async or opts.errback, but got _both_\./,
 				);
@@ -83,7 +83,7 @@ describe("gensync({})", () => {
 				});
 
 				throwTestError();
-			} catch (err) {
+			} catch (_err) {
 				expect(err.message).toMatch(/Expected opts.sync to be a function./);
 				expect(err.code).toBe("GENSYNC_OPTIONS_ERROR");
 			}
@@ -99,7 +99,7 @@ describe("gensync({})", () => {
 				fn.errback();
 
 				throwTestError();
-			} catch (err) {
+			} catch (_err) {
 				expect(err.message).toMatch(/function called without callback/);
 				expect(err.code).toBe("GENSYNC_ERRBACK_NO_CALLBACK");
 			}
@@ -361,7 +361,7 @@ describe("gensync(function* () {})", () => {
 			await fn.async();
 
 			throwTestError();
-		} catch (err) {
+		} catch (_err) {
 			expect(err.message).toMatch(
 				/Got unexpected yielded value in gensync generator/,
 			);
@@ -381,7 +381,7 @@ describe("gensync(function* () {})", () => {
 			await fn.async();
 
 			throwTestError();
-		} catch (err) {
+		} catch (_err) {
 			expect(err.message).toMatch(/Expected GENSYNC_SUSPEND, got {}/);
 			expect(err.code).toBe("GENSYNC_EXPECTED_SUSPEND");
 		}
@@ -399,7 +399,7 @@ describe("gensync(function* () {})", () => {
 			await fn.async();
 
 			throwTestError();
-		} catch (err) {
+		} catch (_err) {
 			expect(err.message).toMatch(/Unexpected generator completion/);
 			expect(err.code).toBe("GENSYNC_EXPECTED_SUSPEND");
 		}

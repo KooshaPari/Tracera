@@ -99,7 +99,7 @@ function upgrade (opts, callback) {
     }
 
     this.dispatch(upgradeOpts, upgradeHandler)
-  } catch (err) {
+  } catch (_err) {
     if (typeof callback !== 'function') {
       throw err
     }

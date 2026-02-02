@@ -226,7 +226,7 @@ describe("AuthStore", () => {
 		it("should clear user", () => {
 			const { setUser, logout } = useAuthStore.getState();
 			setUser(mockUser);
-			logout();
+			void logout();
 
 			const { user } = useAuthStore.getState();
 			expect(user).toBeNull();
@@ -235,7 +235,7 @@ describe("AuthStore", () => {
 		it("should clear token", () => {
 			const { setToken, logout } = useAuthStore.getState();
 			setToken("test-token");
-			logout();
+			void logout();
 
 			const { token } = useAuthStore.getState();
 			expect(token).toBeNull();
@@ -244,7 +244,7 @@ describe("AuthStore", () => {
 		it("should set isAuthenticated to false", () => {
 			const { setUser, logout } = useAuthStore.getState();
 			setUser(mockUser);
-			logout();
+			void logout();
 
 			const { isAuthenticated } = useAuthStore.getState();
 			expect(isAuthenticated).toBe(false);
@@ -253,7 +253,7 @@ describe("AuthStore", () => {
 		it("should remove token from localStorage", () => {
 			const { setToken, logout } = useAuthStore.getState();
 			setToken("test-token");
-			logout();
+			void logout();
 
 			expect(localStorage.getItem("auth_token")).toBeNull();
 		});
@@ -410,7 +410,7 @@ describe("AuthStore", () => {
 
 			const loginPromise = login("test@example.com", "password");
 			await loginPromise;
-			logout();
+			void logout();
 
 			// State should reflect the last operation
 			const { user, isAuthenticated } = useAuthStore.getState();

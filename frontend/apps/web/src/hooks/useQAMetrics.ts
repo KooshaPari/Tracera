@@ -1,5 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { getAuthHeaders } from "@/api/client";
+import client from "@/api/client";
+
+const { getAuthHeaders } = client;
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
@@ -121,122 +123,149 @@ export interface ExecutionHistory {
 
 // ==================== Transform Functions ====================
 
-function transformSummary(data: any): QAMetricsSummary {
+function obj(v: unknown): Record<string, unknown> {
+	return (typeof v === "object" && v !== null ? v : {}) as Record<string, unknown>;
+}
+function arr(v: unknown): unknown[] {
+	return Array.isArray(v) ? v : [];
+}
+
+function transformSummary(data: Record<string, unknown>): QAMetricsSummary {
+	const tc = obj(data['test_cases']);
+	const ts = obj(data['test_suites']);
+	const tr = obj(data['test_runs']);
+	const cov = obj(data['coverage']);
 	return {
-		projectId: data.project_id,
+		projectId: (data['project_id'] ?? "") as string,
 		testCases: {
-			total: data.test_cases?.total || 0,
-			byStatus: data.test_cases?.by_status || {},
-			byPriority: data.test_cases?.by_priority || {},
-			automatedCount: data.test_cases?.automated_count || 0,
-			manualCount: data.test_cases?.manual_count || 0,
-			automationPercentage: data.test_cases?.automation_percentage || 0,
+			total: (tc['total'] as number) || 0,
+			byStatus: (tc['by_status'] as Record<string, number>) || {},
+			byPriority: (tc['by_priority'] as Record<string, number>) || {},
+			automatedCount: (tc['automated_count'] as number) || 0,
+			manualCount: (tc['manual_count'] as number) || 0,
+			automationPercentage: (tc['automation_percentage'] as number) || 0,
 		},
 		testSuites: {
-			total: data.test_suites?.total || 0,
-			byStatus: data.test_suites?.by_status || {},
-			totalTestCases: data.test_suites?.total_test_cases || 0,
+			total: (ts['total'] as number) || 0,
+			byStatus: (ts['by_status'] as Record<string, number>) || {},
+			totalTestCases: (ts['total_test_cases'] as number) || 0,
 		},
 		testRuns: {
-			total: data.test_runs?.total || 0,
-			byStatus: data.test_runs?.by_status || {},
-			byType: data.test_runs?.by_type || {},
-			averagePassRate: data.test_runs?.average_pass_rate || 0,
-			averageDurationSeconds: data.test_runs?.average_duration_seconds || 0,
+			total: (tr['total'] as number) || 0,
+			byStatus: (tr['by_status'] as Record<string, number>) || {},
+			byType: (tr['by_type'] as Record<string, number>) || {},
+			averagePassRate: (tr['average_pass_rate'] as number) || 0,
+			averageDurationSeconds: (tr['average_duration_seconds'] as number) || 0,
 		},
 		coverage: {
-			totalRequirements: data.coverage?.total_requirements || 0,
-			coveredRequirements: data.coverage?.covered_requirements || 0,
-			uncoveredRequirements: data.coverage?.uncovered_requirements || 0,
-			coveragePercentage: data.coverage?.coverage_percentage || 0,
-			totalMappings: data.coverage?.total_mappings || 0,
-			byType: data.coverage?.by_type || {},
+			totalRequirements: (cov['total_requirements'] as number) || 0,
+			coveredRequirements: (cov['covered_requirements'] as number) || 0,
+			uncoveredRequirements: (cov['uncovered_requirements'] as number) || 0,
+			coveragePercentage: (cov['coverage_percentage'] as number) || 0,
+			totalMappings: (cov['total_mappings'] as number) || 0,
+			byType: (cov['by_type'] as Record<string, number>) || {},
 		},
 	};
 }
 
-function transformPassRateTrend(data: any): PassRateTrend {
+function transformPassRateTrend(data: Record<string, unknown>): PassRateTrend {
 	return {
-		projectId: data.project_id,
-		days: data.days,
-		trend: (data.trend || []).map((item: any) => ({
-			date: item.date,
-			totalRuns: item.total_runs,
-			avgPassRate: item.avg_pass_rate,
-			totalPassed: item.total_passed,
-			totalFailed: item.total_failed,
-		})),
+		projectId: (data['project_id'] ?? "") as string,
+		days: (data['days'] ?? 0) as number,
+		trend: arr(data['trend']).map((item: unknown) => {
+			const i = obj(item);
+			return {
+				date: (i['date'] ?? "") as string,
+				totalRuns: (i['total_runs'] ?? 0) as number,
+				avgPassRate: (i['avg_pass_rate'] ?? 0) as number,
+				totalPassed: (i['total_passed'] ?? 0) as number,
+				totalFailed: (i['total_failed'] ?? 0) as number,
+			};
+		}),
 	};
 }
 
-function transformCoverageMetrics(data: any): CoverageMetrics {
+function transformCoverageMetrics(data: Record<string, unknown>): CoverageMetrics {
+	const overall = obj(data['overall']);
 	return {
-		projectId: data.project_id,
+		projectId: (data['project_id'] ?? "") as string,
 		overall: {
-			totalRequirements: data.overall?.total_requirements || 0,
-			coveredRequirements: data.overall?.covered_requirements || 0,
-			coveragePercentage: data.overall?.coverage_percentage || 0,
+			totalRequirements: (overall['total_requirements'] as number) || 0,
+			coveredRequirements: (overall['covered_requirements'] as number) || 0,
+			coveragePercentage: (overall['coverage_percentage'] as number) || 0,
 		},
-		byView: data.by_view || {},
-		byType: data.by_type || {},
-		gapsCount: data.gaps_count || 0,
-		highPriorityGaps: data.high_priority_gaps || 0,
+		byView: (data['by_view'] as CoverageMetrics['byView']) || {},
+		byType: (data['by_type'] as Record<string, number>) || {},
+		gapsCount: (data['gaps_count'] as number) ?? 0,
+		highPriorityGaps: (data['high_priority_gaps'] as number) ?? 0,
 	};
 }
 
-function transformDefectDensity(data: any): DefectDensity {
+function transformDefectDensity(data: Record<string, unknown>): DefectDensity {
 	return {
-		projectId: data.project_id,
-		overallDefectDensity: data.overall_defect_density || 0,
-		totalExecutions: data.total_executions || 0,
-		totalFailures: data.total_failures || 0,
-		testCasesWithFailures: data.test_cases_with_failures || 0,
-		topFailingTests: (data.top_failing_tests || []).map((item: any) => ({
-			testCaseId: item.test_case_id,
-			totalExecutions: item.total_executions,
-			failureCount: item.failure_count,
-			failureRate: item.failure_rate,
-		})),
+		projectId: (data['project_id'] ?? "") as string,
+		overallDefectDensity: (data['overall_defect_density'] as number) ?? 0,
+		totalExecutions: (data['total_executions'] as number) ?? 0,
+		totalFailures: (data['total_failures'] as number) ?? 0,
+		testCasesWithFailures: (data['test_cases_with_failures'] as number) ?? 0,
+		topFailingTests: arr(data['top_failing_tests']).map((item: unknown) => {
+			const i = obj(item);
+			return {
+				testCaseId: (i['test_case_id'] ?? "") as string,
+				totalExecutions: (i['total_executions'] ?? 0) as number,
+				failureCount: (i['failure_count'] ?? 0) as number,
+				failureRate: (i['failure_rate'] ?? 0) as number,
+			};
+		}),
 	};
 }
 
-function transformFlakyTests(data: any): FlakyTests {
+function transformFlakyTests(data: Record<string, unknown>): FlakyTests {
 	return {
-		projectId: data.project_id,
-		markedFlaky: (data.marked_flaky || []).map((item: any) => ({
-			testCaseId: item.test_case_id,
-			flakyOccurrences: item.flaky_occurrences,
-		})),
-		markedFlakyCount: data.marked_flaky_count || 0,
-		potentiallyFlaky: (data.potentially_flaky || []).map((item: any) => ({
-			testCaseId: item.test_case_id,
-			inconsistentDays: item.inconsistent_days,
-		})),
-		potentiallyFlakyCount: data.potentially_flaky_count || 0,
+		projectId: (data['project_id'] ?? "") as string,
+		markedFlaky: arr(data['marked_flaky']).map((item: unknown) => {
+			const i = obj(item);
+			return {
+				testCaseId: (i['test_case_id'] ?? "") as string,
+				flakyOccurrences: (i['flaky_occurrences'] ?? 0) as number,
+			};
+		}),
+		markedFlakyCount: (data['marked_flaky_count'] as number) ?? 0,
+		potentiallyFlaky: arr(data['potentially_flaky']).map((item: unknown) => {
+			const i = obj(item);
+			return {
+				testCaseId: (i['test_case_id'] ?? "") as string,
+				inconsistentDays: (i['inconsistent_days'] ?? 0) as number,
+			};
+		}),
+		potentiallyFlakyCount: (data['potentially_flaky_count'] as number) ?? 0,
 	};
 }
 
-function transformExecutionHistory(data: any): ExecutionHistory {
+function transformExecutionHistory(data: Record<string, unknown>): ExecutionHistory {
 	return {
-		projectId: data.project_id,
-		days: data.days,
-		runs: (data.runs || []).map((run: any) => ({
-			id: run.id,
-			runNumber: run.run_number,
-			name: run.name,
-			status: run.status,
-			runType: run.run_type,
-			environment: run.environment,
-			buildNumber: run.build_number,
-			branch: run.branch,
-			startedAt: run.started_at,
-			completedAt: run.completed_at,
-			durationSeconds: run.duration_seconds,
-			totalTests: run.total_tests,
-			passedCount: run.passed_count,
-			failedCount: run.failed_count,
-			passRate: run.pass_rate,
-		})),
+		projectId: (data['project_id'] ?? "") as string,
+		days: (data['days'] ?? 0) as number,
+		runs: arr(data['runs']).map((run: unknown) => {
+			const r = obj(run);
+			return {
+				id: (r['id'] ?? "") as string,
+				runNumber: (r['run_number'] ?? "") as string,
+				name: (r['name'] ?? "") as string,
+				status: (r['status'] ?? "") as string,
+				runType: (r['run_type'] ?? "") as string,
+				environment: r['environment'] as string | undefined,
+				buildNumber: r['build_number'] as string | undefined,
+				branch: r['branch'] as string | undefined,
+				startedAt: r['started_at'] as string | undefined,
+				completedAt: r['completed_at'] as string | undefined,
+				durationSeconds: r['duration_seconds'] as number | undefined,
+				totalTests: (r['total_tests'] ?? 0) as number,
+				passedCount: (r['passed_count'] ?? 0) as number,
+				failedCount: (r['failed_count'] ?? 0) as number,
+				passRate: r['pass_rate'] as number | undefined,
+			};
+		}),
 	};
 }
 

@@ -3,17 +3,17 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { fetchDependencyAnalysis, fetchImpactAnalysis } from "@/api/impact";
+import { fetchDependencyAnalysis, fetchImpactAnalysis } from "../../api/impact";
 
 // Mock endpoints
-vi.mock("@/api/endpoints", () => ({
+vi.mock("../../api/endpoints", () => ({
 	graphApi: {
 		getImpactAnalysis: vi.fn(),
 		getDependencyAnalysis: vi.fn(),
 	},
 }));
 
-import { graphApi } from "@/api/endpoints";
+import { graphApi } from "../../api/endpoints";
 
 describe("Impact API", () => {
 	beforeEach(() => {

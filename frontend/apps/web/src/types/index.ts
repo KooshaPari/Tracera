@@ -129,14 +129,14 @@ export interface BreadcrumbItem {
 	icon?: string;
 }
 
-export interface TableColumn<T = any> {
+export interface TableColumn<T = unknown> {
 	id: string;
 	header: string;
-	accessor: keyof T | ((row: T) => any);
+	accessor: keyof T | ((row: T) => unknown);
 	width?: number;
 	sortable?: boolean;
 	filterable?: boolean;
-	cell?: (value: any, row: T) => React.ReactNode;
+	cell?: (value: unknown, row: T) => React.ReactNode;
 }
 
 export interface ValidationRule {
@@ -144,8 +144,8 @@ export interface ValidationRule {
 	minLength?: number;
 	maxLength?: number;
 	pattern?: string;
-	custom?: (value: any) => boolean | string;
-	[key: string]: any;
+	custom?: (value: unknown) => boolean | string;
+	[key: string]: unknown;
 }
 
 export interface FormField {
@@ -173,10 +173,10 @@ export interface ContextMenuConfig {
 	targetId?: string;
 }
 
-export interface DragDropItem {
+export interface DragDropItem<T = unknown> {
 	id: string;
 	type: string;
-	data: any;
+	data: T;
 }
 
 export interface UploadFile {
@@ -192,6 +192,13 @@ export interface UploadFile {
 
 export interface ExportFilter {
 	[key: string]: string | number | boolean | string[] | undefined;
+}
+
+export interface ApiErrorResponse {
+	message: string;
+	code?: string;
+	details?: unknown;
+	statusCode?: number;
 }
 
 export interface ExportConfig {

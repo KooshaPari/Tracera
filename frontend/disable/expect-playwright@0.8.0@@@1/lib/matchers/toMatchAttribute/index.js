@@ -16,7 +16,7 @@ const toMatchAttribute = async function (...args) {
 					`"${attribute}", expected`,
 				),
 		};
-	} catch (err) {
+	} catch (_err) {
 		return {
 			pass: false,
 			message: () => err.toString(),

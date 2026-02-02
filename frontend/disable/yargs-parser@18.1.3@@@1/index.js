@@ -771,7 +771,7 @@ function parse(args, opts) {
 							applied.add(ali);
 							argv[ali] = value;
 						});
-					} catch (err) {
+					} catch (_err) {
 						error = err;
 					}
 				}

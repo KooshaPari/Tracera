@@ -1,7 +1,6 @@
 import { useEffect, useRef, memo } from 'react';
 import { SigmaContainer, useLoadGraph, useSigma } from '@react-sigma/core';
 import type Graph from 'graphology';
-import { customNodeRenderer, customEdgeRenderer } from './sigma/customRenderers';
 
 interface SigmaGraphViewProps {
   graph: Graph;

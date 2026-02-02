@@ -257,10 +257,10 @@ test.describe("Advanced Authentication Flows", () => {
 			await page.waitForTimeout(2000);
 
 			// Intercept token refresh request
-			let refreshRequested = false;
+			let _refreshRequested = false;
 			await page.route("**/api/auth/refresh", (route) => {
-				refreshRequested = true;
-				route.fulfill({
+				_refreshRequested = true;
+				void route.fulfill({
 					status: 200,
 					body: JSON.stringify({ token: "new-token" }),
 				});

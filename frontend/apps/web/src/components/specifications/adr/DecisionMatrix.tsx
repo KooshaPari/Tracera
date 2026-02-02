@@ -20,6 +20,12 @@ interface DecisionMatrixProps {
 	showScoring?: boolean;
 }
 
+function calculateScore(option: ADROption): number {
+	const prosCount = option.pros?.length || 0;
+	const consCount = option.cons?.length || 0;
+	return Math.max(0, (prosCount - consCount) * 10);
+}
+
 export function DecisionMatrix({
 	options,
 	onOptionEdit,
@@ -55,15 +61,8 @@ export function DecisionMatrix({
 		);
 	}
 
-	// Calculate scoring
-	const calculateScore = (option: ADROption): number => {
-		const prosCount = option.pros?.length || 0;
-		const consCount = option.cons?.length || 0;
-		return Math.max(0, (prosCount - consCount) * 10);
-	};
-
 	// Sort options
-	const sortedOptions = [...options].sort((a, b) => {
+	const sortedOptions = [...options].toSorted((a, b) => {
 		switch (sortBy) {
 			case "chosen":
 				return a.isChosen ? -1 : b.isChosen ? 1 : 0;

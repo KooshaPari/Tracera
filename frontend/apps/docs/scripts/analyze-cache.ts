@@ -10,7 +10,7 @@
  * - Service worker configuration
  */
 
-import { existsSync, statSync, readdirSync, readFileSync } from 'fs';
+import { existsSync, statSync, readdirSync } from 'fs';
 import { join } from 'path';
 
 interface CacheAnalysis {

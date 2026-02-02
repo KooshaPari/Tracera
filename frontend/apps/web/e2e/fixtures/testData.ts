@@ -3,14 +3,7 @@
  * Provides reusable test data for various test scenarios
  */
 
-import type { Agent, Item, Link, Project } from "../../src/api/types";
-import {
-	AgentStatus,
-	ItemPriority,
-	ItemStatus,
-	ItemType,
-	LinkType,
-} from "../../src/api/types";
+import type { Agent, Item, Link, Project } from "@tracertm/types";
 
 // Helper to generate timestamps
 const now = new Date().toISOString();
@@ -29,8 +22,8 @@ export const testProjects: Project[] = [
 			team: "QA",
 			status: "active",
 		},
-		created_at: lastWeek,
-		updated_at: now,
+		createdAt: lastWeek,
+		updatedAt: now,
 	},
 	{
 		id: "test-proj-2",
@@ -40,8 +33,8 @@ export const testProjects: Project[] = [
 			team: "Dev",
 			status: "active",
 		},
-		created_at: yesterday,
-		updated_at: now,
+		createdAt: yesterday,
+		updatedAt: now,
 	},
 ];
 
@@ -51,40 +44,46 @@ export const testProjects: Project[] = [
 export const testItems: Item[] = [
 	{
 		id: "test-item-1",
-		project_id: "test-proj-1",
-		type: ItemType.REQUIREMENT,
+		projectId: "test-proj-1",
+		view: "feature",
+		type: "requirement",
 		title: "Test Requirement",
 		description: "A requirement for testing",
-		status: ItemStatus.PENDING,
-		priority: ItemPriority.HIGH,
+		status: "todo",
+		priority: "high",
 		metadata: { tags: ["test", "requirement"] },
-		created_at: lastWeek,
-		updated_at: now,
+		version: 1,
+		createdAt: lastWeek,
+		updatedAt: now,
 	},
 	{
 		id: "test-item-2",
-		project_id: "test-proj-1",
-		type: ItemType.FEATURE,
+		projectId: "test-proj-1",
+		view: "feature",
+		type: "feature",
 		title: "Test Feature",
 		description: "A feature for testing",
-		status: ItemStatus.IN_PROGRESS,
-		priority: ItemPriority.MEDIUM,
+		status: "in_progress",
+		priority: "medium",
 		metadata: { tags: ["test", "feature"] },
-		created_at: lastWeek,
-		updated_at: now,
-		parent_id: "test-item-1",
+		version: 1,
+		createdAt: lastWeek,
+		updatedAt: now,
+		parentId: "test-item-1",
 	},
 	{
 		id: "test-item-3",
-		project_id: "test-proj-1",
-		type: ItemType.CODE,
+		projectId: "test-proj-1",
+		view: "code",
+		type: "code",
 		title: "Test Implementation",
 		description: "Code implementation for testing",
-		status: ItemStatus.COMPLETED,
-		priority: ItemPriority.HIGH,
+		status: "done",
+		priority: "high",
 		metadata: { file_path: "src/test.ts" },
-		created_at: lastWeek,
-		updated_at: yesterday,
+		version: 1,
+		createdAt: lastWeek,
+		updatedAt: yesterday,
 	},
 ];
 
@@ -94,21 +93,25 @@ export const testItems: Item[] = [
 export const testLinks: Link[] = [
 	{
 		id: "test-link-1",
-		source_id: "test-item-2",
-		target_id: "test-item-1",
-		type: LinkType.IMPLEMENTS,
+		projectId: "test-proj-1",
+		sourceId: "test-item-2",
+		targetId: "test-item-1",
+		type: "implements",
 		metadata: {},
-		created_at: lastWeek,
-		updated_at: lastWeek,
+		version: 1,
+		createdAt: lastWeek,
+		updatedAt: lastWeek,
 	},
 	{
 		id: "test-link-2",
-		source_id: "test-item-3",
-		target_id: "test-item-2",
-		type: LinkType.IMPLEMENTS,
+		projectId: "test-proj-1",
+		sourceId: "test-item-3",
+		targetId: "test-item-2",
+		type: "implements",
 		metadata: {},
-		created_at: lastWeek,
-		updated_at: lastWeek,
+		version: 1,
+		createdAt: lastWeek,
+		updatedAt: lastWeek,
 	},
 ];
 
@@ -120,23 +123,15 @@ export const testAgents: Agent[] = [
 		id: "test-agent-1",
 		name: "Test Agent 1",
 		type: "test",
-		capabilities: ["testing", "validation"],
-		status: AgentStatus.IDLE,
-		metadata: { version: "1.0.0" },
-		created_at: lastWeek,
-		updated_at: now,
-		last_heartbeat: now,
+		status: "idle",
+		lastSeen: lastWeek,
 	},
 	{
 		id: "test-agent-2",
 		name: "Test Agent 2",
 		type: "analyzer",
-		capabilities: ["analysis", "reporting"],
-		status: AgentStatus.BUSY,
-		metadata: { version: "1.0.0" },
-		created_at: lastWeek,
-		updated_at: now,
-		last_heartbeat: now,
+		status: "active",
+		lastSeen: now,
 	},
 ];
 
@@ -222,8 +217,8 @@ export function generateTestProject(overrides: Partial<Project> = {}): Project {
 		name: `Test Project ${Date.now()}`,
 		description: "Auto-generated test project",
 		metadata: { team: "QA", status: "active" },
-		created_at: now,
-		updated_at: now,
+		createdAt: now,
+		updatedAt: now,
 		...overrides,
 	};
 }
@@ -237,15 +232,17 @@ export function generateTestItem(
 ): Item {
 	return {
 		id: generateTestId("item"),
-		project_id: projectId,
-		type: ItemType.FEATURE,
+		projectId,
+		view: "feature",
+		type: "feature",
 		title: `Test Item ${Date.now()}`,
 		description: "Auto-generated test item",
-		status: ItemStatus.PENDING,
-		priority: ItemPriority.MEDIUM,
+		status: "todo",
+		priority: "medium",
 		metadata: {},
-		created_at: now,
-		updated_at: now,
+		version: 1,
+		createdAt: now,
+		updatedAt: now,
 		...overrides,
 	};
 }
@@ -254,18 +251,21 @@ export function generateTestItem(
  * Generate test link data
  */
 export function generateTestLink(
+	projectId: string,
 	sourceId: string,
 	targetId: string,
 	overrides: Partial<Link> = {},
 ): Link {
 	return {
 		id: generateTestId("link"),
-		source_id: sourceId,
-		target_id: targetId,
-		type: LinkType.IMPLEMENTS,
+		projectId,
+		sourceId,
+		targetId,
+		type: "implements",
 		metadata: {},
-		created_at: now,
-		updated_at: now,
+		version: 1,
+		createdAt: now,
+		updatedAt: now,
 		...overrides,
 	};
 }
@@ -278,12 +278,8 @@ export function generateTestAgent(overrides: Partial<Agent> = {}): Agent {
 		id: generateTestId("agent"),
 		name: `Test Agent ${Date.now()}`,
 		type: "test",
-		capabilities: ["testing"],
-		status: AgentStatus.IDLE,
-		metadata: { version: "1.0.0" },
-		created_at: now,
-		updated_at: now,
-		last_heartbeat: now,
+		status: "idle",
+		lastSeen: now,
 		...overrides,
 	};
 }
@@ -309,7 +305,7 @@ export async function retryUntil<T>(
 		try {
 			return await fn();
 		} catch (error) {
-			lastError = error as Error;
+			lastError = error instanceof Error ? error : new Error(String(error));
 			if (attempt < maxAttempts) {
 				await waitFor(delayMs);
 			}
@@ -333,8 +329,8 @@ export const mockResponses = {
 		status: 200,
 	}),
 
-	link: (sourceId: string, targetId: string, link: Partial<Link> = {}) => ({
-		data: generateTestLink(sourceId, targetId, link),
+	link: (projectId: string, sourceId: string, targetId: string, link: Partial<Link> = {}) => ({
+		data: generateTestLink(projectId, sourceId, targetId, link),
 		status: 200,
 	}),
 

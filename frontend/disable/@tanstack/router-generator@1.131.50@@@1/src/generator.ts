@@ -288,7 +288,7 @@ export class Generator {
 					this.logger.info(
 						`Generated route tree in ${Math.round(end - start)}ms`,
 					);
-				} catch (err) {
+				} catch (_err) {
 					const errArray = !Array.isArray(err) ? [err] : err;
 
 					const recoverableErrors = errArray.filter((e) => isRerun(e));
@@ -1054,7 +1054,7 @@ ${acc.routeTree.map((child) => `${child.variableName}${exportName}: typeof ${get
 			) {
 				try {
 					await this.fs.chown(tmpPath, beforeStat.uid, beforeStat.gid);
-				} catch (err) {
+				} catch (_err) {
 					if (
 						typeof err === "object" &&
 						err !== null &&

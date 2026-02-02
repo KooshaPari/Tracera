@@ -115,7 +115,7 @@ function handlePromise(promise, callback) {
 function invokeCallback(callback, error, value) {
 	try {
 		callback(error, value);
-	} catch (err) {
+	} catch (_err) {
 		(0, _setImmediate2.default)((e) => {
 			throw e;
 		}, err);

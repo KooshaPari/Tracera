@@ -12,7 +12,7 @@ import { logger } from '@/lib/logger';
 
 const ProjectDetailView = lazy(() =>
 	import("@/views/ProjectDetailView").then((m) => {
-		const Comp = m.ProjectDetailView ?? m.default;
+		const Comp = m.ProjectDetailView;
 		if (Comp == null) {
 			logger.error("ProjectDetailView module did not export a component", m);
 			return {

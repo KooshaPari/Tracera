@@ -289,7 +289,7 @@ test.describe("CRITICAL PATH: Link Creation Between Items", () => {
 			// 4. Look for link form
 			const targetSelect = page.getByLabel(/target.*item|target/i).first();
 
-			const hasForm = await targetSelect
+			const _hasForm = await targetSelect
 				.isVisible({ timeout: 2000 })
 				.catch(() => false);
 

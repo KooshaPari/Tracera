@@ -1,6 +1,8 @@
 // Traceability Matrix API stub
-import { apiClient, safeApiCall } from "./client";
+import client from "./client";
 import type { Item, Link } from "./types";
+
+const { apiClient, safeApiCall } = client;
 
 export interface TraceabilityMatrix {
 	items: Item[];
@@ -29,8 +31,8 @@ export const fetchMatrix = async (
 				coverage: { total: 0, traced: 0, untraced: 0, percentage: 0 },
 			}
 		);
-	} catch {
-		return {
+    } catch {
+        return {
 			items: [],
 			links: [],
 			coverage: { total: 0, traced: 0, untraced: 0, percentage: 0 },
@@ -51,7 +53,7 @@ export const exportMatrix = async (
 		return new Blob([JSON.stringify(response.data)], {
 			type: "application/json",
 		});
-	} catch {
-		return new Blob(["{}"], { type: "application/json" });
+    } catch {
+        return new Blob(["{}"], { type: "application/json" });
 	}
 };

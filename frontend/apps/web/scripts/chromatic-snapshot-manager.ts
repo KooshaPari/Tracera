@@ -24,14 +24,6 @@ interface SnapshotConfig {
 	}[];
 }
 
-interface ChromaticBuild {
-	uuid: string;
-	number: number;
-	url: string;
-	changes: number;
-	errors: number;
-}
-
 /**
  * Load snapshot configuration
  */
@@ -44,32 +36,6 @@ function loadConfig(): SnapshotConfig {
 	}
 
 	return JSON.parse(readFileSync(configPath, "utf-8"));
-}
-
-/**
- * Get latest Chromatic build information
- */
-function getLatestBuild(): ChromaticBuild | null {
-	try {
-		const output = execSync("chromatic --list-builds 2>&1 || echo ''", {
-			encoding: "utf-8",
-		});
-
-		if (!output.trim()) {
-			console.log("No builds found");
-			return null;
-		}
-
-		// Parse build information (format may vary)
-		const lines = output.split("\n").filter((l) => l.trim());
-		if (lines.length === 0) return null;
-
-		console.log("Latest builds:", lines.slice(0, 3));
-		return null; // Would parse real output in production
-	} catch (error) {
-		console.error("Failed to fetch builds:", error);
-		return null;
-	}
 }
 
 /**
@@ -102,7 +68,7 @@ function acceptAllChanges(): void {
 	console.log("Accepting all visual changes...");
 
 	try {
-		const output = execSync("chromatic --auto-accept-changes", {
+		execSync("chromatic --auto-accept-changes", {
 			encoding: "utf-8",
 			stdio: "inherit",
 		});

@@ -16,9 +16,9 @@ export {
 	type DesignTokenBrowserProps,
 } from "./DesignTokenBrowser";
 // Multi-dimensional traceability components
+export type { DimensionFilter } from "@tracertm/types";
 export {
 	applyDimensionFilters,
-	type DimensionFilter,
 	DimensionFilters,
 	getDimensionColor,
 	getDimensionSize,
@@ -150,3 +150,12 @@ export { customNodeRenderer, customEdgeRenderer, sigmaRenderers } from "./sigma/
 
 // Phase 6: Hybrid Graph (Task #26) - Automatic threshold switching
 export { HybridGraphView } from "./HybridGraphView";
+
+// Safe Components with Error Boundaries (Phase 2 Code Quality)
+export {
+	SafeGraphViewContainer,
+	SafeFlowGraphView,
+	SafeEnhancedGraphView,
+	SafeVirtualizedGraphView,
+	SafeUnifiedGraphView,
+} from "./SafeGraphComponents";

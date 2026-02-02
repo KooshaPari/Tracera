@@ -4,7 +4,7 @@ export { CommandPalette } from "./CommandPalette";
 export { DeleteOperationDemo } from "./DeleteOperationDemo";
 export { EmptyState } from "./EmptyState";
 export { EquivalenceManager } from "./EquivalenceManager";
-export { ErrorBoundary } from "./ErrorBoundary";
+export { ErrorBoundary, withErrorBoundary } from "./ErrorBoundary";
 export { ErrorState } from "./ErrorState";
 export { FormValidationError } from "./FormValidationError";
 export { KeyboardShortcutsModal } from "./KeyboardShortcutsModal";

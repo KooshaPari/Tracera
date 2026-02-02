@@ -40,7 +40,7 @@ function TestWrapper({ children }: { children: React.ReactNode }) {
 
 describe("Page Structure", () => {
 	it("should have valid HTML document structure", async () => {
-		const { container } = render(
+		render(
 			<div lang="en">
 				<header>
 					<h1>Page Title</h1>
@@ -56,7 +56,7 @@ describe("Page Structure", () => {
 	});
 
 	it("should have unique page title", async () => {
-		const { container } = render(
+		render(
 			<div>
 				<title>TraceRTM - Dashboard</title>
 				<h1>Dashboard</h1>
@@ -69,7 +69,7 @@ describe("Page Structure", () => {
 	});
 
 	it("should have proper heading hierarchy", async () => {
-		const { container } = render(
+		render(
 			<main>
 				<h1>Main Title</h1>
 				<section>
@@ -93,7 +93,7 @@ describe("Page Structure", () => {
 	});
 
 	it("should not skip heading levels", async () => {
-		const { container } = render(
+		render(
 			<main>
 				<h1>Page Title</h1>
 				<h2>Section</h2>
@@ -109,7 +109,7 @@ describe("Page Structure", () => {
 
 describe("Dashboard Page", () => {
 	it("should not have accessibility violations", async () => {
-		const { container } = render(
+		render(
 			<TestWrapper>
 				<main>
 					<h1>Dashboard</h1>
@@ -133,7 +133,7 @@ describe("Dashboard Page", () => {
 	});
 
 	it("should have accessible project cards", async () => {
-		const { container } = render(
+		render(
 			<TestWrapper>
 				<div>
 					<article aria-labelledby="project-1-title">
@@ -154,7 +154,7 @@ describe("Dashboard Page", () => {
 
 describe("Project List Page", () => {
 	it("should not have accessibility violations", async () => {
-		const { container } = render(
+		render(
 			<TestWrapper>
 				<main>
 					<h1>Projects</h1>
@@ -176,7 +176,7 @@ describe("Project List Page", () => {
 	});
 
 	it("should have accessible table for project list", async () => {
-		const { container } = render(
+		render(
 			<TestWrapper>
 				<table>
 					<caption>Projects</caption>
@@ -212,7 +212,7 @@ describe("Project List Page", () => {
 
 describe("Project Detail Page", () => {
 	it("should not have accessibility violations", async () => {
-		const { container } = render(
+		render(
 			<TestWrapper>
 				<main>
 					<header>
@@ -236,7 +236,7 @@ describe("Project Detail Page", () => {
 	});
 
 	it("should have accessible tab navigation", async () => {
-		const { container } = render(
+		render(
 			<TestWrapper>
 				<div role="tablist" aria-label="Project views">
 					<button
@@ -281,7 +281,7 @@ describe("Project Detail Page", () => {
 
 describe("Empty States", () => {
 	it("should have accessible empty state messages", async () => {
-		const { container } = render(
+		render(
 			<TestWrapper>
 				<div role="status" aria-live="polite">
 					<p>No projects found</p>
@@ -297,7 +297,7 @@ describe("Empty States", () => {
 	});
 
 	it("should provide clear call-to-action in empty state", async () => {
-		const { container } = render(
+		render(
 			<TestWrapper>
 				<div>
 					<h2>No items yet</h2>
@@ -318,7 +318,7 @@ describe("Empty States", () => {
 
 describe("Loading States", () => {
 	it("should have accessible loading indicators", async () => {
-		const { container } = render(
+		render(
 			<TestWrapper>
 				<div role="status" aria-live="polite" aria-busy="true">
 					<span className="sr-only">Loading projects...</span>
@@ -337,7 +337,7 @@ describe("Loading States", () => {
 	});
 
 	it("should announce when content loads", async () => {
-		const { container, rerender } = render(
+		render(
 			<TestWrapper>
 				<div role="status" aria-live="polite" aria-busy="true">
 					Loading...
@@ -364,7 +364,7 @@ describe("Loading States", () => {
 
 describe("Error States", () => {
 	it("should have accessible error messages", async () => {
-		const { container } = render(
+		render(
 			<TestWrapper>
 				<div role="alert" aria-live="assertive">
 					<h2>Error loading projects</h2>
@@ -381,7 +381,7 @@ describe("Error States", () => {
 	});
 
 	it("should provide recovery actions in error state", async () => {
-		const { container } = render(
+		render(
 			<TestWrapper>
 				<div role="alert">
 					<p>Connection failed</p>
@@ -400,7 +400,7 @@ describe("Error States", () => {
 
 describe("Search and Filter", () => {
 	it("should have accessible search input", async () => {
-		const { container } = render(
+		render(
 			<TestWrapper>
 				<form role="search">
 					<label htmlFor="search">Search projects</label>
@@ -419,7 +419,7 @@ describe("Search and Filter", () => {
 	});
 
 	it("should announce search results", async () => {
-		const { container } = render(
+		render(
 			<TestWrapper>
 				<div>
 					<div role="status" aria-live="polite">
@@ -442,7 +442,7 @@ describe("Search and Filter", () => {
 
 describe("Breadcrumbs", () => {
 	it("should have accessible breadcrumb navigation", async () => {
-		const { container } = render(
+		render(
 			<TestWrapper>
 				<nav aria-label="Breadcrumb">
 					<ol>
@@ -471,7 +471,7 @@ describe("Breadcrumbs", () => {
 
 describe("Pagination", () => {
 	it("should have accessible pagination controls", async () => {
-		const { container } = render(
+		render(
 			<TestWrapper>
 				<nav aria-label="Pagination">
 					<ul>

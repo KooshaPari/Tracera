@@ -141,7 +141,7 @@ function useSelector(selector, options) {
 		const { subscribe, getVersion, run } = selectorFn;
 		value = run(selector);
 		index_js.useSyncExternalStore(subscribe, getVersion, getVersion);
-	} catch (err) {
+	} catch (_err) {
 		if (
 			(process.env.NODE_ENV === "development" ||
 				process.env.NODE_ENV === "test") &&

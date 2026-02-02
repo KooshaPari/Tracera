@@ -177,7 +177,7 @@ class DispatcherBase extends Dispatcher {
       }
 
       return this[kInterceptedDispatch](opts, handler)
-    } catch (err) {
+    } catch (_err) {
       if (typeof handler.onError !== 'function') {
         throw new InvalidArgumentError('invalid onError method')
       }

@@ -28,7 +28,7 @@ var AsyncIteratorProxy = createAsyncIteratorProxy(function (Promise) {
               state.remaining--;
               loop();
             } else resolve(createIterResultObject(step.value, false));
-          } catch (err) { doneAndReject(err); }
+          } catch (_err) { doneAndReject(err); }
         }, doneAndReject);
       } catch (error) { doneAndReject(error); }
     };

@@ -6,63 +6,65 @@ import type {
 	WebhookStats,
 	WebhookStatus,
 } from "@tracertm/types";
-import { getAuthHeaders } from "@/api/client";
+import client from "@/api/client";
+
+const { getAuthHeaders } = client;
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 // Transform API response (snake_case) to frontend format (camelCase)
-function transformWebhook(data: any): WebhookIntegration {
+function transformWebhook(data: Record<string, unknown>): WebhookIntegration {
 	return {
-		id: data.id,
-		projectId: data.project_id,
+		id: data['id'],
+		projectId: data['project_id'],
 		name: data.name,
-		description: data.description,
-		provider: data.provider,
+		description: data['description'],
+		provider: data['provider'],
 		status: data.status,
-		webhookSecret: data.webhook_secret,
-		apiKey: data.api_key,
-		enabledEvents: data.enabled_events,
-		eventFilters: data.event_filters,
-		callbackUrl: data.callback_url,
-		callbackHeaders: data.callback_headers,
-		defaultSuiteId: data.default_suite_id,
-		rateLimitPerMinute: data.rate_limit_per_minute,
-		autoCreateRun: data.auto_create_run,
-		autoCompleteRun: data.auto_complete_run,
-		verifySignatures: data.verify_signatures,
-		totalRequests: data.total_requests,
-		successfulRequests: data.successful_requests,
-		failedRequests: data.failed_requests,
-		lastRequestAt: data.last_request_at,
-		lastSuccessAt: data.last_success_at,
-		lastFailureAt: data.last_failure_at,
-		lastErrorMessage: data.last_error_message,
-		metadata: data.webhook_metadata,
-		version: data.version,
-		createdAt: data.created_at,
-		updatedAt: data.updated_at,
+		webhookSecret: data['webhook_secret'],
+		apiKey: data['api_key'],
+		enabledEvents: data['enabled_events'],
+		eventFilters: data['event_filters'],
+		callbackUrl: data['callback_url'],
+		callbackHeaders: data['callback_headers'],
+		defaultSuiteId: data['default_suite_id'],
+		rateLimitPerMinute: data['rate_limit_per_minute'],
+		autoCreateRun: data['auto_create_run'],
+		autoCompleteRun: data['auto_complete_run'],
+		verifySignatures: data['verify_signatures'],
+		totalRequests: data['total_requests'],
+		successfulRequests: data['successful_requests'],
+		failedRequests: data['failed_requests'],
+		lastRequestAt: data['last_request_at'],
+		lastSuccessAt: data['last_success_at'],
+		lastFailureAt: data['last_failure_at'],
+		lastErrorMessage: data['last_error_message'],
+		metadata: data['webhook_metadata'],
+		version: data['version'],
+		createdAt: data['created_at'],
+		updatedAt: data['updated_at'],
 	};
 }
 
-function transformWebhookLog(data: any): WebhookLog {
+function transformWebhookLog(data: Record<string, unknown>): WebhookLog {
 	return {
-		id: data.id,
-		webhookId: data.webhook_id,
-		requestId: data.request_id,
-		eventType: data.event_type,
-		httpMethod: data.http_method,
-		sourceIp: data.source_ip,
-		userAgent: data.user_agent,
-		requestHeaders: data.request_headers,
-		requestBodyPreview: data.request_body_preview,
-		payloadSizeBytes: data.payload_size_bytes,
-		success: data.success,
-		statusCode: data.status_code,
-		errorMessage: data.error_message,
-		processingTimeMs: data.processing_time_ms,
-		testRunId: data.test_run_id,
-		resultsSubmitted: data.results_submitted,
-		createdAt: data.created_at,
+		id: data['id'],
+		webhookId: data['webhook_id'],
+		requestId: data['request_id'],
+		eventType: data['event_type'],
+		httpMethod: data['http_method'],
+		sourceIp: data['source_ip'],
+		userAgent: data['user_agent'],
+		requestHeaders: data['request_headers'],
+		requestBodyPreview: data['request_body_preview'],
+		payloadSizeBytes: data['payload_size_bytes'],
+		success: data['success'],
+		statusCode: data['status_code'],
+		errorMessage: data['error_message'],
+		processingTimeMs: data['processing_time_ms'],
+		testRunId: data['test_run_id'],
+		resultsSubmitted: data['results_submitted'],
+		createdAt: data['created_at'],
 	};
 }
 
@@ -96,8 +98,8 @@ async function fetchWebhooks(
 	}
 	const data = await res.json();
 	return {
-		webhooks: (data.webhooks || []).map(transformWebhook),
-		total: data.total || 0,
+		webhooks: (data['webhooks'] || []).map(transformWebhook),
+		total: data['total'] || 0,
 	};
 }
 
@@ -134,20 +136,20 @@ async function createWebhook(
 		method: "POST",
 		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
-			project_id: data.projectId,
+			project_id: data['projectId'],
 			name: data.name,
-			description: data.description,
-			provider: data.provider || "custom",
-			enabled_events: data.enabledEvents,
-			event_filters: data.eventFilters,
-			callback_url: data.callbackUrl,
-			callback_headers: data.callbackHeaders,
-			default_suite_id: data.defaultSuiteId,
-			rate_limit_per_minute: data.rateLimitPerMinute ?? 60,
-			auto_create_run: data.autoCreateRun ?? true,
-			auto_complete_run: data.autoCompleteRun ?? true,
-			verify_signatures: data.verifySignatures ?? true,
-			metadata: data.metadata,
+			description: data['description'],
+			provider: data['provider'] || "custom",
+			enabled_events: data['enabledEvents'],
+			event_filters: data['eventFilters'],
+			callback_url: data['callbackUrl'],
+			callback_headers: data['callbackHeaders'],
+			default_suite_id: data['defaultSuiteId'],
+			rate_limit_per_minute: data['rateLimitPerMinute'] ?? 60,
+			auto_create_run: data['autoCreateRun'] ?? true,
+			auto_complete_run: data['autoCompleteRun'] ?? true,
+			verify_signatures: data['verifySignatures'] ?? true,
+			metadata: data['metadata'],
 		}),
 	});
 	if (!res.ok) {
@@ -179,25 +181,25 @@ async function updateWebhook(
 ): Promise<WebhookIntegration> {
 	const payload: Record<string, unknown> = {};
 	if (data.name !== undefined) payload.name = data.name;
-	if (data.description !== undefined) payload.description = data.description;
-	if (data.enabledEvents !== undefined)
-		payload.enabled_events = data.enabledEvents;
-	if (data.eventFilters !== undefined)
-		payload.event_filters = data.eventFilters;
-	if (data.callbackUrl !== undefined) payload.callback_url = data.callbackUrl;
-	if (data.callbackHeaders !== undefined)
-		payload.callback_headers = data.callbackHeaders;
-	if (data.defaultSuiteId !== undefined)
-		payload.default_suite_id = data.defaultSuiteId;
-	if (data.rateLimitPerMinute !== undefined)
-		payload.rate_limit_per_minute = data.rateLimitPerMinute;
-	if (data.autoCreateRun !== undefined)
-		payload.auto_create_run = data.autoCreateRun;
-	if (data.autoCompleteRun !== undefined)
-		payload.auto_complete_run = data.autoCompleteRun;
-	if (data.verifySignatures !== undefined)
-		payload.verify_signatures = data.verifySignatures;
-	if (data.metadata !== undefined) payload.metadata = data.metadata;
+	if (data['description'] !== undefined) payload['description'] = data['description'];
+	if (data['enabledEvents'] !== undefined)
+		payload['enabled_events'] = data['enabledEvents'];
+	if (data['eventFilters'] !== undefined)
+		payload['event_filters'] = data['eventFilters'];
+	if (data['callbackUrl'] !== undefined) payload['callback_url'] = data['callbackUrl'];
+	if (data['callbackHeaders'] !== undefined)
+		payload['callback_headers'] = data['callbackHeaders'];
+	if (data['defaultSuiteId'] !== undefined)
+		payload['default_suite_id'] = data['defaultSuiteId'];
+	if (data['rateLimitPerMinute'] !== undefined)
+		payload['rate_limit_per_minute'] = data['rateLimitPerMinute'];
+	if (data['autoCreateRun'] !== undefined)
+		payload['auto_create_run'] = data['autoCreateRun'];
+	if (data['autoCompleteRun'] !== undefined)
+		payload['auto_complete_run'] = data['autoCompleteRun'];
+	if (data['verifySignatures'] !== undefined)
+		payload['verify_signatures'] = data['verifySignatures'];
+	if (data['metadata'] !== undefined) payload['metadata'] = data['metadata'];
 
 	const res = await fetch(`${API_URL}/api/v1/webhooks/${id}`, {
 		method: "PUT",
@@ -244,9 +246,9 @@ async function regenerateSecret(
 	}
 	const data = await res.json();
 	return {
-		id: data.id,
-		webhookSecret: data.webhook_secret,
-		version: data.version,
+		id: data['id'],
+		webhookSecret: data['webhook_secret'],
+		version: data['version'],
 	};
 }
 
@@ -286,8 +288,8 @@ async function fetchWebhookLogs(
 	if (!res.ok) throw new Error("Failed to fetch webhook logs");
 	const data = await res.json();
 	return {
-		logs: (data.logs || []).map(transformWebhookLog),
-		total: data.total || 0,
+		logs: (data['logs'] || []).map(transformWebhookLog),
+		total: data['total'] || 0,
 	};
 }
 
@@ -299,13 +301,13 @@ async function fetchWebhookStats(projectId: string): Promise<WebhookStats> {
 	if (!res.ok) throw new Error("Failed to fetch webhook stats");
 	const data = await res.json();
 	return {
-		projectId: data.project_id,
-		total: data.total,
-		byStatus: data.by_status,
-		byProvider: data.by_provider,
-		totalRequests: data.total_requests,
-		successfulRequests: data.successful_requests,
-		failedRequests: data.failed_requests,
+		projectId: data['project_id'],
+		total: data['total'],
+		byStatus: data['by_status'],
+		byProvider: data['by_provider'],
+		totalRequests: data['total_requests'],
+		successfulRequests: data['successful_requests'],
+		failedRequests: data['failed_requests'],
 	};
 }
 
@@ -332,9 +334,9 @@ export function useCreateWebhook() {
 	return useMutation({
 		mutationFn: createWebhook,
 		onSuccess: (data) => {
-			queryClient.invalidateQueries({ queryKey: ["webhooks"] });
-			queryClient.invalidateQueries({
-				queryKey: ["webhookStats", data.projectId],
+			void queryClient.invalidateQueries({ queryKey: ["webhooks"] });
+			void queryClient.invalidateQueries({
+				queryKey: ["webhookStats", data['projectId']],
 			});
 		},
 	});
@@ -346,8 +348,8 @@ export function useUpdateWebhook() {
 		mutationFn: ({ id, data }: { id: string; data: UpdateWebhookData }) =>
 			updateWebhook(id, data),
 		onSuccess: (data) => {
-			queryClient.invalidateQueries({ queryKey: ["webhooks"] });
-			queryClient.invalidateQueries({ queryKey: ["webhook", data.id] });
+			void queryClient.invalidateQueries({ queryKey: ["webhooks"] });
+			void queryClient.invalidateQueries({ queryKey: ["webhook", data['id']] });
 		},
 	});
 }
@@ -358,8 +360,8 @@ export function useSetWebhookStatus() {
 		mutationFn: ({ id, status }: { id: string; status: WebhookStatus }) =>
 			setWebhookStatus(id, status),
 		onSuccess: (data) => {
-			queryClient.invalidateQueries({ queryKey: ["webhooks"] });
-			queryClient.invalidateQueries({ queryKey: ["webhook", data.id] });
+			void queryClient.invalidateQueries({ queryKey: ["webhooks"] });
+			void queryClient.invalidateQueries({ queryKey: ["webhook", data['id']] });
 		},
 	});
 }
@@ -369,7 +371,7 @@ export function useRegenerateWebhookSecret() {
 	return useMutation({
 		mutationFn: regenerateSecret,
 		onSuccess: (data) => {
-			queryClient.invalidateQueries({ queryKey: ["webhook", data.id] });
+			void queryClient.invalidateQueries({ queryKey: ["webhook", data['id']] });
 		},
 	});
 }
@@ -379,7 +381,7 @@ export function useDeleteWebhook() {
 	return useMutation({
 		mutationFn: deleteWebhook,
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["webhooks"] });
+			void queryClient.invalidateQueries({ queryKey: ["webhooks"] });
 		},
 	});
 }

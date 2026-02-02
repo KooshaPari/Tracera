@@ -12,8 +12,6 @@ export interface ProgressRingProps {
 
 export const ProgressRing: React.FC<ProgressRingProps> = ({
 	percentage,
-	radius = 45,
-	strokeWidth = 4,
 	size = "md",
 	animated = true,
 	showLabel = true,

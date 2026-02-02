@@ -47,8 +47,7 @@ export function FeatureListView({ projectId }: FeatureListViewProps) {
 	const [newStatus, setNewStatus] = useState<FeatureStatus>("draft");
 	const [newDescription, setNewDescription] = useState("");
 
-	const filteredFeatures = useMemo(() => {
-		return features.filter((feature: Feature) => {
+	const filteredFeatures = useMemo(() => features.filter((feature: Feature) => {
 			const matchesStatus =
 				statusFilter === "all" || feature.status === statusFilter;
 			const matchesQuery =
@@ -62,22 +61,19 @@ export function FeatureListView({ projectId }: FeatureListViewProps) {
 					false);
 
 			return matchesStatus && matchesQuery;
-		});
-	}, [features, statusFilter, searchQuery]);
+		}), [features, statusFilter, searchQuery]);
 
-	const statusCounts = useMemo(() => {
-		return {
-			all: features.length,
-			draft: features.filter((f: Feature) => f.status === "draft").length,
+	const statusCounts = useMemo(() => ({
 			active: features.filter((f: Feature) => f.status === "active").length,
+			all: features.length,
+			archived: features.filter((f: Feature) => f.status === "archived").length,
 			deprecated: features.filter((f: Feature) => f.status === "deprecated")
 				.length,
-			archived: features.filter((f: Feature) => f.status === "archived").length,
-		};
-	}, [features]);
+			draft: features.filter((f: Feature) => f.status === "draft").length,
+		}), [features]);
 
 	const overallPassRate = useMemo(() => {
-		if (features.length === 0) return 0;
+		if (features.length === 0) {return 0;}
 		const totalScenarios = features.reduce(
 			(sum: number, f: Feature) => sum + (f.scenarioCount || 0),
 			0,
@@ -93,20 +89,20 @@ export function FeatureListView({ projectId }: FeatureListViewProps) {
 
 	const scenarioSummary = useMemo(() => {
 		const summary = {
-			total: features.reduce(
-				(sum: number, f: Feature) => sum + (f.scenarioCount || 0),
+			failed: features.reduce(
+				(sum: number, f: Feature) => sum + (f.failedScenarios || 0),
 				0,
 			),
 			passed: features.reduce(
 				(sum: number, f: Feature) => sum + (f.passedScenarios || 0),
 				0,
 			),
-			failed: features.reduce(
-				(sum: number, f: Feature) => sum + (f.failedScenarios || 0),
-				0,
-			),
 			pending: features.reduce(
 				(sum: number, f: Feature) => sum + (f.pendingScenarios || 0),
+				0,
+			),
+			total: features.reduce(
+				(sum: number, f: Feature) => sum + (f.scenarioCount || 0),
 				0,
 			),
 		};
@@ -125,8 +121,8 @@ export function FeatureListView({ projectId }: FeatureListViewProps) {
 			setNewDescription("");
 			setNewStatus("draft");
 			setShowCreateModal(false);
-		} catch {
-			toast.error("Failed to create feature");
+        } catch {
+            toast.error("Failed to create feature");
 		}
 	};
 
@@ -275,8 +271,8 @@ export function FeatureListView({ projectId }: FeatureListViewProps) {
 							key={feature.id}
 							onClick={() =>
 								navigate({
+									params: { featureId: feature.id, projectId },
 									to: "/projects/$projectId/features/$featureId",
-									params: { projectId, featureId: feature.id },
 								})
 							}
 							className="text-left"

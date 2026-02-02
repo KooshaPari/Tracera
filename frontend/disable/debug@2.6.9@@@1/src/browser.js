@@ -80,7 +80,7 @@ function useColors() {
 exports.formatters.j = (v) => {
 	try {
 		return JSON.stringify(v);
-	} catch (err) {
+	} catch (_err) {
 		return "[UnexpectedJSONParseError]: " + err.message;
 	}
 };

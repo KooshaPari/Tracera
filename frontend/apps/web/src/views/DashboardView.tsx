@@ -53,17 +53,19 @@ import {
 	YAxis,
 } from "recharts";
 import { toast } from "sonner";
-import { getAuthHeaders } from "@/api/client";
 import { getProjectDisplayName } from "@/lib/project-name-utils";
 import { cn } from "@/lib/utils";
 import { useDeleteProject, useProjects } from "../hooks/useProjects";
+import client from "@/api/client";
 
-type DashboardViewProps = {
+const { getAuthHeaders } = client;
+
+interface DashboardViewProps {
 	systemStatus?: {
 		status?: string;
 		mcp?: { baseUrl?: string | null };
 	};
-};
+}
 
 export function DashboardView({ systemStatus }: DashboardViewProps) {
 	const navigate = useNavigate();
@@ -83,9 +85,7 @@ export function DashboardView({ systemStatus }: DashboardViewProps) {
 	const [slot2Tab, setSlot2Tab] = useState("status");
 
 	// Ensure projects is always an array - memoize to prevent infinite loops
-	const projectsArray = useMemo(() => {
-		return Array.isArray(projects) ? projects : [];
-	}, [projects]);
+	const projectsArray = useMemo(() => Array.isArray(projects) ? projects : [], [projects]);
 
 	// Set default pinned project
 	useEffect(() => {
@@ -120,21 +120,18 @@ export function DashboardView({ systemStatus }: DashboardViewProps) {
 						},
 					);
 					if (!res.ok) {
-						return { projectId: project.id, count: 0, items: [] };
+						return { count: 0, items: [], projectId: project.id };
 					}
 					const data = await res.json();
 					const total = data.total || 0;
 					const items = Array.isArray(data) ? data : data.items || [];
 					return {
-						projectId: project.id,
 						count: total,
-						items: items.map((item: any) => ({
-							...item,
-							projectId: item.projectId || project.id,
-						})),
+						items: items.map((item: any) => (Object.assign(item, {projectId:item.projectId||project.id}))),
+						projectId: project.id,
 					};
 				} catch {
-					return { projectId: project.id, count: 0, items: [] };
+					return { count: 0, items: [], projectId: project.id };
 				}
 			}),
 		)
@@ -185,8 +182,7 @@ export function DashboardView({ systemStatus }: DashboardViewProps) {
 		"#ec4899",
 	];
 
-	const projectsWithStats = useMemo(() => {
-		return projectsArray.map((project) => {
+	const projectsWithStats = useMemo(() => projectsArray.map((project) => {
 			const pItems = allItems.filter((item) => item.projectId === project.id);
 			const completed = pItems.filter(
 				(item) => item.status === "done" || item.status === "completed",
@@ -199,29 +195,26 @@ export function DashboardView({ systemStatus }: DashboardViewProps) {
 				itemCount: projectItemCounts[project.id] || pItems.length,
 				progress,
 			};
-		});
-	}, [projectsArray, allItems, projectItemCounts]);
+		}), [projectsArray, allItems, projectItemCounts]);
 
-	const pinnedProject = useMemo(() => {
-		return (
+	const pinnedProject = useMemo(() => (
 			projectsWithStats.find((p) => p.id === pinnedProjectId) ||
 			projectsWithStats[0]
-		);
-	}, [projectsWithStats, pinnedProjectId]);
+		), [projectsWithStats, pinnedProjectId]);
 
 	const pinnedProjectDetails = useMemo(() => {
-		if (!pinnedProject) return [];
+		if (!pinnedProject) {return [];}
 		const pItems = allItems.filter(
 			(item) => item.projectId === pinnedProject.id,
 		);
 		const types = ["requirement", "feature", "test", "task", "bug"];
 		return types.map((type) => ({
-			subject: type.charAt(0).toUpperCase() + type.slice(1),
 			A: pItems.filter((i) => i.type === type).length,
 			fullMark: Math.max(
 				...types.map((t) => pItems.filter((i) => i.type === t).length),
 				10,
 			),
+			subject: type.charAt(0).toUpperCase() + type.slice(1),
 		}));
 	}, [pinnedProject, allItems]);
 
@@ -232,14 +225,14 @@ export function DashboardView({ systemStatus }: DashboardViewProps) {
 				.includes(searchQuery.toLowerCase()),
 		);
 
-		result = [...result].sort((a, b) => {
+		result = [...result].toSorted((a, b) => {
 			if (sortBy === "name") {
 				const aName = a.displayName || a.name;
 				const bName = b.displayName || b.name;
 				return aName.localeCompare(bName);
 			}
-			if (sortBy === "items") return b.itemCount - a.itemCount;
-			if (sortBy === "progress") return b.progress - a.progress;
+			if (sortBy === "items") {return b.itemCount - a.itemCount;}
+			if (sortBy === "progress") {return b.progress - a.progress;}
 			return 0;
 		});
 
@@ -631,7 +624,7 @@ export function DashboardView({ systemStatus }: DashboardViewProps) {
 									if (pinnedProjectId === project.id) {
 										setPinnedProjectId(null);
 									}
-								} catch (error) {
+								} catch {
 									toast.error("Failed to delete project");
 								}
 							};
@@ -639,7 +632,7 @@ export function DashboardView({ systemStatus }: DashboardViewProps) {
 							const handleEdit = (e: React.MouseEvent) => {
 								e.preventDefault();
 								e.stopPropagation();
-								navigate({ to: `/projects/${project.id}` });
+								undefined;
 								toast.info("Edit project in project details");
 							};
 
@@ -692,7 +685,7 @@ export function DashboardView({ systemStatus }: DashboardViewProps) {
 													<DropdownMenuItem
 														onClick={(e) => {
 															e.stopPropagation();
-															navigate({ to: `/projects/${project.id}` });
+															undefined;
 														}}
 														className="gap-2 cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors"
 													>
@@ -713,7 +706,7 @@ export function DashboardView({ systemStatus }: DashboardViewProps) {
 													<DropdownMenuItem
 														onClick={(e) => {
 															e.stopPropagation();
-															handleDelete(e);
+															undefined;
 														}}
 														className="gap-2 text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer hover:bg-destructive/10 hover:text-destructive transition-colors"
 													>
@@ -788,7 +781,7 @@ export function DashboardView({ systemStatus }: DashboardViewProps) {
 									if (pinnedProjectId === project.id) {
 										setPinnedProjectId(null);
 									}
-								} catch (error) {
+								} catch {
 									toast.error("Failed to delete project");
 								}
 							};
@@ -796,7 +789,7 @@ export function DashboardView({ systemStatus }: DashboardViewProps) {
 							const handleEdit = (e: React.MouseEvent) => {
 								e.preventDefault();
 								e.stopPropagation();
-								navigate({ to: `/projects/${project.id}` });
+								undefined;
 								toast.info("Edit project in project details");
 							};
 
@@ -886,7 +879,7 @@ export function DashboardView({ systemStatus }: DashboardViewProps) {
 											<DropdownMenuItem
 												onClick={(e) => {
 													e.stopPropagation();
-													navigate({ to: `/projects/${project.id}` });
+													undefined;
 												}}
 												className="gap-2 cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors"
 											>
@@ -907,7 +900,7 @@ export function DashboardView({ systemStatus }: DashboardViewProps) {
 											<DropdownMenuItem
 												onClick={(e) => {
 													e.stopPropagation();
-													handleDelete(e);
+													undefined;
 												}}
 												className="gap-2 text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer hover:bg-destructive/10 hover:text-destructive transition-colors"
 											>

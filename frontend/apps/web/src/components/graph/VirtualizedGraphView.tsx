@@ -424,7 +424,7 @@ function VirtualizedGraphViewComponent({
 	useEffect(() => {
 		if (autoFit && nodes.length > 0) {
 			const timer = setTimeout(() => {
-				fitView({ padding: 0.2, duration: 300 });
+				void fitView({ padding: 0.2, duration: 300 });
 			}, 100);
 			return () => clearTimeout(timer);
 		}
@@ -470,7 +470,7 @@ function VirtualizedGraphViewComponent({
 	}, [selectedNodeId, links, items]);
 
 	// Handlers
-	const handleFit = () => fitView({ padding: 0.2, duration: 300 });
+	const handleFit = () => void fitView({ padding: 0.2, duration: 300 });
 	const handleReset = () => {
 		setPerspective("all");
 		setLayout("flow-chart");
@@ -482,7 +482,7 @@ function VirtualizedGraphViewComponent({
 		setSelectedNodeId(nodeId);
 		const node = nodes.find((n) => n.id === nodeId);
 		if (node) {
-			fitView({ nodes: [node], padding: 0.5, duration: 300 });
+			void fitView({ nodes: [node], padding: 0.5, duration: 300 });
 		}
 	};
 

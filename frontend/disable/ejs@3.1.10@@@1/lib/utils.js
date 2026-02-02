@@ -111,7 +111,7 @@ try {
 		// If Object.defineProperty() doesn't exist, attempt to shadow this property using the assignment operator.
 		exports.escapeXML.toString = escapeXMLToString;
 	}
-} catch (err) {
+} catch (_err) {
 	console.warn(
 		"Unable to set escapeXML.toString (is the Function prototype frozen?)",
 	);

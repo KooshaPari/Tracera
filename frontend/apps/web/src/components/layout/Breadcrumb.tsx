@@ -46,7 +46,7 @@ export function Breadcrumbs() {
 			const pathSegments = pathname.split("/").filter(Boolean);
 
 			pathSegments.forEach((segment, index) => {
-				if (segment == null || typeof segment !== "string") return;
+				if (segment === null || typeof segment !== "string") return;
 				const href = `/${pathSegments.slice(0, index + 1).join("/")}`;
 
 				// Skip IDs and query parameters

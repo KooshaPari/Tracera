@@ -5,16 +5,21 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Inbox } from "lucide-react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	EmptyState,
 	ErrorEmptyState,
 	FilteredEmptyState,
 	NoItemsEmptyState,
 	NoSearchResultsEmptyState,
-} from "@/components/ui/empty-state";
+} from "../../components/ui/empty-state";
+
+let user: ReturnType<typeof userEvent.setup>;
 
 describe("EmptyState", () => {
+	beforeEach(() => {
+		user = userEvent.setup();
+	});
 	const defaultProps = {
 		icon: Inbox,
 		title: "No items",
@@ -30,7 +35,6 @@ describe("EmptyState", () => {
 	});
 
 	it("renders action buttons", async () => {
-		const user = userEvent.setup();
 		const handleClick = vi.fn();
 
 		render(

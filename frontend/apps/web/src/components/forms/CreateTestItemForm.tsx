@@ -156,7 +156,7 @@ export function CreateTestItemForm({
 							label="Title"
 							name="title"
 							register={register}
-							error={errors.title}
+							error={!!errors.title}
 							placeholder="Enter test title"
 							required
 						/>
@@ -165,7 +165,7 @@ export function CreateTestItemForm({
 							label="Description"
 							name="description"
 							register={register}
-							error={errors.description}
+							error={!!errors.description}
 							placeholder="Describe this test..."
 							rows={3}
 						/>
@@ -175,7 +175,7 @@ export function CreateTestItemForm({
 								label="Status"
 								name="status"
 								register={register}
-								error={errors.status}
+								error={!!errors.status}
 								options={statusOptions}
 								required
 							/>
@@ -184,7 +184,7 @@ export function CreateTestItemForm({
 								label="Priority"
 								name="priority"
 								register={register}
-								error={errors.priority}
+								error={!!errors.priority}
 								options={priorityOptions}
 								required
 							/>
@@ -194,7 +194,7 @@ export function CreateTestItemForm({
 							label="Owner"
 							name="owner"
 							register={register}
-							error={errors.owner}
+							error={!!errors.owner}
 							placeholder="Assigned to..."
 						/>
 					</div>
@@ -210,7 +210,7 @@ export function CreateTestItemForm({
 								label="Test Type"
 								name="test_type"
 								register={register}
-								error={errors.test_type}
+								error={!!errors.test_type}
 								options={testTypeOptions}
 								required
 							/>
@@ -219,7 +219,7 @@ export function CreateTestItemForm({
 								label="Test Framework"
 								name="test_framework"
 								register={register}
-								error={errors.test_framework}
+								error={!!errors.test_framework}
 								placeholder="e.g., Vitest, Jest, Pytest"
 							/>
 						</div>
@@ -229,7 +229,7 @@ export function CreateTestItemForm({
 								label="Language"
 								name="language"
 								register={register}
-								error={errors.language}
+								error={!!errors.language}
 								placeholder="e.g., TypeScript, Python"
 							/>
 
@@ -237,7 +237,7 @@ export function CreateTestItemForm({
 								label="Oracle Type"
 								name="oracle_type"
 								register={register}
-								error={errors.oracle_type}
+								error={!!errors.oracle_type}
 								options={oracleTypeOptions}
 							/>
 						</div>
@@ -247,7 +247,7 @@ export function CreateTestItemForm({
 								label="Coverage Type"
 								name="coverage_type"
 								register={register}
-								error={errors.coverage_type}
+								error={!!errors.coverage_type}
 								options={coverageTypeOptions}
 							/>
 
@@ -255,7 +255,7 @@ export function CreateTestItemForm({
 								label="Safety Level (DO-178C)"
 								name="safety_level"
 								register={register}
-								error={errors.safety_level}
+								error={!!errors.safety_level}
 								options={safetyLevelOptions}
 							/>
 						</div>
@@ -266,7 +266,7 @@ export function CreateTestItemForm({
 								name="expected_duration_ms"
 								type="number"
 								register={register}
-								error={errors.expected_duration_ms}
+								error={!!errors.expected_duration_ms}
 								placeholder="Expected execution time"
 							/>
 

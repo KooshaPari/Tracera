@@ -1,0 +1,130 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: .promtail/positions.yaml
+
+clients:
+  - url: http://localhost:3100/loki/api/v1/push
+
+scrape_configs:
+  # Python backend - structured JSON logs
+  - job_name: python-backend
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: python-backend
+          service: tracertm-python
+          __path__: .data/logs/tracertm.json
+    pipeline_stages:
+      - json:
+          expressions:
+            level: record.level.name
+            timestamp: record.timestamp
+            message: text
+            module: record.module
+            function: record.function
+            line: record.line
+      - labels:
+          level:
+          module:
+      - timestamp:
+          source: timestamp
+          format: RFC3339
+      - output:
+          source: message
+
+  # Python backend - text logs (fallback)
+  - job_name: python-backend-text
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: python-backend-text
+          service: tracertm-python
+          __path__: .data/logs/tracertm.log
+    pipeline_stages:
+      - regex:
+          expression: '^(?P<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) \| (?P<level>\w+)\s+\| (?P<module>[\w\.]+):(?P<function>\w+):(?P<line>\d+) - (?P<message>.*)$'
+      - labels:
+          level:
+          module:
+      - timestamp:
+          source: timestamp
+          format: "2006-01-02 15:04:05"
+
+  # Python backend - errors only
+  - job_name: python-backend-errors
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: python-backend-errors
+          service: tracertm-python
+          level: ERROR
+          __path__: .data/logs/tracertm_errors.log
+    pipeline_stages:
+      - regex:
+          expression: '^(?P<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) \| (?P<level>\w+)\s+\| (?P<module>[\w\.]+):(?P<function>\w+):(?P<line>\d+) - (?P<message>.*)$'
+      - labels:
+          module:
+      - timestamp:
+          source: timestamp
+          format: "2006-01-02 15:04:05"
+
+  # Process-compose logs (from .process-compose/logs/)
+  - job_name: process-compose
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: process-compose
+          __path__: .process-compose/logs/*.log
+    pipeline_stages:
+      - regex:
+          expression: '^(?:\[(?P<lifecycle>LIFECYCLE)\] )?(?P<level>INFO|WARN|ERROR|DEBUG|FATAL)?\s*(?P<message>.*)$'
+      - labels:
+          level:
+          lifecycle:
+
+  # Go backend logs (if they write to a log file)
+  - job_name: go-backend
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: go-backend
+          service: tracertm-go
+          __path__: backend/logs/*.log
+    pipeline_stages:
+      - json:
+          expressions:
+            level:
+            timestamp: time
+            message: msg
+            caller:
+      - labels:
+          level:
+      - timestamp:
+          source: timestamp
+          format: RFC3339
+
+  # Temporal logs (if available)
+  - job_name: temporal
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: temporal
+          service: temporal
+          __path__: .temporal/logs/*.log
+    pipeline_stages:
+      - regex:
+          expression: '^(?P<timestamp>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z)\s+(?P<level>\w+)\s+(?P<message>.*)$'
+      - labels:
+          level:
+      - timestamp:
+          source: timestamp
+          format: RFC3339

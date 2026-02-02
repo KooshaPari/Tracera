@@ -34,9 +34,9 @@ export function MobileMenu({ className }: MobileMenuProps) {
 	};
 
 	const handleLogout = () => {
-		logout();
+		void logout();
 		setIsOpen(false);
-		navigate({ to: "/home" } as any);
+		void navigate({ to: "/home" } as any);
 	};
 
 	const menuItems = [

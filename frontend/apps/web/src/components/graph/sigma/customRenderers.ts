@@ -25,10 +25,10 @@ const ENHANCED_TYPE_COLORS: Record<string, string> = {
 export function customNodeRenderer(
   context: CanvasRenderingContext2D,
   data: NodeDisplayData,
-  settings: any
+  settings: Record<string, unknown>
 ): void {
   const { x, y, size, label, type = 'default' } = data;
-  const typeColor = ENHANCED_TYPE_COLORS[type as string] || ENHANCED_TYPE_COLORS.default;
+  const typeColor = ENHANCED_TYPE_COLORS[type as string] || ENHANCED_TYPE_COLORS["default"];
 
   // Draw node circle with border
   context.beginPath();
@@ -111,7 +111,7 @@ export function customNodeRenderer(
 export function customEdgeRenderer(
   context: CanvasRenderingContext2D,
   data: EdgeDisplayData,
-  settings: any
+  settings: Record<string, unknown>
 ): void {
   const { x1, y1, x2, y2, color = '#94a3b8', size = 1, label } = data;
 

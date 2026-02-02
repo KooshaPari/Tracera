@@ -178,7 +178,7 @@ export function BulkDeleteExample() {
  * - Error states
  */
 export function EmptyStateExample() {
-	const [items, setItems] = useState<any[]>([]);
+	const [items, _setItems] = useState<Array<{ id: string; name: string }>>([]);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [filters, setFilters] = useState<string[]>([]);
 
@@ -264,7 +264,7 @@ export function InlineDeleteExample() {
 					},
 				},
 			});
-		} catch (error) {
+		} catch {
 			toast.error("Failed to delete item");
 		} finally {
 			setIsDeleting(false);
@@ -293,7 +293,7 @@ export function InlineDeleteExample() {
  * - Success feedback
  */
 export function CompleteListViewExample() {
-	const [items] = useState<Array<{ id: string; name: string }>>([]);
+	const [items, setItems] = useState<Array<{ id: string; name: string }>>([]);
 	const [selectedItems, setSelectedItems] = useState<string[]>([]);
 
 	const {
@@ -440,3 +440,6 @@ export function CompleteListViewExample() {
 		</div>
 	);
 }
+
+/** Named export for barrel file */
+export const DeleteOperationDemo = CompleteListViewExample;

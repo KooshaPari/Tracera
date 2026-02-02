@@ -94,7 +94,7 @@ function withTempDir(fn) {
 		let result;
 		try {
 			result = yield fn(dir);
-		} catch (err) {
+		} catch (_err) {
 			d("work failed");
 			yield fs.remove(dir);
 			throw err;

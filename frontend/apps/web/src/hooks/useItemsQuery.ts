@@ -69,9 +69,9 @@ export function useCreateItem() {
 			}
 		},
 		onSuccess: (data) => {
-			queryClient.invalidateQueries({ queryKey: itemKeys.lists() });
-			queryClient.invalidateQueries({
-				queryKey: itemKeys.byProject(data.projectId),
+			void queryClient.invalidateQueries({ queryKey: itemKeys.lists() });
+			void queryClient.invalidateQueries({
+				queryKey: itemKeys.byProject(data['projectId']),
 			});
 		},
 	});
@@ -95,8 +95,8 @@ export function useUpdateItem() {
 			}
 		},
 		onSuccess: (data) => {
-			queryClient.invalidateQueries({ queryKey: itemKeys.detail(data.id) });
-			queryClient.invalidateQueries({ queryKey: itemKeys.lists() });
+			void queryClient.invalidateQueries({ queryKey: itemKeys.detail(data['id']) });
+			void queryClient.invalidateQueries({ queryKey: itemKeys.lists() });
 		},
 	});
 }
@@ -122,7 +122,7 @@ export function useDeleteItem() {
 			}
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: itemKeys.lists() });
+			void queryClient.invalidateQueries({ queryKey: itemKeys.lists() });
 		},
 	});
 }

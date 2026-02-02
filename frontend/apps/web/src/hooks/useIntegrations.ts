@@ -16,150 +16,156 @@ import type {
 	SyncQueueItem,
 	SyncStatusSummary,
 } from "@tracertm/types";
-import { getAuthHeaders } from "@/api/client";
+import client from "@/api/client";
+
+const { getAuthHeaders } = client;
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 // Transform API response (snake_case) to frontend format (camelCase)
-function transformCredential(data: any): IntegrationCredential {
+function transformCredential(data: Record<string, unknown>): IntegrationCredential {
 	return {
-		id: data.id,
-		projectId: data.project_id || undefined,
-		provider: data.provider,
-		credentialType: data.credential_type,
-		status: data.status,
-		scopes: data.scopes || [],
-		providerUserId: data.provider_user_id,
-		providerMetadata: data.provider_metadata,
-		lastValidatedAt: data.last_validated_at,
-		validationError: data.validation_error,
-		expiresAt: data.expires_at,
-		createdAt: data.created_at,
-		updatedAt: data.updated_at,
+		id: data['id'] as string,
+		projectId: (data['project_id'] as string | undefined) || undefined,
+		provider: data['provider'] as IntegrationProvider,
+		credentialType: data['credential_type'] as IntegrationCredential['credentialType'],
+		status: data['status'] as IntegrationCredential['status'],
+		scopes: (data['scopes'] as string[]) || [],
+		providerUserId: data['provider_user_id'] as string | undefined,
+		providerMetadata: data['provider_metadata'] as Record<string, unknown> | undefined,
+		lastValidatedAt: data['last_validated_at'] as string | undefined,
+		validationError: data['validation_error'] as string | undefined,
+		expiresAt: data['expires_at'] as string | undefined,
+		createdAt: data['created_at'] as string,
+		updatedAt: data['updated_at'] as string,
 	};
 }
 
-function transformMapping(data: any): IntegrationMapping {
+function transformMapping(data: Record<string, unknown>): IntegrationMapping {
 	return {
-		id: data.id,
-		credentialId: data.credential_id,
-		provider: data.provider,
-		direction: data.direction,
-		localItemId: data.local_item_id,
-		localItemType: data.local_item_type,
-		externalId: data.external_id,
-		externalType: data.external_type,
-		externalUrl: data.external_url,
-		externalKey: data.external_key,
-		mappingMetadata: data.mapping_metadata,
-		status: data.status,
-		syncEnabled: data.sync_enabled,
-		lastSyncedAt: data.last_synced_at,
-		lastSyncStatus: data.last_sync_status,
-		lastSyncError: data.last_sync_error,
-		fieldMappings: data.field_mappings,
-		fieldResolutionRules: data.field_resolution_rules,
-		localVersion: data.local_version,
-		externalVersion: data.external_version,
-		createdAt: data.created_at,
-		updatedAt: data.updated_at,
+		id: data['id'] as string,
+		credentialId: data['credential_id'] as string,
+		provider: data['provider'] as IntegrationProvider,
+		direction: data['direction'] as MappingDirection,
+		localItemId: data['local_item_id'] as string,
+		localItemType: data['local_item_type'] as string,
+		externalId: data['external_id'] as string,
+		externalType: data['external_type'] as string,
+		externalUrl: data['external_url'] as string | undefined,
+		externalKey: data['external_key'] as string | undefined,
+		mappingMetadata: data['mapping_metadata'] as Record<string, unknown> | undefined,
+		status: data['status'] as IntegrationMapping['status'],
+		syncEnabled: data['sync_enabled'] as boolean,
+		lastSyncedAt: data['last_synced_at'] as string | undefined,
+		lastSyncStatus: data['last_sync_status'] as string | undefined,
+		lastSyncError: data['last_sync_error'] as string | undefined,
+		fieldMappings: data['field_mappings'] as Record<string, string> | undefined,
+		fieldResolutionRules: data['field_resolution_rules'] as Record<string, unknown> | undefined,
+		localVersion: data['local_version'] as number | undefined,
+		externalVersion: data['external_version'] as string | undefined,
+		createdAt: data['created_at'] as string,
+		updatedAt: data['updated_at'] as string,
 	};
 }
 
-function transformSyncQueueItem(data: any): SyncQueueItem {
+function transformSyncQueueItem(data: Record<string, unknown>): SyncQueueItem {
 	return {
-		id: data.id,
-		credentialId: data.credential_id,
-		mappingId: data.mapping_id,
-		provider: data.provider,
-		eventType: data.event_type,
-		direction: data.direction,
-		status: data.status,
-		priority: data.priority,
-		retryCount: data.retry_count,
-		maxRetries: data.max_retries,
-		errorMessage: data.error_message,
-		scheduledAt: data.scheduled_at,
-		startedAt: data.started_at,
-		completedAt: data.completed_at,
-		createdAt: data.created_at,
+		id: data['id'] as string,
+		credentialId: data['credential_id'] as string,
+		mappingId: data['mapping_id'] as string | undefined,
+		provider: data['provider'] as IntegrationProvider,
+		eventType: data['event_type'] as string,
+		direction: data['direction'] as MappingDirection,
+		status: data['status'] as SyncQueueItem['status'],
+		priority: data['priority'] as number,
+		retryCount: data['retry_count'] as number,
+		maxRetries: data['max_retries'] as number,
+		errorMessage: data['error_message'] as string | undefined,
+		scheduledAt: data['scheduled_at'] as string,
+		startedAt: data['started_at'] as string | undefined,
+		completedAt: data['completed_at'] as string | undefined,
+		createdAt: data['created_at'] as string,
 	};
 }
 
-function transformSyncLog(data: any): SyncLog {
+function transformSyncLog(data: Record<string, unknown>): SyncLog {
 	return {
-		id: data.id,
-		credentialId: data.credential_id,
-		mappingId: data.mapping_id,
-		provider: data.provider,
-		eventType: data.event_type,
-		direction: data.direction,
-		status: data.status,
-		itemsProcessed: data.items_processed,
-		itemsFailed: data.items_failed,
-		itemsSkipped: data.items_skipped,
-		errorMessage: data.error_message,
-		startedAt: data.started_at,
-		completedAt: data.completed_at,
-		durationMs: data.duration_ms,
-		createdAt: data.created_at,
+		id: data['id'] as string,
+		credentialId: data['credential_id'] as string,
+		mappingId: data['mapping_id'] as string | undefined,
+		provider: data['provider'] as IntegrationProvider,
+		eventType: data['event_type'] as string,
+		direction: data['direction'] as MappingDirection,
+		status: data['status'] as SyncLog['status'],
+		itemsProcessed: data['items_processed'] as number,
+		itemsFailed: data['items_failed'] as number,
+		itemsSkipped: data['items_skipped'] as number,
+		errorMessage: data['error_message'] as string | undefined,
+		startedAt: data['started_at'] as string,
+		completedAt: data['completed_at'] as string | undefined,
+		durationMs: data['duration_ms'] as number | undefined,
+		createdAt: data['created_at'] as string,
 	};
 }
 
-function transformConflict(data: any): SyncConflict {
+function transformConflict(data: Record<string, unknown>): SyncConflict {
 	return {
-		id: data.id,
-		mappingId: data.mapping_id,
-		provider: data.provider,
-		conflictType: data.conflict_type,
-		fieldName: data.field_name,
-		localValue: data.local_value,
-		externalValue: data.external_value,
-		localModifiedAt: data.local_modified_at,
-		externalModifiedAt: data.external_modified_at,
-		status: data.status,
-		resolution: data.resolution,
-		resolvedValue: data.resolved_value,
-		resolvedBy: data.resolved_by,
-		resolvedAt: data.resolved_at,
-		createdAt: data.created_at,
+		id: data['id'] as string,
+		mappingId: data['mapping_id'] as string,
+		provider: data['provider'] as IntegrationProvider,
+		conflictType: data['conflict_type'] as SyncConflict['conflictType'],
+		fieldName: data['field_name'] as string,
+		localValue: data['local_value'] as unknown,
+		externalValue: data['external_value'] as unknown,
+		localModifiedAt: data['local_modified_at'] as string,
+		externalModifiedAt: data['external_modified_at'] as string,
+		status: data['status'] as SyncConflict['status'],
+		resolution: data['resolution'] as SyncConflict['resolution'] | undefined,
+		resolvedValue: data['resolved_value'] as unknown,
+		resolvedBy: data['resolved_by'] as string | undefined,
+		resolvedAt: data['resolved_at'] as string | undefined,
+		createdAt: data['created_at'] as string,
 	};
 }
 
-function transformSyncStatus(data: any): SyncStatusSummary {
+function transformSyncStatus(data: Record<string, unknown>): SyncStatusSummary {
 	return {
-		projectId: data.project_id,
-		queue: data.queue,
-		recentSyncs: (data.recent_syncs || []).map(transformSyncLog),
-		providers: (data.providers || []).map((p: any) => ({
-			provider: p.provider,
-			status: p.status,
-			lastValidated: p.last_validated,
+		projectId: data['project_id'] as string,
+		queue: data['queue'] as SyncStatusSummary['queue'],
+		recentSyncs: ((data['recent_syncs'] as Record<string, unknown>[]) || []).map(transformSyncLog),
+		providers: ((data['providers'] as Record<string, unknown>[]) || []).map((p: Record<string, unknown>) => ({
+			provider: p['provider'] as IntegrationProvider,
+			status: p['status'] as string,
+			lastValidated: p['last_validated'] as string | undefined,
 		})),
 	};
 }
 
-function transformStats(data: any): IntegrationStats {
+function transformStats(data: Record<string, unknown>): IntegrationStats {
+	const mappings = data['mappings'] as Record<string, unknown> | undefined;
+	const sync = data['sync'] as Record<string, unknown> | undefined;
+	const conflicts = data['conflicts'] as Record<string, unknown> | undefined;
+
 	return {
-		projectId: data.project_id,
-		providers: (data.providers || []).map((p: any) => ({
-			provider: p.provider,
-			status: p.status,
-			credentialType: p.credential_type,
+		projectId: data['project_id'] as string,
+		providers: ((data['providers'] as Record<string, unknown>[]) || []).map((p: Record<string, unknown>) => ({
+			provider: p['provider'] as IntegrationProvider,
+			status: p['status'] as string,
+			credentialType: p['credential_type'] as string,
 		})),
 		mappings: {
-			total: data.mappings?.total || 0,
-			active: data.mappings?.active || 0,
-			byProvider: data.mappings?.by_provider || {},
+			total: (mappings?.total as number) || 0,
+			active: (mappings?.active as number) || 0,
+			byProvider: (mappings?.by_provider as Record<string, number>) || {},
 		},
 		sync: {
-			queuePending: data.sync?.queue_pending || 0,
-			recentSyncs: data.sync?.recent_syncs || 0,
-			successRate: data.sync?.success_rate || 0,
+			queuePending: (sync?.queue_pending as number) || 0,
+			recentSyncs: (sync?.recent_syncs as number) || 0,
+			successRate: (sync?.success_rate as number) || 0,
 		},
 		conflicts: {
-			pending: data.conflicts?.pending || 0,
-			resolved: data.conflicts?.resolved || 0,
+			pending: (conflicts?.pending as number) || 0,
+			resolved: (conflicts?.resolved as number) || 0,
 		},
 	};
 }
@@ -180,8 +186,8 @@ async function fetchCredentials(
 	}
 	const data = await res.json();
 	return {
-		credentials: (data.credentials || []).map(transformCredential),
-		total: data.total || 0,
+		credentials: (data['credentials'] || []).map(transformCredential),
+		total: data['total'] || 0,
 	};
 }
 
@@ -210,7 +216,7 @@ export function useValidateCredential() {
 			return res.json();
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: ["integrations", "credentials"],
 			});
 		},
@@ -231,7 +237,7 @@ export function useDeleteCredential() {
 			return res.json();
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: ["integrations", "credentials"],
 			});
 		},
@@ -253,11 +259,11 @@ export function useStartOAuth() {
 				method: "POST",
 				headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 				body: JSON.stringify({
-					project_id: data.projectId,
-					provider: data.provider,
-					redirect_uri: data.redirectUri,
-					scopes: data.scopes,
-					credential_scope: data.credentialScope,
+					project_id: data['projectId'],
+					provider: data['provider'],
+					redirect_uri: data['redirectUri'],
+					scopes: data['scopes'],
+					credential_scope: data['credentialScope'],
 				}),
 			});
 			if (!res.ok) {
@@ -280,9 +286,9 @@ export function useCompleteOAuth() {
 				method: "POST",
 				headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 				body: JSON.stringify({
-					code: data.code,
-					state: data.state,
-					redirect_uri: data.redirectUri,
+					code: data['code'],
+					state: data['state'],
+					redirect_uri: data['redirectUri'],
 				}),
 			});
 			if (!res.ok) {
@@ -291,7 +297,7 @@ export function useCompleteOAuth() {
 			return res.json();
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: ["integrations", "credentials"],
 			});
 		},
@@ -315,8 +321,8 @@ async function fetchMappings(
 	}
 	const data = await res.json();
 	return {
-		mappings: (data.mappings || []).map(transformMapping),
-		total: data.total || 0,
+		mappings: (data['mappings'] || []).map(transformMapping),
+		total: data['total'] || 0,
 	};
 }
 
@@ -349,18 +355,18 @@ export function useCreateMapping() {
 				method: "POST",
 				headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 				body: JSON.stringify({
-					credential_id: data.credentialId,
-					project_id: data.projectId,
-					local_item_id: data.localItemId,
-					local_item_type: data.localItemType,
-					external_id: data.externalId,
-					external_type: data.externalType,
-					direction: data.direction || "bidirectional",
-					external_url: data.externalUrl,
-					external_key: data.externalKey,
-					field_mappings: data.fieldMappings,
-					mapping_metadata: data.mappingMetadata,
-					sync_enabled: data.syncEnabled ?? true,
+					credential_id: data['credentialId'],
+					project_id: data['projectId'],
+					local_item_id: data['localItemId'],
+					local_item_type: data['localItemType'],
+					external_id: data['externalId'],
+					external_type: data['externalType'],
+					direction: data['direction'] || "bidirectional",
+					external_url: data['externalUrl'],
+					external_key: data['externalKey'],
+					field_mappings: data['fieldMappings'],
+					mapping_metadata: data['mappingMetadata'],
+					sync_enabled: data['syncEnabled'] ?? true,
 				}),
 			});
 			if (!res.ok) {
@@ -369,7 +375,7 @@ export function useCreateMapping() {
 			return res.json();
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["integrations", "mappings"] });
+			void queryClient.invalidateQueries({ queryKey: ["integrations", "mappings"] });
 		},
 	});
 }
@@ -393,10 +399,10 @@ export function useUpdateMapping() {
 					method: "PUT",
 					headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 					body: JSON.stringify({
-						direction: data.direction,
-						field_mappings: data.fieldMappings,
-						sync_enabled: data.syncEnabled,
-						status: data.status,
+						direction: data['direction'],
+						field_mappings: data['fieldMappings'],
+						sync_enabled: data['syncEnabled'],
+						status: data['status'],
 					}),
 				},
 			);
@@ -406,7 +412,7 @@ export function useUpdateMapping() {
 			return res.json();
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["integrations", "mappings"] });
+			void queryClient.invalidateQueries({ queryKey: ["integrations", "mappings"] });
 		},
 	});
 }
@@ -425,7 +431,7 @@ export function useDeleteMapping() {
 			return res.json();
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["integrations", "mappings"] });
+			void queryClient.invalidateQueries({ queryKey: ["integrations", "mappings"] });
 		},
 	});
 }
@@ -472,8 +478,8 @@ export function useSyncQueue(
 			}
 			const data = await res.json();
 			return {
-				items: (data.items || []).map(transformSyncQueueItem),
-				total: data.total || 0,
+				items: (data['items'] || []).map(transformSyncQueueItem),
+				total: data['total'] || 0,
 			};
 		},
 		enabled: Boolean(projectId),
@@ -493,10 +499,10 @@ export function useTriggerSync() {
 				method: "POST",
 				headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 				body: JSON.stringify({
-					mapping_id: data.mappingId,
-					credential_id: data.credentialId,
-					direction: data.direction || "pull",
-					payload: data.payload,
+					mapping_id: data['mappingId'],
+					credential_id: data['credentialId'],
+					direction: data['direction'] || "pull",
+					payload: data['payload'],
 				}),
 			});
 			if (!res.ok) {
@@ -505,7 +511,7 @@ export function useTriggerSync() {
 			return res.json();
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["integrations", "sync"] });
+			void queryClient.invalidateQueries({ queryKey: ["integrations", "sync"] });
 		},
 	});
 }
@@ -528,8 +534,8 @@ export function useConflicts(projectId: string, status?: string) {
 			}
 			const data = await res.json();
 			return {
-				conflicts: (data.conflicts || []).map(transformConflict),
-				total: data.total || 0,
+				conflicts: (data['conflicts'] || []).map(transformConflict),
+				total: data['total'] || 0,
 			};
 		},
 		enabled: Boolean(projectId),
@@ -565,7 +571,7 @@ export function useResolveConflict() {
 			return res.json();
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: ["integrations", "conflicts"],
 			});
 		},
@@ -615,22 +621,22 @@ export function useGitHubRepos(
 			}
 			const data = await res.json();
 			return {
-				repos: (data.repos || []).map((r: any) => ({
+				repos: (data['repos'] || []).map((r: Record<string, unknown>) => ({
 					id: r.id,
 					name: r.name,
 					fullName: r.full_name,
 					description: r.description,
 					htmlUrl: r.html_url,
-					private: r.private,
+					private: r['private'],
 					owner: {
-						login: r.owner?.login,
-						avatarUrl: r.owner?.avatar_url,
+						login: r['owner']?.login,
+						avatarUrl: r['owner']?.avatar_url,
 					},
 					defaultBranch: r.default_branch,
 					updatedAt: r.updated_at,
 				})) as GitHubRepo[],
-				page: data.page,
-				perPage: data.per_page,
+				page: data['page'],
+				perPage: data['per_page'],
 			};
 		},
 		enabled: Boolean(credentialId),
@@ -669,24 +675,24 @@ export function useGitHubIssues(
 			}
 			const data = await res.json();
 			return {
-				issues: (data.issues || []).map((i: any) => ({
+				issues: (data['issues'] || []).map((i: Record<string, unknown>) => ({
 					id: i.id,
 					number: i.number,
 					title: i.title,
-					state: i.state,
+					state: i['state'],
 					htmlUrl: i.html_url,
-					body: i.body,
+					body: i['body'],
 					user: {
-						login: i.user?.login,
-						avatarUrl: i.user?.avatar_url,
+						login: i['user']?.login,
+						avatarUrl: i['user']?.avatar_url,
 					},
-					labels: i.labels || [],
-					assignees: i.assignees || [],
+					labels: i['labels'] || [],
+					assignees: i['assignees'] || [],
 					createdAt: i.created_at,
 					updatedAt: i.updated_at,
 				})) as GitHubIssue[],
-				page: data.page,
-				perPage: data.per_page,
+				page: data['page'],
+				perPage: data['per_page'],
 			};
 		},
 		enabled: Boolean(credentialId) && Boolean(owner) && Boolean(repo),
@@ -723,13 +729,13 @@ export function useGitHubProjects(
 			}
 			const data = await res.json();
 			return {
-				projects: (data.projects || []).map((p: any) => ({
+				projects: (data['projects'] || []).map((p: Record<string, unknown>) => ({
 					id: p.id,
 					title: p.title,
 					description: p.description,
 					url: p.url,
-					closed: p.closed,
-					public: p.public,
+					closed: p['closed'],
+					public: p['public'],
 					createdAt: p.created_at,
 					updatedAt: p.updated_at,
 				})) as GitHubProject[],
@@ -754,13 +760,13 @@ export function useLinearTeams(credentialId: string) {
 			}
 			const data = await res.json();
 			return {
-				teams: (data.teams || []).map((t: any) => ({
+				teams: (data['teams'] || []).map((t: Record<string, unknown>) => ({
 					id: t.id,
 					name: t.name,
 					key: t.key,
 					description: t.description,
-					icon: t.icon,
-					color: t.color,
+					icon: t['icon'],
+					color: t['color'],
 				})) as LinearTeam[],
 			};
 		},
@@ -788,16 +794,16 @@ export function useLinearIssues(
 			}
 			const data = await res.json();
 			return {
-				issues: (data.issues || []).map((i: any) => ({
+				issues: (data['issues'] || []).map((i: Record<string, unknown>) => ({
 					id: i.id,
 					identifier: i.identifier,
 					title: i.title,
 					description: i.description,
-					state: i.state,
+					state: i['state'],
 					priority: i.priority,
 					url: i.url,
-					assignee: i.assignee,
-					labels: i.labels || [],
+					assignee: i['assignee'],
+					labels: i['labels'] || [],
 					createdAt: i.created_at,
 					updatedAt: i.updated_at,
 				})) as LinearIssue[],
@@ -823,12 +829,12 @@ export function useLinearProjects(credentialId: string, first?: number) {
 			}
 			const data = await res.json();
 			return {
-				projects: (data.projects || []).map((p: any) => ({
+				projects: (data['projects'] || []).map((p: Record<string, unknown>) => ({
 					id: p.id,
 					name: p.name,
 					description: p.description,
-					state: p.state,
-					progress: p.progress,
+					state: p['state'],
+					progress: p['progress'],
 					url: p.url,
 					startDate: p.start_date,
 					targetDate: p.target_date,

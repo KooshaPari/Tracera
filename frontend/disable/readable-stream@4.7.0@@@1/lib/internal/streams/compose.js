@@ -106,7 +106,7 @@ module.exports = function compose(...streams) {
           await writer.ready
           writer.write(chunk).catch(() => {})
           callback()
-        } catch (err) {
+        } catch (_err) {
           callback(err)
         }
       }
@@ -115,7 +115,7 @@ module.exports = function compose(...streams) {
           await writer.ready
           writer.close().catch(() => {})
           onfinish = callback
-        } catch (err) {
+        } catch (_err) {
           callback(err)
         }
       }

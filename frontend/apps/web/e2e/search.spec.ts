@@ -16,9 +16,7 @@ test.describe("Search and Filter", () => {
 			const searchInput = page.getByPlaceholder(/Search items/i);
 			await expect(searchInput)
 				.toBeVisible({ timeout: 5000 })
-				.catch(() => {
-					console.log("Search input not found in header");
-				});
+				.catch(() => {});
 		});
 
 		test("should accept search input", async ({ page }) => {
@@ -31,8 +29,6 @@ test.describe("Search and Filter", () => {
 				// Verify input was filled
 				const inputValue = await searchInput.inputValue();
 				expect(inputValue).toBe("project");
-			} else {
-				console.log("Search input not accessible");
 			}
 		});
 
@@ -54,8 +50,6 @@ test.describe("Search and Filter", () => {
 				// Verify search input is cleared
 				const clearedValue = await searchInput.inputValue();
 				expect(clearedValue).toBe("");
-			} else {
-				console.log("Search not available");
 			}
 		});
 	});
@@ -76,17 +70,13 @@ test.describe("Search and Filter", () => {
 			const commandPalette = page.locator('[data-testid="command-palette"]');
 			await expect(commandPalette)
 				.toBeVisible({ timeout: 5000 })
-				.catch(() => {
-					console.log("Command palette not found - may use different selector");
-				});
+				.catch(() => {});
 
 			// Alternative: check for dialog with search input
 			const dialog = page.getByRole("dialog");
 			if (await dialog.isVisible({ timeout: 2000 })) {
 				const paletteInput = dialog.getByPlaceholder(/search|type.*command/i);
 				await expect(paletteInput).toBeVisible();
-			} else {
-				console.log("Command palette dialog not found");
 			}
 		});
 
@@ -106,11 +96,7 @@ test.describe("Search and Filter", () => {
 				);
 				await expect(projectCommand)
 					.toBeVisible({ timeout: 5000 })
-					.catch(() => {
-						console.log("Project commands not found in palette");
-					});
-			} else {
-				console.log("Command palette not available");
+					.catch(() => {});
 			}
 		});
 
@@ -131,8 +117,6 @@ test.describe("Search and Filter", () => {
 
 				// Should navigate to items page
 				await expect(page).toHaveURL(/\/items/);
-			} else {
-				console.log("Command palette navigation not available");
 			}
 		});
 
@@ -147,8 +131,6 @@ test.describe("Search and Filter", () => {
 
 				// Dialog should be hidden
 				await expect(dialog).not.toBeVisible({ timeout: 2000 });
-			} else {
-				console.log("Command palette not available");
 			}
 		});
 	});
@@ -167,14 +149,7 @@ test.describe("Search and Filter", () => {
 
 				// All visible projects should be active
 				const projectCards = page.locator('[data-testid="project-card"]');
-				const count = await projectCards.count().catch(() => 0);
-				if (count > 0) {
-					console.log(`Filtered to ${count} active projects`);
-				} else {
-					console.log("Project cards not found after filtering");
-				}
-			} else {
-				console.log("Status filter not available on projects page");
+				await projectCards.count().catch(() => 0);
 			}
 		});
 
@@ -195,8 +170,6 @@ test.describe("Search and Filter", () => {
 				// Should show Pokemon Go Demo
 				const pokemonProject = page.getByText(/Pokemon Go Demo/);
 				await expect(pokemonProject).toBeVisible({ timeout: 5000 });
-			} else {
-				console.log("Search not available on projects page");
 			}
 		});
 	});
@@ -215,10 +188,6 @@ test.describe("Search and Filter", () => {
 					.first()
 					.click();
 				await page.waitForLoadState("networkidle");
-
-				console.log("Type filter applied");
-			} else {
-				console.log("Type filter not available on items page");
 			}
 		});
 
@@ -235,10 +204,6 @@ test.describe("Search and Filter", () => {
 					.first()
 					.click();
 				await page.waitForLoadState("networkidle");
-
-				console.log("Status filter applied");
-			} else {
-				console.log("Status filter not available on items page");
 			}
 		});
 	});

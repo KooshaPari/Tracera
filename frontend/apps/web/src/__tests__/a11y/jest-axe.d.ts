@@ -1,11 +1,12 @@
 /**
  * Type definitions for jest-axe with Vitest
  */
-
 declare global {
 	namespace Vi {
-		interface Matchers<R = any> {
+		interface Matchers<R = unknown> {
 			toHaveNoViolations(): R;
 		}
 	}
 }
+
+export {};

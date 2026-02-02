@@ -65,7 +65,7 @@ function getStatsSync(src, dest) {
 		} else {
 			destStat = fs.statSync(dest);
 		}
-	} catch (err) {
+	} catch (_err) {
 		if (err.code === "ENOENT") return { srcStat, destStat: null };
 		throw err;
 	}
@@ -165,7 +165,7 @@ function checkParentPathsSync(src, srcStat, dest, funcName) {
 		} else {
 			destStat = fs.statSync(destParent);
 		}
-	} catch (err) {
+	} catch (_err) {
 		if (err.code === "ENOENT") return;
 		throw err;
 	}

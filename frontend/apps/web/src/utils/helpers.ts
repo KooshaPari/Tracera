@@ -1,6 +1,7 @@
 // General helper utilities
 
 import type { Item, Link } from "@tracertm/types";
+import { logger } from '@/lib/logger';
 
 // Array utilities
 export function groupBy<T>(array: T[], key: keyof T): Record<string, T[]> {
@@ -22,7 +23,7 @@ export function sortBy<T>(
 	key: keyof T,
 	order: "asc" | "desc" = "asc",
 ): T[] {
-	return [...array].sort((a, b) => {
+	return [...array].sort((a: T, b: T) => {
 		const aVal = a[key];
 		const bVal = b[key];
 
@@ -133,7 +134,7 @@ export function sleep(ms: number): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: never[]) => unknown>(
 	func: T,
 	wait: number,
 ): (...args: Parameters<T>) => void {
@@ -152,7 +153,7 @@ export function debounce<T extends (...args: any[]) => any>(
 	};
 }
 
-export function throttle<T extends (...args: any[]) => any>(
+export function throttle<T extends (...args: never[]) => unknown>(
 	func: T,
 	limit: number,
 ): (...args: Parameters<T>) => void {

@@ -11,69 +11,71 @@ import type {
 	ProcessSwimlane,
 	ProcessTrigger,
 } from "@tracertm/types";
-import { getAuthHeaders } from "@/api/client";
+import client from "@/api/client";
+
+const { getAuthHeaders } = client;
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 // Transform API response (snake_case) to frontend format (camelCase)
-function transformProcess(data: any): Process {
+function transformProcess(data: Record<string, unknown>): Process {
 	return {
-		id: data.id,
-		processNumber: data.process_number,
-		projectId: data.project_id,
+		id: data['id'],
+		processNumber: data['process_number'],
+		projectId: data['project_id'],
 		name: data.name,
-		description: data.description,
-		purpose: data.purpose,
+		description: data['description'],
+		purpose: data['purpose'],
 		status: data.status,
-		category: data.category,
-		tags: data.tags,
-		versionNumber: data.version_number,
-		isActiveVersion: data.is_active_version,
-		parentVersionId: data.parent_version_id,
-		versionNotes: data.version_notes,
-		stages: data.stages,
-		swimlanes: data.swimlanes,
-		inputs: data.inputs,
-		outputs: data.outputs,
-		triggers: data.triggers,
-		exitCriteria: data.exit_criteria,
-		bpmnXml: data.bpmn_xml,
-		bpmnDiagramUrl: data.bpmn_diagram_url,
-		owner: data.owner,
-		responsibleTeam: data.responsible_team,
-		expectedDurationHours: data.expected_duration_hours,
-		slaHours: data.sla_hours,
-		activatedAt: data.activated_at,
-		activatedBy: data.activated_by,
-		deprecatedAt: data.deprecated_at,
-		deprecatedBy: data.deprecated_by,
-		deprecationReason: data.deprecation_reason,
-		relatedProcessIds: data.related_process_ids,
-		metadata: data.metadata,
-		version: data.version,
-		createdAt: data.created_at,
-		updatedAt: data.updated_at,
+		category: data['category'],
+		tags: data['tags'],
+		versionNumber: data['version_number'],
+		isActiveVersion: data['is_active_version'],
+		parentVersionId: data['parent_version_id'],
+		versionNotes: data['version_notes'],
+		stages: data['stages'],
+		swimlanes: data['swimlanes'],
+		inputs: data['inputs'],
+		outputs: data['outputs'],
+		triggers: data['triggers'],
+		exitCriteria: data['exit_criteria'],
+		bpmnXml: data['bpmn_xml'],
+		bpmnDiagramUrl: data['bpmn_diagram_url'],
+		owner: data['owner'],
+		responsibleTeam: data['responsible_team'],
+		expectedDurationHours: data['expected_duration_hours'],
+		slaHours: data['sla_hours'],
+		activatedAt: data['activated_at'],
+		activatedBy: data['activated_by'],
+		deprecatedAt: data['deprecated_at'],
+		deprecatedBy: data['deprecated_by'],
+		deprecationReason: data['deprecation_reason'],
+		relatedProcessIds: data['related_process_ids'],
+		metadata: data['metadata'],
+		version: data['version'],
+		createdAt: data['created_at'],
+		updatedAt: data['updated_at'],
 	};
 }
 
-function transformExecution(data: any): ProcessExecution {
+function transformExecution(data: Record<string, unknown>): ProcessExecution {
 	return {
-		id: data.id,
-		processId: data.process_id,
-		executionNumber: data.execution_number,
+		id: data['id'],
+		processId: data['process_id'],
+		executionNumber: data['execution_number'],
 		status: data.status,
-		currentStageId: data.current_stage_id,
-		completedStages: data.completed_stages,
-		startedAt: data.started_at,
-		completedAt: data.completed_at,
-		initiatedBy: data.initiated_by,
-		completedBy: data.completed_by,
-		triggerItemId: data.trigger_item_id,
-		contextData: data.context_data,
-		resultSummary: data.result_summary,
-		outputItemIds: data.output_item_ids,
-		createdAt: data.created_at,
-		updatedAt: data.updated_at,
+		currentStageId: data['current_stage_id'],
+		completedStages: data['completed_stages'],
+		startedAt: data['started_at'],
+		completedAt: data['completed_at'],
+		initiatedBy: data['initiated_by'],
+		completedBy: data['completed_by'],
+		triggerItemId: data['trigger_item_id'],
+		contextData: data['context_data'],
+		resultSummary: data['result_summary'],
+		outputItemIds: data['output_item_ids'],
+		createdAt: data['created_at'],
+		updatedAt: data['updated_at'],
 	};
 }
 
@@ -107,8 +109,8 @@ async function fetchProcesses(
 	}
 	const data = await res.json();
 	return {
-		processes: (data.processes || []).map(transformProcess),
-		total: data.total || 0,
+		processes: (data['processes'] || []).map(transformProcess),
+		total: data['total'] || 0,
 	};
 }
 
@@ -147,35 +149,35 @@ async function createProcess(
 	data: CreateProcessData,
 ): Promise<{ id: string; processNumber: string }> {
 	const res = await fetch(
-		`${API_URL}/api/v1/processes?project_id=${data.projectId}`,
+		`${API_URL}/api/v1/processes?project_id=${data['projectId']}`,
 		{
 			method: "POST",
 			headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 			body: JSON.stringify({
 				name: data.name,
-				description: data.description,
-				purpose: data.purpose,
-				category: data.category,
-				tags: data.tags,
-				stages: data.stages,
-				swimlanes: data.swimlanes,
-				inputs: data.inputs,
-				outputs: data.outputs,
-				triggers: data.triggers,
-				exit_criteria: data.exitCriteria,
-				bpmn_xml: data.bpmnXml,
-				owner: data.owner,
-				responsible_team: data.responsibleTeam,
-				expected_duration_hours: data.expectedDurationHours,
-				sla_hours: data.slaHours,
-				related_process_ids: data.relatedProcessIds,
-				metadata: data.metadata || {},
+				description: data['description'],
+				purpose: data['purpose'],
+				category: data['category'],
+				tags: data['tags'],
+				stages: data['stages'],
+				swimlanes: data['swimlanes'],
+				inputs: data['inputs'],
+				outputs: data['outputs'],
+				triggers: data['triggers'],
+				exit_criteria: data['exitCriteria'],
+				bpmn_xml: data['bpmnXml'],
+				owner: data['owner'],
+				responsible_team: data['responsibleTeam'],
+				expected_duration_hours: data['expectedDurationHours'],
+				sla_hours: data['slaHours'],
+				related_process_ids: data['relatedProcessIds'],
+				metadata: data['metadata'] || {},
 			}),
 		},
 	);
 	if (!res.ok) throw new Error("Failed to create process");
 	const result = await res.json();
-	return { id: result.id, processNumber: result.process_number };
+	return { id: result['id'], processNumber: result['process_number'] };
 }
 
 async function updateProcess(
@@ -187,23 +189,23 @@ async function updateProcess(
 		headers: { "Content-Type": "application/json", ...getAuthHeaders() },
 		body: JSON.stringify({
 			name: data.name,
-			description: data.description,
-			purpose: data.purpose,
-			category: data.category,
-			tags: data.tags,
-			stages: data.stages,
-			swimlanes: data.swimlanes,
-			inputs: data.inputs,
-			outputs: data.outputs,
-			triggers: data.triggers,
-			exit_criteria: data.exitCriteria,
-			bpmn_xml: data.bpmnXml,
-			owner: data.owner,
-			responsible_team: data.responsibleTeam,
-			expected_duration_hours: data.expectedDurationHours,
-			sla_hours: data.slaHours,
-			related_process_ids: data.relatedProcessIds,
-			metadata: data.metadata,
+			description: data['description'],
+			purpose: data['purpose'],
+			category: data['category'],
+			tags: data['tags'],
+			stages: data['stages'],
+			swimlanes: data['swimlanes'],
+			inputs: data['inputs'],
+			outputs: data['outputs'],
+			triggers: data['triggers'],
+			exit_criteria: data['exitCriteria'],
+			bpmn_xml: data['bpmnXml'],
+			owner: data['owner'],
+			responsible_team: data['responsibleTeam'],
+			expected_duration_hours: data['expectedDurationHours'],
+			sla_hours: data['slaHours'],
+			related_process_ids: data['relatedProcessIds'],
+			metadata: data['metadata'],
 		}),
 	});
 	if (!res.ok) throw new Error("Failed to update process");
@@ -227,10 +229,10 @@ async function createProcessVersion(
 	if (!res.ok) throw new Error("Failed to create process version");
 	const result = await res.json();
 	return {
-		id: result.id,
-		processNumber: result.process_number,
-		versionNumber: result.version_number,
-		parentVersionId: result.parent_version_id,
+		id: result['id'],
+		processNumber: result['process_number'],
+		versionNumber: result['version_number'],
+		parentVersionId: result['parent_version_id'],
 	};
 }
 
@@ -245,9 +247,9 @@ async function activateProcess(
 	if (!res.ok) throw new Error("Failed to activate process");
 	const result = await res.json();
 	return {
-		id: result.id,
+		id: result['id'],
 		status: result.status,
-		isActiveVersion: result.is_active_version,
+		isActiveVersion: result['is_active_version'],
 	};
 }
 
@@ -288,10 +290,10 @@ async function fetchProcessStats(projectId: string): Promise<{
 	if (!res.ok) throw new Error("Failed to fetch process stats");
 	const data = await res.json();
 	return {
-		projectId: data.project_id,
-		byStatus: data.by_status || {},
-		byCategory: data.by_category || {},
-		total: data.total || 0,
+		projectId: data['project_id'],
+		byStatus: data['by_status'] || {},
+		byCategory: data['by_category'] || {},
+		total: data['total'] || 0,
 	};
 }
 
@@ -316,7 +318,7 @@ async function createExecution(
 	);
 	if (!res.ok) throw new Error("Failed to create execution");
 	const result = await res.json();
-	return { id: result.id, executionNumber: result.execution_number };
+	return { id: result['id'], executionNumber: result['execution_number'] };
 }
 
 async function fetchExecutions(
@@ -335,8 +337,8 @@ async function fetchExecutions(
 	if (!res.ok) throw new Error("Failed to fetch executions");
 	const data = await res.json();
 	return {
-		total: data.total || 0,
-		executions: (data.executions || []).map(transformExecution),
+		total: data['total'] || 0,
+		executions: (data['executions'] || []).map(transformExecution),
 	};
 }
 
@@ -378,9 +380,9 @@ async function advanceExecution(
 	if (!res.ok) throw new Error("Failed to advance execution");
 	const result = await res.json();
 	return {
-		id: result.id,
-		currentStageId: result.current_stage_id,
-		completedStages: result.completed_stages,
+		id: result['id'],
+		currentStageId: result['current_stage_id'],
+		completedStages: result['completed_stages'],
 	};
 }
 
@@ -427,7 +429,7 @@ export function useCreateProcess() {
 	return useMutation({
 		mutationFn: createProcess,
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["processes"] });
+			void queryClient.invalidateQueries({ queryKey: ["processes"] });
 		},
 	});
 }
@@ -443,8 +445,8 @@ export function useUpdateProcess() {
 			data: Partial<Omit<CreateProcessData, "projectId">>;
 		}) => updateProcess(id, data),
 		onSuccess: (_, { id }) => {
-			queryClient.invalidateQueries({ queryKey: ["processes"] });
-			queryClient.invalidateQueries({ queryKey: ["processes", id] });
+			void queryClient.invalidateQueries({ queryKey: ["processes"] });
+			void queryClient.invalidateQueries({ queryKey: ["processes", id] });
 		},
 	});
 }
@@ -460,7 +462,7 @@ export function useCreateProcessVersion() {
 			versionNotes?: string;
 		}) => createProcessVersion(processId, versionNotes),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["processes"] });
+			void queryClient.invalidateQueries({ queryKey: ["processes"] });
 		},
 	});
 }
@@ -470,8 +472,8 @@ export function useActivateProcess() {
 	return useMutation({
 		mutationFn: activateProcess,
 		onSuccess: (_, processId) => {
-			queryClient.invalidateQueries({ queryKey: ["processes"] });
-			queryClient.invalidateQueries({ queryKey: ["processes", processId] });
+			void queryClient.invalidateQueries({ queryKey: ["processes"] });
+			void queryClient.invalidateQueries({ queryKey: ["processes", processId] });
 		},
 	});
 }
@@ -487,8 +489,8 @@ export function useDeprecateProcess() {
 			deprecationReason?: string;
 		}) => deprecateProcess(processId, deprecationReason),
 		onSuccess: (_, { processId }) => {
-			queryClient.invalidateQueries({ queryKey: ["processes"] });
-			queryClient.invalidateQueries({ queryKey: ["processes", processId] });
+			void queryClient.invalidateQueries({ queryKey: ["processes"] });
+			void queryClient.invalidateQueries({ queryKey: ["processes", processId] });
 		},
 	});
 }
@@ -498,7 +500,7 @@ export function useDeleteProcess() {
 	return useMutation({
 		mutationFn: deleteProcess,
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["processes"] });
+			void queryClient.invalidateQueries({ queryKey: ["processes"] });
 		},
 	});
 }
@@ -546,7 +548,7 @@ export function useCreateExecution() {
 			contextData?: Record<string, unknown>;
 		}) => createExecution(processId, triggerItemId, contextData),
 		onSuccess: (_, { processId }) => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: ["processExecutions", processId],
 			});
 		},
@@ -558,8 +560,8 @@ export function useStartExecution() {
 	return useMutation({
 		mutationFn: startExecution,
 		onSuccess: (_, executionId) => {
-			queryClient.invalidateQueries({ queryKey: ["executions", executionId] });
-			queryClient.invalidateQueries({ queryKey: ["processExecutions"] });
+			void queryClient.invalidateQueries({ queryKey: ["executions", executionId] });
+			void queryClient.invalidateQueries({ queryKey: ["processExecutions"] });
 		},
 	});
 }
@@ -575,7 +577,7 @@ export function useAdvanceExecution() {
 			stageId: string;
 		}) => advanceExecution(executionId, stageId),
 		onSuccess: (_, { executionId }) => {
-			queryClient.invalidateQueries({ queryKey: ["executions", executionId] });
+			void queryClient.invalidateQueries({ queryKey: ["executions", executionId] });
 		},
 	});
 }
@@ -593,8 +595,8 @@ export function useCompleteExecution() {
 			outputItemIds?: string[];
 		}) => completeExecution(executionId, resultSummary, outputItemIds),
 		onSuccess: (_, { executionId }) => {
-			queryClient.invalidateQueries({ queryKey: ["executions", executionId] });
-			queryClient.invalidateQueries({ queryKey: ["processExecutions"] });
+			void queryClient.invalidateQueries({ queryKey: ["executions", executionId] });
+			void queryClient.invalidateQueries({ queryKey: ["processExecutions"] });
 		},
 	});
 }

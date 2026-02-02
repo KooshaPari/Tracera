@@ -32,7 +32,7 @@ async function symlinkPaths (srcpath, dstpath) {
   if (path.isAbsolute(srcpath)) {
     try {
       await fs.lstat(srcpath)
-    } catch (err) {
+    } catch (_err) {
       err.message = err.message.replace('lstat', 'ensureSymlink')
       throw err
     }
@@ -56,7 +56,7 @@ async function symlinkPaths (srcpath, dstpath) {
 
   try {
     await fs.lstat(srcpath)
-  } catch (err) {
+  } catch (_err) {
     err.message = err.message.replace('lstat', 'ensureSymlink')
     throw err
   }

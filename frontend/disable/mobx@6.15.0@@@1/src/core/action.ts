@@ -68,7 +68,7 @@ export function executeAction(
     const runInfo = _startAction(actionName, canRunAsDerivation, scope, args)
     try {
         return fn.apply(scope, args)
-    } catch (err) {
+    } catch (_err) {
         runInfo.error_ = err
         throw err
     } finally {

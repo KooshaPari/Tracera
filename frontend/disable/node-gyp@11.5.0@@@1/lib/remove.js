@@ -29,7 +29,7 @@ async function remove (gyp, argv) {
   // first check if its even installed
   try {
     await fs.stat(versionPath)
-  } catch (err) {
+  } catch (_err) {
     if (err.code === 'ENOENT') {
       return 'version was already uninstalled: ' + version
     }

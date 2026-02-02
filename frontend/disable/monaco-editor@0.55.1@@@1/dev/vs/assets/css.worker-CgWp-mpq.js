@@ -1424,7 +1424,7 @@
         this._state = LazyValueState.Running;
         try {
           this._value = this.executor();
-        } catch (err) {
+        } catch (_err) {
           this._error = err;
         } finally {
           this._state = LazyValueState.Completed;
@@ -22463,7 +22463,7 @@ Syntax: ${textToMarkedString(entry.syntax)}`;
           return false;
         }
         return true;
-      } catch (err) {
+      } catch (_err) {
         return false;
       }
     }

@@ -33,6 +33,19 @@ import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
 import { Breadcrumbs } from "./Breadcrumb";
 
+function getNotificationIcon(type: string) {
+	switch (type) {
+		case "success":
+			return <CheckCircle className="h-4 w-4 text-green-500" />;
+		case "warning":
+			return <AlertTriangle className="h-4 w-4 text-amber-500" />;
+		case "error":
+			return <XCircle className="h-4 w-4 text-red-500" />;
+		default:
+			return <Info className="h-4 w-4 text-blue-500" />;
+	}
+}
+
 export function Header() {
 	const location = useLocation();
 	const navigate = useNavigate();
@@ -44,8 +57,8 @@ export function Header() {
 	const { data: project } = useProject(projectId || "");
 
 	const handleLogout = () => {
-		logout();
-		navigate({ to: "/home" });
+		void logout();
+		void navigate({ to: "/home" });
 	};
 
 	// Get initials for avatar
@@ -105,19 +118,6 @@ export function Header() {
 			subtitle: undefined,
 		};
 	}, [location.pathname, project, projectId]);
-
-	const getNotificationIcon = (type: string) => {
-		switch (type) {
-			case "success":
-				return <CheckCircle className="h-4 w-4 text-green-500" />;
-			case "warning":
-				return <AlertTriangle className="h-4 w-4 text-amber-500" />;
-			case "error":
-				return <XCircle className="h-4 w-4 text-red-500" />;
-			default:
-				return <Info className="h-4 w-4 text-blue-500" />;
-		}
-	};
 
 	return (
 		<header
@@ -224,17 +224,17 @@ export function Header() {
 							) : (
 								<div className="p-1 space-y-1">
 									{notifications.map((notification) => (
-										<div
+										<button
 											key={notification.id}
 											className={cn(
-												"relative flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group",
+												"relative flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group w-full text-left",
 												!notification.read_at && "bg-muted/30",
 											)}
 											onClick={() => {
 												if (!notification.read_at)
 													markAsRead.mutate(notification.id);
 												if (notification.link)
-													navigate({ to: notification.link });
+													void navigate({ to: notification.link });
 											}}
 										>
 											<div className="mt-1 shrink-0">
@@ -263,7 +263,7 @@ export function Header() {
 											{!notification.read_at && (
 												<div className="absolute right-2 top-1/2 -translate-y-1/2 h-1.5 w-1.5 rounded-full bg-primary" />
 											)}
-										</div>
+										</button>
 									))}
 								</div>
 							)}

@@ -438,7 +438,7 @@ const setFsWatchListener = (path, fullPath, options, handlers) => {
 					const fd = await (0, promises_1.open)(path, "r");
 					await fd.close();
 					broadcastErr(error);
-				} catch (err) {
+				} catch (_err) {
 					// do nothing
 				}
 			} else {

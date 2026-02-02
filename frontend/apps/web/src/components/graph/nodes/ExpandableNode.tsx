@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import { memo, useCallback, useState } from "react";
 import { getTypeColor, getTypeIcon } from "../utils/typeStyles";
+import { logger } from '@/lib/logger';
 
 // ============================================================================
 // TYPES

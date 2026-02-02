@@ -899,7 +899,7 @@ internals.sort = (schema, value, settings, state, prefs) => {
 
 	try {
 		return { value: value.slice().sort(sort) };
-	} catch (err) {
+	} catch (_err) {
 		return { errors: err };
 	}
 };

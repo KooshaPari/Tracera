@@ -37,6 +37,7 @@ import {
 	Filter,
 } from "lucide-react";
 import { memo, useCallback, useState } from "react";
+import { logger } from '@/lib/logger';
 import {
 	createExportSummary,
 	serializeToCSV,
@@ -119,7 +120,7 @@ function EquivalenceExportComponent({
 	// Get unique domains from concepts
 	const uniqueDomains = Array.from(
 		new Set(canonicalConcepts.map((c) => c.domain)),
-	).sort();
+	).toSorted((a, b) => String(a).localeCompare(String(b)));
 
 	// Filter data based on options
 	const filteredLinks = equivalenceLinks.filter(

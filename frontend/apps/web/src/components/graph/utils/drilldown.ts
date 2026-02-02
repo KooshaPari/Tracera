@@ -58,13 +58,13 @@ export interface DrillDownNodeGroup {
 /**
  * Level hierarchy definition
  */
-const LEVEL_HIERARCHY: Record<DrillDownLevel, number> = {
-	project: 0,
-	repository: 1,
-	module: 2,
-	file: 3,
-	function: 4,
-};
+// const LEVEL_HIERARCHY: Record<DrillDownLevel, number> = {
+// 	project: 0,
+// 	repository: 1,
+// 	module: 2,
+// 	file: 3,
+// 	function: 4,
+// };
 
 /**
  * Icon mapping for levels
@@ -204,7 +204,7 @@ export function createDrillDownContext(
 	itemId: string,
 	items: Item[],
 	hierarchyMap: Map<string, HierarchyNode>,
-	expandedGroups: Set<string> = new Set(),
+	_expandedGroups: Set<string> = new Set(),
 ): DrillDownContext {
 	const node = hierarchyMap.get(itemId);
 	const item = items.find((i) => i.id === itemId);
@@ -263,7 +263,7 @@ export function createDrillDownNodeGroups(
 	const node = hierarchyMap.get(itemId);
 	if (!node) return [];
 
-	const itemMap = new Map(items.map((i) => [i.id, i]));
+// 	const __itemMap = new Map(items.map((i) => [i.id, i]));
 	const childrenByLevel = getChildrenByDrillDownLevel(
 		itemId,
 		hierarchyMap,
@@ -271,7 +271,7 @@ export function createDrillDownNodeGroups(
 	);
 	const groups: DrillDownNodeGroup[] = [];
 
-	const groupIndex = 0;
+// 	const _groupIndex = 0;
 
 	for (const [level, children] of childrenByLevel) {
 		if (children.length === 0) continue;
@@ -298,7 +298,7 @@ export function createDrillDownNodeGroups(
 				itemCount: groupChildren.length,
 				isExpanded: false,
 				canExpand: groupChildren.some(
-					(c) => hierarchyMap.get(c.id)?.childrenIds.length ?? 0 > 0,
+					(c) => (hierarchyMap.get(c.id)?.childrenIds.length ?? 0) > 0,
 				),
 				icon: LEVEL_ICONS[level],
 				color: LEVEL_COLORS[level],
@@ -380,7 +380,7 @@ export function getVisibleDrillDownItems(
 	for (const groupId of expandedGroups) {
 		// Parse group ID to check if it relates to this item
 		if (groupId.startsWith(`dd-${itemId}-`)) {
-			const groupIdx = groupId.split("-").pop();
+// 			const _groupIdx = groupId.split("-").pop();
 			const node = hierarchyMap.get(itemId);
 
 			if (node) {

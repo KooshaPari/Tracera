@@ -185,6 +185,9 @@ make prometheus-ui       # Opens Prometheus
 | Temporal | 7233 | localhost:7233 |
 | Prometheus | 9090 | http://localhost:9090 |
 | Grafana | 3000 | http://localhost:3000 |
+| Loki | 3100 | http://localhost:3100 |
+| Promtail | 9080 | http://localhost:9080 |
+| Jaeger UI | 16686 | http://localhost:16686 |
 | Postgres Exporter | 9187 | http://localhost:9187/metrics |
 | Redis Exporter | 9121 | http://localhost:9121/metrics |
 | Node Exporter | 9100 | http://localhost:9100/metrics |
@@ -237,6 +240,105 @@ make dev  # Vault starts automatically
 - **Full Guide:** [Secrets Management Guide](/docs/guides/SECRETS_MANAGEMENT.md)
 - **Quick Reference:** [Vault Quick Reference](/docs/reference/VAULT_QUICK_REFERENCE.md)
 
+## Observability
+
+TracerTM includes comprehensive observability with metrics, logs, and distributed tracing.
+
+### Metrics (Prometheus + Grafana)
+
+- **Prometheus**: Collects metrics from all services
+- **Grafana**: Visualizes metrics with pre-built dashboards
+- **Exporters**: Postgres, Redis, and Node metrics
+
+Access Grafana at http://localhost:3000 (admin/admin)
+
+### Log Aggregation (Loki + Promtail)
+
+- **Loki**: Centralized log storage and querying
+- **Promtail**: Collects logs from all services
+- **Structured Logging**: JSON logs with context for powerful queries
+
+```bash
+# Check Loki installation
+./scripts/check-loki-installation.sh
+
+# View logs in Grafana
+# 1. Open http://localhost:3000/explore
+# 2. Select "Loki" data source
+# 3. Run queries like: {job="python-backend"} | json | level="ERROR"
+```
+
+**Structured Logging Example:**
+
+```python
+from tracertm.logging_config import get_structlog_logger
+
+logger = get_structlog_logger(__name__)
+logger.info("user_login", user_id=user.id, ip=request.client.host)
+```
+
+**Log Retention:**
+- Loki: 7 days (local development)
+- Error logs: 30 days (file-based)
+
+### Distributed Tracing & APM (Jaeger + OpenTelemetry)
+
+TraceRTM includes comprehensive Application Performance Monitoring (APM):
+
+- **Distributed Tracing**: Track requests across Go and Python backends
+- **Database Instrumentation**: Trace SQL queries and optimize performance
+- **HTTP Client Tracing**: Monitor external API calls
+- **Custom Instrumentation**: Add tracing to your own code
+
+**Access Points:**
+- **Jaeger UI**: http://localhost:16686 - Search traces, view timelines
+- **Grafana APM Dashboards**: http://localhost:3001 - Performance metrics
+  - APM Performance: Response times, throughput, cache metrics
+  - Distributed Tracing: Trace analysis, error rates, top endpoints
+
+**Quick Start:**
+
+```bash
+# 1. Enable tracing in .env
+TRACING_ENABLED=true
+JAEGER_ENDPOINT=localhost:4317
+TRACING_ENVIRONMENT=development
+
+# 2. Start services
+make dev
+
+# 3. View traces
+# - Jaeger UI: http://localhost:16686
+# - Grafana: http://localhost:3001 → Dashboards → APM Performance
+```
+
+**Instrumentation:**
+
+```go
+// Go Backend - Database tracing
+import "github.com/kooshapari/tracertm-backend/internal/tracing"
+
+ctx, dbSpan := tracing.StartDBSpan(ctx, tracing.dbOperationSelect, "items")
+defer dbSpan.End()
+dbSpan.SetQuery("SELECT * FROM items WHERE id = $1")
+```
+
+```python
+# Python Backend - Custom tracing
+from tracertm.observability import trace_method
+
+@trace_method(span_name="process_data")
+async def process_data(data: dict) -> Result:
+    return result
+```
+
+Access Jaeger UI at http://localhost:16686
+
+**Documentation:**
+- [Structured Logging Guide](/docs/guides/structured-logging-guide.md)
+- [Adding Structured Logging Examples](/docs/guides/adding-structured-logging-example.md)
+- [Loki Quick Reference](/docs/reference/loki-quick-reference.md)
+
 ## Development
 
 ### Running Tests
@@ -258,15 +360,56 @@ cd frontend/apps/web && bun run test:e2e
 ### Linting & typechecking
 
 ```bash
-# Run all pre-commit checks (recommended)
+# Run fast pre-commit checks (<5s - recommended for commits)
 pre-commit run --all-files
 
-# Per language
+# Measure pre-commit performance
+./scripts/measure-precommit-performance.sh
+
+# Run comprehensive checks (CI-level validation)
+# Type checking
+uv run mypy src/
+uv run basedpyright src/
+
+# Security scanning
+uv run bandit -r src/
+semgrep --config=p/security-audit src/
+
+# Architecture validation
+uv run tach check
+
+# Per language quick checks
 cd backend && golangci-lint run          # Go (lint + fmt)
 cd frontend && bun run check            # Frontend (Biome lint + format)
 cd frontend && bun run typecheck        # Frontend TypeScript
 ruff check src/ && ruff format --check . # Python
 ```
+
+**Note**: Pre-commit hooks are optimized for speed (<5s). Comprehensive checks (type checking, security scans, tests) run in CI. See [Pre-commit Optimization Guide](docs/guides/quick-start/PRE_COMMIT_OPTIMIZATION.md) for details.
+
+### Dependency Management
+
+TracerTM uses Dependabot for automated dependency updates across all package ecosystems:
+
+```bash
+# List Dependabot PRs
+gh pr list --author "dependabot[bot]"
+
+# Validate Dependabot configuration
+./scripts/validate-dependabot.sh
+
+# View update schedules and auto-merge rules
+cat .github/dependabot.yml
+```
+
+**Auto-merge policy**:
+- ✅ Patch updates (x.y.Z) - Auto-merged after tests pass
+- ✅ Minor updates (x.Y.z) - Auto-merged after tests pass
+- ⚠️ Major updates (X.y.z) - Require manual review
+
+**Resources**:
+- **[Dependabot Guide](/docs/guides/DEPENDABOT_GUIDE.md)** - Full configuration and usage
+- **[Quick Reference](/docs/reference/DEPENDABOT_QUICK_REFERENCE.md)** - Common commands
 
 ### Debugging
 

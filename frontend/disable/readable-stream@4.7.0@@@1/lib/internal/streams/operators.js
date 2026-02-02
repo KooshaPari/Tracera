@@ -107,7 +107,7 @@ function map(fn, options) {
               continue
             }
             val = PromiseResolve(val)
-          } catch (err) {
+          } catch (_err) {
             val = PromiseReject(err)
           }
           cnt += 1
@@ -124,7 +124,7 @@ function map(fn, options) {
           }
         }
         queue.push(kEof)
-      } catch (err) {
+      } catch (_err) {
         const val = PromiseReject(err)
         PromisePrototypeThen(val, afterItemProcessed, onCatch)
         queue.push(val)

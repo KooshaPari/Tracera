@@ -1,4 +1,6 @@
 // Mock elkjs before any imports
+import { vi } from "vitest";
+
 vi.mock("elkjs", () => ({
 	default: class MockELK {
 		layout() {

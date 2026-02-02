@@ -711,7 +711,7 @@ declare module "http2" {
 		 *       } else {
 		 *         stream.respond({ ':status': 500 });
 		 *       }
-		 *     } catch (err) {
+		 *     } catch (_err) {
 		 *       // Perform actual error handling.
 		 *       console.error(err);
 		 *     }

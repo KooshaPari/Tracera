@@ -324,7 +324,7 @@ function validateAndNormalizePrerenderPages(
     let url: URL
     try {
       url = new URL(page.path, routerBaseUrl)
-    } catch (err) {
+    } catch (_err) {
       throw new Error(`prerender page path must be relative: ${page.path}`, {
         cause: err,
       })

@@ -96,6 +96,7 @@
 /* Stagger children (add delay to nth-child) */
 .stagger-children > * {
 	animation: fade-in-up var(--duration-slow, 300ms) var(--ease-out-expo, ease-out) forwards;
+	opacity: 0;
 }
 
 .stagger-children > *:nth-child(1) { animation-delay: 0ms; }
@@ -116,10 +117,6 @@
 .animate-in-scale,
 .animate-in-slide-right,
 .section-entrance {
-	opacity: 0;
-}
-
-.stagger-children > * {
 	opacity: 0;
 }
 

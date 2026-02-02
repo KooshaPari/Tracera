@@ -61,7 +61,7 @@ suite("fileUtils", () => {
 		let barDeleted = false;
 		try {
 			fs.statSync("bar");
-		} catch (err) {
+		} catch (_err) {
 			if (err.code == "ENOENT") {
 				barDeleted = true;
 			}
@@ -88,7 +88,7 @@ suite("fileUtils", () => {
 		let barDeleted = false;
 		try {
 			fs.statSync("bar");
-		} catch (err) {
+		} catch (_err) {
 			if (err.code == "ENOENT") {
 				barDeleted = true;
 			}

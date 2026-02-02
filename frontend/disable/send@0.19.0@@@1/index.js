@@ -996,7 +996,7 @@ function createHttpError (status, err) {
 function decode (path) {
   try {
     return decodeURIComponent(path)
-  } catch (err) {
+  } catch (_err) {
     return -1
   }
 }

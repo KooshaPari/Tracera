@@ -1,6 +1,8 @@
 import { useEffect, useRef } from "react";
-import { apiClient } from "@/api/client";
 import { useConnectionStatusStore } from "@/stores/connectionStatusStore";
+import client from "@/api/client";
+
+const { apiClient } = client;
 
 const POLL_INTERVAL_MS = 25_000;
 const RETRY_ATTEMPTS = 3;
@@ -66,8 +68,8 @@ export function useConnectionHealth(): void {
 				}
 				setOnline();
 				hasEverConnected = true;
-			} catch {
-				if (cancelled) return;
+            } catch {
+                if (cancelled) return;
 				if (!hasEverConnected) {
 					setConnecting("Still waiting for backend…");
 				} else {
@@ -87,8 +89,8 @@ export function useConnectionHealth(): void {
 							hasEverConnected = true;
 							return;
 						}
-					} catch {
-						// continue retries
+                    } catch {
+                        // continue retries
 					}
 				}
 				setLost(
@@ -101,7 +103,7 @@ export function useConnectionHealth(): void {
 
 		// Initial poll after a short delay so we don't block first paint
 		const initial = setTimeout(() => {
-			poll();
+			void poll();
 		}, 2000);
 
 		intervalRef.current = setInterval(poll, POLL_INTERVAL_MS);

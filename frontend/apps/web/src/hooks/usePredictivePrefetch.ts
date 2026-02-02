@@ -28,6 +28,7 @@
  */
 
 import { useEffect, useRef, useState } from "react";
+import { logger } from '@/lib/logger';
 
 /**
  * Viewport state including position, dimensions, and zoom

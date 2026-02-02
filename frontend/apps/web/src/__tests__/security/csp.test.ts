@@ -1,5 +1,5 @@
+/* eslint-disable unicorn/consistent-function-scoping -- test helpers defined inline for clarity */
 import { describe, expect, it, vi } from "vitest";
-import { logger } from '@/lib/logger';
 
 // Test Content Security Policy implementation
 describe("Content Security Policy Tests", () => {
@@ -255,7 +255,7 @@ describe("Content Security Policy Tests", () => {
 				typeof window !== "undefined" && "trustedTypes" in window;
 
 			// Test is informational about browser support
-			expect(supportsTrustedTypes || !supportsTrustedTypes).toBeDefined();
+			expect(typeof supportsTrustedTypes).toBe("boolean");
 		});
 
 		it("should create trusted HTML policy", () => {
@@ -379,17 +379,17 @@ describe("CSP Violation Handling", () => {
 		});
 	});
 
+	async function reportCSPViolation(violation: SecurityPolicyViolationEvent) {
+		await fetch("/api/security/csp-report", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(violation),
+		});
+	}
+
 	it("should report CSP violations to server", async () => {
 		const mockFetch = vi.fn().mockResolvedValue({ ok: true });
 		global.fetch = mockFetch;
-
-		const reportCSPViolation = async (violation: any) => {
-			await fetch("/api/security/csp-report", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(violation),
-			});
-		};
 
 		const violation = {
 			directive: "script-src",

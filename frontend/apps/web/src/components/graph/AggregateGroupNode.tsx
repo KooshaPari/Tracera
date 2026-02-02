@@ -16,6 +16,7 @@ import {
 	Minimize2,
 } from "lucide-react";
 import { memo, useCallback } from "react";
+import { logger } from '@/lib/logger';
 import type { AggregateGroup } from "../../utils/aggregation";
 import { getTypeColor } from "./utils/typeStyles";
 

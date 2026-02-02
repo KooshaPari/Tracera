@@ -10,6 +10,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { logger } from '@/lib/logger';
 
 /**
  * Workflow context data structure

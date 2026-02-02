@@ -53,7 +53,7 @@ export var Trapezoid = function Trapezoid(props) {
         if (pathTotalLength) {
           setTotalLength(pathTotalLength);
         }
-      } catch (err) {
+      } catch (_err) {
         // calculate total length error
       }
     }

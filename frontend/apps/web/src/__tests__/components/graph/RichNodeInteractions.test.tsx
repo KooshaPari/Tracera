@@ -1,5 +1,4 @@
 import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
 // Import components directly to avoid layout dependencies
@@ -34,7 +33,6 @@ describe("NodeActions", () => {
 	});
 
 	it("calls onExpand when expand button is clicked", async () => {
-		const user = userEvent.setup();
 		const onExpand = vi.fn();
 		const onNavigate = vi.fn();
 		const onShowMenu = vi.fn();
@@ -57,7 +55,6 @@ describe("NodeActions", () => {
 	});
 
 	it("calls onNavigate when navigate button is clicked", async () => {
-		const user = userEvent.setup();
 		const onExpand = vi.fn();
 		const onNavigate = vi.fn();
 		const onShowMenu = vi.fn();
@@ -98,11 +95,10 @@ describe("NodeActions", () => {
 	});
 
 	it("stops event propagation on button clicks", async () => {
-		const user = userEvent.setup();
 		const onExpand = vi.fn();
 		const parentClick = vi.fn();
 
-		const { container } = render(
+		render(
 			<div onClick={parentClick}>
 				<NodeActions
 					nodeId="test-node"
@@ -141,7 +137,6 @@ describe("NodeContextMenu", () => {
 	});
 
 	it("shows menu items on right click", async () => {
-		const user = userEvent.setup();
 
 		render(
 			<NodeContextMenu
@@ -167,7 +162,6 @@ describe("NodeContextMenu", () => {
 	});
 
 	it("calls onViewDetails when menu item is clicked", async () => {
-		const user = userEvent.setup();
 		const onViewDetails = vi.fn();
 
 		render(
@@ -195,7 +189,6 @@ describe("NodeContextMenu", () => {
 	});
 
 	it("calls onCopyId when Copy ID is clicked", async () => {
-		const user = userEvent.setup();
 		const onCopyId = vi.fn();
 
 		render(
@@ -284,7 +277,7 @@ describe("NodeHoverTooltip", () => {
 			category: "feature",
 		};
 
-		const { container } = render(
+		render(
 			<NodeHoverTooltip
 				nodeId="test-node"
 				nodeType="requirement"
@@ -299,7 +292,7 @@ describe("NodeHoverTooltip", () => {
 	});
 
 	it("positions tooltip based on position prop", () => {
-		const { container } = render(
+		render(
 			<NodeHoverTooltip
 				nodeId="test-node"
 				nodeType="requirement"
@@ -308,9 +301,12 @@ describe("NodeHoverTooltip", () => {
 			/>,
 		);
 
-		const tooltip = container.firstChild as HTMLElement;
-		expect(tooltip.style.left).toBe("160px"); // x + 10
-		expect(tooltip.style.top).toBe("210px"); // y + 10
+		const tooltip = container.firstChild;
+		expect(tooltip).toBeInstanceOf(HTMLElement);
+		if (tooltip instanceof HTMLElement) {
+			expect(tooltip.style.left).toBe("160px"); // x + 10
+			expect(tooltip.style.top).toBe("210px"); // y + 10
+		}
 	});
 });
 
@@ -330,7 +326,6 @@ describe("NodeQuickActions", () => {
 	});
 
 	it("opens link popover when link button is clicked", async () => {
-		const user = userEvent.setup();
 
 		render(
 			<NodeQuickActions
@@ -350,7 +345,6 @@ describe("NodeQuickActions", () => {
 	});
 
 	it("calls onAddLink when link is submitted", async () => {
-		const user = userEvent.setup();
 		const onAddLink = vi.fn();
 
 		render(
@@ -379,7 +373,6 @@ describe("NodeQuickActions", () => {
 	});
 
 	it("opens tag popover when tag button is clicked", async () => {
-		const user = userEvent.setup();
 
 		render(
 			<NodeQuickActions
@@ -399,7 +392,6 @@ describe("NodeQuickActions", () => {
 	});
 
 	it("calls onAddTag when tag is submitted", async () => {
-		const user = userEvent.setup();
 		const onAddTag = vi.fn();
 
 		render(
@@ -428,7 +420,6 @@ describe("NodeQuickActions", () => {
 	});
 
 	it("calls onEditNote when note is submitted", async () => {
-		const user = userEvent.setup();
 		const onEditNote = vi.fn();
 
 		render(
@@ -457,7 +448,6 @@ describe("NodeQuickActions", () => {
 	});
 
 	it("clears input after submission", async () => {
-		const user = userEvent.setup();
 
 		render(
 			<NodeQuickActions
@@ -475,14 +465,18 @@ describe("NodeQuickActions", () => {
 			expect(screen.getByPlaceholderText("Tag name")).toBeInTheDocument();
 		});
 
-		const input = screen.getByPlaceholderText("Tag name") as HTMLInputElement;
-		await user.type(input, "test-tag");
+		const inputEl = screen.getByPlaceholderText("Tag name");
+		if (inputEl instanceof HTMLInputElement) {
+			await user.type(inputEl, "test-tag");
+		}
 
 		const addButton = screen.getByRole("button", { name: /add/i });
 		await user.click(addButton);
 
 		await waitFor(() => {
-			expect(input.value).toBe("");
+			expect(
+				inputEl instanceof HTMLInputElement ? inputEl.value : "",
+			).toBe("");
 		});
 	});
 });

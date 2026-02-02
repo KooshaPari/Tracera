@@ -208,7 +208,7 @@ function* requireModule(type, loader, name) {
   try {
     LOADING_MODULES.add(name);
     return yield* (0, _moduleTypes.default)(name, loader, `You appear to be using a native ECMAScript module ${type}, ` + "which is only supported when running Babel asynchronously " + "or when using the Node.js `--experimental-require-module` flag.", `You appear to be using a ${type} that contains top-level await, ` + "which is only supported when running Babel asynchronously.", true);
-  } catch (err) {
+  } catch (_err) {
     err.message = `[BABEL]: ${err.message} (While processing: ${name})`;
     throw err;
   } finally {

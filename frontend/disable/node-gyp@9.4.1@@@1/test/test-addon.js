@@ -29,7 +29,7 @@ function checkCharmapValid () {
   try {
     data = execFileSync('python', ['fixtures/test-charmap.py'],
       { cwd: __dirname })
-  } catch (err) {
+  } catch (_err) {
     return false
   }
   var lines = data.toString().trim().split('\n')
@@ -77,7 +77,7 @@ describe('addon', function () {
     var configPath = path.join(addonPath, 'build', 'config.gypi')
     try {
       data = fs.readFileSync(configPath, 'utf8')
-    } catch (err) {
+    } catch (_err) {
       assert.fail(err)
       return
     }
@@ -87,7 +87,7 @@ describe('addon', function () {
     // Create symbol link to path with non-ascii characters
     try {
       fs.symlinkSync(nodeDir, testNodeDir, 'dir')
-    } catch (err) {
+    } catch (_err) {
       switch (err.code) {
         case 'EEXIST': break
         case 'EPERM':
@@ -110,7 +110,7 @@ describe('addon', function () {
     var proc = execFile(process.execPath, cmd, function (err, stdout, stderr) {
       try {
         fs.unlink(testNodeDir)
-      } catch (err) {
+      } catch (_err) {
         assert.fail(err)
       }
 

@@ -36,7 +36,7 @@ async function getResolveErrorBodyCallback ({ callback, body, contentType, statu
       process.nextTick(callback, new ResponseStatusCodeError(`Response status code ${statusCode}${statusMessage ? `: ${statusMessage}` : ''}`, statusCode, headers, payload))
       return
     }
-  } catch (err) {
+  } catch (_err) {
     // Process in a fallback if error
   }
 

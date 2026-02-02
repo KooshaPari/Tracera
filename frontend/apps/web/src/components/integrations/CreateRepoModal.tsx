@@ -19,13 +19,14 @@ import { toast } from "sonner";
 import type { GitHubAppInstallation } from "@/api/github";
 import { Button } from "@/components/ui/enterprise-button";
 import { useCreateGitHubRepo } from "@/hooks/useGitHub";
+import type { ApiErrorResponse } from "@/types";
 
 export interface CreateRepoModalProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	installation: GitHubAppInstallation;
 	accountId: string;
-	onSuccess?: (repo: any) => void;
+	onSuccess?: (repo: { id: string; full_name: string; name: string }) => void;
 }
 
 export function CreateRepoModal({
@@ -72,8 +73,14 @@ export function CreateRepoModal({
 			setName("");
 			setDescription("");
 			setIsPrivate(false);
-		} catch (error: any) {
-			toast.error(error.message || "Failed to create repository");
+		} catch (error) {
+			const message =
+				error instanceof Error
+					? error.message
+					: (error && typeof error === "object" && "message" in error && typeof (error as ApiErrorResponse).message === "string")
+						? (error as ApiErrorResponse).message
+						: "Failed to create repository";
+			toast.error(message);
 		}
 	};
 

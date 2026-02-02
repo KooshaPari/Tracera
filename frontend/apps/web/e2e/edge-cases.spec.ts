@@ -16,7 +16,7 @@ test.describe("Edge Cases - Empty States", () => {
 	test("should display empty state when no items exist", async ({ page }) => {
 		// Mock empty response
 		await page.route("**/api/items**", (route) => {
-			route.fulfill({
+			void route.fulfill({
 				status: 200,
 				body: JSON.stringify({ items: [], total: 0 }),
 			});
@@ -39,7 +39,7 @@ test.describe("Edge Cases - Empty States", () => {
 		page,
 	}) => {
 		await page.route("**/api/projects**", (route) => {
-			route.fulfill({
+			void route.fulfill({
 				status: 200,
 				body: JSON.stringify({ projects: [], total: 0 }),
 			});
@@ -64,7 +64,7 @@ test.describe("Edge Cases - Empty States", () => {
 
 	test("should handle empty agent list", async ({ page }) => {
 		await page.route("**/api/agents**", (route) => {
-			route.fulfill({
+			void route.fulfill({
 				status: 200,
 				body: JSON.stringify({ agents: [], total: 0 }),
 			});
@@ -82,7 +82,7 @@ test.describe("Edge Cases - Network Errors", () => {
 		await page.route("**/api/items**", (route) => {
 			// Simulate timeout by not responding
 			setTimeout(() => {
-				route.abort("timedout");
+				void route.abort("timedout");
 			}, 5000);
 		});
 
@@ -100,7 +100,7 @@ test.describe("Edge Cases - Network Errors", () => {
 
 	test("should handle 500 server error", async ({ page }) => {
 		await page.route("**/api/items**", (route) => {
-			route.fulfill({
+			void route.fulfill({
 				status: 500,
 				body: JSON.stringify({ error: "Internal Server Error" }),
 			});
@@ -156,9 +156,9 @@ test.describe("Edge Cases - Network Errors", () => {
 			requestCount++;
 
 			if (requestCount < 3) {
-				route.fulfill({ status: 500 });
+				void route.fulfill({ status: 500 });
 			} else {
-				route.fulfill({
+				void route.fulfill({
 					status: 200,
 					body: JSON.stringify({ items: [], total: 0 }),
 				});
@@ -197,7 +197,7 @@ test.describe("Edge Cases - Boundary Values", () => {
 
 	test("should handle zero items in pagination", async ({ page }) => {
 		await page.route("**/api/items**", (route) => {
-			route.fulfill({
+			void route.fulfill({
 				status: 200,
 				body: JSON.stringify({ items: [], total: 0, page: 1, pageSize: 10 }),
 			});
@@ -223,7 +223,7 @@ test.describe("Edge Cases - Boundary Values", () => {
 		}));
 
 		await page.route("**/api/items**", (route) => {
-			route.fulfill({
+			void route.fulfill({
 				status: 200,
 				body: JSON.stringify({ items, total: 100 }),
 			});
@@ -349,7 +349,7 @@ test.describe("Edge Cases - Concurrent Operations", () => {
 test.describe("Edge Cases - Data Validation", () => {
 	test("should handle null/undefined values gracefully", async ({ page }) => {
 		await page.route("**/api/items/**", (route) => {
-			route.fulfill({
+			void route.fulfill({
 				status: 200,
 				body: JSON.stringify({
 					id: "test-id",
@@ -376,7 +376,7 @@ test.describe("Edge Cases - Data Validation", () => {
 
 	test("should handle malformed API responses", async ({ page }) => {
 		await page.route("**/api/items**", (route) => {
-			route.fulfill({
+			void route.fulfill({
 				status: 200,
 				body: "Not valid JSON",
 			});
@@ -393,7 +393,7 @@ test.describe("Edge Cases - Data Validation", () => {
 		page,
 	}) => {
 		await page.route("**/api/items**", (route) => {
-			route.fulfill({
+			void route.fulfill({
 				status: 200,
 				body: JSON.stringify({
 					items: [
@@ -476,7 +476,9 @@ test.describe("Edge Cases - Browser Compatibility", () => {
 		context,
 	}) => {
 		// This test checks for progressive enhancement
-		await context.route("**/*.js", (route) => route.abort());
+		await context.route("**/*.js", async (route) => {
+			await route.abort();
+		});
 
 		try {
 			await page.goto("/", { timeout: 5000 });
@@ -501,7 +503,7 @@ test.describe("Edge Cases - Form Validation", () => {
 
 		// Should show validation errors
 		const errors = page.locator(".error");
-		await expect(errors).toHaveCountGreaterThan(0);
+		expect(await errors.count()).toBeGreaterThan(0);
 	});
 
 	test("should prevent submission while validating", async ({ page }) => {
@@ -592,7 +594,7 @@ test.describe("Edge Cases - URL and Routing", () => {
 		const initialUrl = page.url();
 
 		// Navigate to detail and back
-		await page.click('[data-testid="item-card"]').first();
+		await page.locator('[data-testid="item-card"]').first().click();
 		await page.goBack();
 
 		// Query parameters should be preserved
@@ -607,9 +609,13 @@ test.describe("Edge Cases - Performance Under Load", () => {
 
 		// Rapidly scroll up and down
 		for (let i = 0; i < 10; i++) {
-			await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+			await page.evaluate(() => {
+				window.scrollTo(0, document.body.scrollHeight);
+			});
 			await page.waitForTimeout(50);
-			await page.evaluate(() => window.scrollTo(0, 0));
+			await page.evaluate(() => {
+				window.scrollTo(0, 0);
+			});
 			await page.waitForTimeout(50);
 		}
 
@@ -622,7 +628,7 @@ test.describe("Edge Cases - Performance Under Load", () => {
 		await page.goto("/dashboard");
 
 		// Trigger many API calls
-		const promises = [];
+		const promises: Promise<unknown>[] = [];
 		for (let i = 0; i < 20; i++) {
 			promises.push(page.goto("/items"));
 			promises.push(page.goto("/projects"));
@@ -631,7 +637,7 @@ test.describe("Edge Cases - Performance Under Load", () => {
 		await Promise.allSettled(promises);
 
 		// Should handle without crashing
-		await expect(page).toBeDefined();
+		expect(page).toBeDefined();
 	});
 });
 

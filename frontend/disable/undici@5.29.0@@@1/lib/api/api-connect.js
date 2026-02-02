@@ -92,7 +92,7 @@ function connect (opts, callback) {
   try {
     const connectHandler = new ConnectHandler(opts, callback)
     this.dispatch({ ...opts, method: 'CONNECT' }, connectHandler)
-  } catch (err) {
+  } catch (_err) {
     if (typeof callback !== 'function') {
       throw err
     }

@@ -72,7 +72,7 @@ export const trackStream = (stream, chunkSize, onProgress, onFinish) => {
           onProgress(loadedBytes);
         }
         controller.enqueue(new Uint8Array(value));
-      } catch (err) {
+      } catch (_err) {
         _onFinish(err);
         throw err;
       }

@@ -171,7 +171,7 @@ const fetch = async (url, opts) => {
             // handle corrupted header
             try {
               headers.set('Location', locationURL)
-            } catch (err) {
+            } catch (_err) {
               /* istanbul ignore next: nodejs server prevent invalid
                  response headers, we can't test this through normal
                  request */
@@ -338,7 +338,7 @@ const fetch = async (url, opts) => {
         // istanbul ignore next
         try {
           var decoder = new zlib.BrotliDecompress()
-        } catch (err) {
+        } catch (_err) {
           reject(err)
           finalize()
           return

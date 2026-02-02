@@ -49,7 +49,7 @@ export function useLinkGitHubAppInstallation() {
 			accountId: string;
 		}) => linkGitHubAppInstallation(installationId, accountId),
 		onSuccess: (_, variables) => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: ["github", "app", "installations", variables.accountId],
 			});
 		},
@@ -64,7 +64,7 @@ export function useDeleteGitHubAppInstallation() {
 	return useMutation({
 		mutationFn: deleteGitHubAppInstallation,
 		onSuccess: () => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: ["github", "app", "installations"],
 			});
 		},
@@ -97,7 +97,7 @@ export function useCreateGitHubRepo() {
 	return useMutation({
 		mutationFn: (data: CreateRepoRequest) => createGitHubRepo(data),
 		onSuccess: (_, variables) => {
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: [
 					"github",
 					"repos",

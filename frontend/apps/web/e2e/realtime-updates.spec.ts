@@ -67,7 +67,7 @@ test.describe("Real-time Updates", () => {
 			},
 		);
 
-		const item = await createResponse.json();
+		const item = (await createResponse.json()) as { id: string };
 		const itemId = item.id;
 
 		// Wait for item to appear
@@ -108,7 +108,7 @@ test.describe("Real-time Updates", () => {
 				},
 			},
 		);
-		const item1 = await item1Response.json();
+		const item1 = (await item1Response.json()) as { id: string };
 
 		const item2Response = await page.request.post(
 			"http://localhost:8080/api/v1/items",
@@ -121,7 +121,7 @@ test.describe("Real-time Updates", () => {
 				},
 			},
 		);
-		const item2 = await item2Response.json();
+		const item2 = (await item2Response.json()) as { id: string };
 
 		// Create link via API
 		await page.request.post("http://localhost:8080/api/v1/links", {

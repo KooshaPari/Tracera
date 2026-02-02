@@ -124,7 +124,7 @@ function SidebarComponent() {
 	const { currentProject, recentProjects } = useProjectStore();
 	const { data: allProjects } = useProjects();
 	// WorkOS enabled check (unused but kept for future use)
-	void import.meta.env.VITE_WORKOS_CLIENT_ID;
+	void import.meta.env["VITE_WORKOS_CLIENT_ID"];
 
 	const projectId = params.projectId as string | undefined;
 	const isTestEnv =
@@ -301,7 +301,7 @@ function SidebarComponent() {
 
 		const activeId =
 			(typeof projectId === "string" && projectId) ||
-			(currentProject?.id != null && String(currentProject.id)) ||
+			(currentProject?.id !== null && String(currentProject.id)) ||
 			"";
 		if (activeId) {
 			groups.push({
@@ -628,14 +628,14 @@ function SidebarComponent() {
 			.map((group) => {
 				// Handle "all-views" group with categories
 				if ((group as any).categories) {
-					const filteredCategories = (group as any).categories
-						.map((cat: any) => ({
+					const filteredCategories = (group as { categories: Array<{ views: Array<{ title: string }> }> }).categories
+						.map((cat: { views: Array<{ title: string }> }) => ({
 							...cat,
-							views: cat.views.filter((view: any) =>
+							views: cat.views.filter((view: { title: string }) =>
 								view.title.toLowerCase().includes(query),
 							),
 						}))
-						.filter((cat: any) => cat.views.length > 0);
+						.filter((cat: { views: unknown[] }) => cat.views.length > 0);
 					return {
 						...group,
 						categories: filteredCategories,
@@ -643,7 +643,7 @@ function SidebarComponent() {
 				}
 
 				// Handle regular groups with items
-				const filteredItems = group.items.filter((item: any) =>
+				const filteredItems = group.items.filter((item: { title: string }) =>
 					item.title.toLowerCase().includes(query),
 				);
 				return { ...group, items: filteredItems };
@@ -685,7 +685,7 @@ function SidebarComponent() {
 		const filtered = recentProjectObjects;
 
 		// Apply sort
-		const sorted = [...filtered].sort((a, b) => {
+		const sorted = [...filtered].toSorted((a: { name: string; id: string; updatedAt?: string; createdAt?: string }, b: { name: string; id: string; updatedAt?: string; createdAt?: string }) => {
 			if (recentSort === "alphabetical") {
 				return a.name.localeCompare(b.name);
 			} else if (recentSort === "modified") {
@@ -703,7 +703,7 @@ function SidebarComponent() {
 		// Filter by search query
 		if (searchQuery.trim()) {
 			const query = searchQuery.toLowerCase();
-			return sorted.filter((p) => p.name.toLowerCase().includes(query));
+			return sorted.filter((p: { name: string }) => p.name.toLowerCase().includes(query));
 		}
 
 		return sorted.slice(0, 5);
@@ -749,7 +749,6 @@ function SidebarComponent() {
 								}
 							: undefined
 					}
-					role="navigation"
 					aria-label="Main navigation"
 				>
 					{/* Logo Area */}
@@ -882,7 +881,7 @@ function SidebarComponent() {
 														value="views"
 														className="space-y-1 mt-0 max-h-[280px] overflow-y-auto overflow-x-hidden min-w-0 w-full max-w-full isolate"
 													>
-														{viewsItems.map((item: any, _idx: number) => (
+														{viewsItems.map((item: { href: string }) => (
 															<NavItem
 																key={item.href}
 																ref={setNavItemRef}
@@ -1025,11 +1024,11 @@ function SidebarComponent() {
 														(
 															category: {
 																name: string;
-																icon: any;
+																icon: React.ComponentType<{ className?: string }>;
 																views: Array<{
 																	title: string;
 																	href: string;
-																	icon: any;
+																	icon: React.ComponentType<{ className?: string }>;
 																	description: string;
 																}>;
 															},
@@ -1118,7 +1117,7 @@ function SidebarComponent() {
 												</div>
 											</CollapsibleTrigger>
 											<CollapsibleContent className="pt-1 space-y-1 max-h-[360px] overflow-y-auto overflow-x-hidden min-w-0 w-full max-w-full isolate">
-												{group.items.map((item: any) => (
+												{group.items.map((item: { href: string }) => (
 													<NavItem
 														key={item.href}
 														ref={setNavItemRef}
@@ -1141,7 +1140,7 @@ function SidebarComponent() {
 											</h3>
 										)}
 										<div className="space-y-0.5 min-w-0 w-full" role="list">
-											{group.items.map((item: any) => (
+											{group.items.map((item: { href: string }) => (
 												<NavItem
 													key={item.href}
 													ref={setNavItemRef}
@@ -1201,7 +1200,7 @@ function SidebarComponent() {
 										</div>
 									</div>
 									<div className="space-y-0.5 max-h-[260px] overflow-y-auto overflow-x-hidden min-w-0 w-full max-w-full">
-										{sortedRecentProjects.map((p) => (
+										{sortedRecentProjects.map((p: { id: string; name: string }) => (
 											<Tooltip key={p.id}>
 												<TooltipTrigger asChild>
 													<div className="group relative flex items-center min-w-0 w-full overflow-hidden">
@@ -1339,7 +1338,7 @@ interface NavItemProps {
 	item: {
 		title: string;
 		href: string;
-		icon: any;
+		icon: React.ComponentType<{ className?: string }>;
 		badge: number | null;
 	};
 	isActive: boolean;

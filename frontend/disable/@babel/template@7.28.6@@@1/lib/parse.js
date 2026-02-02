@@ -148,7 +148,7 @@ function parseWithCodeFrame(code, parserOpts, syntacticPlaceholders) {
   });
   try {
     return (0, _parser.parse)(code, parserOpts);
-  } catch (err) {
+  } catch (_err) {
     const loc = err.loc;
     if (loc) {
       err.message += "\n" + (0, _codeFrame.codeFrameColumns)(code, {

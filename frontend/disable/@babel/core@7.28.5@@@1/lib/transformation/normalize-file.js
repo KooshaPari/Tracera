@@ -62,7 +62,7 @@ function* normalizeFile(pluginPasses, options, code, ast) {
 			if (lastComment) {
 				try {
 					inputMap = _convertSourceMap().fromComment("//" + lastComment);
-				} catch (err) {
+				} catch (_err) {
 					debug("discarding unknown inline input sourcemap");
 				}
 			}
@@ -77,7 +77,7 @@ function* normalizeFile(pluginPasses, options, code, ast) {
 						"utf8",
 					);
 					inputMap = _convertSourceMap().fromJSON(inputMapContent);
-				} catch (err) {
+				} catch (_err) {
 					debug("discarding unknown file input sourcemap", err);
 				}
 			} else if (lastComment) {

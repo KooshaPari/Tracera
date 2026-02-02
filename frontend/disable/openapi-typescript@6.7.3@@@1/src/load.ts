@@ -55,7 +55,7 @@ function parseHttpHeaders(httpHeaders: Record<string, unknown>): Record<string, 
       try {
         const stringVal = JSON.stringify(v);
         finalHeaders[k] = stringVal;
-      } catch (err) {
+      } catch (_err) {
         error(`Can’t parse key: ${k} into JSON format. Continuing with the next HTTP header that is specified`);
       }
     }

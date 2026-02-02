@@ -114,8 +114,8 @@ export function FeatureView({ projectId }: FeatureViewProps) {
 			});
 			toast.success(createType === "epic" ? "Epic created" : "Feature created");
 			setShowCreate(false);
-		} catch (e) {
-			toast.error(e instanceof Error ? e.message : "Failed to create");
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : "Failed to create");
 		}
 	};
 

@@ -223,7 +223,7 @@ export async function handleCSRFError(response: Response): Promise<boolean> {
 						return false;
 					}
 				}
-			} catch {
+			} catch (error) {
 				// Response body not JSON, not a CSRF error
 			}
 		}

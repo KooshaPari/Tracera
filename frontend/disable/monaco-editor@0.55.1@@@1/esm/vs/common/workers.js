@@ -77,14 +77,14 @@ function createTrustedTypesPolicy(policyName, policyOptions) {
   if (monacoEnvironment?.createTrustedTypesPolicy) {
     try {
       return monacoEnvironment.createTrustedTypesPolicy(policyName, policyOptions);
-    } catch (err) {
+    } catch (_err) {
       console.error(err);
       return void 0;
     }
   }
   try {
     return globalThis.trustedTypes?.createPolicy(policyName, policyOptions);
-  } catch (err) {
+  } catch (_err) {
     console.error(err);
     return void 0;
   }

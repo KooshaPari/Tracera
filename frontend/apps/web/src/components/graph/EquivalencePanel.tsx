@@ -95,17 +95,17 @@ const STRATEGY_LABELS: Record<EquivalenceStrategy, string> = {
 };
 
 // Strategy icons mapping (available for future icon support)
-const _STRATEGY_ICONS: Record<EquivalenceStrategy, string> = {
-	explicit_annotation: "annotation",
-	manual_link: "link",
-	api_contract: "api",
-	shared_canonical: "concept",
-	naming_pattern: "naming",
-	semantic_similarity: "semantic",
-	structural: "structural",
-	temporal: "temporal",
-	co_occurrence: "co-occurrence",
-};
+// const STRATEGY_ICONS: Record<EquivalenceStrategy, string> = {
+// 	explicit_annotation: "annotation",
+// 	manual_link: "link",
+// 	api_contract: "api",
+// 	shared_canonical: "concept",
+// 	naming_pattern: "naming",
+// 	semantic_similarity: "semantic",
+// 	structural: "structural",
+// 	temporal: "temporal",
+// 	co_occurrence: "co-occurrence",
+// };
 
 // =============================================================================
 // COMPONENT
@@ -419,21 +419,21 @@ interface ConfidenceBadgeProps {
 	strategy?: EquivalenceStrategy;
 }
 
+function getConfidenceColor(conf: number): string {
+	if (conf >= 0.9) return "text-green-600 bg-green-100";
+	if (conf >= 0.7) return "text-amber-600 bg-amber-100";
+	if (conf >= 0.5) return "text-orange-600 bg-orange-100";
+	return "text-red-600 bg-red-100";
+}
+
+function getConfidenceLabel(conf: number): string {
+	if (conf >= 0.9) return "High";
+	if (conf >= 0.7) return "Medium";
+	if (conf >= 0.5) return "Low";
+	return "Very Low";
+}
+
 function ConfidenceBadge({ confidence, strategy }: ConfidenceBadgeProps) {
-	const getConfidenceColor = (conf: number) => {
-		if (conf >= 0.9) return "text-green-600 bg-green-100";
-		if (conf >= 0.7) return "text-amber-600 bg-amber-100";
-		if (conf >= 0.5) return "text-orange-600 bg-orange-100";
-		return "text-red-600 bg-red-100";
-	};
-
-	const getConfidenceLabel = (conf: number) => {
-		if (conf >= 0.9) return "High";
-		if (conf >= 0.7) return "Medium";
-		if (conf >= 0.5) return "Low";
-		return "Very Low";
-	};
-
 	return (
 		<Tooltip delayDuration={200}>
 			<TooltipTrigger>
@@ -532,7 +532,7 @@ function buildEquivalenceItems(
 	}
 
 	// Sort by confidence descending
-	return results.sort((a, b) => b.confidence - a.confidence);
+	return results.toSorted((a, b) => b.confidence - a.confidence);
 }
 
 function getPerspectiveForItem(item: Item): {

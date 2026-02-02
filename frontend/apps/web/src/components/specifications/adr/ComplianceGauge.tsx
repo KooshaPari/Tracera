@@ -8,6 +8,12 @@ interface ComplianceGaugeProps {
 	className?: string;
 }
 
+function getColor(value: number) {
+	if (value >= 90) return "#10b981"; // green-500
+	if (value >= 70) return "#f59e0b"; // amber-500
+	return "#ef4444"; // red-500
+}
+
 export function ComplianceGauge({
 	score,
 	size = 100,
@@ -18,13 +24,6 @@ export function ComplianceGauge({
 		{ name: "Score", value: score },
 		{ name: "Remaining", value: 100 - score },
 	];
-
-	// Color logic
-	const getColor = (value: number) => {
-		if (value >= 90) return "#10b981"; // green-500
-		if (value >= 70) return "#f59e0b"; // amber-500
-		return "#ef4444"; // red-500
-	};
 
 	const color = getColor(score);
 

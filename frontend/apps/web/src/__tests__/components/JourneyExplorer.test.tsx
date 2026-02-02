@@ -2,7 +2,6 @@
 // Tests visualization, filtering, overlay, and export functionality
 
 import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import type { Item, Link } from "@tracertm/types";
 import { describe, expect, it, vi } from "vitest";
 import {
@@ -248,7 +247,6 @@ describe("JourneyExplorer", () => {
 
 	describe("Filtering", () => {
 		it("should filter journeys by search term", async () => {
-			const user = userEvent.setup();
 			render(
 				<JourneyExplorer
 					items={mockItems}
@@ -265,7 +263,6 @@ describe("JourneyExplorer", () => {
 		});
 
 		it("should clear filters with clear button", async () => {
-			const user = userEvent.setup();
 			render(
 				<JourneyExplorer
 					items={mockItems}
@@ -296,7 +293,6 @@ describe("JourneyExplorer", () => {
 		});
 
 		it("should show empty state when no journeys match filter", async () => {
-			const user = userEvent.setup();
 			render(
 				<JourneyExplorer
 					items={mockItems}
@@ -316,7 +312,6 @@ describe("JourneyExplorer", () => {
 
 	describe("Coverage Metrics", () => {
 		it("should display coverage for selected journeys", async () => {
-			const user = userEvent.setup();
 			render(
 				<JourneyExplorer
 					items={mockItems}
@@ -350,7 +345,6 @@ describe("JourneyExplorer", () => {
 
 	describe("Interactions", () => {
 		it("should expand/collapse journey details", async () => {
-			const user = userEvent.setup();
 			render(
 				<JourneyExplorer
 					items={mockItems}
@@ -371,7 +365,6 @@ describe("JourneyExplorer", () => {
 
 		it("should call onJourneySelect when journey is clicked", async () => {
 			const onJourneySelect = vi.fn();
-			const user = userEvent.setup();
 
 			render(
 				<JourneyExplorer
@@ -395,7 +388,6 @@ describe("JourneyExplorer", () => {
 
 		it("should call onJourneyDelete when delete button is clicked", async () => {
 			const onJourneyDelete = vi.fn();
-			const user = userEvent.setup();
 
 			render(
 				<JourneyExplorer
@@ -424,7 +416,6 @@ describe("JourneyExplorer", () => {
 	describe("Overlay Mode", () => {
 		it("should toggle overlay mode", async () => {
 			const onJourneyOverlay = vi.fn();
-			const user = userEvent.setup();
 
 			render(
 				<JourneyExplorer
@@ -471,7 +462,6 @@ describe("JourneyExplorer", () => {
 
 	describe("Export Functionality", () => {
 		it("should open export dialog when export button clicked", async () => {
-			const user = userEvent.setup();
 
 			render(
 				<JourneyExplorer
@@ -497,7 +487,6 @@ describe("JourneyExplorer", () => {
 
 		it("should call onExport with correct format", async () => {
 			const onExport = vi.fn();
-			const user = userEvent.setup();
 
 			render(
 				<JourneyExplorer
@@ -529,7 +518,6 @@ describe("JourneyExplorer", () => {
 
 	describe("Create Journey", () => {
 		it("should open create journey dialog", async () => {
-			const user = userEvent.setup();
 
 			render(
 				<JourneyExplorer
@@ -551,7 +539,6 @@ describe("JourneyExplorer", () => {
 
 		it("should call onJourneyCreate with correct data", async () => {
 			const onJourneyCreate = vi.fn();
-			const user = userEvent.setup();
 
 			render(
 				<JourneyExplorer
@@ -587,7 +574,6 @@ describe("JourneyExplorer", () => {
 		});
 
 		it("should disable create button when name is empty", async () => {
-			const user = userEvent.setup();
 
 			render(
 				<JourneyExplorer
@@ -617,7 +603,7 @@ describe("JourneyExplorer", () => {
 
 	describe("Compact Mode", () => {
 		it("should render in compact mode", () => {
-			const { container } = render(
+			render(
 				<JourneyExplorer
 					items={mockItems}
 					links={mockLinks}
@@ -645,7 +631,7 @@ describe("JourneyExplorer", () => {
 
 	describe("Loading State", () => {
 		it("should disable controls when loading", () => {
-			const { rerender } = render(
+			render(
 				<JourneyExplorer
 					items={mockItems}
 					links={mockLinks}

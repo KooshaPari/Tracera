@@ -107,6 +107,7 @@ describe('EnhancedErrorState', () => {
 });
 
 describe('GraphErrorBoundary', () => {
+  /* eslint-disable-next-line unicorn/consistent-function-scoping -- test component that throws */
   const ErrorComponent = () => {
     throw new Error('Test error');
   };
@@ -146,6 +147,7 @@ describe('GraphErrorBoundary', () => {
   });
 
   it('uses custom fallback when provided', () => {
+    /* eslint-disable-next-line unicorn/consistent-function-scoping -- test fallback component */
     const fallback = (error: Error) => (
       <div>Custom error: {error.message}</div>
     );
@@ -244,7 +246,7 @@ describe('RecoveryProgress', () => {
   });
 
   it('updates countdown over time', () => {
-    const { rerender } = render(
+    render(
       <RecoveryProgress
         retryCount={0}
         maxRetries={3}
@@ -311,7 +313,7 @@ describe('useAutoRecovery', () => {
     const retry = vi.fn();
     const error = new Error('Test error');
 
-    const { result, rerender } = renderHook(() =>
+    const { rerender } = renderHook(() =>
       useAutoRecovery(error, retry, {
         retryDelay: 1000,
         exponentialBackoff: true,
@@ -391,7 +393,7 @@ describe('useAutoRecovery', () => {
     const retry = vi.fn();
     let error: Error | null = new Error('Test error');
 
-    const { result, rerender } = renderHook(() =>
+    const { result: _result, rerender } = renderHook(() =>
       useAutoRecovery(error, retry)
     );
 

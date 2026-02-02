@@ -36,36 +36,36 @@ interface ReportTemplate {
 
 const reportTemplates: ReportTemplate[] = [
 	{
-		id: "coverage",
-		name: "Traceability Matrix",
+		color: "text-blue-500",
 		description: "End-to-end mapping from reqs to implementation.",
 		format: ["pdf", "xlsx", "csv"],
 		icon: Layers,
-		color: "text-blue-500",
+		id: "coverage",
+		name: "Traceability Matrix",
 	},
 	{
-		id: "status",
-		name: "Executive Summary",
+		color: "text-green-500",
 		description: "High-level project health and risk assessment.",
 		format: ["pdf", "xlsx"],
 		icon: TrendingUp,
-		color: "text-green-500",
+		id: "status",
+		name: "Executive Summary",
 	},
 	{
-		id: "items",
-		name: "Entity Registry",
+		color: "text-purple-500",
 		description: "Full export of all nodes and metadata.",
 		format: ["json", "csv", "xlsx"],
 		icon: ClipboardList,
-		color: "text-purple-500",
+		id: "items",
+		name: "Entity Registry",
 	},
 	{
-		id: "audit",
-		name: "Compliance Audit",
+		color: "text-orange-500",
 		description: "Complete history of changes and transitions.",
 		format: ["pdf", "json"],
 		icon: ShieldCheck,
-		color: "text-orange-500",
+		id: "audit",
+		name: "Compliance Audit",
 	},
 ];
 
@@ -76,8 +76,8 @@ export function ReportsView() {
 	const [selectedProject, setSelectedProject] = useState<string>("");
 
 	const projectsQuery = useQuery({
-		queryKey: ["projects"],
 		queryFn: () => api.projects.list(),
+		queryKey: ["projects"],
 	});
 
 	const generateReportMutation = useMutation({
@@ -91,19 +91,19 @@ export function ReportsView() {
 			projectId?: string;
 		}) => {
 			if (format === "json" || format === "csv") {
-				if (!projectId) throw new Error("Select project context");
+				if (!projectId) {throw new Error("Select project context");}
 				const out = await api.exportImport.export(projectId, format);
 				if (!(out instanceof Blob)) {
 					toast.error("Export did not return a downloadable file");
 					return { success: false };
 				}
-				const url = window.URL.createObjectURL(out);
+				const url = globalThis.URL.createObjectURL(out);
 				const a = document.createElement("a");
 				a.href = url;
 				a.download = `${templateId}-export.${format}`;
-				document.body.appendChild(a);
+				document.body.append(a);
 				a.click();
-				window.URL.revokeObjectURL(url);
+				globalThis.URL.revokeObjectURL(url);
 				document.body.removeChild(a);
 				return { success: true };
 			}
@@ -114,11 +114,11 @@ export function ReportsView() {
 			);
 			return { success: false };
 		},
-		onSuccess: (data) => {
-			if (data.success) toast.success("Export successful");
-		},
 		onError: (error) => {
 			toast.error(error.message || "Engine failure during generation");
+		},
+		onSuccess: (data) => {
+			if (data.success) {toast.success("Export successful");}
 		},
 	});
 
@@ -132,9 +132,9 @@ export function ReportsView() {
 			return;
 		}
 		generateReportMutation.mutate({
-			templateId,
 			format,
 			projectId: selectedProject,
+			templateId,
 		});
 	};
 
@@ -275,8 +275,8 @@ export function ReportsView() {
 				</div>
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 					{[
-						{ name: "Full Integrity Matrix", date: "2h ago", type: "PDF" },
-						{ name: "Node Registry v1.4", date: "Yesterday", type: "JSON" },
+						{ date: "2h ago", name: "Full Integrity Matrix", type: "PDF" },
+						{ date: "Yesterday", name: "Node Registry v1.4", type: "JSON" },
 					].map((r, i) => (
 						<div
 							key={i}

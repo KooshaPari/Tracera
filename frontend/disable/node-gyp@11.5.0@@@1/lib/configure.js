@@ -138,7 +138,7 @@ async function configure (gyp, argv) {
       await fs.stat(fullPath)
       log.verbose(name, 'found gypi file')
       configs.push(fullPath)
-    } catch (err) {
+    } catch (_err) {
       // ENOENT will check next gypi filename
       if (err.code !== 'ENOENT') {
         throw err
@@ -251,7 +251,7 @@ async function configure (gyp, argv) {
     let commonGypi = path.resolve(nodeDir, 'include/node/common.gypi')
     try {
       await fs.stat(commonGypi)
-    } catch (err) {
+    } catch (_err) {
       commonGypi = path.resolve(nodeDir, 'common.gypi')
     }
 

@@ -765,7 +765,7 @@ async function mainFetch (fetchParams, recursive) {
       // 21. Otherwise, run fetch finale given fetchParams and response.
       fetchFinale(fetchParams, response)
     }
-  } catch (err) {
+  } catch (_err) {
     fetchParams.controller.terminate(err)
   }
 }
@@ -1235,7 +1235,7 @@ function httpRedirectFetch (fetchParams, response) {
     if (locationURL == null) {
       return response
     }
-  } catch (err) {
+  } catch (_err) {
     // 5. If locationURL is failure, then return a network error.
     return Promise.resolve(makeNetworkError(err))
   }
@@ -1927,7 +1927,7 @@ async function httpNetworkFetch (
           yield * processBodyChunk(bytes)
         }
         processEndOfBody()
-      } catch (err) {
+      } catch (_err) {
         processBodyError(err)
       }
     })()
@@ -1945,7 +1945,7 @@ async function httpNetworkFetch (
 
       response = makeResponse({ status, statusText, headersList })
     }
-  } catch (err) {
+  } catch (_err) {
     // 10. If aborted, then:
     if (err.name === 'AbortError') {
       // 1. If connection uses HTTP/2, then transmit an RST_STREAM frame.
@@ -2039,7 +2039,7 @@ async function httpNetworkFetch (
         }
 
         bytes = done ? undefined : value
-      } catch (err) {
+      } catch (_err) {
         if (fetchParams.controller.ended && !timingInfo.encodedBodySize) {
           // zlib doesn't like empty streams.
           bytes = undefined

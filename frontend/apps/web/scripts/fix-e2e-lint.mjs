@@ -66,7 +66,8 @@ for (const { file, from, to } of fixes) {
 			console.log("Fixed:", file);
 		}
 	} catch (e) {
-		if (e.code !== "ENOENT") console.error(file, e.message);
+		const err = /** @type {{ code?: string; message?: string }} */ (e);
+		if (err.code !== "ENOENT") console.error(file, err.message);
 	}
 }
 console.log(

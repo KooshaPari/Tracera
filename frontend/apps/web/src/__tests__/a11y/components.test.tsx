@@ -9,9 +9,9 @@ import { describe, expect, it } from "vitest";
 import { axe } from "./setup";
 
 // Mock Dialog and Tooltip to avoid hook violations
-const Dialog = ({ open, onOpenChange, children }: any) => {
+const Dialog = ({ open, onOpenChange: _onOpenChange, children }: any) => {
 	return (
-		<div data-testid="dialog" open={open}>
+		<div data-testid="dialog" data-open={open}>
 			{children}
 		</div>
 	);
@@ -125,7 +125,7 @@ describe("Input Accessibility", () => {
 	});
 
 	it("should support error states with aria-invalid", async () => {
-		const { container } = render(
+		render(
 			<div>
 				<label htmlFor="error-input">Error Input</label>
 				<Input
@@ -143,7 +143,7 @@ describe("Input Accessibility", () => {
 
 describe("Select Accessibility", () => {
 	it("should not have violations with label", async () => {
-		const { container } = render(
+		render(
 			<div>
 				<label htmlFor="country">Country</label>
 				{/* Select component requires proper context - skip hook validation */}
@@ -159,7 +159,7 @@ describe("Select Accessibility", () => {
 	});
 
 	it("should not have violations when disabled", async () => {
-		const { container } = render(
+		render(
 			<div>
 				<label htmlFor="disabled-select">Disabled Select</label>
 				{/* Use native select for a11y testing */}
@@ -175,7 +175,7 @@ describe("Select Accessibility", () => {
 
 describe("Alert Accessibility", () => {
 	it("should not have violations", async () => {
-		const { container } = render(
+		render(
 			<Alert>
 				<h4>Alert Title</h4>
 				<p>Alert description content</p>
@@ -198,13 +198,13 @@ describe("Alert Accessibility", () => {
 
 describe("Badge Accessibility", () => {
 	it("should not have violations", async () => {
-		const { container } = render(<Badge>New</Badge>);
+		render(<Badge>New</Badge>);
 		const results = await axe(container);
 		expect(results).toHaveNoViolations();
 	});
 
 	it("should have sufficient color contrast", async () => {
-		const { container } = render(
+		render(
 			<div>
 				<Badge variant="default">Default</Badge>
 				<Badge variant="secondary">Secondary</Badge>
@@ -219,7 +219,7 @@ describe("Badge Accessibility", () => {
 
 describe("Card Accessibility", () => {
 	it("should not have violations", async () => {
-		const { container } = render(
+		render(
 			<Card>
 				<h3>Card Title</h3>
 				<p>Card content</p>
@@ -230,7 +230,7 @@ describe("Card Accessibility", () => {
 	});
 
 	it("should support semantic headings", async () => {
-		const { container } = render(
+		render(
 			<Card>
 				<h2>Section Title</h2>
 				<p>Description text</p>
@@ -245,7 +245,7 @@ describe("Card Accessibility", () => {
 
 describe("Dialog Accessibility", () => {
 	it("should not have violations when open", async () => {
-		const { container } = render(
+		render(
 			<Dialog open onOpenChange={() => {}}>
 				<div role="dialog" aria-labelledby="dialog-title">
 					<h2 id="dialog-title">Dialog Title</h2>
@@ -273,7 +273,7 @@ describe("Dialog Accessibility", () => {
 
 describe("Tooltip Accessibility", () => {
 	it("should not have violations", async () => {
-		const { container } = render(
+		render(
 			<Tooltip>
 				<button>Hover me</button>
 				<span role="tooltip">Tooltip content</span>

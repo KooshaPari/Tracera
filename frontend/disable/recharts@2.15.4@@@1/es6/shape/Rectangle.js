@@ -102,7 +102,7 @@ export var Rectangle = function Rectangle(rectangleProps) {
         if (pathTotalLength) {
           setTotalLength(pathTotalLength);
         }
-      } catch (err) {
+      } catch (_err) {
         // calculate total length error
       }
     }

@@ -9,6 +9,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { realtimeClient } from "../lib/websocket";
+import { logger } from '@/lib/logger';
 
 export interface RealtimeConfig {
 	projectId?: string;
@@ -17,8 +18,8 @@ export interface RealtimeConfig {
 }
 
 export function useRealtime(config: RealtimeConfig = {}) {
-	const { projectId, onEvent, enableToasts = false } = config;
-	const queryClient = useQueryClient();
+	const { projectId, onEvent } = config;
+	// const queryClient = useQueryClient();
 	const [isConnected, setIsConnected] = useState(false);
 
 	useEffect(() => {
@@ -73,22 +74,22 @@ export function useRealtimeUpdates(projectId?: string) {
 		// Subscribe to item events
 		const unsubItem = realtimeClient.on("item.created", (event) => {
 			logger.info("Item created:", event);
-			queryClient.invalidateQueries({ queryKey: ["items", projectId] });
+			void queryClient.invalidateQueries({ queryKey: ["items", projectId] });
 
-			toast.success(`New item created: ${event.data.title || event.entity_id}`);
+			toast.success(`New item created: ${event.data['title'] || event.entity_id}`);
 		});
 
 		const unsubItemUpdate = realtimeClient.on("item.updated", (event) => {
 			logger.info("Item updated:", event);
-			queryClient.invalidateQueries({ queryKey: ["items", projectId] });
-			queryClient.invalidateQueries({ queryKey: ["item", event.entity_id] });
+			void queryClient.invalidateQueries({ queryKey: ["items", projectId] });
+			void queryClient.invalidateQueries({ queryKey: ["item", event.entity_id] });
 
-			toast.info(`Item updated: ${event.data.title || event.entity_id}`);
+			toast.info(`Item updated: ${event.data['title'] || event.entity_id}`);
 		});
 
 		const unsubItemDelete = realtimeClient.on("item.deleted", (event) => {
 			logger.info("Item deleted:", event);
-			queryClient.invalidateQueries({ queryKey: ["items", projectId] });
+			void queryClient.invalidateQueries({ queryKey: ["items", projectId] });
 
 			toast.info(`Item deleted: ${event.entity_id}`);
 		});
@@ -96,14 +97,14 @@ export function useRealtimeUpdates(projectId?: string) {
 		// Subscribe to link events
 		const unsubLink = realtimeClient.on("link.created", (event) => {
 			logger.info("Link created:", event);
-			queryClient.invalidateQueries({ queryKey: ["links", projectId] });
+			void queryClient.invalidateQueries({ queryKey: ["links", projectId] });
 
 			toast.success("New link created");
 		});
 
 		const unsubLinkDelete = realtimeClient.on("link.deleted", (event) => {
 			logger.info("Link deleted:", event);
-			queryClient.invalidateQueries({ queryKey: ["links", projectId] });
+			void queryClient.invalidateQueries({ queryKey: ["links", projectId] });
 
 			toast.info("Link deleted");
 		});
@@ -111,7 +112,7 @@ export function useRealtimeUpdates(projectId?: string) {
 		// Subscribe to spec events (from Python backend)
 		const unsubSpec = realtimeClient.on("spec.created", (event) => {
 			logger.info("Spec created:", event);
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: ["specifications", projectId],
 			});
 
@@ -120,10 +121,10 @@ export function useRealtimeUpdates(projectId?: string) {
 
 		const unsubSpecUpdate = realtimeClient.on("spec.updated", (event) => {
 			logger.info("Spec updated:", event);
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: ["specifications", projectId],
 			});
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: ["specification", event.entity_id],
 			});
 
@@ -133,20 +134,20 @@ export function useRealtimeUpdates(projectId?: string) {
 		// Subscribe to AI analysis events
 		const unsubAI = realtimeClient.on("ai.analysis.complete", (event) => {
 			logger.info("AI analysis complete:", event);
-			queryClient.invalidateQueries({
-				queryKey: ["specification", event.data.spec_id],
+			void queryClient.invalidateQueries({
+				queryKey: ["specification", event.data['spec_id']],
 			});
 
 			toast.success(
-				`AI analysis complete for specification ${event.data.spec_id}`,
+				`AI analysis complete for specification ${event.data['spec_id']}`,
 			);
 		});
 
 		// Subscribe to execution events
 		const unsubExecution = realtimeClient.on("execution.completed", (event) => {
 			logger.info("Execution completed:", event);
-			queryClient.invalidateQueries({ queryKey: ["executions", projectId] });
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({ queryKey: ["executions", projectId] });
+			void queryClient.invalidateQueries({
 				queryKey: ["execution", event.entity_id],
 			});
 
@@ -157,8 +158,8 @@ export function useRealtimeUpdates(projectId?: string) {
 			"execution.failed",
 			(event) => {
 				logger.info("Execution failed:", event);
-				queryClient.invalidateQueries({ queryKey: ["executions", projectId] });
-				queryClient.invalidateQueries({
+				void queryClient.invalidateQueries({ queryKey: ["executions", projectId] });
+				void queryClient.invalidateQueries({
 					queryKey: ["execution", event.entity_id],
 				});
 
@@ -169,7 +170,7 @@ export function useRealtimeUpdates(projectId?: string) {
 		// Subscribe to workflow events
 		const unsubWorkflow = realtimeClient.on("workflow.completed", (event) => {
 			logger.info("Workflow completed:", event);
-			queryClient.invalidateQueries({ queryKey: ["workflows", projectId] });
+			void queryClient.invalidateQueries({ queryKey: ["workflows", projectId] });
 
 			toast.success(`Workflow completed`);
 		});
@@ -177,8 +178,8 @@ export function useRealtimeUpdates(projectId?: string) {
 		// Subscribe to project events
 		const unsubProject = realtimeClient.on("project.updated", (event) => {
 			logger.info("Project updated:", event);
-			queryClient.invalidateQueries({ queryKey: ["project", projectId] });
-			queryClient.invalidateQueries({ queryKey: ["projects"] });
+			void queryClient.invalidateQueries({ queryKey: ["project", projectId] });
+			void queryClient.invalidateQueries({ queryKey: ["projects"] });
 
 			toast.info("Project updated");
 		});

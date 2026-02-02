@@ -5,7 +5,7 @@
 
 export { ADRDetailView } from "./ADRDetailView";
 // New comprehensive specification views
-export { ADRListView } from "./ADRListView";
+export { ADRListView } from "./adr-list-view";
 // ============================================================================
 // Specification Views (ADR, Contracts, BDD Features)
 // ============================================================================

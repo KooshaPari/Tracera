@@ -20,8 +20,6 @@ interface ChatPanelProps {
 }
 
 export function ChatPanel({
-	onClose,
-	onToggleMode,
 	mode,
 	className,
 }: ChatPanelProps) {
@@ -66,7 +64,7 @@ export function ChatPanel({
 		if (!content || isStreaming) return;
 
 		setInputValue("");
-		sendMessage(content);
+		void sendMessage(content);
 	};
 
 	const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {

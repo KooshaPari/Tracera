@@ -1,4 +1,3 @@
-import { useParams } from "@tanstack/react-router";
 import type { TestItem } from "@tracertm/types";
 import { isTestItem } from "@tracertm/types";
 import {
@@ -41,45 +40,45 @@ interface TestDetailViewProps {
 
 // Safety level colors and metadata
 const SAFETY_LEVELS = {
-	safe: {
-		color: "bg-green-500/10 text-green-600 border-green-500/30",
-		icon: Shield,
-		label: "Safe",
+	disabled: {
+		color: "bg-red-500/10 text-red-600 border-red-500/30",
+		icon: Ban,
+		label: "Disabled",
 	},
 	quarantined: {
 		color: "bg-yellow-500/10 text-yellow-600 border-yellow-500/30",
 		icon: AlertTriangle,
 		label: "Quarantined",
 	},
-	disabled: {
-		color: "bg-red-500/10 text-red-600 border-red-500/30",
-		icon: Ban,
-		label: "Disabled",
+	safe: {
+		color: "bg-green-500/10 text-green-600 border-green-500/30",
+		icon: Shield,
+		label: "Safe",
 	},
 } as const;
 
 // Test result status colors
 const TEST_RESULT_COLORS = {
-	passed: "bg-green-500/15 text-green-700",
-	failed: "bg-red-500/15 text-red-700",
-	skipped: "bg-slate-500/15 text-slate-700",
 	blocked: "bg-orange-500/15 text-orange-700",
 	error: "bg-red-600/15 text-red-800",
+	failed: "bg-red-500/15 text-red-700",
 	flaky: "bg-yellow-500/15 text-yellow-700",
+	passed: "bg-green-500/15 text-green-700",
+	skipped: "bg-slate-500/15 text-slate-700",
 	timeout: "bg-purple-500/15 text-purple-700",
 } as const;
 
 // DO-178C safety levels
 const DO178C_LEVELS = {
-	A: { label: "Level A (Catastrophic)", color: "text-red-600" },
-	B: { label: "Level B (Hazardous)", color: "text-orange-600" },
-	C: { label: "Level C (Major)", color: "text-yellow-600" },
-	D: { label: "Level D (Minor)", color: "text-blue-600" },
-	E: { label: "Level E (No Effect)", color: "text-green-600" },
+	A: { color: "text-red-600", label: "Level A (Catastrophic)" },
+	B: { color: "text-orange-600", label: "Level B (Hazardous)" },
+	C: { color: "text-yellow-600", label: "Level C (Major)" },
+	D: { color: "text-blue-600", label: "Level D (Minor)" },
+	E: { color: "text-green-600", label: "Level E (No Effect)" },
 };
 
 export function TestDetailView({ item, projectId }: TestDetailViewProps) {
-	const params = useParams({ strict: false });
+	// Const params = useParams({ strict: false });
 
 	// Fetch test spec data (must be called unconditionally)
 	const { data: testSpec, isLoading: specLoading } = useTestSpecByItem(
@@ -89,25 +88,25 @@ export function TestDetailView({ item, projectId }: TestDetailViewProps) {
 
 	// Compute derived values (hooks must be called unconditionally)
 	const safetyLevel = useMemo(() => {
-		if (testSpec?.is_quarantined) return "quarantined";
+		if (testSpec?.is_quarantined) {return "quarantined";}
 		return "safe";
 	}, [testSpec?.is_quarantined]);
 
 	const flakinessScore = testSpec?.flakiness_score ?? 0;
 	const isFlakyTest = flakinessScore > 30;
 	const flakinessColor = useMemo(() => {
-		if (flakinessScore > 30) return "text-red-600";
-		if (flakinessScore > 10) return "text-yellow-600";
+		if (flakinessScore > 30) {return "text-red-600";}
+		if (flakinessScore > 10) {return "text-yellow-600";}
 		return "text-green-600";
 	}, [flakinessScore]);
 
 	const coveragePercent = useMemo(() => {
-		if (!testSpec) return 0;
+		if (!testSpec) {return 0;}
 		return testSpec.line_coverage ?? 0;
 	}, [testSpec]);
 
 	const passRate = useMemo(() => {
-		if (!testSpec || testSpec.total_runs === 0) return 0;
+		if (!testSpec || testSpec.total_runs === 0) {return 0;}
 		return Math.round((testSpec.pass_count / testSpec.total_runs) * 100);
 	}, [testSpec]);
 
@@ -234,7 +233,7 @@ export function TestDetailView({ item, projectId }: TestDetailViewProps) {
 								</p>
 							</CardContent>
 						</Card>
-					) : !testSpec ? (
+					) : (!testSpec ? (
 						<Card className="border-none bg-card/50">
 							<CardContent className="pt-6">
 								<p className="text-sm text-muted-foreground">
@@ -278,7 +277,7 @@ export function TestDetailView({ item, projectId }: TestDetailViewProps) {
 												Language
 											</p>
 											<p className="text-sm font-medium">
-												{(testSpec.spec_metadata?.language as string) ||
+												{(testSpec.spec_metadata?.["language"] as string) ||
 													"Not specified"}
 											</p>
 										</div>
@@ -287,7 +286,7 @@ export function TestDetailView({ item, projectId }: TestDetailViewProps) {
 												Oracle Type
 											</p>
 											<p className="text-sm font-medium">
-												{(testSpec.spec_metadata?.oracle_type as string) ||
+												{(testSpec.spec_metadata?.["oracle_type"] as string) ||
 													"Not specified"}
 											</p>
 										</div>
@@ -296,7 +295,7 @@ export function TestDetailView({ item, projectId }: TestDetailViewProps) {
 												Coverage Type
 											</p>
 											<p className="text-sm font-medium">
-												{(testSpec.spec_metadata?.coverage_type as string) ||
+												{(testSpec.spec_metadata?.["coverage_type"] as string) ||
 													"Not specified"}
 											</p>
 										</div>
@@ -322,30 +321,32 @@ export function TestDetailView({ item, projectId }: TestDetailViewProps) {
 												<SafetyIcon className="h-3.5 w-3.5 mr-1.5" />
 												{safetyConfig.label}
 											</Badge>
-											{testSpec.spec_metadata?.do178c_level && (
+											{testSpec.spec_metadata?.["do178c_level"] ? (
 												<Badge
 													variant="outline"
 													className={cn(
 														DO178C_LEVELS[
-															testSpec.spec_metadata
-																.do178c_level as keyof typeof DO178C_LEVELS
+															testSpec.spec_metadata?.[
+																"do178c_level"
+															] as keyof typeof DO178C_LEVELS
 														]?.color,
 													)}
 												>
 													DO-178C{" "}
 													{
 														DO178C_LEVELS[
-															testSpec.spec_metadata
-																.do178c_level as keyof typeof DO178C_LEVELS
+															testSpec.spec_metadata?.[
+																"do178c_level"
+															] as keyof typeof DO178C_LEVELS
 														]?.label
 													}
 												</Badge>
-											)}
+											) : null}
 										</div>
 									</div>
 
 									{/* Critical Path */}
-									{testSpec.spec_metadata?.is_critical_path && (
+									{testSpec.spec_metadata?.["is_critical_path"] ? (
 										<div className="border-t pt-4">
 											<div className="flex items-center gap-2 text-red-600">
 												<AlertTriangle className="h-4 w-4" />
@@ -354,7 +355,7 @@ export function TestDetailView({ item, projectId }: TestDetailViewProps) {
 												</p>
 											</div>
 										</div>
-									)}
+									) : null}
 
 									{/* File Path */}
 									{testSpec.test_file_path && (
@@ -410,7 +411,7 @@ export function TestDetailView({ item, projectId }: TestDetailViewProps) {
 								</Card>
 							)}
 						</>
-					)}
+					))}
 				</TabsContent>
 
 				{/* Execution Tab */}
@@ -835,9 +836,9 @@ export function TestDetailView({ item, projectId }: TestDetailViewProps) {
 											"h-3",
 											flakinessScore > 30
 												? "[&>*]:bg-red-500"
-												: flakinessScore > 10
+												: (flakinessScore > 10
 													? "[&>*]:bg-yellow-500"
-													: "[&>*]:bg-green-500",
+													: "[&>*]:bg-green-500"),
 										)}
 									/>
 									<p className="text-xs text-muted-foreground mt-2">

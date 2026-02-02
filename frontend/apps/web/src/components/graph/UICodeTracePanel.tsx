@@ -442,7 +442,7 @@ export const UICodeTracePanel = memo(function UICodeTracePanelComponent({
 	onNavigateToUI,
 	onRefreshTrace,
 }: UICodeTracePanelProps) {
-	const [expandedLevels, setExpandedLevels] = useState<Set<string>>(new Set());
+	const [_expandedLevels, _setExpandedLevels] = useState<Set<string>>(new Set());
 
 	if (!traceChain && !isLoading) {
 		return (

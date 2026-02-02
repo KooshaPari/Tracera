@@ -989,7 +989,7 @@ async function loadLocal(value$, syncOptions, syncState$, localState) {
 				if (promise) {
 					await promise;
 				}
-			} catch (err) {
+			} catch (_err) {
 				if (process.env.NODE_ENV === "development") {
 					console.error(
 						"[legend-state] Error loading local cache. This would be a crashing error in production.",

@@ -66,7 +66,7 @@ export function createRetryFetch(
 		input: RequestInfo | URL,
 		init?: RequestInit,
 	): Promise<Response> {
-		const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+// 		const _url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
 		let lastError: unknown;
 		let lastResponse: Response | undefined;
 
@@ -99,7 +99,7 @@ export function createRetryFetch(
 				}
 
 				return res;
-			} catch (e) {
+			} catch (error) {
 				clearTimeout(timeoutId);
 				lastError = e;
 				const isAbort = e instanceof DOMException && e.name === "AbortError";

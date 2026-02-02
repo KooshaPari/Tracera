@@ -46,7 +46,7 @@ export function pressKey(key: string, options: KeyboardEventInit = {}) {
 			cancelable: true,
 			...options,
 		});
-		document.dispatchEvent(event!);
+		if (event) document.dispatchEvent(event);
 	});
 	return event;
 }

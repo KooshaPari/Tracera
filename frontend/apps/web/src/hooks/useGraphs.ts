@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { getAuthHeaders } from "@/api/client";
 import { QUERY_CONFIGS, queryKeys } from "@/lib/queryConfig";
+import client from "@/api/client";
+
+const { getAuthHeaders } = client;
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
@@ -41,7 +43,7 @@ async function fetchGraphs(projectId: string): Promise<GraphSummary[]> {
 	});
 	if (!res.ok) throw new Error("Failed to fetch graphs");
 	const data = await res.json();
-	const graphs = data.graphs || [];
+	const graphs = data['graphs'] || [];
 	return graphs.map((graph: any) => ({
 		id: graph.id,
 		name: graph.name,
@@ -69,23 +71,23 @@ async function fetchGraphProjection(
 	if (!res.ok) throw new Error("Failed to fetch graph projection");
 	const data = await res.json();
 	return {
-		graph: data.graph
+		graph: data['graph']
 			? {
-					id: data.graph.id,
-					name: data.graph.name,
-					graphType: data.graph.graph_type || data.graph.graphType,
-					description: data.graph.description,
-					rootItemId: data.graph.root_item_id || data.graph.rootItemId,
-					graphVersion: data.graph.graph_version || data.graph.graphVersion,
-					graphRules: data.graph.graph_rules || data.graph.graphRules,
+					id: data['graph'].id,
+					name: data['graph'].name,
+					graphType: data['graph'].graph_type || data['graph'].graphType,
+					description: data['graph'].description,
+					rootItemId: data['graph'].root_item_id || data['graph'].rootItemId,
+					graphVersion: data['graph'].graph_version || data['graph'].graphVersion,
+					graphRules: data['graph'].graph_rules || data['graph'].graphRules,
 					metadata:
-						data.graph.metadata ||
-						data.graph.graph_metadata ||
-						data.graph.graphMetadata,
+						data['graph'].metadata ||
+						data['graph'].graph_metadata ||
+						data['graph'].graphMetadata,
 				}
 			: undefined,
-		nodes: data.nodes || [],
-		links: data.links || [],
+		nodes: data['nodes'] || [],
+		links: data['links'] || [],
 	};
 }
 

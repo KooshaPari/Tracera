@@ -277,7 +277,7 @@ export function GraphViewContainer({
 	);
 
 	// Calculate item counts per perspective
-	const perspectiveCounts = useMemo(() => {
+	const _perspectiveCounts = useMemo(() => {
 		const counts = {
 			all: items.length,
 			product: 0,
@@ -349,7 +349,8 @@ export function GraphViewContainer({
 
 	// Get count for a view
 	// Helper to count items by view type (available for future use)
-	const _getViewCount = useCallback(
+	/*
+	const getViewCount = useCallback(
 		(config: ViewConfig): number | undefined => {
 			if (config.category === "graph") return items.length;
 			if (config.category === "diagram") {
@@ -380,6 +381,7 @@ export function GraphViewContainer({
 		},
 		[items.length, perspectiveCounts],
 	);
+	*/
 
 	// Get perspective from view mode
 	const getPerspective = useCallback(
@@ -402,7 +404,7 @@ export function GraphViewContainer({
 		(c) => c.category === "perspective",
 	);
 	// Combine graph and diagram views (available for future use)
-	const _mainViews = [...graphViews, ...diagramViews];
+// 	const __mainViews = [...graphViews, ...diagramViews];
 
 	// Filter view configs by search (for combobox)
 	const searchLower = viewTypeSearch.trim().toLowerCase();

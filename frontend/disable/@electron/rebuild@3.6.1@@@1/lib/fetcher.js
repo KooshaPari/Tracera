@@ -26,7 +26,7 @@ async function fetch(url, responseType, retries = 3) {
 		}
 		d("response came back OK");
 		return response.body;
-	} catch (err) {
+	} catch (_err) {
 		d("request failed for some reason", err);
 		await sleep(2000);
 		return fetch(url, responseType, retries - 1);

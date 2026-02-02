@@ -27,18 +27,25 @@ const taskSchema = z.object({
 	status: z.enum(statusOptions),
 	priority: z.enum(priorityOptions),
 	owner: z.string().max(255).optional(),
-	estimated_hours: z.coerce
-		.number()
-		.min(0, "Estimated hours must be non-negative")
+	estimated_hours: z
+		.union([z.number(), z.string()])
+		.transform((val) => (typeof val === "string" ? Number.parseFloat(val) : val))
+		.pipe(z.number().min(0, "Estimated hours must be non-negative"))
 		.optional(),
-	actual_hours: z.coerce
-		.number()
-		.min(0, "Actual hours must be non-negative")
+	actual_hours: z
+		.union([z.number(), z.string()])
+		.transform((val) => (typeof val === "string" ? Number.parseFloat(val) : val))
+		.pipe(z.number().min(0, "Actual hours must be non-negative"))
 		.optional(),
-	completion_percentage: z.coerce
-		.number()
-		.min(0, "Completion percentage must be at least 0")
-		.max(100, "Completion percentage cannot exceed 100")
+	completion_percentage: z
+		.union([z.number(), z.string()])
+		.transform((val) => (typeof val === "string" ? Number.parseFloat(val) : val))
+		.pipe(
+			z
+				.number()
+				.min(0, "Completion percentage must be at least 0")
+				.max(100, "Completion percentage cannot exceed 100"),
+		)
 		.optional(),
 	subtasks: z.array(z.string().min(1, "Subtask cannot be empty")),
 });
@@ -79,9 +86,9 @@ export function CreateTaskItemForm({
 	const onSubmitWithAnnouncement = useCallback(
 		async (data: TaskFormData) => {
 			try {
-				await onSubmit(data);
+				await Promise.resolve(onSubmit(data));
 				announceToScreenReader("Task created successfully", "polite");
-			} catch (error) {
+			} catch {
 				announceToScreenReader(
 					"Error creating task. Please check the form and try again.",
 					"assertive",

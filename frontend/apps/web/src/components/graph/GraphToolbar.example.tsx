@@ -8,6 +8,7 @@ import { GraphToolbar } from "./GraphToolbar";
 import type { Item, Link } from "@tracertm/types";
 import type { LayoutType } from "./layouts/useDAGLayout";
 import type { GraphPerspective } from "./types";
+import { logger } from '@/lib/logger';
 
 interface EnhancedGraphViewProps {
 	items: Item[];
@@ -45,8 +46,8 @@ export function EnhancedGraphView({
 				await (container as HTMLElement).requestFullscreen();
 				setIsFullscreen(true);
 			}
-		} catch {
-			// Fullscreen not supported or denied
+        } catch {
+            // Fullscreen not supported or denied
 		}
 	}, []);
 

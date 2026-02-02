@@ -5,14 +5,17 @@ import {
 	useQuery,
 	useQueryClient,
 } from "@tanstack/react-query";
-import { apiClient, handleApiResponse } from "./client";
+import client from "./client";
+
+const { apiClient, handleApiResponse } = client;
 
 /**
  * Journey metadata for journey definitions
  */
-export interface JourneyMetadata {
-	[key: string]: string | number | boolean | object | null | undefined;
-}
+export type JourneyMetadata = Record<
+	string,
+	string | number | boolean | object | null | undefined
+>;
 
 // Types for journey API
 export interface Journey {
@@ -77,7 +80,7 @@ export function useDerivedJourneys(
 	type?: string,
 	options?: UseQueryOptions<Journey[]>,
 ) {
-	return useQuery({
+	const baseOptions = {
 		queryKey: journeyQueryKeys.list(projectId, type),
 		queryFn: () =>
 			handleApiResponse(
@@ -88,9 +91,10 @@ export function useDerivedJourneys(
 					},
 				}),
 			),
-		enabled: !!projectId,
-		...options,
-	});
+		enabled: Boolean(projectId),
+	};
+
+	return useQuery(Object.assign(baseOptions, options || {}));
 }
 
 // Get single journey
@@ -98,7 +102,7 @@ export function useJourney(
 	journeyId: string,
 	options?: UseQueryOptions<Journey>,
 ) {
-	return useQuery({
+	const baseOptions = {
 		queryKey: journeyQueryKeys.detail(journeyId),
 		queryFn: () =>
 			handleApiResponse(
@@ -106,9 +110,10 @@ export function useJourney(
 					params: { path: { journeyId } },
 				}),
 			),
-		enabled: !!journeyId,
-		...options,
-	});
+		enabled: Boolean(journeyId),
+	};
+
+	return useQuery(Object.assign(baseOptions, options || {}));
 }
 
 // Get journey steps
@@ -116,7 +121,7 @@ export function useJourneySteps(
 	journeyId: string,
 	options?: UseQueryOptions<JourneyStep[]>,
 ) {
-	return useQuery({
+	const baseOptions = {
 		queryKey: journeyQueryKeys.steps(journeyId),
 		queryFn: () =>
 			handleApiResponse(
@@ -124,9 +129,10 @@ export function useJourneySteps(
 					params: { path: { journeyId } },
 				}),
 			),
-		enabled: !!journeyId,
-		...options,
-	});
+		enabled: Boolean(journeyId),
+	};
+
+	return useQuery(Object.assign(baseOptions, options || {}));
 }
 
 // Trigger journey detection
@@ -134,22 +140,27 @@ export function useDetectJourneys(
 	options?: UseMutationOptions<Journey[], Error, DetectJourneysInput>,
 ) {
 	const queryClient = useQueryClient();
-
-	return useMutation({
-		mutationFn: ({ projectId, minLength, maxLength, types }) =>
-			handleApiResponse(
+	const baseOptions = {
+		mutationFn: (input: DetectJourneysInput) => {
+			const { projectId, minLength, maxLength, types } = input;
+			return handleApiResponse(
 				apiClient.POST("/api/v1/projects/{projectId}/journeys/detect", {
 					params: { path: { projectId } },
 					body: { minLength, maxLength, types },
 				}),
-			),
-		onSuccess: (_, { projectId }) => {
-			queryClient.invalidateQueries({
-				queryKey: journeyQueryKeys.list(projectId),
+			);
+		},
+		onSuccess: async (
+			unusedResult: Journey[],
+			variables: DetectJourneysInput,
+		) => {
+			await queryClient.invalidateQueries({
+				queryKey: journeyQueryKeys.list(variables.projectId),
 			});
 		},
-		...options,
-	});
+	};
+
+	return useMutation(Object.assign(baseOptions, options || {}));
 }
 
 // Create journey manually
@@ -157,22 +168,24 @@ export function useCreateJourney(
 	options?: UseMutationOptions<Journey, Error, CreateJourneyInput>,
 ) {
 	const queryClient = useQueryClient();
-
-	return useMutation({
-		mutationFn: ({ projectId, ...data }) =>
-			handleApiResponse(
+	const baseOptions = {
+		mutationFn: (input: CreateJourneyInput) => {
+			const { projectId, name, description, type, itemIds, metadata } = input;
+			return handleApiResponse(
 				apiClient.POST("/api/v1/projects/{projectId}/journeys", {
 					params: { path: { projectId } },
-					body: data,
+					body: { name, description, type, itemIds, metadata },
 				}),
-			),
-		onSuccess: (data) => {
-			queryClient.invalidateQueries({
+			);
+		},
+		onSuccess: async (data: Journey) => {
+			await queryClient.invalidateQueries({
 				queryKey: journeyQueryKeys.list(data.projectId),
 			});
 		},
-		...options,
-	});
+	};
+
+	return useMutation(Object.assign(baseOptions, options || {}));
 }
 
 // Update journey
@@ -184,25 +197,25 @@ export function useUpdateJourney(
 	>,
 ) {
 	const queryClient = useQueryClient();
-
-	return useMutation({
-		mutationFn: ({ journeyId, data }) =>
+	const baseOptions = {
+		mutationFn: (input: { journeyId: string; data: UpdateJourneyInput }) =>
 			handleApiResponse(
 				apiClient.PUT("/api/v1/journeys/{journeyId}", {
-					params: { path: { journeyId } },
-					body: data,
+					params: { path: { journeyId: input.journeyId } },
+					body: input.data,
 				}),
 			),
-		onSuccess: (data) => {
-			queryClient.invalidateQueries({
+		onSuccess: async (data: Journey) => {
+			await queryClient.invalidateQueries({
 				queryKey: journeyQueryKeys.detail(data.id),
 			});
-			queryClient.invalidateQueries({
+			await queryClient.invalidateQueries({
 				queryKey: journeyQueryKeys.list(data.projectId),
 			});
 		},
-		...options,
-	});
+	};
+
+	return useMutation(Object.assign(baseOptions, options || {}));
 }
 
 // Delete journey
@@ -210,21 +223,21 @@ export function useDeleteJourney(
 	options?: UseMutationOptions<void, Error, string>,
 ) {
 	const queryClient = useQueryClient();
-
-	return useMutation({
-		mutationFn: (journeyId) =>
+	const baseOptions = {
+		mutationFn: (journeyId: string) =>
 			handleApiResponse(
 				apiClient.DELETE("/api/v1/journeys/{journeyId}", {
 					params: { path: { journeyId } },
 				}),
 			),
-		onSuccess: () => {
-			queryClient.invalidateQueries({
+		onSuccess: async () => {
+			await queryClient.invalidateQueries({
 				queryKey: journeyQueryKeys.lists(),
 			});
 		},
-		...options,
-	});
+	};
+
+	return useMutation(Object.assign(baseOptions, options || {}));
 }
 
 // Add item to journey
@@ -236,25 +249,29 @@ export function useAddJourneyStep(
 	>,
 ) {
 	const queryClient = useQueryClient();
-
-	return useMutation({
-		mutationFn: ({ journeyId, itemId, order }) =>
+	const baseOptions = {
+		mutationFn: (input: {
+			journeyId: string;
+			itemId: string;
+			order?: number;
+		}) =>
 			handleApiResponse(
 				apiClient.POST("/api/v1/journeys/{journeyId}/steps", {
-					params: { path: { journeyId } },
-					body: { itemId, order },
+					params: { path: { journeyId: input.journeyId } },
+					body: { itemId: input.itemId, order: input.order },
 				}),
 			),
-		onSuccess: (data) => {
-			queryClient.invalidateQueries({
+		onSuccess: async (data: Journey) => {
+			await queryClient.invalidateQueries({
 				queryKey: journeyQueryKeys.detail(data.id),
 			});
-			queryClient.invalidateQueries({
+			await queryClient.invalidateQueries({
 				queryKey: journeyQueryKeys.steps(data.id),
 			});
 		},
-		...options,
-	});
+	};
+
+	return useMutation(Object.assign(baseOptions, options || {}));
 }
 
 // Remove item from journey
@@ -266,22 +283,27 @@ export function useRemoveJourneyStep(
 	>,
 ) {
 	const queryClient = useQueryClient();
-
-	return useMutation({
-		mutationFn: ({ journeyId, stepItemId }) =>
+	const baseOptions = {
+		mutationFn: (input: { journeyId: string; stepItemId: string }) =>
 			handleApiResponse(
 				apiClient.DELETE("/api/v1/journeys/{journeyId}/steps/{itemId}", {
-					params: { path: { journeyId, itemId: stepItemId } },
+					params: {
+						path: { journeyId: input.journeyId, itemId: input.stepItemId },
+					},
 				}),
 			),
-		onSuccess: (_, { journeyId }) => {
-			queryClient.invalidateQueries({
-				queryKey: journeyQueryKeys.detail(journeyId),
+		onSuccess: async (
+			unusedResult: void,
+			variables: { journeyId: string; stepItemId: string },
+		) => {
+			await queryClient.invalidateQueries({
+				queryKey: journeyQueryKeys.detail(variables.journeyId),
 			});
-			queryClient.invalidateQueries({
-				queryKey: journeyQueryKeys.steps(journeyId),
+			await queryClient.invalidateQueries({
+				queryKey: journeyQueryKeys.steps(variables.journeyId),
 			});
 		},
-		...options,
-	});
+	};
+
+	return useMutation(Object.assign(baseOptions, options || {}));
 }

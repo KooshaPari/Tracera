@@ -124,9 +124,9 @@ test.describe("Dimension Filters", () => {
 					await page.waitForTimeout(300);
 
 					// Check if multi-select is available
-					const checkboxes = page
-						.locator("input[type='checkbox']")
-						.filter({ hasAttribute: "aria-label", name: /draft/i });
+					const checkboxes = page.locator(
+						'input[type="checkbox"][aria-label*="draft" i]',
+					);
 					if (
 						await checkboxes
 							.first()

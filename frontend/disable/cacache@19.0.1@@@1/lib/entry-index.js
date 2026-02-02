@@ -132,7 +132,7 @@ async function insert (cache, key, integrity, opts = {}) {
     // Thanks to @isaacs for the whiteboarding session that ended up with
     // this.
     await appendFile(bucket, `\n${hashEntry(stringified)}\t${stringified}`)
-  } catch (err) {
+  } catch (_err) {
     if (err.code === 'ENOENT') {
       return undefined
     }
@@ -155,7 +155,7 @@ async function find (cache, key) {
         return latest
       }
     }, null)
-  } catch (err) {
+  } catch (_err) {
     if (err.code === 'ENOENT') {
       return null
     } else {
@@ -210,7 +210,7 @@ function lsStream (cache) {
                 stream.write(formatted)
               }
             }
-          } catch (err) {
+          } catch (_err) {
             if (err.code === 'ENOENT') {
               return undefined
             }

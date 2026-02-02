@@ -45,9 +45,9 @@ export const useWebSocketStore = create<WebSocketState>((set, get) => ({
 		// Clear any existing interval first
 		if (
 			typeof globalThis.window !== "undefined" &&
-			(globalThis.window as any).__wsCheckInterval
+			globalThis.window.__wsCheckInterval
 		) {
-			clearInterval((globalThis.window as any).__wsCheckInterval);
+			clearInterval(globalThis.window.__wsCheckInterval);
 		}
 
 		// Monitor connection status
@@ -62,7 +62,7 @@ export const useWebSocketStore = create<WebSocketState>((set, get) => ({
 
 		// Store interval ID for cleanup
 		if (typeof globalThis.window !== "undefined") {
-			(globalThis.window as any).__wsCheckInterval = checkConnection;
+			globalThis.window.__wsCheckInterval = checkConnection;
 		}
 	},
 
@@ -74,9 +74,9 @@ export const useWebSocketStore = create<WebSocketState>((set, get) => ({
 		// Clear connection check interval
 		if (
 			typeof globalThis.window !== "undefined" &&
-			(globalThis.window as any).__wsCheckInterval
+			globalThis.window.__wsCheckInterval
 		) {
-			clearInterval((globalThis.window as any).__wsCheckInterval);
+			clearInterval(globalThis.window.__wsCheckInterval);
 		}
 	},
 

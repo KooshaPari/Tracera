@@ -178,7 +178,7 @@ export class FigmaClient {
 		};
 
 		// Extract color styles
-		for (const [id, style] of Object.entries(file.styles)) {
+		for (const [_id, style] of Object.entries(file.styles)) {
 			if (style.styleType === "FILL") {
 				const paint = style.fills?.[0];
 				if (paint?.type === "SOLID") {
@@ -188,7 +188,7 @@ export class FigmaClient {
 		}
 
 		// Extract typography from text styles
-		for (const [id, style] of Object.entries(file.styles)) {
+		for (const [_id, style] of Object.entries(file.styles)) {
 			if (style.styleType === "TEXT") {
 				variables.typography[style.name] = {
 					fontFamily: style.fontFamily || "Inter",

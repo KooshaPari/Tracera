@@ -19,3 +19,13 @@ export { FormSelect } from "./FormSelect";
 export type { FormTextareaProps } from "./FormTextarea";
 export { FormTextarea } from "./FormTextarea";
 export { ItemTypeSelector } from "./ItemTypeSelector";
+
+// Safe Form Components with Error Boundaries (Phase 2 Code Quality)
+export {
+	SafeCreateItemForm,
+	SafeCreateProblemForm,
+	SafeCreateProcessForm,
+	SafeCreateTestCaseForm,
+	SafeCreateProjectForm,
+	SafeCreateLinkForm,
+} from "./SafeFormComponents";

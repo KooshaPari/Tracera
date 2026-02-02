@@ -165,7 +165,7 @@ suite("rule", function () {
 			rmRf("foo.html", { silent: true });
 			try {
 				exec(`${JAKE_CMD}  ` + key + ":test");
-			} catch (err) {
+			} catch (_err) {
 				// foo.txt prereq doesn't exist yet
 				assert.ok(err.message.indexOf('Unknown task "foo.html"') > -1);
 			}

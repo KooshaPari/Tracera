@@ -1,4 +1,4 @@
-export type { ExportWizardProps } from "./ExportWizard";
 export { ExportWizard } from "./ExportWizard";
-export type { ImportWizardProps } from "./ImportWizard";
+export type { ExportWizardProps, ExportConfig } from "./ExportWizard";
 export { ImportWizard } from "./ImportWizard";
+export type { ImportWizardProps, ConflictStrategy } from "./ImportWizard";

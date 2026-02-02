@@ -422,7 +422,7 @@ const napi = {
     let res = false;
     try {
       res = delete obj[name];
-    } catch (err) {}
+    } catch (_err) {}
     if (result) {
       env.memory[result] = res ? 1 : 0;
     }
@@ -762,7 +762,7 @@ const napi = {
     let res = false;
     try {
       res = delete obj[index];
-    } catch (err) {}
+    } catch (_err) {}
     if (result) {
       env.memory[result] = res ? 1 : 0;
     }
@@ -802,7 +802,7 @@ const napi = {
     try {
       let res = fn.apply(thisArg, args);
       return env.createValue(res, result);
-    } catch (err) {
+    } catch (_err) {
       env.pendingException = err;
       return NAPI_PENDING_EXCEPTION;
     }
@@ -820,7 +820,7 @@ const napi = {
     try {
       let value = new Class(...args);
       return env.createValue(value, result);
-    } catch (err) {
+    } catch (_err) {
       env.pendingException = err;
       return NAPI_PENDING_EXCEPTION;
     }

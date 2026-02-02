@@ -46,7 +46,7 @@ function* parser(
 			return results[0];
 		}
 		throw new Error("More than one plugin attempted to override parsing.");
-	} catch (err) {
+	} catch (_err) {
 		if (err.code === "BABEL_PARSER_SOURCETYPE_MODULE_REQUIRED") {
 			err.message +=
 				"\nConsider renaming the file to '.mjs', or setting sourceType:module " +

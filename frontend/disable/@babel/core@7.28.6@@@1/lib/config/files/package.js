@@ -18,7 +18,7 @@ const readConfigPackage = (0, _utils.makeStaticFileCache)((filepath, content) =>
   let options;
   try {
     options = JSON.parse(content);
-  } catch (err) {
+  } catch (_err) {
     throw new _configError.default(`Error while parsing JSON - ${err.message}`, filepath);
   }
   if (!options) throw new Error(`${filepath}: No config detected`);

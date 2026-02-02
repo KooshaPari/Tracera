@@ -92,7 +92,7 @@ async function run () {
 
     // now run the next command in the queue
     return run()
-  } catch (err) {
+  } catch (_err) {
     log.error(command.name + ' error')
     log.error('stack', err.stack)
     errorMessage()

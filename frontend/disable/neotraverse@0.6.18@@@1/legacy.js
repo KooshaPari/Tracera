@@ -45,7 +45,7 @@ function _iterable_to_array_limit(arr, i) {
             _arr.push(_s.value);
             if (i && _arr.length === i) break;
         }
-    } catch (err) {
+    } catch (_err) {
         _d = true;
         _e = err;
     } finally{
@@ -102,7 +102,7 @@ var __copyProps = function(to, from, except, desc) {
                 });
             };
             for(var _iterator = __getOwnPropNames(from)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true)_loop();
-        } catch (err) {
+        } catch (_err) {
             _didIteratorError = true;
             _iteratorError = err;
         } finally{
@@ -215,7 +215,7 @@ function copy(src, options) {
                 var key = _step.value;
                 dst[key] = src[key];
             }
-        } catch (err) {
+        } catch (_err) {
             _didIteratorError = true;
             _iteratorError = err;
         } finally{
@@ -366,7 +366,7 @@ function walk(root, cb) {
                     }
                     path.pop();
                 }
-            } catch (err) {
+            } catch (_err) {
                 _didIteratorError = true;
                 _iteratorError = err;
             } finally{
@@ -540,7 +540,7 @@ var Traverse = /*#__PURE__*/ function() {
                                 var key = _step.value;
                                 dst[key] = clone(src[key]);
                             }
-                        } catch (err) {
+                        } catch (_err) {
                             _didIteratorError = true;
                             _iteratorError = err;
                         } finally{

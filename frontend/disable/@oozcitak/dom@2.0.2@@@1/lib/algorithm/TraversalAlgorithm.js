@@ -46,7 +46,7 @@ function traversal_filter(traverser, node) {
 	let result = interfaces_1.FilterResult.Reject;
 	try {
 		result = traverser.filter.acceptNode(node);
-	} catch (err) {
+	} catch (_err) {
 		traverser._activeFlag = false;
 		throw err;
 	}

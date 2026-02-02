@@ -23,7 +23,7 @@ async function _readFile(file, options = {}) {
 	let obj;
 	try {
 		obj = JSON.parse(data, options ? options.reviver : null);
-	} catch (err) {
+	} catch (_err) {
 		if (shouldThrow) {
 			err.message = `${file}: ${err.message}`;
 			throw err;
@@ -50,7 +50,7 @@ function readFileSync(file, options = {}) {
 		let content = fs.readFileSync(file, options);
 		content = stripBom(content);
 		return JSON.parse(content, options.reviver);
-	} catch (err) {
+	} catch (_err) {
 		if (shouldThrow) {
 			err.message = `${file}: ${err.message}`;
 			throw err;

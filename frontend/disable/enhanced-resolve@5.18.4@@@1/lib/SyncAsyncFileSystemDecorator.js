@@ -34,7 +34,7 @@ function SyncAsyncFileSystemDecorator(fs) {
 						result = /** @type {SyncOrAsyncFunction | undefined} */ (callback)
 							? lstatSync.call(fs, arg, options)
 							: lstatSync.call(fs, arg);
-					} catch (err) {
+					} catch (_err) {
 						return (callback || options)(
 							/** @type {NodeJS.ErrnoException | null} */
 							(err),
@@ -62,7 +62,7 @@ function SyncAsyncFileSystemDecorator(fs) {
 					result = /** @type {SyncOrAsyncFunction | undefined} */ (callback)
 						? fs.statSync(arg, options)
 						: fs.statSync(arg);
-				} catch (err) {
+				} catch (_err) {
 					return (callback || options)(
 						/** @type {NodeJS.ErrnoException | null} */
 						(err),
@@ -93,7 +93,7 @@ function SyncAsyncFileSystemDecorator(fs) {
 								(options),
 							)
 						: fs.readdirSync(arg);
-				} catch (err) {
+				} catch (_err) {
 					return (callback || options)(
 						/** @type {NodeJS.ErrnoException | null} */
 						(err),
@@ -127,7 +127,7 @@ function SyncAsyncFileSystemDecorator(fs) {
 					result = /** @type {SyncOrAsyncFunction | undefined} */ (callback)
 						? fs.readFileSync(arg, options)
 						: fs.readFileSync(arg);
-				} catch (err) {
+				} catch (_err) {
 					return (callback || options)(
 						/** @type {NodeJS.ErrnoException | null} */
 						(err),
@@ -158,7 +158,7 @@ function SyncAsyncFileSystemDecorator(fs) {
 								(options),
 							)
 						: fs.readlinkSync(arg);
-				} catch (err) {
+				} catch (_err) {
 					return (callback || options)(
 						/** @type {NodeJS.ErrnoException | null} */
 						(err),
@@ -195,7 +195,7 @@ function SyncAsyncFileSystemDecorator(fs) {
 					let result;
 					try {
 						result = readJsonSync.call(fs, arg);
-					} catch (err) {
+					} catch (_err) {
 						return callback(
 							/** @type {NodeJS.ErrnoException | Error | null} */ (err),
 						);
@@ -227,7 +227,7 @@ function SyncAsyncFileSystemDecorator(fs) {
 									(options),
 								)
 							: realpathSync.call(fs, arg);
-					} catch (err) {
+					} catch (_err) {
 						return (callback || options)(
 							/** @type {NodeJS.ErrnoException | null} */
 							(err),

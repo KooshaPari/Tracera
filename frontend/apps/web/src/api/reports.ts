@@ -1,7 +1,8 @@
+/* oxlint-disable import/no-named-export, promise/prefer-await-to-then */
 // Reports API stub
 import { exportImportApi } from "./endpoints";
 
-export interface ReportTemplate {
+interface ReportTemplate {
 	id: string;
 	name: string;
 	description: string;
@@ -9,7 +10,7 @@ export interface ReportTemplate {
 	format: "pdf" | "html" | "json" | "csv" | "xlsx";
 }
 
-export interface GeneratedReport {
+interface GeneratedReport {
 	id: string;
 	templateId: string;
 	projectId: string;
@@ -19,54 +20,61 @@ export interface GeneratedReport {
 	data?: Record<string, unknown>;
 }
 
-export const fetchReportTemplates = async (): Promise<ReportTemplate[]> => {
-	// Return mock templates
-	return [
-		{
-			id: "1",
-			name: "Coverage Report",
-			description: "Test coverage report",
-			type: "coverage",
-			format: "pdf",
-		},
-		{
-			id: "2",
-			name: "Traceability Matrix",
-			description: "Full traceability matrix",
-			type: "traceability",
-			format: "xlsx",
-		},
-		{
-			id: "3",
-			name: "Status Report",
-			description: "Project status summary",
-			type: "status",
-			format: "html",
-		},
-		{
-			id: "4",
-			name: "Progress Report",
-			description: "Sprint progress report",
-			type: "progress",
-			format: "pdf",
-		},
-	];
-};
+const reportTemplates: ReportTemplate[] = [
+	{
+		description: "Test coverage report",
+		format: "pdf",
+		id: "1",
+		name: "Coverage Report",
+		type: "coverage",
+	},
+	{
+		description: "Full traceability matrix",
+		format: "xlsx",
+		id: "2",
+		name: "Traceability Matrix",
+		type: "traceability",
+	},
+	{
+		description: "Project status summary",
+		format: "html",
+		id: "3",
+		name: "Status Report",
+		type: "status",
+	},
+	{
+		description: "Sprint progress report",
+		format: "pdf",
+		id: "4",
+		name: "Progress Report",
+		type: "progress",
+	},
+];
 
-export const generateReport = async (
+const fetchReportTemplates = (): Promise<ReportTemplate[]> =>
+	Promise.resolve(reportTemplates);
+
+const generateReport = (
 	projectId: string,
 	templateId: string,
 	format: string,
-): Promise<GeneratedReport> => {
-	return {
-		id: `report-${Date.now()}`,
-		templateId,
-		projectId,
-		generatedAt: new Date().toISOString(),
-		format,
+): Promise<GeneratedReport> =>
+	Promise.resolve({
 		data: {},
-	};
-};
+		format,
+		generatedAt: new Date().toISOString(),
+		id: `report-${Date.now()}`,
+		projectId,
+		templateId,
+	});
 
-export const exportProject = exportImportApi.exportProject;
-export const importProject = exportImportApi.importProject;
+const { exportProject, importProject } = exportImportApi;
+
+export {
+	exportProject,
+	fetchReportTemplates,
+	generateReport,
+	importProject,
+	type GeneratedReport,
+	type ReportTemplate,
+};

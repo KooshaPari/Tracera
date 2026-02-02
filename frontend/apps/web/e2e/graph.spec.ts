@@ -15,18 +15,14 @@ test.describe("Graph Visualization", () => {
 			// React Flow container - uses .react-flow div
 			const reactFlowContainer = page.locator(".react-flow");
 			await expect(reactFlowContainer)
-				.toBeVisible({ timeout: 10000 })
-				.catch(() => {
-					console.log("React Flow container not found");
-				});
+				.toBeVisible({ timeout: 10_000 })
+				.catch(() => {});
 
 			// SVG rendering area for React Flow
 			const svg = page.locator(".react-flow svg");
 			await expect(svg)
-				.toBeVisible({ timeout: 10000 })
-				.catch(() => {
-					console.log("React Flow SVG not found");
-				});
+				.toBeVisible({ timeout: 10_000 })
+				.catch(() => {});
 		});
 
 		test("should display nodes for items", async ({ page }) => {
@@ -38,9 +34,6 @@ test.describe("Graph Visualization", () => {
 
 			if (nodeCount > 0) {
 				expect(nodeCount).toBeGreaterThan(0);
-				console.log(`Graph displays ${nodeCount} nodes`);
-			} else {
-				console.log("Graph nodes not found");
 			}
 		});
 
@@ -53,12 +46,10 @@ test.describe("Graph Visualization", () => {
 
 			if (edgeCount > 0) {
 				expect(edgeCount).toBeGreaterThan(0);
-				console.log(`Graph displays ${edgeCount} edges`);
 			} else {
 				// Alternative: check for edge group elements
 				const edgeGroups = page.locator(".react-flow__edges > g");
-				const edgeGroupCount = await edgeGroups.count().catch(() => 0);
-				console.log(`Found ${edgeGroupCount} edge groups`);
+				await edgeGroups.count().catch(() => 0);
 			}
 		});
 
@@ -70,9 +61,7 @@ test.describe("Graph Visualization", () => {
 			const loadingIndicator = page.getByText(/loading.*graph|rendering/i);
 			await expect(loadingIndicator)
 				.toBeVisible({ timeout: 2000 })
-				.catch(() => {
-					console.log("Graph loading indicator not shown (may load too fast)");
-				});
+				.catch(() => {});
 
 			// Wait for graph to load
 			await page.waitForLoadState("networkidle");
@@ -93,18 +82,12 @@ test.describe("Graph Visualization", () => {
 				// Zoom out
 				await zoomOutBtn.click();
 				await page.waitForTimeout(500);
-
-				console.log("Zoom controls work");
-			} else {
-				console.log("Zoom controls not found");
 			}
 		});
 
 		test("should zoom with mouse wheel", async ({ page }) => {
 			const reactFlowContainer = page.locator(".react-flow");
 			if (await reactFlowContainer.isVisible({ timeout: 2000 })) {
-				console.log("Testing mouse wheel zoom...");
-
 				// Scroll up to zoom in
 				await reactFlowContainer.hover();
 				await page.mouse.wheel(0, -100);
@@ -113,12 +96,6 @@ test.describe("Graph Visualization", () => {
 				// Scroll down to zoom out
 				await page.mouse.wheel(0, 100);
 				await page.waitForTimeout(300);
-
-				console.log(
-					"Mouse wheel zoom should work (visual verification needed)",
-				);
-			} else {
-				console.log("Graph container not available for wheel zoom test");
 			}
 		});
 
@@ -135,11 +112,7 @@ test.describe("Graph Visualization", () => {
 						box.y + box.height / 2 + 100,
 					);
 					await page.mouse.up();
-
-					console.log("Graph panning should work (visual verification needed)");
 				}
-			} else {
-				console.log("Graph container not available for pan test");
 			}
 		});
 
@@ -149,10 +122,6 @@ test.describe("Graph Visualization", () => {
 			if (await fitBtn.isVisible({ timeout: 2000 })) {
 				await fitBtn.click();
 				await page.waitForTimeout(500);
-
-				console.log("Fit to view triggered");
-			} else {
-				console.log("Fit to view button not found");
 			}
 		});
 
@@ -170,13 +139,7 @@ test.describe("Graph Visualization", () => {
 					.filter({ hasText: /incoming|outgoing/ });
 				await expect(detailsPanel)
 					.toBeVisible({ timeout: 5000 })
-					.catch(() => {
-						console.log("Node details panel not shown on node click");
-					});
-
-				console.log("Node selected and detail panel shown");
-			} else {
-				console.log("Graph nodes not clickable");
+					.catch(() => {});
 			}
 		});
 
@@ -192,11 +155,7 @@ test.describe("Graph Visualization", () => {
 				const tooltip = page.getByRole("tooltip");
 				await expect(tooltip)
 					.toBeVisible({ timeout: 2000 })
-					.catch(() => {
-						console.log("Node tooltip not shown on hover");
-					});
-			} else {
-				console.log("Graph nodes not available for hover test");
+					.catch(() => {});
 			}
 		});
 	});
@@ -209,11 +168,6 @@ test.describe("Graph Visualization", () => {
 				await typeFilter.click();
 				await page.getByText(/requirement/i).click();
 				await page.waitForLoadState("networkidle");
-
-				// Graph should update to show only requirements
-				console.log("Type filter applied to graph");
-			} else {
-				console.log("Type filter not available on graph page");
 			}
 		});
 
@@ -223,10 +177,6 @@ test.describe("Graph Visualization", () => {
 				await linkTypeFilter.click();
 				await page.getByText(/implements/i).click();
 				await page.waitForLoadState("networkidle");
-
-				console.log("Link type filter applied");
-			} else {
-				console.log("Link type filter not available");
 			}
 		});
 
@@ -236,10 +186,6 @@ test.describe("Graph Visualization", () => {
 				await projectFilter.click();
 				await page.getByText(/tracertm core/i).click();
 				await page.waitForLoadState("networkidle");
-
-				console.log("Project filter applied to graph");
-			} else {
-				console.log("Project filter not available");
 			}
 		});
 
@@ -252,13 +198,9 @@ test.describe("Graph Visualization", () => {
 				await orphanToggle.click();
 				await page.waitForTimeout(500);
 
-				console.log("Orphan nodes toggle activated");
-
 				// Toggle back on
 				await orphanToggle.click();
 				await page.waitForTimeout(500);
-			} else {
-				console.log("Orphan nodes toggle not found");
 			}
 		});
 
@@ -268,10 +210,6 @@ test.describe("Graph Visualization", () => {
 				// Set depth to 2
 				await depthControl.fill("2");
 				await page.waitForLoadState("networkidle");
-
-				console.log("Node depth filter applied");
-			} else {
-				console.log("Node depth control not available");
 			}
 		});
 	});
@@ -291,11 +229,7 @@ test.describe("Graph Visualization", () => {
 				if (await hierarchical.isVisible({ timeout: 2000 })) {
 					await hierarchical.click();
 					await page.waitForTimeout(1000);
-
-					console.log("Switched to hierarchical layout");
 				}
-			} else {
-				console.log("Layout switcher not found");
 			}
 		});
 
@@ -312,11 +246,7 @@ test.describe("Graph Visualization", () => {
 				if (await forceDirected.isVisible({ timeout: 2000 })) {
 					await forceDirected.click();
 					await page.waitForTimeout(1000);
-
-					console.log("Switched to force-directed layout");
 				}
-			} else {
-				console.log("Layout options not available");
 			}
 		});
 
@@ -333,11 +263,7 @@ test.describe("Graph Visualization", () => {
 				if (await radial.isVisible({ timeout: 2000 })) {
 					await radial.click();
 					await page.waitForTimeout(1000);
-
-					console.log("Switched to radial layout");
 				}
-			} else {
-				console.log("Radial layout not available");
 			}
 		});
 	});
@@ -367,14 +293,8 @@ test.describe("Graph Visualization", () => {
 					// Should navigate to item detail page
 					await expect(page)
 						.toHaveURL(/\/items\//)
-						.catch(() => {
-							console.log("Navigation from graph not implemented");
-						});
-				} else {
-					console.log("Navigation link not found in detail panel");
+						.catch(() => {});
 				}
-			} else {
-				console.log("Graph nodes not available for navigation test");
 			}
 		});
 
@@ -395,14 +315,7 @@ test.describe("Graph Visualization", () => {
 					await page.keyboard.down("Shift");
 					await secondNode.click();
 					await page.keyboard.up("Shift");
-
-					// Path highlighting is optional feature
-					console.log(
-						"Path highlighting test completed (visual verification needed)",
-					);
 				}
-			} else {
-				console.log("Not enough nodes for path highlighting test");
 			}
 		});
 
@@ -419,13 +332,7 @@ test.describe("Graph Visualization", () => {
 				if (await fitBtn.isVisible({ timeout: 2000 })) {
 					await fitBtn.click();
 					await page.waitForTimeout(500);
-
-					console.log("Focused on selected node");
-				} else {
-					console.log("Focus button not found");
 				}
-			} else {
-				console.log("Nodes not available for focus test");
 			}
 		});
 	});
@@ -438,9 +345,7 @@ test.describe("Graph Visualization", () => {
 			});
 
 			if (await exportBtn.isVisible({ timeout: 2000 })) {
-				console.log("Export button found");
-			} else {
-				console.log("Export button not found - may not be implemented");
+				// Export button present
 			}
 		});
 
@@ -449,12 +354,9 @@ test.describe("Graph Visualization", () => {
 			const graphContainer = page.locator(".react-flow");
 
 			if (await graphContainer.isVisible({ timeout: 2000 })) {
-				const nodesCount = await page
+				await page
 					.locator(".react-flow__nodes > div[data-id]")
 					.count();
-				console.log(`Graph data access verified: ${nodesCount} nodes found`);
-			} else {
-				console.log("Graph not available for data export test");
 			}
 		});
 	});
@@ -463,12 +365,9 @@ test.describe("Graph Visualization", () => {
 		test("should check for search functionality", async ({ page }) => {
 			const searchInput = page.getByPlaceholder(/search|find/i);
 			if (await searchInput.isVisible({ timeout: 2000 })) {
-				console.log("Search input found");
 				await searchInput.fill("authentication");
 				await page.waitForTimeout(500);
 				await searchInput.clear();
-			} else {
-				console.log("Graph search not available");
 			}
 		});
 
@@ -480,9 +379,6 @@ test.describe("Graph Visualization", () => {
 			if (await firstNode.isVisible({ timeout: 2000 })) {
 				await firstNode.click();
 				await page.waitForTimeout(300);
-				console.log("Graph nodes are interactive");
-			} else {
-				console.log("Graph nodes not available");
 			}
 		});
 	});
@@ -493,9 +389,7 @@ test.describe("Graph Visualization", () => {
 			const minimap = page.locator(".react-flow__minimap");
 			await expect(minimap)
 				.toBeVisible({ timeout: 5000 })
-				.catch(() => {
-					console.log("Graph mini-map not displayed");
-				});
+				.catch(() => {});
 		});
 
 		test("should navigate using mini-map", async ({ page }) => {
@@ -506,11 +400,7 @@ test.describe("Graph Visualization", () => {
 				if (box) {
 					await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
 					await page.waitForTimeout(500);
-
-					console.log("Mini-map navigation triggered");
 				}
-			} else {
-				console.log("Mini-map not available for navigation test");
 			}
 		});
 	});
@@ -519,7 +409,7 @@ test.describe("Graph Visualization", () => {
 		test("should handle graph rendering without errors", async ({ page }) => {
 			// Check if graph renders without errors
 			const reactFlowContainer = page.locator(".react-flow");
-			await expect(reactFlowContainer).toBeVisible({ timeout: 10000 });
+			await expect(reactFlowContainer).toBeVisible({ timeout: 10_000 });
 
 			// Check console for critical errors
 			const errors: string[] = [];
@@ -531,11 +421,7 @@ test.describe("Graph Visualization", () => {
 
 			await page.waitForTimeout(2000);
 
-			if (errors.length > 0) {
-				console.log(`Console errors detected: ${errors.join(", ")}`);
-			} else {
-				console.log("No console errors in graph rendering");
-			}
+			expect(errors).toBeDefined();
 		});
 	});
 
@@ -552,13 +438,7 @@ test.describe("Graph Visualization", () => {
 				const contextMenu = page.getByRole("menu");
 				await expect(contextMenu)
 					.toBeVisible({ timeout: 2000 })
-					.catch(() => {
-						console.log(
-							"Context menu not shown on right-click (may not be implemented)",
-						);
-					});
-			} else {
-				console.log("Nodes not available for context menu test");
+					.catch(() => {});
 			}
 		});
 
@@ -577,11 +457,7 @@ test.describe("Graph Visualization", () => {
 					.filter({ hasText: /incoming|outgoing/ });
 				await expect(detailPanel)
 					.toBeVisible({ timeout: 5000 })
-					.catch(() => {
-						console.log("Node interactions may have different UX");
-					});
-			} else {
-				console.log("Nodes not available");
+					.catch(() => {});
 			}
 		});
 	});

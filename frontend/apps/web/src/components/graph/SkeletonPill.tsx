@@ -7,8 +7,9 @@ export interface SkeletonPillData extends Record<string, unknown> {
 }
 
 export const SkeletonPill = memo(function SkeletonPill({ data }: NodeProps<Node<SkeletonPillData>>) {
-  const distance = data.distance ?? 'near';
-  const state = data.state ?? 'loading';
+  const typedData: SkeletonPillData = data as SkeletonPillData;
+  const distance: SkeletonPillData['distance'] = typedData.distance ?? 'near';
+  const state: SkeletonPillData['state'] = typedData.state ?? 'loading';
 
   if (state === 'error') {
     return (

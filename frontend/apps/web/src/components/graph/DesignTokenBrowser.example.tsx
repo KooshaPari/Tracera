@@ -6,6 +6,7 @@
 import type { DesignToken } from "@tracertm/types";
 import { useState } from "react";
 import { DesignTokenBrowser } from "./DesignTokenBrowser";
+import { logger } from '@/lib/logger';
 
 /**
  * Example 1: Basic Usage

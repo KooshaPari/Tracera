@@ -618,7 +618,7 @@ function callFinal(stream, state) {
   state.pendingcb++
   try {
     stream._final(onFinish)
-  } catch (err) {
+  } catch (_err) {
     onFinish(err)
   }
   state.sync = false

@@ -22,6 +22,7 @@ import {
 import { memo, useCallback, useMemo } from "react";
 import type { ClusterNode as ClusterNodeType } from "../../lib/graphClustering";
 import { getTypeColor } from "./utils/typeStyles";
+import { logger } from '@/lib/logger';
 
 /**
  * Data structure for cluster node
@@ -185,7 +186,7 @@ function ExpandedClusterView({
 		totalEdges > 0 ? cluster.metadata.internalEdges / totalEdges : 0;
 
 	// Get type distribution entries sorted by count
-	const typeEntries = Object.entries(cluster.metadata.typeDistribution).sort(
+	const typeEntries = [...Object.entries(cluster.metadata.typeDistribution)].sort(
 		(a, b) => b[1] - a[1],
 	);
 
@@ -386,7 +387,7 @@ function ClusterNodeComponent({ data: nodeData, selected }: NodeProps) {
 	const data = nodeData;
 
 	// Calculate handle positions based on size
-	const { width } = useMemo(
+	useMemo(
 		() => getClusterSize(data.cluster.size),
 		[data.cluster.size],
 	);

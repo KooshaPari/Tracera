@@ -4,7 +4,6 @@
  */
 
 import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
 
@@ -245,7 +244,7 @@ function MockProjectEdit({
 
 // Mock Reports Generation Component
 function MockReportsGeneration({
-	projectId = "proj-1",
+    projectId: _projectId = "proj-1",
 	onGenerateReport = vi.fn(),
 }: {
 	projectId?: string;
@@ -331,7 +330,6 @@ describe("Link Sharing - Basic Functionality", () => {
 
 	it("should copy link to clipboard", async () => {
 		const handleShare = vi.fn();
-		const user = userEvent.setup();
 
 		render(<MockLinkSharing itemId="item-1" onShare={handleShare} />);
 
@@ -346,7 +344,6 @@ describe("Link Sharing - Basic Functionality", () => {
 	});
 
 	it("should revert copy button after 2 seconds", async () => {
-		const user = userEvent.setup();
 		vi.useFakeTimers();
 
 		render(<MockLinkSharing itemId="item-1" />);
@@ -366,7 +363,6 @@ describe("Link Sharing - Basic Functionality", () => {
 	});
 
 	it("should open shared link in new tab", async () => {
-		const user = userEvent.setup();
 		const openSpy = vi.spyOn(window, "open").mockReturnValue(null);
 
 		render(<MockLinkSharing itemId="item-1" />);
@@ -393,7 +389,6 @@ describe("Spec Creation - Form Validation", () => {
 	});
 
 	it("should require specification name", async () => {
-		const user = userEvent.setup();
 		render(<MockSpecCreation />);
 
 		const nameInput = screen.getByLabelText(
@@ -403,7 +398,6 @@ describe("Spec Creation - Form Validation", () => {
 	});
 
 	it("should require specification content", async () => {
-		const user = userEvent.setup();
 		render(<MockSpecCreation />);
 
 		const contentInput = screen.getByLabelText(
@@ -429,7 +423,6 @@ describe("Spec Creation - Form Validation", () => {
 describe("Spec Creation - Submission", () => {
 	it("should submit spec creation form", async () => {
 		const handleCreate = vi.fn();
-		const user = userEvent.setup();
 
 		render(<MockSpecCreation onSpecCreate={handleCreate} />);
 
@@ -458,7 +451,6 @@ describe("Spec Creation - Submission", () => {
 		const handleCreate = vi.fn(
 			() => new Promise((resolve) => setTimeout(resolve, 200)),
 		);
-		const user = userEvent.setup();
 
 		render(<MockSpecCreation onSpecCreate={handleCreate} />);
 
@@ -474,16 +466,11 @@ describe("Spec Creation - Submission", () => {
 	});
 
 	it("should clear form after successful submission", async () => {
-		const user = userEvent.setup();
 
 		render(<MockSpecCreation />);
 
-		const nameInput = screen.getByLabelText(
-			"Specification Name",
-		) as HTMLInputElement;
-		const contentInput = screen.getByLabelText(
-			"Specification Content",
-		) as HTMLInputElement;
+		const nameInput = screen.getByLabelText("Specification Name");
+		const contentInput = screen.getByLabelText("Specification Content");
 		const submitBtn = screen.getByRole("button");
 
 		await user.type(nameInput, "Test API");
@@ -514,7 +501,6 @@ describe("Project Edit - Form Functionality", () => {
 	});
 
 	it("should track field modifications", async () => {
-		const user = userEvent.setup();
 
 		render(
 			<MockProjectEdit
@@ -526,10 +512,10 @@ describe("Project Edit - Form Functionality", () => {
 			/>,
 		);
 
-		const nameInput = screen.getByDisplayValue("Original") as HTMLInputElement;
+		const nameInput = screen.getByDisplayValue("Original");
 		const saveBtn = screen.getByRole("button", {
 			name: "Save Changes",
-		}) as HTMLButtonElement;
+		});
 
 		// Button should be disabled initially
 		expect(saveBtn.disabled).toBe(true);
@@ -542,7 +528,6 @@ describe("Project Edit - Form Functionality", () => {
 	});
 
 	it("should reset changes", async () => {
-		const user = userEvent.setup();
 
 		render(
 			<MockProjectEdit
@@ -554,7 +539,7 @@ describe("Project Edit - Form Functionality", () => {
 			/>,
 		);
 
-		const nameInput = screen.getByDisplayValue("Original") as HTMLInputElement;
+		const nameInput = screen.getByDisplayValue("Original");
 		const resetBtn = screen.getByRole("button", { name: "Reset" });
 
 		await user.clear(nameInput);
@@ -567,7 +552,6 @@ describe("Project Edit - Form Functionality", () => {
 
 	it("should save project changes", async () => {
 		const handleSave = vi.fn();
-		const user = userEvent.setup();
 
 		render(
 			<MockProjectEdit
@@ -600,9 +584,7 @@ describe("Reports Generation - Options", () => {
 	it("should provide multiple report types", () => {
 		render(<MockReportsGeneration />);
 
-		const typeSelect = screen.getByDisplayValue(
-			"Coverage Summary",
-		) as HTMLSelectElement;
+		const typeSelect = screen.getByDisplayValue("Coverage Summary");
 		expect(typeSelect.options).toHaveLength(4);
 		expect(typeSelect.options[0]).toHaveTextContent("Coverage Summary");
 		expect(typeSelect.options[1]).toHaveTextContent("Traceability Matrix");
@@ -613,7 +595,7 @@ describe("Reports Generation - Options", () => {
 	it("should provide multiple export formats", () => {
 		render(<MockReportsGeneration />);
 
-		const formatSelect = screen.getByDisplayValue("PDF") as HTMLSelectElement;
+		const formatSelect = screen.getByDisplayValue("PDF");
 		expect(formatSelect.options).toHaveLength(4);
 		expect(formatSelect.options[0]).toHaveTextContent("PDF");
 		expect(formatSelect.options[1]).toHaveTextContent("Excel");
@@ -623,7 +605,6 @@ describe("Reports Generation - Options", () => {
 
 	it("should generate report with selected options", async () => {
 		const handleGenerate = vi.fn();
-		const user = userEvent.setup();
 
 		render(<MockReportsGeneration onGenerateReport={handleGenerate} />);
 
@@ -649,7 +630,6 @@ describe("Reports Generation - Options", () => {
 		const handleGenerate = vi.fn(
 			() => new Promise((resolve) => setTimeout(resolve, 500)),
 		);
-		const user = userEvent.setup();
 
 		render(<MockReportsGeneration onGenerateReport={handleGenerate} />);
 
@@ -663,6 +643,7 @@ describe("Reports Generation - Options", () => {
 });
 
 describe("Contract and Compliance Features", () => {
+	/* eslint-disable-next-line unicorn/consistent-function-scoping -- test mock component */
 	function MockComplianceChecklist({
 		items = [
 			{ id: "1", name: "Security Review", completed: false },
@@ -700,7 +681,6 @@ describe("Contract and Compliance Features", () => {
 	}
 
 	it("should track compliance items", async () => {
-		const user = userEvent.setup();
 
 		render(<MockComplianceChecklist />);
 
@@ -712,7 +692,7 @@ describe("Contract and Compliance Features", () => {
 	});
 
 	it("should calculate completion percentage", () => {
-		const { rerender } = render(
+		render(
 			<MockComplianceChecklist
 				items={[
 					{ id: "1", name: "Item 1", completed: true },

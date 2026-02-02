@@ -108,7 +108,7 @@ describe("Visual Regression Testing Automation", () => {
 		it("should preserve component args", () => {
 			const testArgs = { label: "Test", variant: "primary" };
 			const stories = createViewportStories("TestComponent", testArgs);
-			Object.values(stories).forEach((story: any) => {
+			Object.values(stories).forEach((story) => {
 				expect(story.args).toEqual(testArgs);
 			});
 		});
@@ -130,7 +130,7 @@ describe("Visual Regression Testing Automation", () => {
 		it("should preserve component args", () => {
 			const testArgs = { label: "Test", variant: "primary" };
 			const stories = createThemeStories(testArgs);
-			Object.values(stories).forEach((story: any) => {
+			Object.values(stories).forEach((story) => {
 				expect(story.args).toEqual(testArgs);
 			});
 		});

@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/consistent-function-scoping -- test helpers defined inline for clarity */
 import DOMPurify from "dompurify";
 import { describe, expect, it } from "vitest";
 
@@ -94,9 +95,9 @@ describe("Input Sanitization Tests", () => {
 				}
 
 				return urlObj.toString();
-			} catch {
-				return null;
-			}
+            } catch {
+                return null;
+            }
 		};
 
 		it("should accept valid HTTPS URLs", () => {
@@ -244,7 +245,7 @@ describe("Input Sanitization Tests", () => {
 	});
 
 	describe("JSON Input Sanitization", () => {
-		const sanitizeJSON = (input: string): any | null => {
+		const sanitizeJSON = (input: string): unknown => {
 			try {
 				const parsed = JSON.parse(input);
 
@@ -254,9 +255,9 @@ describe("Input Sanitization Tests", () => {
 				delete parsed.prototype;
 
 				return parsed;
-			} catch {
-				return null;
-			}
+            } catch {
+                return null;
+            }
 		};
 
 		it("should parse valid JSON", () => {
@@ -512,7 +513,7 @@ describe("Input Sanitization Tests", () => {
 
 // Comprehensive Sanitization Helper
 describe("Comprehensive Sanitization Helper", () => {
-	const sanitizeInput = (input: any, type: string): any => {
+	const sanitizeInput = (input: unknown, type: string): unknown => {
 		switch (type) {
 			case "text":
 				return input.trim().substring(0, 1000);
@@ -529,9 +530,9 @@ describe("Comprehensive Sanitization Helper", () => {
 					return ["http:", "https:"].includes(url.protocol)
 						? url.toString()
 						: null;
-				} catch {
-					return null;
-				}
+            } catch {
+                return null;
+            }
 			case "integer":
 				return parseInt(input, 10) || 0;
 			default:

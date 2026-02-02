@@ -6,17 +6,20 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	type BulkAction,
 	BulkActionToolbar,
-} from "@/components/BulkActionToolbar";
+} from "../../components/BulkActionToolbar";
+
+let user: ReturnType<typeof userEvent.setup>;
 
 describe("BulkActionToolbar", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		user = userEvent.setup();
 	});
 
 	const getMockDelete = () => vi.fn();
 	const getMockSelectAll = () => vi.fn();
 	const getMockSelectNone = () => vi.fn();
-	const getMockOnActionComplete = () => vi.fn();
+	const _getMockOnActionComplete = () => vi.fn();
 
 	const getDeleteAction = (): BulkAction => ({
 		id: "delete",
@@ -69,7 +72,6 @@ describe("BulkActionToolbar", () => {
 	});
 
 	it("calls onSelectAll when Select All is clicked", async () => {
-		const user = userEvent.setup();
 		const mockSelectAll = getMockSelectAll();
 		const { getByText } = render(
 			<BulkActionToolbar
@@ -86,7 +88,6 @@ describe("BulkActionToolbar", () => {
 	});
 
 	it("calls onSelectNone when Deselect is clicked", async () => {
-		const user = userEvent.setup();
 		const mockSelectNone = getMockSelectNone();
 		const { getByText } = render(
 			<BulkActionToolbar
@@ -179,7 +180,6 @@ describe("BulkActionToolbar", () => {
 	});
 
 	it("closes toolbar when close button is clicked", async () => {
-		const user = userEvent.setup();
 		const mockSelectNone = getMockSelectNone();
 		const { getByLabelText } = render(
 			<BulkActionToolbar

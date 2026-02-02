@@ -17,7 +17,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { CommandPalette } from "@/components/CommandPalette";
 
 // Mock TanStack Router
-const mockNavigate = vi.fn((options: any) => {
+const mockNavigate = vi.fn((options: { to: string; params?: Record<string, unknown> }) => {
 	// Handle both old string format and new { to: '...' } format
 	if (typeof options === "string") {
 		return Promise.resolve();
@@ -41,11 +41,8 @@ vi.mock("@tanstack/react-router", async () => {
 		}),
 		useLocation: () => ({ pathname: mockPathname }),
 		useParams: () => ({}),
-		Link: ({ children, to, ...props }: any) => (
-			<a
-				href={typeof to === "string" ? to : to?.to || to?.toString?.()}
-				{...props}
-			>
+		Link: ({ children, to, ...props }: { children: React.ReactNode; to: string; [key: string]: unknown }) => (
+			<a href={typeof to === "string" ? to : String((to as unknown) ?? "")} {...props}>
 				{children}
 			</a>
 		),
@@ -67,9 +64,12 @@ const renderCommandPalette = () => {
 };
 
 describe("CommandPalette Component", () => {
+	let user: ReturnType<typeof userEvent.setup>;
+
 	beforeEach(() => {
 		mockNavigate.mockClear();
 		clearProjectContext(); // Reset to homepage by default
+		user = userEvent.setup();
 	});
 
 	afterEach(() => {
@@ -238,7 +238,6 @@ describe("CommandPalette Component", () => {
 			renderCommandPalette();
 			fireEvent.keyDown(window, { key: "k", metaKey: true });
 
-			const user = userEvent.setup();
 			const input = await screen.findByPlaceholderText(/search commands/i);
 
 			await user.type(input, "dashboard");
@@ -255,7 +254,6 @@ describe("CommandPalette Component", () => {
 			renderCommandPalette();
 			fireEvent.keyDown(window, { key: "k", metaKey: true });
 
-			const user = userEvent.setup();
 			const input = await screen.findByPlaceholderText(/search commands/i);
 
 			await user.type(input, "epics");
@@ -270,7 +268,6 @@ describe("CommandPalette Component", () => {
 			renderCommandPalette();
 			fireEvent.keyDown(window, { key: "k", metaKey: true });
 
-			const user = userEvent.setup();
 			const input = await screen.findByPlaceholderText(/search commands/i);
 
 			await user.type(input, "home");
@@ -284,7 +281,6 @@ describe("CommandPalette Component", () => {
 			renderCommandPalette();
 			fireEvent.keyDown(window, { key: "k", metaKey: true });
 
-			const user = userEvent.setup();
 			const input = await screen.findByPlaceholderText(/search commands/i);
 
 			await user.type(input, "nonexistentcommand12345");
@@ -298,7 +294,6 @@ describe("CommandPalette Component", () => {
 			renderCommandPalette();
 			fireEvent.keyDown(window, { key: "k", metaKey: true });
 
-			const user = userEvent.setup();
 			const input = await screen.findByPlaceholderText(/search commands/i);
 
 			await user.type(input, "DASHBOARD");
@@ -313,7 +308,6 @@ describe("CommandPalette Component", () => {
 
 			// Open, search, close
 			fireEvent.keyDown(window, { key: "k", metaKey: true });
-			const user = userEvent.setup();
 			const input = await screen.findByPlaceholderText(/search commands/i);
 			await user.type(input, "test");
 			fireEvent.keyDown(window, { key: "Escape" });
@@ -416,7 +410,6 @@ describe("CommandPalette Component", () => {
 			renderCommandPalette();
 			fireEvent.keyDown(window, { key: "k", metaKey: true });
 
-			const user = userEvent.setup();
 			const input = await screen.findByPlaceholderText(/search commands/i);
 
 			// Change search query to filter results
@@ -553,7 +546,6 @@ describe("CommandPalette Component", () => {
 			renderCommandPalette();
 			fireEvent.keyDown(window, { key: "k", metaKey: true });
 
-			const user = userEvent.setup();
 			const input = await screen.findByPlaceholderText(/search commands/i);
 
 			// Search for something that doesn't exist
@@ -581,7 +573,6 @@ describe("CommandPalette Component", () => {
 			renderCommandPalette();
 			fireEvent.keyDown(window, { key: "k", metaKey: true });
 
-			const user = userEvent.setup();
 			const input = await screen.findByPlaceholderText(/search commands/i);
 
 			// Type and delete

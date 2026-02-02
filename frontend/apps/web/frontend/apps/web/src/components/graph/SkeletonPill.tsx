@@ -1,14 +1,15 @@
 import { memo } from "react";
-import type { NodeProps } from "@xyflow/react";
+import type { Node, NodeProps } from "@xyflow/react";
 
-export export interface SkeletonPillData {
+export interface SkeletonPillData extends Record<string, unknown> {
   distance?: 'near' | 'medium' | 'far';
   state?: 'loading' | 'error';
 }
 
-export const SkeletonPill = memo(function SkeletonPill({ data }: NodeProps<SkeletonPillData>) {
-  const distance = data.distance ?? 'near';
-  const state = data.state ?? 'loading';
+export const SkeletonPill = memo(function SkeletonPill({ data }: NodeProps<Node<SkeletonPillData>>) {
+  const typedData = data as SkeletonPillData;
+  const distance = typedData.distance ?? 'near';
+  const state = typedData.state ?? 'loading';
 
   if (state === 'error') {
     return (

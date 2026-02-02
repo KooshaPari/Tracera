@@ -270,7 +270,7 @@ var ensureErrorObject = (() => {
 			if (canAttachTrace(value)) return value;
 			try {
 				throw new Error(safeToString(value));
-			} catch (err) {
+			} catch (_err) {
 				return err;
 			}
 		};

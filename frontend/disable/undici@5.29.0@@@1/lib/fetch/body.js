@@ -398,7 +398,7 @@ function bodyMixinMethods (instance) {
             headers,
             preservePath: true
           })
-        } catch (err) {
+        } catch (_err) {
           throw new DOMException(`${err}`, 'AbortError')
         }
 
@@ -463,7 +463,7 @@ function bodyMixinMethods (instance) {
           }
           text += streamingDecoder.decode()
           entries = new URLSearchParams(text)
-        } catch (err) {
+        } catch (_err) {
           // istanbul ignore next: Unclear when new URLSearchParams can fail on a string.
           // 2. If entries is failure, then throw a TypeError.
           throw Object.assign(new TypeError(), { cause: err })

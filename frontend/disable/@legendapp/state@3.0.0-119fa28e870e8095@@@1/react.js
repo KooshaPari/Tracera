@@ -125,7 +125,7 @@ function useSelector(selector, options) {
     const { subscribe, getVersion, run } = selectorFn;
     value = run(selector);
     index_js.useSyncExternalStore(subscribe, getVersion, getVersion);
-  } catch (err) {
+  } catch (_err) {
     if ((process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test") && ((_a = err == null ? void 0 : err.message) == null ? void 0 : _a.includes("Rendered more"))) {
       console.warn(
         `[legend-state]: You may want to wrap this component in \`observer\` to fix the error of ${err.message}`

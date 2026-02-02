@@ -1,12 +1,14 @@
 import { describe, expect, it } from "vitest";
-import {
-	type CanonicalConcept,
-	type CanonicalProjection,
-	type CreateCanonicalConceptInput,
-	canonicalQueryKeys,
-	type PivotTarget,
-	type UpdateCanonicalConceptInput,
-} from "../../api/canonical";
+import canonicalApi from "../../api/canonical";
+
+const { canonicalQueryKeys } = canonicalApi;
+type CanonicalConcept = typeof canonicalApi.types.CanonicalConcept;
+type CanonicalProjection = typeof canonicalApi.types.CanonicalProjection;
+type CreateCanonicalConceptInput =
+	typeof canonicalApi.types.CreateCanonicalConceptInput;
+type PivotTarget = typeof canonicalApi.types.PivotTarget;
+type UpdateCanonicalConceptInput =
+	typeof canonicalApi.types.UpdateCanonicalConceptInput;
 
 describe("canonical API hooks", () => {
 	describe("queryKeys", () => {

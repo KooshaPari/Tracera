@@ -49,7 +49,7 @@ const runCallbacks = (callbacks, err, result) => {
 	for (const callback of callbacks) {
 		try {
 			callback(err, result);
-		} catch (err) {
+		} catch (_err) {
 			if (!error) error = err;
 		}
 	}
@@ -343,7 +343,7 @@ class CacheBackend {
 				this._providerContext,
 				path,
 			);
-		} catch (err) {
+		} catch (_err) {
 			this._storeResult(strPath, /** @type {Error} */ (err), undefined);
 			this._enterSyncModeWhenIdle();
 			if (callbacks) {

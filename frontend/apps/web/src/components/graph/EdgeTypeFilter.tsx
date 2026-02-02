@@ -15,7 +15,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@tracertm/ui/components/DropdownMenu";
-import { Filter, X } from "lucide-react";
+import { Filter, _X } from "lucide-react";
 import { useCallback, useMemo } from "react";
 import { LINK_STYLES } from "./types";
 
@@ -43,7 +43,7 @@ export function EdgeTypeFilter({
 }: EdgeTypeFilterProps) {
 	const sortedTypes = useMemo(() => {
 		// Sort by count (if available) or alphabetically
-		return [...availableTypes].sort((a, b) => {
+		return [...availableTypes].toSorted((a, b) => {
 			if (edgeStats) {
 				return (edgeStats[b] || 0) - (edgeStats[a] || 0);
 			}

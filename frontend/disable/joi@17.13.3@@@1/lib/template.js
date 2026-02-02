@@ -269,7 +269,7 @@ module.exports =
 						functions,
 						constants: internals.constants,
 					});
-				} catch (err) {
+				} catch (_err) {
 					err.message = `Invalid template variable "${content}" fails due to: ${err.message}`;
 					throw err;
 				}

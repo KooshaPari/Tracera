@@ -43,7 +43,7 @@ function createLinkSync(srcpath, dstpath) {
 	try {
 		const srcStat = fs.lstatSync(srcpath);
 		if (dstStat && areIdentical(srcStat, dstStat)) return;
-	} catch (err) {
+	} catch (_err) {
 		err.message = err.message.replace("lstat", "ensureLink");
 		throw err;
 	}
