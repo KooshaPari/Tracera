@@ -12,7 +12,7 @@ from tracertm.schemas.specification import (
     ScenarioCreate,
     ScenarioRead,
 )
-from tracertm.services.feature_service import FeatureService
+from tracertm.services.feature_service import CreateFeatureInput, FeatureService
 from tracertm.services.scenario_service import ScenarioService
 
 router = APIRouter(prefix="/features", tags=["BDD Features"])
@@ -29,9 +29,7 @@ async def create_feature(
     db: AsyncSession = Depends(get_db),
 ):
     service = FeatureService(db)
-    return await service.create_feature(
-        project_id=feature.project_id,
-        name=feature.name,
+    options = CreateFeatureInput(
         description=feature.description,
         as_a=feature.as_a,
         i_want=feature.i_want,
@@ -39,6 +37,11 @@ async def create_feature(
         status=feature.status,
         tags=feature.tags,
         related_requirements=feature.related_requirements,
+    )
+    return await service.create_feature(
+        project_id=feature.project_id,
+        name=feature.name,
+        options=options,
     )
 
 

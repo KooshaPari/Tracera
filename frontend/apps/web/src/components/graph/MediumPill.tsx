@@ -3,9 +3,9 @@ import type { Node, NodeProps } from "@xyflow/react";
 
 export interface MediumPillData extends Record<string, unknown> {
 	id?: string;
-	type?: string;
 	label?: string;
 	status?: string;
+	type?: string;
 }
 
 export const MediumPill = memo(function MediumPill({
@@ -25,12 +25,16 @@ export const MediumPill = memo(function MediumPill({
 		? (typeColors[data.type] ?? typeColors["default"])
 		: typeColors["default"];
 
+	const indicatorStyle = {
+		backgroundColor: typeColor,
+	};
+
 	return (
 		<div className="px-3 py-2 rounded-lg border bg-card">
 			<div className="flex items-center gap-2">
 				<div
 					className="w-2 h-2 rounded-full flex-shrink-0"
-					style={{ backgroundColor: typeColor }}
+					style={indicatorStyle}
 				/>
 				<span className="text-sm font-medium truncate max-w-[120px]">
 					{data.label ?? "Untitled"}

@@ -186,11 +186,12 @@ export const createBreadcrumbs = (
 /**
  * Get children grouped by drill-down level
  */
+// @ts-expect-error TypeScript parser issue with arrow function generic return type
 export const getChildrenByDrillDownLevel = (
 	itemId: string,
 	hierarchyMap: Map<string, HierarchyNode>,
 	items: Item[],
-): Map<DrillDownLevel, Item[]> {
+): Map<DrillDownLevel, Item[]> => {
 	const node = hierarchyMap.get(itemId);
 	if (!node) {
 		return new Map();
@@ -493,7 +494,11 @@ export const navigateToChild = (
 		return null;
 	}
 
-	return node.childrenIds[childIndex];
+	const childId = node.childrenIds[childIndex];
+	if (childId === undefined) {
+		return null;
+	}
+	return childId;
 };
 
 /**

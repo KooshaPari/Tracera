@@ -4,9 +4,9 @@ import type {
 	UseQueryOptions,
 	UseQueryResult,
 } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Link } from "@tracertm/types";
 import { api, handleApiResponse } from "./query-client";
-import { useMutation, useQuery, useQueryClient } from "./react-query-hooks";
 import { queryKeys } from "./queries-keys";
 
 type CreateLinkInput = {
@@ -25,8 +25,8 @@ const useProjectLinks = (
 ): UseQueryResult<Link[]> => {
 	const baseOptions: UseQueryOptions<Link[]> = {
 		enabled: Boolean(projectId),
-		queryFn: () =>
-			handleApiResponse(
+		queryFn: async () =>
+			await handleApiResponse(
 				api.get<Link[]>("/api/v1/projects/{projectId}/links", {
 					params: { path: { projectId } },
 				}),
@@ -34,7 +34,7 @@ const useProjectLinks = (
 		queryKey: queryKeys.projectLinks(projectId),
 	};
 
-	return useQuery({ ...baseOptions, ...options });
+	return useQuery(Object.assign({}, baseOptions, options));
 };
 
 const useCreateLink = (
@@ -42,8 +42,8 @@ const useCreateLink = (
 ): UseMutationResult<Link, Error, CreateLinkInput> => {
 	const queryClient = useQueryClient();
 	const baseOptions: UseMutationOptions<Link, Error, CreateLinkInput> = {
-		mutationFn: (input: CreateLinkInput) =>
-			handleApiResponse(
+		mutationFn: async (input: CreateLinkInput) =>
+			await handleApiResponse(
 				api.post<Link>("/api/v1/projects/{projectId}/links", {
 					body: input.data as Record<string, unknown>,
 					params: { path: { projectId: input.projectId } },
@@ -56,7 +56,7 @@ const useCreateLink = (
 		},
 	};
 
-	return useMutation({ ...baseOptions, ...options });
+	return useMutation(Object.assign({}, baseOptions, options));
 };
 
 const useDeleteLink = (
@@ -64,8 +64,8 @@ const useDeleteLink = (
 ): UseMutationResult<void, Error, DeleteLinkInput> => {
 	const queryClient = useQueryClient();
 	const baseOptions: UseMutationOptions<void, Error, DeleteLinkInput> = {
-		mutationFn: (input: DeleteLinkInput) =>
-			handleApiResponse(
+		mutationFn: async (input: DeleteLinkInput) =>
+			await handleApiResponse(
 				api.del<void>("/api/v1/links/{linkId}", {
 					params: { path: { linkId: input.linkId } },
 				}),
@@ -80,7 +80,7 @@ const useDeleteLink = (
 		},
 	};
 
-	return useMutation({ ...baseOptions, ...options });
+	return useMutation(Object.assign({}, baseOptions, options));
 };
 
 export { useCreateLink, useDeleteLink, useProjectLinks };

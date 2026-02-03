@@ -1,5 +1,6 @@
 """Item service for TraceRTM."""
 
+from dataclasses import dataclass
 from typing import Any
 
 from loguru import logger
@@ -10,6 +11,37 @@ from tracertm.models.item import Item
 from tracertm.repositories.event_repository import EventRepository
 from tracertm.repositories.item_repository import ItemRepository
 from tracertm.repositories.link_repository import LinkRepository
+
+
+@dataclass
+class CreateItemInput:
+    """Input for creating an item with optional links and metadata."""
+
+    project_id: str
+    title: str
+    view: str
+    item_type: str
+    agent_id: str
+    description: str | None = None
+    status: str = "todo"
+    parent_id: str | None = None
+    metadata: dict[str, Any] | None = None
+    owner: str | None = None
+    priority: str | None = "medium"
+    link_to: list[str] | None = None
+    link_type: str = "relates_to"
+
+
+@dataclass
+class ListItemsParams:
+    """Parameters for listing items in a project."""
+
+    view: str | None = None
+    status: str | None = None
+    include_deleted: bool = False
+    limit: int = 100
+    offset: int = 0
+
 
 # Valid status transitions
 STATUS_TRANSITIONS = {
@@ -32,51 +64,33 @@ class ItemService:
         self.links = LinkRepository(session)
         self.events = EventRepository(session)
 
-    async def create_item(
-        self,
-        project_id: str,
-        title: str,
-        view: str,
-        item_type: str,
-        agent_id: str,
-        description: str | None = None,
-        status: str = "todo",
-        parent_id: str | None = None,
-        metadata: dict[str, Any] | None = None,
-        owner: str | None = None,
-        priority: str | None = "medium",
-        link_to: list[str] | None = None,
-        link_type: str = "relates_to",
-    ) -> Item:
+    async def create_item(self, input: CreateItemInput) -> Item:
         """Create item with optional links and event logging."""
-        # Create item
         item = await self.items.create(
-            project_id=project_id,
-            title=title,
-            view=view,
-            item_type=item_type,
-            description=description,
-            status=status,
-            parent_id=parent_id,
-            metadata=metadata,
-            owner=owner,
-            priority=priority,
-            created_by=agent_id,
+            project_id=input.project_id,
+            title=input.title,
+            view=input.view,
+            item_type=input.item_type,
+            description=input.description,
+            status=input.status,
+            parent_id=input.parent_id,
+            metadata=input.metadata,
+            owner=input.owner,
+            priority=input.priority,
+            created_by=input.agent_id,
         )
 
-        # Create links if specified
-        if link_to:
-            for target_id in link_to:
+        if input.link_to:
+            for target_id in input.link_to:
                 await self.links.create(
-                    project_id=project_id,
+                    project_id=input.project_id,
                     source_item_id=str(item.id),
                     target_item_id=target_id,
-                    link_type=link_type,
+                    link_type=input.link_type,
                 )
 
-        # Log event
         await self.events.log(
-            project_id=project_id,
+            project_id=input.project_id,
             event_type="item_created",
             entity_type="item",
             entity_id=str(item.id),
@@ -90,9 +104,9 @@ class ItemService:
                     "owner": item.owner,
                     "priority": item.priority,
                 },
-                "links": link_to or [],
+                "links": input.link_to or [],
             },
-            agent_id=agent_id,
+            agent_id=input.agent_id,
         )
 
         return item
@@ -101,19 +115,16 @@ class ItemService:
         """Get item by ID, ensuring it belongs to the project."""
         return await self.items.get_by_id(item_id, project_id)
 
-    async def list_items(
-        self,
-        project_id: str,
-        view: str | None = None,
-        status: str | None = None,
-        include_deleted: bool = False,
-        limit: int = 100,
-        offset: int = 0,
-    ) -> list[Item]:
+    async def list_items(self, project_id: str, params: ListItemsParams | None = None) -> list[Item]:
         """List items in a project, optionally filtered by view and status."""
-        if view:
-            return await self.items.get_by_view(project_id, view, status, limit=limit, offset=offset)
-        return await self.items.get_by_project(project_id, status=status, limit=limit, offset=offset)
+        p = params or ListItemsParams()
+        if p.view:
+            return await self.items.get_by_view(
+                project_id, p.view, p.status, limit=p.limit, offset=p.offset
+            )
+        return await self.items.get_by_project(
+            project_id, status=p.status, limit=p.limit, offset=p.offset
+        )
 
     async def update_item(
         self,
@@ -502,6 +513,45 @@ class ItemService:
             "errors": errors,
         }
 
+    async def _collect_related_outgoing(
+        self, project_id: str, item_id: str, link_type: str | None
+    ) -> list[Item]:
+        """Collect items linked from item_id (outgoing)."""
+        out: list[Item] = []
+        links = await self.links.get_by_source(item_id)
+        for link in links:
+            if link_type and link.link_type != link_type:
+                continue
+            target = await self.items.get_by_id(link.target_item_id)
+            if target and target.project_id == project_id:
+                out.append(target)
+        return out
+
+    async def _collect_related_incoming(
+        self, project_id: str, item_id: str, link_type: str | None
+    ) -> list[Item]:
+        """Collect items linking to item_id (incoming)."""
+        out: list[Item] = []
+        links = await self.links.get_by_target(item_id)
+        for link in links:
+            if link_type and link.link_type != link_type:
+                continue
+            source = await self.items.get_by_id(link.source_item_id)
+            if source and source.project_id == project_id:
+                out.append(source)
+        return out
+
+    @staticmethod
+    def _deduplicate_items(items: list[Item]) -> list[Item]:
+        """Return items in order, duplicates removed by id."""
+        seen: set[str] = set()
+        unique: list[Item] = []
+        for item in items:
+            if item.id not in seen:
+                seen.add(item.id)
+                unique.append(item)
+        return unique
+
     async def query_by_relationship(
         self,
         project_id: str,
@@ -521,43 +571,17 @@ class ItemService:
         Returns:
             List of items related to the given item
         """
-        related_items = []
-
         try:
-            # Get outgoing links (item_id is source)
+            related: list[Item] = []
             if direction in ("outgoing", "both"):
-                outgoing_links = await self.links.get_by_source(item_id)
-                for link in outgoing_links:
-                    # Filter by link type if provided
-                    if link_type and link.link_type != link_type:
-                        continue
-                    # Get the target item
-                    target = await self.items.get_by_id(link.target_item_id)
-                    if target and target.project_id == project_id:
-                        related_items.append(target)
-
-            # Get incoming links (item_id is target)
+                related.extend(
+                    await self._collect_related_outgoing(project_id, item_id, link_type)
+                )
             if direction in ("incoming", "both"):
-                incoming_links = await self.links.get_by_target(item_id)
-                for link in incoming_links:
-                    # Filter by link type if provided
-                    if link_type and link.link_type != link_type:
-                        continue
-                    # Get the source item
-                    source = await self.items.get_by_id(link.source_item_id)
-                    if source and source.project_id == project_id:
-                        related_items.append(source)
-
-            # Remove duplicates (if direction="both" and item has circular references)
-            seen_ids = set()
-            unique_items = []
-            for item in related_items:
-                if item.id not in seen_ids:
-                    seen_ids.add(item.id)
-                    unique_items.append(item)
-
-            return unique_items
-
+                related.extend(
+                    await self._collect_related_incoming(project_id, item_id, link_type)
+                )
+            return self._deduplicate_items(related)
         except Exception as e:
             logger.error(f"Error getting related items for {item_id}: {e}", exc_info=True)
             return []

@@ -1,9 +1,9 @@
 /* oxlint-disable import/no-named-export, promise/prefer-await-to-callbacks, promise/prefer-await-to-then, eslint/max-lines, eslint/no-undefined, oxc/no-async-await */
 // WebSocket Real-time Connection Manager
-import client from "./client";
 import { logger } from "@/lib/logger";
+import { clientCore } from "./client-core";
 
-const { API_BASE_URL } = client;
+const API_BASE_URL = clientCore.API_BASE_URL;
 
 const AUTH_CLOSE_CODE = 1008;
 const AUTH_TIMEOUT_MS = 5000;
@@ -120,7 +120,7 @@ class WebSocketManager {
 		try {
 			const token = await this.resolveToken();
 			this.handleResolvedToken(token);
-		} catch (error) {
+		} catch (error: unknown) {
 			this.handleConnectionFailure(error);
 		}
 	}
@@ -155,8 +155,10 @@ class WebSocketManager {
 
 	private static getWebSocketProtocol(): string {
 		const windowRef = globalThis.window;
-		if (windowRef && windowRef.location.protocol === "https:") {
-			return "wss:";
+		if (typeof windowRef !== "undefined") {
+			if (windowRef.location.protocol === "https:") {
+				return "wss:";
+			}
 		}
 		return "ws:";
 	}
@@ -166,34 +168,27 @@ class WebSocketManager {
 		this.isAuthenticated = false;
 	}
 
-	private resolveToken(): Promise<string | undefined> {
-		if (!this.getToken) {
-			return Promise.resolve(undefined);
+	private async resolveToken(): Promise<string | undefined> {
+		if (typeof this.getToken === "undefined") {
+			return undefined;
 		}
 
 		try {
-			const tokenResult = this.getToken();
-			if (tokenResult instanceof Promise) {
-				return tokenResult.then((token) => {
-					if (typeof token === "string" && token !== "") {
-						return token;
-					}
-					return undefined;
-				});
-			}
+			const tokenResult = await this.getToken();
 			if (typeof tokenResult === "string" && tokenResult !== "") {
-				return Promise.resolve(tokenResult);
+				return tokenResult;
 			}
-			return Promise.resolve(undefined);
-		} catch (error) {
-			const err =
-				error instanceof Error ? error : new Error("Failed to resolve token");
-			return Promise.reject(err);
+			return undefined;
+		} catch (error: unknown) {
+			if (error instanceof Error) {
+				throw error;
+			}
+			throw new Error("Failed to resolve token");
 		}
 	}
 
 	private handleResolvedToken(token: string | undefined): void {
-		if (!token) {
+		if (typeof token === "undefined" || token === "") {
 			this.handleMissingToken();
 			return;
 		}
@@ -213,7 +208,7 @@ class WebSocketManager {
 		try {
 			this.ws = new WebSocket(this.baseUrl);
 			this.attachSocketHandlers();
-		} catch (connectionError) {
+		} catch (connectionError: unknown) {
 			this.handleConnectionFailure(connectionError);
 		}
 	}
@@ -227,10 +222,10 @@ class WebSocketManager {
 		this.ws.onopen = (): void => {
 			this.handleOpen();
 		};
-		this.ws.onmessage = (event): void => {
+		this.ws.onmessage = (event: MessageEvent): void => {
 			this.handleMessage(event.data);
 		};
-		this.ws.onerror = (error): void => {
+		this.ws.onerror = (error: Event): void => {
 			this.handleError(error);
 		};
 		this.ws.onclose = (event): void => {
@@ -276,7 +271,7 @@ class WebSocketManager {
 			if (isRecordObject(parsed)) {
 				return parsed;
 			}
-		} catch (parseError) {
+		} catch (parseError: unknown) {
 			logger.error("[WebSocket] Failed to parse message:", parseError);
 			return undefined;
 		}
@@ -400,7 +395,12 @@ class WebSocketManager {
 
 	private sendAuthMessage(): void {
 		const socket = this.ws;
-		if (!socket || socket.readyState !== WebSocket.OPEN || !this.token) {
+		if (
+			!socket ||
+			socket.readyState !== WebSocket.OPEN ||
+			typeof this.token === "undefined" ||
+			this.token === ""
+		) {
 			logger.error(
 				"[WebSocket] Cannot send auth message: connection not ready",
 			);
@@ -415,7 +415,7 @@ class WebSocketManager {
 		try {
 			socket.send(JSON.stringify(authMessage));
 			logger.info("[WebSocket] Auth message sent");
-		} catch (sendError) {
+		} catch (sendError: unknown) {
 			logger.error("[WebSocket] Failed to send auth message:", sendError);
 		}
 	}
@@ -457,13 +457,13 @@ class WebSocketManager {
 			this.subscriptions.set(channel, new Set());
 		}
 		const callbacks = this.subscriptions.get(channel);
-		if (callbacks) {
+		if (typeof callbacks !== "undefined") {
 			callbacks.add(listener);
 		}
 	}
 
 	private sendSubscription(channel: string): void {
-		if (!this.isAuthenticated || !this.ws) {
+		if (!this.isAuthenticated || typeof this.ws === "undefined") {
 			return;
 		}
 		this.send({ channel, type: "subscribe" });
@@ -471,7 +471,7 @@ class WebSocketManager {
 
 	private removeSubscription(channel: string, listener: EventCallback): void {
 		const callbacks = this.subscriptions.get(channel);
-		if (!callbacks) {
+		if (typeof callbacks === "undefined") {
 			return;
 		}
 
@@ -481,7 +481,7 @@ class WebSocketManager {
 		}
 
 		this.subscriptions.delete(channel);
-		if (this.isAuthenticated && this.ws) {
+		if (this.isAuthenticated && typeof this.ws !== "undefined") {
 			this.send({ channel, type: "unsubscribe" });
 		}
 	}
@@ -509,7 +509,7 @@ class WebSocketManager {
 	): void {
 		try {
 			listener(event);
-		} catch (callbackError) {
+		} catch (callbackError: unknown) {
 			logger.error(
 				`[WebSocket] Error in callback for ${channel}:`,
 				callbackError,
@@ -533,7 +533,7 @@ class WebSocketManager {
 
 		try {
 			this.ws.send(JSON.stringify(data));
-		} catch (error) {
+		} catch (error: unknown) {
 			logger.error("[WebSocket] Failed to send message:", error);
 			this.queueMessage(data);
 		}
@@ -615,7 +615,10 @@ class WebSocketManager {
 	}
 
 	private isSocketOpen(): boolean {
-		return Boolean(this.ws && this.ws.readyState === WebSocket.OPEN);
+		return (
+			typeof this.ws !== "undefined" &&
+			this.ws.readyState === WebSocket.OPEN
+		);
 	}
 }
 

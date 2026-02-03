@@ -1,5 +1,8 @@
+import { useCallback } from "react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
+
+const SKELETON_COUNT = 6;
 
 export interface CardItem {
 	id: string;
@@ -28,7 +31,7 @@ interface ResponsiveCardViewProps {
  * and transitions to grid on tablet/desktop. Designed for accessibility
  * with minimum 44px touch targets.
  */
-export function ResponsiveCardView({
+export const ResponsiveCardView = function ResponsiveCardView({
 	items,
 	isLoading,
 	emptyState,
@@ -39,7 +42,7 @@ export function ResponsiveCardView({
 	if (isLoading) {
 		return (
 			<div className={cn("space-y-3 sm:space-y-4 md:space-y-0", className)}>
-				{[1, 2, 3, 4, 5, 6].map((i) => (
+				{Array.from({ length: SKELETON_COUNT }, (_, i) => i + 1).map((i) => (
 					<div
 						key={i}
 						className="h-32 sm:h-40 bg-muted rounded-xl animate-pulse"
@@ -72,7 +75,7 @@ export function ResponsiveCardView({
 			))}
 		</div>
 	);
-}
+};
 
 interface CardItemComponentProps {
 	item: CardItem;
@@ -80,31 +83,43 @@ interface CardItemComponentProps {
 	onItemClick?: (item: CardItem) => void;
 }
 
-function CardItemComponent({
+const CardItemComponent = function CardItemComponent({
 	item,
 	cardClassName,
 	onItemClick,
 }: CardItemComponentProps) {
-	const handleClick = () => {
+	const handleClick = useCallback(() => {
 		if (item.onClick) {
 			item.onClick();
 		}
 		if (onItemClick) {
 			onItemClick(item);
 		}
-	};
+	}, [item, onItemClick]);
+
+	const handleKeyDown = useCallback(
+		(e: React.KeyboardEvent) => {
+			if (e.key === "Enter" || e.key === " ") {
+				e.preventDefault();
+				handleClick();
+			}
+		},
+		[handleClick],
+	);
+
+	const handleActionsClick = useCallback((e: React.MouseEvent) => {
+		e.stopPropagation();
+	}, []);
+
+	const handleActionsKeyDown = useCallback((e: React.KeyboardEvent) => {
+		e.stopPropagation();
+	}, []);
 
 	return (
-		<div
+		<button
+			type="button"
 			onClick={handleClick}
-			onKeyDown={(e) => {
-				if (e.key === "Enter" || e.key === " ") {
-					e.preventDefault();
-					handleClick();
-				}
-			}}
-			role="button"
-			tabIndex={0}
+			onKeyDown={handleKeyDown}
 			className={cn(
 				"group relative p-4 sm:p-5 rounded-xl border border-border",
 				"bg-card hover:bg-card/80 transition-all duration-200",
@@ -156,12 +171,13 @@ function CardItemComponent({
 			{item.actions && (
 				<div
 					className="flex items-center gap-2 pt-2 border-t border-border/30"
-					onClick={(e) => e.stopPropagation()}
-					onKeyDown={(e) => e.stopPropagation()}
+					onClick={handleActionsClick}
+					onKeyDown={handleActionsKeyDown}
+					role="presentation"
 				>
 					{item.actions}
 				</div>
 			)}
-		</div>
+		</button>
 	);
-}
+};

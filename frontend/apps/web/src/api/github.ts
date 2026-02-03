@@ -225,7 +225,7 @@ interface GitHubAppInstallationListResponse {
 	total: number;
 }
 
-interface CreateRepoRequest {
+export interface CreateRepoRequest {
 	installation_id: string;
 	account_id: string;
 	name: string;
@@ -234,7 +234,7 @@ interface CreateRepoRequest {
 	org?: string;
 }
 
-const getGitHubAppInstallUrl = async (
+export const getGitHubAppInstallUrl = async (
 	accountId: string,
 ): Promise<{ install_url: string; state: string }> => {
 	const headers = authHeaders();
@@ -251,7 +251,7 @@ const getGitHubAppInstallUrl = async (
 	return parseInstallUrlResponse(await res.json());
 };
 
-const listGitHubAppInstallations = async (
+export const listGitHubAppInstallations = async (
 	accountId: string,
 ): Promise<GitHubAppInstallationListResponse> => {
 	const headers = authHeaders();
@@ -268,7 +268,7 @@ const listGitHubAppInstallations = async (
 	return parseInstallationsResponse(await res.json());
 };
 
-const linkGitHubAppInstallation = async (
+export const linkGitHubAppInstallation = async (
 	installationId: string,
 	accountId: string,
 ): Promise<{ account_id: string; installation_id: string; status: string }> => {
@@ -287,7 +287,7 @@ const linkGitHubAppInstallation = async (
 	return parseLinkResponse(await res.json());
 };
 
-const deleteGitHubAppInstallation = async (
+export const deleteGitHubAppInstallation = async (
 	installationId: string,
 ): Promise<{ status: string }> => {
 	const headers = authHeaders();
@@ -304,7 +304,7 @@ const deleteGitHubAppInstallation = async (
 	return parseStatusResponse(await res.json());
 };
 
-const listGitHubRepos = async (params: {
+export const listGitHubRepos = async (params: {
 	accountId?: string;
 	installationId?: string;
 	credentialId?: string;
@@ -346,7 +346,7 @@ const listGitHubRepos = async (params: {
 	return parseRepoListResponse(await res.json());
 };
 
-const createGitHubRepo = async (
+export const createGitHubRepo = async (
 	data: CreateRepoRequest,
 ): Promise<GitHubRepo> => {
 	const headers = authHeaders();

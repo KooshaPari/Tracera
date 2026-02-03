@@ -46,6 +46,12 @@ jobs:
           # Check numbered suffixes
           NUMBERED=$(find apps packages -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" \) | grep -E '_[0-9]+\.(ts|tsx|js|jsx)$' || true)
 
+          # Check phase suffixes
+          PHASE=$(find apps packages -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" \) | grep -E '(_phase[0-9]|_phase[0-9][0-9]|phase[0-9]_|phase[0-9][0-9]_)\.(ts|tsx|js|jsx)$' || true)
+
+          # Check other AI versioning
+          OTHER_VERSION=$(find apps packages -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" \) | grep -E '_(final|latest|revised)\.(ts|tsx|js|jsx)$' || true)
+
           # Combine all violations
           ALL_VIOLATIONS=""
           if [ -n "$VERSIONED" ]; then
@@ -59,6 +65,12 @@ jobs:
           fi
           if [ -n "$NUMBERED" ]; then
             ALL_VIOLATIONS="$ALL_VIOLATIONS$NUMBERED\n"
+          fi
+          if [ -n "$PHASE" ]; then
+            ALL_VIOLATIONS="$ALL_VIOLATIONS$PHASE\n"
+          fi
+          if [ -n "$OTHER_VERSION" ]; then
+            ALL_VIOLATIONS="$ALL_VIOLATIONS$OTHER_VERSION\n"
           fi
 
           if [ -n "$ALL_VIOLATIONS" ]; then
@@ -84,6 +96,8 @@ jobs:
           echo "  • Prefixed: NewDashboard.tsx, ImprovedComponent.tsx"
           echo "  • Suffixed: Dashboard_new.tsx, Component_improved.tsx"
           echo "  • Numbered: Dashboard_2.tsx, Component_3.tsx"
+          echo "  • Phase suffixes: benchmark_phase2.tsx, component_phase3.tsx"
+          echo "  • Other versions: service_final.tsx, component_latest.tsx"
           echo ""
           echo "Action required:"
           echo "  1. Identify the canonical (active) file"

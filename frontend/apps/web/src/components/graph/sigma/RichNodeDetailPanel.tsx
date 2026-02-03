@@ -1,8 +1,8 @@
-import { memo } from "react";
-import { X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { memo, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { X } from "lucide-react";
 
 interface GraphNode {
 	id: string;
@@ -25,15 +25,24 @@ interface RichNodeDetailPanelProps {
 	onNavigate?: (nodeId: string) => void;
 }
 
-export const RichNodeDetailPanel = memo(function RichNodeDetailPanel({
+interface RichNodeDetailPanelInnerProps {
+	node: GraphNode;
+	onClose: () => void;
+	onExpand?: (nodeId: string) => void;
+	onNavigate?: (nodeId: string) => void;
+}
+
+const RichNodeDetailPanelInner = ({
 	node,
 	onClose,
 	onExpand,
 	onNavigate,
-}: RichNodeDetailPanelProps) {
-	if (!node) {
-		return null;
-	}
+}: RichNodeDetailPanelInnerProps) => {
+	const handleExpand = useCallback(() => onExpand?.(node.id), [node.id, onExpand]);
+	const handleNavigate = useCallback(
+		() => onNavigate?.(node.id),
+		[node.id, onNavigate],
+	);
 
 	return (
 		<div className="fixed right-0 top-0 h-full w-96 bg-card border-l shadow-lg z-50 flex flex-col">
@@ -119,8 +128,8 @@ export const RichNodeDetailPanel = memo(function RichNodeDetailPanel({
 						{onExpand && (
 							<Button
 								size="sm"
-								onClick={() => onExpand(node.id)}
 								className="flex-1"
+								onClick={handleExpand}
 							>
 								Expand
 							</Button>
@@ -129,8 +138,8 @@ export const RichNodeDetailPanel = memo(function RichNodeDetailPanel({
 							<Button
 								size="sm"
 								variant="outline"
-								onClick={() => onNavigate(node.id)}
 								className="flex-1"
+								onClick={handleNavigate}
 							>
 								Navigate
 							</Button>
@@ -139,5 +148,19 @@ export const RichNodeDetailPanel = memo(function RichNodeDetailPanel({
 				</div>
 			</div>
 		</div>
+	);
+};
+
+export const RichNodeDetailPanel = memo((props: RichNodeDetailPanelProps) => {
+	if (!props.node) {
+		return null;
+	}
+	return (
+		<RichNodeDetailPanelInner
+			node={props.node}
+			onClose={props.onClose}
+			onExpand={props.onExpand}
+			onNavigate={props.onNavigate}
+		/>
 	);
 });

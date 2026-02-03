@@ -1,11 +1,42 @@
 // ComponentUsageMatrix.tsx - Matrix view of component usage across pages/views
 // Shows which components are used where, usage counts, variants, and deprecation status
 
+import { memo, useMemo, useState } from "react";
+import {
+	AlertCircle,
+	BarChart3,
+	ChevronDown,
+	Code2,
+	Component,
+	ExternalLink,
+	Grid3x3,
+	Layers,
+	Package,
+	Search,
+	Square,
+	TrendingUp,
+	Zap,
+} from "lucide-react";
 import type {
 	ComponentCategory,
 	ComponentUsage,
 	LibraryComponent,
 } from "@tracertm/types";
+import {
+	AlertCircle,
+	BarChart3,
+	ChevronDown,
+	Code2,
+	Component,
+	ExternalLink,
+	Grid3x3,
+	Layers,
+	Package,
+	Search,
+	Square,
+	TrendingUp,
+	Zap,
+} from "lucide-react";
 import { Badge } from "@tracertm/ui/components/Badge";
 import { Button } from "@tracertm/ui/components/Button";
 import {
@@ -34,22 +65,6 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@tracertm/ui/components/Tooltip";
-import {
-	AlertCircle,
-	BarChart3,
-	ChevronDown,
-	Code2,
-	Component,
-	ExternalLink,
-	Grid3x3,
-	Layers,
-	Package,
-	Search,
-	Square,
-	TrendingUp,
-	Zap,
-} from "lucide-react";
-import { memo, useMemo, useState } from "react";
 
 // =============================================================================
 // TYPES

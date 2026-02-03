@@ -1,14 +1,36 @@
-import { useNavigate, useParams } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useParams } from "@tanstack/react-router";
+import { useCallback, useMemo, useState } from "react";
+
 import { UnifiedGraphView } from "../components/graph";
 import { useGraphProjection, useGraphs } from "../hooks/useGraphs";
 
-export function ProjectMappingGraphView() {
-	const { projectId } = useParams({ strict: false }) as { projectId?: string };
-	const navigate = useNavigate();
+const MAX_EDGES_INITIAL = 500;
+const EDGES_LOAD_MORE = 500;
 
-	// ✅ NEW: Progressive edge loading state
-	const MAX_EDGES_INITIAL = 500;
+function deriveItems(graphData: { nodes?: unknown[] } | undefined) {
+	const nodes = graphData?.nodes || [];
+	return nodes.map((node: any) =>
+		Object.assign(node, {
+			id: node.id,
+			title: node.title,
+			type: node.item_type || node.itemType || node.view,
+			view: node.view,
+		}),
+	);
+}
+
+function deriveLinks(graphData: { links?: unknown[] } | undefined) {
+	return (graphData?.links || []).map((link: any) =>
+		Object.assign(link, {
+			sourceId: (link as any).source_item_id ?? (link as any).sourceId,
+			targetId: (link as any).target_item_id ?? (link as any).targetId,
+			type: (link as any).link_type ?? (link as any).type,
+		}),
+	);
+}
+
+export const ProjectMappingGraphView = () => {
+	const { projectId } = useParams({ strict: false }) as { projectId?: string };
 	const [visibleEdgeCount, setVisibleEdgeCount] = useState(MAX_EDGES_INITIAL);
 
 	const { data: graphsData } = useGraphs(projectId);
@@ -16,44 +38,21 @@ export function ProjectMappingGraphView() {
 		() => graphsData?.find((g) => g.graphType === "mapping") || graphsData?.[0],
 		[graphsData],
 	);
-
 	const { data: graphData, isLoading } = useGraphProjection(
 		projectId,
 		mappingGraph?.id,
 	);
 
-	const items = useMemo(() => {
-		const nodes = graphData?.nodes || [];
-		return nodes.map((node: any) =>
-			Object.assign(node, {
-				id: node.id,
-				title: node.title,
-				type: node.item_type || node.itemType || node.view,
-				view: node.view,
-			}),
-		);
-	}, [graphData]);
+	const items = useMemo(() => deriveItems(graphData), [graphData]);
+	const links = useMemo(() => deriveLinks(graphData), [graphData]);
 
-	const links = useMemo(
-		() =>
-			(graphData?.links || []).map((link: any) =>
-				Object.assign(link, {
-					sourceId: link.source_item_id || link.sourceId,
-					targetId: link.target_item_id || link.targetId,
-					type: link.link_type || link.type,
-				}),
-			),
-		[graphData],
-	);
-
-	// ✅ NEW: Progressive edge loading
 	const visibleLinks = links.slice(0, visibleEdgeCount);
 	const canLoadMore = visibleEdgeCount < links.length;
-	const handleLoadMoreEdges = () => {
-		setVisibleEdgeCount((prev) => Math.min(prev + 500, links.length));
-	};
+	const handleLoadMoreEdges = useCallback(() => {
+		setVisibleEdgeCount((prev) => Math.min(prev + EDGES_LOAD_MORE, links.length));
+	}, [links.length]);
 
-	const handleNavigateToItem = (itemId: string) => {};
+	const handleNavigateToItem = useCallback((_itemId: string) => {}, []);
 
 	return (
 		<UnifiedGraphView
@@ -69,4 +68,4 @@ export function ProjectMappingGraphView() {
 			onLoadMore={handleLoadMoreEdges}
 		/>
 	);
-}
+};

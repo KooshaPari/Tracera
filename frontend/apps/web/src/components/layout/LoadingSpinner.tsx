@@ -14,7 +14,7 @@ const sizeClasses = {
 	xl: "w-16 h-16 border-4",
 };
 
-export function LoadingSpinner({
+export const LoadingSpinner = function LoadingSpinner({
 	size = "md",
 	className,
 	fullScreen = false,
@@ -44,4 +44,4 @@ export function LoadingSpinner({
 	}
 
 	return spinner;
-}
+};

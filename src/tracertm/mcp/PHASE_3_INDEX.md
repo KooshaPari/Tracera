@@ -24,7 +24,7 @@
 → Sections: "Components Implemented", "Performance Improvements"
 
 **Measure performance gains**
-→ Run: `python -m tracertm.mcp.benchmark_phase3 <db_url> <project_id>`
+→ Run: `python -m tracertm.mcp.db_benchmark <db_url> <project_id>`
 → Read: [PHASE_3_COMPLETION_SUMMARY.md](PHASE_3_COMPLETION_SUMMARY.md) - "Benchmark Scenarios"
 
 **Migrate existing tools**
@@ -49,7 +49,7 @@
 | File | Purpose |
 |------|---------|
 | `tools/items_phase3.py` | Example implementation |
-| `benchmark_phase3.py` | Performance benchmarking |
+| `db_benchmark.py` | Performance benchmarking |
 | `tests/unit/mcp/test_database_manager.py` | Unit tests |
 | `tests/unit/mcp/test_cache.py` | Cache tests |
 
@@ -64,7 +64,7 @@
 - [ ] Add caching: `await cached_query(...)`
 - [ ] Use eager loading: `await QueryOptimizer.get_items_with_links(...)`
 - [ ] Invalidate cache on writes: `invalidate_cache("cache_key")`
-- [ ] Test with benchmark: `python -m tracertm.mcp.benchmark_phase3 ...`
+- [ ] Test with benchmark: `python -m tracertm.mcp.db_benchmark ...`
 
 ---
 
@@ -129,7 +129,7 @@ pytest tests/unit/mcp/test_cache.py -v
 
 ### Benchmark
 ```bash
-python -m tracertm.mcp.benchmark_phase3 \
+python -m tracertm.mcp.db_benchmark \
     "postgresql://user:pass@localhost/tracertm" \
     "your-project-id"
 ```
@@ -231,7 +231,7 @@ src/tracertm/mcp/
 ├── database_manager.py          # Connection pooling
 ├── cache.py                      # Query cache
 ├── query_optimizer.py            # Eager loading
-├── benchmark_phase3.py           # Benchmark suite
+├── db_benchmark.py           # Benchmark suite
 ├── tools/
 │   ├── base_async.py            # Async utilities
 │   └── items_phase3.py          # Example implementation
@@ -262,7 +262,7 @@ tests/unit/mcp/
 - 🚀 [Quick Reference](PHASE_3_QUICK_REFERENCE.md)
 - 📊 [Completion Summary](PHASE_3_COMPLETION_SUMMARY.md)
 - 💻 [Example Code](tools/items_phase3.py)
-- 🧪 [Benchmark](benchmark_phase3.py)
+- 🧪 [Benchmark](db_benchmark.py)
 
 ---
 

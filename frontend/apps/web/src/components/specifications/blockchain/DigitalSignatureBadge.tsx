@@ -16,7 +16,142 @@ interface DigitalSignatureBadgeProps {
 	className?: string;
 }
 
-export function DigitalSignatureBadge({
+interface StatusConfig {
+	bg: string;
+	border: string;
+	icon: string;
+	label: string;
+	text: string;
+}
+
+const getStatusConfig = (valid: boolean | null): StatusConfig => {
+	if (valid === true) {
+		return {
+			bg: "bg-green-100",
+			border: "border-green-300",
+			icon: "✓",
+			label: "Verified",
+			text: "text-green-700",
+		};
+	}
+	if (valid === false) {
+		return {
+			bg: "bg-red-100",
+			border: "border-red-300",
+			icon: "✕",
+			label: "Invalid",
+			text: "text-red-700",
+		};
+	}
+	return {
+		bg: "bg-yellow-100",
+		border: "border-yellow-300",
+		icon: "?",
+		label: "Unverified",
+		text: "text-yellow-700",
+	};
+};
+
+const renderUnsignedBadge = (
+	size: "sm" | "md" | "lg",
+	className?: string,
+) => (
+	<div
+		className={cn(
+			"inline-flex items-center gap-1.5 rounded-md border font-medium",
+			"bg-gray-100 text-gray-600 border-gray-300",
+			sizeClasses[size],
+			className,
+		)}
+	>
+		<span>📝</span>
+		<span>Unsigned</span>
+	</div>
+);
+
+const renderSimpleStatus = (
+	statusConfig: StatusConfig,
+	size: "sm" | "md" | "lg",
+	className?: string,
+	signature?: string,
+) => (
+	<div
+		className={cn(
+			"inline-flex items-center gap-1.5 rounded-md border font-medium",
+			statusConfig.bg,
+			statusConfig.text,
+			statusConfig.border,
+			sizeClasses[size],
+			className,
+		)}
+		title={signature ? `Signature: ${signature.slice(0, 20)}...` : undefined}
+	>
+		<span>🔏</span>
+		<span>{statusConfig.label}</span>
+		<span>{statusConfig.icon}</span>
+	</div>
+);
+
+interface DetailsViewOptions {
+	algorithm: string;
+	signedBy: string | null;
+	signedAt: string | null;
+	signature: string;
+	className?: string;
+}
+
+const renderDetailsView = (
+	statusConfig: StatusConfig,
+	options: DetailsViewOptions,
+) => (
+	<div className={cn("rounded-lg border p-3 space-y-2", options.className)}>
+		<div className="flex items-center justify-between">
+			<div className="flex items-center gap-2">
+				<span className="text-lg">🔏</span>
+				<span className="font-medium">Digital Signature</span>
+			</div>
+			<div
+				className={cn(
+					"px-2 py-0.5 rounded text-xs font-medium",
+					statusConfig.bg,
+					statusConfig.text,
+				)}
+			>
+				{statusConfig.label} {statusConfig.icon}
+			</div>
+		</div>
+
+		<div className="space-y-1.5 text-sm">
+			<div className="flex justify-between">
+				<span className="text-muted-foreground">Algorithm</span>
+				<span className="font-mono text-xs">{options.algorithm}</span>
+			</div>
+
+			{options.signedBy && (
+				<div className="flex justify-between">
+					<span className="text-muted-foreground">Signed By</span>
+					<span>{options.signedBy}</span>
+				</div>
+			)}
+
+			{options.signedAt && (
+				<div className="flex justify-between">
+					<span className="text-muted-foreground">Signed At</span>
+					<span>{new Date(options.signedAt).toLocaleString()}</span>
+				</div>
+			)}
+
+			<div className="pt-2 border-t">
+				<div className="text-xs text-muted-foreground mb-1">Signature</div>
+				<code className="text-xs font-mono break-all block p-2 bg-muted rounded">
+					{options.signature}
+				</code>
+			</div>
+		</div>
+	</div>
+);
+
+export const DigitalSignatureBadge = ({
 	signature,
 	valid,
 	signedBy,
@@ -25,118 +160,25 @@ export function DigitalSignatureBadge({
 	size = "md",
 	showDetails = false,
 	className,
-}: DigitalSignatureBadgeProps) {
+}: DigitalSignatureBadgeProps) => {
 	if (!signature) {
-		return (
-			<div
-				className={cn(
-					"inline-flex items-center gap-1.5 rounded-md border font-medium",
-					"bg-gray-100 text-gray-600 border-gray-300",
-					sizeClasses[size],
-					className,
-				)}
-			>
-				<span>📝</span>
-				<span>Unsigned</span>
-			</div>
-		);
+		return renderUnsignedBadge(size, className);
 	}
 
-	const statusConfig =
-		valid === true
-			? {
-					bg: "bg-green-100",
-					border: "border-green-300",
-					icon: "✓",
-					label: "Verified",
-					text: "text-green-700",
-				}
-			: (valid === false
-				? {
-						bg: "bg-red-100",
-						border: "border-red-300",
-						icon: "✕",
-						label: "Invalid",
-						text: "text-red-700",
-					}
-				: {
-						bg: "bg-yellow-100",
-						border: "border-yellow-300",
-						icon: "?",
-						label: "Unverified",
-						text: "text-yellow-700",
-					});
+	const statusConfig = getStatusConfig(valid);
 
 	if (!showDetails) {
-		return (
-			<div
-				className={cn(
-					"inline-flex items-center gap-1.5 rounded-md border font-medium",
-					statusConfig.bg,
-					statusConfig.text,
-					statusConfig.border,
-					sizeClasses[size],
-					className,
-				)}
-				title={
-					signature ? `Signature: ${signature.slice(0, 20)}...` : undefined
-				}
-			>
-				<span>🔏</span>
-				<span>{statusConfig.label}</span>
-				<span>{statusConfig.icon}</span>
-			</div>
-		);
+		return renderSimpleStatus(statusConfig, size, className, signature);
 	}
 
-	return (
-		<div className={cn("rounded-lg border p-3 space-y-2", className)}>
-			<div className="flex items-center justify-between">
-				<div className="flex items-center gap-2">
-					<span className="text-lg">🔏</span>
-					<span className="font-medium">Digital Signature</span>
-				</div>
-				<div
-					className={cn(
-						"px-2 py-0.5 rounded text-xs font-medium",
-						statusConfig.bg,
-						statusConfig.text,
-					)}
-				>
-					{statusConfig.label} {statusConfig.icon}
-				</div>
-			</div>
-
-			<div className="space-y-1.5 text-sm">
-				<div className="flex justify-between">
-					<span className="text-muted-foreground">Algorithm</span>
-					<span className="font-mono text-xs">{algorithm}</span>
-				</div>
-
-				{signedBy && (
-					<div className="flex justify-between">
-						<span className="text-muted-foreground">Signed By</span>
-						<span>{signedBy}</span>
-					</div>
-				)}
-
-				{signedAt && (
-					<div className="flex justify-between">
-						<span className="text-muted-foreground">Signed At</span>
-						<span>{new Date(signedAt).toLocaleString()}</span>
-					</div>
-				)}
-
-				<div className="pt-2 border-t">
-					<div className="text-xs text-muted-foreground mb-1">Signature</div>
-					<code className="text-xs font-mono break-all block p-2 bg-muted rounded">
-						{signature}
-					</code>
-				</div>
-			</div>
-		</div>
-	);
-}
+	return renderDetailsView(statusConfig, {
+		algorithm,
+		className,
+		signature,
+		signedAt,
+		signedBy,
+	});
+};
 
 const sizeClasses = {
 	lg: "text-base px-3 py-1.5",
@@ -150,11 +192,11 @@ interface SignatureVerificationStatusProps {
 	className?: string;
 }
 
-export function SignatureVerificationStatus({
+export const SignatureVerificationStatus = ({
 	hasSignature,
 	isValid,
 	className,
-}: SignatureVerificationStatusProps) {
+}: SignatureVerificationStatusProps) => {
 	if (!hasSignature) {
 		return (
 			<div
@@ -208,7 +250,7 @@ export function SignatureVerificationStatus({
 			<span>Signature pending verification</span>
 		</div>
 	);
-}
+};
 
 interface SignatureHistoryProps {
 	signatures: {
@@ -221,10 +263,10 @@ interface SignatureHistoryProps {
 	className?: string;
 }
 
-export function SignatureHistory({
+export const SignatureHistory = ({
 	signatures,
 	className,
-}: SignatureHistoryProps) {
+}: SignatureHistoryProps) => {
 	if (signatures.length === 0) {
 		return (
 			<div
@@ -266,4 +308,4 @@ export function SignatureHistory({
 			))}
 		</div>
 	);
-}
+};

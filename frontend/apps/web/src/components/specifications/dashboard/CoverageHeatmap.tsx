@@ -3,10 +3,26 @@
  * Shows coverage intensity with hover details and click navigation
  */
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
-import { useState } from "react";
 import { cn } from "@/lib/utils";
+
+// Coverage threshold constants
+const COVERAGE_EXCELLENT = 90;
+const COVERAGE_GOOD = 70;
+const COVERAGE_FAIR = 50;
+const COVERAGE_MODERATE = 30;
+const COVERAGE_LOW = 10;
+const COVERAGE_VERY_LOW = 20;
+const COVERAGE_MODERATE_LOW = 40;
+const COVERAGE_MODERATE_HIGH = 60;
+
+// Animation constants
+const ANIMATION_DURATION = 0.3;
+const CELL_ANIMATION_DELAY_MS = 10;
+const HOVER_SCALE = 1.05;
+const TAP_SCALE = 0.95;
 
 interface CoverageCell {
 	id: string;
@@ -25,85 +41,98 @@ interface CoverageHeatmapProps {
 	className?: string;
 }
 
-function getCoverageColor(coverage: number): string {
-	if (coverage >= 90) {
+const getCoverageColor = (coverage: number): string => {
+	if (coverage >= COVERAGE_EXCELLENT) {
 		return "bg-emerald-600";
-	} // Full coverage
-	if (coverage >= 70) {
+	}
+	if (coverage >= COVERAGE_GOOD) {
 		return "bg-emerald-500";
 	}
-	if (coverage >= 50) {
+	if (coverage >= COVERAGE_FAIR) {
 		return "bg-amber-500";
 	}
-	if (coverage >= 30) {
+	if (coverage >= COVERAGE_MODERATE) {
 		return "bg-orange-500";
 	}
-	if (coverage >= 10) {
+	if (coverage >= COVERAGE_LOW) {
 		return "bg-red-500";
 	}
-	return "bg-slate-300"; // No coverage
-}
+	return "bg-slate-300";
+};
 
-function getCoverageOpacity(coverage: number): string {
+const getCoverageOpacity = (coverage: number): string => {
 	if (coverage === 0) {
 		return "opacity-30";
 	}
-	if (coverage < 20) {
+	if (coverage < COVERAGE_VERY_LOW) {
 		return "opacity-40";
 	}
-	if (coverage < 40) {
+	if (coverage < COVERAGE_MODERATE_LOW) {
 		return "opacity-60";
 	}
-	if (coverage < 60) {
+	if (coverage < COVERAGE_MODERATE_HIGH) {
 		return "opacity-75";
 	}
 	return "opacity-100";
-}
+};
 
-export function CoverageHeatmap({
+export const CoverageHeatmap = ({
 	data,
 	onCellClick,
 	columns = 8,
 	className,
-}: CoverageHeatmapProps) {
+}: CoverageHeatmapProps) => {
 	const [hoveredId, setHoveredId] = useState<string | null>(null);
 	const [hoveredDetails, setHoveredDetails] = useState<CoverageCell | null>(
 		null,
 	);
+
+	const handleMouseEnter = (cell: CoverageCell) => {
+		setHoveredId(cell.id);
+		setHoveredDetails(cell);
+	};
+
+	const handleMouseLeave = () => {
+		setHoveredId(null);
+		setHoveredDetails(null);
+	};
+
+	const handleCellClick = (cell: CoverageCell) => {
+		onCellClick?.(cell);
+	};
+
+	// Calculate summary stats
+	const totalItems = data.length;
+	const avgCoverage = Math.round(
+		data.reduce((sum, c) => sum + c.coverage, 0) / totalItems,
+	);
+	const fullyCovered = data.filter((c) => c.coverage >= COVERAGE_EXCELLENT).length;
+	const uncovered = data.filter((c) => c.coverage === 0).length;
 
 	return (
 		<motion.div
 			className={cn("space-y-4", className)}
 			initial={{ opacity: 0 }}
 			animate={{ opacity: 1 }}
-			transition={{ duration: 0.3 }}
+			transition={{ duration: ANIMATION_DURATION }}
 		>
 			{/* Summary Stats */}
 			<div className="grid grid-cols-4 gap-3 text-xs">
 				<div className="bg-muted/30 rounded-lg p-3">
 					<div className="text-muted-foreground">Total Items</div>
-					<div className="text-xl font-bold">{data.length}</div>
+					<div className="text-xl font-bold">{totalItems}</div>
 				</div>
 				<div className="bg-muted/30 rounded-lg p-3">
 					<div className="text-muted-foreground">Avg Coverage</div>
-					<div className="text-xl font-bold">
-						{Math.round(
-							data.reduce((sum, c) => sum + c.coverage, 0) / data.length,
-						)}
-						%
-					</div>
+					<div className="text-xl font-bold">{avgCoverage}%</div>
 				</div>
 				<div className="bg-muted/30 rounded-lg p-3">
 					<div className="text-muted-foreground">Fully Covered</div>
-					<div className="text-xl font-bold">
-						{data.filter((c) => c.coverage >= 90).length}
-					</div>
+					<div className="text-xl font-bold">{fullyCovered}</div>
 				</div>
 				<div className="bg-muted/30 rounded-lg p-3">
 					<div className="text-muted-foreground">Uncovered</div>
-					<div className="text-xl font-bold">
-						{data.filter((c) => c.coverage === 0).length}
-					</div>
+					<div className="text-xl font-bold">{uncovered}</div>
 				</div>
 			</div>
 
@@ -120,19 +149,13 @@ export function CoverageHeatmap({
 							key={cell.id}
 							initial={{ opacity: 0, scale: 0.8 }}
 							animate={{ opacity: 1, scale: 1 }}
-							transition={{ delay: idx * 0.01 }}
-							onMouseEnter={() => {
-								setHoveredId(cell.id);
-								setHoveredDetails(cell);
-							}}
-							onMouseLeave={() => {
-								setHoveredId(null);
-								setHoveredDetails(null);
-							}}
+							transition={{ delay: idx * CELL_ANIMATION_DELAY_MS }}
+							onMouseEnter={() => handleMouseEnter(cell)}
+							onMouseLeave={handleMouseLeave}
 							className="relative"
 						>
 							<motion.button
-								onClick={() => onCellClick?.(cell)}
+								onClick={() => handleCellClick(cell)}
 								className={cn(
 									"w-full aspect-square rounded-lg transition-all",
 									"border border-border/50 hover:border-primary",
@@ -141,8 +164,8 @@ export function CoverageHeatmap({
 									getCoverageOpacity(cell.coverage),
 									"hover:ring-2 hover:ring-primary/50 hover:shadow-lg",
 								)}
-								whileHover={{ scale: 1.05 }}
-								whileTap={{ scale: 0.95 }}
+								whileHover={{ scale: HOVER_SCALE }}
+								whileTap={{ scale: TAP_SCALE }}
 							>
 								{/* Coverage percentage */}
 								<div className="absolute inset-0 flex items-center justify-center">
@@ -213,7 +236,7 @@ export function CoverageHeatmap({
 											</div>
 										)}
 
-										{cell.coverage < 50 && (
+										{cell.coverage < COVERAGE_FAIR && (
 											<div className="text-xs bg-amber-500/10 text-amber-700 rounded px-2 py-1 border border-amber-500/20">
 												Low coverage - Consider adding tests or documentation
 											</div>
@@ -255,4 +278,4 @@ export function CoverageHeatmap({
 			)}
 		</motion.div>
 	);
-}
+};

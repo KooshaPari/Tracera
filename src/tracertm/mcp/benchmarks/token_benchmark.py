@@ -1,4 +1,4 @@
-"""Benchmark script for Phase 2 MCP optimizations.
+"""Benchmark script for MCP token optimizations.
 
 Measures:
 - Token usage reduction (target: 50%)
@@ -331,7 +331,7 @@ def benchmark_error_messages():
 def main():
     """Run all benchmarks and generate summary."""
     print("\n" + "=" * 80)
-    print("MCP Phase 2 Optimization Benchmarks")
+    print("MCP Token Optimization Benchmarks")
     print("=" * 80)
     print("\nTarget: 50% token reduction across all operations")
     print("\n")

@@ -1,5 +1,8 @@
-import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import { create } from "zustand";
+
+const DEFAULT_GRID_COLUMNS = Number("3");
+const DEFAULT_SIDEBAR_WIDTH = Number("240");
 
 // SSR-safe storage that only accesses localStorage on the client
 const noopStorage = {
@@ -21,124 +24,121 @@ const getStorage = () => {
 };
 
 // SSR-safe check for dark mode preference
-const getDefaultDarkMode = () => {
+const getDefaultDarkMode = (): boolean => {
 	if (typeof globalThis.window === "undefined") {
 		return true;
-	} // Default to dark for SSR
+	}
 	return globalThis.matchMedia("(prefers-color-scheme: dark)").matches;
 };
 
-interface UIState {
-	// Sidebar
-	sidebarOpen: boolean;
-	sidebarWidth: number;
-
-	// Theme
-	isDarkMode: boolean;
-
-	// Current view and selection
+interface UIStateData {
+	commandPaletteOpen: boolean;
 	currentView: string;
+	gridColumns: number;
+	isDarkMode: boolean;
+	layoutMode: "grid" | "list" | "kanban" | "graph";
+	priorityFilter: string[];
+	searchOpen: boolean;
+	searchQuery: string;
 	selectedItemId: string | null;
 	selectedItemIds: string[];
-
-	// Command palette
-	commandPaletteOpen: boolean;
-
-	// Search
-	searchQuery: string;
-	searchOpen: boolean;
-
-	// Filters
+	sidebarOpen: boolean;
+	sidebarWidth: number;
 	statusFilter: string[];
-	priorityFilter: string[];
-
-	// Layout
-	layoutMode: "grid" | "list" | "kanban" | "graph";
-	gridColumns: number;
-
-	// Actions
-	toggleSidebar: () => void;
-	setSidebarWidth: (width: number) => void;
-	toggleDarkMode: () => void;
-	setCurrentView: (view: string) => void;
-	selectItem: (id: string | null) => void;
-	toggleItemSelection: (id: string) => void;
-	clearSelection: () => void;
-	toggleCommandPalette: () => void;
-	setSearchQuery: (query: string) => void;
-	toggleSearch: () => void;
-	setStatusFilter: (statuses: string[]) => void;
-	setPriorityFilter: (priorities: string[]) => void;
-	setLayoutMode: (mode: "grid" | "list" | "kanban" | "graph") => void;
-	setGridColumns: (columns: number) => void;
 }
+
+interface UIStateActions {
+	clearSelection: () => void;
+	selectItem: (id: string | null) => void;
+	setCurrentView: (view: string) => void;
+	setGridColumns: (columns: number) => void;
+	setLayoutMode: (mode: "grid" | "list" | "kanban" | "graph") => void;
+	setPriorityFilter: (priorities: string[]) => void;
+	setSearchQuery: (query: string) => void;
+	setSidebarWidth: (width: number) => void;
+	setStatusFilter: (statuses: string[]) => void;
+	toggleCommandPalette: () => void;
+	toggleDarkMode: () => void;
+	toggleItemSelection: (id: string) => void;
+	toggleSearch: () => void;
+	toggleSidebar: () => void;
+}
+
+type UIState = UIStateData & UIStateActions;
+
+type StoreSetter = (
+	partial:
+		| Partial<UIState>
+		| ((state: UIState) => Partial<UIState> | UIState),
+) => void;
+
+type StoreGetter = () => UIState;
+
+const createInitialState = (): UIStateData => ({
+	commandPaletteOpen: false,
+	currentView: "FEATURE",
+	gridColumns: DEFAULT_GRID_COLUMNS,
+	isDarkMode: getDefaultDarkMode(),
+	layoutMode: "grid",
+	priorityFilter: [],
+	searchOpen: false,
+	searchQuery: "",
+	selectedItemId: null,
+	selectedItemIds: [],
+	sidebarOpen: true,
+	sidebarWidth: DEFAULT_SIDEBAR_WIDTH,
+	statusFilter: [],
+});
+
+const applyDarkMode = (enabled: boolean): void => {
+	if (typeof document !== "undefined") {
+		document.documentElement.classList.toggle("dark", enabled);
+	}
+};
+
+const createUIActions = (set: StoreSetter, _get: StoreGetter): UIStateActions =>
+	({
+		clearSelection: () =>
+			set({ selectedItemId: null, selectedItemIds: [] }),
+		selectItem: (id) => set({ selectedItemId: id }),
+		setCurrentView: (view) => set({ currentView: view }),
+		setGridColumns: (columns) => set({ gridColumns: columns }),
+		setLayoutMode: (mode) => set({ layoutMode: mode }),
+		setPriorityFilter: (priorities) => set({ priorityFilter: priorities }),
+		setSearchQuery: (query) => set({ searchQuery: query }),
+		setSidebarWidth: (width) => set({ sidebarWidth: width }),
+		setStatusFilter: (statuses) => set({ statusFilter: statuses }),
+		toggleCommandPalette: () =>
+			set((state) => ({ commandPaletteOpen: !state.commandPaletteOpen })),
+		toggleDarkMode: () =>
+			set((state) => {
+				const newMode = !state.isDarkMode;
+				applyDarkMode(newMode);
+				return { isDarkMode: newMode };
+			}),
+		toggleItemSelection: (id) =>
+			set((state) => {
+				const exists = state.selectedItemIds.includes(id);
+				return {
+					selectedItemIds: exists
+						? state.selectedItemIds.filter((itemId) => itemId !== id)
+						: [...state.selectedItemIds, id],
+				};
+			}),
+		toggleSearch: () =>
+			set((state) => ({ searchOpen: !state.searchOpen })),
+		toggleSidebar: () =>
+			set((state) => ({ sidebarOpen: !state.sidebarOpen })),
+	});
+
+const buildUIStore = (set: StoreSetter, get: StoreGetter): UIState => ({
+	...createInitialState(),
+	...createUIActions(set, get),
+});
 
 export const useUIStore = create<UIState>()(
 	persist(
-		(set) => ({
-			// Initial state
-			sidebarOpen: true,
-			sidebarWidth: 240,
-			isDarkMode: getDefaultDarkMode(),
-			currentView: "FEATURE",
-			selectedItemId: null,
-			selectedItemIds: [],
-			commandPaletteOpen: false,
-			searchQuery: "",
-			searchOpen: false,
-			statusFilter: [],
-			priorityFilter: [],
-			layoutMode: "grid",
-			gridColumns: 3,
-
-			// Actions
-			toggleSidebar: () =>
-				set((state) => ({ sidebarOpen: !state.sidebarOpen })),
-
-			setSidebarWidth: (width) => set({ sidebarWidth: width }),
-
-			toggleDarkMode: () =>
-				set((state) => {
-					const newMode = !state.isDarkMode;
-					if (typeof document !== "undefined") {
-						document.documentElement.classList.toggle("dark", newMode);
-					}
-					return { isDarkMode: newMode };
-				}),
-
-			setCurrentView: (view) => set({ currentView: view }),
-
-			selectItem: (id) => set({ selectedItemId: id }),
-
-			toggleItemSelection: (id) =>
-				set((state) => {
-					const exists = state.selectedItemIds.includes(id);
-					return {
-						selectedItemIds: exists
-							? state.selectedItemIds.filter((itemId) => itemId !== id)
-							: [...state.selectedItemIds, id],
-					};
-				}),
-
-			clearSelection: () => set({ selectedItemId: null, selectedItemIds: [] }),
-
-			toggleCommandPalette: () =>
-				set((state) => ({
-					commandPaletteOpen: !state.commandPaletteOpen,
-				})),
-
-			setSearchQuery: (query) => set({ searchQuery: query }),
-
-			toggleSearch: () => set((state) => ({ searchOpen: !state.searchOpen })),
-
-			setStatusFilter: (statuses) => set({ statusFilter: statuses }),
-
-			setPriorityFilter: (priorities) => set({ priorityFilter: priorities }),
-
-			setLayoutMode: (mode) => set({ layoutMode: mode }),
-
-			setGridColumns: (columns) => set({ gridColumns: columns }),
-		}),
+		(set, get) => buildUIStore(set, get),
 		{
 			name: "tracertm-ui-store",
 			partialize: (state) => ({

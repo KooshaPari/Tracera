@@ -141,7 +141,7 @@ result = await query_items_v2(...)  # Production
 
 ```bash
 # Run benchmarks
-python src/tracertm/mcp/benchmarks/phase2_benchmark.py
+python src/tracertm/mcp/benchmarks/token_benchmark.py
 
 # Expected: 77.2% average token reduction
 ```

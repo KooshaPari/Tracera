@@ -8,7 +8,7 @@ interface PageHeaderProps {
 	breadcrumbs?: { label: string; href?: string }[];
 }
 
-export function PageHeader({
+export const PageHeader = function PageHeader({
 	title,
 	description,
 	icon,
@@ -22,7 +22,10 @@ export function PageHeader({
 					<nav className="flex mb-2" aria-label="Breadcrumb">
 						<ol className="flex items-center space-x-2 text-sm">
 							{breadcrumbs.map((crumb, index) => (
-								<li key={index} className="flex items-center">
+								<li
+									key={`${crumb.label}-${crumb.href ?? "current"}-${index}`}
+									className="flex items-center"
+								>
 									{index > 0 && (
 										<svg
 											className="w-4 h-4 mx-2 text-gray-400"
@@ -80,4 +83,4 @@ export function PageHeader({
 			</div>
 		</div>
 	);
-}
+};

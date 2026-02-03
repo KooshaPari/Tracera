@@ -2,7 +2,8 @@
  * Create GitHub repository modal component.
  */
 
-import { Input } from "@tracertm/ui";
+import type { GitHubAppInstallation, GitHubRepo } from "@/api/github";
+import type { ApiErrorResponse } from "@/types";
 import {
 	Dialog,
 	DialogContent,
@@ -11,25 +12,37 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@tracertm/ui/components/Dialog";
-import { Label } from "@tracertm/ui/components/Label";
-import { Textarea } from "@tracertm/ui/components/Textarea";
-import { Github, Loader2 } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
-import type { GitHubAppInstallation } from "@/api/github";
 import { Button } from "@/components/ui/enterprise-button";
 import { useCreateGitHubRepo } from "@/hooks/useGitHub";
-import type { ApiErrorResponse } from "@/types";
+import { Label } from "@tracertm/ui/components/Label";
+import { Textarea } from "@tracertm/ui/components/Textarea";
+import { Input } from "@tracertm/ui";
+import { Github, Loader2 } from "lucide-react";
+import { useCallback, useState } from "react";
+import { toast } from "sonner";
 
 export interface CreateRepoModalProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	installation: GitHubAppInstallation;
 	accountId: string;
-	onSuccess?: (repo: { id: string; full_name: string; name: string }) => void;
+	onSuccess?: (repo: GitHubRepo) => void;
 }
 
-export function CreateRepoModal({
+function getCreateRepoErrorMessage(error: unknown): string {
+	if (error instanceof Error) return error.message;
+	if (
+		error &&
+		typeof error === "object" &&
+		"message" in error &&
+		typeof (error as ApiErrorResponse).message === "string"
+	) {
+		return (error as ApiErrorResponse).message;
+	}
+	return "Failed to create repository";
+}
+
+export const CreateRepoModal = function CreateRepoModal({
 	open,
 	onOpenChange,
 	installation,
@@ -42,50 +55,70 @@ export function CreateRepoModal({
 
 	const createRepo = useCreateGitHubRepo();
 
-	const handleSubmit = async (e: React.FormEvent) => {
-		e.preventDefault();
+	const handleSubmit = useCallback(
+		async (e: React.FormEvent) => {
+			e.preventDefault();
 
-		if (!name.trim()) {
-			toast.error("Repository name is required");
-			return;
-		}
+			if (!name.trim()) {
+				toast.error("Repository name is required");
+				return;
+			}
 
-		try {
-			const trimmedDescription = description.trim();
-			const orgValue =
-				installation.target_type === "Organization"
-					? installation.account_login
-					: undefined;
-			const repo = await createRepo.mutateAsync({
-				installation_id: installation.id,
-				account_id: accountId,
-				name: name.trim(),
-				...(trimmedDescription ? { description: trimmedDescription } : {}),
-				private: isPrivate,
-				...(orgValue ? { org: orgValue } : {}),
-			});
+			try {
+				const trimmedDescription = description.trim();
+				const orgValue =
+					installation.target_type === "Organization"
+						? installation.account_login
+						: undefined;
+				const repo = await createRepo.mutateAsync({
+					account_id: accountId,
+					...(trimmedDescription ? { description: trimmedDescription } : {}),
+					installation_id: installation.id,
+					name: name.trim(),
+					...(orgValue ? { org: orgValue } : {}),
+					private: isPrivate,
+				});
 
-			toast.success(`Repository "${repo.full_name}" created successfully`);
-			onSuccess?.(repo);
-			onOpenChange(false);
+				toast.success(`Repository "${repo.full_name}" created successfully`);
+				onSuccess?.(repo);
+				onOpenChange(false);
 
-			// Reset form
-			setName("");
-			setDescription("");
-			setIsPrivate(false);
-		} catch (error) {
-			const message =
-				error instanceof Error
-					? error.message
-					: (error &&
-							typeof error === "object" &&
-							"message" in error &&
-							typeof (error as ApiErrorResponse).message === "string"
-						? (error as ApiErrorResponse).message
-						: "Failed to create repository");
-			toast.error(message);
-		}
-	};
+				setName("");
+				setDescription("");
+				setIsPrivate(false);
+			} catch (error) {
+				toast.error(getCreateRepoErrorMessage(error));
+			}
+		},
+		[
+			accountId,
+			createRepo,
+			description,
+			installation.account_login,
+			installation.id,
+			installation.target_type,
+			isPrivate,
+			name,
+			onOpenChange,
+			onSuccess,
+		],
+	);
+
+	const handleNameChange = useCallback(
+		(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value),
+		[],
+	);
+	const handleDescriptionChange = useCallback(
+		(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+			setDescription(e.target.value),
+		[],
+	);
+	const handlePrivateChange = useCallback(
+		(e: React.ChangeEvent<HTMLInputElement>) =>
+			setIsPrivate(e.target.checked),
+		[],
+	);
+	const handleCancel = useCallback(() => onOpenChange(false), [onOpenChange]);
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
@@ -108,7 +141,7 @@ export function CreateRepoModal({
 								id="repo-name"
 								placeholder="my-awesome-repo"
 								value={name}
-								onChange={(e) => setName(e.target.value)}
+								onChange={handleNameChange}
 								disabled={createRepo.isPending}
 								pattern="[a-zA-Z0-9._-]+"
 								title="Repository name can only contain letters, numbers, dots, hyphens, and underscores"
@@ -125,7 +158,7 @@ export function CreateRepoModal({
 								id="repo-description"
 								placeholder="A short description of your repository"
 								value={description}
-								onChange={(e) => setDescription(e.target.value)}
+								onChange={handleDescriptionChange}
 								disabled={createRepo.isPending}
 								rows={3}
 							/>
@@ -136,7 +169,7 @@ export function CreateRepoModal({
 								type="checkbox"
 								id="repo-private"
 								checked={isPrivate}
-								onChange={(e) => setIsPrivate(e.target.checked)}
+								onChange={handlePrivateChange}
 								disabled={createRepo.isPending}
 								className="h-4 w-4 rounded border-gray-300"
 							/>
@@ -150,7 +183,7 @@ export function CreateRepoModal({
 						<Button
 							type="button"
 							variant="outline"
-							onClick={() => onOpenChange(false)}
+							onClick={handleCancel}
 							disabled={createRepo.isPending}
 						>
 							Cancel
@@ -169,4 +202,4 @@ export function CreateRepoModal({
 			</DialogContent>
 		</Dialog>
 	);
-}
+};

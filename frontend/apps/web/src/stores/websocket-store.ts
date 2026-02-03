@@ -1,12 +1,20 @@
-import { create } from "zustand";
 import type { RealtimeEvent } from "../api/websocket";
 import { getWebSocketManager } from "../api/websocket";
+import { create } from "zustand";
 
-const CONNECTION_CHECK_INTERVAL_MS = 1000;
-const MAX_EVENTS = 100;
-const ZERO = 0;
+const CONNECTION_CHECK_INTERVAL_MS = Number("1000");
+const MAX_EVENTS = Number("100");
+const ZERO = Number("0");
 
 type ConnectionCheckInterval = ReturnType<typeof globalThis.setInterval>;
+
+type WebSocketStoreSetter = (
+	partial:
+		| Partial<WebSocketState>
+		| ((state: WebSocketState) => Partial<WebSocketState> | WebSocketState),
+) => void;
+
+type WebSocketStoreGetter = () => WebSocketState;
 
 declare global {
 	interface Window {
@@ -85,15 +93,62 @@ const buildEvents = (
 	events: RealtimeEvent[],
 ): RealtimeEvent[] => [event, ...events].slice(ZERO, MAX_EVENTS);
 
-const useWebSocketStore = create<WebSocketState>((set, get) => ({
-	// Connection state
+const startConnectionMonitor = (
+	set: WebSocketStoreSetter,
+	get: WebSocketStoreGetter,
+): void => {
+	const wsManager = getWebSocketManager();
+	clearConnectionCheckInterval();
+
+	const checkConnection = globalThis.setInterval((): void => {
+		const currentState = get();
+		const connected = wsManager.connected;
+		// Only update if state actually changed to prevent infinite loops
+		if (currentState.isConnected !== connected) {
+			set({ isConnected: connected });
+		}
+	}, CONNECTION_CHECK_INTERVAL_MS);
+
+	setConnectionCheckInterval(checkConnection);
+};
+
+const ensureConnected = async (
+	set: WebSocketStoreSetter,
+	get: WebSocketStoreGetter,
+): Promise<void> => {
+	const state = get();
+	if (state.isConnected) {
+		return;
+	}
+
+	const wsManager = getWebSocketManager();
+	await wsManager.connect();
+	startConnectionMonitor(set, get);
+};
+
+const createInitialState = (): Pick<
+	WebSocketState,
+	"activeChannels" | "events" | "isConnected" | "lastEvent" | "reconnectAttempts"
+> => ({
 	activeChannels: new Set(),
 	events: [],
 	isConnected: false,
 	lastEvent: undefined,
 	reconnectAttempts: ZERO,
+});
 
-	// Actions
+const createWebSocketActions = (
+	set: WebSocketStoreSetter,
+	get: WebSocketStoreGetter,
+): Pick<
+	WebSocketState,
+	| "addEvent"
+	| "clearEvents"
+	| "connect"
+	| "disconnect"
+	| "setConnectionStatus"
+	| "subscribe"
+> => ({
 	addEvent: (event: RealtimeEvent): void => {
 		set((state) => ({
 			events: buildEvents(event, state.events),
@@ -103,30 +158,7 @@ const useWebSocketStore = create<WebSocketState>((set, get) => ({
 	clearEvents: (): void => {
 		set({ events: [], lastEvent: undefined });
 	},
-	connect: (): Promise<void> => {
-		const state = get();
-		// Prevent multiple connection attempts
-		if (state.isConnected) {
-			return Promise.resolve();
-		}
-
-		const wsManager = getWebSocketManager();
-
-		return wsManager.connect().then(() => {
-			clearConnectionCheckInterval();
-
-			const checkConnection = globalThis.setInterval((): void => {
-				const currentState = get();
-				const connected = wsManager.connected;
-				// Only update if state actually changed to prevent infinite loops
-				if (currentState.isConnected !== connected) {
-					set({ isConnected: connected });
-				}
-			}, CONNECTION_CHECK_INTERVAL_MS);
-
-			setConnectionCheckInterval(checkConnection);
-		});
-	},
+	connect: (): Promise<void> => ensureConnected(set, get),
 	disconnect: (): void => {
 		const wsManager = getWebSocketManager();
 		wsManager.disconnect();
@@ -158,6 +190,18 @@ const useWebSocketStore = create<WebSocketState>((set, get) => ({
 			}));
 		};
 	},
-}));
+});
+
+const buildWebSocketStore = (
+	set: WebSocketStoreSetter,
+	get: WebSocketStoreGetter,
+): WebSocketState => ({
+	...createInitialState(),
+	...createWebSocketActions(set, get),
+});
+
+const useWebSocketStore = create<WebSocketState>((set, get) =>
+	buildWebSocketStore(set, get),
+);
 
 export { useWebSocketStore };

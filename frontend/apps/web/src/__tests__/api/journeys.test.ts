@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { journeyQueryKeys } from "../../api/journeys";
-import type {
-	CreateJourneyInput,
-	DetectJourneysInput,
-	Journey,
-	JourneyStep,
-	UpdateJourneyInput,
+
+import {
+	journeyQueryKeys,
+	type CreateJourneyInput,
+	type DetectJourneysInput,
+	type Journey,
+	type JourneyStep,
+	type UpdateJourneyInput,
 } from "../../api/journeys";
 
 describe("journey API hooks", () => {

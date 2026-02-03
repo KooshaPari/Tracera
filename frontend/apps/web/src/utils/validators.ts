@@ -14,7 +14,7 @@ export const isUrl = (url: string): boolean => URL.canParse(url);
 
 export const isValidProjectName = (name: string): boolean => {
 	const nameRegex = new RegExp(
-		`^[a-zA-Z0-9\\s\-_]{${MIN_PROJECT_NAME_LENGTH},${MAX_PROJECT_NAME_LENGTH}}$`,
+		`^[a-zA-Z0-9\\s-_]{${MIN_PROJECT_NAME_LENGTH},${MAX_PROJECT_NAME_LENGTH}}$`,
 	);
 	return nameRegex.test(name);
 };

@@ -58,7 +58,7 @@ export interface UseProgressState {
 /**
  * Main MCP client hook
  */
-export function useMCP(config: MCPClientConfig): UseMCPState {
+export const useMCP = (config: MCPClientConfig): UseMCPState => {
 	const [state, setState] = useState<UseMCPState>({
 		client: null,
 		error: null,
@@ -72,7 +72,7 @@ export function useMCP(config: MCPClientConfig): UseMCPState {
 	useEffect(() => {
 		let mounted = true;
 
-		async function initializeClient() {
+		const initializeClient = async () => {
 			try {
 				setState((prev) => ({ ...prev, isInitializing: true, error: null }));
 
@@ -117,9 +117,9 @@ export function useMCP(config: MCPClientConfig): UseMCPState {
 					}));
 				}
 			}
-		}
+		};
 
-		undefined;
+		initializeClient();
 
 		return () => {
 			mounted = false;
@@ -132,15 +132,15 @@ export function useMCP(config: MCPClientConfig): UseMCPState {
 	}, [config.baseUrl, config.token, config.timeout]);
 
 	return state;
-}
+};
 
 /**
  * Hook for executing MCP tools
  */
-export function useTool<T = unknown>(
+export const useTool = <T = unknown>(
 	client: MCPClient | null,
 	toolName: string,
-): UseToolState<T> {
+): UseToolState<T> => {
 	const [state, setState] = useState<{
 		data: T | null;
 		isLoading: boolean;
@@ -178,17 +178,17 @@ export function useTool<T = unknown>(
 		...state,
 		execute,
 	};
-}
+};
 
 /**
  * Hook for listing available tools
  */
-export function useTools(client: MCPClient | null): {
+export const useTools = (client: MCPClient | null): {
 	tools: MCPTool[];
 	isLoading: boolean;
 	error: Error | null;
 	refresh: () => Promise<void>;
-} {
+} => {
 	const [tools, setTools] = useState<MCPTool[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<Error | null>(null);
@@ -214,21 +214,21 @@ export function useTools(client: MCPClient | null): {
 	}, [client]);
 
 	useEffect(() => {
-		undefined;
+		refresh();
 	}, [refresh]);
 
 	return { error, isLoading, refresh, tools };
-}
+};
 
 /**
  * Hook for listing available resources
  */
-export function useResources(client: MCPClient | null): {
+export const useResources = (client: MCPClient | null): {
 	resources: MCPResource[];
 	isLoading: boolean;
 	error: Error | null;
 	refresh: () => Promise<void>;
-} {
+} => {
 	const [resources, setResources] = useState<MCPResource[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<Error | null>(null);
@@ -254,21 +254,21 @@ export function useResources(client: MCPClient | null): {
 	}, [client]);
 
 	useEffect(() => {
-		undefined;
+		refresh();
 	}, [refresh]);
 
 	return { error, isLoading, refresh, resources };
-}
+};
 
 /**
  * Hook for listing available prompts
  */
-export function usePrompts(client: MCPClient | null): {
+export const usePrompts = (client: MCPClient | null): {
 	prompts: MCPPrompt[];
 	isLoading: boolean;
 	error: Error | null;
 	refresh: () => Promise<void>;
-} {
+} => {
 	const [prompts, setPrompts] = useState<MCPPrompt[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<Error | null>(null);
@@ -294,19 +294,19 @@ export function usePrompts(client: MCPClient | null): {
 	}, [client]);
 
 	useEffect(() => {
-		undefined;
+		refresh();
 	}, [refresh]);
 
 	return { error, isLoading, prompts, refresh };
-}
+};
 
 /**
  * Hook for tracking progress via SSE
  */
-export function useProgress(client: MCPClient | null): UseProgressState & {
+export const useProgress = (client: MCPClient | null): UseProgressState & {
 	startTracking: () => void;
 	stopTracking: () => void;
-} {
+} => {
 	const [state, setState] = useState<UseProgressState>({
 		isTracking: false,
 		message: null,
@@ -367,4 +367,4 @@ export function useProgress(client: MCPClient | null): UseProgressState & {
 		startTracking,
 		stopTracking,
 	};
-}
+};

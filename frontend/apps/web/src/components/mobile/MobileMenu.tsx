@@ -10,86 +10,112 @@ import {
 	Settings,
 	X,
 } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
+import type { User } from "@/stores/authStore";
 
 interface MobileMenuProps {
 	className?: string;
 }
 
-/**
- * Mobile hamburger menu with proper 44px+ touch targets
- * Compliant with WCAG accessibility guidelines
- */
-export function MobileMenu({ className }: MobileMenuProps) {
-	const [isOpen, setIsOpen] = useState(false);
-	const navigate = useNavigate();
-	const location = useLocation();
-	const { user, logout } = useAuthStore();
+const SignInButton = function SignInButton({
+	onClick,
+}: {
+	onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
+}) {
+	return (
+		<button
+			type="button"
+			data-href="/auth/login"
+			onClick={onClick}
+			className={cn(
+				"w-full flex items-center gap-3 px-4 py-3 rounded-lg",
+				"min-h-[52px] transition-all duration-200",
+				"bg-primary text-primary-foreground hover:bg-primary/90",
+				"focus:outline-none focus:ring-2 focus:ring-primary",
+				"active:scale-95 transition-transform",
+			)}
+		>
+			<LogIn className="h-5 w-5 shrink-0" />
+			<span className="flex-1 text-left text-sm font-medium">
+				Sign in to your account
+			</span>
+		</button>
+	);
+};
 
-	const handleNavigate = async (to: string) => {
-		setIsOpen(false);
-		await navigate({ to } as any);
-	};
-
-	const handleLogout = () => {
-		undefined;
-		setIsOpen(false);
-		undefined;
-	};
-
-	const menuItems = [
-		{
-			href: "/home",
-			icon: Home,
-			label: "Dashboard",
-		},
-		{
-			href: "/projects",
-			icon: FolderOpen,
-			label: "Projects",
-		},
-		{
-			href: "/settings",
-			icon: Settings,
-			label: "Settings",
-		},
-	];
-
-	const isActive = (href: string) =>
-		location.pathname === href || location.pathname.startsWith(`${href}/`);
-
+const AccountAndLogout = function AccountAndLogout({
+	user,
+	onLogout,
+}: {
+	user: User;
+	onLogout: () => void;
+}) {
 	return (
 		<>
-			{/* Hamburger button - minimum 44x44px touch target */}
-			<Button
-				variant="ghost"
-				size="icon"
-				onClick={() => setIsOpen(!isOpen)}
+			<div className="px-4 py-3 rounded-lg bg-muted/50">
+				<p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1">
+					Account
+				</p>
+				<p className="text-sm font-medium text-foreground truncate">
+					{user?.name || "User"}
+				</p>
+				<p className="text-xs text-muted-foreground truncate mt-0.5">
+					{user?.email}
+				</p>
+			</div>
+			<button
+				type="button"
+				onClick={onLogout}
 				className={cn(
-					"h-11 w-11 rounded-lg md:hidden",
-					"focus:ring-2 focus:ring-primary focus:ring-offset-0",
+					"w-full flex items-center gap-3 px-4 py-3 rounded-lg",
+					"min-h-[52px] transition-all duration-200",
+					"bg-destructive/10 text-destructive hover:bg-destructive/20",
+					"border border-destructive/30",
+					"focus:outline-none focus:ring-2 focus:ring-destructive",
 					"active:scale-95 transition-transform",
-					className,
 				)}
-				aria-label={isOpen ? "Close menu" : "Open menu"}
-				aria-expanded={isOpen}
-				aria-controls="mobile-menu"
 			>
-				{isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-			</Button>
+				<LogOut className="h-5 w-5 shrink-0" />
+				<span className="flex-1 text-left text-sm font-medium">
+					Log out
+				</span>
+			</button>
+		</>
+	);
+};
 
-			{/* Mobile menu backdrop */}
-			{isOpen && (
-				<div
-					className="fixed inset-0 bg-black/50 z-40 md:hidden"
-					onClick={() => setIsOpen(false)}
-					aria-hidden="true"
-				/>
-			)}
+const MENU_ITEMS = [
+	{ href: "/home", icon: Home, label: "Dashboard" },
+	{ href: "/projects", icon: FolderOpen, label: "Projects" },
+	{ href: "/settings", icon: Settings, label: "Settings" },
+] as const;
 
-			{/* Mobile menu panel */}
+interface MenuPanelProps {
+	isOpen: boolean;
+	onClose: () => void;
+	onMenuClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
+	onLogout: () => void;
+	user: User | null;
+	isActive: (href: string) => boolean;
+}
+
+const MenuPanel = function MenuPanel({
+	isOpen,
+	onClose,
+	onMenuClick,
+	onLogout,
+	user,
+	isActive,
+}: MenuPanelProps) {
+	return (
+		<>
+			<div
+				className="fixed inset-0 bg-black/50 z-40 md:hidden"
+				onClick={onClose}
+				aria-hidden="true"
+			/>
 			<div
 				id="mobile-menu"
 				className={cn(
@@ -101,23 +127,21 @@ export function MobileMenu({ className }: MobileMenuProps) {
 						: "-translate-x-full opacity-0 pointer-events-none",
 				)}
 			>
-				{/* Header section */}
 				<div className="p-4 sm:p-6 border-b border-border/30">
 					<h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-widest">
 						Menu
 					</h2>
 				</div>
-
-				{/* Navigation items */}
 				<nav className="flex-1 p-4 sm:p-6 space-y-2">
-					{menuItems.map((item) => {
+					{MENU_ITEMS.map((item) => {
 						const Icon = item.icon;
 						const active = isActive(item.href);
-
 						return (
 							<button
 								key={item.href}
-								onClick={() => handleNavigate(item.href)}
+								type="button"
+								data-href={item.href}
+								onClick={onMenuClick}
 								className={cn(
 									"w-full flex items-center gap-3 px-4 py-3 rounded-lg",
 									"min-h-[52px] transition-all duration-200",
@@ -137,60 +161,89 @@ export function MobileMenu({ className }: MobileMenuProps) {
 						);
 					})}
 				</nav>
-
-				{/* User section */}
 				<div className="p-4 sm:p-6 border-t border-border/30 space-y-3">
 					{!user ? (
-						<button
-							onClick={() => handleNavigate("/auth/login")}
-							className={cn(
-								"w-full flex items-center gap-3 px-4 py-3 rounded-lg",
-								"min-h-[52px] transition-all duration-200",
-								"bg-primary text-primary-foreground hover:bg-primary/90",
-								"focus:outline-none focus:ring-2 focus:ring-primary",
-								"active:scale-95 transition-transform",
-							)}
-						>
-							<LogIn className="h-5 w-5 shrink-0" />
-							<span className="flex-1 text-left text-sm font-medium">
-								Sign in to your account
-							</span>
-						</button>
+						<SignInButton onClick={onMenuClick} />
 					) : (
-						<>
-							<div className="px-4 py-3 rounded-lg bg-muted/50">
-								<p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1">
-									Account
-								</p>
-								<p className="text-sm font-medium text-foreground truncate">
-									{user?.name || "User"}
-								</p>
-								<p className="text-xs text-muted-foreground truncate mt-0.5">
-									{user?.email}
-								</p>
-							</div>
-
-							{/* Logout button - minimum 44x44px */}
-							<button
-								onClick={handleLogout}
-								className={cn(
-									"w-full flex items-center gap-3 px-4 py-3 rounded-lg",
-									"min-h-[52px] transition-all duration-200",
-									"bg-destructive/10 text-destructive hover:bg-destructive/20",
-									"border border-destructive/30",
-									"focus:outline-none focus:ring-2 focus:ring-destructive",
-									"active:scale-95 transition-transform",
-								)}
-							>
-								<LogOut className="h-5 w-5 shrink-0" />
-								<span className="flex-1 text-left text-sm font-medium">
-									Log out
-								</span>
-							</button>
-						</>
+						<AccountAndLogout user={user} onLogout={onLogout} />
 					)}
 				</div>
 			</div>
 		</>
 	);
-}
+};
+
+/**
+ * Mobile hamburger menu with proper 44px+ touch targets
+ * Compliant with WCAG accessibility guidelines
+ */
+export const MobileMenu = function MobileMenu({ className }: MobileMenuProps) {
+	const [isOpen, setIsOpen] = useState(false);
+	const navigate = useNavigate();
+	const location = useLocation();
+	const { user, logout } = useAuthStore();
+
+	const handleNavigate = useCallback(
+		async (to: string) => {
+			setIsOpen(false);
+			await navigate({ to } as Parameters<typeof navigate>[0]);
+		},
+		[navigate],
+	);
+
+	const handleClose = useCallback(() => setIsOpen(false), []);
+
+	const handleLogout = useCallback(() => {
+		setIsOpen(false);
+		logout()
+			.then(() => navigate({ to: "/auth/login" }))
+			.catch(() => {});
+	}, [logout, navigate]);
+
+	const isActive = useCallback(
+		(href: string) =>
+			location.pathname === href || location.pathname.startsWith(`${href}/`),
+		[location.pathname],
+	);
+
+	const handleToggleOpen = useCallback(() => setIsOpen((prev) => !prev), []);
+
+	const handleMenuClick = useCallback(
+		(e: React.MouseEvent<HTMLButtonElement>) => {
+			const href = e.currentTarget.getAttribute("data-href");
+			if (href) handleNavigate(href).catch(() => {});
+		},
+		[handleNavigate],
+	);
+
+	return (
+		<>
+			<Button
+				variant="ghost"
+				size="icon"
+				onClick={handleToggleOpen}
+				className={cn(
+					"h-11 w-11 rounded-lg md:hidden",
+					"focus:ring-2 focus:ring-primary focus:ring-offset-0",
+					"active:scale-95 transition-transform",
+					className,
+				)}
+				aria-label={isOpen ? "Close menu" : "Open menu"}
+				aria-expanded={isOpen}
+				aria-controls="mobile-menu"
+			>
+				{isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+			</Button>
+			{isOpen && (
+				<MenuPanel
+					isOpen={isOpen}
+					onClose={handleClose}
+					onMenuClick={handleMenuClick}
+					onLogout={handleLogout}
+					user={user}
+					isActive={isActive}
+				/>
+			)}
+		</>
+	);
+};

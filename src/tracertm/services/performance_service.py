@@ -9,6 +9,13 @@ from tracertm.models.item import Item
 from tracertm.models.link import Link
 from tracertm.repositories.project_repository import ProjectRepository
 
+# Density thresholds for complexity classification
+DENSITY_HIGH = 0.5
+DENSITY_MEDIUM = 0.1
+# Recommendation thresholds
+ITEM_COUNT_ARCHIVE_THRESHOLD = 10000
+LINK_COUNT_CACHE_THRESHOLD = 50000
+
 
 class PerformanceService:
     """Service for performance analysis and optimization."""
@@ -42,11 +49,18 @@ class PerformanceService:
         # Calculate density
         density = link_count / max(item_count * (item_count - 1), 1)
 
+        if density > DENSITY_HIGH:
+            complexity = "high"
+        elif density > DENSITY_MEDIUM:
+            complexity = "medium"
+        else:
+            complexity = "low"
+
         return {
             "item_count": item_count,
             "link_count": link_count,
             "density": density,
-            "complexity": ("high" if density > 0.5 else "medium" if density > 0.1 else "low"),
+            "complexity": complexity,
         }
 
     async def get_slow_queries(self) -> list[dict[str, Any]]:
@@ -72,13 +86,13 @@ class PerformanceService:
 
         analysis = await self.analyze_query_performance(project_id)
 
-        if analysis["item_count"] > 10000:
+        if analysis["item_count"] > ITEM_COUNT_ARCHIVE_THRESHOLD:
             recommendations.append("Consider archiving old items")
 
-        if analysis["density"] > 0.5:
+        if analysis["density"] > DENSITY_HIGH:
             recommendations.append("High link density detected - consider refactoring structure")
 
-        if analysis["link_count"] > 50000:
+        if analysis["link_count"] > LINK_COUNT_CACHE_THRESHOLD:
             recommendations.append("Consider implementing link caching")
 
         return recommendations

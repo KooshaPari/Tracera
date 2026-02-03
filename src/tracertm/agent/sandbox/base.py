@@ -3,7 +3,7 @@
 Implementations: LocalFilesystemSandboxProvider (first), optional Vercel later.
 """
 
-from typing import Protocol, Any
+from typing import Any, Protocol
 
 from tracertm.agent.types import SandboxConfig, SandboxMetadata
 

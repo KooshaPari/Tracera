@@ -94,41 +94,56 @@ class ImportService:
 
         return {"items_imported": imported}
 
-    async def validate_import_data(self, json_data: str) -> list[str]:
-        """Validate import data and return list of errors."""
-        errors = []
-
-        try:
-            data = json.loads(json_data)
-        except json.JSONDecodeError as e:
-            return [f"Invalid JSON: {e!s}"]
-
-        # Validate project
+    def _validate_project_section(self, data: dict) -> list[str]:
+        """Validate project section; return list of errors."""
+        errors: list[str] = []
         if "project" not in data:
             errors.append("Missing 'project' section")
-        else:
-            project = data["project"]
-            if not project.get("name"):
-                errors.append("Project name is required")
+            return errors
+        project = data["project"]
+        if not project.get("name"):
+            errors.append("Project name is required")
+        return errors
 
-        # Validate items
-        items = data.get("items", [])
+    def _validate_items_section(self, items: list[dict]) -> list[str]:
+        """Validate items list; return list of errors."""
+        errors: list[str] = []
         for i, item in enumerate(items):
             if not item.get("title"):
                 errors.append(f"Item {i}: title is required")
             if not item.get("view"):
                 errors.append(f"Item {i}: view is required")
+        return errors
 
-        # Validate links
-        item_ids = {item.get("id") for item in items}
-        links = data.get("links", [])
+    def _validate_links_section(
+        self, links: list[dict], item_ids: set[str | None]
+    ) -> list[str]:
+        """Validate links reference existing items; return list of errors."""
+        errors: list[str] = []
         for i, link in enumerate(links):
             source = link.get("source_id")
             target = link.get("target_id")
-
             if source not in item_ids:
                 errors.append(f"Link {i}: source_id '{source}' not found in items")
             if target not in item_ids:
                 errors.append(f"Link {i}: target_id '{target}' not found in items")
+        return errors
+
+    async def validate_import_data(self, json_data: str) -> list[str]:
+        """Validate import data and return list of errors."""
+        try:
+            data = json.loads(json_data)
+        except json.JSONDecodeError as e:
+            return [f"Invalid JSON: {e!s}"]
+
+        errors: list[str] = []
+        errors.extend(self._validate_project_section(data))
+
+        items = data.get("items", [])
+        errors.extend(self._validate_items_section(items))
+
+        item_ids = {item.get("id") for item in items}
+        links = data.get("links", [])
+        errors.extend(self._validate_links_section(links, item_ids))
 
         return errors

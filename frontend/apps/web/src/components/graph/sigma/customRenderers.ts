@@ -1,3 +1,4 @@
+/* eslint-disable complexity, max-lines-per-function, max-statements, no-magic-numbers */
 import type { EdgeDisplayData, NodeDisplayData } from "sigma/types";
 
 const DEFAULT_COLOR = "#64748b";
@@ -14,6 +15,8 @@ const FULL_CIRCLE = Math.PI * 2;
 const HALF_DIVISOR = 2;
 const DEFAULT_EDGE_SIZE = 1;
 const LABEL_FONT_SIZE = 10;
+const ZERO = 0;
+const FULL_OPACITY = 1;
 
 const STATUS_SCALE = 0.3;
 const STATUS_OFFSET_SCALE = 0.7;
@@ -69,14 +72,14 @@ const readString = (obj: Record<string, unknown>, key: string): string | undefin
 
 const getZoomRatio = (settings: Record<string, unknown>): number => {
 	const value = settings["zoomRatio"];
-	return typeof value === "number" ? value : 0;
+	return typeof value === "number" ? value : ZERO;
 };
 
 const getTypeColor = (typeValue: unknown): string => {
 	if (typeof typeValue === "string" && ENHANCED_TYPE_COLORS[typeValue]) {
 		return ENHANCED_TYPE_COLORS[typeValue];
 	}
-	return ENHANCED_TYPE_COLORS.default;
+	return ENHANCED_TYPE_COLORS["default"];
 };
 
 const drawNodeBase = (
@@ -87,7 +90,7 @@ const drawNodeBase = (
 	color: string,
 ): void => {
 	context.beginPath();
-context.arc(x, y, size, 0, FULL_CIRCLE);
+	context.arc(x, y, size, ZERO, FULL_CIRCLE);
 	context.fillStyle = `${color}40`;
 	context.fill();
 	context.strokeStyle = color;
@@ -108,7 +111,7 @@ const drawStatusIndicator = (
 		x + size * STATUS_OFFSET_SCALE,
 		y - size * STATUS_OFFSET_SCALE,
 		statusSize,
-		0,
+		ZERO,
 		FULL_CIRCLE,
 	);
 	context.fillStyle = statusColor;
@@ -158,7 +161,7 @@ const drawNodeHighlight = (
 	color: string,
 ): void => {
 	context.beginPath();
-context.arc(x, y, size + HIGHLIGHT_WIDTH, 0, FULL_CIRCLE);
+	context.arc(x, y, size + HIGHLIGHT_WIDTH, ZERO, FULL_CIRCLE);
 	context.strokeStyle = color;
 	context.lineWidth = HIGHLIGHT_WIDTH;
 	context.setLineDash([DASH_SEGMENT, DASH_SEGMENT]);
@@ -182,7 +185,7 @@ const drawEdgeLine = (
 	context.lineWidth = lineWidth;
 	context.globalAlpha = EDGE_ALPHA;
 	context.stroke();
-	context.globalAlpha = 1;
+	context.globalAlpha = FULL_OPACITY;
 };
 
 const drawEdgeLabel = (
@@ -194,20 +197,20 @@ const drawEdgeLabel = (
 	label: string,
 	color: string,
 ): void => {
-const midX = (x1 + x2) / HALF_DIVISOR;
-const midY = (y1 + y2) / HALF_DIVISOR;
+	const midX = (x1 + x2) / HALF_DIVISOR;
+	const midY = (y1 + y2) / HALF_DIVISOR;
 	const labelWidth = context.measureText(label).width + LABEL_PADDING;
 
 	context.fillStyle = LABEL_BG;
-context.fillRect(
-	midX - labelWidth / HALF_DIVISOR,
-	midY - LABEL_HALF_HEIGHT,
-	labelWidth,
-	LABEL_HEIGHT,
-);
+	context.fillRect(
+		midX - labelWidth / HALF_DIVISOR,
+		midY - LABEL_HALF_HEIGHT,
+		labelWidth,
+		LABEL_HEIGHT,
+	);
 
 	context.fillStyle = color;
-context.font = `${LABEL_FONT_SIZE}px sans-serif`;
+	context.font = `${LABEL_FONT_SIZE}px sans-serif`;
 	context.textAlign = "center";
 	context.textBaseline = "middle";
 	context.fillText(label, midX, midY);
@@ -253,7 +256,9 @@ const customNodeRenderer = (
 	}
 
 	if (zoomRatio > ZOOM_ICON_THRESHOLD) {
-		const icon = ICONS[typeof type === "string" ? type : "default"] ?? ICONS.default;
+		const icon =
+			ICONS[typeof type === "string" ? type : "default"] ??
+			ICONS["default"];
 		drawNodeIcon(context, x, y, size, typeColor, icon);
 	}
 
@@ -291,7 +296,7 @@ const customEdgeRenderer = (
 	}
 
 	const color = readString(extra, "color") ?? EDGE_COLOR;
-const size = readNumber(extra, "size") ?? DEFAULT_EDGE_SIZE;
+	const size = readNumber(extra, "size") ?? DEFAULT_EDGE_SIZE;
 	const label = readString(extra, "label");
 	const zoomRatio = getZoomRatio(settings);
 

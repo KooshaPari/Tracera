@@ -245,7 +245,7 @@ async def query_items(include_links: bool = False, ...):
 
 ### Run Benchmark
 ```bash
-python -m tracertm.mcp.benchmark_phase3 \
+python -m tracertm.mcp.db_benchmark \
     "postgresql://user:pass@localhost/db" \
     "project-id-here"
 ```
@@ -302,4 +302,4 @@ print(health["queries"]["recent_slow_queries"])
 - **Full Guide**: `PHASE_3_DATABASE_OPTIMIZATION.md`
 - **Completion Summary**: `PHASE_3_COMPLETION_SUMMARY.md`
 - **Example Tools**: `tools/items_phase3.py`
-- **Benchmark**: `benchmark_phase3.py`
+- **Benchmark**: `db_benchmark.py`

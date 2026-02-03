@@ -1,3 +1,4 @@
+import { useMemo, useState } from "react";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import type { Feature, FeatureStatus } from "@tracertm/types";
 import {
@@ -21,7 +22,6 @@ import {
 	TrendingUp,
 	XCircle,
 } from "lucide-react";
-import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { FeatureCard } from "@/components/specifications/bdd/FeatureCard";
 import { useFeatures } from "@/hooks/useSpecifications";
@@ -30,7 +30,7 @@ interface FeatureListViewProps {
 	projectId: string;
 }
 
-export function FeatureListView({ projectId }: FeatureListViewProps) {
+export const FeatureListView = ({ projectId }: FeatureListViewProps) => {
 	const navigate = useNavigate();
 	const searchParams = useSearch({ strict: false }) as
 		| { status?: string }
@@ -83,7 +83,7 @@ export function FeatureListView({ projectId }: FeatureListViewProps) {
 
 	const overallPassRate = useMemo(() => {
 		if (features.length === 0) {
-			return 0;
+			return "0";
 		}
 		const totalScenarios = features.reduce(
 			(sum: number, f: Feature) => sum + (f.scenarioCount || 0),
@@ -135,6 +135,37 @@ export function FeatureListView({ projectId }: FeatureListViewProps) {
 		} catch {
 			toast.error("Failed to create feature");
 		}
+	};
+
+	const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		setSearchQuery(e.target.value);
+	};
+
+	const handleStatusFilterChange = (v: string) => {
+		setStatusFilter(v as FeatureStatus | "all");
+	};
+
+	const handleFeatureClick = (feature: Feature) => {
+		navigate({
+			params: { featureId: feature.id, projectId },
+			to: "/projects/$projectId/features/$featureId",
+		});
+	};
+
+	const handleNewStatusChange = (v: string) => {
+		setNewStatus(v as FeatureStatus);
+	};
+
+	const handleCloseModal = () => {
+		setShowCreateModal(false);
+	};
+
+	const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		setNewName(e.target.value);
+	};
+
+	const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+		setNewDescription(e.target.value);
 	};
 
 	if (isLoading) {
@@ -242,7 +273,7 @@ export function FeatureListView({ projectId }: FeatureListViewProps) {
 						placeholder="Search by name or feature number..."
 						className="pl-10 h-10 border-none bg-transparent focus-visible:ring-0"
 						value={searchQuery}
-						onChange={(e) => setSearchQuery(e.target.value)}
+						onChange={handleSearchChange}
 					/>
 				</div>
 
@@ -250,7 +281,7 @@ export function FeatureListView({ projectId }: FeatureListViewProps) {
 
 				<Select
 					value={statusFilter}
-					onValueChange={(v) => setStatusFilter(v as FeatureStatus | "all")}
+					onValueChange={handleStatusFilterChange}
 				>
 					<SelectTrigger className="w-[140px] h-10 border-none bg-transparent hover:bg-background/50">
 						<div className="flex items-center gap-2">
@@ -280,12 +311,7 @@ export function FeatureListView({ projectId }: FeatureListViewProps) {
 					{filteredFeatures.map((feature: Feature) => (
 						<button
 							key={feature.id}
-							onClick={() =>
-								navigate({
-									params: { featureId: feature.id, projectId },
-									to: "/projects/$projectId/features/$featureId",
-								})
-							}
+							onClick={() => handleFeatureClick(feature)}
 							className="text-left"
 						>
 							<FeatureCard feature={feature} />
@@ -311,7 +337,7 @@ export function FeatureListView({ projectId }: FeatureListViewProps) {
 				<div className="fixed inset-0 z-50 flex items-center justify-center">
 					<div
 						className="fixed inset-0 bg-black/50 backdrop-blur-sm"
-						onClick={() => setShowCreateModal(false)}
+						onClick={handleCloseModal}
 					/>
 					<div
 						className="relative w-full max-w-2xl rounded-xl border bg-background p-6 shadow-2xl"
@@ -325,7 +351,7 @@ export function FeatureListView({ projectId }: FeatureListViewProps) {
 							</h2>
 							<button
 								type="button"
-								onClick={() => setShowCreateModal(false)}
+								onClick={handleCloseModal}
 								aria-label="Close dialog"
 								className="rounded-lg p-1 hover:bg-accent"
 							>
@@ -340,7 +366,7 @@ export function FeatureListView({ projectId }: FeatureListViewProps) {
 								</label>
 								<Input
 									value={newName}
-									onChange={(e) => setNewName(e.target.value)}
+									onChange={handleNameChange}
 									placeholder="e.g., User Authentication"
 									className="h-10"
 								/>
@@ -350,7 +376,7 @@ export function FeatureListView({ projectId }: FeatureListViewProps) {
 								<label className="block text-sm font-medium mb-1">Status</label>
 								<Select
 									value={newStatus}
-									onValueChange={(v) => setNewStatus(v as FeatureStatus)}
+									onValueChange={handleNewStatusChange}
 								>
 									<SelectTrigger className="h-10">
 										<SelectValue />
@@ -370,17 +396,14 @@ export function FeatureListView({ projectId }: FeatureListViewProps) {
 								</label>
 								<textarea
 									value={newDescription}
-									onChange={(e) => setNewDescription(e.target.value)}
+									onChange={handleDescriptionChange}
 									placeholder="Describe the feature in business terms..."
 									className="w-full h-24 px-3 py-2 rounded-lg border border-input bg-background"
 								/>
 							</div>
 
 							<div className="flex justify-end gap-2 pt-4">
-								<Button
-									variant="ghost"
-									onClick={() => setShowCreateModal(false)}
-								>
+								<Button variant="ghost" onClick={handleCloseModal}>
 									Cancel
 								</Button>
 								<Button onClick={handleCreate} disabled={!newName.trim()}>
@@ -393,4 +416,4 @@ export function FeatureListView({ projectId }: FeatureListViewProps) {
 			)}
 		</div>
 	);
-}
+};

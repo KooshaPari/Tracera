@@ -1,5 +1,5 @@
 """
-Phase 3 Database Optimization Benchmark.
+MCP Database Optimization Benchmark.
 
 Compares performance before/after optimizations:
 - Connection pooling
@@ -290,7 +290,7 @@ class BenchmarkRunner:
 async def run_benchmark(database_url: str, project_id: str):
     """Run full benchmark suite."""
     print("=" * 70)
-    print("MCP DATABASE OPTIMIZATION BENCHMARK - PHASE 3")
+    print("MCP DATABASE OPTIMIZATION BENCHMARK")
     print("=" * 70)
     print(f"\nDatabase: {database_url}")
     print(f"Project ID: {project_id}")
@@ -312,7 +312,7 @@ if __name__ == "__main__":
     import sys
 
     if len(sys.argv) < 3:
-        print("Usage: python benchmark_phase3.py <database_url> <project_id>")
+        print("Usage: python db_benchmark.py <database_url> <project_id>")
         sys.exit(1)
 
     database_url = sys.argv[1]

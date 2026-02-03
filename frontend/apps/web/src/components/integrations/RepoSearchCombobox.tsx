@@ -2,13 +2,20 @@
  * Repository search and select combobox component.
  */
 
-import { Input } from "@tracertm/ui";
-import { Github, Loader2, Plus, Search } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
 import type { GitHubRepo } from "@/api/github";
+import {
+	Github,
+	Loader2,
+	Plus,
+	Search,
+} from "lucide-react";
 import { Button } from "@/components/ui/enterprise-button";
 import { useGitHubRepos } from "@/hooks/useGitHub";
 import { cn } from "@/lib/utils";
+import { Input } from "@tracertm/ui";
+import { useCallback, useEffect, useMemo, useState } from "react";
+
+const DEBOUNCE_MS = 300;
 
 export interface RepoSearchComboboxProps {
 	accountId?: string;
@@ -22,7 +29,7 @@ export interface RepoSearchComboboxProps {
 	disabled?: boolean;
 }
 
-export function RepoSearchCombobox({
+export const RepoSearchCombobox = function RepoSearchCombobox({
 	accountId,
 	installationId,
 	credentialId,
@@ -37,11 +44,10 @@ export function RepoSearchCombobox({
 	const [isOpen, setIsOpen] = useState(false);
 	const [debouncedSearch, setDebouncedSearch] = useState("");
 
-	// Debounce search query
 	useEffect(() => {
 		const timer = setTimeout(() => {
 			setDebouncedSearch(searchQuery);
-		}, 300);
+		}, DEBOUNCE_MS);
 		return () => clearTimeout(timer);
 	}, [searchQuery]);
 
@@ -53,18 +59,106 @@ export function RepoSearchCombobox({
 		perPage: 20,
 	});
 
-	const repos = useMemo(() => data?.repos || [], [data]);
+	const repos = useMemo(() => data?.repos ?? [], [data]);
 
-	const handleSelect = (repo: GitHubRepo) => {
-		onSelect?.(repo);
-		setIsOpen(false);
-		setSearchQuery("");
-	};
+	const handleSelect = useCallback(
+		(repo: GitHubRepo) => {
+			onSelect?.(repo);
+			setIsOpen(false);
+			setSearchQuery("");
+		},
+		[onSelect],
+	);
 
-	const handleClear = () => {
+	const handleClear = useCallback(() => {
 		onSelect?.(null);
 		setSearchQuery("");
-	};
+	}, [onSelect]);
+
+	const handleSearchChange = useCallback(
+		(e: React.ChangeEvent<HTMLInputElement>) => {
+			setSearchQuery(e.target.value);
+			setIsOpen(true);
+		},
+		[],
+	);
+	const handleFocus = useCallback(() => setIsOpen(true), []);
+	const handleClose = useCallback(() => setIsOpen(false), []);
+
+	const handleClearKeyDown = useCallback(
+		(e: React.KeyboardEvent) => {
+			if (e.key === "Enter" || e.key === " ") {
+				e.preventDefault();
+				handleClear();
+			}
+		},
+		[handleClear],
+	);
+
+	const handleRepoClick = useCallback(
+		(e: React.MouseEvent<HTMLButtonElement>) => {
+			const id = Number(
+				(e.currentTarget as HTMLButtonElement).dataset["repoId"],
+			);
+			const repo = repos.find((r: GitHubRepo) => r.id === id);
+			if (repo) handleSelect(repo);
+		},
+		[repos, handleSelect],
+	);
+
+	function renderListContent() {
+		if (isLoading) {
+			return (
+				<div className="flex items-center justify-center p-4">
+					<Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+				</div>
+			);
+		}
+		if (repos.length === 0) {
+			return (
+				<div className="p-4 text-sm text-muted-foreground text-center">
+					{searchQuery
+						? "No repositories found"
+						: "No repositories available"}
+				</div>
+			);
+		}
+		return (
+			<div className="p-1">
+				{repos.map((repo: GitHubRepo) => (
+					<button
+						key={repo.id}
+						data-repo-id={repo.id}
+						onClick={handleRepoClick}
+						className={cn(
+							"w-full text-left px-3 py-2 rounded-sm hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer",
+							value?.id === repo.id && "bg-accent",
+						)}
+						type="button"
+					>
+						<div className="flex items-center gap-2">
+							<Github className="h-4 w-4 text-muted-foreground shrink-0" />
+							<div className="flex-1 min-w-0">
+								<div className="font-medium text-sm truncate">
+									{repo.full_name}
+								</div>
+								{repo.description && (
+									<div className="text-xs text-muted-foreground truncate">
+										{repo.description}
+									</div>
+								)}
+							</div>
+							{repo.private && (
+								<span className="text-xs text-muted-foreground shrink-0">
+									Private
+								</span>
+							)}
+						</div>
+					</button>
+				))}
+			</div>
+		);
+	}
 
 	return (
 		<div className={cn("relative w-full", className)}>
@@ -74,19 +168,18 @@ export function RepoSearchCombobox({
 					type="text"
 					placeholder={placeholder}
 					value={searchQuery || value?.full_name || ""}
-					onChange={(e) => {
-						setSearchQuery(e.target.value);
-						setIsOpen(true);
-					}}
-					onFocus={() => setIsOpen(true)}
+					onChange={handleSearchChange}
+					onFocus={handleFocus}
 					disabled={disabled}
 					className="pl-9 pr-20"
 				/>
 				{value && (
 					<button
-						onClick={handleClear}
-						className="absolute right-10 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded p-1 transition-colors cursor-pointer"
 						type="button"
+						onClick={handleClear}
+						onKeyDown={handleClearKeyDown}
+						className="absolute right-10 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded p-1 transition-colors cursor-pointer"
+						aria-label="Clear selection"
 					>
 						×
 					</button>
@@ -106,57 +199,17 @@ export function RepoSearchCombobox({
 
 			{isOpen && (searchQuery || repos.length > 0) && (
 				<div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-md shadow-lg max-h-60 overflow-auto">
-					{isLoading ? (
-						<div className="flex items-center justify-center p-4">
-							<Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-						</div>
-					) : (repos.length === 0 ? (
-						<div className="p-4 text-sm text-muted-foreground text-center">
-							{searchQuery
-								? "No repositories found"
-								: "No repositories available"}
-						</div>
-					) : (
-						<div className="p-1">
-							{repos.map((repo) => (
-								<button
-									key={repo.id}
-									onClick={() => handleSelect(repo)}
-									className={cn(
-										"w-full text-left px-3 py-2 rounded-sm hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer",
-										value?.id === repo.id && "bg-accent",
-									)}
-									type="button"
-								>
-									<div className="flex items-center gap-2">
-										<Github className="h-4 w-4 text-muted-foreground shrink-0" />
-										<div className="flex-1 min-w-0">
-											<div className="font-medium text-sm truncate">
-												{repo.full_name}
-											</div>
-											{repo.description && (
-												<div className="text-xs text-muted-foreground truncate">
-													{repo.description}
-												</div>
-											)}
-										</div>
-										{repo.private && (
-											<span className="text-xs text-muted-foreground shrink-0">
-												Private
-											</span>
-										)}
-									</div>
-								</button>
-							))}
-						</div>
-					))}
+					{renderListContent()}
 				</div>
 			)}
 
-			{/* Click outside to close */}
 			{isOpen && (
-				<div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+				<div
+					className="fixed inset-0 z-40"
+					onClick={handleClose}
+					aria-hidden
+				/>
 			)}
 		</div>
 	);
-}
+};

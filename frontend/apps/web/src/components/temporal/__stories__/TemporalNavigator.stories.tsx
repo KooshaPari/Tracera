@@ -1,8 +1,8 @@
 // TemporalNavigator Storybook stories
+import type { Branch, Version } from "../TemporalNavigator";
 import type { Meta, StoryObj } from "@storybook/react";
 import { logger } from "@/lib/logger";
 import { TemporalNavigator } from "../TemporalNavigator";
-import type { Branch, Version } from "../TemporalNavigator";
 
 const meta = {
 	component: TemporalNavigator,
@@ -13,6 +13,8 @@ const meta = {
 	title: "Temporal/TemporalNavigator",
 } satisfies Meta<typeof TemporalNavigator>;
 
+// Storybook requires default export for meta
+// eslint-disable-next-line import/no-default-export -- Storybook convention
 export default meta;
 type Story = StoryObj<typeof meta>;
 

@@ -1,8 +1,9 @@
 // TimelineView Storybook stories
 import type { Meta, StoryObj } from "@storybook/react";
-import type { Version } from "../TemporalNavigator";
-import { TimelineView } from "../TimelineView";
+
 import { logger } from "@/lib/logger";
+import { TimelineView } from "../TimelineView";
+import type { Version } from "../TemporalNavigator";
 
 const meta = {
 	component: TimelineView,
@@ -15,6 +16,8 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof meta>;
+
+const MS_PER_DAY_STORY = 86_400_000;
 
 const mockVersions: Version[] = [
 	{
@@ -73,7 +76,7 @@ export const SingleVersion: Story = {
 		currentVersionId: "v1.0.0",
 		onVersionChange: (versionId) =>
 			logger.info("Version changed to:", versionId),
-		versions: [mockVersions[0]],
+		versions: [mockVersions[0] as Version],
 	},
 };
 
@@ -82,12 +85,22 @@ export const ManyVersions: Story = {
 		currentVersionId: "v10",
 		onVersionChange: (versionId) =>
 			logger.info("Version changed to:", versionId),
-		versions: Array.from({ length: 20 }, (_, i) => ({
-			...mockVersions[i % mockVersions.length],
-			id: `v${i}`,
-			title: `Version ${i}`,
-			timestamp: new Date(new Date("2024-01-01").getTime() + i * 86400000),
-		})),
+		versions: Array.from({ length: 20 }, (_, i) => {
+			const base = mockVersions[i % mockVersions.length];
+			if (!base) throw new Error("mockVersions empty");
+			return {
+				author: base.author,
+				branchId: base.branchId,
+				description: base.description,
+				id: `v${i}`,
+				status: base.status,
+				tag: base.tag,
+				timestamp: new Date(
+					new Date("2024-01-01").getTime() + i * MS_PER_DAY_STORY,
+				),
+				title: `Version ${i}`,
+			} satisfies Version;
+		}),
 	},
 };
 
@@ -102,7 +115,7 @@ export const EmptyTimeline: Story = {
 
 export const DraftVersions: Story = {
 	args: {
-		currentVersionId: mockVersions[0].id,
+		currentVersionId: mockVersions[0]?.id ?? "",
 		onVersionChange: (versionId) =>
 			logger.info("Version changed to:", versionId),
 		versions: mockVersions.map((v) => ({

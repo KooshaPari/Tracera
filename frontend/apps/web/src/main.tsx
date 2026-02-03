@@ -1,8 +1,8 @@
 import { RouterProvider } from "@tanstack/react-router";
 import { createRoot } from "react-dom/client";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import AppProviders from "@/providers/app-providers";
-import ThemeProvider from "@/providers/theme-provider";
+import { AppProviders } from "@/providers/app-providers";
+import { ThemeProvider } from "@/providers/theme-provider";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { createRetryFetch } from "@/lib/fetch-retry";
 import { renderPreflightFailure, runFrontendPreflight } from "@/lib/preflight";

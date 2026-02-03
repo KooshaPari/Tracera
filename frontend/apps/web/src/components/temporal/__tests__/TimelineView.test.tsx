@@ -3,11 +3,13 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
+
 import type { Version } from "../TemporalNavigator";
 import { TimelineView } from "../TimelineView";
 
-describe(TimelineView, () => {
-	const mockVersions: Version[] = [
+const EMPTY_VERSIONS: Version[] = [];
+
+const MOCK_VERSIONS: Version[] = [
 		{
 			author: "Alice",
 			branchId: "branch-1",
@@ -36,8 +38,9 @@ describe(TimelineView, () => {
 			timestamp: new Date("2024-01-15"),
 			title: "Development Build",
 		},
-	];
+];
 
+describe(TimelineView, () => {
 	const mockOnVersionChange = vi.fn();
 
 	afterEach(() => {
@@ -47,7 +50,7 @@ describe(TimelineView, () => {
 	it("renders version markers", () => {
 		render(
 			<TimelineView
-				versions={mockVersions}
+				versions={MOCK_VERSIONS}
 				currentVersionId="v-1"
 				onVersionChange={mockOnVersionChange}
 			/>,
@@ -60,7 +63,7 @@ describe(TimelineView, () => {
 	it("shows version count", () => {
 		render(
 			<TimelineView
-				versions={mockVersions}
+				versions={MOCK_VERSIONS}
 				currentVersionId="v-1"
 				onVersionChange={mockOnVersionChange}
 			/>,
@@ -72,7 +75,7 @@ describe(TimelineView, () => {
 	it("highlights current version", () => {
 		render(
 			<TimelineView
-				versions={mockVersions}
+				versions={MOCK_VERSIONS}
 				currentVersionId="v-2"
 				onVersionChange={mockOnVersionChange}
 			/>,
@@ -86,23 +89,23 @@ describe(TimelineView, () => {
 		const user = userEvent.setup();
 		render(
 			<TimelineView
-				versions={mockVersions}
+				versions={MOCK_VERSIONS}
 				currentVersionId="v-1"
 				onVersionChange={mockOnVersionChange}
 			/>,
 		);
 
 		const versionCards = screen.getAllByText(/Patch Release/);
-		if (versionCards.length > 0) {
-			await user.click(versionCards[0]);
-			expect(mockOnVersionChange).toHaveBeenCalledWith("v-2");
-		}
+		const firstCard = versionCards[0];
+		expect(firstCard).toBeDefined();
+		await user.click(firstCard!);
+		expect(mockOnVersionChange).toHaveBeenCalledWith("v-2");
 	});
 
 	it("displays version tags", () => {
 		render(
 			<TimelineView
-				versions={mockVersions}
+				versions={MOCK_VERSIONS}
 				currentVersionId="v-1"
 				onVersionChange={mockOnVersionChange}
 			/>,
@@ -115,7 +118,7 @@ describe(TimelineView, () => {
 	it("displays version status badges", () => {
 		render(
 			<TimelineView
-				versions={mockVersions}
+				versions={MOCK_VERSIONS}
 				currentVersionId="v-1"
 				onVersionChange={mockOnVersionChange}
 			/>,
@@ -131,7 +134,7 @@ describe(TimelineView, () => {
 	it("displays author information", () => {
 		render(
 			<TimelineView
-				versions={mockVersions}
+				versions={MOCK_VERSIONS}
 				currentVersionId="v-1"
 				onVersionChange={mockOnVersionChange}
 			/>,
@@ -144,7 +147,7 @@ describe(TimelineView, () => {
 	it("handles zoom controls", async () => {
 		render(
 			<TimelineView
-				versions={mockVersions}
+				versions={MOCK_VERSIONS}
 				currentVersionId="v-1"
 				onVersionChange={mockOnVersionChange}
 			/>,
@@ -157,7 +160,7 @@ describe(TimelineView, () => {
 	it("renders empty state for no versions", () => {
 		render(
 			<TimelineView
-				versions={[]}
+				versions={EMPTY_VERSIONS}
 				currentVersionId=""
 				onVersionChange={mockOnVersionChange}
 			/>,
@@ -171,7 +174,7 @@ describe(TimelineView, () => {
 	it("displays date range", () => {
 		render(
 			<TimelineView
-				versions={mockVersions}
+				versions={MOCK_VERSIONS}
 				currentVersionId="v-1"
 				onVersionChange={mockOnVersionChange}
 			/>,
@@ -184,7 +187,7 @@ describe(TimelineView, () => {
 	it("displays version descriptions", () => {
 		render(
 			<TimelineView
-				versions={mockVersions}
+				versions={MOCK_VERSIONS}
 				currentVersionId="v-1"
 				onVersionChange={mockOnVersionChange}
 			/>,

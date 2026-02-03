@@ -1,8 +1,8 @@
 /* eslint-disable promise/prefer-await-to-then */
-import { apiConstants } from "./client-constants";
-import { extractCSRFTokenFromResponse, handleCSRFError } from "../lib/csrf";
 import { logger } from "@/lib/logger";
+import { extractCSRFTokenFromResponse, handleCSRFError } from "../lib/csrf";
 import { useConnectionStatusStore } from "../stores/connection-status-store";
+import { apiConstants } from "./client-constants";
 
 interface ToastAction {
 	label: string;

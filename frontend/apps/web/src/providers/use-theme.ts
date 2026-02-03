@@ -1,5 +1,5 @@
 import { type ContextType, useContext } from "react";
-import ThemeContext from "./theme-context";
+import { ThemeContext } from "./theme-context";
 
 type ThemeContextType = ContextType<typeof ThemeContext>;
 
@@ -11,4 +11,4 @@ const useTheme = (): ThemeContextType => {
 	return context;
 };
 
-export default useTheme;
+export { useTheme };

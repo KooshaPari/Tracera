@@ -299,7 +299,7 @@ Run the benchmark to measure improvements:
 
 ```bash
 cd /Users/kooshapari/temp-PRODVERCEL/485/kush/trace
-python -m tracertm.mcp.benchmark_phase3 \
+python -m tracertm.mcp.db_benchmark \
     "postgresql://user:pass@localhost/db" \
     "project-id-here"
 ```
@@ -478,7 +478,7 @@ pytest tests/unit/mcp/test_cache.py
 pytest tests/unit/mcp/test_query_optimizer.py
 
 # Benchmark
-python -m tracertm.mcp.benchmark_phase3 <db_url> <project_id>
+python -m tracertm.mcp.db_benchmark <db_url> <project_id>
 ```
 
 ---
@@ -490,7 +490,7 @@ python -m tracertm.mcp.benchmark_phase3 <db_url> <project_id>
 3. `/src/tracertm/mcp/query_optimizer.py` - Eager loading patterns
 4. `/src/tracertm/mcp/tools/base_async.py` - Async base utilities
 5. `/src/tracertm/mcp/tools/items_phase3.py` - Example optimized tools
-6. `/src/tracertm/mcp/benchmark_phase3.py` - Performance benchmark
+6. `/src/tracertm/mcp/db_benchmark.py` - Performance benchmark
 7. `/src/tracertm/mcp/PHASE_3_DATABASE_OPTIMIZATION.md` - This document
 
 ---

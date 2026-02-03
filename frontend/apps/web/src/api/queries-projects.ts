@@ -4,9 +4,10 @@ import type {
 	UseQueryOptions,
 	UseQueryResult,
 } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { PaginatedResponse, Project } from "@tracertm/types";
+
 import { api, handleApiResponse } from "./query-client";
-import { useMutation, useQuery, useQueryClient } from "./react-query-hooks";
 import { queryKeys } from "./queries-keys";
 
 type ProjectListResponse = PaginatedResponse<Project>;
@@ -25,12 +26,14 @@ const useProjects = (
 	options?: UseQueryOptions<ProjectListResponse>,
 ): UseQueryResult<ProjectListResponse> => {
 	const baseOptions: UseQueryOptions<ProjectListResponse> = {
-		queryFn: () =>
-			handleApiResponse(api.get<ProjectListResponse>("/api/v1/projects", {})),
+		queryFn: async () =>
+			await handleApiResponse(
+				api.get<ProjectListResponse>("/api/v1/projects", {}),
+			),
 		queryKey: queryKeys.projects,
 	};
 
-	return useQuery({ ...baseOptions, ...options });
+	return useQuery(Object.assign({}, baseOptions, options));
 };
 
 const useProject = (
@@ -39,8 +42,8 @@ const useProject = (
 ): UseQueryResult<Project> => {
 	const baseOptions: UseQueryOptions<Project> = {
 		enabled: Boolean(projectId),
-		queryFn: () =>
-			handleApiResponse(
+		queryFn: async () =>
+			await handleApiResponse(
 				api.get<Project>("/api/v1/projects/{projectId}", {
 					params: { path: { projectId } },
 				}),
@@ -48,7 +51,7 @@ const useProject = (
 		queryKey: queryKeys.project(projectId),
 	};
 
-	return useQuery({ ...baseOptions, ...options });
+	return useQuery(Object.assign({}, baseOptions, options));
 };
 
 const useCreateProject = (
@@ -56,8 +59,8 @@ const useCreateProject = (
 ): UseMutationResult<Project, Error, CreateProjectInput> => {
 	const queryClient = useQueryClient();
 	const baseOptions: UseMutationOptions<Project, Error, CreateProjectInput> = {
-		mutationFn: (data: CreateProjectInput) =>
-			handleApiResponse(
+		mutationFn: async (data: CreateProjectInput) =>
+			await handleApiResponse(
 				api.post<Project>("/api/v1/projects", { body: data }),
 			),
 		onSuccess: async (): Promise<void> => {
@@ -65,7 +68,7 @@ const useCreateProject = (
 		},
 	};
 
-	return useMutation({ ...baseOptions, ...options });
+	return useMutation(Object.assign({}, baseOptions, options));
 };
 
 const useUpdateProject = (
@@ -73,8 +76,8 @@ const useUpdateProject = (
 ): UseMutationResult<Project, Error, UpdateProjectInput> => {
 	const queryClient = useQueryClient();
 	const baseOptions: UseMutationOptions<Project, Error, UpdateProjectInput> = {
-		mutationFn: (input: UpdateProjectInput) =>
-			handleApiResponse(
+		mutationFn: async (input: UpdateProjectInput) =>
+			await handleApiResponse(
 				api.put<Project>("/api/v1/projects/{projectId}", {
 					body: input.data,
 					params: { path: { projectId: input.projectId } },
@@ -91,7 +94,7 @@ const useUpdateProject = (
 		},
 	};
 
-	return useMutation({ ...baseOptions, ...options });
+	return useMutation(Object.assign({}, baseOptions, options));
 };
 
 const useDeleteProject = (
@@ -99,8 +102,8 @@ const useDeleteProject = (
 ): UseMutationResult<void, Error, string> => {
 	const queryClient = useQueryClient();
 	const baseOptions: UseMutationOptions<void, Error, string> = {
-		mutationFn: (projectId: string) =>
-			handleApiResponse(
+		mutationFn: async (projectId: string) =>
+			await handleApiResponse(
 				api.del<void>("/api/v1/projects/{projectId}", {
 					params: { path: { projectId } },
 				}),
@@ -110,7 +113,7 @@ const useDeleteProject = (
 		},
 	};
 
-	return useMutation({ ...baseOptions, ...options });
+	return useMutation(Object.assign({}, baseOptions, options));
 };
 
 export {

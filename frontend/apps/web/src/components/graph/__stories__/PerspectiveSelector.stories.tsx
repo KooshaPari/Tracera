@@ -1,5 +1,9 @@
+import type { CSSProperties } from "react";
 import type { Meta, StoryObj } from "@storybook/react";
 import { PerspectiveSelector } from "../PerspectiveSelector";
+
+const DARK_DECORATOR_STYLE: CSSProperties = { padding: "20px" };
+const NO_OP = (): void => {};
 
 const meta: Meta<typeof PerspectiveSelector> = {
 	argTypes: {
@@ -32,6 +36,7 @@ const meta: Meta<typeof PerspectiveSelector> = {
 	title: "Components/Graph/PerspectiveSelector",
 };
 
+// eslint-disable-next-line import/no-default-export
 export default meta;
 type Story = StoryObj<typeof meta>;
 
@@ -42,7 +47,7 @@ export const Default: Story = {
 	args: {
 		currentPerspective: "all",
 		itemCounts: undefined,
-		onPerspectiveChange: () => {},
+		onPerspectiveChange: NO_OP,
 	},
 };
 
@@ -53,7 +58,7 @@ export const WithCounts: Story = {
 	args: {
 		currentPerspective: "all",
 		itemCounts: { all: 42, product: 12, technical: 20 },
-		onPerspectiveChange: () => {},
+		onPerspectiveChange: NO_OP,
 	},
 };
 
@@ -64,7 +69,7 @@ export const Tablet: Story = {
 	args: {
 		currentPerspective: "all",
 		itemCounts: undefined,
-		onPerspectiveChange: () => {},
+		onPerspectiveChange: NO_OP,
 	},
 	parameters: {
 		viewport: {
@@ -80,7 +85,7 @@ export const Mobile: Story = {
 	args: {
 		currentPerspective: "all",
 		itemCounts: undefined,
-		onPerspectiveChange: () => {},
+		onPerspectiveChange: NO_OP,
 	},
 	parameters: {
 		viewport: {
@@ -96,11 +101,11 @@ export const DarkMode: Story = {
 	args: {
 		currentPerspective: "all",
 		itemCounts: undefined,
-		onPerspectiveChange: () => {},
+		onPerspectiveChange: NO_OP,
 	},
 	decorators: [
 		(Story) => (
-			<div className="dark" data-theme="dark" style={{ padding: "20px" }}>
+			<div className="dark" data-theme="dark" style={DARK_DECORATOR_STYLE}>
 				<Story />
 			</div>
 		),
@@ -121,7 +126,7 @@ export const Focused: Story = {
 	args: {
 		currentPerspective: "all",
 		itemCounts: undefined,
-		onPerspectiveChange: () => {},
+		onPerspectiveChange: NO_OP,
 	},
 	play: async ({ canvasElement }) => {
 		const selector = canvasElement.querySelector("button");
@@ -138,7 +143,7 @@ export const Hovered: Story = {
 	args: {
 		currentPerspective: "all",
 		itemCounts: undefined,
-		onPerspectiveChange: () => {},
+		onPerspectiveChange: NO_OP,
 	},
 	play: async ({ canvasElement }) => {
 		const selector = canvasElement.querySelector("button");

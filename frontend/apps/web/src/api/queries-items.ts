@@ -1,19 +1,24 @@
-import type * as ReactQuery from "@tanstack/react-query";
-import type * as TracerTypes from "@tracertm/types";
-import * as QueryClient from "./query-client";
-import * as QueryKeys from "./queries-keys";
-import * as ReactQueryHooks from "./react-query-hooks";
+import type {
+	UseMutationOptions,
+	UseMutationResult,
+	UseQueryOptions,
+	UseQueryResult,
+} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { Item, PaginatedResponse } from "@tracertm/types";
 
-type Item = TracerTypes.Item;
-type ItemListResponse = TracerTypes.PaginatedResponse<Item>;
+import { queryKeys } from "./queries-keys";
+import { api, handleApiResponse } from "./query-client";
 
-type ItemFilters = {
+type ItemListResponse = PaginatedResponse<Item>;
+
+interface ItemFilters {
 	page?: number;
 	pageSize?: number;
 	priority?: string;
 	status?: string;
 	view?: string;
-};
+}
 
 type CreateItemInput = {
 	data: Partial<Item>;
@@ -33,13 +38,13 @@ type DeleteItemInput = {
 const useProjectItems = (
 	projectId: string,
 	filters?: ItemFilters,
-	options?: ReactQuery.UseQueryOptions<ItemListResponse>,
-): ReactQuery.UseQueryResult<ItemListResponse> => {
-	const baseOptions: ReactQuery.UseQueryOptions<ItemListResponse> = {
+	options?: UseQueryOptions<ItemListResponse>,
+): UseQueryResult<ItemListResponse> => {
+	const baseOptions: UseQueryOptions<ItemListResponse> = {
 		enabled: Boolean(projectId),
 		queryFn: async (): Promise<ItemListResponse> =>
-			await QueryClient.handleApiResponse(
-				QueryClient.api.get<ItemListResponse>(
+			await handleApiResponse(
+				api.get<ItemListResponse>(
 					"/api/v1/projects/{projectId}/items",
 					{
 						params: {
@@ -49,137 +54,102 @@ const useProjectItems = (
 					},
 				),
 			),
-		queryKey: QueryKeys.queryKeys.projectItems(projectId, filters),
+		queryKey: queryKeys.projectItems(projectId, filters),
 	};
 
-	if (options) {
-		return ReactQueryHooks.useQuery(Object.assign(baseOptions, options));
-	}
-
-	return ReactQueryHooks.useQuery(baseOptions);
+	return useQuery(Object.assign({}, baseOptions, options));
 };
 
 const useItem = (
 	itemId: string,
-	options?: ReactQuery.UseQueryOptions<Item>,
-): ReactQuery.UseQueryResult<Item> => {
-	const baseOptions: ReactQuery.UseQueryOptions<Item> = {
+	options?: UseQueryOptions<Item>,
+): UseQueryResult<Item> => {
+	const baseOptions: UseQueryOptions<Item> = {
 		enabled: Boolean(itemId),
 		queryFn: async (): Promise<Item> =>
-			await QueryClient.handleApiResponse(
-				QueryClient.api.get<Item>("/api/v1/items/{itemId}", {
+			await handleApiResponse(
+				api.get<Item>("/api/v1/items/{itemId}", {
 					params: { path: { itemId } },
 				}),
 			),
-		queryKey: QueryKeys.queryKeys.item(itemId),
+		queryKey: queryKeys.item(itemId),
 	};
 
-	if (options) {
-		return ReactQueryHooks.useQuery(Object.assign(baseOptions, options));
-	}
-
-	return ReactQueryHooks.useQuery(baseOptions);
+	return useQuery(Object.assign({}, baseOptions, options));
 };
 
 const useCreateItem = (
-	options?: ReactQuery.UseMutationOptions<Item, Error, CreateItemInput>,
-): ReactQuery.UseMutationResult<Item, Error, CreateItemInput> => {
-	const queryClient = ReactQueryHooks.useQueryClient();
-	const baseOptions: ReactQuery.UseMutationOptions<Item, Error, CreateItemInput> =
-		{
-			mutationFn: async (input: CreateItemInput): Promise<Item> =>
-				await QueryClient.handleApiResponse(
-					QueryClient.api.post<Item>(
-						"/api/v1/projects/{projectId}/items",
-						{
-							body: input.data as Record<string, unknown>,
-							params: { path: { projectId: input.projectId } },
-						},
-					),
-				),
-			onSuccess: async (
-				_data: Item,
-				variables: CreateItemInput,
-			): Promise<void> => {
-				await queryClient.invalidateQueries({
-					queryKey: QueryKeys.queryKeys.projectItems(variables.projectId),
-				});
-			},
-		};
+	options?: UseMutationOptions<Item, Error, CreateItemInput>,
+): UseMutationResult<Item, Error, CreateItemInput> => {
+	const queryClient = useQueryClient();
+	const baseOptions: UseMutationOptions<Item, Error, CreateItemInput> = {
+		mutationFn: async (input: CreateItemInput): Promise<Item> =>
+			await handleApiResponse(
+				api.post<Item>("/api/v1/projects/{projectId}/items", {
+					body: input.data as Record<string, unknown>,
+					params: { path: { projectId: input.projectId } },
+				}),
+			),
+		onSuccess: async (
+			_data: Item,
+			variables: CreateItemInput,
+		): Promise<void> => {
+			await queryClient.invalidateQueries({
+				queryKey: queryKeys.projectItems(variables.projectId),
+			});
+		},
+	};
 
-	let mergedOptions = baseOptions;
-	if (options) {
-		mergedOptions = Object.assign(baseOptions, options);
-	}
-
-	return ReactQueryHooks.useMutation<Item, Error, CreateItemInput>(
-		mergedOptions,
-	);
+	return useMutation(Object.assign({}, baseOptions, options));
 };
 
 const useUpdateItem = (
-	options?: ReactQuery.UseMutationOptions<Item, Error, UpdateItemInput>,
-): ReactQuery.UseMutationResult<Item, Error, UpdateItemInput> => {
-	const queryClient = ReactQueryHooks.useQueryClient();
-	const baseOptions: ReactQuery.UseMutationOptions<Item, Error, UpdateItemInput> =
-		{
-			mutationFn: async (input: UpdateItemInput): Promise<Item> =>
-				await QueryClient.handleApiResponse(
-					QueryClient.api.put<Item>("/api/v1/items/{itemId}", {
-						body: input.data,
-						params: { path: { itemId: input.itemId } },
-					}),
-				),
-			onSuccess: async (data: Item): Promise<void> => {
-				await queryClient.invalidateQueries({
-					queryKey: QueryKeys.queryKeys.item(data.id),
-				});
-				await queryClient.invalidateQueries({
-					queryKey: QueryKeys.queryKeys.projectItems(data.projectId),
-				});
-			},
-		};
+	options?: UseMutationOptions<Item, Error, UpdateItemInput>,
+): UseMutationResult<Item, Error, UpdateItemInput> => {
+	const queryClient = useQueryClient();
+	const baseOptions: UseMutationOptions<Item, Error, UpdateItemInput> = {
+		mutationFn: async (input: UpdateItemInput): Promise<Item> =>
+			await handleApiResponse(
+				api.put<Item>("/api/v1/items/{itemId}", {
+					body: input.data,
+					params: { path: { itemId: input.itemId } },
+				}),
+			),
+		onSuccess: async (data: Item): Promise<void> => {
+			await queryClient.invalidateQueries({
+				queryKey: queryKeys.item(data.id),
+			});
+			await queryClient.invalidateQueries({
+				queryKey: queryKeys.projectItems(data.projectId),
+			});
+		},
+	};
 
-	let mergedOptions = baseOptions;
-	if (options) {
-		mergedOptions = Object.assign(baseOptions, options);
-	}
-
-	return ReactQueryHooks.useMutation<Item, Error, UpdateItemInput>(
-		mergedOptions,
-	);
+	return useMutation(Object.assign({}, baseOptions, options));
 };
 
 const useDeleteItem = (
-	options?: ReactQuery.UseMutationOptions<void, Error, DeleteItemInput>,
-): ReactQuery.UseMutationResult<void, Error, DeleteItemInput> => {
-	const queryClient = ReactQueryHooks.useQueryClient();
-	const baseOptions: ReactQuery.UseMutationOptions<void, Error, DeleteItemInput> =
-		{
-			mutationFn: async (input: DeleteItemInput): Promise<void> =>
-				await QueryClient.handleApiResponse(
-					QueryClient.api.del<void>("/api/v1/items/{itemId}", {
-						params: { path: { itemId: input.itemId } },
-					}),
-				),
-			onSuccess: async (
-				_data: void,
-				variables: DeleteItemInput,
-			): Promise<void> => {
-				await queryClient.invalidateQueries({
-					queryKey: QueryKeys.queryKeys.projectItems(variables.projectId),
-				});
-			},
-		};
+	options?: UseMutationOptions<void, Error, DeleteItemInput>,
+): UseMutationResult<void, Error, DeleteItemInput> => {
+	const queryClient = useQueryClient();
+	const baseOptions: UseMutationOptions<void, Error, DeleteItemInput> = {
+		mutationFn: async (input: DeleteItemInput): Promise<void> =>
+			await handleApiResponse(
+				api.del<void>("/api/v1/items/{itemId}", {
+					params: { path: { itemId: input.itemId } },
+				}),
+			),
+		onSuccess: async (
+			_data: void,
+			variables: DeleteItemInput,
+		): Promise<void> => {
+			await queryClient.invalidateQueries({
+				queryKey: queryKeys.projectItems(variables.projectId),
+			});
+		},
+	};
 
-	let mergedOptions = baseOptions;
-	if (options) {
-		mergedOptions = Object.assign(baseOptions, options);
-	}
-
-	return ReactQueryHooks.useMutation<void, Error, DeleteItemInput>(
-		mergedOptions,
-	);
+	return useMutation(Object.assign({}, baseOptions, options));
 };
 
 export {

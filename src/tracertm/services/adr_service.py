@@ -1,6 +1,6 @@
 """ADR Service for TraceRTM."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 from typing import Any
 
 from sqlalchemy import delete, select

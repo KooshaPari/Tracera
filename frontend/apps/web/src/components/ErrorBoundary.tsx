@@ -1,16 +1,14 @@
+import React, { type ReactNode } from "react";
+
 import {
 	Alert,
 	AlertDescription,
 	AlertTitle,
 } from "@tracertm/ui/components/Alert";
-import { logger } from "@/lib/logger";
 import { Button } from "@tracertm/ui/components/Button";
 import { AlertCircle, Bug, RefreshCw } from "lucide-react";
-import type { ReactNode } from "react";
-import React from "react";
-
-// Sentry integration
 import { captureException as sentryCaptureException } from "@/lib/sentry";
+import { logger } from "@/lib/logger";
 
 interface ErrorBoundaryProps {
 	children: ReactNode;
@@ -80,17 +78,14 @@ export class ErrorBoundary extends React.Component<
 	override componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
 		const { name, onError } = this.props;
 
-		// Log to console with boundary name
 		logger.error(
 			`Error caught by ${name || "ErrorBoundary"}:`,
 			error,
 			errorInfo,
 		);
 
-		// Store error info in state for display
 		this.setState({ errorInfo });
 
-		// Report to Sentry
 		try {
 			sentryCaptureException(error, {
 				react: {
@@ -99,11 +94,9 @@ export class ErrorBoundary extends React.Component<
 				},
 			});
 		} catch (sentryError) {
-			// Sentry might not be initialized, that's OK
 			logger.warn("Failed to report error to Sentry:", sentryError);
 		}
 
-		// Call custom error handler if provided
 		if (onError) {
 			try {
 				onError(error, errorInfo);
@@ -201,11 +194,11 @@ export class ErrorBoundary extends React.Component<
  * const SafeGraphView = withErrorBoundary(GraphView, { name: "GraphView" });
  * ```
  */
-export function withErrorBoundary<P extends object>(
-	Component: React.ComponentType<P>,
+export const withErrorBoundary = <Props extends object>(
+	Component: React.ComponentType<Props>,
 	options?: Omit<ErrorBoundaryProps, "children">,
-) {
-	const WrappedComponent = (props: P) => (
+) => {
+	const WrappedComponent = (props: Props) => (
 		<ErrorBoundary {...options}>
 			<Component {...props} />
 		</ErrorBoundary>
@@ -214,4 +207,4 @@ export function withErrorBoundary<P extends object>(
 	WrappedComponent.displayName = `withErrorBoundary(${Component.displayName || Component.name || "Component"})`;
 
 	return WrappedComponent;
-}
+};

@@ -72,11 +72,11 @@ This directory contains the MCP (Model Context Protocol) implementation for Trac
    - Token reduction validation
    - All tests passing ✅
 
-2. **`benchmarks/phase2_benchmark.py`**
+2. **`benchmarks/token_benchmark.py`**
    - Comprehensive benchmarking suite
    - Token usage measurements
    - Performance analysis
-   - Run: `python src/tracertm/mcp/benchmarks/phase2_benchmark.py`
+   - Run: `python src/tracertm/mcp/benchmarks/token_benchmark.py`
 
 ## Key Metrics
 
@@ -143,7 +143,7 @@ if batch1["has_more"]:
 ### 3. Run Benchmarks
 
 ```bash
-python src/tracertm/mcp/benchmarks/phase2_benchmark.py
+python src/tracertm/mcp/benchmarks/token_benchmark.py
 ```
 
 Expected output:
@@ -175,7 +175,7 @@ src/tracertm/mcp/
 │   └── streaming.py                # Legacy streaming - preserved
 │
 ├── benchmarks/
-│   └── phase2_benchmark.py         # NEW: Comprehensive benchmarks
+│   └── token_benchmark.py         # NEW: Comprehensive benchmarks
 │
 └── tests/
     └── unit/
@@ -325,7 +325,7 @@ pytest tests/unit/mcp/test_response_optimizer.py -v
 
 ### Testing
 - Unit Tests: `tests/unit/mcp/test_response_optimizer.py`
-- Benchmarks: `benchmarks/phase2_benchmark.py`
+- Benchmarks: `benchmarks/token_benchmark.py`
 
 ### Implementation
 - Response Optimizer: `tools/response_optimizer.py`

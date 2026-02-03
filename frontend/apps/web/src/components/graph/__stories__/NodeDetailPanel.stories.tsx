@@ -1,7 +1,34 @@
+/* eslint-disable import/no-default-export, import/prefer-default-export */
 import type { Meta, StoryObj } from "@storybook/react";
-import type { Item, Link } from "@tracertm/types";
+import type { Item, Link, LinkType } from "@tracertm/types";
 import { NodeDetailPanel } from "../NodeDetailPanel";
 import type { EnhancedNodeData } from "../types";
+
+const LINK_TYPES: LinkType[] = [
+	"implements",
+	"tests",
+	"depends_on",
+	"related_to",
+	"blocks",
+	"parent_of",
+	"same_as",
+	"represents",
+	"manifests_as",
+	"documents",
+	"mentions",
+	"calls",
+	"imports",
+	"derives_from",
+	"alternative_to",
+	"conflicts_with",
+	"supersedes",
+	"validates",
+	"traces_to",
+];
+
+const emptyLinkTypeCounts = Object.fromEntries(
+	LINK_TYPES.map((type) => [type, 0]),
+) as Record<LinkType, number>;
 
 const mockItem: Item = {
 	createdAt: new Date().toISOString(),
@@ -14,11 +41,11 @@ const mockItem: Item = {
 	type: "feature",
 	updatedAt: new Date().toISOString(),
 	version: 1,
-	view: "technical",
+	view: "architecture",
 };
 
 const mockNode: EnhancedNodeData = {
-	connections: { byType: {}, incoming: 2, outgoing: 3, total: 5 },
+	connections: { byType: emptyLinkTypeCounts, incoming: 2, outgoing: 3, total: 5 },
 	depth: 0,
 	hasChildren: true,
 	id: "node-1",

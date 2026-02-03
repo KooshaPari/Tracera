@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import type { ADR } from "@tracertm/types";
 import {
@@ -26,7 +27,6 @@ import {
 	TrendingUp,
 	X,
 } from "lucide-react";
-import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { ComplianceGauge } from "@/components/specifications/adr/ComplianceGauge";
 import { DecisionMatrix } from "@/components/specifications/adr/DecisionMatrix";
@@ -79,7 +79,10 @@ interface ADRDetailViewProps {
 	adrId?: string;
 }
 
-export function ADRDetailView({ adrId }: ADRDetailViewProps) {
+// Save delay in milliseconds
+const API_SAVE_DELAY_MS = 500;
+
+export const ADRDetailView = ({ adrId }: ADRDetailViewProps) => {
 	const params = useParams({ strict: false });
 	const navigate = useNavigate();
 	const effectiveAdrId = adrId || params?.adrId || "";
@@ -99,21 +102,11 @@ export function ADRDetailView({ adrId }: ADRDetailViewProps) {
 		}
 	}, [adrData]);
 
-	if (adrLoading && !adrData) {
-		return (
-			<div className="p-6 space-y-6">
-				<div className="h-8 w-40 bg-muted/40 rounded" />
-				<div className="h-32 bg-muted/30 rounded-xl" />
-				<div className="h-64 bg-muted/20 rounded-xl" />
-			</div>
-		);
-	}
-
 	const handleSave = async () => {
 		setIsLoading(true);
 		try {
 			// API call would go here
-			await new Promise((resolve) => setTimeout(resolve, 500));
+			await new Promise((resolve) => setTimeout(resolve, API_SAVE_DELAY_MS));
 			setAdr(editedADR);
 			setIsEditing(false);
 			toast.success("ADR updated successfully");
@@ -130,12 +123,51 @@ export function ADRDetailView({ adrId }: ADRDetailViewProps) {
 		}
 		try {
 			// API call would go here
-			await new Promise((resolve) => setTimeout(resolve, 500));
+			await new Promise((resolve) => setTimeout(resolve, API_SAVE_DELAY_MS));
 			toast.success("ADR deleted");
-			undefined;
+			navigate("/adrs");
 		} catch {
 			toast.error("Failed to delete ADR");
 		}
+	};
+
+	const handleEditClick = () => {
+		setEditedADR(adr);
+		setIsEditing(true);
+	};
+
+	const handleCancelEdit = () => {
+		setIsEditing(false);
+		setEditedADR(adr);
+	};
+
+	const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		setEditedADR({ ...editedADR, title: e.target.value });
+	};
+
+	const handleContextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+		setEditedADR({
+			...editedADR,
+			context: e.target.value,
+		});
+	};
+
+	const handleDecisionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+		setEditedADR({
+			...editedADR,
+			decision: e.target.value,
+		});
+	};
+
+	const handleConsequencesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+		setEditedADR({
+			...editedADR,
+			consequences: e.target.value,
+		});
+	};
+
+	const handleBackClick = () => {
+		navigate("/adrs");
 	};
 
 	const statusColors = {
@@ -146,12 +178,22 @@ export function ADRDetailView({ adrId }: ADRDetailViewProps) {
 		superseded: "bg-orange-500/10 text-orange-600",
 	};
 
+	if (adrLoading && !adrData) {
+		return (
+			<div className="p-6 space-y-6">
+				<div className="h-8 w-40 bg-muted/40 rounded" />
+				<div className="h-32 bg-muted/30 rounded-xl" />
+				<div className="h-64 bg-muted/20 rounded-xl" />
+			</div>
+		);
+	}
+
 	return (
 		<div className="p-6 space-y-6 max-w-[1400px] mx-auto pb-20">
 			{/* Header */}
 			<div className="flex items-center justify-between gap-4">
 				<button
-					onClick={() => {}}
+					onClick={handleBackClick}
 					className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
 				>
 					<ArrowLeft className="h-4 w-4" />
@@ -163,10 +205,7 @@ export function ADRDetailView({ adrId }: ADRDetailViewProps) {
 						<Button
 							variant="outline"
 							size="sm"
-							onClick={() => {
-								setEditedADR(adr);
-								setIsEditing(true);
-							}}
+							onClick={handleEditClick}
 						>
 							<Edit2 className="h-4 w-4 mr-2" />
 							Edit
@@ -188,10 +227,7 @@ export function ADRDetailView({ adrId }: ADRDetailViewProps) {
 						<Button
 							variant="outline"
 							size="sm"
-							onClick={() => {
-								setIsEditing(false);
-								setEditedADR(adr);
-							}}
+							onClick={handleCancelEdit}
 						>
 							<X className="h-4 w-4 mr-2" />
 							Cancel
@@ -210,9 +246,7 @@ export function ADRDetailView({ adrId }: ADRDetailViewProps) {
 					<input
 						type="text"
 						value={editedADR.title}
-						onChange={(e) =>
-							setEditedADR({ ...editedADR, title: e.target.value })
-						}
+						onChange={handleTitleChange}
 						className="text-3xl font-black w-full bg-transparent border-b-2 border-primary outline-none"
 					/>
 				) : (
@@ -261,12 +295,7 @@ export function ADRDetailView({ adrId }: ADRDetailViewProps) {
 									{isEditing ? (
 										<textarea
 											value={editedADR.context || ""}
-											onChange={(e) =>
-												setEditedADR({
-													...editedADR,
-													context: e.target.value,
-												})
-											}
+											onChange={handleContextChange}
 											className="w-full h-32 px-3 py-2 rounded-lg border border-input bg-background"
 										/>
 									) : (
@@ -289,12 +318,7 @@ export function ADRDetailView({ adrId }: ADRDetailViewProps) {
 									{isEditing ? (
 										<textarea
 											value={editedADR.decision || ""}
-											onChange={(e) =>
-												setEditedADR({
-													...editedADR,
-													decision: e.target.value,
-												})
-											}
+											onChange={handleDecisionChange}
 											className="w-full h-32 px-3 py-2 rounded-lg border border-input bg-background"
 										/>
 									) : (
@@ -317,12 +341,7 @@ export function ADRDetailView({ adrId }: ADRDetailViewProps) {
 									{isEditing ? (
 										<textarea
 											value={editedADR.consequences || ""}
-											onChange={(e) =>
-												setEditedADR({
-													...editedADR,
-													consequences: e.target.value,
-												})
-											}
+											onChange={handleConsequencesChange}
 											className="w-full h-32 px-3 py-2 rounded-lg border border-input bg-background"
 										/>
 									) : (
@@ -530,4 +549,4 @@ export function ADRDetailView({ adrId }: ADRDetailViewProps) {
 			</div>
 		</div>
 	);
-}
+};

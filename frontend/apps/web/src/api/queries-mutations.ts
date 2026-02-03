@@ -1,13 +1,13 @@
-import { api, handleApiResponse } from "./query-client";
-import { queryKeys } from "./queries-keys";
-import { useMutation, useQuery, useQueryClient } from "./react-query-hooks";
 import type {
 	UseMutationOptions,
 	UseMutationResult,
 	UseQueryOptions,
 	UseQueryResult,
 } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Mutation } from "@tracertm/types";
+import { api, handleApiResponse } from "./query-client";
+import { queryKeys } from "./queries-keys";
 
 type MutationFilters = {
 	since?: string;
@@ -19,8 +19,8 @@ const useMutations = (
 	options?: UseQueryOptions<Mutation[]>,
 ): UseQueryResult<Mutation[]> => {
 	const baseOptions: UseQueryOptions<Mutation[]> = {
-		queryFn: () =>
-			handleApiResponse(
+		queryFn: async () =>
+			await handleApiResponse(
 				api.get<Mutation[]>("/api/v1/mutations", {
 					params: { query: filters },
 				}),
@@ -28,7 +28,7 @@ const useMutations = (
 		queryKey: queryKeys.mutations(filters),
 	};
 
-	return useQuery({ ...baseOptions, ...options });
+	return useQuery(Object.assign({}, baseOptions, options));
 };
 
 const useCreateMutation = (
@@ -36,8 +36,8 @@ const useCreateMutation = (
 ): UseMutationResult<Mutation, Error, Partial<Mutation>> => {
 	const queryClient = useQueryClient();
 	const baseOptions: UseMutationOptions<Mutation, Error, Partial<Mutation>> = {
-		mutationFn: (data: Partial<Mutation>) =>
-			handleApiResponse(
+		mutationFn: async (data: Partial<Mutation>) =>
+			await handleApiResponse(
 				api.post<Mutation>("/api/v1/mutations", {
 					body: data as Record<string, unknown>,
 				}),
@@ -47,7 +47,7 @@ const useCreateMutation = (
 		},
 	};
 
-	return useMutation({ ...baseOptions, ...options });
+	return useMutation(Object.assign({}, baseOptions, options));
 };
 
 export { useCreateMutation, useMutations };

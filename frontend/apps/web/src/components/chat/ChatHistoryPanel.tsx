@@ -12,30 +12,41 @@ import {
 	SelectValue,
 } from "@tracertm/ui/components/Select";
 import { History, Search, Trash2, X } from "lucide-react";
-import { useMemo, useState } from "react";
+import {
+	type ChangeEvent,
+	type MouseEvent,
+	useCallback,
+	useMemo,
+	useState,
+} from "react";
 import type { ChatConversation } from "@/lib/ai/types";
 
 type SortOption = "newest" | "oldest";
 
-function formatDate(iso: string) {
-	const d = new Date(iso);
+type ConversationAction = {
+	onDelete: (id: string) => void;
+	onSelect: (id: string) => void;
+};
+
+const formatDate = (iso: string) => {
+	const date = new Date(iso);
 	const now = new Date();
 	const sameDay =
-		d.getDate() === now.getDate() &&
-		d.getMonth() === now.getMonth() &&
-		d.getFullYear() === now.getFullYear();
+		date.getDate() === now.getDate() &&
+		date.getMonth() === now.getMonth() &&
+		date.getFullYear() === now.getFullYear();
 	if (sameDay) {
-		return d.toLocaleTimeString(undefined, {
+		return date.toLocaleTimeString(undefined, {
 			hour: "2-digit",
 			minute: "2-digit",
 		});
 	}
-	return d.toLocaleDateString(undefined, {
+	return date.toLocaleDateString(undefined, {
 		day: "numeric",
 		month: "short",
-		year: d.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
+		year: date.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
 	});
-}
+};
 
 interface ChatHistoryPanelProps {
 	conversations: ChatConversation[];
@@ -47,7 +58,169 @@ interface ChatHistoryPanelProps {
 	className?: string;
 }
 
-export function ChatHistoryPanel({
+const HistoryHeader = ({ onClose }: { onClose: () => void }) => (
+	<div className="flex items-center justify-between px-3 py-2 border-b bg-muted/30 shrink-0">
+		<div className="flex items-center gap-2 min-w-0">
+			<History className="h-4 w-4 shrink-0 text-muted-foreground" />
+			<h3 className="font-semibold text-sm truncate min-w-0">Chat history</h3>
+		</div>
+		<Button
+			variant="ghost"
+			size="icon"
+			className="h-7 w-7 shrink-0"
+			onClick={onClose}
+			title="Back to chat"
+		>
+			<X className="h-4 w-4" />
+		</Button>
+	</div>
+);
+
+const SearchFilter = ({
+	searchQuery,
+	onSearchChange,
+	sort,
+	onSortChange,
+	filterByProject,
+	onToggleProject,
+	projectId,
+}: {
+	searchQuery: string;
+	onSearchChange: (event: ChangeEvent<HTMLInputElement>) => void;
+	sort: SortOption;
+	onSortChange: (value: SortOption) => void;
+	filterByProject: boolean;
+	onToggleProject: () => void;
+	projectId?: string | null;
+}) => (
+	<div className="px-2 py-2 border-b bg-muted/10 space-y-2 shrink-0">
+		<div className="relative">
+			<Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+		<Input
+			placeholder="Search by title or content..."
+			value={searchQuery}
+			onChange={onSearchChange}
+			className="pl-8 h-8 text-sm"
+		/>
+		</div>
+		<div className="flex items-center gap-2">
+			<Select value={sort} onValueChange={onSortChange}>
+				<SelectTrigger className="h-8 text-xs flex-1 min-w-0">
+					<SelectValue />
+				</SelectTrigger>
+				<SelectContent>
+					<SelectItem value="newest">Newest first</SelectItem>
+					<SelectItem value="oldest">Oldest first</SelectItem>
+				</SelectContent>
+			</Select>
+			{projectId ? (
+				<Button
+					variant={filterByProject ? "secondary" : "ghost"}
+					size="sm"
+					className="h-8 text-xs shrink-0"
+					onClick={onToggleProject}
+				>
+					{filterByProject ? "This project" : "All"}
+				</Button>
+			) : null}
+		</div>
+	</div>
+);
+
+const EmptyState = ({ hasConversations }: { hasConversations: boolean }) => (
+	<div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground text-sm">
+		<History className="h-10 w-10 mb-2 opacity-50" />
+		{hasConversations
+			? "No conversations match your search or filter."
+			: "No conversations yet. Start a chat to see history here."}
+	</div>
+);
+
+const ConversationItem = ({
+	conversation,
+	activeConversationId,
+	actions,
+}: {
+	conversation: ChatConversation;
+	activeConversationId: string | null;
+	actions: ConversationAction;
+}) => {
+	const isActive = conversation.id === activeConversationId;
+	const handleSelect = useCallback(() => {
+		actions.onSelect(conversation.id);
+	}, [actions, conversation.id]);
+	const handleDelete = useCallback(
+		(event: MouseEvent<HTMLButtonElement>) => {
+			event.stopPropagation();
+			actions.onDelete(conversation.id);
+		},
+		[actions, conversation.id],
+	);
+	return (
+		<li>
+			<div
+				className={cn(
+					"group flex items-center gap-2 rounded-md px-2 py-2 transition-colors border",
+					isActive
+						? "bg-primary/10 border-primary/30"
+						: "hover:bg-muted/50 border-transparent",
+				)}
+			>
+				<button
+					type="button"
+					className="flex-1 min-w-0 text-left"
+					onClick={handleSelect}
+				>
+					<p className="text-sm font-medium truncate">
+						{conversation.title || "New Chat"}
+					</p>
+					<p className="text-xs text-muted-foreground">
+						{formatDate(conversation.updatedAt)}
+						{conversation.messages.length > 0 ? (
+							<>
+								{" · "}
+								{conversation.messages.length} message
+								{conversation.messages.length !== 1 ? "s" : ""}
+							</>
+						) : null}
+					</p>
+				</button>
+				<Button
+					variant="ghost"
+					size="icon"
+					className="h-7 w-7 opacity-50 group-hover:opacity-100 shrink-0"
+					onClick={handleDelete}
+					title="Delete conversation"
+				>
+					<Trash2 className="h-3.5 w-3.5" />
+				</Button>
+			</div>
+		</li>
+	);
+};
+
+const ConversationList = ({
+	conversations,
+	activeConversationId,
+	actions,
+}: {
+	conversations: ChatConversation[];
+	activeConversationId: string | null;
+	actions: ConversationAction;
+}) => (
+	<ul className="space-y-1">
+		{conversations.map((conversation) => (
+			<ConversationItem
+				key={conversation.id}
+				conversation={conversation}
+				activeConversationId={activeConversationId}
+				actions={actions}
+			/>
+		))}
+	</ul>
+);
+
+export const ChatHistoryPanel = ({
 	conversations,
 	activeConversationId,
 	projectId,
@@ -55,37 +228,70 @@ export function ChatHistoryPanel({
 	onDeleteConversation,
 	onClose,
 	className,
-}: ChatHistoryPanelProps) {
+}: ChatHistoryPanelProps) => {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [sort, setSort] = useState<SortOption>("newest");
 	const [filterByProject, setFilterByProject] = useState(false);
+
+	const handleSearchChange = useCallback(
+		(event: ChangeEvent<HTMLInputElement>) => {
+			setSearchQuery(event.target.value);
+		},
+		[],
+	);
+
+	const handleSortChange = useCallback((value: SortOption) => {
+		setSort(value);
+	}, []);
+
+	const handleToggleProject = useCallback(() => {
+		setFilterByProject((prev) => !prev);
+	}, []);
 
 	const filteredAndSorted = useMemo(() => {
 		let list = [...conversations];
 
 		if (filterByProject && projectId) {
-			list = list.filter((c) => c.projectId === projectId);
+			list = list.filter((conversation) => conversation.projectId === projectId);
 		}
 
-		const q = searchQuery.trim().toLowerCase();
-		if (q) {
+		const query = searchQuery.trim().toLowerCase();
+		if (query) {
 			list = list.filter(
-				(c) =>
-					c.title.toLowerCase().includes(q) ||
-					c.messages.some(
-						(m) => m.content && m.content.toLowerCase().includes(q),
+				(conversation) =>
+					conversation.title.toLowerCase().includes(query) ||
+					conversation.messages.some(
+						(message) =>
+							message.content &&
+								message.content.toLowerCase().includes(query),
 					),
 			);
 		}
 
 		list.sort((a, b) => {
-			const ta = new Date(a.updatedAt).getTime();
-			const tb = new Date(b.updatedAt).getTime();
-			return sort === "newest" ? tb - ta : ta - tb;
+			const firstTime = new Date(a.updatedAt).getTime();
+			const secondTime = new Date(b.updatedAt).getTime();
+			return sort === "newest" ? secondTime - firstTime : firstTime - secondTime;
 		});
 
 		return list;
 	}, [conversations, searchQuery, sort, filterByProject, projectId]);
+
+	const handleSelectConversation = useCallback(
+		(id: string) => {
+			onSelectConversation(id);
+			onClose();
+		},
+		[onClose, onSelectConversation],
+	);
+
+	const actions = useMemo<ConversationAction>(
+		() => ({
+			onDelete: onDeleteConversation,
+			onSelect: handleSelectConversation,
+		}),
+		[handleSelectConversation, onDeleteConversation],
+	);
 
 	return (
 		<div
@@ -94,117 +300,27 @@ export function ChatHistoryPanel({
 				className,
 			)}
 		>
-			{/* Header */}
-			<div className="flex items-center justify-between px-3 py-2 border-b bg-muted/30 shrink-0">
-				<div className="flex items-center gap-2 min-w-0">
-					<History className="h-4 w-4 shrink-0 text-muted-foreground" />
-					<h3 className="font-semibold text-sm truncate min-w-0">
-						Chat history
-					</h3>
-				</div>
-				<Button
-					variant="ghost"
-					size="icon"
-					className="h-7 w-7 shrink-0"
-					onClick={onClose}
-					title="Back to chat"
-				>
-					<X className="h-4 w-4" />
-				</Button>
-			</div>
-
-			{/* Filters */}
-			<div className="px-2 py-2 border-b bg-muted/10 space-y-2 shrink-0">
-				<div className="relative">
-					<Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-					<Input
-						placeholder="Search by title or content..."
-						value={searchQuery}
-						onChange={(e) => setSearchQuery(e.target.value)}
-						className="pl-8 h-8 text-sm"
-					/>
-				</div>
-				<div className="flex items-center gap-2">
-					<Select value={sort} onValueChange={(v) => setSort(v as SortOption)}>
-						<SelectTrigger className="h-8 text-xs flex-1 min-w-0">
-							<SelectValue />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="newest">Newest first</SelectItem>
-							<SelectItem value="oldest">Oldest first</SelectItem>
-						</SelectContent>
-					</Select>
-					{projectId && (
-						<Button
-							variant={filterByProject ? "secondary" : "ghost"}
-							size="sm"
-							className="h-8 text-xs shrink-0"
-							onClick={() => setFilterByProject(!filterByProject)}
-						>
-							{filterByProject ? "This project" : "All"}
-						</Button>
-					)}
-				</div>
-			</div>
-
-			{/* List */}
+			<HistoryHeader onClose={onClose} />
+			<SearchFilter
+				searchQuery={searchQuery}
+				onSearchChange={handleSearchChange}
+				sort={sort}
+				onSortChange={handleSortChange}
+				filterByProject={filterByProject}
+				onToggleProject={handleToggleProject}
+				projectId={projectId}
+			/>
 			<ScrollArea className="flex-1 min-h-0 p-2">
 				{filteredAndSorted.length === 0 ? (
-					<div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground text-sm">
-						<History className="h-10 w-10 mb-2 opacity-50" />
-						{conversations.length === 0
-							? "No conversations yet. Start a chat to see history here."
-							: "No conversations match your search or filter."}
-					</div>
+					<EmptyState hasConversations={conversations.length > 0} />
 				) : (
-					<ul className="space-y-1">
-						{filteredAndSorted.map((conv) => (
-							<li key={conv.id}>
-								<div
-									className={cn(
-										"group flex items-center gap-2 rounded-md px-2 py-2 cursor-pointer transition-colors border",
-										conv.id === activeConversationId
-											? "bg-primary/10 border-primary/30"
-											: "hover:bg-muted/50 border-transparent",
-									)}
-									onClick={() => {
-										onSelectConversation(conv.id);
-										onClose();
-									}}
-								>
-									<div className="flex-1 min-w-0">
-										<p className="text-sm font-medium truncate">
-											{conv.title || "New Chat"}
-										</p>
-										<p className="text-xs text-muted-foreground">
-											{formatDate(conv.updatedAt)}
-											{conv.messages.length > 0 && (
-												<>
-													{" · "}
-													{conv.messages.length} message
-													{conv.messages.length !== 1 ? "s" : ""}
-												</>
-											)}
-										</p>
-									</div>
-									<Button
-										variant="ghost"
-										size="icon"
-										className="h-7 w-7 opacity-50 group-hover:opacity-100 shrink-0"
-										onClick={(e) => {
-											e.stopPropagation();
-											onDeleteConversation(conv.id);
-										}}
-										title="Delete conversation"
-									>
-										<Trash2 className="h-3.5 w-3.5" />
-									</Button>
-								</div>
-							</li>
-						))}
-					</ul>
+					<ConversationList
+						conversations={filteredAndSorted}
+						activeConversationId={activeConversationId}
+						actions={actions}
+					/>
 				)}
 			</ScrollArea>
 		</div>
 	);
-}
+};

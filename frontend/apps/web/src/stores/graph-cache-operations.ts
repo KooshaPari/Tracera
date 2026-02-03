@@ -1,6 +1,5 @@
+import { type GraphCacheStoreState, useGraphCacheStore } from "./graph-cache-store";
 import type { GraphCacheTypes } from "./graph-cache-types";
-import type { GraphCacheStoreState } from "./graph-cache-store";
-import { useGraphCacheStore } from "./graph-cache-store";
 
 type CacheStatistics = GraphCacheTypes["CacheStatistics"];
 type GroupingData = GraphCacheTypes["GroupingData"];

@@ -4,24 +4,24 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useItems } from "../../hooks/useItems";
 import { useLinks } from "../../hooks/useLinks";
 import { useProject } from "../../hooks/useProjects";
 import { ProjectDetailView } from "../../views/ProjectDetailView";
+import userEvent from "@testing-library/user-event";
 
 // Mock TanStack Router
 vi.mock("@tanstack/react-router", async () => {
 	const actual = await vi.importActual("@tanstack/react-router");
 	return {
-		...actual,
 		Link: ({ children, to }: any) => (
 			<a href={typeof to === "string" ? to : to.toString()}>{children}</a>
 		),
 		useNavigate: () => vi.fn(),
-		useSearch: () => ({}),
 		useParams: () => ({ projectId: "proj-1" }),
+		useSearch: () => ({}),
+		...actual,
 	};
 });
 
@@ -159,8 +159,9 @@ describe(ProjectDetailView, () => {
 
 		// Find and click tabs
 		const tabs = screen.getAllByRole("tab");
-		if (tabs.length > 1) {
-			await user.click(tabs[1]);
+		const secondTab = tabs[1];
+		if (secondTab) {
+			await user.click(secondTab);
 			// Should switch to different tab content
 		}
 	});

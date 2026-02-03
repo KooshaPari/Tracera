@@ -59,6 +59,29 @@ class SessionSandboxStore:
         return False
 
 
+async def _get_cached_path_async(cache: Any, cache_key: str) -> str | None:
+    """Return cached sandbox path from async cache if present and valid."""
+    if cache is None:
+        return None
+    try:
+        cached = await cache.get(cache_key)
+        if cached is not None and isinstance(cached, str):
+            return cached
+    except Exception as e:
+        logger.debug("Agent session cache get failed: %s", e)
+    return None
+
+
+async def _set_cache_async(cache: Any, cache_key: str, path: str) -> None:
+    """Write path to cache; log and ignore errors."""
+    if cache is None:
+        return
+    try:
+        await cache.set(cache_key, path, AGENT_SESSION_CACHE_TTL)
+    except Exception as e:
+        logger.debug("Agent session cache set failed: %s", e)
+
+
 class SessionSandboxStoreDB(SessionSandboxStore):
     """DB-backed session store: persists agent_sessions in PostgreSQL. Optional Redis cache for lookup."""
 
@@ -70,6 +93,45 @@ class SessionSandboxStoreDB(SessionSandboxStore):
         super().__init__(sandbox_provider)
         self._cache = cache_service
 
+    async def _load_from_db(self, db_session: Any, session_id: str) -> tuple[str, SandboxMetadata] | None:
+        """Load session from DB; return (sandbox_root, meta) or None."""
+        from sqlalchemy import select
+
+        from tracertm.agent.types import SandboxStatus
+        from tracertm.models.agent_session import AgentSession
+
+        result = await db_session.execute(select(AgentSession).where(AgentSession.session_id == session_id))
+        row = result.scalar_one_or_none()
+        if row is None:
+            return None
+        meta = SandboxMetadata(
+            sandbox_id=session_id,
+            status=SandboxStatus.READY,
+            created_at=row.created_at,
+            started_at=row.created_at,
+            sandbox_root=row.sandbox_root,
+        )
+        self._store[session_id] = meta
+        return (row.sandbox_root, meta)
+
+    async def _persist_created(
+        self, db_session: Any, session_id: str, path: str, config: SandboxConfig | None
+    ) -> None:
+        """Insert AgentSession row when sandbox was just created."""
+        import uuid
+
+        from tracertm.models.agent_session import AgentSession
+
+        raw_pid = getattr(config, "project_id", None) if config else None
+        project_id = uuid.UUID(str(raw_pid)) if raw_pid else None
+        rec = AgentSession(
+            session_id=session_id,
+            sandbox_root=path,
+            project_id=project_id,
+        )
+        db_session.add(rec)
+        await db_session.flush()
+
     async def get_or_create(
         self,
         session_id: str,
@@ -78,56 +140,19 @@ class SessionSandboxStoreDB(SessionSandboxStore):
     ) -> tuple[str, bool]:
         """Return (sandbox root path, created). Uses Redis cache then DB when available."""
         cache_key = _agent_session_cache_key(session_id)
-        if self._cache is not None:
-            try:
-                cached = await self._cache.get(cache_key)
-                if cached is not None and isinstance(cached, str):
-                    return cached, False
-            except Exception as e:
-                logger.debug("Agent session cache get failed: %s", e)
+        cached = await _get_cached_path_async(self._cache, cache_key)
+        if cached is not None:
+            return cached, False
 
         if db_session is not None:
-            from sqlalchemy import select
-
-            from tracertm.agent.types import SandboxStatus
-            from tracertm.models.agent_session import AgentSession
-
-            result = await db_session.execute(select(AgentSession).where(AgentSession.session_id == session_id))
-            row = result.scalar_one_or_none()
-            if row is not None:
-                meta = SandboxMetadata(
-                    sandbox_id=session_id,
-                    status=SandboxStatus.READY,
-                    created_at=row.created_at,
-                    started_at=row.created_at,
-                    sandbox_root=row.sandbox_root,
-                )
-                self._store[session_id] = meta
-                if self._cache is not None:
-                    try:
-                        await self._cache.set(cache_key, row.sandbox_root, AGENT_SESSION_CACHE_TTL)
-                    except Exception as e:
-                        logger.debug("Agent session cache set failed: %s", e)
-                return row.sandbox_root, False
+            loaded = await self._load_from_db(db_session, session_id)
+            if loaded is not None:
+                path, _ = loaded
+                await _set_cache_async(self._cache, cache_key, path)
+                return path, False
 
         path, created = await super().get_or_create(session_id, config, db_session)
         if created and db_session is not None:
-            import uuid
-
-            from tracertm.models.agent_session import AgentSession
-
-            raw_pid = getattr(config, "project_id", None) if config else None
-            project_id = uuid.UUID(str(raw_pid)) if raw_pid else None
-            rec = AgentSession(
-                session_id=session_id,
-                sandbox_root=path,
-                project_id=project_id,
-            )
-            db_session.add(rec)
-            await db_session.flush()
-        if self._cache is not None:
-            try:
-                await self._cache.set(cache_key, path, AGENT_SESSION_CACHE_TTL)
-            except Exception as e:
-                logger.debug("Agent session cache set failed: %s", e)
+            await self._persist_created(db_session, session_id, path, config)
+        await _set_cache_async(self._cache, cache_key, path)
         return path, created

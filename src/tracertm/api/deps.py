@@ -2,11 +2,11 @@
 
 import logging
 from collections.abc import AsyncGenerator
+from typing import Any
 
 from fastapi import HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from typing import Any
 from tracertm.config.manager import ConfigManager
 from tracertm.core.context import current_user_id
 from tracertm.infrastructure.event_bus import EventBus

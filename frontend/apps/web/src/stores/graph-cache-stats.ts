@@ -1,5 +1,5 @@
-import { graphCacheConstants } from "./graph-cache-constants";
 import type { GraphCacheTypes } from "./graph-cache-types";
+import { graphCacheConstants } from "./graph-cache-constants";
 
 type CacheStatistics = GraphCacheTypes["CacheStatistics"];
 type GroupingData = GraphCacheTypes["GroupingData"];
@@ -29,7 +29,7 @@ const createInitialCacheStats = (): CacheStatistics => ({
 		count: graphCacheConstants.emptyCount,
 		hitRate: graphCacheConstants.emptyCount,
 	},
-	lastInvalidationTime: void 0,
+	lastInvalidationTime: undefined,
 	layouts: {
 		avgAge: graphCacheConstants.emptyCount,
 		count: graphCacheConstants.emptyCount,

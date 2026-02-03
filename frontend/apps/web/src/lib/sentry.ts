@@ -15,18 +15,23 @@
 
 import * as Sentry from "@sentry/react";
 
+const SENTRY_DSN = import.meta.env["VITE_SENTRY_DSN"];
+const BUILD_ID = import.meta.env["VITE_BUILD_ID"] || "local";
+const SAMPLE_RATE_LOW = 0.1;
+const SAMPLE_RATE_HUNDRED_PERCENT = 1.0;
+const TIMESTAMP_MILLISECONDS_DIVISOR = 1000;
+
 /**
  * Initialize Sentry error tracking
  *
  * Only initializes in production or when VITE_SENTRY_DSN is explicitly set.
  * Includes performance monitoring, replay sessions, and React-specific integrations.
  */
-export function initSentry(): void {
-	const dsn = import.meta.env.VITE_SENTRY_DSN;
+export const initSentry = (): void => {
 	const environment = import.meta.env.MODE;
 
 	// Skip initialization if no DSN is provided or in test environment
-	if (!dsn || environment === "test") {
+	if (!SENTRY_DSN || environment === "test") {
 		console.log(
 			"[Sentry] Skipping initialization (no DSN or test environment)",
 		);
@@ -34,7 +39,7 @@ export function initSentry(): void {
 	}
 
 	Sentry.init({
-		dsn,
+		dsn: SENTRY_DSN,
 		environment,
 
 		// Integrations
@@ -50,9 +55,9 @@ export function initSentry(): void {
 				? [
 						Sentry.replayIntegration({
 							// Capture 10% of sessions for performance monitoring
-							sessionSampleRate: 0.1,
+							sessionSampleRate: SAMPLE_RATE_LOW,
 							// Capture 100% of sessions with errors
-							errorSampleRate: 1.0,
+							errorSampleRate: SAMPLE_RATE_HUNDRED_PERCENT,
 							// Mask all text and images for privacy
 							maskAllText: true,
 							maskAllInputs: true,
@@ -64,18 +69,19 @@ export function initSentry(): void {
 
 		// Performance Monitoring
 		// Lower sample rate in production to reduce bandwidth
-		tracesSampleRate: environment === "production" ? 0.1 : 1.0,
+		tracesSampleRate:
+			environment === "production" ? SAMPLE_RATE_LOW : SAMPLE_RATE_HUNDRED_PERCENT,
 
 		// Session Replay
 		// Capture replays for 10% of sessions, 100% of error sessions
-		replaysSessionSampleRate: 0.1,
-		replaysOnErrorSampleRate: 1.0,
+		replaysSessionSampleRate: SAMPLE_RATE_LOW,
+		replaysOnErrorSampleRate: SAMPLE_RATE_HUNDRED_PERCENT,
 
 		// Release tracking for versioning
 		release: import.meta.env.VITE_APP_VERSION || "unknown",
 
 		// Dist tracking for deployment identification
-		dist: import.meta.env.VITE_BUILD_ID || "local",
+		dist: BUILD_ID,
 
 		// Hook for filtering errors before sending to Sentry
 		beforeSend(event, hint) {
@@ -127,7 +133,7 @@ export function initSentry(): void {
 	});
 
 	console.log(`[Sentry] Initialized for ${environment} environment`);
-}
+};
 
 /**
  * Set user context for error tracking
@@ -136,24 +142,24 @@ export function initSentry(): void {
  * @param email - User email (optional)
  * @param username - Username (optional)
  */
-export function setSentryUser(
+export const setSentryUser = (
 	userId: string,
 	email?: string,
 	username?: string,
-): void {
+): void => {
 	Sentry.setUser({
 		id: userId,
 		email,
 		username,
 	});
-}
+};
 
 /**
  * Clear user context (e.g., on logout)
  */
-export function clearSentryUser(): void {
+export const clearSentryUser = (): void => {
 	Sentry.setUser(null);
-}
+};
 
 /**
  * Add custom context to error reports
@@ -161,12 +167,12 @@ export function clearSentryUser(): void {
  * @param context - Context name
  * @param data - Context data
  */
-export function setSentryContext(
+export const setSentryContext = (
 	context: string,
 	data: Record<string, unknown>,
-): void {
+): void => {
 	Sentry.setContext(context, data);
-}
+};
 
 /**
  * Add breadcrumb for debugging
@@ -175,18 +181,18 @@ export function setSentryContext(
  * @param category - Breadcrumb category
  * @param level - Severity level
  */
-export function addSentryBreadcrumb(
+export const addSentryBreadcrumb = (
 	message: string,
 	category: string = "custom",
 	level: "info" | "warning" | "error" | "debug" = "info",
-): void {
+): void => {
 	Sentry.addBreadcrumb({
 		message,
 		category,
 		level,
-		timestamp: Date.now() / 1000,
+		timestamp: Date.now() / TIMESTAMP_MILLISECONDS_DIVISOR,
 	});
-}
+};
 
 /**
  * Manually capture an exception
@@ -194,10 +200,10 @@ export function addSentryBreadcrumb(
  * @param error - Error to capture
  * @param context - Additional context (optional)
  */
-export function captureException(
+export const captureException = (
 	error: Error,
 	context?: Record<string, unknown>,
-): void {
+): void => {
 	if (context) {
 		Sentry.withScope((scope) => {
 			Object.entries(context).forEach(([key, value]) => {
@@ -208,7 +214,7 @@ export function captureException(
 	} else {
 		Sentry.captureException(error);
 	}
-}
+};
 
 /**
  * Manually capture a message
@@ -216,12 +222,12 @@ export function captureException(
  * @param message - Message to capture
  * @param level - Severity level
  */
-export function captureMessage(
+export const captureMessage = (
 	message: string,
 	level: "info" | "warning" | "error" | "debug" = "info",
-): void {
+): void => {
 	Sentry.captureMessage(message, level);
-}
+};
 
 // Re-export Sentry for advanced usage
 export { Sentry };

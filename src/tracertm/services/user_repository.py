@@ -6,11 +6,20 @@ methods to sync user data from WorkOS into the local database cache.
 """
 
 from datetime import UTC, datetime
+from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from typing import Any
 from tracertm.models.user import User
+
+
+def _parse_workos_timestamp(value: str | datetime | None) -> datetime:
+    """Parse WorkOS timestamp, handling both string and datetime formats."""
+    if value is None:
+        return datetime.now(UTC)
+    if isinstance(value, datetime):
+        return value
+    return datetime.fromisoformat(value.replace("Z", "+00:00"))
 
 
 class UserRepository:
@@ -42,6 +51,7 @@ class UserRepository:
         """
         user_id = workos_user["id"]
         user = await db.get(User, user_id)
+        now = datetime.now(UTC)
 
         if user:
             # Update existing user with fresh data from WorkOS
@@ -52,41 +62,11 @@ class UserRepository:
             user.profile_picture_url = workos_user.get("profile_picture_url")
 
             # Parse WorkOS timestamps (ISO format strings)
-            updated_at_str = workos_user.get("updated_at")
-            if updated_at_str:
-                # Handle both ISO format strings and datetime objects
-                if isinstance(updated_at_str, str):
-                    user.updated_at = datetime.fromisoformat(updated_at_str.replace("Z", "+00:00"))
-                elif isinstance(updated_at_str, datetime):
-                    user.updated_at = updated_at_str
-                else:
-                    # Fallback to current time if format unexpected
-                    user.updated_at = datetime.now(UTC)
-            else:
-                user.updated_at = datetime.now(UTC)
-
+            user.updated_at = _parse_workos_timestamp(workos_user.get("updated_at"))
             # Mark cache as fresh
-            user.synced_at = datetime.now(UTC)
+            user.synced_at = now
         else:
             # Create new user from WorkOS data
-            created_at_str = workos_user.get("created_at")
-            updated_at_str = workos_user.get("updated_at")
-
-            # Parse timestamps - handle both string and datetime formats
-            if isinstance(created_at_str, str):
-                created_at = datetime.fromisoformat(created_at_str.replace("Z", "+00:00"))
-            elif isinstance(created_at_str, datetime):
-                created_at = created_at_str
-            else:
-                created_at = datetime.now(UTC)
-
-            if isinstance(updated_at_str, str):
-                updated_at = datetime.fromisoformat(updated_at_str.replace("Z", "+00:00"))
-            elif isinstance(updated_at_str, datetime):
-                updated_at = updated_at_str
-            else:
-                updated_at = datetime.now(UTC)
-
             user = User(
                 id=user_id,
                 email=workos_user["email"],
@@ -94,9 +74,9 @@ class UserRepository:
                 last_name=workos_user.get("last_name"),
                 email_verified=workos_user.get("email_verified", False),
                 profile_picture_url=workos_user.get("profile_picture_url"),
-                created_at=created_at,
-                updated_at=updated_at,
-                synced_at=datetime.now(UTC),
+                created_at=_parse_workos_timestamp(workos_user.get("created_at")),
+                updated_at=_parse_workos_timestamp(workos_user.get("updated_at")),
+                synced_at=now,
             )
             db.add(user)
 

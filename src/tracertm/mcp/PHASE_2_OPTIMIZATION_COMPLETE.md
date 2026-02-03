@@ -161,7 +161,7 @@ src/tracertm/mcp/
 │   └── streaming.py               # Legacy streaming (preserved)
 │
 └── benchmarks/
-    └── phase2_benchmark.py        # NEW: Comprehensive benchmarks
+    └── token_benchmark.py        # NEW: Comprehensive benchmarks
 ```
 
 ## Benchmark Results
@@ -370,7 +370,7 @@ item = await get_item_v2(item_id)  # No metadata = fewer tokens
 
 ```bash
 # Run comprehensive benchmarks
-python src/tracertm/mcp/benchmarks/phase2_benchmark.py
+python src/tracertm/mcp/benchmarks/token_benchmark.py
 
 # Expected output: 77.2% average token reduction
 ```
@@ -419,5 +419,5 @@ The MCP server is now significantly more efficient, providing better performance
 - **Response Optimizer**: `src/tracertm/mcp/tools/response_optimizer.py`
 - **Streaming Tools**: `src/tracertm/mcp/tools/streaming_v2.py`
 - **Optimized Items**: `src/tracertm/mcp/tools/items_optimized.py`
-- **Benchmarks**: `src/tracertm/mcp/benchmarks/phase2_benchmark.py`
+- **Benchmarks**: `src/tracertm/mcp/benchmarks/token_benchmark.py`
 - **Base Updates**: `src/tracertm/mcp/tools/base.py`

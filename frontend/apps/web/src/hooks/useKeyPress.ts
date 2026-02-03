@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
 
 interface KeyPressOptions {
-	ctrl?: boolean;
-	shift?: boolean;
 	alt?: boolean;
+	ctrl?: boolean;
 	meta?: boolean;
+	shift?: boolean;
 }
 
-export function useKeyPress(
+export const useKeyPress = (
 	targetKey: string,
 	options: KeyPressOptions = {},
-): boolean {
+): boolean => {
 	const [keyPressed, setKeyPressed] = useState(false);
 
 	useEffect(() => {
@@ -53,13 +53,13 @@ export function useKeyPress(
 	}, [targetKey, options]);
 
 	return keyPressed;
-}
+};
 
-export function useKeyboardShortcut(
+export const useKeyboardShortcut = (
 	key: string,
 	callback: () => void,
 	options: KeyPressOptions = {},
-): void {
+): void => {
 	useEffect(() => {
 		const handler = (event: KeyboardEvent) => {
 			const { ctrl, shift, alt, meta } = options;
@@ -88,4 +88,4 @@ export function useKeyboardShortcut(
 		globalThis.addEventListener("keydown", handler);
 		return () => globalThis.removeEventListener("keydown", handler);
 	}, [key, callback, options]);
-}
+};

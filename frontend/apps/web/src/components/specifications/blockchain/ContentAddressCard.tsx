@@ -3,8 +3,16 @@
  * Displays IPFS-style content addressing information
  */
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
+
 import { cn } from "@/lib/utils";
+
+const COPY_RESET_MS = 2000;
+
+const formatDate = (dateStr: string): string => {
+	const date = new Date(dateStr);
+	return date.toLocaleString();
+};
 
 interface ContentAddressCardProps {
 	contentHash: string;
@@ -19,12 +27,48 @@ interface ContentAddressCardProps {
 	className?: string;
 }
 
-function formatDate(dateStr: string) {
-	const date = new Date(dateStr);
-	return date.toLocaleString();
-}
+const ContentAddressCardHeader = ({
+	versionNumber,
+	digitalSignature,
+	signatureValid,
+}: Pick<
+	ContentAddressCardProps,
+	"versionNumber" | "digitalSignature" | "signatureValid"
+>) => (
+	<div className="flex items-start justify-between">
+		<div>
+			<h3 className="text-lg font-semibold flex items-center gap-2">
+				<span>📍</span>
+				Content Address
+			</h3>
+			<p className="text-sm text-muted-foreground">
+				Version {versionNumber} • Immutable content identifier
+			</p>
+		</div>
+		{digitalSignature && (
+			<div>
+				{signatureValid === true ? (
+					<span className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded-md font-medium flex items-center gap-1">
+						<span>🔏</span>
+						Signed & Valid
+					</span>
+				) : (signatureValid === false ? (
+					<span className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded-md font-medium flex items-center gap-1">
+						<span>⚠</span>
+						Invalid Signature
+					</span>
+				) : (
+					<span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded-md font-medium flex items-center gap-1">
+						<span>🔏</span>
+						Signed
+					</span>
+				))}
+			</div>
+		)}
+	</div>
+);
 
-export function ContentAddressCard({
+export const ContentAddressCard = ({
 	contentHash,
 	contentCid,
 	versionChainHead,
@@ -35,117 +79,82 @@ export function ContentAddressCard({
 	createdAt,
 	lastModifiedAt,
 	className,
-}: ContentAddressCardProps) {
+}: ContentAddressCardProps) => {
 	const [copiedField, setCopiedField] = useState<string | null>(null);
 
-	const copyToClipboard = async (text: string, field: string) => {
+	const copyToClipboard = useCallback(async (text: string, field: string) => {
 		try {
 			await navigator.clipboard.writeText(text);
 			setCopiedField(field);
-			setTimeout(() => setCopiedField(null), 2000);
+			setTimeout(() => setCopiedField(null), COPY_RESET_MS);
 		} catch {
 			// Clipboard API not available
 		}
-	};
+	}, []);
 
 	return (
 		<div className={cn("rounded-lg border p-4 space-y-4", className)}>
-			{/* Header */}
-			<div className="flex items-start justify-between">
-				<div>
-					<h3 className="text-lg font-semibold flex items-center gap-2">
-						<span>📍</span>
-						Content Address
-					</h3>
-					<p className="text-sm text-muted-foreground">
-						Version {versionNumber} • Immutable content identifier
-					</p>
-				</div>
-				{digitalSignature && (
-					<div>
-						{signatureValid === true ? (
-							<span className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded-md font-medium flex items-center gap-1">
-								<span>🔏</span>
-								Signed & Valid
-							</span>
-						) : (signatureValid === false ? (
-							<span className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded-md font-medium flex items-center gap-1">
-								<span>⚠</span>
-								Invalid Signature
-							</span>
-						) : (
-							<span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded-md font-medium flex items-center gap-1">
-								<span>🔏</span>
-								Signed
-							</span>
-						))}
-					</div>
-				)}
-			</div>
-
-			{/* Primary Identifiers */}
+			<ContentAddressCardHeader
+				digitalSignature={digitalSignature}
+				signatureValid={signatureValid}
+				versionNumber={versionNumber}
+			/>
 			<div className="space-y-3">
-				{/* Content CID */}
 				<HashField
-					label="Content CID (IPFS-style)"
-					value={contentCid}
-					icon="📦"
-					onCopy={() => copyToClipboard(contentCid, "cid")}
 					copied={copiedField === "cid"}
+					fieldId="cid"
 					highlight
+					icon="📦"
+					label="Content CID (IPFS-style)"
+					onCopy={copyToClipboard}
+					value={contentCid}
 				/>
-
-				{/* Content Hash */}
 				<HashField
-					label="Content Hash (SHA-256)"
-					value={contentHash}
-					icon="🔒"
-					onCopy={() => copyToClipboard(contentHash, "hash")}
 					copied={copiedField === "hash"}
+					fieldId="hash"
+					icon="🔒"
+					label="Content Hash (SHA-256)"
+					onCopy={copyToClipboard}
+					value={contentHash}
 				/>
 			</div>
-
-			{/* Version Chain */}
 			{(versionChainHead || previousVersionHash) && (
 				<div className="border-t pt-4 space-y-3">
 					<h4 className="text-sm font-medium">Version Chain</h4>
-
 					{versionChainHead && (
 						<HashField
-							label="Chain Head"
-							value={versionChainHead}
-							icon="⛓"
-							onCopy={() => copyToClipboard(versionChainHead, "chain")}
 							copied={copiedField === "chain"}
+							fieldId="chain"
+							icon="⛓"
+							label="Chain Head"
+							onCopy={copyToClipboard}
+							value={versionChainHead}
 						/>
 					)}
-
 					{previousVersionHash && (
 						<HashField
-							label="Previous Version"
-							value={previousVersionHash}
-							icon="⬅"
-							onCopy={() => copyToClipboard(previousVersionHash, "prev")}
 							copied={copiedField === "prev"}
+							fieldId="prev"
+							icon="⬅"
+							label="Previous Version"
+							onCopy={copyToClipboard}
+							value={previousVersionHash}
 						/>
 					)}
 				</div>
 			)}
-
-			{/* Digital Signature */}
 			{digitalSignature && (
 				<div className="border-t pt-4">
 					<HashField
-						label="Digital Signature"
-						value={digitalSignature}
-						icon="🔏"
-						onCopy={() => copyToClipboard(digitalSignature, "sig")}
 						copied={copiedField === "sig"}
+						fieldId="sig"
+						icon="🔏"
+						label="Digital Signature"
+						onCopy={copyToClipboard}
+						value={digitalSignature}
 					/>
 				</div>
 			)}
-
-			{/* Timestamps */}
 			<div className="border-t pt-4 grid grid-cols-2 gap-4 text-sm">
 				<div>
 					<div className="text-muted-foreground mb-1">Created</div>
@@ -158,25 +167,30 @@ export function ContentAddressCard({
 			</div>
 		</div>
 	);
-}
+};
 
 interface HashFieldProps {
 	label: string;
 	value: string;
 	icon?: string;
-	onCopy?: () => void;
+	fieldId: string;
+	onCopy?: (text: string, field: string) => void;
 	copied?: boolean;
 	highlight?: boolean;
 }
 
-function HashField({
+const HashField = ({
 	label,
 	value,
 	icon,
+	fieldId,
 	onCopy,
 	copied,
 	highlight,
-}: HashFieldProps) {
+}: HashFieldProps) => {
+	const handleClick = useCallback(() => {
+		onCopy?.(value, fieldId);
+	}, [value, fieldId, onCopy]);
 	return (
 		<div
 			className={cn(
@@ -191,7 +205,8 @@ function HashField({
 				</div>
 				{onCopy && (
 					<button
-						onClick={onCopy}
+						type="button"
+						onClick={handleClick}
 						className="text-xs px-2 py-0.5 rounded hover:bg-muted-foreground/10 transition-colors"
 					>
 						{copied ? "Copied!" : "Copy"}
@@ -201,7 +216,9 @@ function HashField({
 			<code className="text-xs font-mono break-all">{value}</code>
 		</div>
 	);
-}
+};
+
+const CID_PREVIEW_LENGTH = 12;
 
 interface ContentAddressBadgeProps {
 	contentCid: string;
@@ -210,26 +227,26 @@ interface ContentAddressBadgeProps {
 	className?: string;
 }
 
-export function ContentAddressBadge({
+export const ContentAddressBadge = ({
 	contentCid,
 	versionNumber,
 	signed,
 	className,
-}: ContentAddressBadgeProps) {
-	return (
-		<div
-			className={cn(
-				"inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-muted text-sm",
-				className,
-			)}
-		>
-			<span>📍</span>
-			<code className="font-mono text-xs">{contentCid.slice(0, 12)}...</code>
-			<span className="text-muted-foreground">v{versionNumber}</span>
-			{signed && <span title="Digitally signed">🔏</span>}
-		</div>
-	);
-}
+}: ContentAddressBadgeProps) => (
+	<div
+		className={cn(
+			"inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-muted text-sm",
+			className,
+		)}
+	>
+		<span>📍</span>
+		<code className="font-mono text-xs">
+			{contentCid.slice(0, CID_PREVIEW_LENGTH)}...
+		</code>
+		<span className="text-muted-foreground">v{versionNumber}</span>
+		{signed && <span title="Digitally signed">🔏</span>}
+	</div>
+);
 
 interface ContentHashComparisonProps {
 	currentHash: string;
@@ -237,13 +254,12 @@ interface ContentHashComparisonProps {
 	className?: string;
 }
 
-export function ContentHashComparison({
+export const ContentHashComparison = ({
 	currentHash,
 	baselineHash,
 	className,
-}: ContentHashComparisonProps) {
+}: ContentHashComparisonProps) => {
 	const matches = currentHash === baselineHash;
-
 	return (
 		<div className={cn("rounded-lg border p-4 space-y-3", className)}>
 			<div className="flex items-center justify-between">
@@ -277,4 +293,4 @@ export function ContentHashComparison({
 			)}
 		</div>
 	);
-}
+};

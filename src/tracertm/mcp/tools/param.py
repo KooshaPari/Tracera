@@ -156,7 +156,7 @@ def _resolve_project_id(payload: dict[str, Any], ctx: Any | None) -> str | None:
     project_ids = claims.get("project_ids")
     if isinstance(project_ids, str):
         allowed.extend([p.strip() for p in project_ids.split(",") if p.strip()])
-    elif isinstance(project_ids, (list[Any], tuple, set)):
+    elif project_ids is not None and isinstance(project_ids, (list[Any], tuple, set)):
         allowed.extend([str(p) for p in project_ids if p])
 
     if allowed:
@@ -752,7 +752,10 @@ async def import_manage(
             except json.JSONDecodeError:
                 import yaml
 
-                return yaml.safe_load(content)
+                result = yaml.safe_load(content)
+                if result is None:
+                    raise ToolError("Failed to parse YAML content")
+                return result
         if path:
             file_path = Path(path)
             if not file_path.exists():
@@ -760,7 +763,10 @@ async def import_manage(
             if file_path.suffix.lower() in {".yaml", ".yml"}:
                 import yaml
 
-                return yaml.safe_load(file_path.read_text(encoding="utf-8"))
+                result = yaml.safe_load(file_path.read_text(encoding="utf-8"))
+                if result is None:
+                    raise ToolError(f"Failed to parse YAML file: {path}")
+                return result
             return json.loads(file_path.read_text(encoding="utf-8"))
         raise ToolError("Provide data, content, or path for import.")
 

@@ -128,27 +128,37 @@ class ExternalIntegrationService:
 
         return history
 
+    def _validate_github_config(self, integration: Integration) -> list[str]:
+        errors = []
+        if "token" not in integration.config:
+            errors.append("GitHub token is required")
+        if "repo" not in integration.config:
+            errors.append("GitHub repository is required")
+        return errors
+
+    def _validate_slack_config(self, integration: Integration) -> list[str]:
+        if "webhook_url" not in integration.config:
+            return ["Slack webhook URL is required"]
+        return []
+
+    def _validate_vscode_config(self, integration: Integration) -> list[str]:
+        if "extension_id" not in integration.config:
+            return ["VS Code extension ID is required"]
+        return []
+
     def validate_integration_config(self, integration: Integration) -> list[str]:
         """Validate integration configuration."""
         errors = []
-
         if not integration.name:
             errors.append("Integration name is required")
-
-        if integration.integration_type == IntegrationType.GITHUB:
-            if "token" not in integration.config:
-                errors.append("GitHub token is required")
-            if "repo" not in integration.config:
-                errors.append("GitHub repository is required")
-
-        elif integration.integration_type == IntegrationType.SLACK:
-            if "webhook_url" not in integration.config:
-                errors.append("Slack webhook URL is required")
-
-        elif integration.integration_type == IntegrationType.VSCODE:
-            if "extension_id" not in integration.config:
-                errors.append("VS Code extension ID is required")
-
+        type_validators = {
+            IntegrationType.GITHUB: self._validate_github_config,
+            IntegrationType.SLACK: self._validate_slack_config,
+            IntegrationType.VSCODE: self._validate_vscode_config,
+        }
+        validator = type_validators.get(integration.integration_type)
+        if validator:
+            errors.extend(validator(integration))
         return errors
 
     def get_integration_stats(self) -> dict[str, Any]:

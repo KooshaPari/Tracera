@@ -666,6 +666,7 @@ def _search_files(params: dict[str, Any], base_dir: str | None) -> dict[str, Any
     for root, dirs, files in os.walk(path):
         # Filter directories in-place for efficiency
         dirs[:] = [d for d in dirs if not d.startswith(".") and d not in skip_dirs]
+        root_path = pathlib.Path(root)
 
         for name in files:
             # Skip binary files for efficiency

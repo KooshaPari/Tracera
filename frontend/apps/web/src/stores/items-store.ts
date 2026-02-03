@@ -20,58 +20,91 @@ interface UpdateItemInput {
 	parentId?: string;
 }
 
-interface ItemsState {
-	// Items cache
+interface ItemsDataState {
+	isLoading: boolean;
 	items: Map<string, Item>;
 	itemsByProject: Map<string, string[]>;
-
-	// Loading states
-	isLoading: boolean;
 	loadingItems: Set<string>;
-
-	// Optimistic updates
 	pendingCreates: Map<string, CreateItemInput>;
-	pendingUpdates: Map<string, UpdateItemInput>;
 	pendingDeletes: Set<string>;
-
-	// Actions - Basic CRUD
-	addItem: (item: Item) => void;
-	addItems: (items: Item[]) => void;
-	updateItem: (id: string, updates: Partial<Item>) => void;
-	removeItem: (id: string) => void;
-	getItem: (id: string) => Item | undefined;
-	getItemsByProject: (projectId: string) => Item[];
-	clearItems: () => void;
-
-	// Actions - Optimistic updates
-	optimisticCreate: (tempId: string, data: CreateItemInput) => void;
-	confirmCreate: (tempId: string, item: Item) => void;
-	rollbackCreate: (tempId: string) => void;
-
-	optimisticUpdate: (id: string, updates: UpdateItemInput) => void;
-	confirmUpdate: (id: string, item: Item) => void;
-	rollbackUpdate: (id: string) => void;
-
-	optimisticDelete: (id: string) => void;
-	confirmDelete: (id: string) => void;
-	rollbackDelete: (id: string, item: Item) => void;
-
-	// Actions - Loading states
-	setLoading: (loading: boolean) => void;
-	setItemLoading: (id: string, loading: boolean) => void;
+	pendingUpdates: Map<string, UpdateItemInput>;
 }
 
-export const useItemsStore = create<ItemsState>((set, get) => ({
-	// Initial state
+interface ItemsActions {
+	addItem: (item: Item) => void;
+	addItems: (items: Item[]) => void;
+	clearItems: () => void;
+	confirmCreate: (tempId: string, item: Item) => void;
+	confirmDelete: (id: string) => void;
+	confirmUpdate: (id: string, item: Item) => void;
+	getItem: (id: string) => Item | undefined;
+	getItemsByProject: (projectId: string) => Item[];
+	optimisticCreate: (tempId: string, data: CreateItemInput) => void;
+	optimisticDelete: (id: string) => void;
+	optimisticUpdate: (id: string, updates: UpdateItemInput) => void;
+	removeItem: (id: string) => void;
+	removePendingMutation?: never;
+	rollbackCreate: (tempId: string) => void;
+	rollbackDelete: (id: string, item: Item) => void;
+	rollbackUpdate: (id: string) => void;
+	setItemLoading: (id: string, loading: boolean) => void;
+	setLoading: (loading: boolean) => void;
+	updateItem: (id: string, updates: Partial<Item>) => void;
+}
+
+type ItemsState = ItemsDataState & ItemsActions;
+
+type StoreSetter = (
+	fn: (state: ItemsState) => Partial<ItemsState> | ItemsState,
+) => void;
+
+type StoreGetter = () => ItemsState;
+
+const DEFAULT_VIEW: ViewType = "FEATURE";
+const DEFAULT_STATUS: ItemStatus = "todo";
+const DEFAULT_PRIORITY: Priority = "medium";
+
+const createInitialState = (): ItemsDataState => ({
+	isLoading: false,
 	items: new Map(),
 	itemsByProject: new Map(),
-	isLoading: false,
 	loadingItems: new Set(),
 	pendingCreates: new Map(),
-	pendingUpdates: new Map(),
 	pendingDeletes: new Set(),
+	pendingUpdates: new Map(),
+});
 
-	// Basic CRUD
+const buildTempItem = (tempId: string, data: CreateItemInput): Item => {
+	const description = data.description;
+	const parentId = data.parentId;
+	const now = new Date().toISOString();
+
+	return {
+		createdAt: now,
+		...(description !== undefined ? { description } : {}),
+		id: tempId,
+		...(parentId !== undefined ? { parentId } : {}),
+		priority: data.priority ?? DEFAULT_PRIORITY,
+		projectId: data.projectId,
+		status: data.status ?? DEFAULT_STATUS,
+		title: data.title,
+		type: data.type,
+		updatedAt: now,
+		version: 1,
+		view: DEFAULT_VIEW,
+	};
+};
+
+const createCrudActions = (set: StoreSetter, get: StoreGetter): Pick<
+	ItemsActions,
+	| "addItem"
+	| "addItems"
+	| "clearItems"
+	| "getItem"
+	| "getItemsByProject"
+	| "removeItem"
+	| "updateItem"
+> => ({
 	addItem: (item) => {
 		set((state) => {
 			const newItems = new Map(state.items);
@@ -89,25 +122,27 @@ export const useItemsStore = create<ItemsState>((set, get) => ({
 			};
 		});
 	},
-
 	addItems: (items) => {
 		items.forEach((item) => get().addItem(item));
 	},
-
-	updateItem: (id, updates) => {
-		set((state) => {
-			const item = state.items.get(id);
-			if (!item) {
-				return state;
-			}
-
-			const newItems = new Map(state.items);
-			newItems.set(id, { ...item, ...updates });
-
-			return { items: newItems };
+	clearItems: () => {
+		set({
+			items: new Map(),
+			itemsByProject: new Map(),
 		});
 	},
-
+	getItem: (id) => get().items.get(id),
+	getItemsByProject: (projectId) => {
+		const itemIds = get().itemsByProject.get(projectId) || [];
+		const itemsMap = get().items;
+		return itemIds.reduce<Item[]>((acc, id) => {
+			const item = itemsMap.get(id);
+			if (item) {
+				acc.push(item);
+			}
+			return acc;
+		}, []);
+	},
 	removeItem: (id) => {
 		set((state) => {
 			const item = state.items.get(id);
@@ -131,152 +166,143 @@ export const useItemsStore = create<ItemsState>((set, get) => ({
 			};
 		});
 	},
-
-	getItem: (id) => get().items.get(id),
-
-	getItemsByProject: (projectId) => {
-		const itemIds = get().itemsByProject.get(projectId) || [];
-		const { items } = get();
-		return itemIds.map((id) => items.get(id)!).filter(Boolean);
-	},
-
-	clearItems: () => {
-		set({
-			items: new Map(),
-			itemsByProject: new Map(),
-		});
-	},
-
-	// Optimistic creates
-	optimisticCreate: (tempId, data) => {
-		const defaultView: ViewType = "FEATURE";
-		const defaultStatus: ItemStatus = data.status ?? "todo";
-		const defaultPriority: Priority = data.priority ?? "medium";
-		const tempItem: Item = {
-			id: tempId,
-			projectId: data.projectId,
-			view: defaultView,
-			type: data.type,
-			title: data.title,
-			...(data.description !== undefined && { description: data.description }),
-			status: defaultStatus,
-			priority: defaultPriority,
-			...(data.parentId !== undefined && { parentId: data.parentId }),
-			version: 1,
-			createdAt: new Date().toISOString(),
-			updatedAt: new Date().toISOString(),
-		};
-
+	updateItem: (id, updates) => {
 		set((state) => {
-			const newPendingCreates = new Map(state.pendingCreates);
-			newPendingCreates.set(tempId, data);
-			return { pendingCreates: newPendingCreates };
-		});
+			const item = state.items.get(id);
+			if (!item) {
+				return state;
+			}
 
-		get().addItem(tempItem);
-	},
+			const newItems = new Map(state.items);
+			newItems.set(id, { ...item, ...updates });
 
-	confirmCreate: (tempId, item) => {
-		// Remove temp item and add real item
-		get().removeItem(tempId);
-		get().addItem(item);
-
-		set((state) => {
-			const newPendingCreates = new Map(state.pendingCreates);
-			newPendingCreates.delete(tempId);
-			return { pendingCreates: newPendingCreates };
+			return { items: newItems };
 		});
 	},
+});
 
-	rollbackCreate: (tempId) => {
-		get().removeItem(tempId);
+const createOptimisticCreateActions = (
+	set: StoreSetter,
+	get: StoreGetter,
+): Pick<ItemsActions, "confirmCreate" | "optimisticCreate" | "rollbackCreate"> =>
+	({
+		confirmCreate: (tempId, item) => {
+			// Remove temp item and add real item
+			get().removeItem(tempId);
+			get().addItem(item);
 
-		set((state) => {
-			const newPendingCreates = new Map(state.pendingCreates);
-			newPendingCreates.delete(tempId);
-			return { pendingCreates: newPendingCreates };
-		});
-	},
+			set((state) => {
+				const newPendingCreates = new Map(state.pendingCreates);
+				newPendingCreates.delete(tempId);
+				return { pendingCreates: newPendingCreates };
+			});
+		},
+		optimisticCreate: (tempId, data) => {
+			const tempItem = buildTempItem(tempId, data);
 
-	// Optimistic updates
-	optimisticUpdate: (id, updates) => {
-		const item = get().getItem(id);
-		if (!item) {
-			return;
-		}
+			set((state) => {
+				const newPendingCreates = new Map(state.pendingCreates);
+				newPendingCreates.set(tempId, data);
+				return { pendingCreates: newPendingCreates };
+			});
 
-		set((state) => {
-			const newPendingUpdates = new Map(state.pendingUpdates);
-			newPendingUpdates.set(id, updates);
-			return { pendingUpdates: newPendingUpdates };
-		});
+			get().addItem(tempItem);
+		},
+		rollbackCreate: (tempId) => {
+			get().removeItem(tempId);
 
-		get().updateItem(id, updates);
-	},
+			set((state) => {
+				const newPendingCreates = new Map(state.pendingCreates);
+				newPendingCreates.delete(tempId);
+				return { pendingCreates: newPendingCreates };
+			});
+		},
+	});
 
-	confirmUpdate: (id, item) => {
-		get().addItem(item);
+const createOptimisticUpdateActions = (
+	set: StoreSetter,
+	get: StoreGetter,
+): Pick<ItemsActions, "confirmUpdate" | "optimisticUpdate" | "rollbackUpdate"> =>
+	({
+		confirmUpdate: (id, item) => {
+			get().addItem(item);
 
-		set((state) => {
-			const newPendingUpdates = new Map(state.pendingUpdates);
-			newPendingUpdates.delete(id);
-			return { pendingUpdates: newPendingUpdates };
-		});
-	},
+			set((state) => {
+				const newPendingUpdates = new Map(state.pendingUpdates);
+				newPendingUpdates.delete(id);
+				return { pendingUpdates: newPendingUpdates };
+			});
+		},
+		optimisticUpdate: (id, updates) => {
+			const item = get().getItem(id);
+			if (!item) {
+				return;
+			}
 
-	rollbackUpdate: (id) => {
-		const pendingUpdate = get().pendingUpdates.get(id);
-		if (!pendingUpdate) {
-			return;
-		}
+			set((state) => {
+				const newPendingUpdates = new Map(state.pendingUpdates);
+				newPendingUpdates.set(id, updates);
+				return { pendingUpdates: newPendingUpdates };
+			});
 
-		// Revert to previous state (would need to store original values)
-		set((state) => {
-			const newPendingUpdates = new Map(state.pendingUpdates);
-			newPendingUpdates.delete(id);
-			return { pendingUpdates: newPendingUpdates };
-		});
-	},
+			get().updateItem(id, updates);
+		},
+		rollbackUpdate: (id) => {
+			const pendingUpdate = get().pendingUpdates.get(id);
+			if (!pendingUpdate) {
+				return;
+			}
 
-	// Optimistic deletes
-	optimisticDelete: (id) => {
-		const item = get().getItem(id);
-		if (!item) {
-			return;
-		}
+			// Revert to previous state (would need to store original values)
+			set((state) => {
+				const newPendingUpdates = new Map(state.pendingUpdates);
+				newPendingUpdates.delete(id);
+				return { pendingUpdates: newPendingUpdates };
+			});
+		},
+	});
 
-		set((state) => {
-			const newPendingDeletes = new Set(state.pendingDeletes);
-			newPendingDeletes.add(id);
-			return { pendingDeletes: newPendingDeletes };
-		});
+const createOptimisticDeleteActions = (
+	set: StoreSetter,
+	get: StoreGetter,
+): Pick<ItemsActions, "confirmDelete" | "optimisticDelete" | "rollbackDelete"> =>
+	({
+		confirmDelete: (id) => {
+			set((state) => {
+				const newPendingDeletes = new Set(state.pendingDeletes);
+				newPendingDeletes.delete(id);
+				return { pendingDeletes: newPendingDeletes };
+			});
+		},
+		optimisticDelete: (id) => {
+			const item = get().getItem(id);
+			if (!item) {
+				return;
+			}
 
-		get().removeItem(id);
-	},
+			set((state) => {
+				const newPendingDeletes = new Set(state.pendingDeletes);
+				newPendingDeletes.add(id);
+				return { pendingDeletes: newPendingDeletes };
+			});
 
-	confirmDelete: (id) => {
-		set((state) => {
-			const newPendingDeletes = new Set(state.pendingDeletes);
-			newPendingDeletes.delete(id);
-			return { pendingDeletes: newPendingDeletes };
-		});
-	},
+			get().removeItem(id);
+		},
+		rollbackDelete: (id, item) => {
+			get().addItem(item);
 
-	rollbackDelete: (id, item) => {
-		get().addItem(item);
+			set((state) => {
+				const newPendingDeletes = new Set(state.pendingDeletes);
+				newPendingDeletes.delete(id);
+				return { pendingDeletes: newPendingDeletes };
+			});
+		},
+	});
 
-		set((state) => {
-			const newPendingDeletes = new Set(state.pendingDeletes);
-			newPendingDeletes.delete(id);
-			return { pendingDeletes: newPendingDeletes };
-		});
-	},
-
-	// Loading states
-	setLoading: (loading) => {
-		set({ isLoading: loading });
-	},
-
+const createLoadingActions = (set: StoreSetter): Pick<
+	ItemsActions,
+	"setItemLoading" | "setLoading"
+> => ({
 	setItemLoading: (id, loading) => {
 		set((state) => {
 			const newLoadingItems = new Set(state.loadingItems);
@@ -288,4 +314,22 @@ export const useItemsStore = create<ItemsState>((set, get) => ({
 			return { loadingItems: newLoadingItems };
 		});
 	},
-}));
+	setLoading: (loading) => {
+		set({ isLoading: loading });
+	},
+});
+
+const buildItemsStore = (set: StoreSetter, get: StoreGetter): ItemsState => ({
+	...createInitialState(),
+	...createCrudActions(set, get),
+	...createOptimisticCreateActions(set, get),
+	...createOptimisticUpdateActions(set, get),
+	...createOptimisticDeleteActions(set, get),
+	...createLoadingActions(set),
+});
+
+export const useItemsStore = create<ItemsState>((set, get) =>
+	buildItemsStore(set, get),
+);
+
+export type { CreateItemInput, UpdateItemInput };

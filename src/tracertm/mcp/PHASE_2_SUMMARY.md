@@ -97,7 +97,7 @@
    - `delete_item_v2()` - Optimized delete
    - `summarize_view_v2()` - Optimized summary
 
-4. **`src/tracertm/mcp/benchmarks/phase2_benchmark.py`**
+4. **`src/tracertm/mcp/benchmarks/token_benchmark.py`**
    - Comprehensive benchmarking suite
    - Token usage measurements
    - Compression effectiveness tests

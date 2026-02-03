@@ -52,25 +52,32 @@ class QueryOptimizationService:
 
     def _rate_performance(self, execution_time: float) -> str:
         """Rate query performance."""
-        if execution_time < 0.1:
+        EXCELLENT_THRESHOLD = 0.1
+        GOOD_THRESHOLD = 0.5
+        FAIR_THRESHOLD = 1.0
+        if execution_time < EXCELLENT_THRESHOLD:
             return "Excellent"
-        if execution_time < 0.5:
+        if execution_time < GOOD_THRESHOLD:
             return "Good"
-        if execution_time < 1.0:
+        if execution_time < FAIR_THRESHOLD:
             return "Fair"
         return "Poor"
 
     def _suggest_optimizations(self, execution_time: float, result_count: int) -> list[str]:
         """Suggest query optimizations."""
         suggestions = []
+        EXEC_SLOW_THRESHOLD = 1.0
+        RESULT_COUNT_PAGINATE = 10000
+        EXEC_MEDIUM_THRESHOLD = 0.5
+        RESULT_COUNT_CACHE_MAX = 100
 
-        if execution_time > 1.0:
+        if execution_time > EXEC_SLOW_THRESHOLD:
             suggestions.append("Consider adding indexes to frequently queried fields")
 
-        if result_count > 10000:
+        if result_count > RESULT_COUNT_PAGINATE:
             suggestions.append("Consider using pagination for large result sets")
 
-        if execution_time > 0.5 and result_count < 100:
+        if execution_time > EXEC_MEDIUM_THRESHOLD and result_count < RESULT_COUNT_CACHE_MAX:
             suggestions.append("Consider caching this query result")
 
         return suggestions
@@ -142,15 +149,17 @@ class QueryOptimizationService:
         recommendations = []
 
         # Analyze query stats
-        if len(self.query_stats) > 10:
+        MIN_STATS_FOR_RECOMMEND = 10
+        INDEX_RECOMMEND_RATIO = 0.5
+        if len(self.query_stats) > MIN_STATS_FOR_RECOMMEND:
             # If many queries filter by status, recommend status index
             status_queries = [s for s in self.query_stats if "status" in s.get("query_filters", {})]
-            if len(status_queries) > len(self.query_stats) * 0.5:
+            if len(status_queries) > len(self.query_stats) * INDEX_RECOMMEND_RATIO:
                 recommendations.append("CREATE INDEX idx_item_status ON items(status)")
 
             # If many queries filter by view, recommend view index
             view_queries = [s for s in self.query_stats if "view" in s.get("query_filters", {})]
-            if len(view_queries) > len(self.query_stats) * 0.5:
+            if len(view_queries) > len(self.query_stats) * INDEX_RECOMMEND_RATIO:
                 recommendations.append("CREATE INDEX idx_item_view ON items(view)")
 
         return recommendations
