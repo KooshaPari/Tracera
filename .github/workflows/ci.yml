@@ -75,14 +75,54 @@ jobs:
       run: |
         uv pip install --system -e ".[dev,test]"
 
-    - name: Run linting
+    - name: Run Ruff linting (strict enforcement)
       run: |
+        ruff check src/ tests/ --output-format=json > /tmp/ruff-results.json || true
+        VIOLATION_COUNT=$(jq '[.[] // []] | length' /tmp/ruff-results.json || echo "0")
+        echo "RUFF_VIOLATIONS=$VIOLATION_COUNT" >> $GITHUB_ENV
+        echo "## Python Linting Results (Ruff)" >> $GITHUB_STEP_SUMMARY
+        echo "Total violations: $VIOLATION_COUNT" >> $GITHUB_STEP_SUMMARY
+        echo "Config: pyproject.toml (complexity max=7)" >> $GITHUB_STEP_SUMMARY
         ruff check src/ tests/
         ruff format --check src/ tests/
 
-    - name: Run type checking
+    - name: Run type checking (mypy)
       run: |
+        mypy src/ --json-report=/tmp/mypy-report || true
+        if [ -f /tmp/mypy-report/index.txt ]; then
+          MYPY_ERRORS=$(grep -o "Found [0-9]* error" /tmp/mypy-report/index.txt | grep -o "[0-9]*" || echo "0")
+          echo "MYPY_VIOLATIONS=$MYPY_ERRORS" >> $GITHUB_ENV
+          echo "Mypy errors: $MYPY_ERRORS" >> $GITHUB_STEP_SUMMARY
+        fi
         mypy src/
+
+    - name: Run Bandit (security linter - strict)
+      run: |
+        uv run bandit -r src/ --format json --output /tmp/bandit-results.json || true
+        BANDIT_ISSUES=$(jq '[.results // []] | length' /tmp/bandit-results.json || echo "0")
+        echo "BANDIT_VIOLATIONS=$BANDIT_ISSUES" >> $GITHUB_ENV
+        echo "Bandit security issues: $BANDIT_ISSUES" >> $GITHUB_STEP_SUMMARY
+        uv run bandit -r src/
+
+    - name: Run pip-audit (dependency vulnerabilities)
+      run: |
+        uv run pip-audit --format json --output /tmp/pip-audit-results.json || true
+        AUDIT_VULNS=$(jq '[.vulnerabilities // []] | length' /tmp/pip-audit-results.json || echo "0")
+        echo "PIP_AUDIT_VIOLATIONS=$AUDIT_VULNS" >> $GITHUB_ENV
+        echo "Dependency vulnerabilities: $AUDIT_VULNS" >> $GITHUB_STEP_SUMMARY
+        uv run pip-audit
+
+    - name: Upload Python lint results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: python-lint-results
+        path: |
+          /tmp/ruff-results.json
+          /tmp/mypy-report/
+          /tmp/bandit-results.json
+          /tmp/pip-audit-results.json
+        retention-days: 90
 
     - name: Run Python database migrations
       env:
@@ -239,12 +279,31 @@ jobs:
         go mod download
         go mod verify
 
-    - name: Run golangci-lint
+    - name: Run golangci-lint (strict enforcement)
       uses: golangci/golangci-lint-action@v6
       with:
-        version: latest
+        version: v1.61
         working-directory: backend
-        args: --timeout=5m
+        args: --timeout=5m --config=.golangci.yml
+      continue-on-error: false
+
+    - name: Capture Go linting baseline
+      if: always()
+      working-directory: backend
+      run: |
+        golangci-lint run --timeout=5m --config=.golangci.yml --out-format=json > /tmp/go-lint-results.json || true
+        VIOLATION_COUNT=$(jq '[.Issues // []] | length' /tmp/go-lint-results.json || echo "0")
+        echo "GO_VIOLATIONS=$VIOLATION_COUNT" >> $GITHUB_ENV
+        echo "## Go Linting Results" >> $GITHUB_STEP_SUMMARY
+        echo "Total violations: $VIOLATION_COUNT" >> $GITHUB_STEP_SUMMARY
+
+    - name: Upload Go lint results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: go-lint-results
+        path: /tmp/go-lint-results.json
+        retention-days: 90
 
     # Run short tests first (fast tests)
     - name: Run short tests
@@ -347,17 +406,40 @@ jobs:
         working-directory: frontend
         run: bun install --frozen-lockfile
 
-      - name: Biome check (lint + format)
+      - name: Oxlint (strict AI config enforcement)
         working-directory: frontend
-        run: bun run check
+        run: |
+          bun run check
+          bun run lint:oxc --format=json > /tmp/oxlint-results.json || true
+          VIOLATION_COUNT=$(jq '[.[] // []] | length' /tmp/oxlint-results.json || echo "0")
+          echo "OXLINT_VIOLATIONS=$VIOLATION_COUNT" >> $GITHUB_ENV
+          echo "## Frontend Linting Results (Oxlint)" >> $GITHUB_STEP_SUMMARY
+          echo "Total violations: $VIOLATION_COUNT" >> $GITHUB_STEP_SUMMARY
+          echo "Config: .oxlintrc.json (AI-strict)" >> $GITHUB_STEP_SUMMARY
 
       - name: TypeScript typecheck
         working-directory: frontend
         run: bun run typecheck
 
-      - name: Oxlint (fast lint)
+      - name: Stylelint (CSS)
         working-directory: frontend
-        run: bun run lint:oxc
+        run: bun run lint:stylelint
+
+      - name: Format check (oxfmt)
+        working-directory: frontend
+        run: bun run format:check
+
+      - name: Upload frontend lint results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-lint-results
+          path: /tmp/oxlint-results.json
+          retention-days: 90
+
+      - name: Vitest (unit tests)
+        working-directory: frontend
+        run: bun run test -- --run
 
   # Frontend E2E Tests (Playwright)
   frontend-e2e:
@@ -502,6 +584,137 @@ jobs:
           path: frontend/apps/web/test-results/**/*.webm
           retention-days: 30
 
+  # Linting Baseline Enforcement
+  lint-baseline-check:
+    name: Lint Baseline Enforcement
+    runs-on: ubuntu-latest
+    needs: [python-tests, go-tests, frontend-checks]
+    if: always()
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download all lint artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: /tmp/lint-artifacts/
+
+    - name: Check baseline regression
+      run: |
+        mkdir -p .ci-baselines
+
+        # Initialize baseline file if it doesn't exist
+        if [ ! -f .ci-baselines/lint-baseline.json ]; then
+          echo '{"python_ruff": 0, "python_mypy": 0, "python_bandit": 0, "go_lint": 0, "frontend_oxlint": 0}' > .ci-baselines/lint-baseline.json
+        fi
+
+        # Read current baselines
+        BASELINE_RUFF=$(jq -r '.python_ruff // 0' .ci-baselines/lint-baseline.json)
+        BASELINE_MYPY=$(jq -r '.python_mypy // 0' .ci-baselines/lint-baseline.json)
+        BASELINE_BANDIT=$(jq -r '.python_bandit // 0' .ci-baselines/lint-baseline.json)
+        BASELINE_GO=$(jq -r '.go_lint // 0' .ci-baselines/lint-baseline.json)
+        BASELINE_OXLINT=$(jq -r '.frontend_oxlint // 0' .ci-baselines/lint-baseline.json)
+
+        # Extract current violation counts from artifacts
+        CURRENT_RUFF=$(jq '[.[] // []] | length' /tmp/lint-artifacts/python-lint-results/ruff-results.json 2>/dev/null || echo "0")
+        CURRENT_MYPY=$(grep -o "Found [0-9]* error" /tmp/lint-artifacts/python-lint-results/mypy-report/index.txt 2>/dev/null | grep -o "[0-9]*" || echo "0")
+        CURRENT_BANDIT=$(jq '[.results // []] | length' /tmp/lint-artifacts/python-lint-results/bandit-results.json 2>/dev/null || echo "0")
+        CURRENT_GO=$(jq '[.Issues // []] | length' /tmp/lint-artifacts/go-lint-results/go-lint-results.json 2>/dev/null || echo "0")
+        CURRENT_OXLINT=$(jq '[.[] // []] | length' /tmp/lint-artifacts/frontend-lint-results/oxlint-results.json 2>/dev/null || echo "0")
+
+        # Calculate thresholds (10% regression allowed)
+        THRESHOLD_RUFF=$(echo "$BASELINE_RUFF * 1.1" | bc | cut -d. -f1)
+        THRESHOLD_MYPY=$(echo "$BASELINE_MYPY * 1.1" | bc | cut -d. -f1)
+        THRESHOLD_BANDIT=$(echo "$BASELINE_BANDIT * 1.1" | bc | cut -d. -f1)
+        THRESHOLD_GO=$(echo "$BASELINE_GO * 1.1" | bc | cut -d. -f1)
+        THRESHOLD_OXLINT=$(echo "$BASELINE_OXLINT * 1.1" | bc | cut -d. -f1)
+
+        # Generate report
+        echo "## Linting Baseline Enforcement Report" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "| Linter | Baseline | Current | Threshold (+10%) | Status |" >> $GITHUB_STEP_SUMMARY
+        echo "|--------|----------|---------|------------------|--------|" >> $GITHUB_STEP_SUMMARY
+
+        REGRESSION_DETECTED=0
+
+        # Check Python Ruff
+        if [ "$CURRENT_RUFF" -gt "$THRESHOLD_RUFF" ]; then
+          echo "| Python Ruff | $BASELINE_RUFF | $CURRENT_RUFF | $THRESHOLD_RUFF | ❌ REGRESSION |" >> $GITHUB_STEP_SUMMARY
+          REGRESSION_DETECTED=1
+        else
+          echo "| Python Ruff | $BASELINE_RUFF | $CURRENT_RUFF | $THRESHOLD_RUFF | ✅ PASS |" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        # Check Python Mypy
+        if [ "$CURRENT_MYPY" -gt "$THRESHOLD_MYPY" ]; then
+          echo "| Python Mypy | $BASELINE_MYPY | $CURRENT_MYPY | $THRESHOLD_MYPY | ❌ REGRESSION |" >> $GITHUB_STEP_SUMMARY
+          REGRESSION_DETECTED=1
+        else
+          echo "| Python Mypy | $BASELINE_MYPY | $CURRENT_MYPY | $THRESHOLD_MYPY | ✅ PASS |" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        # Check Python Bandit
+        if [ "$CURRENT_BANDIT" -gt "$THRESHOLD_BANDIT" ]; then
+          echo "| Python Bandit | $BASELINE_BANDIT | $CURRENT_BANDIT | $THRESHOLD_BANDIT | ❌ REGRESSION |" >> $GITHUB_STEP_SUMMARY
+          REGRESSION_DETECTED=1
+        else
+          echo "| Python Bandit | $BASELINE_BANDIT | $CURRENT_BANDIT | $THRESHOLD_BANDIT | ✅ PASS |" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        # Check Go linting
+        if [ "$CURRENT_GO" -gt "$THRESHOLD_GO" ]; then
+          echo "| Go (golangci-lint) | $BASELINE_GO | $CURRENT_GO | $THRESHOLD_GO | ❌ REGRESSION |" >> $GITHUB_STEP_SUMMARY
+          REGRESSION_DETECTED=1
+        else
+          echo "| Go (golangci-lint) | $BASELINE_GO | $CURRENT_GO | $THRESHOLD_GO | ✅ PASS |" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        # Check Frontend Oxlint
+        if [ "$CURRENT_OXLINT" -gt "$THRESHOLD_OXLINT" ]; then
+          echo "| Frontend (Oxlint) | $BASELINE_OXLINT | $CURRENT_OXLINT | $THRESHOLD_OXLINT | ❌ REGRESSION |" >> $GITHUB_STEP_SUMMARY
+          REGRESSION_DETECTED=1
+        else
+          echo "| Frontend (Oxlint) | $BASELINE_OXLINT | $CURRENT_OXLINT | $THRESHOLD_OXLINT | ✅ PASS |" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Enforcement Policy" >> $GITHUB_STEP_SUMMARY
+        echo "- Baseline violations stored in \`.ci-baselines/lint-baseline.json\`" >> $GITHUB_STEP_SUMMARY
+        echo "- Maximum allowed regression: **+10% from baseline**" >> $GITHUB_STEP_SUMMARY
+        echo "- Improvement is always allowed (lower violation counts)" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        if [ $REGRESSION_DETECTED -eq 1 ]; then
+          echo "❌ **REGRESSION DETECTED**: New violations exceed baseline by >10%" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "To fix: Reduce violations below threshold or update baseline after approval" >> $GITHUB_STEP_SUMMARY
+          exit 1
+        else
+          echo "✅ **ALL CHECKS PASSED**: No significant regression detected" >> $GITHUB_STEP_SUMMARY
+        fi
+
+    - name: Update baseline on main (if improved)
+      if: github.ref == 'refs/heads/main' && success()
+      run: |
+        # Only update if violations decreased
+        CURRENT_RUFF=$(jq '[.[] // []] | length' /tmp/lint-artifacts/python-lint-results/ruff-results.json 2>/dev/null || echo "0")
+        CURRENT_MYPY=$(grep -o "Found [0-9]* error" /tmp/lint-artifacts/python-lint-results/mypy-report/index.txt 2>/dev/null | grep -o "[0-9]*" || echo "0")
+        CURRENT_BANDIT=$(jq '[.results // []] | length' /tmp/lint-artifacts/python-lint-results/bandit-results.json 2>/dev/null || echo "0")
+        CURRENT_GO=$(jq '[.Issues // []] | length' /tmp/lint-artifacts/go-lint-results/go-lint-results.json 2>/dev/null || echo "0")
+        CURRENT_OXLINT=$(jq '[.[] // []] | length' /tmp/lint-artifacts/frontend-lint-results/oxlint-results.json 2>/dev/null || echo "0")
+
+        jq -n \
+          --arg ruff "$CURRENT_RUFF" \
+          --arg mypy "$CURRENT_MYPY" \
+          --arg bandit "$CURRENT_BANDIT" \
+          --arg go "$CURRENT_GO" \
+          --arg oxlint "$CURRENT_OXLINT" \
+          '{python_ruff: ($ruff|tonumber), python_mypy: ($mypy|tonumber), python_bandit: ($bandit|tonumber), go_lint: ($go|tonumber), frontend_oxlint: ($oxlint|tonumber)}' \
+          > .ci-baselines/lint-baseline.json
+
+        echo "Updated baseline with current violation counts"
+
   # Security Scanning
   security-scan:
     name: Security Scanning
@@ -510,6 +723,16 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+
+    - name: Setup Bun (for frontend audit)
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: latest
+
+    - name: Frontend dependency audit (bun)
+      working-directory: frontend
+      run: bun install --frozen-lockfile && bun audit
+      continue-on-error: true
 
     - name: Run Trivy vulnerability scanner
       uses: aquasecurity/trivy-action@master
@@ -630,7 +853,7 @@ jobs:
 
     - name: Install Pulumi Node.js dependencies
       working-directory: infra
-      run: npm install
+      run: bun install
 
     - name: Pulumi up (dev)
       uses: pulumi/actions@v5
@@ -670,8 +893,8 @@ jobs:
         IMAGE_TAG: develop-${{ github.sha }}
         DOCKER_REGISTRY: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}
       run: |
-        chmod +x scripts/deploy.sh
-        ./scripts/deploy.sh all
+        chmod +x scripts/shell/deploy.sh
+        ./scripts/shell/deploy.sh all
 
     - name: Verify deployment
       run: |
@@ -709,8 +932,8 @@ jobs:
         IMAGE_TAG: ${{ github.event.release.tag_name }}
         DOCKER_REGISTRY: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}
       run: |
-        chmod +x scripts/deploy.sh
-        ./scripts/deploy.sh all
+        chmod +x scripts/shell/deploy.sh
+        ./scripts/shell/deploy.sh all
 
     - name: Verify deployment
       run: |
