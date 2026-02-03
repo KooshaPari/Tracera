@@ -1,10 +1,8 @@
 // Traceability Matrix API stub
-import type { Item, Link } from "./types";
 import client from "./client";
+import type { Item, Link } from "./types";
 
-const { apiClient, safeApiCall } = client;
-
-export interface TraceabilityMatrix {
+interface TraceabilityMatrix {
 	coverage: {
 		percentage: number;
 		total: number;
@@ -15,70 +13,80 @@ export interface TraceabilityMatrix {
 	links: Link[];
 }
 
-const fetchMatrix = (projectId: string): Promise<TraceabilityMatrix> => {
-	const response = safeApiCall(
-		apiClient.GET("/api/v1/projects/{id}/matrix", {
-			params: { path: { id: projectId } },
-		}),
-	);
-	return response
-		.then((res) => {
-			const data = res.data;
-			if (
-				data &&
-				typeof data === "object" &&
-				"coverage" in data &&
-				"items" in data &&
-				"links" in data
-			) {
-				return data as TraceabilityMatrix;
-			}
-			return {
-				coverage: {
-					percentage: 0,
-					total: 0,
-					traced: 0,
-					untraced: 0,
-				},
-				items: [],
-				links: [],
-			} satisfies TraceabilityMatrix;
-		})
-		.catch(() => {
-			return {
-				coverage: {
-					percentage: 0,
-					total: 0,
-					traced: 0,
-					untraced: 0,
-				},
-				items: [],
-				links: [],
-			} satisfies TraceabilityMatrix;
-		});
+const apiClient = client.apiClient;
+const safeApiCall = client.safeApiCall;
+const get = apiClient.GET.bind(apiClient);
+
+const emptyMatrix: TraceabilityMatrix = {
+	coverage: {
+		percentage: 0,
+		total: 0,
+		traced: 0,
+		untraced: 0,
+	},
+	items: [],
+	links: [],
 };
 
-const exportMatrix = (
+const isRecordObject = (value: unknown): value is Record<string, unknown> =>
+	Object.prototype.toString.call(value) === "[object Object]";
+
+const isTraceabilityMatrix = (value: unknown): value is TraceabilityMatrix => {
+	if (!isRecordObject(value)) {
+		return false;
+	}
+
+	const coverage = value["coverage"];
+	const items = value["items"];
+	const links = value["links"];
+
+	if (!isRecordObject(coverage) || !Array.isArray(items) || !Array.isArray(links)) {
+		return false;
+	}
+
+	return (
+		typeof coverage["percentage"] === "number" &&
+		typeof coverage["total"] === "number" &&
+		typeof coverage["traced"] === "number" &&
+		typeof coverage["untraced"] === "number"
+	);
+};
+
+const fetchMatrix = async (projectId: string): Promise<TraceabilityMatrix> => {
+	try {
+		const response = await safeApiCall(
+			get("/api/v1/projects/{id}/matrix", {
+				params: { path: { id: projectId } },
+			}),
+		);
+		const { data } = response;
+		if (isTraceabilityMatrix(data)) {
+			return data;
+		}
+		return emptyMatrix;
+	} catch {
+		return emptyMatrix;
+	}
+};
+
+const exportMatrix = async (
 	projectId: string,
 	format: "csv" | "json" | "xlsx",
 ): Promise<Blob> => {
-	const response = safeApiCall(
-		apiClient.GET("/api/v1/projects/{id}/matrix/export", {
-			params: { path: { id: projectId }, query: { format } },
-		}),
-	);
-	return response
-		.then((res) => {
-			return new Blob([JSON.stringify(res.data)], {
-				type: "application/json",
-			});
-		})
-		.catch(() => {
-			return new Blob(["{}"], { type: "application/json" });
+	try {
+		const response = await safeApiCall(
+			get("/api/v1/projects/{id}/matrix/export", {
+				params: { path: { id: projectId }, query: { format } },
+			}),
+		);
+		return new Blob([JSON.stringify(response.data)], {
+			type: "application/json",
 		});
+	} catch {
+		return new Blob(["{}"], { type: "application/json" });
+	}
 };
 
 const matrixApi = { exportMatrix, fetchMatrix };
 
-// eslint-disable-next-line import/no-default-export
-export default matrixApi;
+export { matrixApi, type TraceabilityMatrix };

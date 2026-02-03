@@ -24,9 +24,42 @@ interface RateLimitBody {
 	retry_after?: number;
 }
 
-const parseJson = <TData>(response: Response): Promise<TData> => {
-	const clone = response.clone();
-	return clone.json().catch(() => ({}) as TData) as Promise<TData>;
+const isRecordObject = (value: unknown): value is Record<string, unknown> =>
+	Object.prototype.toString.call(value) === "[object Object]";
+
+const parseJsonObject = async (
+	response: Response,
+): Promise<Record<string, unknown>> => {
+	try {
+		const data = await response.clone().json();
+		if (isRecordObject(data)) {
+			return data;
+		}
+		return {};
+	} catch {
+		return {};
+	}
+};
+
+const parseIntegrationAuthBody = async (
+	response: Response,
+): Promise<IntegrationAuthBody> => {
+	const data = await parseJsonObject(response);
+	const code = typeof data["code"] === "string" ? data["code"] : undefined;
+	const detail =
+		typeof data["detail"] === "string" ? data["detail"] : undefined;
+	return { code, detail };
+};
+
+const parseRateLimitBody = async (
+	response: Response,
+): Promise<RateLimitBody> => {
+	const data = await parseJsonObject(response);
+	const detail =
+		typeof data["detail"] === "string" ? data["detail"] : undefined;
+	const retryAfter =
+		typeof data["retry_after"] === "number" ? data["retry_after"] : undefined;
+	return { detail, retry_after: retryAfter };
 };
 
 const showToast = (
@@ -90,7 +123,7 @@ const handleUnauthorizedBody = (
 	response: Response,
 	handleLogout: () => void,
 ): Promise<boolean> => {
-	return parseJson<IntegrationAuthBody>(response).then((body) => {
+	return parseIntegrationAuthBody(response).then((body) => {
 		const detail = getIntegrationAuthDetail(body);
 		if (detail) {
 			return showIntegrationAuthToast(detail);
@@ -140,7 +173,7 @@ const handleRateLimited = (response: Response): Promise<boolean> => {
 	if (response.status !== apiConstants.statusRateLimited) {
 		return Promise.resolve(false);
 	}
-	return parseJson<RateLimitBody>(response).then((body) => {
+	return parseRateLimitBody(response).then((body) => {
 		const retryAfterHeader =
 			response.headers.get(apiConstants.retryAfterHeader) ?? "";
 		const seconds = resolveRateLimitSeconds(retryAfterHeader, body);
@@ -166,7 +199,7 @@ const handleNotFound = (response: Response): Promise<boolean> => {
 	if (response.status !== apiConstants.statusNotFound) {
 		return Promise.resolve(false);
 	}
-	return parseJson<IntegrationAuthBody>(response).then((body) => {
+	return parseIntegrationAuthBody(response).then((body) => {
 		if (body.code === "integration_not_found") {
 			const detail = body.detail ?? "The requested item was not found.";
 			return showToast("Resource not found", detail);

@@ -4,32 +4,29 @@
  * Demonstrates how to use the worker hooks in a React component
  */
 
-import { useState } from "react";
 import {
-	type WorkerStatus,
 	useDataTransformWorker,
 	useExportImportWorker,
 	useGraphLayoutWorker,
 	useSearchIndexWorker,
 	useWorkerSupport,
 } from "@/hooks/useWorker";
+import { useState } from "react";
 
-const DEFAULT_NODE_SIZE = 50;
-const DIRECTION_TB = "TB";
-const LAYOUT_TYPE_DAGRE = "dagre";
-const MAX_DISPLAY_ITEMS = 10;
-const CATEGORY_COUNT = 3;
+const NODE_HEIGHT = 50;
+const NODE_WIDTH = 100;
+const NODE_COUNT = 3;
+const CATEGORY_MODULO = 3;
+const MAX_ITEMS_DISPLAY = 10;
+const DATA_LENGTH = 1000;
+const TITLE_WEIGHT = 2;
 const DEFAULT_WEIGHT = 1;
-const TITLE_WEIGHT_MULTIPLIER = 2;
 const MAX_DISTANCE = 2;
-const DEFAULT_CATEGORY_LIST = ["A", "B", "C"] as const;
-
-const defaultNode = { height: DEFAULT_NODE_SIZE, width: DEFAULT_NODE_SIZE * 2 };
 
 const defaultNodes = [
-	{ ...defaultNode, id: "A" },
-	{ ...defaultNode, id: "B" },
-	{ ...defaultNode, id: "C" },
+	{ height: NODE_HEIGHT, id: "A", width: NODE_WIDTH },
+	{ height: NODE_HEIGHT, id: "B", width: NODE_WIDTH },
+	{ height: NODE_HEIGHT, id: "C", width: NODE_WIDTH },
 ];
 
 const defaultEdges = [
@@ -37,14 +34,28 @@ const defaultEdges = [
 	{ id: "BC", source: "B", target: "C" },
 ];
 
-const layoutOptions = { direction: DIRECTION_TB, type: LAYOUT_TYPE_DAGRE };
+const layoutOptions = { direction: "TB", type: "dagre" as const };
+
+const categoryList = ["A", "B", "C"] as const;
+
+const generateData = (length: number) =>
+	Array.from({ length }, (_, i) => ({
+		category: categoryList[i % CATEGORY_MODULO],
+		id: i,
+		value: Math.random() * 100,
+	}));
 
 const indexFieldWeights = {
 	content: DEFAULT_WEIGHT,
-	title: TITLE_WEIGHT_MULTIPLIER,
+	title: TITLE_WEIGHT,
 };
 
-function GraphLayoutExample() {
+const searchOptions = {
+	fuzzy: true,
+	maxDistance: MAX_DISTANCE,
+};
+
+export function GraphLayoutExample() {
 	const { worker, status, createProgressCallback } = useGraphLayoutWorker();
 	const [layoutResult, setLayoutResult] = useState<unknown>(null);
 
@@ -68,45 +79,37 @@ function GraphLayoutExample() {
 		}
 	};
 
-	const renderStatus = () => {
-		if (status.error) {
-			return (
-				<div className="text-red-500">
-					Error: {status.error.message}
-				</div>
-			);
-		}
-		if (status.progress > 0) {
-			return (
-				<div className="mt-2">
-					<div className="text-sm mb-1">
-						Progress: {status.progress.toFixed(0)}%
-					</div>
-					<div className="w-full bg-gray-200 rounded">
-						<div
-							className="bg-blue-500 h-2 rounded transition-all"
-							style={{ width: `${status.progress}%` }}
-						/>
-					</div>
-				</div>
-			);
-		}
-		return null;
-	};
+	const statusMessage = status.isReady ? "Ready" : "Loading...";
+	const progressPercent = status.progress.toFixed(0);
 
 	return (
 		<div className="p-4 border rounded">
 			<h2 className="text-lg font-bold mb-4">Graph Layout Worker</h2>
 
 			<div className="mb-4">
-				<div>Status: {status.isReady ? "Ready" : "Loading..."}</div>
-				{renderStatus()}
+				<div>Status: {statusMessage}</div>
+				{status.error && (
+					<div className="text-red-500">Error: {status.error.message}</div>
+				)}
+				{status.progress > 0 && (
+					<div className="mt-2">
+						<div className="text-sm mb-1">
+							Progress: {progressPercent}%
+						</div>
+						<div className="w-full bg-gray-200 rounded">
+							<div
+								className="bg-blue-500 h-2 rounded transition-all"
+								style={{ width: `${status.progress}%` }}
+							/>
+						</div>
+					</div>
+				)}
 			</div>
 
 			<button
+				onClick={handleComputeLayout}
 				disabled={!status.isReady}
 				className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
-				onClick={handleComputeLayout}
 			>
 				Compute Layout
 			</button>
@@ -123,60 +126,16 @@ function GraphLayoutExample() {
 	);
 }
 
-const generateRandomData = (count: number) =>
-	Array.from({ length: count }, (_, i) => ({
-		category: DEFAULT_CATEGORY_LIST[i % CATEGORY_COUNT],
-		id: i,
-		value: Math.random() * 100,
-	}));
-
-const transformResultDisplay = (
-	result: Readonly<{
-		readonly aggregated: unknown;
-		readonly sorted: ReadonlyArray<{ id: number; value: number }>;
-		readonly stats: unknown;
-	}>,
-) => (
-	<div className="mt-4 space-y-2">
-		<div>
-			<h3 className="font-semibold">Statistics:</h3>
-			<pre className="mt-1 p-2 bg-gray-100 rounded text-xs">
-				{JSON.stringify(result.stats, null, 2)}
-			</pre>
-		</div>
-		<div>
-			<h3 className="font-semibold">Top 10 (sorted):</h3>
-			<ul className="mt-1 text-sm">
-				{result.sorted.map((item) => (
-					<li key={item.id}>
-						ID: {item.id}, Value: {item.value.toFixed(2)}
-					</li>
-				))}
-			</ul>
-		</div>
-		<div>
-			<h3 className="font-semibold">Aggregated by Category:</h3>
-			<pre className="mt-1 p-2 bg-gray-100 rounded text-xs">
-				{JSON.stringify(result.aggregated, null, 2)}
-			</pre>
-		</div>
-	</div>
-);
-
-function DataTransformExample() {
+export function DataTransformExample() {
 	const { worker, status } = useDataTransformWorker();
-	const [result, setResult] = useState<Readonly<{
-		readonly aggregated: unknown;
-		readonly sorted: ReadonlyArray<{ id: number; value: number }>;
-		readonly stats: unknown;
-	}> | null>(null);
+	const [result, setResult] = useState<unknown>(null);
 
 	const handleTransform = async () => {
 		if (!worker) {
 			return;
 		}
 
-		const data = generateRandomData(1000);
+		const data = generateData(DATA_LENGTH);
 
 		try {
 			const sorted = await worker.sortData(data, "value", "desc");
@@ -190,7 +149,7 @@ function DataTransformExample() {
 
 			setResult({
 				aggregated,
-				sorted: sorted.slice(0, MAX_DISPLAY_ITEMS),
+				sorted: sorted.slice(0, MAX_ITEMS_DISPLAY),
 				stats,
 			});
 		} catch {
@@ -198,21 +157,44 @@ function DataTransformExample() {
 		}
 	};
 
-	const isDisabled = !status.isReady;
-
 	return (
 		<div className="p-4 border rounded">
 			<h2 className="text-lg font-bold mb-4">Data Transform Worker</h2>
 
 			<button
-				disabled={isDisabled}
-				className="px-4 py-2 bg-green-500 text-white rounded disabled:opacity-50"
 				onClick={handleTransform}
+				disabled={!status.isReady}
+				className="px-4 py-2 bg-green-500 text-white rounded disabled:opacity-50"
 			>
 				Transform 1000 Items
 			</button>
 
-			{result && transformResultDisplay(result)}
+			{result && (
+				<div className="mt-4 space-y-2">
+					<div>
+						<h3 className="font-semibold">Statistics:</h3>
+						<pre className="mt-1 p-2 bg-gray-100 rounded text-xs">
+							{JSON.stringify(result.stats, null, 2)}
+						</pre>
+					</div>
+					<div>
+						<h3 className="font-semibold">Top 10 (sorted):</h3>
+						<ul className="mt-1 text-sm">
+							{result.sorted.map((item: { id: number; value: number }) => (
+								<li key={item.id}>
+									ID: {item.id}, Value: {item.value.toFixed(2)}
+								</li>
+							))}
+						</ul>
+					</div>
+					<div>
+						<h3 className="font-semibold">Aggregated by Category:</h3>
+						<pre className="mt-1 p-2 bg-gray-100 rounded text-xs">
+							{JSON.stringify(result.aggregated, null, 2)}
+						</pre>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }
@@ -223,7 +205,7 @@ const sampleExportData = [
 	{ age: 35, id: 3, name: "Charlie" },
 ];
 
-function ExportImportExample() {
+export function ExportImportExample() {
 	const { worker, status } = useExportImportWorker();
 	const [exported, setExported] = useState("");
 
@@ -260,16 +242,16 @@ function ExportImportExample() {
 
 			<div className="space-x-2 mb-4">
 				<button
+					onClick={handleExport}
 					disabled={!status.isReady}
 					className="px-4 py-2 bg-purple-500 text-white rounded disabled:opacity-50"
-					onClick={handleExport}
 				>
 					Export to NDJSON
 				</button>
 				<button
+					onClick={handleImport}
 					disabled={!status.isReady || !exported}
 					className="px-4 py-2 bg-purple-700 text-white rounded disabled:opacity-50"
-					onClick={handleImport}
 				>
 					Import from NDJSON
 				</button>
@@ -289,41 +271,35 @@ function ExportImportExample() {
 
 const sampleDocuments = [
 	{
+		id: "1",
 		fields: {
 			content: "React is a JavaScript library for building user interfaces",
 			title: "Introduction to React",
 		},
-		id: "1",
 	},
 	{
+		id: "2",
 		fields: {
 			content: "Vue is a progressive framework for building user interfaces",
 			title: "Vue.js Basics",
 		},
-		id: "2",
 	},
 	{
+		id: "3",
 		fields: {
 			content: "Angular is a platform for building web applications",
 			title: "Angular Guide",
 		},
-		id: "3",
 	},
 ];
 
-const defaultSearchOptions = {
-	fuzzy: true,
-	maxDistance: MAX_DISTANCE,
-};
-
-function SearchIndexExample() {
+export function SearchIndexExample() {
 	const { worker, status } = useSearchIndexWorker();
 	const [index, setIndex] = useState<unknown>(null);
 	const [query, setQuery] = useState("");
-	const [results, setResults] = useState<ReadonlyArray<{
-		id: string;
-		score: number;
-	}>>([]);
+	const [results, setResults] = useState<
+		ReadonlyArray<{ id: string; score: number }>
+	>([]);
 
 	const handleBuildIndex = async () => {
 		if (!worker) {
@@ -347,41 +323,12 @@ function SearchIndexExample() {
 		}
 
 		try {
-			const searchResults = await worker.search(
-				index,
-				query,
-				defaultSearchOptions,
-			);
+			const searchResults = await worker.search(index, query, searchOptions);
 			setResults(searchResults);
 		} catch {
 			// Error handling is managed through status.error
 		}
 	};
-
-	const renderSearchResults = () => {
-		if (results.length === 0) {
-			return null;
-		}
-
-		return (
-			<div className="mt-4">
-				<h3 className="font-semibold">Results:</h3>
-				<ul className="mt-2 space-y-2">
-					{results.map((result) => (
-						<li key={result.id} className="p-2 bg-gray-100 rounded">
-							<div className="font-medium">Document {result.id}</div>
-							<div className="text-sm text-gray-600">
-								Score: {result.score.toFixed(2)}
-							</div>
-						</li>
-					))}
-				</ul>
-			</div>
-		);
-	};
-
-	const isBuildDisabled = !status.isReady;
-	const isSearchDisabled = !status.isReady || !index || !query;
 
 	return (
 		<div className="p-4 border rounded">
@@ -389,9 +336,9 @@ function SearchIndexExample() {
 
 			<div className="space-y-4">
 				<button
-					disabled={isBuildDisabled}
-					className="px-4 py-2 bg-orange-500 text-white rounded disabled:opacity-50"
 					onClick={handleBuildIndex}
+					disabled={!status.isReady}
+					className="px-4 py-2 bg-orange-500 text-white rounded disabled:opacity-50"
 				>
 					Build Index
 				</button>
@@ -407,15 +354,30 @@ function SearchIndexExample() {
 								className="flex-1 px-3 py-2 border rounded"
 							/>
 							<button
-								disabled={isSearchDisabled}
-								className="px-4 py-2 bg-orange-700 text-white rounded"
 								onClick={handleSearch}
+								className="px-4 py-2 bg-orange-700 text-white rounded"
 							>
 								Search
 							</button>
 						</div>
 
-						{renderSearchResults()}
+						{results.length > 0 && (
+							<div className="mt-4">
+								<h3 className="font-semibold">Results:</h3>
+								<ul className="mt-2 space-y-2">
+									{results.map((result) => (
+										<li key={result.id} className="p-2 bg-gray-100 rounded">
+											<div className="font-medium">
+												Document {result.id}
+											</div>
+											<div className="text-sm text-gray-600">
+												Score: {result.score.toFixed(2)}
+											</div>
+										</li>
+									))}
+								</ul>
+							</div>
+						)}
 					</>
 				)}
 			</div>
@@ -423,7 +385,7 @@ function SearchIndexExample() {
 	);
 }
 
-function WorkerSupportCheck() {
+export function WorkerSupportCheck() {
 	const { supported, checked } = useWorkerSupport();
 
 	if (!checked) {
@@ -449,7 +411,7 @@ function WorkerSupportCheck() {
 /**
  * Main demo component showing all worker examples
  */
-function WebWorkersDemo() {
+export function WebWorkersDemo() {
 	return (
 		<div className="p-8 max-w-6xl mx-auto">
 			<h1 className="text-3xl font-bold mb-8">Web Workers Demo</h1>
@@ -464,12 +426,3 @@ function WebWorkersDemo() {
 		</div>
 	);
 }
-
-export {
-	WebWorkersDemo,
-	GraphLayoutExample,
-	DataTransformExample,
-	ExportImportExample,
-	SearchIndexExample,
-	WorkerSupportCheck,
-};

@@ -1,8 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { X } from "lucide-react";
-import { useCallback, useEffect, useRef } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 import {
 	announceToScreenReader,
 	createFocusTrap,
@@ -10,6 +7,9 @@ import {
 	restoreFocus,
 	saveFocus,
 } from "@/lib/focus-management";
+import { useCallback, useEffect, useRef } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { FormArrayField } from "./FormArrayField";
 
 const statusOptions = [
@@ -53,11 +53,11 @@ interface CreateUserStoryItemFormProps {
 	isLoading?: boolean;
 }
 
-export function CreateUserStoryItemForm({
+export const CreateUserStoryItemForm = ({
 	onSubmit,
 	onCancel,
 	isLoading,
-}: CreateUserStoryItemFormProps) {
+}: CreateUserStoryItemFormProps) => {
 	const dialogRef = useRef<HTMLDivElement>(null);
 	const formRef = useRef<HTMLFormElement>(null);
 	const savedFocusRef = useRef<HTMLElement | null>(null);

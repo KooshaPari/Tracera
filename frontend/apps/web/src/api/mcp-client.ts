@@ -8,7 +8,7 @@ import type {
 	MCPTool,
 	ProgressNotification,
 } from "./mcp-client-types";
-import { type MCPClientState, type ProgressCallbacks, mcpClientUtils } from "./mcp-client-utils";
+import { mcpClientUtils, type MCPClientState, type ProgressCallbacks } from "./mcp-client-utils";
 import EventSourcePolyfill from "event-source-polyfill";
 
 type InitializeResponse = {

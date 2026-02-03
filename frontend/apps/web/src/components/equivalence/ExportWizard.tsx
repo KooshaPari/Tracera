@@ -1,6 +1,6 @@
 import { AlertCircle, Download, Loader2 } from "lucide-react";
-import { logger } from "@/lib/logger";
-import React, { useCallback, useState } from "react";
+import type { FC } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -14,9 +14,20 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import client from "@/api/client";
+import { clientCore } from "@/api/client-core";
+import { logger } from "@/lib/logger";
 
-const { getAuthHeaders } = client;
+const { getAuthHeaders } = clientCore;
+
+const BYTES_PER_KB = 1024;
+const EMBEDDING_BYTES_PER_CONCEPT = 12_800;
+const ESTIMATED_BYTES_PER_ITEM = 500;
+const SIZE_DECIMALS = 2;
+const SIZE_UNITS = ["B", "KB", "MB", "GB"] as const;
+
+type ExportStep = "options" | "review";
+
+type ExportFormat = "json" | "yaml";
 
 export interface ExportWizardProps {
 	projectId: string;
@@ -27,7 +38,7 @@ export interface ExportWizardProps {
 }
 
 export interface ExportConfig {
-	format: "json" | "yaml";
+	format: ExportFormat;
 	includeEmbeddings: boolean;
 	includeMetadata: boolean;
 	includeItemInfo: boolean;
@@ -47,26 +58,346 @@ interface ExportStats {
 	averageConfidence: number;
 }
 
-function formatSize(bytes: number): string {
-	const units = ["B", "KB", "MB", "GB"];
+const formatSize = (bytes: number): string => {
 	let size = bytes;
 	let unitIndex = 0;
-	while (size >= 1024 && unitIndex < units.length - 1) {
-		size /= 1024;
+	while (size >= BYTES_PER_KB && unitIndex < SIZE_UNITS.length - 1) {
+		size /= BYTES_PER_KB;
 		unitIndex += 1;
 	}
-	return `${size.toFixed(2)} ${units[unitIndex]}`;
-}
+	return `${size.toFixed(SIZE_DECIMALS)} ${SIZE_UNITS[unitIndex]}`;
+};
 
-export const ExportWizard: React.FC<ExportWizardProps> = ({
+const downloadExportBlob = (blob: Blob, filename: string): void => {
+	const url = URL.createObjectURL(blob);
+	const link = document.createElement("a");
+	link.href = url;
+	link.download = filename;
+	document.body.append(link);
+	link.click();
+	link.remove();
+	URL.revokeObjectURL(url);
+};
+
+const buildExportUrl = (
+	projectId: string,
+	config: ExportConfig,
+): string => {
+	const params = new URLSearchParams({
+		format: config.format,
+		include_embeddings: String(config.includeEmbeddings),
+		include_metadata: String(config.includeMetadata),
+	});
+	return `/api/v1/projects/${projectId}/equivalence/export?${params.toString()}`;
+};
+
+const fetchExportStats = async (projectId: string): Promise<ExportStats> => {
+	const response = await fetch(
+		`/api/v1/projects/${projectId}/equivalence/export-statistics`,
+		{ headers: getAuthHeaders() },
+	);
+	if (!response.ok) {
+		throw new Error("Failed to fetch statistics");
+	}
+	return (await response.json()) as ExportStats;
+};
+
+const runDefaultExport = async (
+	projectId: string,
+	projectName: string,
+	config: ExportConfig,
+): Promise<void> => {
+	const response = await fetch(buildExportUrl(projectId, config), {
+		headers: getAuthHeaders(),
+	});
+	if (!response.ok) {
+		throw new Error("Export failed");
+	}
+	const blob = await response.blob();
+	const date = new Date().toISOString().split("T")[0];
+	downloadExportBlob(blob, `equivalence-${projectName}-${date}.${config.format}`);
+};
+
+const SummaryItem: FC<{ label: string; value: number }> = ({ label, value }) => (
+	<div>
+		<div className="font-medium">{value}</div>
+		<div className="text-xs">{label}</div>
+	</div>
+);
+
+const ExportSummary: FC<{ stats: ExportStats }> = ({ stats }) => (
+	<div className="rounded-lg bg-blue-50 p-4 border border-blue-200">
+		<h3 className="font-semibold text-blue-900 mb-2">Export Summary</h3>
+		<div className="grid grid-cols-2 gap-4 text-sm text-blue-800">
+			<SummaryItem label="Canonical Concepts" value={stats.concepts} />
+			<SummaryItem label="Projections" value={stats.projections} />
+			<SummaryItem label="Equivalence Links" value={stats.links} />
+			<SummaryItem label="Perspectives" value={stats.perspectives} />
+		</div>
+	</div>
+);
+
+const FormatSelector: FC<{
+	format: ExportFormat;
+	onChange: (value: string) => void;
+}> = ({ format, onChange }) => (
+	<div>
+		<Label className="text-base font-semibold mb-3 block">Format</Label>
+		<RadioGroup value={format} onValueChange={onChange}>
+			<div className="flex items-center space-x-2 mb-2">
+				<RadioGroupItem value="json" id="json" />
+				<Label htmlFor="json" className="font-normal cursor-pointer">
+					JSON - Universal format with detailed structure
+				</Label>
+			</div>
+			<div className="flex items-center space-x-2">
+				<RadioGroupItem value="yaml" id="yaml" />
+				<Label htmlFor="yaml" className="font-normal cursor-pointer">
+					YAML - Human-readable format
+				</Label>
+			</div>
+		</RadioGroup>
+	</div>
+);
+
+const CheckboxRow: FC<{
+	id: string;
+	label: string;
+	checked: boolean;
+	onChange: (checked: boolean | "indeterminate") => void;
+}> = ({ id, label, checked, onChange }) => (
+	<div className="flex items-center space-x-2">
+		<Checkbox id={id} checked={checked} onCheckedChange={onChange} />
+		<Label htmlFor={id} className="font-normal cursor-pointer">
+			{label}
+		</Label>
+	</div>
+);
+
+const OptionsSection: FC<{
+	includeEmbeddings: boolean;
+	includeItemInfo: boolean;
+	includeMetadata: boolean;
+	pretty: boolean;
+	onEmbeddingsChange: (checked: boolean | "indeterminate") => void;
+	onItemInfoChange: (checked: boolean | "indeterminate") => void;
+	onMetadataChange: (checked: boolean | "indeterminate") => void;
+	onPrettyChange: (checked: boolean | "indeterminate") => void;
+}> = ({
+	includeEmbeddings,
+	includeItemInfo,
+	includeMetadata,
+	onEmbeddingsChange,
+	onItemInfoChange,
+	onMetadataChange,
+	onPrettyChange,
+	pretty,
+}) => (
+	<div className="space-y-3">
+		<Label className="text-base font-semibold">Options</Label>
+		<div className="space-y-2">
+			<CheckboxRow
+				id="embeddings"
+				label="Include embeddings (larger file size)"
+				checked={includeEmbeddings}
+				onChange={onEmbeddingsChange}
+			/>
+			<CheckboxRow
+				id="metadata"
+				label="Include metadata and evidence"
+				checked={includeMetadata}
+				onChange={onMetadataChange}
+			/>
+			<CheckboxRow
+				id="iteminfo"
+				label="Include item information (titles, types)"
+				checked={includeItemInfo}
+				onChange={onItemInfoChange}
+			/>
+			<CheckboxRow
+				id="pretty"
+				label="Pretty print (larger but human-readable)"
+				checked={pretty}
+				onChange={onPrettyChange}
+			/>
+		</div>
+	</div>
+);
+
+const EstimatedSizeRow: FC<{ size: string }> = ({ size }) => (
+	<div className="pt-2 pb-2 border-t">
+		<div className="flex justify-between items-center">
+			<span className="text-sm text-gray-600">Estimated file size:</span>
+			<span className="font-semibold">{size}</span>
+		</div>
+	</div>
+);
+
+const OptionsStep: FC<{
+	error: string | null;
+	stats: ExportStats | null;
+	format: ExportFormat;
+	includeEmbeddings: boolean;
+	includeItemInfo: boolean;
+	includeMetadata: boolean;
+	pretty: boolean;
+	estimatedSize: string;
+	onFormatChange: (value: string) => void;
+	onEmbeddingsChange: (checked: boolean | "indeterminate") => void;
+	onItemInfoChange: (checked: boolean | "indeterminate") => void;
+	onMetadataChange: (checked: boolean | "indeterminate") => void;
+	onPrettyChange: (checked: boolean | "indeterminate") => void;
+}> = ({
+	error,
+	stats,
+	format,
+	includeEmbeddings,
+	includeItemInfo,
+	includeMetadata,
+	pretty,
+	estimatedSize,
+	onFormatChange,
+	onEmbeddingsChange,
+	onItemInfoChange,
+	onMetadataChange,
+	onPrettyChange,
+}) => (
+	<div className="space-y-6">
+		{error && (
+			<Alert variant="destructive">
+				<AlertCircle className="h-4 w-4" />
+				<AlertDescription>{error}</AlertDescription>
+			</Alert>
+		)}
+		{stats && <ExportSummary stats={stats} />}
+		<div className="space-y-4">
+			<FormatSelector format={format} onChange={onFormatChange} />
+			<OptionsSection
+				includeEmbeddings={includeEmbeddings}
+				includeItemInfo={includeItemInfo}
+				includeMetadata={includeMetadata}
+				onEmbeddingsChange={onEmbeddingsChange}
+				onItemInfoChange={onItemInfoChange}
+				onMetadataChange={onMetadataChange}
+				onPrettyChange={onPrettyChange}
+				pretty={pretty}
+			/>
+			<EstimatedSizeRow size={estimatedSize} />
+		</div>
+	</div>
+);
+
+const ReviewOptionsList: FC<{
+	includeEmbeddings: boolean;
+	includeItemInfo: boolean;
+	includeMetadata: boolean;
+	pretty: boolean;
+}> = ({ includeEmbeddings, includeItemInfo, includeMetadata, pretty }) => (
+	<ul className="text-sm space-y-1 list-disc list-inside">
+		{includeEmbeddings && <li>Embeddings</li>}
+		{includeMetadata && <li>Metadata & Evidence</li>}
+		{includeItemInfo && <li>Item Information</li>}
+		{pretty && <li>Pretty Print</li>}
+	</ul>
+);
+
+const ReviewStep: FC<{
+	format: ExportFormat;
+	estimatedSize: string;
+	includeEmbeddings: boolean;
+	includeItemInfo: boolean;
+	includeMetadata: boolean;
+	pretty: boolean;
+}> = ({
+	format,
+	estimatedSize,
+	includeEmbeddings,
+	includeItemInfo,
+	includeMetadata,
+	pretty,
+}) => (
+	<div className="space-y-4">
+		<div className="rounded-lg bg-gray-50 p-4 space-y-3">
+			<div className="grid grid-cols-2 gap-4 text-sm">
+				<div>
+					<span className="text-gray-600">Format:</span>
+					<span className="font-semibold ml-2">{format.toUpperCase()}</span>
+				</div>
+				<div>
+					<span className="text-gray-600">File size:</span>
+					<span className="font-semibold ml-2">{estimatedSize}</span>
+				</div>
+			</div>
+			<div className="border-t pt-3">
+				<div className="text-sm text-gray-600 mb-2">Options enabled:</div>
+				<ReviewOptionsList
+					includeEmbeddings={includeEmbeddings}
+					includeItemInfo={includeItemInfo}
+					includeMetadata={includeMetadata}
+					pretty={pretty}
+				/>
+			</div>
+		</div>
+		<Alert>
+			<AlertCircle className="h-4 w-4" />
+			<AlertDescription>
+				The export file will contain all equivalence data for this project. You
+				can import it later into another project or keep it as a backup.
+			</AlertDescription>
+		</Alert>
+	</div>
+);
+
+const ExportFooter: FC<{
+	step: ExportStep;
+	isLoading: boolean;
+	onBack: () => void;
+	onClose: () => void;
+	onExport: () => void;
+	onNext: () => void;
+}> = ({ step, isLoading, onBack, onClose, onExport, onNext }) => (
+	<DialogFooter>
+		{step === "options" ? (
+			<>
+				<Button variant="outline" onClick={onClose}>
+					Cancel
+				</Button>
+				<Button onClick={onNext} disabled={isLoading}>
+					Next
+				</Button>
+			</>
+		) : (
+			<>
+				<Button variant="outline" onClick={onBack} disabled={isLoading}>
+					Back
+				</Button>
+				<Button onClick={onExport} disabled={isLoading} className="gap-2">
+					{isLoading ? (
+						<>
+							<Loader2 className="h-4 w-4 animate-spin" />
+							Exporting...
+						</>
+					) : (
+						<>
+							<Download className="h-4 w-4" />
+							Export
+						</>
+					)}
+				</Button>
+			</>
+		)}
+	</DialogFooter>
+);
+
+export const ExportWizard: FC<ExportWizardProps> = ({
 	projectId,
 	projectName,
 	isOpen,
 	onClose,
 	onExport,
 }) => {
-	const [step, setStep] = useState<"options" | "review">("options");
-	const [format, setFormat] = useState<"json" | "yaml">("json");
+	const [step, setStep] = useState<ExportStep>("options");
+	const [format, setFormat] = useState<ExportFormat>("json");
 	const [includeEmbeddings, setIncludeEmbeddings] = useState(false);
 	const [includeMetadata, setIncludeMetadata] = useState(true);
 	const [includeItemInfo, setIncludeItemInfo] = useState(true);
@@ -75,29 +406,62 @@ export const ExportWizard: React.FC<ExportWizardProps> = ({
 	const [error, setError] = useState<string | null>(null);
 	const [stats, setStats] = useState<ExportStats | null>(null);
 
-	const fetchStats = useCallback(async () => {
-		try {
-			const response = await fetch(
-				`/api/v1/projects/${projectId}/equivalence/export-statistics`,
-				{ headers: getAuthHeaders() },
-			);
-			if (!response.ok) {
-				throw new Error("Failed to fetch statistics");
-			}
-			const data = await response.json();
-			setStats(data);
-		} catch (error) {
-			logger.error("Failed to fetch export statistics:", error);
-			setError("Failed to load export statistics");
+	useEffect(() => {
+		let isMounted = true;
+		if (!isOpen || stats) {
+			return () => {
+				isMounted = false;
+			};
 		}
-	}, [projectId]);
+		fetchExportStats(projectId)
+			.then((data) => {
+				if (isMounted) {
+					setStats(data);
+				}
+			})
+			.catch((fetchError) => {
+				logger.error("Failed to fetch export statistics:", fetchError);
+				if (isMounted) {
+					setError("Failed to load export statistics");
+				}
+			});
+		return () => {
+			isMounted = false;
+		};
+	}, [isOpen, projectId, stats]);
 
-	// Fetch statistics when dialog opens
-	React.useEffect(() => {
-		if (isOpen && !stats) {
-			undefined;
+	const estimatedSize = useMemo(() => {
+		if (!stats) {
+			return "Calculating...";
 		}
-	}, [isOpen, stats, fetchStats]);
+		const baseSize =
+			(stats.concepts + stats.projections + stats.links) *
+			ESTIMATED_BYTES_PER_ITEM;
+		const embeddingsSize = includeEmbeddings
+			? stats.concepts * EMBEDDING_BYTES_PER_CONCEPT
+			: 0;
+		return formatSize(baseSize + embeddingsSize);
+	}, [includeEmbeddings, stats]);
+
+	const handleFormatChange = (value: string) => {
+		setFormat(value as ExportFormat);
+	};
+
+	const handleEmbeddingsChange = (checked: boolean | "indeterminate") => {
+		setIncludeEmbeddings(Boolean(checked));
+	};
+
+	const handleItemInfoChange = (checked: boolean | "indeterminate") => {
+		setIncludeItemInfo(Boolean(checked));
+	};
+
+	const handleMetadataChange = (checked: boolean | "indeterminate") => {
+		setIncludeMetadata(Boolean(checked));
+	};
+
+	const handlePrettyChange = (checked: boolean | "indeterminate") => {
+		setPretty(Boolean(checked));
+	};
 
 	const handleNext = () => {
 		setStep("review");
@@ -107,10 +471,15 @@ export const ExportWizard: React.FC<ExportWizardProps> = ({
 		setStep("options");
 	};
 
+	const handleClose = () => {
+		setStep("options");
+		setError(null);
+		onClose();
+	};
+
 	const handleExport = async () => {
 		setIsLoading(true);
 		setError(null);
-
 		try {
 			const config: ExportConfig = {
 				format,
@@ -119,55 +488,19 @@ export const ExportWizard: React.FC<ExportWizardProps> = ({
 				includeMetadata,
 				pretty,
 			};
-
 			if (onExport) {
 				await onExport(config);
 			} else {
-				// Default export behavior
-				const response = await fetch(
-					`/api/v1/projects/${projectId}/equivalence/export?format=${format}` +
-						`&include_embeddings=${includeEmbeddings}` +
-						`&include_metadata=${includeMetadata}`,
-					{ headers: getAuthHeaders() },
-				);
-
-				if (!response.ok) {
-					throw new Error("Export failed");
-				}
-
-				const blob = await response.blob();
-				const url = URL.createObjectURL(blob);
-				const link = document.createElement("a");
-				link.href = url;
-				link.download = `equivalence-${projectName}-${new Date().toISOString().split("T")[0]}.${format}`;
-				document.body.append(link);
-				link.click();
-				document.body.removeChild(link);
-				URL.revokeObjectURL(url);
+				await runDefaultExport(projectId, projectName, config);
 			}
-
 			onClose();
-		} catch (error) {
-			setError(error instanceof Error ? error.message : "Export failed");
+		} catch (exportError) {
+			setError(
+				exportError instanceof Error ? exportError.message : "Export failed",
+			);
 		} finally {
 			setIsLoading(false);
 		}
-	};
-
-	const handleClose = () => {
-		setStep("options");
-		setError(null);
-		onClose();
-	};
-
-	const estimateSize = (): string => {
-		if (!stats) {
-			return "Calculating...";
-		}
-		// Rough estimation: ~500 bytes per concept, projection, and link
-		const baseSize = (stats.concepts + stats.projections + stats.links) * 500;
-		const embeddingsSize = includeEmbeddings ? stats.concepts * 12_800 : 0; // ~3200 floats
-		return formatSize(baseSize + embeddingsSize);
 	};
 
 	return (
@@ -176,230 +509,46 @@ export const ExportWizard: React.FC<ExportWizardProps> = ({
 				<DialogHeader>
 					<DialogTitle>Export Equivalence Data</DialogTitle>
 					<DialogDescription>
-						Export canonical concepts, projections, and equivalence links from{" "}
+						Export canonical concepts, projections, and equivalence links from {" "}
 						{projectName}
 					</DialogDescription>
 				</DialogHeader>
 
-				{step === "options" && (
-					<div className="space-y-6">
-						{error && (
-							<Alert variant="destructive">
-								<AlertCircle className="h-4 w-4" />
-								<AlertDescription>{error}</AlertDescription>
-							</Alert>
-						)}
-
-						{stats && (
-							<div className="rounded-lg bg-blue-50 p-4 border border-blue-200">
-								<h3 className="font-semibold text-blue-900 mb-2">
-									Export Summary
-								</h3>
-								<div className="grid grid-cols-2 gap-4 text-sm text-blue-800">
-									<div>
-										<div className="font-medium">{stats.concepts}</div>
-										<div className="text-xs">Canonical Concepts</div>
-									</div>
-									<div>
-										<div className="font-medium">{stats.projections}</div>
-										<div className="text-xs">Projections</div>
-									</div>
-									<div>
-										<div className="font-medium">{stats.links}</div>
-										<div className="text-xs">Equivalence Links</div>
-									</div>
-									<div>
-										<div className="font-medium">{stats.perspectives}</div>
-										<div className="text-xs">Perspectives</div>
-									</div>
-								</div>
-							</div>
-						)}
-
-						<div className="space-y-4">
-							<div>
-								<Label className="text-base font-semibold mb-3 block">
-									Format
-								</Label>
-								<RadioGroup
-									value={format}
-									onValueChange={(v: string) => setFormat(v as "json" | "yaml")}
-								>
-									<div className="flex items-center space-x-2 mb-2">
-										<RadioGroupItem value="json" id="json" />
-										<Label
-											htmlFor="json"
-											className="font-normal cursor-pointer"
-										>
-											JSON - Universal format with detailed structure
-										</Label>
-									</div>
-									<div className="flex items-center space-x-2">
-										<RadioGroupItem value="yaml" id="yaml" />
-										<Label
-											htmlFor="yaml"
-											className="font-normal cursor-pointer"
-										>
-											YAML - Human-readable format
-										</Label>
-									</div>
-								</RadioGroup>
-							</div>
-
-							<div className="space-y-3">
-								<Label className="text-base font-semibold">Options</Label>
-								<div className="space-y-2">
-									<div className="flex items-center space-x-2">
-										<Checkbox
-											id="embeddings"
-											checked={includeEmbeddings}
-											onCheckedChange={(checked) =>
-												setIncludeEmbeddings(Boolean(checked))
-											}
-										/>
-										<Label
-											htmlFor="embeddings"
-											className="font-normal cursor-pointer"
-										>
-											Include embeddings (larger file size)
-										</Label>
-									</div>
-									<div className="flex items-center space-x-2">
-										<Checkbox
-											id="metadata"
-											checked={includeMetadata}
-											onCheckedChange={(checked) =>
-												setIncludeMetadata(Boolean(checked))
-											}
-										/>
-										<Label
-											htmlFor="metadata"
-											className="font-normal cursor-pointer"
-										>
-											Include metadata and evidence
-										</Label>
-									</div>
-									<div className="flex items-center space-x-2">
-										<Checkbox
-											id="iteminfo"
-											checked={includeItemInfo}
-											onCheckedChange={(checked) =>
-												setIncludeItemInfo(Boolean(checked))
-											}
-										/>
-										<Label
-											htmlFor="iteminfo"
-											className="font-normal cursor-pointer"
-										>
-											Include item information (titles, types)
-										</Label>
-									</div>
-									<div className="flex items-center space-x-2">
-										<Checkbox
-											id="pretty"
-											checked={pretty}
-											onCheckedChange={(checked) => setPretty(Boolean(checked))}
-										/>
-										<Label
-											htmlFor="pretty"
-											className="font-normal cursor-pointer"
-										>
-											Pretty print (larger but human-readable)
-										</Label>
-									</div>
-								</div>
-							</div>
-
-							<div className="pt-2 pb-2 border-t">
-								<div className="flex justify-between items-center">
-									<span className="text-sm text-gray-600">
-										Estimated file size:
-									</span>
-									<span className="font-semibold">{estimateSize()}</span>
-								</div>
-							</div>
-						</div>
-					</div>
+				{step === "options" ? (
+					<OptionsStep
+						error={error}
+						stats={stats}
+						format={format}
+						includeEmbeddings={includeEmbeddings}
+						includeItemInfo={includeItemInfo}
+						includeMetadata={includeMetadata}
+						pretty={pretty}
+						estimatedSize={estimatedSize}
+						onFormatChange={handleFormatChange}
+						onEmbeddingsChange={handleEmbeddingsChange}
+						onItemInfoChange={handleItemInfoChange}
+						onMetadataChange={handleMetadataChange}
+						onPrettyChange={handlePrettyChange}
+					/>
+				) : (
+					<ReviewStep
+						format={format}
+						estimatedSize={estimatedSize}
+						includeEmbeddings={includeEmbeddings}
+						includeItemInfo={includeItemInfo}
+						includeMetadata={includeMetadata}
+						pretty={pretty}
+					/>
 				)}
 
-				{step === "review" && (
-					<div className="space-y-4">
-						<div className="rounded-lg bg-gray-50 p-4 space-y-3">
-							<div className="grid grid-cols-2 gap-4 text-sm">
-								<div>
-									<span className="text-gray-600">Format:</span>
-									<span className="font-semibold ml-2">
-										{format.toUpperCase()}
-									</span>
-								</div>
-								<div>
-									<span className="text-gray-600">File size:</span>
-									<span className="font-semibold ml-2">{estimateSize()}</span>
-								</div>
-							</div>
-							<div className="border-t pt-3">
-								<div className="text-sm text-gray-600 mb-2">
-									Options enabled:
-								</div>
-								<ul className="text-sm space-y-1 list-disc list-inside">
-									{includeEmbeddings && <li>Embeddings</li>}
-									{includeMetadata && <li>Metadata & Evidence</li>}
-									{includeItemInfo && <li>Item Information</li>}
-									{pretty && <li>Pretty Print</li>}
-								</ul>
-							</div>
-						</div>
-
-						<Alert>
-							<AlertCircle className="h-4 w-4" />
-							<AlertDescription>
-								The export file will contain all equivalence data for this
-								project. You can import it later into another project or keep it
-								as a backup.
-							</AlertDescription>
-						</Alert>
-					</div>
-				)}
-
-				<DialogFooter>
-					{step === "options" ? (
-						<>
-							<Button variant="outline" onClick={handleClose}>
-								Cancel
-							</Button>
-							<Button onClick={handleNext} disabled={isLoading}>
-								Next
-							</Button>
-						</>
-					) : (
-						<>
-							<Button
-								variant="outline"
-								onClick={handleBack}
-								disabled={isLoading}
-							>
-								Back
-							</Button>
-							<Button
-								onClick={handleExport}
-								disabled={isLoading}
-								className="gap-2"
-							>
-								{isLoading ? (
-									<>
-										<Loader2 className="h-4 w-4 animate-spin" />
-										Exporting...
-									</>
-								) : (
-									<>
-										<Download className="h-4 w-4" />
-										Export
-									</>
-								)}
-							</Button>
-						</>
-					)}
-				</DialogFooter>
+				<ExportFooter
+					step={step}
+					isLoading={isLoading}
+					onBack={handleBack}
+					onClose={handleClose}
+					onExport={handleExport}
+					onNext={handleNext}
+				/>
 			</DialogContent>
 		</Dialog>
 	);

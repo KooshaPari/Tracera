@@ -1,8 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { X } from "lucide-react";
-import { useCallback, useEffect, useRef } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 import {
 	announceToScreenReader,
 	createFocusTrap,
@@ -10,6 +7,9 @@ import {
 	restoreFocus,
 	saveFocus,
 } from "@/lib/focus-management";
+import { useCallback, useEffect, useRef } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 // Base item fields
 const statusOptions = [
@@ -92,7 +92,7 @@ const earsPatternExamples: Record<string, string> = {
 	unwanted: "The system shall not store passwords in plain text",
 };
 
-export function CreateRequirementItemForm({
+export const CreateRequirementItemForm = ({
 	onSubmit,
 	onCancel,
 	isLoading,

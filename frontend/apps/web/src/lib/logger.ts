@@ -17,7 +17,7 @@ class Logger {
 	 * Debug level logging - only visible in development
 	 * Use for detailed debugging information
 	 */
-	debug(...args: any[]) {
+	debug(...args: unknown[]): void {
 		if (this.isDev) {
 			console.debug("[DEBUG]", ...args);
 		}
@@ -27,7 +27,7 @@ class Logger {
 	 * Info level logging - only visible in development
 	 * Use for general informational messages
 	 */
-	info(...args: any[]) {
+	info(...args: unknown[]): void {
 		if (this.isDev) {
 			console.info("[INFO]", ...args);
 		}
@@ -37,7 +37,7 @@ class Logger {
 	 * Warning level logging - visible in all environments
 	 * Use for non-critical issues that should be monitored
 	 */
-	warn(...args: any[]) {
+	warn(...args: unknown[]): void {
 		console.warn("[WARN]", ...args);
 	}
 
@@ -45,7 +45,7 @@ class Logger {
 	 * Error level logging - visible in all environments
 	 * Use for errors that need attention
 	 */
-	error(...args: any[]) {
+	error(...args: unknown[]): void {
 		console.error("[ERROR]", ...args);
 	}
 
@@ -53,7 +53,7 @@ class Logger {
 	 * Table logging - only visible in development
 	 * Use for displaying tabular data
 	 */
-	table(data: any, columns?: string[]) {
+	table(data: unknown, columns?: string[]): void {
 		if (this.isDev) {
 			console.table(data, columns);
 		}
@@ -63,7 +63,7 @@ class Logger {
 	 * Group logging - only visible in development
 	 * Use for grouping related log messages
 	 */
-	group(label: string) {
+	group(label: string): void {
 		if (this.isDev) {
 			console.group(label);
 		}
@@ -72,7 +72,7 @@ class Logger {
 	/**
 	 * Collapsed group logging - only visible in development
 	 */
-	groupCollapsed(label: string) {
+	groupCollapsed(label: string): void {
 		if (this.isDev) {
 			console.groupCollapsed(label);
 		}
@@ -81,7 +81,7 @@ class Logger {
 	/**
 	 * End group logging - only visible in development
 	 */
-	groupEnd() {
+	groupEnd(): void {
 		if (this.isDev) {
 			console.groupEnd();
 		}
@@ -90,7 +90,7 @@ class Logger {
 	/**
 	 * Time tracking - only visible in development
 	 */
-	time(label: string) {
+	time(label: string): void {
 		if (this.isDev) {
 			console.time(label);
 		}
@@ -99,7 +99,7 @@ class Logger {
 	/**
 	 * End time tracking - only visible in development
 	 */
-	timeEnd(label: string) {
+	timeEnd(label: string): void {
 		if (this.isDev) {
 			console.timeEnd(label);
 		}

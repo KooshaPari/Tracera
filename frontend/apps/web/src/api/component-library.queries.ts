@@ -1,163 +1,174 @@
-/* eslint-disable eslint/no-duplicate-imports, eslint/prefer-object-spread, eslint/sort-imports */
-import type { UseQueryOptions, UseQueryResult } from "@tanstack/react-query";
-import { useQuery } from "@tanstack/react-query";
-import type {
-	ComponentLibrary,
-	ComponentUsage,
-	DesignToken,
-	LibraryComponent,
-} from "@tracertm/types";
-import client from "./client";
-
-const { apiClient, handleApiResponse } = client;
-
-const apiGet = apiClient["GET"];
-
-const componentLibraryQueryKeys = {
-	all: ["componentLibrary"] as const,
-	component: (componentId: string) =>
-		["componentLibrary", "component", componentId] as const,
-	components: (libraryId: string) =>
-		["componentLibrary", "components", libraryId] as const,
-	detail: (id: string) => [...componentLibraryQueryKeys.details(), id] as const,
-	details: () => [...componentLibraryQueryKeys.all, "detail"] as const,
-	list: (projectId: string) =>
-		[...componentLibraryQueryKeys.lists(), projectId] as const,
-	lists: () => [...componentLibraryQueryKeys.all, "list"] as const,
-	tokens: (libraryId: string) =>
-		["componentLibrary", "tokens", libraryId] as const,
-	usage: (componentId: string) =>
-		["componentLibrary", "usage", componentId] as const,
-};
+import type * as ReactQuery from "@tanstack/react-query";
+import type * as TracerTypes from "@tracertm/types";
+import * as QueryKeys from "./component-library-keys";
+import * as QueryClient from "./query-client";
+import * as ReactQueryHooks from "./react-query-hooks";
 
 const useComponentLibraries = (
 	projectId: string,
-	options?: UseQueryOptions<ComponentLibrary[]>,
-): UseQueryResult<ComponentLibrary[]> => {
-	const queryOptions = Object.assign(
-		{
-			enabled: Boolean(projectId),
-			queryFn: async () =>
-				await handleApiResponse(
-					apiGet("/api/v1/projects/{projectId}/libraries", {
+	options?: ReactQuery.UseQueryOptions<TracerTypes.ComponentLibrary[]>,
+): ReactQuery.UseQueryResult<TracerTypes.ComponentLibrary[]> => {
+	const baseOptions: ReactQuery.UseQueryOptions<
+		TracerTypes.ComponentLibrary[]
+	> = {
+		enabled: Boolean(projectId),
+		queryFn: async (): Promise<TracerTypes.ComponentLibrary[]> =>
+			QueryClient.handleApiResponse(
+				QueryClient.api.get<TracerTypes.ComponentLibrary[]>(
+					"/api/v1/projects/{projectId}/libraries",
+					{
 						params: { path: { projectId } },
-					}),
+					},
 				),
-			queryKey: componentLibraryQueryKeys.list(projectId),
-		},
-		options,
-	);
+			),
+		queryKey: QueryKeys.componentLibraryQueryKeys.list(projectId),
+	};
 
-	return useQuery(queryOptions);
+	const queryOptions: ReactQuery.UseQueryOptions<
+		TracerTypes.ComponentLibrary[]
+	> = {};
+	Object.assign(queryOptions, baseOptions, options);
+
+	return ReactQueryHooks.useQuery(queryOptions);
 };
 
 const useComponentLibrary = (
 	libraryId: string,
-	options?: UseQueryOptions<ComponentLibrary>,
-): UseQueryResult<ComponentLibrary> => {
-	const queryOptions = Object.assign(
-		{
-			enabled: Boolean(libraryId),
-			queryFn: async () =>
-				await handleApiResponse(
-					apiGet("/api/v1/libraries/{libraryId}", {
+	options?: ReactQuery.UseQueryOptions<TracerTypes.ComponentLibrary>,
+): ReactQuery.UseQueryResult<TracerTypes.ComponentLibrary> => {
+	const baseOptions: ReactQuery.UseQueryOptions<
+		TracerTypes.ComponentLibrary
+	> = {
+		enabled: Boolean(libraryId),
+		queryFn: async (): Promise<TracerTypes.ComponentLibrary> =>
+			QueryClient.handleApiResponse(
+				QueryClient.api.get<TracerTypes.ComponentLibrary>(
+					"/api/v1/libraries/{libraryId}",
+					{
 						params: { path: { libraryId } },
-					}),
+					},
 				),
-			queryKey: componentLibraryQueryKeys.detail(libraryId),
-		},
-		options,
-	);
+			),
+		queryKey: QueryKeys.componentLibraryQueryKeys.detail(libraryId),
+	};
 
-	return useQuery(queryOptions);
+	const queryOptions: ReactQuery.UseQueryOptions<
+		TracerTypes.ComponentLibrary
+	> = {};
+	Object.assign(queryOptions, baseOptions, options);
+
+	return ReactQueryHooks.useQuery(queryOptions);
 };
 
 const useLibraryComponents = (
 	libraryId: string,
-	options?: UseQueryOptions<LibraryComponent[]>,
-): UseQueryResult<LibraryComponent[]> => {
-	const queryOptions = Object.assign(
-		{
-			enabled: Boolean(libraryId),
-			queryFn: async () =>
-				await handleApiResponse(
-					apiGet("/api/v1/libraries/{libraryId}/components", {
+	options?: ReactQuery.UseQueryOptions<TracerTypes.LibraryComponent[]>,
+): ReactQuery.UseQueryResult<TracerTypes.LibraryComponent[]> => {
+	const baseOptions: ReactQuery.UseQueryOptions<
+		TracerTypes.LibraryComponent[]
+	> = {
+		enabled: Boolean(libraryId),
+		queryFn: async (): Promise<TracerTypes.LibraryComponent[]> =>
+			QueryClient.handleApiResponse(
+				QueryClient.api.get<TracerTypes.LibraryComponent[]>(
+					"/api/v1/libraries/{libraryId}/components",
+					{
 						params: { path: { libraryId } },
-					}),
+					},
 				),
-			queryKey: componentLibraryQueryKeys.components(libraryId),
-		},
-		options,
-	);
+			),
+		queryKey: QueryKeys.componentLibraryQueryKeys.components(libraryId),
+	};
 
-	return useQuery(queryOptions);
+	const queryOptions: ReactQuery.UseQueryOptions<
+		TracerTypes.LibraryComponent[]
+	> = {};
+	Object.assign(queryOptions, baseOptions, options);
+
+	return ReactQueryHooks.useQuery(queryOptions);
 };
 
 const useLibraryComponent = (
 	componentId: string,
-	options?: UseQueryOptions<LibraryComponent>,
-): UseQueryResult<LibraryComponent> => {
-	const queryOptions = Object.assign(
-		{
-			enabled: Boolean(componentId),
-			queryFn: async () =>
-				await handleApiResponse(
-					apiGet("/api/v1/components/{componentId}", {
+	options?: ReactQuery.UseQueryOptions<TracerTypes.LibraryComponent>,
+): ReactQuery.UseQueryResult<TracerTypes.LibraryComponent> => {
+	const baseOptions: ReactQuery.UseQueryOptions<
+		TracerTypes.LibraryComponent
+	> = {
+		enabled: Boolean(componentId),
+		queryFn: async (): Promise<TracerTypes.LibraryComponent> =>
+			QueryClient.handleApiResponse(
+				QueryClient.api.get<TracerTypes.LibraryComponent>(
+					"/api/v1/components/{componentId}",
+					{
 						params: { path: { componentId } },
-					}),
+					},
 				),
-			queryKey: componentLibraryQueryKeys.component(componentId),
-		},
-		options,
-	);
+			),
+		queryKey: QueryKeys.componentLibraryQueryKeys.component(componentId),
+	};
 
-	return useQuery(queryOptions);
+	const queryOptions: ReactQuery.UseQueryOptions<
+		TracerTypes.LibraryComponent
+	> = {};
+	Object.assign(queryOptions, baseOptions, options);
+
+	return ReactQueryHooks.useQuery(queryOptions);
 };
 
 const useComponentUsage = (
 	componentId: string,
-	options?: UseQueryOptions<ComponentUsage[]>,
-): UseQueryResult<ComponentUsage[]> => {
-	const queryOptions = Object.assign(
-		{
-			enabled: Boolean(componentId),
-			queryFn: async () =>
-				await handleApiResponse(
-					apiGet("/api/v1/components/{componentId}/usage", {
+	options?: ReactQuery.UseQueryOptions<TracerTypes.ComponentUsage[]>,
+): ReactQuery.UseQueryResult<TracerTypes.ComponentUsage[]> => {
+	const baseOptions: ReactQuery.UseQueryOptions<
+		TracerTypes.ComponentUsage[]
+	> = {
+		enabled: Boolean(componentId),
+		queryFn: async (): Promise<TracerTypes.ComponentUsage[]> =>
+			QueryClient.handleApiResponse(
+				QueryClient.api.get<TracerTypes.ComponentUsage[]>(
+					"/api/v1/components/{componentId}/usage",
+					{
 						params: { path: { componentId } },
-					}),
+					},
 				),
-			queryKey: componentLibraryQueryKeys.usage(componentId),
-		},
-		options,
-	);
+			),
+		queryKey: QueryKeys.componentLibraryQueryKeys.usage(componentId),
+	};
 
-	return useQuery(queryOptions);
+	const queryOptions: ReactQuery.UseQueryOptions<
+		TracerTypes.ComponentUsage[]
+	> = {};
+	Object.assign(queryOptions, baseOptions, options);
+
+	return ReactQueryHooks.useQuery(queryOptions);
 };
 
 const useDesignTokens = (
 	libraryId: string,
-	options?: UseQueryOptions<DesignToken[]>,
-): UseQueryResult<DesignToken[]> => {
-	const queryOptions = Object.assign(
-		{
-			enabled: Boolean(libraryId),
-			queryFn: async () =>
-				await handleApiResponse(
-					apiGet("/api/v1/libraries/{libraryId}/tokens", {
+	options?: ReactQuery.UseQueryOptions<TracerTypes.DesignToken[]>,
+): ReactQuery.UseQueryResult<TracerTypes.DesignToken[]> => {
+	const baseOptions: ReactQuery.UseQueryOptions<TracerTypes.DesignToken[]> = {
+		enabled: Boolean(libraryId),
+		queryFn: async (): Promise<TracerTypes.DesignToken[]> =>
+			QueryClient.handleApiResponse(
+				QueryClient.api.get<TracerTypes.DesignToken[]>(
+					"/api/v1/libraries/{libraryId}/tokens",
+					{
 						params: { path: { libraryId } },
-					}),
+					},
 				),
-			queryKey: componentLibraryQueryKeys.tokens(libraryId),
-		},
-		options,
-	);
+			),
+		queryKey: QueryKeys.componentLibraryQueryKeys.tokens(libraryId),
+	};
 
-	return useQuery(queryOptions);
+	const queryOptions: ReactQuery.UseQueryOptions<TracerTypes.DesignToken[]> = {};
+	Object.assign(queryOptions, baseOptions, options);
+
+	return ReactQueryHooks.useQuery(queryOptions);
 };
 
-const componentLibraryQueries = {
-	componentLibraryQueryKeys,
+export {
 	useComponentLibraries,
 	useComponentLibrary,
 	useComponentUsage,
@@ -165,6 +176,3 @@ const componentLibraryQueries = {
 	useLibraryComponent,
 	useLibraryComponents,
 };
-
-// eslint-disable-next-line import/no-default-export
-export default componentLibraryQueries;

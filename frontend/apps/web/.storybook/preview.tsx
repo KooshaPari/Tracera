@@ -14,12 +14,12 @@ const preview: Preview = {
 			delay: 300,
 			modes: {
 				dark: {
-					query: "[data-theme='dark']",
 					matcherUrl: "**/dark",
+					query: "[data-theme='dark']",
 				},
 				light: {
-					query: "[data-theme='light']",
 					matcherUrl: "**/light",
+					query: "[data-theme='light']",
 				},
 			},
 			pauseAnimationAtEnd: true,

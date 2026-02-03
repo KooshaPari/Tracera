@@ -1,14 +1,8 @@
-/* eslint-disable eslint/no-duplicate-imports, eslint/prefer-object-spread, eslint/sort-imports, promise/prefer-await-to-then, oxc/no-async-await */
-import type {
-	UseMutationOptions,
-	UseMutationResult,
-} from "@tanstack/react-query";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { ComponentLibrary, LibraryComponent } from "@tracertm/types";
-import client from "./client";
-import componentLibraryQueries from "./component-library.queries";
-
-const { apiClient, handleApiResponse } = client;
+import type * as ReactQuery from "@tanstack/react-query";
+import type * as TracerTypes from "@tracertm/types";
+import * as QueryKeys from "./component-library-keys";
+import * as QueryClient from "./query-client";
+import * as ReactQueryHooks from "./react-query-hooks";
 
 interface CreateComponentLibraryInput {
 	projectId: string;
@@ -40,124 +34,160 @@ interface UpdateLibraryComponentInput {
 	variant?: string;
 }
 
-const { componentLibraryQueryKeys } = componentLibraryQueries;
-const apiDelete = apiClient["DELETE"];
-const apiPost = apiClient["POST"];
-const apiPut = apiClient["PUT"];
-
 const useCreateComponentLibrary = (
-	options?: UseMutationOptions<
-		ComponentLibrary,
+	options?: ReactQuery.UseMutationOptions<
+		TracerTypes.ComponentLibrary,
 		Error,
 		CreateComponentLibraryInput
 	>,
-): UseMutationResult<ComponentLibrary, Error, CreateComponentLibraryInput> => {
-	const queryClient = useQueryClient();
+): ReactQuery.UseMutationResult<
+	TracerTypes.ComponentLibrary,
+	Error,
+	CreateComponentLibraryInput
+> => {
+	const queryClient = ReactQueryHooks.useQueryClient();
 
-	const mutationOptions = Object.assign(
-		{
-			mutationFn: async (input: CreateComponentLibraryInput) =>
-				await handleApiResponse(
-					apiPost("/api/v1/projects/{projectId}/libraries", {
+	const baseOptions: ReactQuery.UseMutationOptions<
+		TracerTypes.ComponentLibrary,
+		Error,
+		CreateComponentLibraryInput
+	> = {
+		mutationFn: async (
+			input: CreateComponentLibraryInput,
+		): Promise<TracerTypes.ComponentLibrary> =>
+			QueryClient.handleApiResponse(
+				QueryClient.api.post<TracerTypes.ComponentLibrary>(
+					"/api/v1/projects/{projectId}/libraries",
+					{
 						body: {
 							description: input.description,
 							name: input.name,
 							version: input.version,
 						},
 						params: { path: { projectId: input.projectId } },
-					}),
+					},
 				),
-			onSuccess: (data: ComponentLibrary) =>
-				queryClient.invalidateQueries({
-					queryKey: componentLibraryQueryKeys.list(data.projectId),
-				}),
+			),
+		onSuccess: async (data: TracerTypes.ComponentLibrary): Promise<void> => {
+			await queryClient.invalidateQueries({
+				queryKey: QueryKeys.componentLibraryQueryKeys.list(data.projectId),
+			});
 		},
-		options,
-	);
+	};
 
-	return useMutation(mutationOptions);
+	const mutationOptions: ReactQuery.UseMutationOptions<
+		TracerTypes.ComponentLibrary,
+		Error,
+		CreateComponentLibraryInput
+	> = {};
+	Object.assign(mutationOptions, baseOptions, options);
+
+	return ReactQueryHooks.useMutation(mutationOptions);
 };
 
 const useUpdateComponentLibrary = (
-	options?: UseMutationOptions<
-		ComponentLibrary,
+	options?: ReactQuery.UseMutationOptions<
+		TracerTypes.ComponentLibrary,
 		Error,
 		{ libraryId: string; data: UpdateComponentLibraryInput }
 	>,
-): UseMutationResult<
-	ComponentLibrary,
+): ReactQuery.UseMutationResult<
+	TracerTypes.ComponentLibrary,
 	Error,
 	{ libraryId: string; data: UpdateComponentLibraryInput }
 > => {
-	const queryClient = useQueryClient();
+	const queryClient = ReactQueryHooks.useQueryClient();
 
-	const mutationOptions = Object.assign(
-		{
-			mutationFn: async (input: {
-				libraryId: string;
-				data: UpdateComponentLibraryInput;
-			}) =>
-				await handleApiResponse(
-					apiPut("/api/v1/libraries/{libraryId}", {
+	const baseOptions: ReactQuery.UseMutationOptions<
+		TracerTypes.ComponentLibrary,
+		Error,
+		{ libraryId: string; data: UpdateComponentLibraryInput }
+	> = {
+		mutationFn: async (input: {
+			libraryId: string;
+			data: UpdateComponentLibraryInput;
+		}): Promise<TracerTypes.ComponentLibrary> =>
+			QueryClient.handleApiResponse(
+				QueryClient.api.put<TracerTypes.ComponentLibrary>(
+					"/api/v1/libraries/{libraryId}",
+					{
 						body: input.data,
 						params: { path: { libraryId: input.libraryId } },
-					}),
+					},
 				),
-			onSuccess: async (data: ComponentLibrary) => {
-				await Promise.all([
-					queryClient.invalidateQueries({
-						queryKey: componentLibraryQueryKeys.detail(data.id),
-					}),
-					queryClient.invalidateQueries({
-						queryKey: componentLibraryQueryKeys.lists(),
-					}),
-				]);
-			},
+			),
+		onSuccess: async (data: TracerTypes.ComponentLibrary): Promise<void> => {
+			await Promise.all([
+				queryClient.invalidateQueries({
+					queryKey: QueryKeys.componentLibraryQueryKeys.detail(data.id),
+				}),
+				queryClient.invalidateQueries({
+					queryKey: QueryKeys.componentLibraryQueryKeys.lists(),
+				}),
+			]);
 		},
-		options,
-	);
+	};
 
-	return useMutation(mutationOptions);
+	const mutationOptions: ReactQuery.UseMutationOptions<
+		TracerTypes.ComponentLibrary,
+		Error,
+		{ libraryId: string; data: UpdateComponentLibraryInput }
+	> = {};
+	Object.assign(mutationOptions, baseOptions, options);
+
+	return ReactQueryHooks.useMutation(mutationOptions);
 };
 
 const useDeleteComponentLibrary = (
-	options?: UseMutationOptions<void, Error, string>,
-): UseMutationResult<void, Error, string> => {
-	const queryClient = useQueryClient();
+	options?: ReactQuery.UseMutationOptions<void, Error, string>,
+): ReactQuery.UseMutationResult<void, Error, string> => {
+	const queryClient = ReactQueryHooks.useQueryClient();
 
-	const mutationOptions = Object.assign(
-		{
-			mutationFn: async (libraryId: string) =>
-				await handleApiResponse(
-					apiDelete("/api/v1/libraries/{libraryId}", {
-						params: { path: { libraryId } },
-					}),
-				),
-			onSuccess: () =>
-				queryClient.invalidateQueries({
-					queryKey: componentLibraryQueryKeys.lists(),
+	const baseOptions: ReactQuery.UseMutationOptions<void, Error, string> = {
+		mutationFn: async (libraryId: string): Promise<void> =>
+			QueryClient.handleApiResponse(
+				QueryClient.api.del<void>("/api/v1/libraries/{libraryId}", {
+					params: { path: { libraryId } },
 				}),
+			),
+		onSuccess: async (): Promise<void> => {
+			await queryClient.invalidateQueries({
+				queryKey: QueryKeys.componentLibraryQueryKeys.lists(),
+			});
 		},
-		options,
-	);
+	};
 
-	return useMutation(mutationOptions);
+	const mutationOptions: ReactQuery.UseMutationOptions<void, Error, string> = {};
+	Object.assign(mutationOptions, baseOptions, options);
+
+	return ReactQueryHooks.useMutation(mutationOptions);
 };
 
 const useCreateLibraryComponent = (
-	options?: UseMutationOptions<
-		LibraryComponent,
+	options?: ReactQuery.UseMutationOptions<
+		TracerTypes.LibraryComponent,
 		Error,
 		CreateLibraryComponentInput
 	>,
-): UseMutationResult<LibraryComponent, Error, CreateLibraryComponentInput> => {
-	const queryClient = useQueryClient();
+): ReactQuery.UseMutationResult<
+	TracerTypes.LibraryComponent,
+	Error,
+	CreateLibraryComponentInput
+> => {
+	const queryClient = ReactQueryHooks.useQueryClient();
 
-	const mutationOptions = Object.assign(
-		{
-			mutationFn: async (input: CreateLibraryComponentInput) =>
-				await handleApiResponse(
-					apiPost("/api/v1/libraries/{libraryId}/components", {
+	const baseOptions: ReactQuery.UseMutationOptions<
+		TracerTypes.LibraryComponent,
+		Error,
+		CreateLibraryComponentInput
+	> = {
+		mutationFn: async (
+			input: CreateLibraryComponentInput,
+		): Promise<TracerTypes.LibraryComponent> =>
+			QueryClient.handleApiResponse(
+				QueryClient.api.post<TracerTypes.LibraryComponent>(
+					"/api/v1/libraries/{libraryId}/components",
+					{
 						body: {
 							category: input.category,
 							description: input.description,
@@ -166,96 +196,127 @@ const useCreateLibraryComponent = (
 							variant: input.variant,
 						},
 						params: { path: { libraryId: input.libraryId } },
-					}),
+					},
 				),
-			onSuccess: (data: LibraryComponent) =>
-				queryClient.invalidateQueries({
-					queryKey: componentLibraryQueryKeys.components(data.libraryId),
-				}),
+			),
+		onSuccess: async (data: TracerTypes.LibraryComponent): Promise<void> => {
+			await queryClient.invalidateQueries({
+				queryKey: QueryKeys.componentLibraryQueryKeys.components(data.libraryId),
+			});
 		},
-		options,
-	);
+	};
 
-	return useMutation(mutationOptions);
+	const mutationOptions: ReactQuery.UseMutationOptions<
+		TracerTypes.LibraryComponent,
+		Error,
+		CreateLibraryComponentInput
+	> = {};
+	Object.assign(mutationOptions, baseOptions, options);
+
+	return ReactQueryHooks.useMutation(mutationOptions);
 };
 
 const useUpdateLibraryComponent = (
-	options?: UseMutationOptions<
-		LibraryComponent,
+	options?: ReactQuery.UseMutationOptions<
+		TracerTypes.LibraryComponent,
 		Error,
 		{ componentId: string; data: UpdateLibraryComponentInput }
 	>,
-): UseMutationResult<
-	LibraryComponent,
+): ReactQuery.UseMutationResult<
+	TracerTypes.LibraryComponent,
 	Error,
 	{ componentId: string; data: UpdateLibraryComponentInput }
 > => {
-	const queryClient = useQueryClient();
+	const queryClient = ReactQueryHooks.useQueryClient();
 
-	const mutationOptions = Object.assign(
-		{
-			mutationFn: async (input: {
-				componentId: string;
-				data: UpdateLibraryComponentInput;
-			}) =>
-				await handleApiResponse(
-					apiPut("/api/v1/components/{componentId}", {
+	const baseOptions: ReactQuery.UseMutationOptions<
+		TracerTypes.LibraryComponent,
+		Error,
+		{ componentId: string; data: UpdateLibraryComponentInput }
+	> = {
+		mutationFn: async (input: {
+			componentId: string;
+			data: UpdateLibraryComponentInput;
+		}): Promise<TracerTypes.LibraryComponent> =>
+			QueryClient.handleApiResponse(
+				QueryClient.api.put<TracerTypes.LibraryComponent>(
+					"/api/v1/components/{componentId}",
+					{
 						body: input.data,
 						params: { path: { componentId: input.componentId } },
-					}),
+					},
 				),
-			onSuccess: async (data: LibraryComponent) => {
-				await Promise.all([
-					queryClient.invalidateQueries({
-						queryKey: componentLibraryQueryKeys.component(data.id),
-					}),
-					queryClient.invalidateQueries({
-						queryKey: componentLibraryQueryKeys.components(data.libraryId),
-					}),
-				]);
-			},
+			),
+		onSuccess: async (data: TracerTypes.LibraryComponent): Promise<void> => {
+			await Promise.all([
+				queryClient.invalidateQueries({
+					queryKey: QueryKeys.componentLibraryQueryKeys.component(data.id),
+				}),
+				queryClient.invalidateQueries({
+					queryKey: QueryKeys.componentLibraryQueryKeys.components(data.libraryId),
+				}),
+			]);
 		},
-		options,
-	);
+	};
 
-	return useMutation(mutationOptions);
+	const mutationOptions: ReactQuery.UseMutationOptions<
+		TracerTypes.LibraryComponent,
+		Error,
+		{ componentId: string; data: UpdateLibraryComponentInput }
+	> = {};
+	Object.assign(mutationOptions, baseOptions, options);
+
+	return ReactQueryHooks.useMutation(mutationOptions);
 };
 
 const useDeleteLibraryComponent = (
-	options?: UseMutationOptions<
+	options?: ReactQuery.UseMutationOptions<
 		void,
 		Error,
 		{ componentId: string; libraryId: string }
 	>,
-): UseMutationResult<
+): ReactQuery.UseMutationResult<
 	void,
 	Error,
 	{ componentId: string; libraryId: string }
 > => {
-	const queryClient = useQueryClient();
+	const queryClient = ReactQueryHooks.useQueryClient();
 
-	const mutationOptions = Object.assign(
-		{
-			mutationFn: async (input: { componentId: string; libraryId: string }) =>
-				await handleApiResponse(
-					apiDelete("/api/v1/components/{componentId}", {
-						params: { path: { componentId: input.componentId } },
-					}),
+	const baseOptions: ReactQuery.UseMutationOptions<
+		void,
+		Error,
+		{ componentId: string; libraryId: string }
+	> = {
+		mutationFn: async (input: {
+			componentId: string;
+			libraryId: string;
+		}): Promise<void> =>
+			QueryClient.handleApiResponse(
+				QueryClient.api.del<void>("/api/v1/components/{componentId}", {
+					params: { path: { componentId: input.componentId } },
+				}),
+			),
+		onSuccess: async (
+			data: void,
+			variables: { componentId: string; libraryId: string },
+		): Promise<void> => {
+			await queryClient.invalidateQueries({
+				queryKey: QueryKeys.componentLibraryQueryKeys.components(
+					variables.libraryId,
 				),
-			onSuccess: async (
-				data: void,
-				variables: { componentId: string; libraryId: string },
-			) => {
-				await queryClient.invalidateQueries({
-					queryKey: componentLibraryQueryKeys.components(variables.libraryId),
-				});
-				return data;
-			},
+			});
+			return data;
 		},
-		options,
-	);
+	};
 
-	return useMutation(mutationOptions);
+	const mutationOptions: ReactQuery.UseMutationOptions<
+		void,
+		Error,
+		{ componentId: string; libraryId: string }
+	> = {};
+	Object.assign(mutationOptions, baseOptions, options);
+
+	return ReactQueryHooks.useMutation(mutationOptions);
 };
 
 const componentLibraryMutationsLibrary = {
@@ -267,5 +328,4 @@ const componentLibraryMutationsLibrary = {
 	useUpdateLibraryComponent,
 };
 
-// eslint-disable-next-line import/no-default-export
-export default componentLibraryMutationsLibrary;
+export { componentLibraryMutationsLibrary };

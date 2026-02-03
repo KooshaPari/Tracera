@@ -313,26 +313,23 @@ const listGitHubRepos = async (params: {
 	page?: number;
 }): Promise<GitHubRepoListResponse> => {
 	const searchParams = new URLSearchParams();
-	const { accountId, credentialId, installationId, page, perPage, search } =
-		params;
+	const entries: Array<[string, string | number | undefined]> = [
+		["account_id", params.accountId],
+		["credential_id", params.credentialId],
+		["installation_id", params.installationId],
+		["page", params.page],
+		["per_page", params.perPage],
+		["search", params.search],
+	];
 
-	if (typeof accountId === "string" && accountId !== "") {
-		searchParams.set("account_id", accountId);
-	}
-	if (typeof installationId === "string" && installationId !== "") {
-		searchParams.set("installation_id", installationId);
-	}
-	if (typeof credentialId === "string" && credentialId !== "") {
-		searchParams.set("credential_id", credentialId);
-	}
-	if (typeof search === "string" && search !== "") {
-		searchParams.set("search", search);
-	}
-	if (typeof perPage === "number" && Number.isFinite(perPage)) {
-		searchParams.set("per_page", String(perPage));
-	}
-	if (typeof page === "number" && Number.isFinite(page)) {
-		searchParams.set("page", String(page));
+	for (const [key, value] of entries) {
+		if (typeof value === "string") {
+			if (value !== "") {
+				searchParams.set(key, value);
+			}
+		} else if (typeof value !== "undefined" && Number.isFinite(value)) {
+			searchParams.set(key, String(value));
+		}
 	}
 
 	const headers = authHeaders();
