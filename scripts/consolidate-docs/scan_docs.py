@@ -111,64 +111,76 @@ def extract_links(content: str) -> list[str]:
     return links
 
 
+def determine_audience(path_str: str, frontmatter_data: dict) -> str:
+    """Determine document audience from path and frontmatter."""
+    audience = frontmatter_data.get("audience")
+    if audience:
+        return audience
+
+    if "user" in path_str or "getting-started" in path_str or "guide" in path_str:
+        return "user"
+    if "developer" in path_str or "api" in path_str or "architecture" in path_str:
+        return "developer"
+    if "api" in path_str or "reference" in path_str:
+        return "api"
+    return "unknown"
+
+
+def determine_doc_type(path_str: str, frontmatter_data: dict) -> str:
+    """Determine document type from path and frontmatter."""
+    doc_type = frontmatter_data.get("type")
+    if doc_type:
+        return doc_type
+
+    # Mapping of keywords to doc types
+    type_patterns = {
+        "research": ["research"],
+        "planning": ["plan", "planning"],
+        "report": ["report", "completion"],
+        "guide": ["guide", "tutorial"],
+        "reference": ["reference", "api"],
+        "example": ["example", "use-case"],
+        "faq": ["faq", "troubleshooting"],
+    }
+
+    for doc_type, keywords in type_patterns.items():
+        if any(keyword in path_str for keyword in keywords):
+            return doc_type
+
+    return "general"
+
+
+def determine_category(path_str: str, frontmatter_data: dict) -> str:
+    """Determine document category from path and frontmatter."""
+    category = frontmatter_data.get("category")
+    if category:
+        return category
+
+    # Mapping of keywords to categories
+    category_patterns = {
+        "cli": ["cli"],
+        "tui": ["tui"],
+        "frontend": ["frontend", "web"],
+        "backend": ["backend"],
+        "testing": ["test", "testing"],
+        "architecture": ["architecture"],
+    }
+
+    for category, keywords in category_patterns.items():
+        if any(keyword in path_str for keyword in keywords):
+            return category
+
+    return "general"
+
+
 def categorize_doc(path: Path, content: str, frontmatter_data: dict) -> dict[str, str]:
     """Categorize document by audience, type, and topic."""
     path_str = str(path).lower()
 
-    # Determine audience
-    audience = frontmatter_data.get("audience")
-    if not audience:
-        if "user" in path_str or "getting-started" in path_str or "guide" in path_str:
-            audience = "user"
-        elif "developer" in path_str or "api" in path_str or "architecture" in path_str:
-            audience = "developer"
-        elif "api" in path_str or "reference" in path_str:
-            audience = "api"
-        else:
-            audience = "unknown"
-
-    # Determine doc type
-    doc_type = frontmatter_data.get("type")
-    if not doc_type:
-        if "research" in path_str:
-            doc_type = "research"
-        elif "plan" in path_str or "planning" in path_str:
-            doc_type = "planning"
-        elif "report" in path_str or "completion" in path_str:
-            doc_type = "report"
-        elif "guide" in path_str or "tutorial" in path_str:
-            doc_type = "guide"
-        elif "reference" in path_str or "api" in path_str:
-            doc_type = "reference"
-        elif "example" in path_str or "use-case" in path_str:
-            doc_type = "example"
-        elif "faq" in path_str or "troubleshooting" in path_str:
-            doc_type = "faq"
-        else:
-            doc_type = "general"
-
-    # Determine category/topic
-    category = frontmatter_data.get("category")
-    if not category:
-        if "cli" in path_str:
-            category = "cli"
-        elif "tui" in path_str:
-            category = "tui"
-        elif "frontend" in path_str or "web" in path_str:
-            category = "frontend"
-        elif "backend" in path_str:
-            category = "backend"
-        elif "test" in path_str or "testing" in path_str:
-            category = "testing"
-        elif "architecture" in path_str:
-            category = "architecture"
-        else:
-            category = "general"
-
     return {
-        "audience": audience,
-        "type": doc_type,
-        "category": category,
+        "audience": determine_audience(path_str, frontmatter_data),
+        "type": determine_doc_type(path_str, frontmatter_data),
+        "category": determine_category(path_str, frontmatter_data),
     }
 
 
