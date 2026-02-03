@@ -21,6 +21,17 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+
+def _path_exists_str(path_str: str) -> bool:
+    """Sync helper for Path(path).exists() (run via asyncio.to_thread)."""
+    return Path(path_str).exists()
+
+
+def _path_name_str(path_str: str) -> str:
+    """Sync helper for Path(path).name (run via asyncio.to_thread)."""
+    return Path(path_str).name
+
+
 if TYPE_CHECKING:
     from tracertm.preflight import PreflightCheck
 
@@ -566,81 +577,7 @@ async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONR
 
 
 # NATS Event Bus integration
-def _backoff_delay(attempt: int, initial: float, cap: float, multiplier: float = 1.5) -> float:
-    """Progressive backoff: initial, then initial*multiplier, ... capped at cap."""
-    delay = initial * (multiplier ** (attempt - 1))
-    return min(delay, cap)
-
-
-async def _poll_one_service(
-    service_name: str,
-    check: PreflightCheck,
-    is_required: bool,
-    interval_initial: float,
-    interval_max: float,
-) -> tuple[str, bool]:
-    """Poll one preflight check indefinitely with progressive backoff (cap interval_max). Returns (check.name, ok)."""
-    from tracertm.preflight import run_single_check
-
-    # Initial wait so dependent services can start
-    await asyncio.sleep(interval_initial)
-    attempt = 0
-    while True:
-        attempt += 1
-        result = await asyncio.to_thread(run_single_check, check)
-        if result.ok:
-            logger.info("[%s] %s ok (after attempt %d)", service_name, check.name, attempt)
-            return (check.name, True)
-        delay = _backoff_delay(attempt, interval_initial, interval_max)
-        logger.info(
-            "[%s] %s failed (attempt %d), retrying in %.1fs",
-            service_name,
-            check.name,
-            attempt,
-            delay,
-        )
-        await asyncio.sleep(delay)
-
-
-async def _poll_services(
-    service_name: str,
-    required_names: tuple[str, ...],
-    optional_names: tuple[str, ...],
-    interval_initial: float = 2.0,
-    interval_max: float = 30.0,
-) -> None:
-    """Poll required services in parallel with indefinite retries and progressive backoff (cap interval_max)."""
-    from tracertm.preflight import build_api_checks
-
-    checks = build_api_checks()
-    to_poll_required = [
-        c for c in checks
-        if c.name in required_names and c.url and c.url.strip()
-    ]
-    missing_required = [
-        n for n in required_names
-        if not any(c.name == n and c.url and c.url.strip() for c in checks)
-    ]
-    if missing_required:
-        raise RuntimeError(f"Preflight failed for: {', '.join(missing_required)} (missing url)")
-
-    # Required: poll all in parallel with indefinite retry and progressive backoff
-    if to_poll_required:
-        names = ", ".join(c.name for c in to_poll_required)
-        sys.stderr.write(
-            f"[{service_name}] Polling required (indefinite retry, backoff cap {interval_max}s): {names}...\n"
-        )
-        sys.stderr.flush()
-        results = await asyncio.gather(
-            *[
-                _poll_one_service(service_name, c, True, interval_initial, interval_max)
-                for c in to_poll_required
-            ]
-        )
-        required_failures = [name for name, ok in results if not ok]
-        if required_failures:
-            raise RuntimeError(f"Preflight failed for: {'; '.join(required_failures)}")
-
+# Helper functions (_backoff_delay, _poll_one_service, _poll_services) now in tracertm.api.config.startup
 
 # Add CORS middleware (gateway + frontend only; no wildcards)
 # External clients must use the gateway; allow gateway (4000) + frontend origins
@@ -939,125 +876,8 @@ async def auth_callback(payload: AuthCallbackPayload):
 # WebSocket endpoint for real-time updates
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
-    """WebSocket endpoint for real-time updates.
-
-    Supports two auth flows:
-    1. Token in query (?token=) or Authorization header (browser WS cannot set headers).
-    2. Accept first, then validate token from first message { "type": "auth", "token": "..." }.
-    """
-    ws_closed = False
-
-    async def _close_once(code: int | None = None, reason: str = ""):
-        nonlocal ws_closed
-        if ws_closed:
-            return
-        ws_closed = True
-        try:
-            if code is not None:
-                await websocket.close(code=code, reason=reason)
-            else:
-                await websocket.close()
-        except Exception:
-            pass
-
-    # Try token from query or header first (for clients that send it on handshake)
-    token: str | None = None
-    if "token" in websocket.query_params:
-        token = websocket.query_params["token"]
-    elif "authorization" in {k.lower(): v for k, v in websocket.headers.items()}:
-        auth_header = websocket.headers.get("Authorization") or websocket.headers.get("authorization")
-        if auth_header and auth_header.lower().startswith("bearer "):
-            token = auth_header.split(None, 1)[1].strip()
-
-    # Accept connection so we can receive the first message (browser WS cannot set custom headers)
-    await websocket.accept()
-
-    # If no token yet, expect auth in first message (frontend sends { type: "auth", token: "..." })
-    if not token:
-        try:
-            msg = await asyncio.wait_for(websocket.receive_json(), timeout=10.0)
-            if isinstance(msg, dict) and msg.get("type") == "auth":
-                token = (msg.get("token") or "").strip()
-            if not token:
-                await websocket.send_json({"type": "auth_failed", "message": "Missing auth message"})
-                await _close_once(1008, "Authentication required")
-                return
-        except TimeoutError:
-            logger.info("WebSocket auth timeout (no auth message) from %s", websocket.client)
-            await _close_once(1008, "Authentication timeout")
-            return
-        except WebSocketDisconnect as e:
-            # Normal closure (1000/1001) = client closed tab or navigated away before sending auth
-            code = getattr(e, "code", None)
-            if code in (1000, 1001):
-                logger.info("WebSocket client disconnected before auth from %s (code=%s)", websocket.client, code)
-            else:
-                logger.warning("WebSocket disconnected before auth from %s: %s", websocket.client, e)
-            return
-        except Exception as e:
-            logger.warning("WebSocket failed to receive auth message from %s: %s", websocket.client, e)
-            await _close_once(1008, "Invalid auth")
-            return
-
-    # Verify token
-    if not token or not isinstance(token, str):
-        await websocket.send_json({"type": "auth_failed", "message": "No token provided"})
-        await _close_once(1008, "Authentication required")
-        return
-    try:
-        claims = verify_token(token)
-        logger.info("WebSocket authenticated: user=%s from %s", claims.get("sub"), websocket.client)
-    except Exception as exc:
-        logger.warning(
-            "WebSocket rejected: invalid token from %s: %s",
-            websocket.client,
-            exc,
-        )
-        try:
-            await websocket.send_json({"type": "auth_failed", "message": str(exc)})
-        except WebSocketDisconnect:
-            pass
-        await _close_once(1008, f"Invalid token: {exc!s}")
-        return
-
-    # Tell client auth succeeded (frontend expects auth_success)
-    try:
-        await websocket.send_json({"type": "auth_success"})
-    except WebSocketDisconnect:
-        logger.info("WebSocket client disconnected before auth_success from %s", websocket.client)
-        return
-
-    try:
-        # Keep connection alive and handle messages
-        while True:
-            try:
-                data = await websocket.receive_json()
-                # Handle ping/pong for keepalive
-                if data.get("type") == "ping":
-                    await websocket.send_json({"type": "pong"})
-                elif data.get("type") == "subscribe":
-                    channel = data.get("channel", "*")
-                    await websocket.send_json({"type": "subscribed", "channel": channel})
-                elif data.get("type") == "unsubscribe":
-                    channel = data.get("channel", "*")
-                    await websocket.send_json({"type": "unsubscribed", "channel": channel})
-                else:
-                    await websocket.send_json({"type": "echo", "data": data})
-            except WebSocketDisconnect:
-                break
-            except Exception as e:
-                logger.error("WebSocket error: %s", e)
-                await websocket.send_json({"type": "error", "message": str(e)})
-    except WebSocketDisconnect:
-        logger.info("WebSocket client disconnected")
-    except Exception as e:
-        logger.error("WebSocket connection error: %s", e)
-    finally:
-        if not ws_closed:
-            try:
-                await websocket.close()
-            except Exception:
-                pass
+    """WebSocket endpoint for real-time updates - wrapper for extracted implementation."""
+    await _websocket_endpoint_impl(websocket, verify_token)
 
 
 # Items endpoints

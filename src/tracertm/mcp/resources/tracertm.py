@@ -587,7 +587,7 @@ def coverage_view_resource(project_id: str) -> str:
                     "total": total,
                     "covered": covered,
                     "percentage": round(covered / total * 100, 1) if total else 0,
-                    "uncovered": [str(item.id)[:8] for item in view_item_list if str(item.id) not in linked_ids][:10],
+                    "uncovered": [str(item.id)[:8] for item in view_item_list if str(item.id) not in linked_ids][:_MAX_ITEM_LIST_DISPLAY],
                 }
 
             return _format_yaml({
