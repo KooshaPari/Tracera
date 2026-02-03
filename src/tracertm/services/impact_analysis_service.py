@@ -46,6 +46,104 @@ class ImpactAnalysisService:
         self.items = ItemRepository(session)
         self.links = LinkRepository(session)
 
+    async def _forward_bfs_step(
+        self,
+        current_id: str,
+        depth: int,
+        path: list[str],
+        link_type: str | None,
+        link_types: list[str] | None,
+    ) -> tuple[ImpactNode | None, list[tuple[str, int, list[str], str | None]]]:
+        """Process one forward BFS step; return (node or None, next queue entries)."""
+        item = await self.items.get_by_id(current_id)
+        if not item:
+            return None, []
+        node = (
+            ImpactNode(item=item, depth=depth, path=path, link_type=link_type)
+            if depth > 0
+            else None
+        )
+        links = await self.links.get_by_source(current_id)
+        next_entries = []
+        for link in links:
+            if link_types and link.link_type not in link_types:
+                continue
+            next_entries.append((
+                link.target_item_id,
+                depth + 1,
+                [*path, link.target_item_id],
+                link.link_type,
+            ))
+        return node, next_entries
+
+    async def _bfs_impact(
+        self,
+        item_id: str,
+        max_depth: int,
+        link_types: list[str] | None,
+    ) -> tuple[list[ImpactNode], str]:
+        """BFS from item_id along outgoing links; returns (impact_nodes, root_title)."""
+        root_item = await self.items.get_by_id(item_id)
+        if not root_item:
+            raise ValueError(f"Item {item_id} not found")
+
+        visited: set[str] = set()
+        impact_nodes: list[ImpactNode] = []
+        queue = deque([(item_id, 0, [item_id], None)])
+
+        while queue:
+            current_id, depth, path, link_type = queue.popleft()
+            if current_id in visited or depth > max_depth:
+                continue
+            visited.add(current_id)
+
+            node, next_entries = await self._forward_bfs_step(
+                current_id, depth, path, link_type, link_types
+            )
+            if node is not None:
+                impact_nodes.append(node)
+            for entry in next_entries:
+                if entry[0] not in visited:
+                    queue.append(entry)
+
+        return impact_nodes, root_item.title
+
+    def _build_impact_result(
+        self, item_id: str, root_title: str, impact_nodes: list[ImpactNode]
+    ) -> ImpactAnalysisResult:
+        """Build ImpactAnalysisResult from impact nodes."""
+        affected_by_depth: dict[int, int] = {}
+        affected_by_view: dict[str, int] = {}
+        for node in impact_nodes:
+            affected_by_depth[node.depth] = affected_by_depth.get(node.depth, 0) + 1
+            affected_by_view[node.item.view] = affected_by_view.get(node.item.view, 0) + 1
+        critical_paths = self._find_critical_paths(impact_nodes)
+        return ImpactAnalysisResult(
+            root_item_id=item_id,
+            root_item_title=root_title,
+            total_affected=len(impact_nodes),
+            max_depth_reached=max(
+                (node.depth for node in impact_nodes),
+                default=0,
+            ),
+            affected_by_depth=affected_by_depth,
+            affected_by_view=affected_by_view,
+            affected_items=[
+                {
+                    "id": node.item.id,
+                    "title": node.item.title,
+                    "view": node.item.view,
+                    "item_type": node.item.item_type,
+                    "status": node.item.status,
+                    "depth": node.depth,
+                    "path": node.path,
+                    "link_type": node.link_type,
+                }
+                for node in impact_nodes
+            ],
+            critical_paths=critical_paths,
+        )
+
     async def analyze_impact(
         self,
         item_id: str,
@@ -65,94 +163,8 @@ class ImpactAnalysisService:
 
         Complexity: O(V + E) where V = items, E = links
         """
-        # Get root item
-        root_item = await self.items.get_by_id(item_id)
-        if not root_item:
-            raise ValueError(f"Item {item_id} not found")
-
-        visited: set[str] = set()
-        impact_nodes: list[ImpactNode] = []
-        queue = deque([(item_id, 0, [item_id], None)])
-
-        # BFS traversal
-        while queue:
-            current_id, depth, path, link_type = queue.popleft()
-
-            # Skip if already visited or max depth exceeded
-            if current_id in visited or depth > max_depth:
-                continue
-
-            visited.add(current_id)
-
-            # Get item
-            item = await self.items.get_by_id(current_id)
-            if not item:
-                continue
-
-            # Add to impact nodes (skip root)
-            if depth > 0:
-                impact_nodes.append(
-                    ImpactNode(
-                        item=item,
-                        depth=depth,
-                        path=path,
-                        link_type=link_type,
-                    )
-                )
-
-            # Get downstream links
-            links = await self.links.get_by_source(current_id)
-            for link in links:
-                # Filter by link types if specified
-                if link_types and link.link_type not in link_types:
-                    continue
-
-                if link.target_item_id not in visited:
-                    queue.append((
-                        link.target_item_id,
-                        depth + 1,
-                        [*path, link.target_item_id],
-                        link.link_type,
-                    ))
-
-        # Calculate statistics
-        affected_by_depth: dict[int, int] = {}
-        affected_by_view: dict[str, int] = {}
-
-        for node in impact_nodes:
-            # Count by depth
-            affected_by_depth[node.depth] = affected_by_depth.get(node.depth, 0) + 1
-            # Count by view
-            affected_by_view[node.item.view] = affected_by_view.get(node.item.view, 0) + 1
-
-        # Find critical paths (paths to leaf nodes)
-        critical_paths = self._find_critical_paths(impact_nodes)
-
-        return ImpactAnalysisResult(
-            root_item_id=item_id,
-            root_item_title=root_item.title,
-            total_affected=len(impact_nodes),
-            max_depth_reached=max(
-                (node.depth for node in impact_nodes),
-                default=0,
-            ),
-            affected_by_depth=affected_by_depth,
-            affected_by_view=affected_by_view,
-            affected_items=[
-                {
-                    "id": node.item.id,
-                    "title": node.item.title,
-                    "view": node.item.view,
-                    "item_type": node.item.item_type,
-                    "status": node.item.status,
-                    "depth": node.depth,
-                    "path": node.path,
-                    "link_type": node.link_type,
-                }
-                for node in impact_nodes
-            ],
-            critical_paths=critical_paths,
-        )
+        impact_nodes, root_title = await self._bfs_impact(item_id, max_depth, link_types)
+        return self._build_impact_result(item_id, root_title, impact_nodes)
 
     def _find_critical_paths(self, nodes: list[ImpactNode]) -> list[list[str]]:
         """Find critical paths (paths to leaf nodes)."""
@@ -168,19 +180,29 @@ class ImpactAnalysisService:
         # Find leaf nodes (nodes with no children)
         return [node.path for node in nodes if node.item.id not in children]
 
-    async def analyze_reverse_impact(
-        self,
-        item_id: str,
-        max_depth: int = 10,
-    ) -> ImpactAnalysisResult:
-        """
-        Analyze reverse impact (what depends on this item).
+    async def _reverse_bfs_step(
+        self, current_id: str, depth: int, path: list[str], link_type: str | None
+    ) -> tuple[ImpactNode | None, list[tuple[str, int, list[str], str | None]]]:
+        """Process one reverse BFS step: load item and links; return (node or None, next queue entries)."""
+        item = await self.items.get_by_id(current_id)
+        if not item:
+            return None, []
+        node = (
+            ImpactNode(item=item, depth=depth, path=path, link_type=link_type)
+            if depth > 0
+            else None
+        )
+        links = await self.links.get_by_target(current_id)
+        next_entries = [
+            (link.source_item_id, depth + 1, [*path, link.source_item_id], link.link_type)
+            for link in links
+        ]
+        return node, next_entries
 
-        This finds all items that link TO this item (upstream dependencies).
-
-        Complexity: O(V + E) where V = items, E = links
-        """
-        # Get root item
+    async def _bfs_reverse_impact(
+        self, item_id: str, max_depth: int
+    ) -> tuple[list[ImpactNode], str]:
+        """BFS from item_id along incoming links; returns (impact_nodes, root_title)."""
         root_item = await self.items.get_by_id(item_id)
         if not root_item:
             raise ValueError(f"Item {item_id} not found")
@@ -189,60 +211,38 @@ class ImpactAnalysisService:
         impact_nodes: list[ImpactNode] = []
         queue = deque([(item_id, 0, [item_id], None)])
 
-        # BFS traversal (reverse direction)
         while queue:
             current_id, depth, path, link_type = queue.popleft()
-
             if current_id in visited or depth > max_depth:
                 continue
-
             visited.add(current_id)
 
-            # Get item
-            item = await self.items.get_by_id(current_id)
-            if not item:
-                continue
+            node, next_entries = await self._reverse_bfs_step(
+                current_id, depth, path, link_type
+            )
+            if node is not None:
+                impact_nodes.append(node)
+            for entry in next_entries:
+                if entry[0] not in visited:
+                    queue.append(entry)
 
-            # Add to impact nodes (skip root)
-            if depth > 0:
-                impact_nodes.append(
-                    ImpactNode(
-                        item=item,
-                        depth=depth,
-                        path=path,
-                        link_type=link_type,
-                    )
-                )
+        return impact_nodes, root_item.title
 
-            # Get upstream links (links pointing TO this item)
-            links = await self.links.get_by_target(current_id)
-            for link in links:
-                if link.source_item_id not in visited:
-                    queue.append((
-                        link.source_item_id,
-                        depth + 1,
-                        [*path, link.source_item_id],
-                        link.link_type,
-                    ))
-
-        # Calculate statistics
+    def _build_reverse_impact_result(
+        self, item_id: str, root_title: str, impact_nodes: list[ImpactNode]
+    ) -> ImpactAnalysisResult:
+        """Build ImpactAnalysisResult from reverse-impact nodes."""
         affected_by_depth: dict[int, int] = {}
         affected_by_view: dict[str, int] = {}
-
         for node in impact_nodes:
             affected_by_depth[node.depth] = affected_by_depth.get(node.depth, 0) + 1
             affected_by_view[node.item.view] = affected_by_view.get(node.item.view, 0) + 1
-
         critical_paths = self._find_critical_paths(impact_nodes)
-
         return ImpactAnalysisResult(
             root_item_id=item_id,
-            root_item_title=root_item.title,
+            root_item_title=root_title,
             total_affected=len(impact_nodes),
-            max_depth_reached=max(
-                (node.depth for node in impact_nodes),
-                default=0,
-            ),
+            max_depth_reached=max((node.depth for node in impact_nodes), default=0),
             affected_by_depth=affected_by_depth,
             affected_by_view=affected_by_view,
             affected_items=[
@@ -260,3 +260,18 @@ class ImpactAnalysisService:
             ],
             critical_paths=critical_paths,
         )
+
+    async def analyze_reverse_impact(
+        self,
+        item_id: str,
+        max_depth: int = 10,
+    ) -> ImpactAnalysisResult:
+        """
+        Analyze reverse impact (what depends on this item).
+
+        This finds all items that link TO this item (upstream dependencies).
+
+        Complexity: O(V + E) where V = items, E = links
+        """
+        impact_nodes, root_title = await self._bfs_reverse_impact(item_id, max_depth)
+        return self._build_reverse_impact_result(item_id, root_title, impact_nodes)

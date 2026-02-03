@@ -2,8 +2,9 @@
 Pydantic schemas for Account API.
 """
 
-from pydantic import BaseModel, Field
 from typing import Any
+
+from pydantic import BaseModel, Field
 
 
 class AccountCreate(BaseModel):

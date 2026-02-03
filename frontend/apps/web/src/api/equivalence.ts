@@ -7,7 +7,7 @@ import {
 	useQuery,
 	useQueryClient,
 } from "@tanstack/react-query";
-import client from "./client";
+import { client } from "./client";
 
 type ApiClient = typeof client.apiClient;
 

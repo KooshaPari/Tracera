@@ -18,6 +18,10 @@ PREFLIGHT_INITIAL_DELAY = 1.0
 PREFLIGHT_BACKOFF = 2.0
 PREFLIGHT_BACKOFF_MAX_SECONDS = 30.0  # Cap wait between retries (indefinite retry)
 
+# HTTP status range for success
+HTTP_OK_MIN = 200
+HTTP_OK_MAX = 300
+
 
 @dataclass(frozen=True)
 class PreflightCheck:
@@ -101,7 +105,7 @@ def _http_check(url: str, path: str, timeout: float) -> PreflightResult:
     try:
         req = urllib.request.Request(full_url, method="GET")  # noqa: S310 scheme validated above
         with urllib.request.urlopen(req, timeout=timeout) as resp:  # noqa: S310 scheme validated above
-            if 200 <= resp.status < 300:
+            if HTTP_OK_MIN <= resp.status < HTTP_OK_MAX:
                 return PreflightResult(full_url, True, "ok", True)
             return PreflightResult(full_url, False, f"status {resp.status}", True)
     except Exception as exc:  # pragma: no cover - best effort

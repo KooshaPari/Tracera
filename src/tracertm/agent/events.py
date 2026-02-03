@@ -222,7 +222,7 @@ class AgentEventPublisher:
                 "checkpoint_id": payload.checkpoint_id,
                 "turn_number": payload.turn_number,
                 "s3_key": payload.s3_key,
-                "metadata": (payload.metadata or {}) if payload.metadata is not None else {},
+                "metadata": payload.metadata or {},
             },
             metadata=EventMetadata(source=EventSource.WORKFLOW_EXECUTOR),
         )
@@ -332,7 +332,7 @@ class AgentEventPublisher:
                 "content_preview": content_preview,
                 "content_length": len(content),
                 "turn_number": payload.turn_number,
-                "metadata": (payload.metadata or {}) if payload.metadata is not None else {},
+                "metadata": payload.metadata or {},
             },
             metadata=EventMetadata(source=EventSource.CHAT_HANDLER),
         )

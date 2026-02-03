@@ -76,7 +76,7 @@ interface TestCaseViewProps {
 	projectId: string;
 }
 
-export function TestCaseView({ projectId }: TestCaseViewProps) {
+export const TestCaseView = ({ projectId }: TestCaseViewProps) => {
 	const [showCreateModal, setShowCreateModal] = useState(false);
 	const [statusFilter, setStatusFilter] = useState<TestCaseStatus | "">("");
 	const [typeFilter, setTypeFilter] = useState<TestCaseType | "">("");
@@ -106,6 +106,26 @@ export function TestCaseView({ projectId }: TestCaseViewProps) {
 		setShowCreateModal(false);
 	};
 
+	const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		setSearchQuery(e.target.value);
+	};
+
+	const handleStatusFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+		setStatusFilter(e.target.value as TestCaseStatus | "");
+	};
+
+	const handleTypeFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+		setTypeFilter(e.target.value as TestCaseType | "");
+	};
+
+	const handlePriorityFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+		setPriorityFilter(e.target.value as TestCasePriority | "");
+	};
+
+	const handleAutomationFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+		setAutomationFilter(e.target.value as AutomationStatus | "");
+	};
+
 	// Surface load failures to the user via toast
 	useEffect(() => {
 		if (error) {
@@ -118,6 +138,17 @@ export function TestCaseView({ projectId }: TestCaseViewProps) {
 			});
 		}
 	}, [error]);
+
+	// Calculate pass rate
+	const passRate = stats?.executionSummary
+		? (stats.executionSummary.totalRuns > 0
+			? Math.round(
+					(stats.executionSummary.totalPassed /
+						stats.executionSummary.totalRuns) *
+						100,
+				)
+			: 0)
+		: 0;
 
 	if (error) {
 		return (
@@ -133,17 +164,6 @@ export function TestCaseView({ projectId }: TestCaseViewProps) {
 			</div>
 		);
 	}
-
-	// Calculate pass rate
-	const passRate = stats?.executionSummary
-		? (stats.executionSummary.totalRuns > 0
-			? Math.round(
-					(stats.executionSummary.totalPassed /
-						stats.executionSummary.totalRuns) *
-						100,
-				)
-			: 0)
-		: 0;
 
 	return (
 		<div className="space-y-6">
@@ -218,7 +238,7 @@ export function TestCaseView({ projectId }: TestCaseViewProps) {
 						type="text"
 						placeholder="Search test cases..."
 						value={searchQuery}
-						onChange={(e) => setSearchQuery(e.target.value)}
+						onChange={handleSearchChange}
 						className="w-full rounded-lg border bg-background pl-10 pr-4 py-2"
 					/>
 				</div>
@@ -226,9 +246,7 @@ export function TestCaseView({ projectId }: TestCaseViewProps) {
 					<Filter className="h-4 w-4 text-muted-foreground" />
 					<select
 						value={statusFilter}
-						onChange={(e) =>
-							setStatusFilter(e.target.value as TestCaseStatus | "")
-						}
+						onChange={handleStatusFilterChange}
 						className="rounded-lg border bg-background px-3 py-2"
 					>
 						<option value="">All Statuses</option>
@@ -240,7 +258,7 @@ export function TestCaseView({ projectId }: TestCaseViewProps) {
 					</select>
 					<select
 						value={typeFilter}
-						onChange={(e) => setTypeFilter(e.target.value as TestCaseType | "")}
+						onChange={handleTypeFilterChange}
 						className="rounded-lg border bg-background px-3 py-2"
 					>
 						<option value="">All Types</option>
@@ -257,9 +275,7 @@ export function TestCaseView({ projectId }: TestCaseViewProps) {
 					</select>
 					<select
 						value={priorityFilter}
-						onChange={(e) =>
-							setPriorityFilter(e.target.value as TestCasePriority | "")
-						}
+						onChange={handlePriorityFilterChange}
 						className="rounded-lg border bg-background px-3 py-2"
 					>
 						<option value="">All Priorities</option>
@@ -270,9 +286,7 @@ export function TestCaseView({ projectId }: TestCaseViewProps) {
 					</select>
 					<select
 						value={automationFilter}
-						onChange={(e) =>
-							setAutomationFilter(e.target.value as AutomationStatus | "")
-						}
+						onChange={handleAutomationFilterChange}
 						className="rounded-lg border bg-background px-3 py-2"
 					>
 						<option value="">All Automation</option>
@@ -364,7 +378,7 @@ export function TestCaseView({ projectId }: TestCaseViewProps) {
 			)}
 		</div>
 	);
-}
+};
 
 function TestCaseRow({ testCase }: { testCase: TestCase }) {
 	return (

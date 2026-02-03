@@ -1,21 +1,16 @@
-import { useNavigate, useSearch } from "@tanstack/react-router";
-import type { FC } from "react";
 import type { Contract, ContractStatus } from "@tracertm/types";
+import type { FC } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { useNavigate, useSearch } from "@tanstack/react-router";
+import { AlertCircle, Plus, Search, Shield } from "lucide-react";
+import { toast } from "sonner";
 import {
 	Button,
 	Card,
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
 	Skeleton,
 } from "@tracertm/ui";
-import { AlertCircle, Filter, Plus, Search, Shield } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
-import { toast } from "sonner";
-import { ContractCard } from "@/components/specifications/contracts/ContractCard";
 import { ContractFiltersBar } from "@/components/specifications/contracts/ContractFiltersBar";
+import { ContractCard } from "@/components/specifications/contracts/ContractCard";
 import { CreateContractModal } from "@/components/specifications/contracts/CreateContractModal";
 import { VerificationSummaryCards } from "@/components/specifications/contracts/VerificationSummaryCards";
 import { useContracts } from "@/hooks/useSpecifications";

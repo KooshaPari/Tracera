@@ -3,7 +3,7 @@
  * Used by chat to run tools in a scoped filesystem per conversation.
  */
 
-import client from "./client";
+import { client } from "./client";
 
 const API_URL = client.getBackendURL();
 
@@ -39,35 +39,27 @@ const isAgentSessionResponse = (
 	);
 };
 
-const createAgentSession = (
+const createAgentSession = async (
 	body: AgentSessionCreateRequest,
 ): Promise<AgentSessionResponse> => {
 	const headers: Record<string, string> = {
 		"Content-Type": "application/json",
 	};
 	Object.assign(headers, client.getAuthHeaders());
-
-	return fetch(`${API_URL}/api/v1/agent/sessions`, {
+	const response = await fetch(`${API_URL}/api/v1/agent/sessions`, {
 		body: JSON.stringify(body),
 		headers,
 		method: "POST",
-	})
-		.then((res) => {
-			if (!res.ok) {
-				return res.text().then((text) => {
-					throw new Error(
-						`Agent session create failed: ${res.status} ${text}`,
-					);
-				});
-			}
-			return res.json();
-		})
-		.then((data: unknown) => {
-			if (!isAgentSessionResponse(data)) {
-				throw new Error("Invalid agent session response");
-			}
-			return data;
-		});
+	});
+	if (!response.ok) {
+		const errorText = await response.text();
+		throw new Error(`Agent session create failed: ${response.status} ${errorText}`);
+	}
+	const data: unknown = await response.json();
+	if (!isAgentSessionResponse(data)) {
+		throw new Error("Invalid agent session response");
+	}
+	return data;
 };
 
 const agentApi = {

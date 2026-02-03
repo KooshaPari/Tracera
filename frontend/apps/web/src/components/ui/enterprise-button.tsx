@@ -258,4 +258,5 @@ export const ToolbarButton = React.forwardRef<
 ToolbarButton.displayName = "ToolbarButton";
 
 export { Button, buttonVariants };
+// eslint-disable-next-line eslint-plugin-import/no-default-export -- backward compatibility for default import
 export default Button;

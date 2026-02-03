@@ -3,7 +3,7 @@
 import re
 import uuid
 from pathlib import Path
-from typing import Any, cast
+from typing import Any, Iterable, cast
 from uuid import uuid4
 
 import yaml
@@ -40,6 +40,201 @@ class StatelessIngestionService:
             self.markdown: Any = Markdown()
         else:
             self.markdown = None
+
+    def _validate_file_extension(self, path: Path, allowed: tuple[str, ...], label: str) -> None:
+        if path.suffix.lower() not in allowed:
+            raise ValueError(
+                f"Invalid file extension: {path.suffix}. Expected {label}"
+            )
+
+    def _parse_frontmatter(self, content: str) -> tuple[dict[str, Any], str]:
+        if frontmatter:
+            try:
+                post = frontmatter.loads(content)
+                return post.metadata, post.content
+            except Exception:
+                return {}, content
+        return {}, content
+
+    def _get_or_create_project(
+        self,
+        *,
+        project_id: str | None,
+        name: str,
+        description: str,
+        validate_existing: bool,
+    ) -> str:
+        if project_id:
+            if validate_existing:
+                project = self.session.query(Project).filter(Project.id == project_id).first()
+                if not project:
+                    raise ValueError(f"Project not found: {project_id}")
+            return project_id
+
+        project = self.session.query(Project).filter(Project.name == name).first()
+        if not project:
+            project = Project(
+                id=str(uuid4()),
+                name=name,
+                description=description,
+            )
+            self.session.add(project)
+            self.session.flush()
+        return str(project.id)
+
+    def _create_item(self, item: Item) -> str:
+        self.session.add(item)
+        self.session.flush()
+        return str(item.id)
+
+    def _collect_markdown_headers(
+        self,
+        body: str,
+        project_id: str,
+        view: str,
+        metadata: dict[str, Any],
+        path: Path,
+    ) -> tuple[list[str], list[tuple[int, str, str]]]:
+        items_created: list[str] = []
+        headers: list[tuple[int, str, str]] = []
+        header_pattern = r"^(#{1,6})\s+(.+)$"
+        parent_stack: list[str | None] = [None]
+
+        for line in body.split("\n"):
+            match = re.match(header_pattern, line)
+            if not match:
+                continue
+            level = len(match.group(1))
+            title = match.group(2).strip()
+            parent_stack = self._adjust_parent_stack(parent_stack, level)
+            parent_id = parent_stack[-1] if parent_stack else None
+            item_type = self._determine_item_type(level, metadata)
+            item = Item(
+                id=str(uuid4()),
+                project_id=project_id,
+                title=title,
+                view=view,
+                item_type=item_type,
+                status=metadata.get("status", "todo"),
+                description=self._extract_section_content(body, line),
+                item_metadata={
+                    "header_level": level,
+                    "source_file": str(path),
+                    **metadata,
+                },
+                parent_id=parent_id,
+                version=1,
+            )
+            item_id = self._create_item(item)
+            items_created.append(item_id)
+            headers.append((level, item_id, title))
+            parent_stack = self._update_parent_stack(parent_stack, level, item_id)
+
+        return items_created, headers
+
+    def _adjust_parent_stack(self, parent_stack: list[str | None], level: int) -> list[str | None]:
+        while len(parent_stack) > level:
+            parent_stack.pop()
+        while len(parent_stack) < level:
+            parent_stack.append(None)
+        return parent_stack
+
+    def _update_parent_stack(
+        self,
+        parent_stack: list[str | None],
+        level: int,
+        item_id: str,
+    ) -> list[str | None]:
+        if len(parent_stack) <= level:
+            parent_stack.append(item_id)
+        else:
+            parent_stack[level - 1] = item_id
+        return parent_stack
+
+    def _create_markdown_links(
+        self,
+        body: str,
+        project_id: str,
+        headers: list[tuple[int, str, str]],
+        items_created: list[str],
+    ) -> list[tuple[str, str]]:
+        links_created: list[tuple[str, str]] = []
+        link_pattern = r"\[([^\]]+)\]\(([^\)]+)\)"
+        for match in re.finditer(link_pattern, body):
+            link_url = match.group(2)
+            if not items_created:
+                continue
+            source_id = items_created[-1]
+            if not link_url.startswith("#"):
+                continue
+            target_title = link_url[1:].replace("-", " ").title()
+            target_id = self._find_header_target(headers, target_title)
+            if not target_id:
+                continue
+            link = Link(
+                id=str(uuid4()),
+                project_id=project_id,
+                source_item_id=source_id,
+                target_item_id=target_id,
+                link_type="relates_to",
+            )
+            self.session.add(link)
+            links_created.append((source_id, target_id))
+        return links_created
+
+    def _find_header_target(
+        self,
+        headers: list[tuple[int, str, str]],
+        target_title: str,
+    ) -> str | None:
+        for _level, item_id, title in headers:
+            if title.lower() == target_title.lower():
+                return item_id
+        return None
+
+    def _count_yaml_items(self, data: Any) -> int:
+        if isinstance(data, dict):
+            return sum(self._count_yaml_items(value) for value in data.values()) + len(data)
+        if isinstance(data, list):
+            return sum(self._count_yaml_items(value) for value in data) + len(data)
+        return 0
+
+    def _schema_name_from_ref(self, schema_ref: str) -> str | None:
+        return schema_ref.split("/")[-1] if schema_ref else None
+
+    def _iter_schema_names_from_content(
+        self,
+        content: dict[str, Any],
+    ) -> Iterable[str]:
+        for content_schema in content.values():
+            schema_ref = content_schema.get("schema", {}).get("$ref", "")
+            schema_name = self._schema_name_from_ref(schema_ref)
+            if schema_name:
+                yield schema_name
+
+    def _link_schema_names(
+        self,
+        *,
+        project_id: str,
+        source_item_id: str,
+        schema_items: dict[str, str],
+        schema_names: Iterable[str],
+        link_type: str,
+        links_created: list[tuple[str, str]],
+    ) -> None:
+        for schema_name in schema_names:
+            target_item_id = schema_items.get(schema_name)
+            if not target_item_id:
+                continue
+            link = Link(
+                id=str(uuid4()),
+                project_id=project_id,
+                source_item_id=source_item_id,
+                target_item_id=target_item_id,
+                link_type=link_type,
+            )
+            self.session.add(link)
+            links_created.append((source_item_id, target_item_id))
 
     def ingest_markdown(
         self,

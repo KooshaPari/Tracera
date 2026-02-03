@@ -2,7 +2,7 @@
 Repository for GitHub App Installation operations.
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy import select

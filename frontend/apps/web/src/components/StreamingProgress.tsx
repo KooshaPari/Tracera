@@ -3,9 +3,14 @@
  * Displays progress for NDJSON streaming operations
  */
 
-import _React from "react";
 import type { StreamingStats } from "../lib/ndjson-parser";
 import { calculateThroughput } from "../lib/ndjson-parser";
+
+const BYTES_IN_KB = 1024;
+const BYTES_IN_MB = BYTES_IN_KB * BYTES_IN_KB;
+const MS_PER_SECOND = 1000;
+const MS_PER_MINUTE = 60 * MS_PER_SECOND;
+const PERCENTAGE_SCALE = 100;
 
 export interface StreamingProgressProps {
 	stats: StreamingStats | null;
@@ -15,142 +20,160 @@ export interface StreamingProgressProps {
 	className?: string;
 }
 
-function formatBytes(bytes: number): string {
-	if (bytes < 1024) {
+const formatBytes = (bytes: number): string => {
+	if (bytes < BYTES_IN_KB) {
 		return `${bytes} B`;
 	}
-	if (bytes < 1024 * 1024) {
-		return `${(bytes / 1024).toFixed(2)} KB`;
+	if (bytes < BYTES_IN_MB) {
+		return `${(bytes / BYTES_IN_KB).toFixed(2)} KB`;
 	}
-	return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
-}
+	return `${(bytes / BYTES_IN_MB).toFixed(2)} MB`;
+};
 
-function formatDuration(ms: number): string {
-	if (ms < 1000) {
+const formatDuration = (ms: number): string => {
+	if (ms < MS_PER_SECOND) {
 		return `${ms.toFixed(0)}ms`;
 	}
-	if (ms < 60_000) {
-		return `${(ms / 1000).toFixed(1)}s`;
+	if (ms < MS_PER_MINUTE) {
+		return `${(ms / MS_PER_SECOND).toFixed(1)}s`;
 	}
-	return `${(ms / 60_000).toFixed(1)}m`;
-}
+	return `${(ms / MS_PER_MINUTE).toFixed(1)}m`;
+};
 
-export function StreamingProgress({
+const hasErrors = (stats: StreamingStats | null): boolean => {
+	return stats !== null && stats.errors.length > 0;
+};
+
+const StatItem = ({
+	label,
+	value,
+}: {
+	label: string;
+	value: string | number;
+}) => (
+	<div className="flex flex-col">
+		<span className="text-muted-foreground">{label}</span>
+		<span className="font-mono font-semibold">{value}</span>
+	</div>
+);
+
+const ErrorStat = ({ count }: { count: number }) => (
+	<div className="flex flex-col">
+		<span className="text-destructive">Errors</span>
+		<span className="font-mono font-semibold text-destructive">{count}</span>
+	</div>
+);
+
+const ErrorDetails = ({ errors }: { errors: string[] }) => (
+	<div className="mt-2 text-sm text-destructive">
+		<details>
+			<summary className="cursor-pointer">
+				{errors.length} error{errors.length > 1 ? "s" : ""} occurred
+			</summary>
+			<ul className="list-disc list-inside mt-1 pl-4">
+				{errors.map((error, idx) => (
+					<li key={`${error}-${idx}`}>{error}</li>
+				))}
+			</ul>
+		</details>
+	</div>
+);
+
+const StatsRow = ({
+	stats,
+	showBytes,
+	showThroughput,
+	throughput,
+}: {
+	stats: StreamingStats | null;
+	showBytes: boolean;
+	showThroughput: boolean;
+	throughput: ReturnType<typeof calculateThroughput>;
+}) => (
+	<div className="flex gap-6 text-sm">
+		<StatItem label="Items" value={stats?.itemsReceived.toLocaleString() || 0} />
+
+		{showBytes && stats && (
+			<StatItem label="Data" value={formatBytes(stats.bytesReceived)} />
+		)}
+
+		{showThroughput && throughput && (
+			<StatItem
+				label="Speed"
+				value={`${throughput.itemsPerSecond.toFixed(0)} items/s`}
+			/>
+		)}
+
+		{stats && (
+			<StatItem
+				label="Duration"
+				value={formatDuration((stats.endTime || Date.now()) - stats.startTime)}
+			/>
+		)}
+
+		{hasErrors(stats) && <ErrorStat count={stats!.errors.length} />}
+	</div>
+);
+
+const Spinner = () => (
+	<div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent" />
+);
+
+const ProgressBar = () => (
+	<div className="w-full h-1 bg-muted rounded-full overflow-hidden mt-2">
+		<div className="h-full bg-primary animate-pulse" />
+	</div>
+);
+
+const StatusText = ({ isStreaming }: { isStreaming: boolean }) => (
+	<div className="text-sm text-muted-foreground ml-auto">
+		{isStreaming ? "Streaming..." : "Complete"}
+	</div>
+);
+
+export const StreamingProgress = ({
 	stats,
 	isStreaming,
 	showThroughput = true,
 	showBytes = false,
 	className = "",
-}: StreamingProgressProps) {
+}: StreamingProgressProps) => {
 	if (!stats && !isStreaming) {
 		return null;
 	}
 
 	const throughput = stats ? calculateThroughput(stats) : null;
+	const errorStats = hasErrors(stats) ? stats : null;
 
 	return (
 		<div className={`streaming-progress ${className}`}>
 			<div className="flex items-center gap-4">
-				{/* Spinner */}
-				{isStreaming && (
-					<div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent" />
-				)}
-
-				{/* Stats */}
-				<div className="flex gap-6 text-sm">
-					{/* Items received */}
-					<div className="flex flex-col">
-						<span className="text-muted-foreground">Items</span>
-						<span className="font-mono font-semibold">
-							{stats?.itemsReceived.toLocaleString() || 0}
-						</span>
-					</div>
-
-					{/* Bytes received */}
-					{showBytes && stats && (
-						<div className="flex flex-col">
-							<span className="text-muted-foreground">Data</span>
-							<span className="font-mono font-semibold">
-								{formatBytes(stats.bytesReceived)}
-							</span>
-						</div>
-					)}
-
-					{/* Throughput */}
-					{showThroughput && throughput && (
-						<div className="flex flex-col">
-							<span className="text-muted-foreground">Speed</span>
-							<span className="font-mono font-semibold">
-								{throughput.itemsPerSecond.toFixed(0)} items/s
-							</span>
-						</div>
-					)}
-
-					{/* Duration */}
-					{stats && (
-						<div className="flex flex-col">
-							<span className="text-muted-foreground">Duration</span>
-							<span className="font-mono font-semibold">
-								{formatDuration(
-									(stats.endTime || Date.now()) - stats.startTime,
-								)}
-							</span>
-						</div>
-					)}
-
-					{/* Errors */}
-					{stats && stats.errors.length > 0 && (
-						<div className="flex flex-col">
-							<span className="text-destructive">Errors</span>
-							<span className="font-mono font-semibold text-destructive">
-								{stats.errors.length}
-							</span>
-						</div>
-					)}
-				</div>
-
-				{/* Status text */}
-				<div className="text-sm text-muted-foreground ml-auto">
-					{isStreaming ? "Streaming..." : "Complete"}
-				</div>
+				{isStreaming && <Spinner />}
+				<StatsRow
+					stats={stats}
+					showBytes={showBytes}
+					showThroughput={showThroughput}
+					throughput={throughput}
+				/>
+				<StatusText isStreaming={isStreaming} />
 			</div>
 
-			{/* Progress bar (indeterminate when streaming) */}
-			{isStreaming && (
-				<div className="w-full h-1 bg-muted rounded-full overflow-hidden mt-2">
-					<div className="h-full bg-primary animate-pulse" />
-				</div>
-			)}
+			{isStreaming && <ProgressBar isStreaming={isStreaming} />}
 
-			{/* Error messages */}
-			{stats && stats.errors.length > 0 && (
-				<div className="mt-2 text-sm text-destructive">
-					<details>
-						<summary className="cursor-pointer">
-							{stats.errors.length} error{stats.errors.length > 1 ? "s" : ""}{" "}
-							occurred
-						</summary>
-						<ul className="list-disc list-inside mt-1 pl-4">
-							{stats.errors.map((error, i) => (
-								<li key={i}>{error}</li>
-							))}
-						</ul>
-					</details>
-				</div>
-			)}
+			{errorStats && <ErrorDetails errors={errorStats.errors} />}
 		</div>
 	);
-}
+};
 
 export interface CompactStreamingProgressProps {
 	stats: StreamingStats | null;
 	isStreaming: boolean;
 }
 
-export function CompactStreamingProgress({
+export const CompactStreamingProgress = ({
 	stats,
 	isStreaming,
-}: CompactStreamingProgressProps) {
+}: CompactStreamingProgressProps) => {
 	if (!stats && !isStreaming) {
 		return null;
 	}
@@ -166,7 +189,7 @@ export function CompactStreamingProgress({
 			{isStreaming && <span>streaming...</span>}
 		</div>
 	);
-}
+};
 
 export interface StreamingProgressBarProps {
 	current: number;
@@ -175,13 +198,13 @@ export interface StreamingProgressBarProps {
 	className?: string;
 }
 
-export function StreamingProgressBar({
+export const StreamingProgressBar = ({
 	current,
 	total,
 	isStreaming,
 	className = "",
-}: StreamingProgressBarProps) {
-	const percentage = total ? (current / total) * 100 : 0;
+}: StreamingProgressBarProps) => {
+	const percentage = total ? (current / total) * PERCENTAGE_SCALE : 0;
 	const showPercentage = total && total > 0;
 
 	return (
@@ -209,4 +232,4 @@ export function StreamingProgressBar({
 			</div>
 		</div>
 	);
-}
+};

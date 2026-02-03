@@ -2,7 +2,6 @@
  * Tests for Projects API
  */
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	createProject,
 	deleteProject,
@@ -10,6 +9,8 @@ import {
 	fetchProjects,
 	updateProject,
 } from "@/api/projects";
+import type { Project } from "@tracertm/types";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock endpoints
 vi.mock("@/api/endpoints", () => ({
@@ -50,10 +51,11 @@ describe("Projects API", () => {
 
 	describe(fetchProject, () => {
 		it("should fetch a single project", async () => {
-			vi.mocked(projectsApi.get).mockResolvedValue(mockProjects[0]);
+			const project = mockProjects[0] as Project;
+			vi.mocked(projectsApi.get).mockResolvedValue(project);
 
 			const result = await fetchProject("proj-1");
-			expect(result).toEqual(mockProjects[0]);
+			expect(result).toEqual(project);
 			expect(projectsApi.get).toHaveBeenCalledWith("proj-1");
 		});
 	});
@@ -61,7 +63,11 @@ describe("Projects API", () => {
 	describe(createProject, () => {
 		it("should create a project", async () => {
 			const newProject = { description: "Test", name: "New Project" };
-			const created = { ...mockProjects[0], ...newProject, id: "new-proj" };
+			const created: Project = {
+				...mockProjects[0],
+				...newProject,
+				id: "new-proj",
+			} as Project;
 			vi.mocked(projectsApi.create).mockResolvedValue(created);
 
 			const result = await createProject(newProject);
@@ -73,7 +79,10 @@ describe("Projects API", () => {
 	describe(updateProject, () => {
 		it("should update a project", async () => {
 			const updates = { name: "Updated Project" };
-			const updated = { ...mockProjects[0], ...updates };
+			const updated: Project = {
+				...mockProjects[0],
+				...updates,
+			} as Project;
 			vi.mocked(projectsApi.update).mockResolvedValue(updated);
 
 			const result = await updateProject("proj-1", updates);

@@ -2,10 +2,11 @@
 Repository for Account model operations.
 """
 
+from typing import Any
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from typing import Any
 from tracertm.models.account import Account
 from tracertm.models.account_user import AccountRole, AccountUser
 

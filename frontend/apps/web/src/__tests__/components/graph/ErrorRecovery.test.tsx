@@ -1,12 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+	act,
+	fireEvent,
+	render,
+	renderHook,
+	screen,
+	waitFor,
+} from "@testing-library/react";
 import { EnhancedErrorState } from "@/components/graph/EnhancedErrorState";
 import { GraphErrorBoundary } from "@/components/graph/GraphErrorBoundary";
 import { NetworkErrorState } from "@/components/graph/NetworkErrorState";
 import { TimeoutErrorState } from "@/components/graph/TimeoutErrorState";
 import { RecoveryProgress } from "@/components/graph/RecoveryProgress";
 import { useAutoRecovery } from "@/hooks/useAutoRecovery";
-import { act, renderHook } from "@testing-library/react";
 
 describe(EnhancedErrorState, () => {
 	it("renders error message as string", () => {

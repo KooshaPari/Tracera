@@ -60,13 +60,13 @@ const createStatusActions = (set: SyncSetter): Pick<
 	"finishSync" | "setOnline" | "startSync"
 > => ({
 	finishSync: (error) =>
-		set({
+		set((state) => ({
 			isSyncing: false,
 			lastSyncedAt: error ? null : new Date(),
 			syncError: error || null,
-		}),
-	setOnline: (online) => set({ isOnline: online }),
-	startSync: () => set({ isSyncing: true, syncError: null }),
+		})),
+	setOnline: (online) => set((state) => ({ isOnline: online })),
+	startSync: () => set((state) => ({ isSyncing: true, syncError: null })),
 });
 
 const createMutationActions = (set: SyncSetter): Pick<

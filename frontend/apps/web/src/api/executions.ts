@@ -1,7 +1,6 @@
 // Execution API endpoints for QA Integration
 
-/* oxlint-disable oxc/no-async-await */
-import client, { handleApiResponse, safeApiCall } from "./client";
+import { client, handleApiResponse, safeApiCall } from "./client";
 
 const { apiClient } = client;
 

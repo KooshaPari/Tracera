@@ -173,7 +173,7 @@ const statusBadge: Record<string, string> = {
 	planned: "bg-yellow-500",
 };
 
-export function ApiView({ projectId }: ApiViewProps) {
+export const ApiView = ({ projectId }: ApiViewProps) => {
 	const [expanded, setExpanded] = useState<Set<string>>(new Set(["1"]));
 	const [copied, setCopied] = useState<string | null>(null);
 
@@ -320,4 +320,4 @@ export function ApiView({ projectId }: ApiViewProps) {
 			</div>
 		</div>
 	);
-}
+};

@@ -170,8 +170,8 @@ export function useGraphLayoutWorker(
 					setIsReady(true);
 					setError(null);
 				}
-			} catch (error) {
-				const error = error instanceof Error ? error : new Error(String(error));
+			} catch (caughtError) {
+				const error = caughtError instanceof Error ? caughtError : new Error(String(caughtError));
 				logger.error(
 					"[useGraphLayoutWorker] Failed to initialize worker:",
 					error,
@@ -274,8 +274,8 @@ export function useGraphLayoutWorker(
 				const result = await Promise.race([layoutPromise, timeoutPromise]);
 				setProgress(1);
 				return result;
-			} catch (error) {
-				const error = error instanceof Error ? error : new Error(String(error));
+			} catch (caughtError) {
+				const error = caughtError instanceof Error ? caughtError : new Error(String(caughtError));
 				logger.error(
 					"[useGraphLayoutWorker] Layout computation failed:",
 					error,

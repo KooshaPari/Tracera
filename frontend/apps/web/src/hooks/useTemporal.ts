@@ -4,7 +4,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Branch, Version } from "@/components/temporal/TemporalNavigator";
 import { QUERY_CONFIGS, queryKeys } from "@/lib/queryConfig";
-import client from "@/api/client";
+import { client } from "@/api/client";
 
 const { getAuthHeaders } = client;
 

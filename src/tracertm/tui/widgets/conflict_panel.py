@@ -4,7 +4,7 @@ Conflict panel widget for TUI.
 Displays and manages sync conflicts with resolution options.
 """
 
-from typing import TYPE_CHECKING, ClassVar, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 try:
     from textual.app import ComposeResult

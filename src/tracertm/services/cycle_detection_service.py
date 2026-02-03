@@ -7,7 +7,7 @@ Prevents circular dependencies in depends_on relationships.
 import asyncio
 import uuid
 from types import SimpleNamespace
-from typing import cast, Any
+from typing import Any, cast
 
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession

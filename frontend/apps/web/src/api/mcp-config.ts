@@ -1,4 +1,4 @@
-import client from "./client";
+import { client } from "./client";
 import { logger } from "@/lib/logger";
 
 const { API_BASE_URL } = client;

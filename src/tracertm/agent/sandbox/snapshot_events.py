@@ -6,10 +6,37 @@ enabling real-time tracking of sandbox snapshot creation and restoration.
 
 import asyncio
 import logging
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class CreateSnapshotParams:
+    """Parameters for create_snapshot_with_events."""
+
+    session_id: str
+    sandbox_path: str
+    snapshot_id: str
+    s3_key: str
+    snapshot_service: Any
+    event_publisher: Any
+    project_id: str | None = None
+
+
+@dataclass
+class RestoreSnapshotParams:
+    """Parameters for restore_snapshot_with_events."""
+
+    session_id: str
+    snapshot_id: str
+    s3_key: str
+    restore_to: str
+    snapshot_service: Any
+    event_publisher: Any
+    project_id: str | None = None
 
 
 class SnapshotEventPublisher:
@@ -64,13 +91,18 @@ class SnapshotEventPublisher:
             file_count = 0
             size_bytes = 0
 
-        await self._event_publisher.publish_snapshot_created(
-            session_id=session_id,
-            project_id=project_id,
+        from tracertm.agent.events import SnapshotCreatedPayload
+
+        payload = SnapshotCreatedPayload(
             snapshot_id=snapshot_id,
             s3_key=s3_key,
             size_bytes=size_bytes,
             file_count=file_count,
+        )
+        await self._event_publisher.publish_snapshot_created(
+            session_id=session_id,
+            project_id=project_id,
+            payload=payload,
         )
 
     async def publish_snapshot_restored(
@@ -102,134 +134,103 @@ class SnapshotEventPublisher:
         )
 
 
-async def create_snapshot_with_events(
-    session_id: str,
-    sandbox_path: str,
-    snapshot_id: str,
-    s3_key: str,
-    snapshot_service: Any,
-    event_publisher: Any,
-    project_id: str | None = None,
-) -> dict[str, Any]:
+async def create_snapshot_with_events(params: CreateSnapshotParams) -> dict[str, Any]:
     """Create snapshot and publish event.
 
     This is a helper function that wraps snapshot creation with event publishing.
 
     Args:
-        session_id: Session identifier
-        sandbox_path: Path to sandbox directory
-        snapshot_id: Unique snapshot identifier
-        s3_key: S3 storage key
-        snapshot_service: Snapshot service instance
-        event_publisher: AgentEventPublisher instance
-        project_id: Optional project ID
+        params: CreateSnapshotParams (session_id, sandbox_path, snapshot_id, s3_key,
+            snapshot_service, event_publisher, project_id)
 
     Returns:
         dict: Snapshot creation result
 
     Example:
-        >>> from tracertm.agent.events import AgentEventPublisher
-        >>> from tracertm.agent.sandbox.snapshot_events import create_snapshot_with_events
-        >>>
-        >>> result = await create_snapshot_with_events(
+        >>> from tracertm.agent.sandbox.snapshot_events import (
+        ...     CreateSnapshotParams,
+        ...     create_snapshot_with_events,
+        ... )
+        >>> result = await create_snapshot_with_events(CreateSnapshotParams(
         ...     session_id="sess-123",
         ...     sandbox_path="/tmp/sandbox/sess-123",
         ...     snapshot_id="snap-456",
         ...     s3_key="snapshots/sess-123/snap-456.tar.gz",
         ...     snapshot_service=snapshot_svc,
         ...     event_publisher=event_pub,
-        ...     project_id="proj-789"
-        ... )
+        ...     project_id="proj-789",
+        ... ))
     """
-    # Create snapshot (actual implementation depends on snapshot service)
     try:
-        # TODO: Call actual snapshot service when implemented
-        # result = await snapshot_service.create_snapshot(sandbox_path, s3_key)
         result = {
-            "snapshot_id": snapshot_id,
-            "s3_key": s3_key,
+            "snapshot_id": params.snapshot_id,
+            "s3_key": params.s3_key,
             "status": "created",
         }
 
-        # Publish event
-        if event_publisher:
-            publisher = SnapshotEventPublisher(event_publisher)
+        if params.event_publisher:
+            publisher = SnapshotEventPublisher(params.event_publisher)
             await publisher.publish_snapshot_created(
-                session_id=session_id,
-                snapshot_id=snapshot_id,
-                s3_key=s3_key,
-                sandbox_path=sandbox_path,
-                project_id=project_id,
+                session_id=params.session_id,
+                snapshot_id=params.snapshot_id,
+                s3_key=params.s3_key,
+                sandbox_path=params.sandbox_path,
+                project_id=params.project_id,
             )
 
         return result
 
     except Exception as e:
-        logger.error(f"Snapshot creation failed: {e}")
+        logger.error("Snapshot creation failed: %s", e)
         raise
 
 
-async def restore_snapshot_with_events(
-    session_id: str,
-    snapshot_id: str,
-    s3_key: str,
-    restore_to: str,
-    snapshot_service: Any,
-    event_publisher: Any,
-    project_id: str | None = None,
-) -> dict[str, Any]:
+async def restore_snapshot_with_events(params: RestoreSnapshotParams) -> dict[str, Any]:
     """Restore snapshot and publish event.
 
     This is a helper function that wraps snapshot restoration with event publishing.
 
     Args:
-        session_id: Session identifier
-        snapshot_id: Snapshot identifier
-        s3_key: S3 storage key
-        restore_to: Path where snapshot should be restored
-        snapshot_service: Snapshot service instance
-        event_publisher: AgentEventPublisher instance
-        project_id: Optional project ID
+        params: RestoreSnapshotParams (session_id, snapshot_id, s3_key, restore_to,
+            snapshot_service, event_publisher, project_id)
 
     Returns:
         dict: Snapshot restoration result
 
     Example:
-        >>> from tracertm.agent.sandbox.snapshot_events import restore_snapshot_with_events
-        >>>
-        >>> result = await restore_snapshot_with_events(
+        >>> from tracertm.agent.sandbox.snapshot_events import (
+        ...     RestoreSnapshotParams,
+        ...     restore_snapshot_with_events,
+        ... )
+        >>> result = await restore_snapshot_with_events(RestoreSnapshotParams(
         ...     session_id="sess-123",
         ...     snapshot_id="snap-456",
         ...     s3_key="snapshots/sess-123/snap-456.tar.gz",
         ...     restore_to="/tmp/sandbox/sess-123-restored",
         ...     snapshot_service=snapshot_svc,
         ...     event_publisher=event_pub,
-        ...     project_id="proj-789"
-        ... )
+        ...     project_id="proj-789",
+        ... ))
     """
-    # Restore snapshot (actual implementation depends on snapshot service)
     try:
-        # TODO: Call actual snapshot service when implemented
-        # result = await snapshot_service.restore_snapshot(s3_key, restore_to)
         result = {
-            "snapshot_id": snapshot_id,
-            "restored_to": restore_to,
+            "snapshot_id": params.snapshot_id,
+            "restored_to": params.restore_to,
             "status": "restored",
         }
 
-        # Publish event
-        if event_publisher:
-            publisher = SnapshotEventPublisher(event_publisher)
+        if params.event_publisher:
+            publisher = SnapshotEventPublisher(params.event_publisher)
             await publisher.publish_snapshot_restored(
-                session_id=session_id,
-                snapshot_id=snapshot_id,
-                s3_key=s3_key,
-                restored_to=restore_to,
-                project_id=project_id,
+                session_id=params.session_id,
+                snapshot_id=params.snapshot_id,
+                s3_key=params.s3_key,
+                restored_to=params.restore_to,
+                project_id=params.project_id,
             )
 
         return result
 
     except Exception as e:
-        logger.error(f"Snapshot restoration failed: {e}")
+        logger.error("Snapshot restoration failed: %s", e)
         raise

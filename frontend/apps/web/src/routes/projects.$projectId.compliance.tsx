@@ -16,6 +16,4 @@ export const Route = createFileRoute("/projects/$projectId/compliance")({
 	component: CompliancePage,
 });
 
-function CompliancePage() {
-	return null;
-}
+const CompliancePage = () => null;

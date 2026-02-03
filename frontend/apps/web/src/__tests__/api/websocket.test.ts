@@ -96,8 +96,7 @@ globalThis.WebSocket = MockWebSocket as any;
 
 // Mock API_BASE_URL
 vi.mock("@/api/client", () => ({
-	__esModule: true,
-	default: {
+	client: {
 		API_BASE_URL: "http://localhost:4000",
 	},
 }));

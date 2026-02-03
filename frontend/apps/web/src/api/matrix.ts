@@ -1,6 +1,6 @@
 // Traceability Matrix API stub
+import { client } from "./client";
 import type { Item, Link } from "./types";
-import client from "./client";
 
 interface TraceabilityMatrix {
 	coverage: {

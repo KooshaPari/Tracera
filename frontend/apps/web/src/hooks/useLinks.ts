@@ -3,7 +3,7 @@ import type { Link, LinkType } from "@tracertm/types";
 import { useState } from "react";
 import { useAuthStore } from "@/stores/authStore";
 import { QUERY_CONFIGS, queryKeys } from "@/lib/queryConfig";
-import client from "@/api/client";
+import { client } from "@/api/client";
 
 const { getAuthHeaders } = client;
 

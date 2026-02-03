@@ -2,7 +2,7 @@ import { useAuthStore } from "../stores";
 import { authApi } from "./auth-api";
 import authConstants from "./auth-constants";
 import { AuthError } from "./auth-types";
-import client from "./client";
+import { client } from "./client";
 import { getAuthErrorMessage, hasWindow, parseErrorData } from "./auth-utils";
 import type { AuthResponse, LoginRequest } from "./auth-types";
 

@@ -116,7 +116,7 @@ async def import_manage(
     action = action.lower()
     project_name = payload.get("project_name")
 
-    def _load_data() -> dict[str, Any]:
+    def _load_data() -> Any:
         data = payload.get("data")
         if isinstance(data, dict[str, Any]):
             return data

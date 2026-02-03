@@ -29,6 +29,18 @@ class Plugin:
     config: dict[str, Any] = field(default_factory=dict)
 
 
+@dataclass
+class RegisterPluginInput:
+    """Input for registering a plugin."""
+
+    name: str
+    version: str
+    plugin_type: PluginType
+    description: str
+    author: str
+    config: dict[str, Any] | None = None
+
+
 class PluginService:
     """Service for managing plugins."""
 
@@ -36,26 +48,17 @@ class PluginService:
         self.plugins: dict[str, Plugin] = {}
         self.hooks: dict[str, list[Callable]] = {}
 
-    def register_plugin(
-        self,
-        name: str,
-        version: str,
-        plugin_type: PluginType,
-        description: str,
-        author: str,
-        config: dict[str, Any] | None = None,
-    ) -> Plugin:
+    def register_plugin(self, input: RegisterPluginInput) -> Plugin:
         """Register a new plugin."""
         plugin = Plugin(
-            name=name,
-            version=version,
-            plugin_type=plugin_type,
-            description=description,
-            author=author,
-            config=config or {},
+            name=input.name,
+            version=input.version,
+            plugin_type=input.plugin_type,
+            description=input.description,
+            author=input.author,
+            config=input.config or {},
         )
-
-        self.plugins[name] = plugin
+        self.plugins[input.name] = plugin
         return plugin
 
     def unregister_plugin(self, name: str) -> bool:

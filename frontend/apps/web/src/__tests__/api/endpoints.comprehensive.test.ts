@@ -40,8 +40,7 @@ vi.mock("../../api/client", () => {
 	}
 
 	return {
-		__esModule: true,
-		default: {
+		client: {
 			ApiError: MockApiError,
 			apiClient: mockApiClient,
 			handleApiResponse: mockHandleApiResponse,
@@ -50,7 +49,7 @@ vi.mock("../../api/client", () => {
 	};
 });
 
-import client from "../../api/client";
+import { client } from "../../api/client";
 
 const { ApiError, apiClient, handleApiResponse, safeApiCall } = client;
 

@@ -3,12 +3,12 @@ Database connection management for TraceRTM.
 """
 
 from collections.abc import Generator
+from typing import Any
 
 from sqlalchemy import Engine, create_engine, text
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import QueuePool
 
-from typing import Any
 from tracertm.models.base import Base
 
 

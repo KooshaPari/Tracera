@@ -4,7 +4,7 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import client from "@/api/client";
+import { client } from "@/api/client";
 
 const { ApiError, apiClient, handleApiResponse, safeApiCall } = client;
 

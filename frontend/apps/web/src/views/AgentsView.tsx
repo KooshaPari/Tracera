@@ -1,5 +1,5 @@
-import { Badge } from "@tracertm/ui/components/Badge";
 import { Button, Card, CardContent, CardHeader, CardTitle } from "@tracertm/ui";
+import { Badge } from "@tracertm/ui/components/Badge";
 
 const MINUTE_IN_MS = Number("60000");
 const HOUR_IN_MS = Number("60") * MINUTE_IN_MS;

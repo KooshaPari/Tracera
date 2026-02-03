@@ -150,7 +150,7 @@ const healthColors = {
 	healthy: "bg-green-500",
 };
 
-export function DeploymentView() {
+export const DeploymentView = () => {
 	const [deploying, setDeploying] = useState<string | null>(null);
 
 	const triggerDeploy = (env: string) => {
@@ -265,4 +265,4 @@ export function DeploymentView() {
 			</div>
 		</div>
 	);
-}
+};

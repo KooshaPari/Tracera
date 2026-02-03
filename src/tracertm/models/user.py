@@ -6,10 +6,11 @@ API latency. WorkOS remains the source of truth, and this cache is
 synchronized on demand with a 5-minute TTL.
 """
 
+from typing import Any
+
 from sqlalchemy import Boolean, Column, DateTime, Index, String
 from sqlalchemy.sql import func
 
-from typing import Any
 from tracertm.models.base import Base
 
 

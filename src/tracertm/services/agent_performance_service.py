@@ -8,6 +8,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from tracertm.repositories.agent_repository import AgentRepository
 from tracertm.repositories.event_repository import EventRepository
 
+EFFICIENCY_EXCELLENT = 90
+EFFICIENCY_GOOD = 75
+EFFICIENCY_FAIR = 50
+WORKLOAD_HEAVY_THRESHOLD = 10
+WORKLOAD_MODERATE_THRESHOLD = 5
+
 
 class AgentPerformanceService:
     """Service for analyzing agent performance."""
@@ -103,11 +109,11 @@ class AgentPerformanceService:
 
     def _get_efficiency_rating(self, score: float) -> str:
         """Get efficiency rating based on score."""
-        if score >= 90:
+        if score >= EFFICIENCY_EXCELLENT:
             return "Excellent"
-        if score >= 75:
+        if score >= EFFICIENCY_GOOD:
             return "Good"
-        if score >= 50:
+        if score >= EFFICIENCY_FAIR:
             return "Fair"
         return "Poor"
 
@@ -124,9 +130,9 @@ class AgentPerformanceService:
         events_per_hour = stats.get("events_per_hour", 0)
 
         # Classify workload
-        if events_per_hour > 10:
+        if events_per_hour > WORKLOAD_HEAVY_THRESHOLD:
             workload = "Heavy"
-        elif events_per_hour > 5:
+        elif events_per_hour > WORKLOAD_MODERATE_THRESHOLD:
             workload = "Moderate"
         elif events_per_hour > 1:
             workload = "Light"

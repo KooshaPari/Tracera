@@ -271,13 +271,18 @@ async def create_session_checkpoint(
             await nats_client.connect()
             event_publisher = AgentEventPublisher(nats_client)
 
-            await event_publisher.publish_session_checkpoint(
-                session_id=session_id,
-                project_id=project_id,
+            from tracertm.agent.events import SessionCheckpointPayload
+
+            payload = SessionCheckpointPayload(
                 checkpoint_id=checkpoint_id,
                 turn_number=turn_number,
                 s3_key=s3_key,
                 metadata=checkpoint_data,
+            )
+            await event_publisher.publish_session_checkpoint(
+                session_id=session_id,
+                project_id=project_id,
+                payload=payload,
             )
 
             await nats_client.close()

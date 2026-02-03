@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { appProvidersDeps } from "./app-providers-deps";
 import { useEffect } from "react";
+import { appProvidersDeps } from "./app-providers-deps";
 
 const {
 	AuthKitProvider,

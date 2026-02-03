@@ -2,12 +2,12 @@
 
 import uuid
 from datetime import UTC, datetime
+from typing import Any
 from uuid import uuid4
 
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from typing import Any
 from tracertm.models.agent import Agent
 
 

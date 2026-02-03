@@ -4,7 +4,6 @@ import asyncio
 import inspect
 import logging
 import os
-from pathlib import Path
 import re
 import sys
 import warnings
@@ -19,7 +18,10 @@ warnings.filterwarnings(
 from collections import defaultdict
 from collections.abc import AsyncGenerator
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from tracertm.preflight import PreflightCheck
 
 # Disable optional Pydantic plugins that are not part of this repo (ex: logfire).
 if os.getenv("PYDANTIC_DISABLE_PLUGINS") is None:
@@ -31,7 +33,8 @@ from fastapi import Depends, FastAPI, HTTPException, Request, WebSocket, WebSock
 try:
     from uvicorn.protocols.utils import ClientDisconnected
 except ImportError:
-    ClientDisconnected: type[Exception] = type("ClientDisconnected", (Exception,), {})  # type: ignore[assignment,misc]
+    _ClientDisconnectedFallback = type("ClientDisconnected", (Exception,), {})
+    ClientDisconnected = _ClientDisconnectedFallback  # type: ignore[assignment,misc]
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel
@@ -81,6 +84,9 @@ from tracertm.services.cache_service import RedisUnavailableError
 from tracertm.services.temporal_service import TemporalService
 
 logger = logging.getLogger(__name__)
+
+# HTTP status threshold for server errors (health checks)
+HTTP_SERVER_ERROR_START = 500
 
 # ---------------------------------------------------------------------------
 # Security and access-control placeholders
@@ -164,27 +170,28 @@ def verify_token(token: str, *args: Any, **kwargs: Any) -> dict[str, Any]:
     return workos_auth_service.verify_access_token(token)
 
 
-def verify_refresh_token(refresh_token: str, *args: Any, **kwargs: Any) -> dict[str, Any] | bool:
+def verify_refresh_token(refresh_token: str, *args: Any, **kwargs: Any) -> dict[str, Any]:
     """Verify refresh token using WorkOS AuthKit (if configured)."""
     try:
-        return workos_auth_service.authenticate_with_refresh_token(refresh_token)
+        result = workos_auth_service.authenticate_with_refresh_token(refresh_token)
+        if isinstance(result, dict):
+            return result
+        raise ValueError("Invalid refresh token response")
     except Exception as exc:
         raise ValueError(str(exc)) from exc
 
 
-def generate_access_token(*args: Any, **kwargs: Any) -> dict[str, Any]:
+def generate_access_token(refresh_token_val: str, *args: Any, **kwargs: Any) -> dict[str, Any]:
     """Generate access tokens from refresh token exchange output."""
-    refresh_token = kwargs.get("refresh_token")
-    if refresh_token:
-        result = verify_refresh_token(refresh_token)
-        if isinstance(result, dict[str, Any]):
-            return {
-                "access_token": result.get("access_token"),
-                "refresh_token": result.get("refresh_token"),
-                "token_type": result.get("token_type", "bearer"),
-                "expires_in": result.get("expires_in"),
-            }
-    raise ValueError("Unable to generate access token")
+    result = verify_refresh_token(refresh_token_val)
+    if not isinstance(result, dict):
+        raise ValueError("Unable to generate access token")
+    return {
+        "access_token": result.get("access_token"),
+        "refresh_token": result.get("refresh_token"),
+        "token_type": result.get("token_type", "bearer"),
+        "expires_in": result.get("expires_in"),
+    }
 
 
 def check_permissions(*args: Any, **kwargs: Any) -> bool:
@@ -218,7 +225,7 @@ def _is_system_admin_email(email: str | None) -> bool:
 
 def is_system_admin(claims: dict[str, Any] | None, email_from_user: str | None = None) -> bool:
     """True if the user is a system admin (by email or cached user_id from /auth/me)."""
-    if not claims:
+    if not claims or not isinstance(claims, dict):
         return False
     user_id = claims.get("sub")
     if user_id and user_id in _admin_user_ids:
@@ -339,7 +346,9 @@ def auth_guard(request: Request) -> dict[str, Any]:
         logger.error(f"Authentication failed: {exc}")
         raise HTTPException(status_code=401, detail=f"Invalid token: {exc!s}")
 
-    return claims or {}
+    if not isinstance(claims, dict):
+        raise HTTPException(status_code=401, detail="Invalid token")
+    return claims
 
 
 def ensure_project_access(project_id: str | None, claims: dict[str, Any] | None) -> None:
@@ -362,6 +371,9 @@ def ensure_credential_access(credential, claims: dict[str, Any] | None) -> None:
     user_id = claims.get("sub") if claims else None
     if not user_id or credential.created_by_user_id != user_id:
         raise HTTPException(status_code=403, detail="Credential access denied")
+
+
+_rate_limit_counts: defaultdict[tuple[str, str, str], int] = defaultdict(int)
 
 
 def enforce_rate_limit(request: Request | None, claims: dict[str, Any] | None) -> None:
@@ -391,19 +403,22 @@ def enforce_rate_limit(request: Request | None, claims: dict[str, Any] | None) -
     key = claims.get("sub") if claims else None
     key = key or request.headers.get("X-User-ID") or client_ip or "anonymous"
     limit_info = get_endpoint_limit(request.method, request.url.path)
-    limit: int | None = None
+    resolved_limit: int | None = None
     if isinstance(limit_info, dict):
-        limit = limit_info.get("limit")  # type: ignore[assignment]
+        val = limit_info.get("limit")
+        resolved_limit = val if isinstance(val, int) else None
     elif isinstance(limit_info, int):
-        limit = limit_info
+        resolved_limit = limit_info
 
-    allowed = limiter.check_limit(key, method=request.method, path=request.url.path, limit=limit)
+    allowed = limiter.check_limit(key, method=request.method, path=request.url.path, limit=resolved_limit)
 
     rate_key = (key, request.method, request.url.path)
-    enforce_rate_limit._counts[rate_key] += 1  # type: ignore[attr-defined]
+    if rate_key not in _rate_limit_counts:
+        _rate_limit_counts[rate_key] = 0
+    _rate_limit_counts[rate_key] += 1
     if allowed is False:
         pass
-    elif limit is not None and enforce_rate_limit._counts[rate_key] > (limit or 0):
+    elif resolved_limit is not None and _rate_limit_counts[rate_key] > (resolved_limit or 0):
         allowed = False
 
     if not allowed:
@@ -411,11 +426,6 @@ def enforce_rate_limit(request: Request | None, claims: dict[str, Any] | None) -
         message = getattr(limiter, "get_message", lambda *args, **kwargs: "Rate limit exceeded")(key, request.method, request.url.path)
         headers = {"Retry-After": str(retry_after)} if retry_after is not None else None
         raise HTTPException(status_code=429, detail=message, headers=headers)
-
-
-# Type annotation for the rate limit counter
-_rate_limit_counts: defaultdict[tuple[str, str, str], int] = defaultdict(int)
-enforce_rate_limit._counts = _rate_limit_counts  # type: ignore[attr-defined]
 
 
 # Create FastAPI app
@@ -549,7 +559,7 @@ async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONR
     """Log unhandled exceptions and return a safe 500 response (no traceback leak)."""
     if isinstance(exc, HTTPException):
         return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
-    logger.exception("Unhandled exception: %s", exc)
+    logger.error("Unhandled exception: %s", exc)
     return JSONResponse(
         status_code=500,
         content={"detail": "Internal server error"},
@@ -565,13 +575,13 @@ def _backoff_delay(attempt: int, initial: float, cap: float, multiplier: float =
 
 async def _poll_one_service(
     service_name: str,
-    check: Any,
+    check: "PreflightCheck",
     is_required: bool,
     interval_initial: float,
     interval_max: float,
 ) -> tuple[str, bool]:
     """Poll one preflight check indefinitely with progressive backoff (cap interval_max). Returns (check.name, ok)."""
-    from tracertm.preflight import PreflightCheck, run_single_check
+    from tracertm.preflight import run_single_check
 
     # Initial wait so dependent services can start
     await asyncio.sleep(interval_initial)
@@ -639,28 +649,28 @@ async def startup_event() -> None:
     from tracertm.preflight import build_api_checks, run_preflight
 
     # Preflight: all services are required. Run checks for everything except the two we poll with retries.
-    _required_poll = ("go-backend", "temporal-host")
-    _optional_poll: tuple[str, ...] = ()
+    required_poll = ("go-backend", "temporal-host")
+    optional_poll: tuple[str, ...] = ()
     all_checks = build_api_checks()
-    excluded = set(_required_poll + _optional_poll)
+    excluded = set(required_poll + optional_poll)
     checked_now = [c.name for c in all_checks if c.name not in excluded and c.url and c.url.strip()]
     run_preflight(
         "python-api",
         all_checks,
         strict=True,
-        exclude_names=_required_poll + _optional_poll,
+        exclude_names=required_poll + optional_poll,
     )
     if checked_now:
         logger.info(
             "[python-api] All required checks passed: %s (all of concern). Now polling with retries: %s",
             ", ".join(checked_now),
-            ", ".join(_required_poll),
+            ", ".join(required_poll),
         )
     # Wait & poll required services in parallel; retry indefinitely with progressive backoff (cap 30s).
     await _poll_services(
         "python-api",
-        required_names=_required_poll,
-        optional_names=_optional_poll,
+        required_names=required_poll,
+        optional_names=optional_poll,
         interval_initial=2.0,
         interval_max=30.0,
     )
@@ -846,10 +856,9 @@ async def startup_event() -> None:
 
         async def handle_project_updated(event: dict[str, Any]) -> None:
             """Handle project.updated events from NATS."""
-            entity_id = event.get("entity_id")
             project_id = event.get("project_id")
 
-            logger.info(f"Received project.updated event: {project_id}")
+            logger.info("Received project.updated event: %s", project_id)
 
             # Invalidate project-level caches
             if project_id:
@@ -1098,10 +1107,10 @@ async def api_health_check(
         async with httpx.AsyncClient(timeout=5.0) as client:
             resp = await client.get(f"{go_backend_url}/health")
             components["go_backend"] = {
-                "status": "healthy" if resp.status_code < 500 else "unhealthy",
+                "status": "healthy" if resp.status_code < HTTP_SERVER_ERROR_START else "unhealthy",
                 "http_status": resp.status_code,
             }
-            if resp.status_code >= 500:
+            if resp.status_code >= HTTP_SERVER_ERROR_START:
                 status = "unhealthy"
     except Exception as exc:
         components["go_backend"] = {"status": "unhealthy", "error": str(exc)}
@@ -1184,8 +1193,7 @@ async def mcp_config() -> dict[str, Any]:
 async def auth_callback(payload: AuthCallbackPayload):
     """Exchange authorization code for user data and tokens (B2B flow)."""
     try:
-        result = workos_auth_service.authenticate_with_code(payload.code)
-        return result
+        return workos_auth_service.authenticate_with_code(payload.code)
     except Exception as exc:
         logger.error(f"Auth callback failed: {exc}")
         raise HTTPException(status_code=400, detail=str(exc))
@@ -1216,7 +1224,7 @@ async def websocket_endpoint(websocket: WebSocket):
             pass
 
     # Try token from query or header first (for clients that send it on handshake)
-    token = None
+    token: str | None = None
     if "token" in websocket.query_params:
         token = websocket.query_params["token"]
     elif "authorization" in {k.lower(): v for k, v in websocket.headers.items()}:
@@ -1255,6 +1263,10 @@ async def websocket_endpoint(websocket: WebSocket):
             return
 
     # Verify token
+    if not token:
+        await websocket.send_json({"type": "auth_failed", "message": "No token provided"})
+        await _close_once(1008, "Authentication required")
+        return
     try:
         claims = verify_token(token)
         logger.info("WebSocket authenticated: user=%s from %s", claims.get("sub"), websocket.client)
@@ -1392,9 +1404,7 @@ async def _list_items_impl(
             return True
         if cand == f"{req}s" or req == f"{cand}s":
             return True
-        if cand.startswith(req) or req.startswith(cand):
-            return True
-        return False
+        return bool(cand.startswith(req) or req.startswith(cand))
 
     async def resolve_view_matches() -> list[str]:
         if not view:
@@ -1459,8 +1469,7 @@ async def _list_items_impl(
             .order_by(Item.created_at.desc())
             .offset(skip)
         )
-        if limit is not None and limit > 0:
-            items_query = items_query.limit(limit)
+        items_query = items_query.limit(limit) if limit is not None and limit > 0 else items_query
         items_result = await db.execute(items_query)
         items = list(items_result.scalars().all())
     except (OperationalError, ProgrammingError) as exc:
@@ -2482,7 +2491,7 @@ async def summarize_items_endpoint(
     return {
         "project_id": project_id,
         "view": view_upper,
-        "status_counts": {status: count for status, count in status_counts},
+        "status_counts": dict(status_counts),
         "total": sum(count for _, count in status_counts),
         "samples": [
             {
@@ -2668,7 +2677,7 @@ async def login_endpoint(
     from tracertm.schemas.auth import LoginRequest
 
     try:
-        login_data = LoginRequest(**data)
+        LoginRequest(**data)  # validate request body
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -2764,7 +2773,6 @@ async def device_token_endpoint(
         raise HTTPException(status_code=400, detail=str(e))
 
     device_code = request_data.device_code
-    client_id = request_data.client_id or os.getenv("WORKOS_CLIENT_ID")
 
     # Check if device code exists and is valid
     code_data = _device_code_store.get(device_code)
@@ -6581,7 +6589,7 @@ async def update_test_run(
 @app.post("/api/v1/test-runs/{run_id}/start")
 async def start_test_run(
     run_id: str,
-    start_data: dict[str, Any] = None,
+    start_data: dict[str, Any] | None = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     request: Request | None = None,
@@ -6615,7 +6623,7 @@ async def start_test_run(
 @app.post("/api/v1/test-runs/{run_id}/complete")
 async def complete_test_run(
     run_id: str,
-    complete_data: dict[str, Any] = None,
+    complete_data: dict[str, Any] | None = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     request: Request | None = None,
@@ -6653,7 +6661,7 @@ async def complete_test_run(
 @app.post("/api/v1/test-runs/{run_id}/cancel")
 async def cancel_test_run(
     run_id: str,
-    cancel_data: dict[str, Any] = None,
+    cancel_data: dict[str, Any] | None = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     request: Request | None = None,
@@ -7903,7 +7911,7 @@ async def get_pass_rate_trend(
     enforce_rate_limit(request, claims)
     ensure_project_access(project_id, claims)
 
-    from datetime import datetime, timedelta
+    from datetime import datetime, timedelta, timezone
 
     from sqlalchemy import and_, func, select
 
@@ -8102,7 +8110,7 @@ async def get_flaky_tests(
         .where(
             and_(
                 TestRun.project_id == project_id,
-                TestResult.is_flaky == True,
+                TestResult.is_flaky.is_(True),
             )
         )
         .group_by(TestResult.test_case_id)
@@ -8175,7 +8183,7 @@ async def get_execution_history(
     enforce_rate_limit(request, claims)
     ensure_project_access(project_id, claims)
 
-    from datetime import datetime, timedelta
+    from datetime import datetime, timedelta, timezone
 
     from sqlalchemy import and_, select
 
@@ -8405,9 +8413,14 @@ async def oauth_callback(
     repo = IntegrationCredentialRepository(db, encryption_service)
 
     # Check for existing credential
+    sub = claims.get("sub")
     if credential_scope == "user":
-        existing = await repo.get_global_by_user_and_provider(claims.get("sub"), provider)
+        if not isinstance(sub, str):
+            raise HTTPException(status_code=401, detail="User ID not found")
+        existing = await repo.get_global_by_user_and_provider(sub, provider)
     else:
+        if not isinstance(project_id, str) or not isinstance(provider, str):
+            raise HTTPException(status_code=400, detail="Project and provider required")
         existing = await repo.get_by_project_and_provider(project_id, provider)
     if existing:
         # Update existing
@@ -8423,6 +8436,7 @@ async def oauth_callback(
         credential_id = existing.id
     else:
         # Create new
+        created_by = claims.get("sub")
         credential = await repo.create(
             project_id=project_id if credential_scope != "user" else None,
             provider=provider,
@@ -8432,7 +8446,7 @@ async def oauth_callback(
             scopes=token_data.get("scope", "").split(",") if provider == "linear" else token_data.get("scope", "").split(" "),
             provider_user_id=str(user_info.get("id", "")),
             provider_metadata={"user": user_info},
-            created_by_user_id=claims.get("sub"),
+            created_by_user_id=created_by if isinstance(created_by, str) else None,
         )
         credential_id = credential.id
 
@@ -8470,12 +8484,17 @@ async def list_credentials(
     repo = IntegrationCredentialRepository(db, encryption_service)
 
     if project_id:
+        sub = claims.get("sub") if include_global else None
         credentials = await repo.get_by_project(
             project_id,
-            include_global_user_id=claims.get("sub") if include_global else None,
+            include_global_user_id=sub if isinstance(sub, str) else None,
         )
     else:
-        credentials = await repo.list_by_user(claims.get("sub"))
+        sub = claims.get("sub")
+        if not isinstance(sub, str):
+            credentials = []
+        else:
+            credentials = await repo.list_by_user(sub)
 
     return {
         "credentials": [
@@ -8563,7 +8582,7 @@ async def validate_credential(
         "provider": credential.provider,
         "user": user_info if valid else None,
         "error": error,
-        "validated_at": datetime.now(timezone.utc).isoformat(),
+        "validated_at": datetime.now(UTC).isoformat(),
     }
 
 
@@ -8601,7 +8620,7 @@ async def delete_credential(
 @app.get("/api/v1/integrations/mappings")
 async def list_mappings(
     project_id: str,
-    provider: str = None,
+    provider: str | None = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     request: Request | None = None,
@@ -8897,7 +8916,7 @@ async def get_sync_status(
 
     queue_stats = {"pending": 0, "processing": 0, "failed": 0, "completed": 0}
     for row in queue_result.all():
-        queue_stats[row.status] = row.count
+        queue_stats[row["status"]] = row["count"]
 
     # Get recent sync logs
     log_result = await db.execute(
@@ -9004,7 +9023,7 @@ async def trigger_sync(
 @app.get("/api/v1/integrations/sync/queue")
 async def get_sync_queue(
     project_id: str,
-    status: str = None,
+    status: str | None = None,
     limit: int = 50,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
@@ -9543,8 +9562,8 @@ async def github_app_webhook(
         installation_id = installation_data.get("id")
 
         if action == "created":
-            # Extract account_id from installation metadata or setup action
-            account_id = payload.get("account_id")  # This would come from state during installation
+            # Extract account_id from installation metadata or setup action (state during installation)
+            _account_id = payload.get("account_id")
             # For now, we'll need to handle this differently - account_id should be in installation metadata
             # or we need to store it during the installation flow
 
@@ -10277,12 +10296,14 @@ async def get_integration_stats(
 
     mapping_stats = {"total": 0, "active": 0, "by_provider": {}}
     for row in mapping_result.all():
-        mapping_stats["total"] += row.count
-        if row.status == "active":
-            mapping_stats["active"] += row.count
-        if row.external_system not in mapping_stats["by_provider"]:
-            mapping_stats["by_provider"][row.external_system] = 0
-        mapping_stats["by_provider"][row.external_system] += row.count
+        cnt = row["count"]
+        mapping_stats["total"] += cnt
+        if row["status"] == "active":
+            mapping_stats["active"] += cnt
+        ext = row["external_system"]
+        if ext not in mapping_stats["by_provider"]:
+            mapping_stats["by_provider"][ext] = 0
+        mapping_stats["by_provider"][ext] += cnt
 
     # Sync stats
     queue_pending = await db.scalar(
@@ -10295,7 +10316,7 @@ async def get_integration_stats(
         )
     )
 
-    from datetime import datetime, timedelta, UTC
+    from datetime import UTC, datetime, timedelta
     week_ago = datetime.now(UTC) - timedelta(days=7)
 
     sync_logs_result = await db.execute(
@@ -10313,9 +10334,10 @@ async def get_integration_stats(
 
     sync_counts = {"total": 0, "success": 0}
     for row in sync_logs_result.all():
-        sync_counts["total"] += row.count
-        if row.success:
-            sync_counts["success"] += row.count
+        cnt = row["count"]
+        sync_counts["total"] += cnt
+        if row["success"]:
+            sync_counts["success"] += cnt
 
     success_rate = (
         round(sync_counts["success"] / sync_counts["total"] * 100, 1)
@@ -10335,10 +10357,11 @@ async def get_integration_stats(
 
     conflict_stats = {"pending": 0, "resolved": 0}
     for row in conflict_result.all():
-        if row.resolution_status == "pending":
-            conflict_stats["pending"] = row.count
-        elif row.resolution_status == "resolved":
-            conflict_stats["resolved"] = row.count
+        cnt = row["count"]
+        if row["resolution_status"] == "pending":
+            conflict_stats["pending"] = cnt
+        elif row["resolution_status"] == "resolved":
+            conflict_stats["resolved"] = cnt
 
     return {
         "project_id": project_id,

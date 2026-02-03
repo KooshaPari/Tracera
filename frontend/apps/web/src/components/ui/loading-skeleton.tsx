@@ -8,6 +8,13 @@
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
+const TABLE_ROW_DELAY_STEP = 0.02;
+const TRANSITION_DELAY_STEP = 0.1;
+const GRAPH_POS_RANGE = 300;
+const GRAPH_POS_OFFSET = 150;
+const SCALE_BOUNCE = 1.2;
+const CONTENT_ANIM_DELAY = 0.3;
+
 interface SkeletonProps {
 	className?: string;
 	animate?: boolean;
@@ -99,7 +106,7 @@ export function TableSkeleton({
 						className="py-2 border-b"
 						initial={{ opacity: 0, x: -10 }}
 						animate={{ opacity: 1, x: 0 }}
-						transition={{ delay: rowIndex * 0.02, duration: 0.15 }}
+						transition={{ delay: rowIndex * TABLE_ROW_DELAY_STEP, duration: 0.15 }}
 					>
 						<div
 							className="grid gap-4"
@@ -130,7 +137,7 @@ export function KanbanSkeleton({ columns = 4 }: { columns?: number }) {
 					className="flex-1 min-w-0"
 					initial={{ opacity: 0, scale: 0.95 }}
 					animate={{ opacity: 1, scale: 1 }}
-					transition={{ delay: i * 0.1, duration: 0.2 }}
+					transition={{ delay: i * TRANSITION_DELAY_STEP, duration: 0.2 }}
 				>
 					<div className="rounded-lg border bg-muted/30 p-4">
 						<Skeleton className="h-4 w-3/4 mb-4" animate={false} />
@@ -163,13 +170,13 @@ export function GraphSkeleton() {
 						key={i}
 						className="absolute"
 						style={{
-							left: `${Math.random() * 300 - 150}px`,
-							top: `${Math.random() * 300 - 150}px`,
+							left: `${Math.random() * GRAPH_POS_RANGE - GRAPH_POS_OFFSET}px`,
+							top: `${Math.random() * GRAPH_POS_RANGE - GRAPH_POS_OFFSET}px`,
 						}}
 						initial={{ scale: 0 }}
-						animate={{ scale: [0, 1.2, 1] }}
+						animate={{ scale: [0, SCALE_BOUNCE, 1] }}
 						transition={{
-							delay: i * 0.1,
+							delay: i * TRANSITION_DELAY_STEP,
 							duration: 0.5,
 							repeat: Infinity,
 							repeatType: "reverse",
@@ -197,7 +204,7 @@ export function DashboardSkeleton() {
 						key={i}
 						initial={{ opacity: 0, y: 10 }}
 						animate={{ opacity: 1, y: 0 }}
-						transition={{ delay: i * 0.1 }}
+						transition={{ delay: i * TRANSITION_DELAY_STEP }}
 					>
 						<div className="rounded-lg border bg-card p-6">
 							<Skeleton className="h-4 w-20 mb-2" animate={false} />
@@ -214,7 +221,7 @@ export function DashboardSkeleton() {
 					className="lg:col-span-2"
 					initial={{ opacity: 0, x: -10 }}
 					animate={{ opacity: 1, x: 0 }}
-					transition={{ delay: 0.3 }}
+					transition={{ delay: CONTENT_ANIM_DELAY }}
 				>
 					<div className="rounded-lg border bg-card p-6">
 						<Skeleton className="h-6 w-32 mb-4" animate={false} />

@@ -26,7 +26,8 @@ def _uuid() -> str:
     return str(uuid.uuid4())
 
 
-def upgrade() -> None:
+def _create_tables() -> None:
+    """Create new tables for graphs and graph nodes."""
     op.create_table(
         "graphs",
         sa.Column("id", sa.String(length=255), primary_key=True),
@@ -71,19 +72,18 @@ def upgrade() -> None:
     op.create_index("idx_graph_nodes_item", "graph_nodes", ["item_id"])
     op.create_index("idx_graph_nodes_project_graph", "graph_nodes", ["project_id", "graph_id"])
 
+
+def _add_columns() -> None:
+    """Add new columns to existing tables."""
     op.add_column(
         "links",
         sa.Column("graph_id", sa.String(length=255), sa.ForeignKey("graphs.id", ondelete="CASCADE"), nullable=True),
     )
     op.create_index("idx_links_project_graph", "links", ["project_id", "graph_id"])
 
-    if context.is_offline_mode():
-        return
 
-    conn = op.get_bind()
-    if conn is None:
-        return
-
+def _backfill_graphs_from_views(conn: sa.engine.Connection) -> dict[tuple[str, str], str]:
+    """Create graphs from existing views."""
     graphs_table = sa.table(
         "graphs",
         sa.column("id", sa.String),
@@ -94,22 +94,13 @@ def upgrade() -> None:
         sa.column("root_item_id", sa.String),
         sa.column("graph_metadata", JSONType),
     )
-    graph_nodes_table = sa.table(
-        "graph_nodes",
-        sa.column("graph_id", sa.String),
-        sa.column("item_id", sa.String),
-        sa.column("project_id", sa.String),
-        sa.column("is_primary", sa.Boolean),
-    )
 
     view_rows = conn.execute(sa.text("select id, project_id, name from views")).fetchall()
-    view_map: dict[tuple[str, str], str] = {}
     graph_ids: dict[tuple[str, str], str] = {}
 
-    for view_id, project_id, view_name in view_rows:
+    for _view_id, project_id, view_name in view_rows:
         graph_id = _uuid()
         graph_ids[project_id, view_name] = graph_id
-        view_map[project_id, view_name] = view_id
         conn.execute(
             graphs_table.insert().values(
                 id=graph_id,
@@ -122,7 +113,20 @@ def upgrade() -> None:
             )
         )
 
-    # Backfill graph_nodes using existing item_views -> default graph per view
+    return graph_ids
+
+
+def _migrate_graph_nodes(conn: sa.engine.Connection, graph_ids: dict[tuple[str, str], str]) -> None:
+    """Migrate item_views to graph_nodes."""
+    graph_nodes_table = sa.table(
+        "graph_nodes",
+        sa.column("graph_id", sa.String),
+        sa.column("item_id", sa.String),
+        sa.column("project_id", sa.String),
+        sa.column("is_primary", sa.Boolean),
+    )
+
+    # Backfill graph_nodes using existing item_views
     item_view_rows = conn.execute(sa.text("select item_id, project_id, view_id, is_primary from item_views")).fetchall()
 
     graph_node_inserts = []
@@ -147,7 +151,9 @@ def upgrade() -> None:
     if graph_node_inserts:
         conn.execute(graph_nodes_table.insert(), graph_node_inserts)
 
-    # Backfill links.graph_id by matching source item's primary view graph
+
+def _update_link_graphs(conn: sa.engine.Connection) -> None:
+    """Update links.graph_id based on source item's primary view graph."""
     conn.execute(
         sa.text(
             """
@@ -162,6 +168,22 @@ def upgrade() -> None:
             """
         )
     )
+
+
+def upgrade() -> None:
+    _create_tables()
+    _add_columns()
+
+    if context.is_offline_mode():
+        return
+
+    conn = op.get_bind()
+    if conn is None:
+        return
+
+    graph_ids = _backfill_graphs_from_views(conn)
+    _migrate_graph_nodes(conn, graph_ids)
+    _update_link_graphs(conn)
 
 
 def downgrade() -> None:

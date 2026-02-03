@@ -1,7 +1,7 @@
 import { fetchCSRFToken, getCSRFToken } from "../lib/csrf";
 import { useAuthStore } from "../stores";
 import authConstants from "./auth-constants";
-import client from "./client";
+import { client } from "./client";
 import { AuthError } from "./auth-types";
 import type { AuthErrorDetails } from "./auth-types";
 
@@ -136,8 +136,18 @@ const isAuthError = (error: unknown): error is AuthError =>
 
 const getAuthErrorMessage = (error: AuthError): string => {
 	const code = error.code;
-	if (code !== undefined && authConstants.authErrorMessages[code]) {
-		return authConstants.authErrorMessages[code];
+	const authErrorCodes = [
+		"CSRF_TOKEN_MISSING",
+		"INVALID_CREDENTIALS",
+		"INVALID_PASSWORD",
+		"INVALID_TOKEN",
+		"PASSWORD_MISMATCH",
+		"USER_DISABLED",
+		"USER_NOT_FOUND",
+	] as const;
+
+	if (code !== undefined && authErrorCodes.includes(code as any)) {
+		return authConstants.authErrorMessages[code as keyof typeof authConstants.authErrorMessages];
 	}
 	if (error.statusCode === authConstants.httpTooManyRequests) {
 		return "Too many login attempts, please try again later";

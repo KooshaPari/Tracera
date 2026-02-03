@@ -3,7 +3,7 @@ import type {
 	WorkflowRun,
 	WorkflowSchedule,
 } from "../../../packages/types/src/index";
-import client from "@/api/client";
+import { client } from "@/api/client";
 
 const { getAuthHeaders } = client;
 

@@ -5,10 +5,10 @@
  * Includes icon, title, description, and optional action buttons.
  */
 
+import * as React from "react";
 import { motion } from "framer-motion";
 import { AlertCircle, FilterX, Inbox, SearchX } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import * as React from "react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -339,7 +339,7 @@ export interface ErrorEmptyStateProps
 export const ErrorEmptyState = React.forwardRef<
 	HTMLDivElement,
 	ErrorEmptyStateProps
->(({ error, ...props }, ref) => (
+>(({ error, description: _desc, ...props }, ref) => (
 	<EmptyState
 		ref={ref}
 		icon={AlertCircle}
@@ -351,9 +351,4 @@ export const ErrorEmptyState = React.forwardRef<
 
 ErrorEmptyState.displayName = "ErrorEmptyState";
 
-export {
-	EmptyState,
-	EmptyStateButton,
-	type EmptyStateProps,
-	type EmptyStateAction,
-};
+export { EmptyState, EmptyStateButton };

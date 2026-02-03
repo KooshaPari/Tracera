@@ -445,14 +445,18 @@ const StreamExportExample = () => {
 
 			<div className="space-y-2">
 				<StreamingProgress
-					stats={state.stats as StreamingStats | null}
+					stats={(state.stats ?? null) as StreamingStats | null}
 					isStreaming={state.isStreaming}
 					showThroughput
 					showBytes
 				/>
-				{state.stats && (
+				{state.stats != null && (
 					<StreamingProgressBar
-						current={state.stats.itemsReceived}
+						current={
+							"itemsReceived" in state.stats
+								? state.stats.itemsReceived
+								: 0
+						}
 						isStreaming={state.isStreaming}
 					/>
 				)}

@@ -1,9 +1,11 @@
-/* oxlint-disable oxc/no-async-await */
-import type { SearchQuery, SearchResult } from "./types";
-// Search API stub
 import { searchApi } from "./endpoints";
+import type { SearchQuery, SearchResult } from "./types";
 
-export const fetchSearchResults = (query: SearchQuery): Promise<SearchResult> =>
-	searchApi.search(query);
+// Search API stub
+const fetchSearchResults = async (
+	query: SearchQuery,
+): Promise<SearchResult> => await searchApi.search(query);
 
-export const search = searchApi.search;
+const { search } = searchApi;
+
+export { fetchSearchResults, search };

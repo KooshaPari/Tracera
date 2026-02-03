@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useConnectionStatusStore } from "@/stores/connectionStatusStore";
-import client from "@/api/client";
+import { client } from "@/api/client";
 
 const { apiClient } = client;
 

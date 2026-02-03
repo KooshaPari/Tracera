@@ -1,4 +1,3 @@
-/* oxlint-disable oxc/no-async-await */
 // Impact analysis API - re-exports from graph
 import { graphApi } from "./endpoints";
 

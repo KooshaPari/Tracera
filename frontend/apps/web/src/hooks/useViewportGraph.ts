@@ -23,7 +23,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Edge, Node } from "@xyflow/react";
 import { logger } from "@/lib/logger";
-import client from "@/api/client";
+import { client } from "@/api/client";
 
 const { getAuthHeaders } = client;
 

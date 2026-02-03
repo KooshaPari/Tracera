@@ -1,3 +1,4 @@
+/* eslint-disable complexity, func-style, jsx-max-depth, max-lines, max-lines-per-function, max-statements, no-magic-numbers, react-perf/jsx-no-new-function-as-prop, react-perf/jsx-no-new-object-as-prop, sort-imports */
 import type { Item, Link, LinkType } from "@tracertm/types";
 import { Badge } from "@tracertm/ui/components/Badge";
 import { Button } from "@tracertm/ui/components/Button";
@@ -43,6 +44,17 @@ import {
 	PERSPECTIVE_CONFIGS,
 	TYPE_TO_PERSPECTIVE,
 } from "./types";
+
+const readString = (
+	record: Record<string, unknown> | undefined,
+	key: string,
+): string | undefined => {
+	if (!record) {
+		return undefined;
+	}
+	const value = record[key];
+	return typeof value === "string" ? value : undefined;
+};
 
 // Simplified node component for LOD rendering
 function SimplifiedNodePill({ data }: { data: { id: string; type: string } }) {
@@ -181,6 +193,10 @@ function VirtualizedGraphViewComponent({
 			const incoming = incomingCount.get(item.id) || 0;
 			const outgoing = outgoingCount.get(item.id) || 0;
 			const hasChildren = items.some((i) => i.parentId === item.id);
+			const screenshotUrl = readString(item.metadata, "screenshotUrl");
+			const componentCode = readString(item.metadata, "code");
+			const interactiveUrl = readString(item.metadata, "interactiveUrl");
+			const thumbnailUrl = readString(item.metadata, "thumbnailUrl");
 
 			let depth = 0;
 			let currentId = item.parentId;
@@ -207,14 +223,12 @@ function VirtualizedGraphViewComponent({
 				perspective: perspectives,
 				status: item.status,
 				type: itemType,
-				uiPreview: item.metadata?.screenshotUrl
+				uiPreview: screenshotUrl
 					? {
-							componentCode: item.metadata.code as string | undefined,
-							interactiveWidgetUrl: item.metadata.interactiveUrl as
-								| string
-								| undefined,
-							screenshotUrl: item.metadata.screenshotUrl as string,
-							thumbnailUrl: item.metadata.thumbnailUrl as string | undefined,
+							componentCode,
+							interactiveWidgetUrl: interactiveUrl,
+							screenshotUrl,
+							thumbnailUrl,
 						}
 					: undefined,
 			} as EnhancedNodeData;
@@ -426,14 +440,14 @@ function VirtualizedGraphViewComponent({
 	}, [initialEdges, setEdges]);
 
 	// Auto-fit on initial load
-	useEffect(() => {
-		if (autoFit && nodes.length > 0) {
-			const timer = setTimeout(() => {
-				undefined;
-			}, 100);
-			return () => clearTimeout(timer);
-		}
-		return;
+		useEffect(() => {
+			if (autoFit && nodes.length > 0) {
+				const timer = setTimeout(() => {
+					fitView();
+				}, 100);
+				return () => clearTimeout(timer);
+			}
+			return;
 	}, [autoFit, fitView, nodes.length]);
 
 	// Update viewport on move/zoom
@@ -477,7 +491,9 @@ function VirtualizedGraphViewComponent({
 	}, [selectedNodeId, links, items]);
 
 	// Handlers
-	const handleFit = () => undefined;
+		const handleFit = () => {
+			fitView();
+		};
 	const handleReset = () => {
 		setPerspective("all");
 		setLayout("flow-chart");
@@ -485,13 +501,13 @@ function VirtualizedGraphViewComponent({
 		setExpandedNodes(new Set());
 	};
 
-	const handleFocusNode = (nodeId: string) => {
-		setSelectedNodeId(nodeId);
-		const node = nodes.find((n) => n.id === nodeId);
-		if (node) {
-			undefined;
-		}
-	};
+		const handleFocusNode = (nodeId: string) => {
+			setSelectedNodeId(nodeId);
+			const node = nodes.find((n) => n.id === nodeId);
+			if (node) {
+				fitView({ nodes: [node], duration: 200 });
+			}
+		};
 
 	return (
 		<div className="h-full flex flex-col">

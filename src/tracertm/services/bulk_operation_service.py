@@ -20,6 +20,8 @@ from tracertm.schemas.item import ItemCreate
 
 logger = logging.getLogger(__name__)
 
+BULK_WARN_THRESHOLD = 100
+
 
 class BulkOperationService:
     """
@@ -76,7 +78,7 @@ class BulkOperationService:
 
         # Generate warnings
         warnings = []
-        if total_count > 100:
+        if total_count > BULK_WARN_THRESHOLD:
             warnings.append(f"Large operation: {total_count} items will be updated")
         if "status" in updates:
             # Check for status conflicts
@@ -379,7 +381,7 @@ class BulkOperationService:
         # Generate warnings
         warnings = []
         total_count = len(valid_items)
-        if total_count > 100:
+        if total_count > BULK_WARN_THRESHOLD:
             warnings.append(f"Large operation: {total_count} items will be created")
         if len(invalid_rows) > 0:
             warnings.append(f"{len(invalid_rows)} row(s) have validation errors and will be skipped")

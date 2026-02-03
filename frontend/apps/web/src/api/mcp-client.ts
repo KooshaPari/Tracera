@@ -8,7 +8,8 @@ import type {
 	MCPTool,
 	ProgressNotification,
 } from "./mcp-client-types";
-import { mcpClientUtils, type MCPClientState, type ProgressCallbacks } from "./mcp-client-utils";
+import { mcpClientUtils } from "./mcp-client-utils";
+import type { MCPClientState, ProgressCallbacks } from "./mcp-client-utils";
 import EventSourcePolyfill from "event-source-polyfill";
 
 type InitializeResponse = {
@@ -75,38 +76,38 @@ class MCPClient {
 		}
 	}
 
-	initialize(params?: InitializeParams): Promise<InitializeResponse> {
-		return this.sendRequest("initialize", params);
+	async initialize(params?: InitializeParams): Promise<InitializeResponse> {
+		return await this.sendRequest("initialize", params);
 	}
 
-	listTools(): Promise<{ tools: MCPTool[] }> {
-		return this.sendRequest("tools/list");
+	async listTools(): Promise<{ tools: MCPTool[] }> {
+		return await this.sendRequest("tools/list");
 	}
 
-	callTool<TResult = unknown>(
+	async callTool<TResult = unknown>(
 		name: string,
 		args?: Record<string, unknown>,
 	): Promise<TResult> {
-		return this.sendRequest("tools/call", { arguments: args, name });
+		return await this.sendRequest("tools/call", { arguments: args, name });
 	}
 
-	listResources(): Promise<{ resources: MCPResource[] }> {
-		return this.sendRequest("resources/list");
+	async listResources(): Promise<{ resources: MCPResource[] }> {
+		return await this.sendRequest("resources/list");
 	}
 
-	readResource(uri: string): Promise<{ contents: unknown }> {
-		return this.sendRequest("resources/read", { uri });
+	async readResource(uri: string): Promise<{ contents: unknown }> {
+		return await this.sendRequest("resources/read", { uri });
 	}
 
-	listPrompts(): Promise<{ prompts: MCPPrompt[] }> {
-		return this.sendRequest("prompts/list");
+	async listPrompts(): Promise<{ prompts: MCPPrompt[] }> {
+		return await this.sendRequest("prompts/list");
 	}
 
-	getPrompt(
+	async getPrompt(
 		name: string,
 		args?: Record<string, unknown>,
 	): Promise<{ messages: unknown[] }> {
-		return this.sendRequest("prompts/get", { arguments: args, name });
+		return await this.sendRequest("prompts/get", { arguments: args, name });
 	}
 
 	subscribeToProgress(callbacks: ProgressCallbacks): () => void {

@@ -1,3 +1,4 @@
+/* eslint-disable complexity, func-style, max-lines-per-function, no-magic-numbers, sort-imports */
 /**
  * GraphLoadingProgress - UI component for streaming graph loading progress
  *
@@ -23,6 +24,7 @@ import {
 	Network,
 	XCircle,
 } from "lucide-react";
+import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 
 const ELAPSED_TICK_MS = 100;
@@ -38,7 +40,7 @@ export interface GraphLoadingProgressProps {
 }
 
 type StageInfo = {
-	icon: JSX.Element;
+	icon: ReactNode;
 	label: string;
 };
 

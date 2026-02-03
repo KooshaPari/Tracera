@@ -3,11 +3,11 @@
  * Shown when user clicks the settings (gear) button in the chat header.
  */
 
-import type { ChatContext } from "@/lib/ai/types";
-import { buildSystemPrompt } from "@/lib/ai/systemPrompt";
-import { Button, ScrollArea, Textarea, cn } from "@tracertm/ui";
 import { Settings, X } from "lucide-react";
 import { type ChangeEvent, useCallback, useMemo } from "react";
+import { Button, ScrollArea, Textarea, cn } from "@tracertm/ui";
+import type { ChatContext } from "@/lib/ai/types";
+import { buildSystemPrompt } from "@/lib/ai/systemPrompt";
 
 const PROMPT_ID = "chat-settings-system-prompt";
 const OVERRIDE_ID = "chat-settings-override";

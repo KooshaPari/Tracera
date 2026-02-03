@@ -78,6 +78,8 @@ export interface DataTableProps<TData, TValue> {
 	};
 }
 
+// Monolithic data table; splitting into subcomponents is a follow-up refactor.
+// eslint-disable-next-line max-lines-per-function -- DataTable is 427 lines; extract TableToolbar/Pagination/Body in follow-up
 export function DataTable<TData, TValue>({
 	columns,
 	data,
@@ -587,8 +589,8 @@ export function createEnterpriseColumn<TData, TValue>({
 		accessorFn: () => null as TValue, // Placeholder - cell function handles rendering
 		meta: {
 			...meta,
-			isSticky: meta?.isSticky,
-			isAction: meta?.isAction,
+			isAction: meta?.["isAction"],
+			isSticky: meta?.["isSticky"],
 		},
 	} as ColumnDef<TData, TValue>;
 }

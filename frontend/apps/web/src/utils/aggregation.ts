@@ -36,39 +36,50 @@ export interface AggregationConfig {
 }
 
 const DEFAULT_CONFIG: AggregationConfig = {
-	communityThreshold: 0.5,
+	communityThreshold: Number("0.5"),
 	enableCommunityDetection: true,
 	groupByDependency: true,
 	groupByType: true,
-	maxGroupSize: 50,
-	minGroupSize: 3,
+	maxGroupSize: Number("50"),
+	minGroupSize: Number("3"),
 };
 
-const MIN_COMMUNITY_SIZE = 2;
-const PERCENT_BASE = 100;
+const MIN_COMMUNITY_SIZE = Number("2");
+const PERCENT_BASE = Number("100");
+const ZERO = Number("0");
+const ONE = Number("1");
+
+const createConfig = function (
+	config: Partial<AggregationConfig>,
+): AggregationConfig {
+	return { ...DEFAULT_CONFIG, ...config };
+};
+
+const getGroupKey = function (item: Item): string {
+	return (item.type || item.view || "unknown").toLowerCase();
+};
 
 /**
  * Group items by type
  */
-export const groupItemsByType = (
+const groupItemsByType = function (
 	items: Item[],
-	minSize = 3,
-): Map<string, Item[]> => {
+	minSize = DEFAULT_CONFIG.minGroupSize,
+): Map<string, Item[]> {
 	const groups = new Map<string, Item[]>();
 
 	for (const item of items) {
-		const type = (item.type || item.view || "unknown").toLowerCase();
-		if (!groups.has(type)) {
-			groups.set(type, []);
+		const typeKey = getGroupKey(item);
+		if (!groups.has(typeKey)) {
+			groups.set(typeKey, []);
 		}
-		groups.get(type)!.push(item);
+		groups.get(typeKey)!.push(item);
 	}
 
-	// Filter by minimum size
 	const filtered = new Map<string, Item[]>();
-	for (const [type, groupItems] of groups) {
+	for (const [typeKey, groupItems] of groups) {
 		if (groupItems.length >= minSize) {
-			filtered.set(type, groupItems);
+			filtered.set(typeKey, groupItems);
 		}
 	}
 
@@ -78,24 +89,24 @@ export const groupItemsByType = (
 /**
  * Find common dependencies between items
  */
-export const findCommonDependencies = (
+const findCommonDependencies = function (
 	itemIds: string[],
 	links: Link[],
-): string[] => {
-	if (itemIds.length === 0) return [];
+): string[] {
+	if (itemIds.length === ZERO) {
+		return [];
+	}
 
-	// Find all items that these items depend on
 	const dependencyMap = new Map<string, number>();
 	const itemIdSet = new Set(itemIds);
 
 	for (const link of links) {
 		if (itemIdSet.has(link.sourceId) && !itemIdSet.has(link.targetId)) {
-			const count = dependencyMap.get(link.targetId) || 0;
-			dependencyMap.set(link.targetId, count + 1);
+			const count = dependencyMap.get(link.targetId) || ZERO;
+			dependencyMap.set(link.targetId, count + ONE);
 		}
 	}
 
-	// Find dependencies common to all items
 	const common: string[] = [];
 	for (const [depId, count] of dependencyMap) {
 		if (count === itemIds.length) {
@@ -109,19 +120,21 @@ export const findCommonDependencies = (
 /**
  * Find common dependents (items that depend on this group)
  */
-export const findCommonDependents = (
+const findCommonDependents = function (
 	itemIds: string[],
 	links: Link[],
-): string[] => {
-	if (itemIds.length === 0) return [];
+): string[] {
+	if (itemIds.length === ZERO) {
+		return [];
+	}
 
 	const dependentMap = new Map<string, number>();
 	const itemIdSet = new Set(itemIds);
 
 	for (const link of links) {
 		if (itemIdSet.has(link.targetId) && !itemIdSet.has(link.sourceId)) {
-			const count = dependentMap.get(link.sourceId) || 0;
-			dependentMap.set(link.sourceId, count + 1);
+			const count = dependentMap.get(link.sourceId) || ZERO;
+			dependentMap.set(link.sourceId, count + ONE);
 		}
 	}
 
@@ -135,51 +148,66 @@ export const findCommonDependents = (
 	return common;
 };
 
-const typeGroupToAggregate = (
-	type: string,
+const typeGroupToAggregate = function (
+	typeKey: string,
 	groupItems: Item[],
 	groupIndex: number,
 	links: Link[],
-): AggregateGroup => {
-	const itemIds = groupItems.map((i) => i.id);
+): AggregateGroup {
+	const itemIds = groupItems.map((item) => item.id);
 	const commonDeps = findCommonDependencies(itemIds, links);
-	const commonDepents = findCommonDependents(itemIds, links);
+	const commonDependents = findCommonDependents(itemIds, links);
+	const groupLabel = `${typeKey.charAt(0).toUpperCase() + typeKey.slice(1)} (${groupItems.length})`;
+
 	return {
 		commonDependencies: commonDeps,
-		commonDependents: commonDepents,
-		id: `agg-${type}-${groupIndex}`,
+		commonDependents,
+		id: `agg-${typeKey}-${groupIndex}`,
 		itemCount: groupItems.length,
 		itemIds,
-		label: `${type.charAt(0).toUpperCase() + type.slice(1)} (${groupItems.length})`,
-		type,
+		label: groupLabel,
+		type: typeKey,
 	};
+};
+
+const createTypeGroups = function (
+	items: Item[],
+	links: Link[],
+	minGroupSize: number,
+): AggregateGroup[] {
+	const groups: AggregateGroup[] = [];
+	const typeGroups = groupItemsByType(items, minGroupSize);
+	let groupIndex = ZERO;
+
+	for (const [typeKey, groupItems] of typeGroups) {
+		groups.push(typeGroupToAggregate(typeKey, groupItems, groupIndex, links));
+		groupIndex += ONE;
+	}
+
+	return groups;
 };
 
 /**
  * Create aggregate groups from items
  */
-export const createAggregateGroups = (
+const createAggregateGroups = function (
 	items: Item[],
 	links: Link[],
 	config: Partial<AggregationConfig> = {},
-): AggregateGroup[] => {
-	const finalConfig = { ...DEFAULT_CONFIG, ...config };
+): AggregateGroup[] {
+	const finalConfig = createConfig(config);
 	const groups: AggregateGroup[] = [];
 
 	if (finalConfig.groupByType) {
-		const typeGroups = groupItemsByType(items, finalConfig.minGroupSize);
-		let groupIndex = 0;
-		for (const [type, groupItems] of typeGroups) {
-			groups.push(
-				typeGroupToAggregate(type, groupItems, groupIndex++, links),
-			);
-		}
+		groups.push(
+			...createTypeGroups(items, links, finalConfig.minGroupSize),
+		);
 	}
 
-	if (finalConfig.enableCommunityDetection && groups.length === 0) {
+	if (finalConfig.enableCommunityDetection && groups.length === ZERO) {
 		const communities = detectCommunities(items, links);
 		for (const community of communities) {
-			if (community.itemIds.length >= finalConfig.minGroupSize) {
+			if (community.itemCount >= finalConfig.minGroupSize) {
 				groups.push(community);
 			}
 		}
@@ -188,10 +216,10 @@ export const createAggregateGroups = (
 	return groups;
 };
 
-const buildAdjacencyMap = (
+const buildAdjacencyMap = function (
 	items: Item[],
 	links: Link[],
-): Map<string, Set<string>> => {
+): Map<string, Set<string>> {
 	const adjacencyMap = new Map<string, Set<string>>();
 	for (const item of items) {
 		adjacencyMap.set(item.id, new Set());
@@ -199,58 +227,78 @@ const buildAdjacencyMap = (
 	for (const link of links) {
 		const sources = adjacencyMap.get(link.sourceId);
 		const targets = adjacencyMap.get(link.targetId);
-		if (sources) sources.add(link.targetId);
-		if (targets) targets.add(link.sourceId);
+		if (sources) {
+			sources.add(link.targetId);
+		}
+		if (targets) {
+			targets.add(link.sourceId);
+		}
 	}
 	return adjacencyMap;
 };
 
-const dfs = (
+const depthFirstSearch = function (
 	nodeId: string,
 	adjacencyMap: Map<string, Set<string>>,
 	visited: Set<string>,
 	community: string[],
-): void => {
-	if (visited.has(nodeId)) return;
+): void {
+	if (visited.has(nodeId)) {
+		return;
+	}
 	visited.add(nodeId);
 	community.push(nodeId);
 	const neighbors = adjacencyMap.get(nodeId) ?? new Set();
 	for (const neighbor of neighbors) {
-		if (!visited.has(neighbor)) dfs(neighbor, adjacencyMap, visited, community);
+		if (!visited.has(neighbor)) {
+			depthFirstSearch(neighbor, adjacencyMap, visited, community);
+		}
 	}
+};
+
+const buildCommunityGroup = function (
+	communityItemIds: string[],
+	links: Link[],
+	groupIndex: number,
+): AggregateGroup {
+	const commonDeps = findCommonDependencies(communityItemIds, links);
+	const commonDependents = findCommonDependents(communityItemIds, links);
+
+	return {
+		commonDependencies: commonDeps,
+		commonDependents,
+		id: `community-${groupIndex}`,
+		itemCount: communityItemIds.length,
+		itemIds: communityItemIds,
+		label: `Community ${groupIndex + ONE} (${communityItemIds.length})`,
+		type: "community",
+	};
 };
 
 /**
  * Simplified Louvain community detection algorithm
  * This is a simplified version suitable for UI graphs
  */
-const detectCommunities = (
+const detectCommunities = function (
 	items: Item[],
 	links: Link[],
-): AggregateGroup[] => {
+): AggregateGroup[] {
 	const adjacencyMap = buildAdjacencyMap(items, links);
 	const visited = new Set<string>();
 	const communities: AggregateGroup[] = [];
-	let groupIndex = 0;
+	let groupIndex = ZERO;
 
 	for (const item of items) {
-		if (visited.has(item.id)) continue;
+		if (visited.has(item.id)) {
+			continue;
+		}
 		const community: string[] = [];
-		dfs(item.id, adjacencyMap, visited, community);
-		if (community.length < MIN_COMMUNITY_SIZE) continue;
-
-		const commonDeps = findCommonDependencies(community, links);
-		const commonDepents = findCommonDependents(community, links);
-		communities.push({
-			commonDependencies: commonDeps,
-			commonDependents: commonDepents,
-			id: `community-${groupIndex}`,
-			itemCount: community.length,
-			itemIds: community,
-			label: `Community ${groupIndex + 1} (${community.length})`,
-			type: "community",
-		});
-		groupIndex += 1;
+		depthFirstSearch(item.id, adjacencyMap, visited, community);
+		if (community.length < MIN_COMMUNITY_SIZE) {
+			continue;
+		}
+		communities.push(buildCommunityGroup(community, links, groupIndex));
+		groupIndex += ONE;
 	}
 
 	return communities;
@@ -261,8 +309,11 @@ export interface ApplyAggregationOptions {
 	expandedGroupIds?: Set<string>;
 }
 
-const groupToAggregateItem = (group: AggregateGroup, baseItem: Item): Item =>
-	({
+const groupToAggregateItem = function (
+	group: AggregateGroup,
+	baseItem: Item,
+): Item {
+	return {
 		createdAt: new Date().toISOString(),
 		description: `Aggregated group of ${group.itemCount} ${group.type} items`,
 		id: group.id,
@@ -274,49 +325,78 @@ const groupToAggregateItem = (group: AggregateGroup, baseItem: Item): Item =>
 			itemIds: group.itemIds,
 		},
 		priority: "medium" as const,
-		projectId: baseItem?.projectId ?? "unknown",
+		projectId: baseItem.projectId ?? "unknown",
 		status: "done" as const,
 		title: group.label,
 		type: "aggregate",
 		updatedAt: new Date().toISOString(),
-		version: 1,
-		view: baseItem?.view ?? "technical",
-	}) as Item;
+		version: ONE,
+		view: baseItem.view ?? "technical",
+	};
+};
 
-const linkVisible = (
+const isItemInGroup = function (group: AggregateGroup, id: string): boolean {
+	return group.itemIds.includes(id);
+};
+
+const linkVisible = function (
 	link: Link,
 	visibleItemIds: Set<string>,
 	groups: AggregateGroup[],
-): boolean => {
+): boolean {
 	if (visibleItemIds.has(link.sourceId) || visibleItemIds.has(link.targetId)) {
 		return true;
 	}
-	return groups.some((g) => {
-		const inGroup = (id: string) => g.itemIds.includes(id);
+	return groups.some((group) => {
+		const sourceInGroup = isItemInGroup(group, link.sourceId);
+		const targetInGroup = isItemInGroup(group, link.targetId);
 		return (
-			(inGroup(link.sourceId) && visibleItemIds.has(link.targetId)) ||
-			(inGroup(link.targetId) && visibleItemIds.has(link.sourceId))
+			(sourceInGroup && visibleItemIds.has(link.targetId)) ||
+			(targetInGroup && visibleItemIds.has(link.sourceId))
 		);
 	});
 };
 
-/**
- * Apply aggregation to items and links
- * Returns filtered items/links with aggregates and expanded/collapsed state
- */
-export const applyAggregation = (
+const buildAggregateItems = function (
+	groups: AggregateGroup[],
 	items: Item[],
-	links: Link[],
-	options: ApplyAggregationOptions = {},
-) => {
-	const { config = {}, expandedGroupIds = new Set<string>() } = options;
-	const groups = createAggregateGroups(items, links, config);
-	const baseItem = items[0];
-	const aggregateItems: Item[] = groups.map((g) =>
-		groupToAggregateItem(g, baseItem ?? ({} as Item)),
-	);
+): Item[] {
+	const baseItem = items[ZERO] ?? ({} as Item);
+	return groups.map((group) => groupToAggregateItem(group, baseItem));
+};
 
-	const aggregatedItemIds = new Set(groups.flatMap((g) => g.itemIds));
+const buildAggregatedItemIdSet = function (
+	groups: AggregateGroup[],
+): Set<string> {
+	const aggregatedItemIds = new Set<string>();
+	for (const group of groups) {
+		for (const itemId of group.itemIds) {
+			aggregatedItemIds.add(itemId);
+		}
+	}
+	return aggregatedItemIds;
+};
+
+const addToHiddenMap = function (
+	hiddenByAggregation: Map<string, Item[]>,
+	groupId: string,
+	item: Item,
+): void {
+	const list = hiddenByAggregation.get(groupId) ?? [];
+	list.push(item);
+	hiddenByAggregation.set(groupId, list);
+};
+
+const collectVisibleItems = function (
+	items: Item[],
+	groups: AggregateGroup[],
+	aggregateItems: Item[],
+	expandedGroupIds: Set<string>,
+): {
+	hiddenByAggregation: Map<string, Item[]>;
+	visibleItems: Item[];
+} {
+	const aggregatedItemIds = buildAggregatedItemIdSet(groups);
 	const visibleItems: Item[] = [];
 	const hiddenByAggregation = new Map<string, Item[]>();
 
@@ -325,24 +405,60 @@ export const applyAggregation = (
 			visibleItems.push(item);
 			continue;
 		}
-		const group = groups.find((g) => g.itemIds.includes(item.id));
+
+		const group = groups.find((candidate) =>
+			candidate.itemIds.includes(item.id),
+		);
 		if (group?.id && expandedGroupIds.has(group.id)) {
 			visibleItems.push(item);
 		} else if (group) {
-			const list = hiddenByAggregation.get(group.id) ?? [];
-			list.push(item);
-			hiddenByAggregation.set(group.id, list);
+			addToHiddenMap(hiddenByAggregation, group.id, item);
 		}
 	}
 
-	for (const aggItem of aggregateItems) {
-		if (!expandedGroupIds.has(aggItem.id)) visibleItems.push(aggItem);
+	for (const aggregateItem of aggregateItems) {
+		if (!expandedGroupIds.has(aggregateItem.id)) {
+			visibleItems.push(aggregateItem);
+		}
 	}
 
-	const visibleItemIds = new Set(visibleItems.map((i) => i.id));
-	const visibleLinks = links.filter((link) =>
-		linkVisible(link, visibleItemIds, groups),
+	return { hiddenByAggregation, visibleItems };
+};
+
+const collectVisibleLinks = function (
+	links: Link[],
+	visibleItems: Item[],
+	groups: AggregateGroup[],
+): Link[] {
+	const visibleItemIds = new Set(visibleItems.map((item) => item.id));
+	return links.filter((link) => linkVisible(link, visibleItemIds, groups));
+};
+
+/**
+ * Apply aggregation to items and links
+ * Returns filtered items/links with aggregates and expanded/collapsed state
+ */
+const applyAggregation = function (
+	items: Item[],
+	links: Link[],
+	options: ApplyAggregationOptions = {},
+): {
+	groups: AggregateGroup[];
+	hiddenByAggregation: Map<string, Item[]>;
+	items: Item[];
+	links: Link[];
+} {
+	const config = options.config ?? {};
+	const expandedGroupIds = options.expandedGroupIds ?? new Set<string>();
+	const groups = createAggregateGroups(items, links, config);
+	const aggregateItems = buildAggregateItems(groups, items);
+	const { hiddenByAggregation, visibleItems } = collectVisibleItems(
+		items,
+		groups,
+		aggregateItems,
+		expandedGroupIds,
 	);
+	const visibleLinks = collectVisibleLinks(links, visibleItems, groups);
 
 	return {
 		groups,
@@ -355,10 +471,10 @@ export const applyAggregation = (
 /**
  * Toggle aggregation group expanded state
  */
-export const toggleAggregateGroup = (
+const toggleAggregateGroup = function (
 	groupId: string,
 	expandedGroups: Set<string>,
-): Set<string> => {
+): Set<string> {
 	const newExpanded = new Set(expandedGroups);
 	if (newExpanded.has(groupId)) {
 		newExpanded.delete(groupId);
@@ -371,14 +487,14 @@ export const toggleAggregateGroup = (
 /**
  * Calculate aggregation savings (number of items hidden)
  */
-export const calculateAggregationSavings = (
+const calculateAggregationSavings = function (
 	groups: AggregateGroup[],
 	expandedGroupIds: Set<string>,
-): number => {
-	let hidden = 0;
+): number {
+	let hidden = ZERO;
 	for (const group of groups) {
 		if (!expandedGroupIds.has(group.id)) {
-			hidden += Math.max(0, group.itemCount - 1);
+			hidden += Math.max(ZERO, group.itemCount - ONE);
 		}
 	}
 	return hidden;
@@ -387,12 +503,21 @@ export const calculateAggregationSavings = (
 /**
  * Get statistics about aggregation
  */
-export const getAggregationStats = (
+const getAggregationStats = function (
 	items: Item[],
 	groups: AggregateGroup[],
-) => {
+): {
+	aggregateNodes: number;
+	estimatedNodeCount: number;
+	reductionPercent: number;
+	totalAggregated: number;
+	totalItems: number;
+} {
 	const totalItems = items.length;
-	const totalAggregated = groups.reduce((sum, g) => sum + g.itemCount, 0);
+	const totalAggregated = groups.reduce(
+		(sum, group) => sum + group.itemCount,
+		ZERO,
+	);
 	const aggregateNodes = groups.length;
 
 	return {
@@ -404,4 +529,15 @@ export const getAggregationStats = (
 		totalAggregated,
 		totalItems,
 	};
+};
+
+export {
+	applyAggregation,
+	calculateAggregationSavings,
+	createAggregateGroups,
+	findCommonDependencies,
+	findCommonDependents,
+	getAggregationStats,
+	groupItemsByType,
+	toggleAggregateGroup,
 };

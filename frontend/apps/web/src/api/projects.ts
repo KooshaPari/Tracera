@@ -1,12 +1,11 @@
-/* oxlint-disable oxc/no-async-await */
 // Re-export projects API from endpoints
 import { projectsApi } from "./endpoints";
 
-const fetchProjects = projectsApi.list;
-const fetchProject = projectsApi.get;
-const createProject = projectsApi.create;
-const updateProject = projectsApi.update;
-const deleteProject = projectsApi.delete;
+export const fetchProjects = projectsApi.list;
+export const fetchProject = projectsApi.get;
+export const createProject = projectsApi.create;
+export const updateProject = projectsApi.update;
+export const deleteProject = projectsApi.delete;
 
 const projectsApiExports = {
 	createProject,

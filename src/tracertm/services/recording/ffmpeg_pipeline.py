@@ -13,6 +13,43 @@ from dataclasses import dataclass
 from pathlib import Path
 from uuid import uuid4
 
+# Default timeout for FFmpeg subprocess (seconds)
+DEFAULT_RUN_TIMEOUT = 300
+# Expected "num/den" frame rate parts from ffprobe
+FPS_RATE_PARTS = 2
+
+
+@dataclass
+class VideoToGifOptions:
+    """Options for video-to-GIF conversion."""
+
+    fps: int = 10
+    scale: int = 640
+    optimize_palette: bool = True
+    dither_method: str = "bayer"
+    bayer_scale: int = 5
+
+
+@dataclass
+class CompressVideoOptions:
+    """Options for video compression."""
+
+    codec: str = "libx264"
+    crf: int = 23
+    preset: str = "medium"
+    audio_codec: str | None = "aac"
+    audio_bitrate: str | None = "128k"
+
+
+@dataclass
+class CreateStoryboardOptions:
+    """Options for creating a storyboard/sprite sheet."""
+
+    columns: int = 10
+    rows: int = 10
+    thumb_width: int = 160
+    thumb_height: int = 90
+
 
 @dataclass
 class VideoInfo:
@@ -46,7 +83,7 @@ class FFmpegPipeline:
         pipeline = FFmpegPipeline()
         available, version = await pipeline.check_availability()
         if available:
-            await pipeline.video_to_gif("input.webm", "output.gif", fps=10)
+            await pipeline.video_to_gif("input.webm", "output.gif")
     """
 
     def __init__(self, temp_dir: Path | None = None):
@@ -104,11 +141,7 @@ class FFmpegPipeline:
         self,
         input_path: str | Path,
         output_path: str | Path,
-        fps: int = 10,
-        scale: int = 640,
-        optimize_palette: bool = True,
-        dither_method: str = "bayer",
-        bayer_scale: int = 5,
+        options: VideoToGifOptions | None = None,
     ) -> Path:
         """Convert video to GIF.
 
@@ -118,11 +151,7 @@ class FFmpegPipeline:
         Args:
             input_path: Path to input video file.
             output_path: Path for output GIF file.
-            fps: Frames per second (lower = smaller file). Default 10.
-            scale: Width in pixels (height auto-calculated). Default 640.
-            optimize_palette: Use two-pass palette optimization. Default True.
-            dither_method: Dithering algorithm ('bayer', 'none', 'floyd_steinberg').
-            bayer_scale: Bayer dither scale (1-5, higher = more pattern).
+            options: Conversion options (fps, scale, palette, dither). Defaults if None.
 
         Returns:
             Path to created GIF file.
@@ -130,10 +159,11 @@ class FFmpegPipeline:
         Raises:
             FFmpegError: If conversion fails.
         """
+        opts = options or VideoToGifOptions()
         input_path = Path(input_path)
         output_path = Path(output_path)
 
-        if optimize_palette:
+        if opts.optimize_palette:
             # Two-pass: Generate palette, then apply
             palette_path = self._temp_dir / f"palette_{uuid4()}.png"
 
@@ -143,16 +173,15 @@ class FFmpegPipeline:
                     "-i",
                     str(input_path),
                     "-vf",
-                    f"fps={fps},scale={scale}:-1:flags=lanczos,palettegen=stats_mode=diff",
+                    f"fps={opts.fps},scale={opts.scale}:-1:flags=lanczos,palettegen=stats_mode=diff",
                     "-y",
                     str(palette_path),
                 ])
 
-                # Pass 2: Apply palette with dithering
-                if dither_method == "none":
+                if opts.dither_method == "none":
                     palette_use = "paletteuse=dither=none"
                 else:
-                    palette_use = f"paletteuse=dither={dither_method}:bayer_scale={bayer_scale}"
+                    palette_use = f"paletteuse=dither={opts.dither_method}:bayer_scale={opts.bayer_scale}"
 
                 await self._run([
                     "-i",
@@ -160,19 +189,18 @@ class FFmpegPipeline:
                     "-i",
                     str(palette_path),
                     "-lavfi",
-                    f"fps={fps},scale={scale}:-1:flags=lanczos[x];[x][1:v]{palette_use}",
+                    f"fps={opts.fps},scale={opts.scale}:-1:flags=lanczos[x];[x][1:v]{palette_use}",
                     "-y",
                     str(output_path),
                 ])
             finally:
                 palette_path.unlink(missing_ok=True)
         else:
-            # Single pass (faster, larger file)
             await self._run([
                 "-i",
                 str(input_path),
                 "-vf",
-                f"fps={fps},scale={scale}:-1:flags=lanczos",
+                f"fps={opts.fps},scale={opts.scale}:-1:flags=lanczos",
                 "-y",
                 str(output_path),
             ])
@@ -262,11 +290,7 @@ class FFmpegPipeline:
         self,
         input_path: str | Path,
         output_path: str | Path,
-        codec: str = "libx264",
-        crf: int = 23,
-        preset: str = "medium",
-        audio_codec: str | None = "aac",
-        audio_bitrate: str | None = "128k",
+        options: CompressVideoOptions | None = None,
     ) -> Path:
         """Compress video with specified codec and quality.
 
@@ -280,13 +304,7 @@ class FFmpegPipeline:
         Args:
             input_path: Path to input video.
             output_path: Path for output video.
-            codec: Video codec ('libx264', 'libx265', 'h264_nvenc').
-            crf: Constant Rate Factor quality (lower = better). Default 23.
-            preset: Encoding speed/quality tradeoff. Options:
-                ultrafast, superfast, veryfast, faster, fast,
-                medium, slow, slower, veryslow. Default 'medium'.
-            audio_codec: Audio codec or None to copy. Default 'aac'.
-            audio_bitrate: Audio bitrate. Default '128k'.
+            options: Compression options (codec, crf, preset, audio). Defaults if None.
 
         Returns:
             Path to compressed video.
@@ -294,21 +312,22 @@ class FFmpegPipeline:
         Raises:
             FFmpegError: If compression fails.
         """
+        opts = options or CompressVideoOptions()
         args = [
             "-i",
             str(input_path),
             "-c:v",
-            codec,
+            opts.codec,
             "-crf",
-            str(crf),
+            str(opts.crf),
             "-preset",
-            preset,
+            opts.preset,
             "-movflags",
-            "+faststart",  # Web optimization
+            "+faststart",
         ]
 
-        if audio_codec:
-            args.extend(["-c:a", audio_codec, "-b:a", audio_bitrate or "128k"])
+        if opts.audio_codec:
+            args.extend(["-c:a", opts.audio_codec, "-b:a", opts.audio_bitrate or "128k"])
         else:
             args.extend(["-c:a", "copy"])
 
@@ -449,10 +468,7 @@ class FFmpegPipeline:
         self,
         video_path: str | Path,
         output_path: str | Path,
-        columns: int = 10,
-        rows: int = 10,
-        thumb_width: int = 160,
-        thumb_height: int = 90,
+        options: CreateStoryboardOptions | None = None,
     ) -> Path:
         """Create a storyboard/sprite sheet from video.
 
@@ -462,10 +478,7 @@ class FFmpegPipeline:
         Args:
             video_path: Path to input video.
             output_path: Path for output storyboard image.
-            columns: Number of columns. Default 10.
-            rows: Number of rows. Default 10.
-            thumb_width: Width of each thumbnail. Default 160.
-            thumb_height: Height of each thumbnail. Default 90.
+            options: Layout options (columns, rows, thumb size). Defaults if None.
 
         Returns:
             Path to created storyboard.
@@ -473,9 +486,9 @@ class FFmpegPipeline:
         Raises:
             FFmpegError: If creation fails.
         """
-        total_frames = columns * rows
+        opts = options or CreateStoryboardOptions()
+        total_frames = opts.columns * opts.rows
 
-        # Calculate fps to get exactly the right number of frames
         info = await self.get_video_info(video_path)
         fps = total_frames / info.duration if info.duration > 0 else 1
 
@@ -483,7 +496,7 @@ class FFmpegPipeline:
             "-i",
             str(video_path),
             "-vf",
-            f"scale={thumb_width}:{thumb_height},fps={fps},tile={columns}x{rows}",
+            f"scale={opts.thumb_width}:{opts.thumb_height},fps={fps},tile={opts.columns}x{opts.rows}",
             "-vframes",
             "1",
             "-y",
@@ -534,7 +547,11 @@ class FFmpegPipeline:
 
         # Parse frame rate (usually "30000/1001" or "30/1")
         fps_parts = video_stream.get("r_frame_rate", "30/1").split("/")
-        fps = float(fps_parts[0]) / float(fps_parts[1]) if len(fps_parts) == 2 and float(fps_parts[1]) != 0 else 30.0
+        fps = (
+            float(fps_parts[0]) / float(fps_parts[1])
+            if len(fps_parts) == FPS_RATE_PARTS and float(fps_parts[1]) != 0
+            else 30.0
+        )
 
         return VideoInfo(
             duration=float(data.get("format", {}).get("duration", 0)),
@@ -586,12 +603,11 @@ class FFmpegPipeline:
         await self._run(args)
         return Path(output_path)
 
-    async def _run(self, args: list[str], timeout: int = 300) -> None:
-        """Run FFmpeg command.
+    async def _run(self, args: list[str]) -> None:
+        """Run FFmpeg command with default timeout.
 
         Args:
             args: Arguments to pass to ffmpeg.
-            timeout: Maximum seconds to wait. Default 300 (5 minutes).
 
         Raises:
             FFmpegError: If command fails or times out.
@@ -599,7 +615,7 @@ class FFmpegPipeline:
         try:
             proc = await asyncio.create_subprocess_exec(
                 "ffmpeg",
-                "-hide_banner",  # Less verbose output
+                "-hide_banner",
                 "-loglevel",
                 "warning",
                 *args,
@@ -607,10 +623,14 @@ class FFmpegPipeline:
                 stderr=subprocess.PIPE,
             )
 
-            _, stderr = await asyncio.wait_for(proc.communicate(), timeout=timeout)
+            _, stderr = await asyncio.wait_for(
+                proc.communicate(), timeout=DEFAULT_RUN_TIMEOUT
+            )
 
             if proc.returncode != 0:
                 raise FFmpegError(f"FFmpeg failed: {stderr.decode()}")
         except TimeoutError:
             proc.kill()
-            raise FFmpegError(f"FFmpeg timed out after {timeout} seconds") from None
+            raise FFmpegError(
+                f"FFmpeg timed out after {DEFAULT_RUN_TIMEOUT} seconds"
+            ) from None

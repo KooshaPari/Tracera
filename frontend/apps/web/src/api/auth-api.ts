@@ -14,7 +14,7 @@ import {
 	handleAuthResponse,
 } from "./auth-utils";
 import authConstants from "./auth-constants";
-import client from "./client";
+import { client } from "./client";
 
 const apiClient = client.apiClient;
 const safeApiCall = client.safeApiCall;

@@ -15,9 +15,13 @@ import pytest
 
 from tracertm.agent.events import (
     AgentEventPublisher,
+    ChatMessagePayload,
+    ChatToolUsePayload,
     EventSource,
     EventType,
+    SessionCheckpointPayload,
     SessionStatus,
+    SnapshotCreatedPayload,
 )
 
 # Test data constants (avoid magic numbers in assertions)
@@ -92,13 +96,16 @@ async def test_publish_session_created(publisher, mock_nats):
 @pytest.mark.asyncio
 async def test_publish_session_checkpoint(publisher, mock_nats):
     """Test session checkpoint event publishing."""
+    payload = SessionCheckpointPayload(
+        checkpoint_id="ckpt-789",
+        turn_number=EXPECTED_CHECKPOINT_TURN,
+        s3_key="checkpoints/sess-123/ckpt-789.json",
+        metadata={"notes": "checkpoint after code generation"},
+    )
     await publisher.publish_session_checkpoint(
         session_id="sess-123",
         project_id="proj-456",
-        checkpoint_id="ckpt-789",
-        turn_number=5,
-        s3_key="checkpoints/sess-123/ckpt-789.json",
-        metadata={"notes": "checkpoint after code generation"},
+        payload=payload,
     )
 
     assert len(mock_nats.published_events) == 1
@@ -154,13 +161,16 @@ async def test_publish_session_status_changed(publisher, mock_nats):
 async def test_publish_chat_message(publisher, mock_nats):
     """Test chat message event publishing."""
     long_content = "A" * TEST_CONTENT_LENGTH
-    await publisher.publish_chat_message(
-        session_id="sess-123",
-        project_id="proj-456",
+    payload = ChatMessagePayload(
         role="user",
         content=long_content,
         turn_number=EXPECTED_CHAT_TURN_NUMBER,
         metadata={"source": "web_ui"},
+    )
+    await publisher.publish_chat_message(
+        session_id="sess-123",
+        project_id="proj-456",
+        payload=payload,
     )
 
     assert len(mock_nats.published_events) == 1
@@ -178,13 +188,16 @@ async def test_publish_chat_message(publisher, mock_nats):
 @pytest.mark.asyncio
 async def test_publish_chat_tool_use(publisher, mock_nats):
     """Test tool use event publishing."""
-    await publisher.publish_chat_tool_use(
-        session_id="sess-123",
-        project_id="proj-456",
+    payload = ChatToolUsePayload(
         tool_name="read_file",
         tool_input={"path": "/tmp/test.py"},
         tool_output="file contents here",
         success=True,
+    )
+    await publisher.publish_chat_tool_use(
+        session_id="sess-123",
+        project_id="proj-456",
+        payload=payload,
     )
 
     assert len(mock_nats.published_events) == 1
@@ -220,13 +233,16 @@ async def test_publish_chat_error(publisher, mock_nats):
 @pytest.mark.asyncio
 async def test_publish_snapshot_created(publisher, mock_nats):
     """Test snapshot created event publishing."""
-    await publisher.publish_snapshot_created(
-        session_id="sess-123",
-        project_id="proj-456",
+    payload = SnapshotCreatedPayload(
         snapshot_id="snap-789",
         s3_key="snapshots/sess-123/snap-789.tar.gz",
         size_bytes=TEST_SNAPSHOT_SIZE_BYTES,
         file_count=TEST_SNAPSHOT_FILE_COUNT,
+    )
+    await publisher.publish_snapshot_created(
+        session_id="sess-123",
+        project_id="proj-456",
+        payload=payload,
     )
 
     assert len(mock_nats.published_events) == 1

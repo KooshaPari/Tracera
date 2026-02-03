@@ -1,4 +1,3 @@
-/* eslint-disable import/no-default-export */
 import { clientCore, type ClientCore } from "./client-core";
 import { ApiError, handleApiResponse, safeApiCall } from "./client-errors";
 
@@ -15,4 +14,4 @@ const client = {
 	validateSession: core.validateSession,
 };
 
-export default client;
+export { ApiError, client, handleApiResponse, safeApiCall };

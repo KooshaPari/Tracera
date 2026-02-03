@@ -37,174 +37,202 @@ export interface SearchResult {
 
 export type ProgressCallback = (progress: number) => void;
 
+const ZERO = 0;
+const ONE = 1;
+const TWO = 2;
+const HALF = 0.5;
+const ONE_HUNDRED = 100;
+const MIN_TOKEN_LENGTH = 1;
+const MIN_STEM_EXTRA = 2;
+const DEFAULT_MAX_DISTANCE = 2;
+const DEFAULT_RESULT_LIMIT = 100;
+const DEFAULT_SUGGEST_LIMIT = 10;
+const CHUNK_SIZE = 100;
+const PROGRESS_TOKENIZED = 20;
+const PROGRESS_MATCHED = 60;
+const PROGRESS_SCORED = 80;
+const PROGRESS_INTERVAL = 100;
+
+type SearchTaskOptions = SearchOptions & { onProgress?: ProgressCallback };
+type AutoSuggestOptions = { limit?: number; onProgress?: ProgressCallback };
+
 /**
  * Simple tokenizer
  */
-function tokenize(text: string, caseSensitive = false): string[] {
+const tokenize = (text: string, caseSensitive = false): string[] => {
 	const normalized = caseSensitive ? text : text.toLowerCase();
 	// Split on non-alphanumeric characters
-	const tokens = normalized.split(/[^a-z0-9]+/i).filter((t) => t.length > 0);
+	const tokens = normalized
+		.split(/[^a-z0-9]+/i)
+		.filter((token) => token.length > MIN_TOKEN_LENGTH);
 	return tokens;
-}
+};
 
 /**
  * Simple stemmer (removes common suffixes)
  */
-function stem(word: string): string {
+const stem = (word: string): string => {
 	// Very basic stemming - remove common English suffixes
 	const suffixes = ["ing", "ed", "es", "s", "er", "est", "ly"];
 
 	for (const suffix of suffixes) {
-		if (word.endsWith(suffix) && word.length > suffix.length + 2) {
+		if (word.endsWith(suffix) && word.length > suffix.length + MIN_STEM_EXTRA) {
 			return word.slice(0, -suffix.length);
 		}
 	}
 
 	return word;
-}
+};
 
 /**
  * Calculate Levenshtein distance (edit distance)
  */
-function levenshteinDistance(a: string, b: string): number {
-	const matrix: number[][] = [];
+const levenshteinDistance = (a: string, b: string): number => {
+	const matrix: number[][] = Array.from({ length: b.length + ONE }, () =>
+		Array.from({ length: a.length + ONE }, () => ZERO),
+	);
 
-	for (let i = 0; i <= b.length; i += 1) {
-		matrix[i] = [i];
+	for (let i = ZERO; i <= b.length; i += ONE) {
+		const row = matrix[i];
+		if (!row) {
+			continue;
+		}
+		row[ZERO] = i;
 	}
 
-	for (let j = 0; j <= a.length; j += 1) {
-		matrix[0][j] = j;
+	for (let j = ZERO; j <= a.length; j += ONE) {
+		const firstRow = matrix[ZERO];
+		if (!firstRow) {
+			continue;
+		}
+		firstRow[j] = j;
 	}
 
-	for (let i = 1; i <= b.length; i += 1) {
-		for (let j = 1; j <= a.length; j += 1) {
-			if (b.charAt(i - 1) === a.charAt(j - 1)) {
-				matrix[i][j] = matrix[i - 1][j - 1];
+	for (let i = ONE; i <= b.length; i += ONE) {
+		const row = matrix[i];
+		const previousRow = matrix[i - ONE];
+		if (!row || !previousRow) {
+			continue;
+		}
+		for (let j = ONE; j <= a.length; j += ONE) {
+			const currentLeft = row[j - ONE];
+			const previousTop = previousRow[j];
+			const previousDiag = previousRow[j - ONE];
+			if (currentLeft === undefined || previousTop === undefined || previousDiag === undefined) {
+				continue;
+			}
+
+			if (b.charAt(i - ONE) === a.charAt(j - ONE)) {
+				row[j] = previousDiag;
 			} else {
-				matrix[i][j] = Math.min(
-					matrix[i - 1][j - 1] + 1, // Substitution
-					matrix[i][j - 1] + 1, // Insertion
-					matrix[i - 1][j] + 1, // Deletion
+				row[j] = Math.min(
+					previousDiag + ONE, // Substitution
+					currentLeft + ONE, // Insertion
+					previousTop + ONE, // Deletion
 				);
 			}
 		}
 	}
 
-	return matrix[b.length][a.length];
-}
+	const lastRow = matrix[b.length];
+	if (!lastRow) {
+		return ZERO;
+	}
+	const value = lastRow[a.length];
+	if (value === undefined) {
+		return ZERO;
+	}
+	return value;
+};
 
-/**
- * Build search index from documents
- */
-function buildIndex(
-	documents: SearchDocument[],
-	fieldWeights: Record<string, number> = {},
-	onProgress?: ProgressCallback,
-): SearchIndex {
-	onProgress?.(0);
+const reportProgress = (onProgress: ProgressCallback | undefined, value: number): void => {
+	if (onProgress) {
+		onProgress(value);
+	}
+};
 
-	const index: SearchIndex = {
-		documents: new Map(),
-		fieldWeights: fieldWeights,
-		invertedIndex: new Map(),
-	};
+const calculatePercent = (current: number, total: number): number => {
+	if (total <= ZERO) {
+		return ONE_HUNDRED;
+	}
+	return (current / total) * ONE_HUNDRED;
+};
 
-	const chunkSize = 100;
+const buildEmptyIndex = (fieldWeights: Record<string, number>): SearchIndex => ({
+	documents: new Map(),
+	fieldWeights,
+	invertedIndex: new Map(),
+});
 
-	for (let i = 0; i < documents.length; i += chunkSize) {
-		const chunk = documents.slice(i, Math.min(i + chunkSize, documents.length));
+const ensureTokenBucket = (index: SearchIndex, token: string): Set<string> => {
+	const existing = index.invertedIndex.get(token);
+	if (existing) {
+		return existing;
+	}
+	const created = new Set<string>();
+	index.invertedIndex.set(token, created);
+	return created;
+};
 
-		for (const doc of chunk) {
-			// Store document
-			index.documents.set(doc.id, doc);
-
-			// Index each field
-			for (const [_field, value] of Object.entries(doc.fields)) {
-				if (typeof value !== "string") {
-					continue;
-				}
-
-				const tokens = tokenize(value, false);
-				const stemmedTokens = tokens.map(stem);
-
-				// Add to inverted index
-				for (const token of stemmedTokens) {
-					if (!index.invertedIndex.has(token)) {
-						index.invertedIndex.set(token, new Set());
-					}
-					index.invertedIndex.get(token)!.add(doc.id);
-				}
-			}
+const indexDocumentFields = (index: SearchIndex, document: SearchDocument): void => {
+	for (const [_field, value] of Object.entries(document.fields)) {
+		if (typeof value !== "string") {
+			continue;
 		}
 
-		onProgress?.(((i + chunkSize) / documents.length) * 100);
+		const tokens = tokenize(value, false);
+		const stemmedTokens = tokens.map(stem);
+
+		for (const token of stemmedTokens) {
+			ensureTokenBucket(index, token).add(document.id);
+		}
 	}
+};
 
-	onProgress?.(100);
-	return index;
-}
+const applyExactMatches = (
+	docScores: Map<string, { score: number; matches: Record<string, string[]> }>,
+	docIds: Set<string>,
+): void => {
+	for (const docId of docIds) {
+		const current = docScores.get(docId);
+		if (current) {
+			current.score += ONE;
+		} else {
+			docScores.set(docId, { matches: {}, score: ONE });
+		}
+	}
+};
 
-/**
- * Search the index
- */
-function search(
+const applyFuzzyMatches = (
+	docScores: Map<string, { score: number; matches: Record<string, string[]> }>,
+	index: SearchIndex,
+	queryToken: string,
+	maxDistance: number,
+): void => {
+	for (const [indexToken, docIds] of index.invertedIndex) {
+		const distance = levenshteinDistance(queryToken, indexToken);
+		if (distance <= ZERO || distance > maxDistance) {
+			continue;
+		}
+		const score = ONE / (distance + ONE);
+		for (const docId of docIds) {
+			const current = docScores.get(docId);
+			if (current) {
+				current.score += score * HALF;
+			} else {
+				docScores.set(docId, { matches: {}, score: score * HALF });
+			}
+		}
+	}
+};
+
+const applyFieldMatches = (
+	docScores: Map<string, { score: number; matches: Record<string, string[]> }>,
 	index: SearchIndex,
 	query: string,
-	options: SearchOptions = {},
-	onProgress?: ProgressCallback,
-): SearchResult[] {
-	onProgress?.(0);
-
-	const fuzzy = options.fuzzy ?? false;
-	const maxDistance = options.maxDistance ?? 2;
-	const { fields } = options;
-	const limit = options.limit ?? 100;
-	const caseSensitive = options.caseSensitive ?? false;
-
-	// Tokenize and stem query
-	const queryTokens = tokenize(query, caseSensitive).map(stem);
-
-	onProgress?.(20);
-
-	// Find matching documents
-	const docScores = new Map<
-		string,
-		{ score: number; matches: Record<string, string[]> }
-	>();
-
-	for (const queryToken of queryTokens) {
-		// Exact matches
-		const exactMatches = index.invertedIndex.get(queryToken);
-		if (exactMatches) {
-			for (const docId of exactMatches) {
-				if (!docScores.has(docId)) {
-					docScores.set(docId, { matches: {}, score: 0 });
-				}
-				docScores.get(docId)!.score += 1;
-			}
-		}
-
-		// Fuzzy matches
-		if (fuzzy) {
-			for (const [indexToken, docIds] of index.invertedIndex) {
-				const distance = levenshteinDistance(queryToken, indexToken);
-				if (distance > 0 && distance <= maxDistance) {
-					const score = 1 / (distance + 1);
-					for (const docId of docIds) {
-						if (!docScores.has(docId)) {
-							docScores.set(docId, { matches: {}, score: 0 });
-						}
-						docScores.get(docId)!.score += score * 0.5; // Fuzzy matches get half score
-					}
-				}
-			}
-		}
-	}
-
-	onProgress?.(60);
-
-	// Calculate field-specific scores and collect matches
+	caseSensitive: boolean,
+	fields?: string[],
+): void => {
 	for (const [docId, scoreData] of docScores) {
 		const doc = index.documents.get(docId);
 		if (!doc) {
@@ -222,35 +250,127 @@ function search(
 			const fieldText = caseSensitive ? value : value.toLowerCase();
 			const normalizedQuery = caseSensitive ? query : query.toLowerCase();
 
-			// Check for query matches in this field
-			if (fieldText.includes(normalizedQuery)) {
-				const weight = index.fieldWeights[field] ?? 1;
-				scoreData.score += 2 * weight; // Boost for phrase match
-
-				if (!scoreData.matches[field]) {
-					scoreData.matches[field] = [];
-				}
-				scoreData.matches[field].push(normalizedQuery);
+			if (!fieldText.includes(normalizedQuery)) {
+				continue;
 			}
+
+			const weight = index.fieldWeights[field] ?? ONE;
+			scoreData.score += TWO * weight;
+
+			if (!scoreData.matches[field]) {
+				scoreData.matches[field] = [];
+			}
+			scoreData.matches[field].push(normalizedQuery);
+		}
+	}
+};
+
+const buildResults = (
+	docScores: Map<string, { score: number; matches: Record<string, string[]> }>,
+	limit: number,
+): SearchResult[] =>
+	[...docScores.entries()]
+		.map(([id, { score, matches }]) => ({ id, matches, score }))
+		.toSorted((a, b) => b.score - a.score)
+		.slice(ZERO, limit);
+
+/**
+ * Build search index from documents
+ */
+const buildIndex = (
+	documents: SearchDocument[],
+	fieldWeights: Record<string, number> = {},
+	onProgress?: ProgressCallback,
+): SearchIndex => {
+	reportProgress(onProgress, ZERO);
+
+	const index = buildEmptyIndex(fieldWeights);
+
+	for (let i = ZERO; i < documents.length; i += CHUNK_SIZE) {
+		const chunkEnd = Math.min(i + CHUNK_SIZE, documents.length);
+		const chunk = documents.slice(i, chunkEnd);
+
+		for (const doc of chunk) {
+			index.documents.set(doc.id, doc);
+			indexDocumentFields(index, doc);
+		}
+
+		reportProgress(onProgress, calculatePercent(chunkEnd, documents.length));
+	}
+
+	reportProgress(onProgress, ONE_HUNDRED);
+	return index;
+};
+
+/**
+ * Search the index
+ */
+const search = (
+	index: SearchIndex,
+	query: string,
+	options: SearchTaskOptions = {},
+): SearchResult[] => {
+	const { onProgress } = options;
+	reportProgress(onProgress, ZERO);
+
+	const fuzzy = options.fuzzy ?? false;
+	const maxDistance = options.maxDistance ?? DEFAULT_MAX_DISTANCE;
+	const { fields } = options;
+	const limit = options.limit ?? DEFAULT_RESULT_LIMIT;
+	const caseSensitive = options.caseSensitive ?? false;
+
+	// Tokenize and stem query
+	const queryTokens = tokenize(query, caseSensitive).map(stem);
+
+	reportProgress(onProgress, PROGRESS_TOKENIZED);
+
+	// Find matching documents
+	const docScores = new Map<
+		string,
+		{ score: number; matches: Record<string, string[]> }
+	>();
+
+	for (const queryToken of queryTokens) {
+		const exactMatches = index.invertedIndex.get(queryToken);
+		if (exactMatches) {
+			applyExactMatches(docScores, exactMatches);
+		}
+
+		if (fuzzy) {
+			applyFuzzyMatches(docScores, index, queryToken, maxDistance);
 		}
 	}
 
-	onProgress?.(80);
+	reportProgress(onProgress, PROGRESS_MATCHED);
 
-	// Convert to results and sort by score
-	const results: SearchResult[] = [...docScores.entries()]
-		.map(([id, { score, matches }]) => ({ id, matches, score }))
-		.toSorted((a, b) => b.score - a.score)
-		.slice(0, limit);
+	applyFieldMatches(docScores, index, query, caseSensitive, fields);
+	reportProgress(onProgress, PROGRESS_SCORED);
 
-	onProgress?.(100);
+	const results = buildResults(docScores, limit);
+	reportProgress(onProgress, ONE_HUNDRED);
 	return results;
-}
+};
 
 /**
  * Update index with new documents
  */
-function updateIndex(
+const removeDocumentFromIndex = (index: SearchIndex, docId: string): void => {
+	index.documents.delete(docId);
+
+	for (const [term, docIds] of index.invertedIndex) {
+		docIds.delete(docId);
+		if (docIds.size === ZERO) {
+			index.invertedIndex.delete(term);
+		}
+	}
+};
+
+const addDocumentToIndex = (index: SearchIndex, document: SearchDocument): void => {
+	index.documents.set(document.id, document);
+	indexDocumentFields(index, document);
+};
+
+const updateIndex = (
 	index: SearchIndex,
 	updates: {
 		id: string;
@@ -258,8 +378,8 @@ function updateIndex(
 		document?: SearchDocument;
 	}[],
 	onProgress?: ProgressCallback,
-): SearchIndex {
-	onProgress?.(0);
+): SearchIndex => {
+	reportProgress(onProgress, ZERO);
 
 	const updatedIndex = {
 		documents: new Map(index.documents),
@@ -267,90 +387,68 @@ function updateIndex(
 		invertedIndex: new Map(index.invertedIndex),
 	};
 
-	for (let i = 0; i < updates.length; i += 1) {
+	for (let i = ZERO; i < updates.length; i += ONE) {
 		const update = updates[i];
-
-		if (update.action === "remove") {
-			// Remove from documents
-			updatedIndex.documents.delete(update.id);
-
-			// Remove from inverted index
-			for (const [term, docIds] of updatedIndex.invertedIndex) {
-				docIds.delete(update.id);
-				if (docIds.size === 0) {
-					updatedIndex.invertedIndex.delete(term);
-				}
-			}
-		} else if (update.action === "add" && update.document) {
-			// Add/update document
-			updatedIndex.documents.set(update.id, update.document);
-
-			// Index fields
-			for (const [_field, value] of Object.entries(update.document.fields)) {
-				if (typeof value !== "string") {
-					continue;
-				}
-
-				const tokens = tokenize(value, false);
-				const stemmedTokens = tokens.map(stem);
-
-				for (const token of stemmedTokens) {
-					if (!updatedIndex.invertedIndex.has(token)) {
-						updatedIndex.invertedIndex.set(token, new Set());
-					}
-					updatedIndex.invertedIndex.get(token)!.add(update.id);
-				}
-			}
+		if (!update) {
+			continue;
 		}
 
-		onProgress?.(((i + 1) / updates.length) * 100);
+		if (update.action === "remove") {
+			removeDocumentFromIndex(updatedIndex, update.id);
+		} else if (update.action === "add" && update.document) {
+			addDocumentToIndex(updatedIndex, update.document);
+		}
+
+		reportProgress(onProgress, calculatePercent(i + ONE, updates.length));
 	}
 
-	onProgress?.(100);
+	reportProgress(onProgress, ONE_HUNDRED);
 	return updatedIndex;
-}
+};
 
 /**
  * Get index statistics
  */
-function getIndexStats(index: SearchIndex): {
+const getIndexStats = (
+	index: SearchIndex,
+): {
 	documentCount: number;
 	termCount: number;
 	avgTermsPerDocument: number;
-} {
+} => {
 	const documentCount = index.documents.size;
 	const termCount = index.invertedIndex.size;
 
-	let totalTerms = 0;
+	let totalTerms = ZERO;
 	for (const docIds of index.invertedIndex.values()) {
 		totalTerms += docIds.size;
 	}
 
 	const avgTermsPerDocument =
-		documentCount > 0 ? totalTerms / documentCount : 0;
+		documentCount > ZERO ? totalTerms / documentCount : ZERO;
 
 	return {
 		avgTermsPerDocument,
 		documentCount,
 		termCount,
 	};
-}
+};
 
 /**
  * Auto-suggest/autocomplete
  */
-function autoSuggest(
+const autoSuggest = (
 	index: SearchIndex,
 	prefix: string,
-	limit = 10,
-	onProgress?: ProgressCallback,
-): string[] {
-	onProgress?.(0);
+	options: AutoSuggestOptions = {},
+): string[] => {
+	const { limit = DEFAULT_SUGGEST_LIMIT, onProgress } = options;
+	reportProgress(onProgress, ZERO);
 
 	const normalizedPrefix = prefix.toLowerCase();
 	const suggestions = new Set<string>();
 
-	let processed = 0;
+	let processed = ZERO;
 	const total = index.invertedIndex.size;
 
 	for (const term of index.invertedIndex.keys()) {
@@ -362,15 +460,15 @@ function autoSuggest(
 			}
 		}
 
-		processed += 1;
-		if (processed % 100 === 0) {
-			onProgress?.((processed / total) * 100);
+		processed += ONE;
+		if (processed % PROGRESS_INTERVAL === ZERO) {
+			reportProgress(onProgress, calculatePercent(processed, total));
 		}
 	}
 
-	onProgress?.(100);
-	return [...suggestions].slice(0, limit);
-}
+	reportProgress(onProgress, ONE_HUNDRED);
+	return [...suggestions].slice(ZERO, limit);
+};
 
 // Worker API
 const api = {

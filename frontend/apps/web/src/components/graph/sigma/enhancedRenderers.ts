@@ -51,7 +51,7 @@ const enhancedNodeRenderer = (
 	const { x, y, size, label, color } = data;
 	const zoomRatio = getZoomRatio(settings);
 
-	const extra: Record<string, unknown> = data;
+	const extra = data as unknown as Record<string, unknown>;
 	const type = readString(extra, "type") ?? "default";
 	const status = readString(extra, "status");
 	const highlighted = extra["highlighted"] === true;
@@ -61,10 +61,10 @@ const enhancedNodeRenderer = (
 	const lod = getLOD(zoomRatio);
 
 	// Base node color
-	const nodeColor =
+	const defaultColor = ENHANCED_TYPE_COLORS["default"] ?? "#64748b";
+	const nodeColor: string =
 		color ??
-		ENHANCED_TYPE_COLORS[type] ??
-		ENHANCED_TYPE_COLORS["default"];
+		(ENHANCED_TYPE_COLORS[type] ?? defaultColor);
 
 	// Apply status opacity
 	const statusOpacity =
@@ -97,7 +97,7 @@ const enhancedNodeRenderer = (
 		context.arc(x, y, size, 0, Math.PI * 2);
 
 		// Fill with semi-transparent background
-		context.fillStyle = `${nodeColor}40`;
+		context.fillStyle = `${nodeColor ?? "#64748b"}40`;
 		context.fill();
 
 		// Border
@@ -232,7 +232,7 @@ const enhancedEdgeRenderer = (
 		return;
 	}
 
-	const extra: Record<string, unknown> = data;
+	const extra = data as unknown as Record<string, unknown>;
 	const highlighted = extra["highlighted"] === true;
 	const edgeColor = color ?? "#94a3b8";
 
@@ -324,7 +324,7 @@ const getTypeIcon = (type: string): string => {
 		task: "📝",
 		test: "✓",
 	};
-	return icons[type] ?? icons["default"];
+	return icons[type] ?? icons["default"] ?? "●";
 };
 
 // Export enhanced renderers configuration

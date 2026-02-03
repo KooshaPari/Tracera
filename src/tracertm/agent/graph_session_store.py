@@ -1,6 +1,7 @@
 """Neo4j-backed session graph for tracking session relationships and lineage."""
 
 import logging
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any
 
@@ -9,6 +10,16 @@ from tracertm.agent.session_store import SessionSandboxStoreDB
 from tracertm.agent.types import SandboxConfig
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class ToolCallPayload:
+    """Payload for track_tool_call (tool name, input/output, success)."""
+
+    tool_name: str
+    input_data: dict[str, Any]
+    output_data: Any = None
+    success: bool = True
 
 
 class GraphSessionStore(SessionSandboxStoreDB):
@@ -157,30 +168,30 @@ class GraphSessionStore(SessionSandboxStoreDB):
     async def track_tool_call(
         self,
         session_id: str,
-        tool_name: str,
-        input_data: dict[str, Any],
-        output_data: Any = None,
-        success: bool = True,
+        payload: ToolCallPayload,
         project_id: str | None = None,
-    ):
+    ) -> None:
         """Track tool execution in Neo4j graph and publish event."""
-        # Publish tool use event
         if self._event_publisher:
             try:
-                error_msg = None if success else str(output_data)
+                error_msg = None if payload.success else str(payload.output_data)
+                from tracertm.agent.events import ChatToolUsePayload
+
+                event_payload = ChatToolUsePayload(
+                    tool_name=payload.tool_name,
+                    tool_input=payload.input_data,
+                    tool_output=payload.output_data if payload.success else None,
+                    success=payload.success,
+                    error=error_msg,
+                )
                 await self._event_publisher.publish_chat_tool_use(
                     session_id=session_id,
                     project_id=project_id,
-                    tool_name=tool_name,
-                    tool_input=input_data,
-                    tool_output=output_data if success else None,
-                    success=success,
-                    error=error_msg,
+                    payload=event_payload,
                 )
             except Exception as e:
-                logger.debug(f"Failed to publish tool use event: {e}")
+                logger.debug("Failed to publish tool use event: %s", e)
 
-        # Store in Neo4j
         if self._neo4j is None:
             return
 
@@ -195,14 +206,13 @@ class GraphSessionStore(SessionSandboxStoreDB):
         }]->(s)
         """
 
-        # Summarize input/output to avoid storing huge data
-        input_summary = str(input_data)[:500] if input_data else ""
-        output_summary = str(output_data)[:500] if output_data else ""
+        input_summary = str(payload.input_data)[:500] if payload.input_data else ""
+        output_summary = str(payload.output_data)[:500] if payload.output_data else ""
 
         params = {
             "session_id": session_id,
-            "tool_name": tool_name,
-            "success": success,
+            "tool_name": payload.tool_name,
+            "success": payload.success,
             "timestamp": datetime.now(UTC).isoformat(),
             "input_summary": input_summary,
             "output_summary": output_summary,

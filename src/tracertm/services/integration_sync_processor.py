@@ -88,6 +88,71 @@ class IntegrationSyncProcessor:
         results = [await self.process_queue_item(item) for item in retryable[:limit]]
         return {"processed": len(results), "results": results}
 
+    async def _do_sync_github(
+        self,
+        client: GitHubClient,
+        provider: str,
+        mapping,
+        payload: dict[str, Any],
+        direction: str,
+    ) -> dict[str, Any]:
+        """Handle github provider sync; caller must close client."""
+        repo_name = mapping.mapping_metadata.get("repo_full_name") or mapping.external_id
+        if direction in ("external_to_tracertm", "bidirectional") and repo_name and "/" in repo_name:
+            owner, repo = repo_name.split("/", 1)
+            return await self._sync_github_repo_issues(
+                client=client, mapping=mapping, owner=owner, repo=repo
+            )
+        if direction in ("tracertm_to_external", "bidirectional"):
+            return await self._push_github_issue_update(
+                client=client, mapping=mapping, payload=payload
+            )
+        user = await client.get_authenticated_user()
+        return {"provider": provider, "user": user.get("login")}
+
+    async def _do_sync_github_projects(
+        self,
+        client: GitHubClient,
+        provider: str,
+        mapping,
+        direction: str,
+    ) -> dict[str, Any]:
+        """Handle github_projects provider sync; caller must close client."""
+        project_id = mapping.mapping_metadata.get("project_id") or mapping.external_id
+        if direction in ("external_to_tracertm", "bidirectional") and project_id:
+            return await self._sync_github_project_items(
+                client=client, mapping=mapping, project_id=project_id
+            )
+        user = await client.get_authenticated_user()
+        return {"provider": provider, "user": user.get("login")}
+
+    async def _do_sync_linear(
+        self,
+        client: LinearClient,
+        provider: str,
+        mapping,
+        payload: dict[str, Any],
+        direction: str,
+    ) -> dict[str, Any]:
+        """Handle linear provider sync; caller must close client."""
+        team_id = mapping.mapping_metadata.get("team_id")
+        project_id = mapping.mapping_metadata.get("project_id") or mapping.external_id
+        if direction in ("external_to_tracertm", "bidirectional"):
+            if team_id:
+                return await self._sync_linear_team_issues(
+                    client=client, mapping=mapping, team_id=team_id
+                )
+            if project_id:
+                return await self._sync_linear_project_issues(
+                    client=client, mapping=mapping, project_id=project_id
+                )
+        if direction in ("tracertm_to_external", "bidirectional"):
+            return await self._push_linear_issue_update(
+                client=client, mapping=mapping, payload=payload
+            )
+        viewer = await client.get_viewer()
+        return {"provider": provider, "viewer": viewer.get("name")}
+
     async def _sync_provider(
         self,
         provider: str,
@@ -99,70 +164,21 @@ class IntegrationSyncProcessor:
         if provider == "github":
             client = GitHubClient(token)
             try:
-                repo_name = mapping.mapping_metadata.get("repo_full_name") or mapping.external_id
-                if direction in ("external_to_tracertm", "bidirectional") and repo_name and "/" in repo_name:
-                    owner, repo = repo_name.split("/", 1)
-                    return await self._sync_github_repo_issues(
-                        client=client,
-                        mapping=mapping,
-                        owner=owner,
-                        repo=repo,
-                    )
-                if direction in ("tracertm_to_external", "bidirectional"):
-                    return await self._push_github_issue_update(
-                        client=client,
-                        mapping=mapping,
-                        payload=payload,
-                    )
-                user = await client.get_authenticated_user()
-                return {"provider": provider, "user": user.get("login")}
+                return await self._do_sync_github(client, provider, mapping, payload, direction)
             finally:
                 await client.close()
-
         if provider == "github_projects":
             client = GitHubClient(token)
             try:
-                project_id = mapping.mapping_metadata.get("project_id") or mapping.external_id
-                if direction in ("external_to_tracertm", "bidirectional") and project_id:
-                    return await self._sync_github_project_items(
-                        client=client,
-                        mapping=mapping,
-                        project_id=project_id,
-                    )
-                user = await client.get_authenticated_user()
-                return {"provider": provider, "user": user.get("login")}
+                return await self._do_sync_github_projects(client, provider, mapping, direction)
             finally:
                 await client.close()
-
         if provider == "linear":
             client = LinearClient(token)
             try:
-                team_id = mapping.mapping_metadata.get("team_id")
-                project_id = mapping.mapping_metadata.get("project_id") or mapping.external_id
-                if direction in ("external_to_tracertm", "bidirectional"):
-                    if team_id:
-                        return await self._sync_linear_team_issues(
-                            client=client,
-                            mapping=mapping,
-                            team_id=team_id,
-                        )
-                    if project_id:
-                        return await self._sync_linear_project_issues(
-                            client=client,
-                            mapping=mapping,
-                            project_id=project_id,
-                        )
-                if direction in ("tracertm_to_external", "bidirectional"):
-                    return await self._push_linear_issue_update(
-                        client=client,
-                        mapping=mapping,
-                        payload=payload,
-                    )
-                viewer = await client.get_viewer()
-                return {"provider": provider, "viewer": viewer.get("name")}
+                return await self._do_sync_linear(client, provider, mapping, payload, direction)
             finally:
                 await client.close()
-
         return {
             "provider": provider,
             "status": "noop",

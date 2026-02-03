@@ -22,12 +22,11 @@ import {
 	shouldLogoutOnError,
 } from "@/api/auth";
 import type { AuthResponse, LoginRequest, User } from "@/api/auth";
-import client from "@/api/client";
+import { client } from "@/api/client";
 
 // Mock API client
 vi.mock("@/api/client", () => ({
-	__esModule: true,
-	default: {
+	client: {
 		ApiError: class ApiError extends Error {
 			public data?: unknown;
 			public status: number;
@@ -221,7 +220,7 @@ describe("Authentication API", () => {
 
 	describe("logout", () => {
 		it("should successfully logout", async () => {
-			vi.mocked(authClient.handleApiResponse).mockResolvedValueOnce();
+			vi.mocked(authClient.handleApiResponse).mockResolvedValueOnce(undefined);
 
 			await authApi.logout();
 
@@ -330,7 +329,7 @@ describe("Authentication API", () => {
 
 	describe("changePassword", () => {
 		it("should successfully change password", async () => {
-			vi.mocked(authClient.handleApiResponse).mockResolvedValueOnce();
+			vi.mocked(authClient.handleApiResponse).mockResolvedValueOnce(undefined);
 
 			await authApi.changePassword({
 				confirmPassword: "newPass123",
@@ -383,7 +382,7 @@ describe("Authentication API", () => {
 
 	describe("requestPasswordReset", () => {
 		it("should request password reset", async () => {
-			vi.mocked(authClient.handleApiResponse).mockResolvedValueOnce();
+			vi.mocked(authClient.handleApiResponse).mockResolvedValueOnce(undefined);
 
 			await authApi.requestPasswordReset({
 				email: "user@example.com",
@@ -395,7 +394,7 @@ describe("Authentication API", () => {
 
 		it("should handle non-existent email gracefully", async () => {
 			// Should not throw for security reasons
-			vi.mocked(authClient.handleApiResponse).mockResolvedValueOnce();
+			vi.mocked(authClient.handleApiResponse).mockResolvedValueOnce(undefined);
 
 			await authApi.requestPasswordReset({
 				email: "nonexistent@example.com",
@@ -407,7 +406,7 @@ describe("Authentication API", () => {
 
 	describe("confirmPasswordReset", () => {
 		it("should confirm password reset with valid token", async () => {
-			vi.mocked(authClient.handleApiResponse).mockResolvedValueOnce();
+			vi.mocked(authClient.handleApiResponse).mockResolvedValueOnce(undefined);
 
 			await authApi.confirmPasswordReset({
 				confirmPassword: "newPass123",
@@ -460,7 +459,7 @@ describe("Authentication API", () => {
 
 	describe("verifyEmail", () => {
 		it("should verify email with valid token", async () => {
-			vi.mocked(authClient.handleApiResponse).mockResolvedValueOnce();
+			vi.mocked(authClient.handleApiResponse).mockResolvedValueOnce(undefined);
 
 			await authApi.verifyEmail("email-verify-token-123");
 
@@ -484,7 +483,7 @@ describe("Authentication API", () => {
 
 	describe("requestEmailVerification", () => {
 		it("should request new verification email", async () => {
-			vi.mocked(authClient.handleApiResponse).mockResolvedValueOnce();
+			vi.mocked(authClient.handleApiResponse).mockResolvedValueOnce(undefined);
 
 			await authApi.requestEmailVerification();
 
@@ -499,7 +498,7 @@ describe("Authentication API", () => {
 
 	describe("deleteAccount", () => {
 		it("should delete user account", async () => {
-			vi.mocked(authClient.handleApiResponse).mockResolvedValueOnce();
+			vi.mocked(authClient.handleApiResponse).mockResolvedValueOnce(undefined);
 
 			await authApi.deleteAccount();
 
@@ -572,7 +571,7 @@ describe("Authentication API", () => {
 
 		it("should return false for non-error objects", () => {
 			expect(isAuthError(null)).toBe(false);
-			expect(isAuthError()).toBe(false);
+			expect(isAuthError(undefined)).toBe(false);
 			expect(isAuthError("string")).toBe(false);
 			expect(isAuthError({})).toBe(false);
 		});
@@ -711,7 +710,7 @@ describe("Authentication API", () => {
 		});
 
 		it("should ensure CSRF for all state-changing operations", async () => {
-			vi.mocked(authClient.handleApiResponse).mockResolvedValue();
+			vi.mocked(authClient.handleApiResponse).mockResolvedValue(undefined);
 
 			// These should all try to get/fetch CSRF token
 			await authApi.logout();
@@ -719,7 +718,7 @@ describe("Authentication API", () => {
 
 			vi.clearAllMocks();
 			vi.mocked(csrfLib.getCSRFToken).mockReturnValue("token");
-			vi.mocked(authClient.handleApiResponse).mockResolvedValue();
+			vi.mocked(authClient.handleApiResponse).mockResolvedValue(undefined);
 
 			await authApi.changePassword({
 				confirmPassword: "new",

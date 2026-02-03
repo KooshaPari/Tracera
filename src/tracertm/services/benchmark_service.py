@@ -2,8 +2,11 @@
 
 import time
 from dataclasses import dataclass
-from datetime import UTC, datetime, timezone
+from datetime import UTC, datetime
 from typing import Any, ClassVar
+
+TARGET_MS_INCREMENTAL = 1000
+TARGET_MS_FULL = 5000
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -153,8 +156,8 @@ class BenchmarkService:
                 row_count=0,
                 success=True,
                 metadata={
-                    "target_ms": 1000,
-                    "meets_target": duration_ms < 1000,
+                    "target_ms": TARGET_MS_INCREMENTAL,
+                    "meets_target": duration_ms < TARGET_MS_INCREMENTAL,
                 },
             )
         except Exception as e:
@@ -188,8 +191,8 @@ class BenchmarkService:
                 row_count=0,
                 success=True,
                 metadata={
-                    "target_ms": 5000,
-                    "meets_target": duration_ms < 5000,
+                    "target_ms": TARGET_MS_FULL,
+                    "meets_target": duration_ms < TARGET_MS_FULL,
                 },
             )
         except Exception as e:

@@ -1,10 +1,20 @@
 // General helper utilities
 
-import type { Item, Link } from "@tracertm/types";
 import { logger } from "@/lib/logger";
+import type { Item, Link } from "@tracertm/types";
+
+const BASE36_RADIX = Number("36");
+const ID_SLICE_START = Number("2");
+const ID_SLICE_END = Number("9");
+const FULL_PERCENT = Number("100");
+const ORDER_BEFORE = Number("-1");
+const ORDER_AFTER = Number("1");
 
 // Array utilities
-export function groupBy<T>(array: T[], key: keyof T): Record<string, T[]> {
+const groupBy = function <T>(
+	array: T[],
+	key: keyof T,
+): Record<string, T[]> {
 	return array.reduce(
 		(result, item) => {
 			const groupKey = String(item[key]);
@@ -16,9 +26,9 @@ export function groupBy<T>(array: T[], key: keyof T): Record<string, T[]> {
 		},
 		{} as Record<string, T[]>,
 	);
-}
+};
 
-export function sortBy<T>(
+const sortBy = function <T>(
 	array: T[],
 	key: keyof T,
 	order: "asc" | "desc" = "asc",
@@ -28,40 +38,40 @@ export function sortBy<T>(
 		const bVal = b[key];
 
 		if (aVal < bVal) {
-			return order === "asc" ? -1 : 1;
+			return order === "asc" ? ORDER_BEFORE : ORDER_AFTER;
 		}
 		if (aVal > bVal) {
-			return order === "asc" ? 1 : -1;
+			return order === "asc" ? ORDER_AFTER : ORDER_BEFORE;
 		}
 		return 0;
 	});
-}
+};
 
-export function unique<T>(array: T[]): T[] {
+const unique = function <T>(array: T[]): T[] {
 	return [...new Set(array)];
-}
+};
 
-export function chunk<T>(array: T[], size: number): T[][] {
+const chunk = function <T>(array: T[], size: number): T[][] {
 	const chunks: T[][] = [];
-	for (let i = 0; i < array.length; i += size) {
-		chunks.push(array.slice(i, i + size));
+	for (let index = 0; index < array.length; index += size) {
+		chunks.push(array.slice(index, index + size));
 	}
 	return chunks;
-}
+};
 
-export function shuffle<T>(array: T[]): T[] {
+const shuffle = function <T>(array: T[]): T[] {
 	const shuffled = [...array];
-	for (let i = shuffled.length - 1; i > 0; i -= 1) {
-		const j = Math.floor(Math.random() * (i + 1));
-		const temp = shuffled[i];
-		shuffled[i] = shuffled[j]!;
-		shuffled[j] = temp!;
+	for (let index = shuffled.length - 1; index > 0; index -= 1) {
+		const swapIndex = Math.floor(Math.random() * (index + 1));
+		const temp = shuffled[index];
+		shuffled[index] = shuffled[swapIndex]!;
+		shuffled[swapIndex] = temp!;
 	}
 	return shuffled;
-}
+};
 
 // Object utilities
-export function pick<T extends object, K extends keyof T>(
+const pick = function <T extends object, K extends keyof T>(
 	obj: T,
 	keys: K[],
 ): Pick<T, K> {
@@ -72,9 +82,9 @@ export function pick<T extends object, K extends keyof T>(
 		}
 	});
 	return result;
-}
+};
 
-export function omit<T extends object, K extends keyof T>(
+const omit = function <T extends object, K extends keyof T>(
 	obj: T,
 	keys: K[],
 ): Omit<T, K> {
@@ -83,62 +93,64 @@ export function omit<T extends object, K extends keyof T>(
 		delete result[key];
 	});
 	return result;
-}
+};
 
-export function deepClone<T>(obj: T): T {
+const deepClone = function <T>(obj: T): T {
 	return structuredClone(obj);
-}
+};
 
-export function isEmpty(obj: object): boolean {
+const isEmpty = function (obj: object): boolean {
 	return Object.keys(obj).length === 0;
-}
+};
 
-export function merge<T extends object>(
+const merge = function <T extends object>(
 	target: T,
 	...sources: Partial<T>[]
 ): T {
 	return Object.assign({}, target, ...sources);
-}
+};
 
 // String utilities
-export function generateId(): string {
-	return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-}
+const generateId = function (): string {
+	return `${Date.now()}-${Math.random()
+		.toString(BASE36_RADIX)
+		.slice(ID_SLICE_START, ID_SLICE_END)}`;
+};
 
-export function slugify(text: string): string {
+const slugify = function (text: string): string {
 	return text
 		.toLowerCase()
 		.trim()
 		.replaceAll(/[^\w\s-]/g, "")
 		.replaceAll(/[\s_-]+/g, "-")
 		.replaceAll(/^-+|-+$/g, "");
-}
+};
 
-export function randomString(length: number): string {
+const randomString = function (length: number): string {
 	const chars =
 		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 	let result = "";
-	for (let i = 0; i < length; i += 1) {
+	for (let index = 0; index < length; index += 1) {
 		result += chars.charAt(Math.floor(Math.random() * chars.length));
 	}
 	return result;
-}
+};
 
 // Type guards
-export function isNotNull<T>(value: T | null | undefined): value is T {
+const isNotNull = function <T>(value: T | null | undefined): value is T {
 	return value !== null && value !== undefined;
-}
+};
 
-export function isDefined<T>(value: T | undefined): value is T {
+const isDefined = function <T>(value: T | undefined): value is T {
 	return value !== undefined;
-}
+};
 
 // Async utilities
-export function sleep(ms: number): Promise<void> {
+const sleep = function (ms: number): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, ms));
-}
+};
 
-export function debounce<T extends (...args: never[]) => unknown>(
+const debounce = function <T extends (...args: never[]) => unknown>(
 	func: T,
 	wait: number,
 ): (...args: Parameters<T>) => void {
@@ -155,9 +167,9 @@ export function debounce<T extends (...args: never[]) => unknown>(
 		}
 		timeout = setTimeout(later, wait);
 	};
-}
+};
 
-export function throttle<T extends (...args: never[]) => unknown>(
+const throttle = function <T extends (...args: never[]) => unknown>(
 	func: T,
 	limit: number,
 ): (...args: Parameters<T>) => void {
@@ -170,18 +182,21 @@ export function throttle<T extends (...args: never[]) => unknown>(
 			setTimeout(() => (inThrottle = false), limit);
 		}
 	};
-}
+};
 
 // TraceRTM specific utilities
-export function getItemsByView(items: Item[], view: string): Item[] {
+const getItemsByView = function (items: Item[], view: string): Item[] {
 	return items.filter((item) => item.view === view);
-}
+};
 
-export function getItemChildren(items: Item[], parentId: string): Item[] {
+const getItemChildren = function (
+	items: Item[],
+	parentId: string,
+): Item[] {
 	return items.filter((item) => item.parentId === parentId);
-}
+};
 
-export function getItemAncestors(items: Item[], itemId: string): Item[] {
+const getItemAncestors = function (items: Item[], itemId: string): Item[] {
 	const ancestors: Item[] = [];
 	let currentItem = items.find((item) => item.id === itemId);
 
@@ -196,9 +211,9 @@ export function getItemAncestors(items: Item[], itemId: string): Item[] {
 	}
 
 	return ancestors;
-}
+};
 
-export function getLinkedItems(
+const getLinkedItems = function (
 	items: Item[],
 	links: Link[],
 	itemId: string,
@@ -217,22 +232,25 @@ export function getLinkedItems(
 			.map((link) => items.find((item) => item.id === link.targetId))
 			.filter(isNotNull),
 	};
-}
+};
 
-export function calculateProgress(items: Item[]): number {
+const calculateProgress = function (items: Item[]): number {
 	if (items.length === 0) {
 		return 0;
 	}
 	const doneItems = items.filter((item) => item.status === "done").length;
-	return (doneItems / items.length) * 100;
-}
+	return (doneItems / items.length) * FULL_PERCENT;
+};
 
 // Local storage utilities (SSR-safe)
-const isLocalStorageAvailable = () =>
-	typeof localStorage !== "undefined" &&
-	typeof localStorage.getItem === "function";
+const isLocalStorageAvailable = function (): boolean {
+	return (
+		typeof localStorage !== "undefined" &&
+		typeof localStorage.getItem === "function"
+	);
+};
 
-export function getFromStorage<T>(key: string, defaultValue: T): T {
+const getFromStorage = function <T>(key: string, defaultValue: T): T {
 	if (!isLocalStorageAvailable()) {
 		return defaultValue;
 	}
@@ -242,9 +260,9 @@ export function getFromStorage<T>(key: string, defaultValue: T): T {
 	} catch {
 		return defaultValue;
 	}
-}
+};
 
-export function setToStorage<T>(key: string, value: T): void {
+const setToStorage = function <T>(key: string, value: T): void {
 	if (!isLocalStorageAvailable()) {
 		return;
 	}
@@ -253,9 +271,9 @@ export function setToStorage<T>(key: string, value: T): void {
 	} catch (error) {
 		logger.error("Error saving to localStorage:", error);
 	}
-}
+};
 
-export function removeFromStorage(key: string): void {
+const removeFromStorage = function (key: string): void {
 	if (!isLocalStorageAvailable()) {
 		return;
 	}
@@ -264,10 +282,10 @@ export function removeFromStorage(key: string): void {
 	} catch (error) {
 		logger.error("Error removing from localStorage:", error);
 	}
-}
+};
 
 // Copy to clipboard
-export async function copyToClipboard(text: string): Promise<boolean> {
+const copyToClipboard = async function (text: string): Promise<boolean> {
 	if (
 		typeof globalThis.window === "undefined" ||
 		typeof navigator === "undefined" ||
@@ -304,10 +322,10 @@ export async function copyToClipboard(text: string): Promise<boolean> {
 	} catch {
 		return false;
 	}
-}
+};
 
 // Download file
-export function downloadFile(
+const downloadFile = function (
 	content: string,
 	filename: string,
 	type = "text/plain",
@@ -328,4 +346,35 @@ export function downloadFile(
 	link.click();
 	document.body.removeChild(link);
 	URL.revokeObjectURL(url);
-}
+};
+
+export {
+	calculateProgress,
+	chunk,
+	copyToClipboard,
+	debounce,
+	deepClone,
+	downloadFile,
+	generateId,
+	getFromStorage,
+	getItemAncestors,
+	getItemChildren,
+	getItemsByView,
+	getLinkedItems,
+	groupBy,
+	isDefined,
+	isEmpty,
+	isNotNull,
+	merge,
+	omit,
+	pick,
+	randomString,
+	removeFromStorage,
+	setToStorage,
+	shuffle,
+	slugify,
+	sleep,
+	sortBy,
+	throttle,
+	unique,
+};

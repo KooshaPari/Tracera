@@ -17,7 +17,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import client from "@/api/client";
+import { client } from "@/api/client";
 
 const { getAuthHeaders } = client;
 

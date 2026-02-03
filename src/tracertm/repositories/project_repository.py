@@ -1,12 +1,12 @@
 """Project repository for TraceRTM."""
 
 import uuid
+from typing import Any
 from uuid import uuid4
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from typing import Any
 from tracertm.models.project import Project
 
 

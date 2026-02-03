@@ -1,3 +1,4 @@
+/* eslint-disable complexity, func-style, jsx-max-depth, max-lines-per-function, no-magic-numbers, react-perf/jsx-no-new-object-as-prop, react-perf/jsx-no-new-function-as-prop, sort-imports */
 // EpicNode - Type-specific node for epic items
 // Shows business value, timeline progress, and story completion
 

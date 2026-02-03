@@ -6,7 +6,7 @@ import type {
 	WebhookStats,
 	WebhookStatus,
 } from "@tracertm/types";
-import client from "@/api/client";
+import { client } from "@/api/client";
 
 const { getAuthHeaders } = client;
 

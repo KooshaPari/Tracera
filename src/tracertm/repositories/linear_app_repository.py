@@ -2,7 +2,7 @@
 Repository for Linear App Installation operations.
 """
 
-from datetime import UTC, datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession

@@ -1,6 +1,5 @@
-/* oxlint-disable oxc/no-async-await */
 // Events API stub
-import client from "./client";
+import { client } from "./client";
 
 interface Event {
 	id: string;

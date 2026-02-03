@@ -8,6 +8,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from tracertm.repositories.item_repository import ItemRepository
 from tracertm.repositories.link_repository import LinkRepository
 
+EXCELLENT_THRESHOLD = 0.1
+GOOD_THRESHOLD = 0.5
+FAIR_THRESHOLD = 1.0
+EXEC_SLOW_THRESHOLD = 1.0
+EXEC_MEDIUM_THRESHOLD = 0.5
+RESULT_COUNT_PAGINATE = 10000
+RESULT_COUNT_CACHE_MAX = 100
+MIN_STATS_FOR_RECOMMEND = 10
+INDEX_RECOMMEND_RATIO = 0.5
+
 
 class QueryOptimizationService:
     """Service for optimizing queries."""
@@ -52,9 +62,6 @@ class QueryOptimizationService:
 
     def _rate_performance(self, execution_time: float) -> str:
         """Rate query performance."""
-        EXCELLENT_THRESHOLD = 0.1
-        GOOD_THRESHOLD = 0.5
-        FAIR_THRESHOLD = 1.0
         if execution_time < EXCELLENT_THRESHOLD:
             return "Excellent"
         if execution_time < GOOD_THRESHOLD:
@@ -66,10 +73,6 @@ class QueryOptimizationService:
     def _suggest_optimizations(self, execution_time: float, result_count: int) -> list[str]:
         """Suggest query optimizations."""
         suggestions = []
-        EXEC_SLOW_THRESHOLD = 1.0
-        RESULT_COUNT_PAGINATE = 10000
-        EXEC_MEDIUM_THRESHOLD = 0.5
-        RESULT_COUNT_CACHE_MAX = 100
 
         if execution_time > EXEC_SLOW_THRESHOLD:
             suggestions.append("Consider adding indexes to frequently queried fields")
@@ -149,8 +152,6 @@ class QueryOptimizationService:
         recommendations = []
 
         # Analyze query stats
-        MIN_STATS_FOR_RECOMMEND = 10
-        INDEX_RECOMMEND_RATIO = 0.5
         if len(self.query_stats) > MIN_STATS_FOR_RECOMMEND:
             # If many queries filter by status, recommend status index
             status_queries = [s for s in self.query_stats if "status" in s.get("query_filters", {})]

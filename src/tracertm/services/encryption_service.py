@@ -6,6 +6,8 @@ import secrets
 
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
+AES256_KEY_BYTES = 32  # 256 bits
+
 
 class EncryptionService:
     """AES-256-GCM encryption for credentials.
@@ -38,8 +40,10 @@ class EncryptionService:
             raise ValueError(f"Invalid master key format (must be base64): {e}") from e
 
         # Validate key size (must be 256 bits = 32 bytes)
-        if len(self._key) != 32:
-            raise ValueError(f"Master key must be 256 bits (32 bytes), got {len(self._key)} bytes")
+        if len(self._key) != AES256_KEY_BYTES:
+            raise ValueError(
+                f"Master key must be 256 bits ({AES256_KEY_BYTES} bytes), got {len(self._key)} bytes"
+            )
 
         self._cipher = AESGCM(self._key)
 
@@ -50,7 +54,7 @@ class EncryptionService:
         Returns:
             Base64-encoded 256-bit key suitable for use as master key.
         """
-        key_bytes = secrets.token_bytes(32)  # 256 bits
+        key_bytes = secrets.token_bytes(AES256_KEY_BYTES)
         return base64.b64encode(key_bytes).decode("utf-8")
 
     def encrypt(self, plaintext: str) -> str:

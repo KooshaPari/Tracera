@@ -48,6 +48,9 @@ from tracertm.storage.sync_engine import SyncEngine
 # Table names from sqlite_master or backup JSON; must be identifier-safe for S608
 _TABLE_NAME_RE = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_]*$")
 
+# Agent health: hours since last activity for idle vs stale
+HOURS_IDLE_THRESHOLD = 24
+
 
 def _safe_table_name(name: str) -> str:
     if not _TABLE_NAME_RE.match(name):
@@ -156,7 +159,7 @@ def _resolve_project_id(payload: dict[str, Any], ctx: Any | None) -> str | None:
     project_ids = claims.get("project_ids")
     if isinstance(project_ids, str):
         allowed.extend([p.strip() for p in project_ids.split(",") if p.strip()])
-    elif project_ids is not None and isinstance(project_ids, (list[Any], tuple, set)):
+    elif isinstance(project_ids, (list, tuple, set)):
         allowed.extend([str(p) for p in project_ids if p])
 
     if allowed:
@@ -740,7 +743,7 @@ async def import_manage(
     action = action.lower()
     project_name = payload.get("project_name")
 
-    def _load_data() -> dict[str, Any]:
+    def _load_data() -> Any:
         data = payload.get("data")
         if isinstance(data, dict[str, Any]):
             return data
@@ -1198,7 +1201,7 @@ async def agents_manage(
                         hours_since = (datetime.now(UTC) - last_activity.replace(tzinfo=None)).total_seconds() / 3600
                         if hours_since < 1:
                             health = "healthy"
-                        elif hours_since < 24:
+                        elif hours_since < HOURS_IDLE_THRESHOLD:
                             health = "idle"
                         else:
                             health = "stale"

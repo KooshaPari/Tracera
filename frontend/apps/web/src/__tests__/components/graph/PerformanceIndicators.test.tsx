@@ -1,6 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
-import { renderHook } from "@testing-library/react";
+import { render, renderHook, screen, waitFor } from "@testing-library/react";
 import { PerformanceStats } from "@/components/graph/PerformanceStats";
 import { PerformanceOverlay } from "@/components/graph/PerformanceOverlay";
 import { PerformanceChart } from "@/components/graph/PerformanceChart";

@@ -7,8 +7,7 @@ import { fetchSystemStatus } from "@/api/system";
 
 // Mock client
 vi.mock("@/api/client", () => ({
-	__esModule: true,
-	default: {
+	client: {
 		apiClient: {
 			GET: vi.fn(),
 		},
@@ -18,7 +17,7 @@ vi.mock("@/api/mcp-config", () => ({
 	getMcpConfig: vi.fn(),
 }));
 
-import client from "@/api/client";
+import { client } from "@/api/client";
 import { getMcpConfig } from "@/api/mcp-config";
 
 const { apiClient } = client;

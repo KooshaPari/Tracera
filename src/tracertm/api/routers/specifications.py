@@ -5,6 +5,7 @@ endpoints with proper authentication, validation, and error handling.
 """
 
 from datetime import UTC, datetime
+from typing import Any
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
 from fastapi.encoders import jsonable_encoder
@@ -12,7 +13,6 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from typing import Any
 from tracertm.api.deps import auth_guard, get_db, get_event_bus
 from tracertm.infrastructure.event_bus import EventBus
 from tracertm.infrastructure.event_publisher_utils import safe_publish

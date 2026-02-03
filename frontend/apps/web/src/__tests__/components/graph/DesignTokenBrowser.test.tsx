@@ -121,6 +121,9 @@ const mockTokensWithReferences: DesignToken[] = [
 	},
 ];
 
+const TOKENS_ALL = [...mockColorTokens, ...mockSpacingTokens, ...mockTypographyTokens];
+const TOKENS_COLOR_AND_SPACING = [...mockColorTokens, ...mockSpacingTokens];
+
 // =============================================================================
 // TESTS
 // =============================================================================
@@ -133,12 +136,7 @@ describe(DesignTokenBrowser, () => {
 	// Basic rendering
 	describe("rendering", () => {
 		it("should render the component with all tokens", () => {
-			const tokens = [
-				...mockColorTokens,
-				...mockSpacingTokens,
-				...mockTypographyTokens,
-			];
-			render(<DesignTokenBrowser tokens={tokens} />);
+			render(<DesignTokenBrowser tokens={TOKENS_ALL} />);
 
 			expect(screen.getByText("Design Tokens")).toBeInTheDocument();
 			expect(screen.getByText(/10 tokens/)).toBeInTheDocument();
@@ -152,8 +150,7 @@ describe(DesignTokenBrowser, () => {
 		});
 
 		it("should group tokens by type", () => {
-			const tokens = [...mockColorTokens, ...mockSpacingTokens];
-			render(<DesignTokenBrowser tokens={tokens} />);
+			render(<DesignTokenBrowser tokens={TOKENS_COLOR_AND_SPACING} />);
 
 			// Should show category buttons
 			expect(screen.getByText(/Colors \(3\)/)).toBeInTheDocument();
@@ -161,8 +158,7 @@ describe(DesignTokenBrowser, () => {
 		});
 
 		it("should display token stats correctly", () => {
-			const tokens = [...mockColorTokens, ...mockSpacingTokens];
-			render(<DesignTokenBrowser tokens={tokens} />);
+			render(<DesignTokenBrowser tokens={TOKENS_COLOR_AND_SPACING} />);
 
 			expect(screen.getByText(/5 tokens/)).toBeInTheDocument();
 			expect(screen.getByText(/3 in use/)).toBeInTheDocument();
@@ -173,8 +169,7 @@ describe(DesignTokenBrowser, () => {
 	// Search functionality
 	describe("search and filtering", () => {
 		it("should filter tokens by name", async () => {
-			const tokens = mockColorTokens;
-			render(<DesignTokenBrowser tokens={tokens} />);
+			render(<DesignTokenBrowser tokens={mockColorTokens} />);
 
 			const searchInput = screen.getByPlaceholderText(/Search tokens by name/);
 			await userEvent.type(searchInput, "primary");
@@ -186,8 +181,7 @@ describe(DesignTokenBrowser, () => {
 		});
 
 		it("should filter tokens by path", async () => {
-			const tokens = mockColorTokens;
-			render(<DesignTokenBrowser tokens={tokens} />);
+			render(<DesignTokenBrowser tokens={mockColorTokens} />);
 
 			const searchInput = screen.getByPlaceholderText(/Search tokens by name/);
 			await userEvent.type(searchInput, "secondary");
@@ -196,8 +190,7 @@ describe(DesignTokenBrowser, () => {
 		});
 
 		it("should filter tokens by value", async () => {
-			const tokens = mockColorTokens;
-			render(<DesignTokenBrowser tokens={tokens} />);
+			render(<DesignTokenBrowser tokens={mockColorTokens} />);
 
 			const searchInput = screen.getByPlaceholderText(/Search tokens by name/);
 			await userEvent.type(searchInput, "#EF4444");
@@ -206,8 +199,7 @@ describe(DesignTokenBrowser, () => {
 		});
 
 		it("should filter tokens by tag", async () => {
-			const tokens = mockColorTokens;
-			render(<DesignTokenBrowser tokens={tokens} />);
+			render(<DesignTokenBrowser tokens={mockColorTokens} />);
 
 			const searchInput = screen.getByPlaceholderText(/Search tokens by name/);
 			await userEvent.type(searchInput, "brand");
@@ -216,8 +208,7 @@ describe(DesignTokenBrowser, () => {
 		});
 
 		it("should show no results message when search has no matches", async () => {
-			const tokens = mockColorTokens;
-			render(<DesignTokenBrowser tokens={tokens} />);
+			render(<DesignTokenBrowser tokens={mockColorTokens} />);
 
 			const searchInput = screen.getByPlaceholderText(/Search tokens by name/);
 			await userEvent.type(searchInput, "nonexistent");
@@ -229,8 +220,7 @@ describe(DesignTokenBrowser, () => {
 	// Category expansion
 	describe("category expansion", () => {
 		it("should expand categories on click", async () => {
-			const tokens = mockColorTokens;
-			render(<DesignTokenBrowser tokens={tokens} />);
+			render(<DesignTokenBrowser tokens={mockColorTokens} />);
 
 			const colorsButton = screen.getByText(/Colors \(3\)/);
 			expect(colorsButton).toBeInTheDocument();
@@ -244,8 +234,7 @@ describe(DesignTokenBrowser, () => {
 		});
 
 		it("should expand all categories with button", async () => {
-			const tokens = [...mockColorTokens, ...mockSpacingTokens];
-			render(<DesignTokenBrowser tokens={tokens} />);
+			render(<DesignTokenBrowser tokens={TOKENS_COLOR_AND_SPACING} />);
 
 			const expandAllButton = screen.getByText("Expand All");
 			await userEvent.click(expandAllButton);
@@ -257,8 +246,9 @@ describe(DesignTokenBrowser, () => {
 		});
 
 		it("should collapse all categories with button", async () => {
-			const tokens = [...mockColorTokens, ...mockSpacingTokens];
-			render(<DesignTokenBrowser tokens={tokens} />);
+			const { rerender } = render(
+				<DesignTokenBrowser tokens={TOKENS_COLOR_AND_SPACING} />,
+			);
 
 			// First expand all
 			const expandAllButton = screen.getByText("Expand All");
@@ -273,7 +263,7 @@ describe(DesignTokenBrowser, () => {
 			await userEvent.click(collapseAllButton);
 
 			// Rerender to see updated state
-			rerender(<DesignTokenBrowser tokens={tokens} />);
+			rerender(<DesignTokenBrowser tokens={TOKENS_COLOR_AND_SPACING} />);
 
 			// Primary should not be visible until expanded again
 			const primaryElements = screen.queryAllByText("primary");
@@ -285,9 +275,8 @@ describe(DesignTokenBrowser, () => {
 	describe("token selection", () => {
 		it("should call onSelectToken when token is clicked", async () => {
 			const onSelectToken = vi.fn();
-			const tokens = mockColorTokens;
 			render(
-				<DesignTokenBrowser tokens={tokens} onSelectToken={onSelectToken} />,
+				<DesignTokenBrowser tokens={mockColorTokens} onSelectToken={onSelectToken} />,
 			);
 
 			// Expand colors category
@@ -295,11 +284,11 @@ describe(DesignTokenBrowser, () => {
 			await userEvent.click(colorsButton);
 
 			// Click on primary token
-			await waitFor(() => {
+			await waitFor(async () => {
 				const primaryToken = screen.getByText("primary");
 				const tokenContainer = primaryToken.closest("div[class*='flex-col']");
 				if (tokenContainer) {
-					void userEvent.click(tokenContainer);
+					await userEvent.click(tokenContainer);
 				}
 			});
 
@@ -307,8 +296,7 @@ describe(DesignTokenBrowser, () => {
 		});
 
 		it("should highlight selected token", async () => {
-			const tokens = mockColorTokens;
-			render(<DesignTokenBrowser tokens={tokens} selectedTokenId="color-1" />);
+			render(<DesignTokenBrowser tokens={mockColorTokens} selectedTokenId="color-1" />);
 
 			// Expand colors category
 			const colorsButton = screen.getByText(/Colors \(3\)/);
@@ -326,8 +314,7 @@ describe(DesignTokenBrowser, () => {
 	// Copy functionality
 	describe("copy to clipboard", () => {
 		it("should copy token value to clipboard", async () => {
-			const tokens = mockColorTokens;
-			render(<DesignTokenBrowser tokens={tokens} />);
+			render(<DesignTokenBrowser tokens={mockColorTokens} />);
 
 			// Expand colors category
 			const colorsButton = screen.getByText(/Colors \(3\)/);
@@ -347,21 +334,20 @@ describe(DesignTokenBrowser, () => {
 	// Token details expansion
 	describe("token details", () => {
 		it("should show description when expanded", async () => {
-			const tokens = mockColorTokens;
-			render(<DesignTokenBrowser tokens={tokens} />);
+			render(<DesignTokenBrowser tokens={mockColorTokens} />);
 
 			// Expand colors category
 			const colorsButton = screen.getByText(/Colors \(3\)/);
 			await userEvent.click(colorsButton);
 
 			// Expand token details
-			await waitFor(() => {
+			await waitFor(async () => {
 				const primaryToken = screen.getByText("primary");
 				const expandButton = primaryToken
 					.closest("div[class*='flex-col']")
 					?.querySelector("button");
 				if (expandButton) {
-					void userEvent.click(expandButton);
+					await userEvent.click(expandButton);
 				}
 			});
 
@@ -371,14 +357,13 @@ describe(DesignTokenBrowser, () => {
 		});
 
 		it("should show component usage", async () => {
-			const tokens = mockColorTokens;
 			const componentMap = new Map([
 				["btn-1", "Button Primary"],
 				["btn-2", "Button Secondary"],
 			]);
 			render(
 				<DesignTokenBrowser
-					tokens={tokens}
+					tokens={mockColorTokens}
 					showComponentUsage
 					componentMap={componentMap}
 				/>,
@@ -393,8 +378,7 @@ describe(DesignTokenBrowser, () => {
 		});
 
 		it("should display referenced tokens", async () => {
-			const tokens = mockTokensWithReferences;
-			render(<DesignTokenBrowser tokens={tokens} />);
+			render(<DesignTokenBrowser tokens={mockTokensWithReferences} />);
 
 			// Expand colors category
 			const colorsButton = screen.getByText(/Colors \(1\)/);
@@ -410,8 +394,7 @@ describe(DesignTokenBrowser, () => {
 	// Figma integration
 	describe("figma integration", () => {
 		it("should show Figma icon for synced tokens", async () => {
-			const tokens = mockColorTokens;
-			render(<DesignTokenBrowser tokens={tokens} />);
+			render(<DesignTokenBrowser tokens={mockColorTokens} />);
 
 			// Expand colors category
 			const colorsButton = screen.getByText(/Colors \(3\)/);
@@ -429,9 +412,8 @@ describe(DesignTokenBrowser, () => {
 
 		it("should call onLinkToFigma when linking token", async () => {
 			const onLinkToFigma = vi.fn();
-			const tokens = mockColorTokens;
 			render(
-				<DesignTokenBrowser tokens={tokens} onLinkToFigma={onLinkToFigma} />,
+				<DesignTokenBrowser tokens={mockColorTokens} onLinkToFigma={onLinkToFigma} />,
 			);
 
 			// Expand colors category
@@ -444,8 +426,7 @@ describe(DesignTokenBrowser, () => {
 		});
 
 		it("should show sync count in stats", () => {
-			const tokens = mockColorTokens;
-			render(<DesignTokenBrowser tokens={tokens} />);
+			render(<DesignTokenBrowser tokens={mockColorTokens} />);
 
 			expect(screen.getByText(/1 synced/)).toBeInTheDocument();
 		});
@@ -454,8 +435,7 @@ describe(DesignTokenBrowser, () => {
 	// Token preview rendering
 	describe("token preview", () => {
 		it("should render color preview box", async () => {
-			const tokens = mockColorTokens;
-			render(<DesignTokenBrowser tokens={tokens} />);
+			render(<DesignTokenBrowser tokens={mockColorTokens} />);
 
 			// Expand colors category
 			const colorsButton = screen.getByText(/Colors \(3\)/);
@@ -468,8 +448,7 @@ describe(DesignTokenBrowser, () => {
 		});
 
 		it("should display token value in code format", async () => {
-			const tokens = mockColorTokens;
-			render(<DesignTokenBrowser tokens={tokens} />);
+			render(<DesignTokenBrowser tokens={mockColorTokens} />);
 
 			// Expand colors category
 			const colorsButton = screen.getByText(/Colors \(3\)/);
@@ -484,12 +463,7 @@ describe(DesignTokenBrowser, () => {
 	// Category type icons
 	describe("category type icons", () => {
 		it("should display correct icon for each token type", async () => {
-			const tokens = [
-				...mockColorTokens,
-				...mockSpacingTokens,
-				...mockTypographyTokens,
-			];
-			render(<DesignTokenBrowser tokens={tokens} />);
+			render(<DesignTokenBrowser tokens={TOKENS_ALL} />);
 
 			// All category buttons should be visible
 			expect(screen.getByText(/Colors \(3\)/)).toBeInTheDocument();
@@ -501,16 +475,14 @@ describe(DesignTokenBrowser, () => {
 	// Accessibility
 	describe("accessibility", () => {
 		it("should have accessible button labels", async () => {
-			const tokens = mockColorTokens;
-			render(<DesignTokenBrowser tokens={tokens} />);
+			render(<DesignTokenBrowser tokens={mockColorTokens} />);
 
 			expect(screen.getByText("Expand All")).toBeInTheDocument();
 			expect(screen.getByText("Collapse All")).toBeInTheDocument();
 		});
 
 		it("should have descriptive search placeholder", () => {
-			const tokens = mockColorTokens;
-			render(<DesignTokenBrowser tokens={tokens} />);
+			render(<DesignTokenBrowser tokens={mockColorTokens} />);
 
 			const searchInput = screen.getByPlaceholderText(
 				/Search tokens by name, value, or path/,

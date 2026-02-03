@@ -4,7 +4,7 @@ import { Plus } from "lucide-react";
 import { ContractCard } from "@/components/specifications/contracts/ContractCard";
 import { useContracts } from "@/hooks/useSpecifications";
 
-export function ContractView() {
+export const ContractView = () => {
 	const { projectId } = useParams({ strict: false });
 	const { data: contractsData } = useContracts({ projectId: projectId || "" });
 	const contracts = contractsData?.contracts ?? [];
@@ -31,4 +31,4 @@ export function ContractView() {
 			</div>
 		</div>
 	);
-}
+};

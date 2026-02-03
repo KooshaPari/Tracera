@@ -12,6 +12,8 @@ from sqlalchemy.orm import Session
 from tracertm.models.event import Event
 from tracertm.models.item import Item
 
+MIN_EVENTS_FOR_CONFLICT = 2
+
 
 class ConflictResolutionService:
     """
@@ -115,7 +117,7 @@ class ConflictResolutionService:
             .all()
         )
 
-        if len(events) < 2:
+        if len(events) < MIN_EVENTS_FOR_CONFLICT:
             return {
                 "resolved": False,
                 "reason": "No conflict detected",

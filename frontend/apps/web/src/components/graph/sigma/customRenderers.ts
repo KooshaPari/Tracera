@@ -1,4 +1,4 @@
-/* eslint-disable complexity, max-lines-per-function, max-statements, no-magic-numbers */
+/* eslint-disable complexity, max-lines-per-function, max-params, max-statements, no-magic-numbers */
 import type { EdgeDisplayData, NodeDisplayData } from "sigma/types";
 
 const DEFAULT_COLOR = "#64748b";
@@ -57,9 +57,6 @@ const ICONS: Record<string, string> = {
 	test: "✓",
 };
 
-const isRecordObject = (value: unknown): value is Record<string, unknown> =>
-	Object.prototype.toString.call(value) === "[object Object]";
-
 const readNumber = (obj: Record<string, unknown>, key: string): number | undefined => {
 	const value = obj[key];
 	return typeof value === "number" ? value : undefined;
@@ -76,10 +73,9 @@ const getZoomRatio = (settings: Record<string, unknown>): number => {
 };
 
 const getTypeColor = (typeValue: unknown): string => {
-	if (typeof typeValue === "string" && ENHANCED_TYPE_COLORS[typeValue]) {
-		return ENHANCED_TYPE_COLORS[typeValue];
-	}
-	return ENHANCED_TYPE_COLORS["default"];
+	const out =
+		typeof typeValue === "string" ? ENHANCED_TYPE_COLORS[typeValue] : undefined;
+	return out ?? ENHANCED_TYPE_COLORS["default"];
 };
 
 const drawNodeBase = (
@@ -243,7 +239,7 @@ const customNodeRenderer = (
 	settings: Record<string, unknown>,
 ): void => {
 	const { x, y, size, label, type } = data;
-	const extra: Record<string, unknown> = data;
+	const extra = data as unknown as Record<string, unknown>;
 	const zoomRatio = getZoomRatio(settings);
 	const typeColor = getTypeColor(type);
 
@@ -256,9 +252,8 @@ const customNodeRenderer = (
 	}
 
 	if (zoomRatio > ZOOM_ICON_THRESHOLD) {
-		const icon =
-			ICONS[typeof type === "string" ? type : "default"] ??
-			ICONS["default"];
+		const iconKey = typeof type === "string" ? type : "default";
+		const icon = ICONS[iconKey] ?? ICONS["default"];
 		drawNodeIcon(context, x, y, size, typeColor, icon);
 	}
 
@@ -280,7 +275,7 @@ const customEdgeRenderer = (
 	data: EdgeDisplayData,
 	settings: Record<string, unknown>,
 ): void => {
-	const extra: Record<string, unknown> = data;
+	const extra = data as unknown as Record<string, unknown>;
 	const x1 = readNumber(extra, "x1");
 	const y1 = readNumber(extra, "y1");
 	const x2 = readNumber(extra, "x2");

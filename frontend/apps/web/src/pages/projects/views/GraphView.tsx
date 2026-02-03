@@ -8,7 +8,7 @@ import { Badge } from "@tracertm/ui/components/Badge";
 import { Skeleton } from "@tracertm/ui/components/Skeleton";
 import { useEffect } from "react";
 import { UnifiedGraphView } from "@/components/graph";
-import client from "@/api/client";
+import { client } from "@/api/client";
 
 const { getAuthHeaders, getBackendURL } = client;
 

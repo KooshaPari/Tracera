@@ -98,13 +98,17 @@ class AgentService:
         last_message = messages[-1]
         if last_message.get("role") != "user":
             return
+        payload = ChatMessagePayload(
+            role="user",
+            content=str(last_message.get("content", "")),
+            turn_number=len(messages) // 2,
+            metadata=None,
+        )
         try:
             await self._event_publisher.publish_chat_message(
                 session_id=session_id,
                 project_id=project_id,
-                role="user",
-                content=str(last_message.get("content", "")),
-                turn_number=len(messages) // 2,
+                payload=payload,
             )
         except Exception as e:
             logger.debug("Failed to publish chat message event: %s", e)

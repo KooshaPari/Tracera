@@ -6,6 +6,7 @@ import type {
 	LinkType,
 	PerspectiveType,
 } from "@tracertm/types";
+import { DEFAULT_PERSPECTIVES } from "@tracertm/types";
 
 // Re-export PerspectiveType from canonical types for backward compatibility
 export type GraphPerspective = PerspectiveType;
@@ -122,8 +123,6 @@ export interface PerspectiveConfig {
 
 // Build PERSPECTIVE_CONFIGS from canonical DEFAULT_PERSPECTIVES
 // Maps perspectiveType -> id for backward compatibility
-import { DEFAULT_PERSPECTIVES } from "@tracertm/types";
-
 export const PERSPECTIVE_CONFIGS: PerspectiveConfig[] =
 	DEFAULT_PERSPECTIVES.map((config) => ({
 		color: config.color,

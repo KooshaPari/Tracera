@@ -44,7 +44,7 @@ interface ProblemViewProps {
 	projectId: string;
 }
 
-export function ProblemView({ projectId }: ProblemViewProps) {
+export const ProblemView = ({ projectId }: ProblemViewProps) => {
 	const [showCreateModal, setShowCreateModal] = useState(false);
 	const [statusFilter, setStatusFilter] = useState<ProblemStatus | "">("");
 	const [priorityFilter, setPriorityFilter] = useState<ImpactLevel | "">("");
@@ -66,6 +66,18 @@ export function ProblemView({ projectId }: ProblemViewProps) {
 
 	const handleCreateSuccess = () => {
 		setShowCreateModal(false);
+	};
+
+	const handleStatusFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+		setStatusFilter(e.target.value as ProblemStatus | "");
+	};
+
+	const handlePriorityFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+		setPriorityFilter(e.target.value as ImpactLevel | "");
+	};
+
+	const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		setSearchQuery(e.target.value);
 	};
 
 	if (error) {
@@ -145,7 +157,7 @@ export function ProblemView({ projectId }: ProblemViewProps) {
 						type="text"
 						placeholder="Search problems..."
 						value={searchQuery}
-						onChange={(e) => setSearchQuery(e.target.value)}
+						onChange={handleSearchChange}
 						className="w-full rounded-lg border bg-background pl-10 pr-4 py-2"
 					/>
 				</div>
@@ -153,9 +165,7 @@ export function ProblemView({ projectId }: ProblemViewProps) {
 					<Filter className="h-4 w-4 text-muted-foreground" />
 					<select
 						value={statusFilter}
-						onChange={(e) =>
-							setStatusFilter(e.target.value as ProblemStatus | "")
-						}
+						onChange={handleStatusFilterChange}
 						className="rounded-lg border bg-background px-3 py-2"
 					>
 						<option value="">All Statuses</option>
@@ -168,9 +178,7 @@ export function ProblemView({ projectId }: ProblemViewProps) {
 					</select>
 					<select
 						value={priorityFilter}
-						onChange={(e) =>
-							setPriorityFilter(e.target.value as ImpactLevel | "")
-						}
+						onChange={handlePriorityFilterChange}
 						className="rounded-lg border bg-background px-3 py-2"
 					>
 						<option value="">All Priorities</option>
@@ -254,7 +262,7 @@ export function ProblemView({ projectId }: ProblemViewProps) {
 			)}
 		</div>
 	);
-}
+};
 
 function ProblemRow({ problem }: { problem: Problem }) {
 	const createdDate = problem.createdAt

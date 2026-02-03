@@ -2,12 +2,12 @@
  * Streaming API client for large data transfers using NDJSON
  */
 
-import type { NDJSONMetadata, StreamingStats } from "../lib/ndjson-parser";
-import type { Item } from "./types";
 import {
 	createCancellableNDJSONStream,
 	parseNDJSONWithProgress,
 } from "../lib/ndjson-parser";
+import type { NDJSONMetadata, StreamingStats } from "../lib/ndjson-parser";
+import type { Item } from "./types";
 
 const API_BASE = "/api/v1";
 const DEFAULT_BATCH_SIZE = 50;

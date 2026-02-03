@@ -1,6 +1,6 @@
 // Complete API Client for TraceRTM Backend
 /* oxlint-disable import/no-named-export, import/group-exports, import/max-dependencies, eslint/arrow-body-style, eslint/require-await, eslint/new-cap, eslint/no-ternary, eslint/sort-keys, eslint/sort-imports, eslint/id-length, eslint/max-lines, typescript-eslint/array-type, typescript-eslint/explicit-function-return-type, typescript-eslint/explicit-module-boundary-types, oxc/no-async-await */
-import client from "./client";
+import { client } from "./client";
 import type {
 	CreateItemInput,
 	CreateLinkInput,

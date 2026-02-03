@@ -1,4 +1,3 @@
-/* eslint-disable promise/prefer-await-to-then */
 import { logger } from "@/lib/logger";
 import { extractCSRFTokenFromResponse, handleCSRFError } from "../lib/csrf";
 import { useConnectionStatusStore } from "../stores/connection-status-store";
@@ -62,38 +61,36 @@ const parseRateLimitBody = async (
 	return { detail, retry_after: retryAfter };
 };
 
-const showToast = (
+const showToast = async (
 	title: string,
 	description: string,
 	action?: ToastAction,
 ): Promise<boolean> => {
 	if (!globalThis.window) {
-		return Promise.resolve(false);
+		return false;
 	}
 
-	return import("sonner").then(({ toast }) => {
-		const toastOptions: ToastOptions = { description };
-		if (action) {
-			toastOptions.action = action;
-		}
-		toast.error(title, toastOptions);
-		return true;
-	});
+	const { toast } = await import("sonner");
+	const toastOptions: ToastOptions = { description };
+	if (action) {
+		toastOptions.action = action;
+	}
+	toast.error(title, toastOptions);
+	return true;
 };
 
-const handleCsrf = (response: Response): Promise<boolean> => {
+const handleCsrf = async (response: Response): Promise<boolean> => {
 	if (response.status !== apiConstants.statusForbidden) {
-		return Promise.resolve(false);
+		return false;
 	}
 
-	return handleCSRFError(response.clone()).then((wasCsrfError) => {
-		if (wasCsrfError) {
-			logger.warn(
-				"[API Client] CSRF token was refreshed, request may need to be retried",
-			);
-		}
-		return wasCsrfError;
-	});
+	const wasCsrfError = await handleCSRFError(response.clone());
+	if (wasCsrfError) {
+		logger.warn(
+			"[API Client] CSRF token was refreshed, request may need to be retried",
+		);
+	}
+	return wasCsrfError;
 };
 
 const showIntegrationAuthToast = (detail: string): Promise<boolean> =>
@@ -119,32 +116,31 @@ const isUnauthorizedResponse = (response: Response): boolean =>
 const isLoginFailureResponse = (response: Response): boolean =>
 	response.url.includes(apiConstants.authLoginPath);
 
-const handleUnauthorizedBody = (
+const handleUnauthorizedBody = async (
 	response: Response,
 	handleLogout: () => void,
 ): Promise<boolean> => {
-	return parseIntegrationAuthBody(response).then((body) => {
-		const detail = getIntegrationAuthDetail(body);
-		if (detail) {
-			return showIntegrationAuthToast(detail);
-		}
-		logger.warn("[Auth] Session expired or invalid - redirecting to login");
-		handleLogout();
-		return true;
-	});
+	const body = await parseIntegrationAuthBody(response);
+	const detail = getIntegrationAuthDetail(body);
+	if (detail) {
+		return showIntegrationAuthToast(detail);
+	}
+	logger.warn("[Auth] Session expired or invalid - redirecting to login");
+	handleLogout();
+	return true;
 };
 
-const handleUnauthorized = (
+const handleUnauthorized = async (
 	response: Response,
 	handleLogout: () => void,
 ): Promise<boolean> => {
 	if (!isUnauthorizedResponse(response)) {
-		return Promise.resolve(false);
+		return false;
 	}
 	if (isLoginFailureResponse(response)) {
-		return Promise.resolve(true);
+		return true;
 	}
-	return handleUnauthorizedBody(response, handleLogout);
+	return await handleUnauthorizedBody(response, handleLogout);
 };
 
 const buildRateLimitMessage = (seconds: number): string => {
@@ -169,80 +165,78 @@ const buildRateLimitDetail = (seconds: number, body: RateLimitBody): string => {
 	return body.detail ?? message;
 };
 
-const handleRateLimited = (response: Response): Promise<boolean> => {
+const handleRateLimited = async (response: Response): Promise<boolean> => {
 	if (response.status !== apiConstants.statusRateLimited) {
-		return Promise.resolve(false);
+		return false;
 	}
-	return parseRateLimitBody(response).then((body) => {
-		const retryAfterHeader =
-			response.headers.get(apiConstants.retryAfterHeader) ?? "";
-		const seconds = resolveRateLimitSeconds(retryAfterHeader, body);
-		const detail = buildRateLimitDetail(seconds, body);
-		return showToast("Rate limited", detail).then(() => true);
-	});
+	const body = await parseRateLimitBody(response);
+	const retryAfterHeader =
+		response.headers.get(apiConstants.retryAfterHeader) ?? "";
+	const seconds = resolveRateLimitSeconds(retryAfterHeader, body);
+	const detail = buildRateLimitDetail(seconds, body);
+	await showToast("Rate limited", detail);
+	return true;
 };
 
-const handleForbidden = (
+const handleForbidden = async (
 	response: Response,
 	wasCsrfError: boolean,
 ): Promise<boolean> => {
 	if (response.status === apiConstants.statusForbidden && !wasCsrfError) {
-		return showToast(
+		await showToast(
 			"Access denied",
 			"You don't have permission for this action.",
-		).then(() => true);
+		);
+		return true;
 	}
-	return Promise.resolve(false);
+	return false;
 };
 
-const handleNotFound = (response: Response): Promise<boolean> => {
+const handleNotFound = async (response: Response): Promise<boolean> => {
 	if (response.status !== apiConstants.statusNotFound) {
-		return Promise.resolve(false);
-	}
-	return parseIntegrationAuthBody(response).then((body) => {
-		if (body.code === "integration_not_found") {
-			const detail = body.detail ?? "The requested item was not found.";
-			return showToast("Resource not found", detail);
-		}
 		return false;
-	});
+	}
+	const body = await parseIntegrationAuthBody(response);
+	if (body.code === "integration_not_found") {
+		const detail = body.detail ?? "The requested item was not found.";
+		return await showToast("Resource not found", detail);
+	}
+	return false;
 };
 
-const handleServerError = (response: Response): Promise<boolean> => {
+const handleServerError = async (response: Response): Promise<boolean> => {
 	if (response.status < apiConstants.statusServerError) {
-		return Promise.resolve(false);
+		return false;
 	}
 	const message = `Backend error ${response.status}`;
 	useConnectionStatusStore.getState().setLost(message);
-	return showToast(
+	await showToast(
 		"Server error",
 		"Connection issue. We'll retry; check back in a moment.",
-	).then(() => true);
+	);
+	return true;
 };
 
-const handleNonCsrfResponses = (
+const handleNonCsrfResponses = async (
 	response: Response,
 	wasCsrfError: boolean,
 	handleLogout: () => void,
 ): Promise<void> => {
-	return handleUnauthorized(response, handleLogout)
-		.then(() => handleRateLimited(response))
-		.then(() => handleForbidden(response, wasCsrfError))
-		.then(() => handleNotFound(response))
-		.then(() => handleServerError(response))
-		.then(() => undefined);
+	await handleUnauthorized(response, handleLogout);
+	await handleRateLimited(response);
+	await handleForbidden(response, wasCsrfError);
+	await handleNotFound(response);
+	await handleServerError(response);
 };
 
-const handleResponse = (
+const handleResponse = async (
 	response: Response,
 	handleLogout: () => void,
 ): Promise<Response> => {
 	extractCSRFTokenFromResponse(response);
-	return handleCsrf(response).then((wasCsrfError) =>
-		handleNonCsrfResponses(response, wasCsrfError, handleLogout).then(
-			() => response,
-		),
-	);
+	const wasCsrfError = await handleCsrf(response);
+	await handleNonCsrfResponses(response, wasCsrfError, handleLogout);
+	return response;
 };
 
 const responseHandlers = {

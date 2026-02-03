@@ -260,14 +260,14 @@ export function RICEScoreBadge({
 	size = "md",
 	className,
 }: RICEScoreBadgeProps) {
-	const color =
-		score >= 1000
-			? "bg-green-100 text-green-700 border-green-300"
-			: score >= 500
-				? "bg-blue-100 text-blue-700 border-blue-300"
-				: score >= 100
-					? "bg-yellow-100 text-yellow-700 border-yellow-300"
-					: "bg-gray-100 text-gray-700 border-gray-300";
+	let color = "bg-gray-100 text-gray-700 border-gray-300";
+	if (score >= 1000) {
+		color = "bg-green-100 text-green-700 border-green-300";
+	} else if (score >= 500) {
+		color = "bg-blue-100 text-blue-700 border-blue-300";
+	} else if (score >= 100) {
+		color = "bg-yellow-100 text-yellow-700 border-yellow-300";
+	}
 
 	const sizeClass = {
 		lg: "text-base px-3 py-1.5",

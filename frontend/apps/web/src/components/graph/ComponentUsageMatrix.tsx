@@ -22,21 +22,6 @@ import type {
 	ComponentUsage,
 	LibraryComponent,
 } from "@tracertm/types";
-import {
-	AlertCircle,
-	BarChart3,
-	ChevronDown,
-	Code2,
-	Component,
-	ExternalLink,
-	Grid3x3,
-	Layers,
-	Package,
-	Search,
-	Square,
-	TrendingUp,
-	Zap,
-} from "lucide-react";
 import { Badge } from "@tracertm/ui/components/Badge";
 import { Button } from "@tracertm/ui/components/Button";
 import {

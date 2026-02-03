@@ -32,8 +32,7 @@ import {
 
 // Mock the API client
 vi.mock("@/api/client", () => ({
-	__esModule: true,
-	default: {
+	client: {
 		apiClient: {
 			DELETE: vi.fn(),
 			GET: vi.fn(),
@@ -44,7 +43,7 @@ vi.mock("@/api/client", () => ({
 	},
 }));
 
-import client from "@/api/client";
+import { client } from "@/api/client";
 import { mockItems, mockLinks, mockProjects } from "../mocks/data";
 
 const { handleApiResponse } = client;

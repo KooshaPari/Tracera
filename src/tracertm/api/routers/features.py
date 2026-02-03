@@ -1,7 +1,8 @@
+from typing import Any
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from typing import Any
 from tracertm.api.deps import auth_guard, get_db
 from tracertm.repositories.event_repository import EventRepository
 from tracertm.schemas.specification import (

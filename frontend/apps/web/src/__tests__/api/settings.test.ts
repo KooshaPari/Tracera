@@ -8,8 +8,7 @@ import { fetchSettings, updateSettings } from "@/api/settings";
 
 // Mock the API client
 vi.mock("@/api/client", () => ({
-	__esModule: true,
-	default: {
+	client: {
 		apiClient: {
 			GET: vi.fn(),
 			PUT: vi.fn(),
@@ -18,7 +17,7 @@ vi.mock("@/api/client", () => ({
 	},
 }));
 
-import client from "@/api/client";
+import { client } from "@/api/client";
 
 const { apiClient, safeApiCall } = client;
 

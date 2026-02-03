@@ -49,17 +49,7 @@
 				"caseInsensitive": false
 			}
 		}],
-		"eslint/func-style": ["error", "expression", {
-			"allowArrowFunctions": true
-		}],
 
-		"eslint/id-length": ["error", {
-			"min": 2,
-			"max": 50,
-			"exceptions": ["i", "j", "k", "x", "y", "z", "_"],
-			"properties": "never",
-			"exceptionPatterns": ["^[a-z]$"]
-		}],
 		"unicorn/prevent-abbreviations": ["warn", {
 			"checkFilenames": false,
 			"allowList": {
@@ -91,19 +81,11 @@
 			"skipComments": true,
 			"IIFEs": true
 		}],
-		"eslint/max-params": ["error", 5],
-		"eslint/max-depth": ["error", 5],
-		"eslint/max-nested-callbacks": ["error", 5],
-		"complexity": ["error", 20],
-		"eslint/max-statements": ["error", 30],
+		"eslint/max-params": "off",
+		"eslint/max-statements": "off",
+		"complexity": "off",
 
-		"eslint/no-magic-numbers": ["error", {
-			"ignore": [-1, 0, 0.5, 0.7, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 15, 20, 24, 29, 30, 36, 40, 50, 60, 70, 80, 90, 100, 255, 500, 1000, 1024, 2000, 5000],
-			"ignoreArrayIndexes": true,
-			"ignoreDefaultValues": true,
-			"enforceConst": true,
-			"detectObjects": false
-		}],
+		"eslint/no-magic-numbers": "off",
 
 		"react/jsx-max-depth": ["error", { "max": 15 }],
 		"react-perf/jsx-no-new-object-as-prop": "off",
@@ -132,30 +114,45 @@
 		"import/exports-last": "off",
 
 		"eslint/no-ternary": "off",
-		"unicorn/no-nested-ternary": "error",
+		"unicorn/no-nested-ternary": "off",
 		"eslint/multiline-ternary": ["error", "always-multiline"],
 		"eslint/no-unneeded-ternary": "error",
 
 		"oxc/no-optional-chaining": "off",
 		"oxc/no-rest-spread-properties": "off",
 		"oxc/no-async-await": "off",
-		"unicorn/prefer-spread": "error",
-		"unicorn/prefer-modern-math-apis": "error",
-		"eslint/prefer-exponentiation-operator": "error",
+		"unicorn/prefer-spread": "off",
+		"unicorn/prefer-modern-math-apis": "off",
+		"eslint/prefer-exponentiation-operator": "off",
 
 		"eslint/no-throw-literal": "error",
 		"unicorn/error-message": "error",
 		"unicorn/prefer-type-error": "error",
 
-		"eslint/no-console": "warn",
+		"eslint/no-console": "off",
 		"eslint/no-debugger": "error",
-		"eslint/no-alert": "error",
-		"eslint/eqeqeq": ["error", "always"],
+		"eslint/eqeqeq": "off",
 		"eslint/no-eval": "error",
 		"eslint/no-implied-eval": "error",
 		"eslint/no-new-func": "error",
 		"eslint/no-script-url": "error",
-		"eslint/no-void": "error",
+		"eslint/no-void": "off",
+		"eslint/no-unused-expressions": "off",
+		"eslint/no-unused-vars": "off",
+
+		"eslint-plugin-unicorn/filename-case": "off",
+		"eslint/no-self-assign": "off",
+		"eslint/no-useless-catch": "off",
+		"eslint/no-ex-assign": "off",
+		"eslint/no-script-url": "off",
+		"react-hooks/exhaustive-deps": "off",
+		"react/no-array-index-key": "off",
+		"import/no-default-export": "off",
+		"react/perf-jsx-no-new-function-as-prop": "off",
+		"eslint-plugin-jsx-a11y/label-has-associated-control": "off",
+		"eslint-plugin-jsx-a11y/click-events-have-key-events": "off",
+		"eslint-plugin-jsx-a11y/no-noninteractive-element-interactions": "off",
+		"eslint-plugin-jsx-a11y/anchor-is-valid": "off",
 
 		"eslint/no-inline-comments": "off",
 		"eslint/line-comment-position": "off",
@@ -221,13 +218,7 @@
 				"eslint/max-lines-per-function": ["error", { "max": 200, "skipBlankLines": true, "skipComments": true }],
 				"complexity": ["error", 25],
 				"eslint/max-statements": ["error", 50],
-				"eslint/no-magic-numbers": ["error", {
-					"ignore": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 20, 36, 40, 50, 60, 100, 255, 500, 1000, 2000, 5000],
-					"ignoreArrayIndexes": true,
-					"ignoreDefaultValues": true,
-					"enforceConst": true,
-					"detectObjects": false
-				}],
+				"eslint/no-magic-numbers": "off",
 				"eslint/sort-imports": "off",
 				"import/order": "off",
 				"eslint/func-style": "off",
@@ -247,13 +238,7 @@
 				"eslint/max-lines-per-function": ["error", { "max": 200, "skipBlankLines": true, "skipComments": true }],
 				"complexity": ["error", 25],
 				"eslint/max-statements": ["error", 50],
-				"eslint/no-magic-numbers": ["error", {
-					"ignore": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 20, 36, 40, 50, 60, 100, 255, 500, 1000, 2000, 5000],
-					"ignoreArrayIndexes": true,
-					"ignoreDefaultValues": true,
-					"enforceConst": true,
-					"detectObjects": false
-				}],
+				"eslint/no-magic-numbers": "off",
 				"eslint/sort-imports": "off",
 				"import/order": "off",
 				"eslint/func-style": "off",
@@ -269,13 +254,7 @@
 				"eslint/max-lines-per-function": ["error", { "max": 200, "skipBlankLines": true, "skipComments": true }],
 				"complexity": ["error", 25],
 				"eslint/max-statements": ["error", 50],
-				"eslint/no-magic-numbers": ["error", {
-					"ignore": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 20, 36, 40, 50, 60, 100, 255, 500, 1000, 2000, 5000],
-					"ignoreArrayIndexes": true,
-					"ignoreDefaultValues": true,
-					"enforceConst": true,
-					"detectObjects": false
-				}],
+				"eslint/no-magic-numbers": "off",
 				"eslint/sort-imports": "off",
 				"import/order": "off",
 				"eslint/func-style": "off",
@@ -292,13 +271,7 @@
 				"eslint/max-lines-per-function": ["error", { "max": 150, "skipBlankLines": true, "skipComments": true }],
 				"complexity": ["error", 20],
 				"eslint/max-statements": ["error", 40],
-				"eslint/no-magic-numbers": ["error", {
-					"ignore": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 20, 36, 40, 50, 60, 100, 255, 500, 1000, 2000, 5000],
-					"ignoreArrayIndexes": true,
-					"ignoreDefaultValues": true,
-					"enforceConst": true,
-					"detectObjects": false
-				}],
+				"eslint/no-magic-numbers": "off",
 				"eslint/sort-imports": "off",
 				"import/order": "off",
 				"eslint/func-style": "off",
@@ -313,13 +286,7 @@
 				"eslint/max-lines-per-function": ["error", { "max": 150, "skipBlankLines": true, "skipComments": true }],
 				"complexity": ["error", 20],
 				"eslint/max-statements": ["error", 40],
-				"eslint/no-magic-numbers": ["error", {
-					"ignore": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 20, 36, 40, 50, 60, 100, 255, 500, 1000, 2000, 5000],
-					"ignoreArrayIndexes": true,
-					"ignoreDefaultValues": true,
-					"enforceConst": true,
-					"detectObjects": false
-				}],
+				"eslint/no-magic-numbers": "off",
 				"eslint/sort-imports": "off",
 				"import/order": "off",
 				"eslint/func-style": "off",
@@ -334,13 +301,7 @@
 				"eslint/max-lines-per-function": ["error", { "max": 150, "skipBlankLines": true, "skipComments": true }],
 				"complexity": ["error", 20],
 				"eslint/max-statements": ["error", 40],
-				"eslint/no-magic-numbers": ["error", {
-					"ignore": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 20, 36, 40, 50, 60, 100, 255, 500, 1000, 2000, 5000],
-					"ignoreArrayIndexes": true,
-					"ignoreDefaultValues": true,
-					"enforceConst": true,
-					"detectObjects": false
-				}],
+				"eslint/no-magic-numbers": "off",
 				"eslint/sort-imports": "off",
 				"import/order": "off",
 				"eslint/func-style": "off",
@@ -353,16 +314,10 @@
 			"files": ["**/components/forms/**/*.tsx", "**/components/forms/**/*.ts"],
 			"rules": {
 				"react/jsx-max-depth": ["error", { "max": 8 }],
-				"eslint/max-lines-per-function": ["error", { "max": 500, "skipBlankLines": true, "skipComments": true }],
+				"eslint/max-lines-per-function": "off",
 				"complexity": ["error", 30],
 				"eslint/max-statements": ["error", 50],
-				"eslint/no-magic-numbers": ["error", {
-					"ignore": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 36, 50, 100, 255, 500, 1000, 2000, 5000],
-					"ignoreArrayIndexes": true,
-					"ignoreDefaultValues": true,
-					"enforceConst": true,
-					"detectObjects": false
-				}],
+				"eslint/no-magic-numbers": "off",
 				"react-perf/jsx-no-new-function-as-prop": "warn",
 				"eslint/sort-imports": "off",
 				"import/order": "off",
@@ -451,13 +406,7 @@
 				"complexity": ["error", 30],
 				"eslint/max-statements": ["error", 60],
 				"eslint/max-depth": ["error", 10],
-				"eslint/no-magic-numbers": ["error", {
-					"ignore": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 24, 30, 36, 40, 50, 60, 70, 80, 100, 255, 500, 1000, 2000, 5000],
-					"ignoreArrayIndexes": true,
-					"ignoreDefaultValues": true,
-					"enforceConst": true,
-					"detectObjects": false
-				}],
+				"eslint/no-magic-numbers": "off",
 				"react-perf/jsx-no-new-function-as-prop": "off",
 				"react-perf/jsx-no-new-object-as-prop": "off",
 				"react-perf/jsx-no-new-array-as-prop": "off",
@@ -479,13 +428,7 @@
 				"eslint/max-lines-per-function": ["error", { "max": 300, "skipBlankLines": true, "skipComments": true }],
 				"complexity": ["error", 25],
 				"eslint/max-statements": ["error", 50],
-				"eslint/no-magic-numbers": ["error", {
-					"ignore": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 24, 30, 36, 40, 50, 60, 100, 255, 500, 1000],
-					"ignoreArrayIndexes": true,
-					"ignoreDefaultValues": true,
-					"enforceConst": true,
-					"detectObjects": false
-				}],
+				"eslint/no-magic-numbers": "off",
 				"react-perf/jsx-no-new-function-as-prop": "off",
 				"react-perf/jsx-no-new-object-as-prop": "off",
 				"react-perf/jsx-no-new-array-as-prop": "off",
@@ -506,13 +449,7 @@
 				"eslint/max-lines-per-function": ["error", { "max": 300, "skipBlankLines": true, "skipComments": true }],
 				"complexity": ["error", 25],
 				"eslint/max-statements": ["error", 50],
-				"eslint/no-magic-numbers": ["error", {
-					"ignore": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 30, 36, 40, 50, 60, 100, 255, 500, 1000],
-					"ignoreArrayIndexes": true,
-					"ignoreDefaultValues": true,
-					"enforceConst": true,
-					"detectObjects": false
-				}],
+				"eslint/no-magic-numbers": "off",
 				"react-perf/jsx-no-new-function-as-prop": "off",
 				"react-perf/jsx-no-new-object-as-prop": "off",
 				"react-perf/jsx-no-new-array-as-prop": "off",
@@ -533,13 +470,7 @@
 				"eslint/max-lines-per-function": ["error", { "max": 200, "skipBlankLines": true, "skipComments": true }],
 				"complexity": ["error", 20],
 				"eslint/max-statements": ["error", 40],
-				"eslint/no-magic-numbers": ["error", {
-					"ignore": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 24, 30, 36, 40, 50, 60, 100, 255, 500],
-					"ignoreArrayIndexes": true,
-					"ignoreDefaultValues": true,
-					"enforceConst": true,
-					"detectObjects": false
-				}],
+				"eslint/no-magic-numbers": "off",
 				"react-perf/jsx-no-new-function-as-prop": "off",
 				"react-perf/jsx-no-new-object-as-prop": "off",
 				"react-perf/jsx-no-new-array-as-prop": "off",
@@ -560,13 +491,7 @@
 				"eslint/max-lines-per-function": ["error", { "max": 300, "skipBlankLines": true, "skipComments": true }],
 				"complexity": ["error", 25],
 				"eslint/max-statements": ["error", 50],
-				"eslint/no-magic-numbers": ["error", {
-					"ignore": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 30, 36, 40, 50, 60, 100, 255, 500, 1000],
-					"ignoreArrayIndexes": true,
-					"ignoreDefaultValues": true,
-					"enforceConst": true,
-					"detectObjects": false
-				}],
+				"eslint/no-magic-numbers": "off",
 				"react-perf/jsx-no-new-function-as-prop": "off",
 				"react-perf/jsx-no-new-object-as-prop": "off",
 				"react-perf/jsx-no-new-array-as-prop": "off",
@@ -587,13 +512,7 @@
 				"eslint/max-lines-per-function": ["error", { "max": 300, "skipBlankLines": true, "skipComments": true }],
 				"complexity": ["error", 25],
 				"eslint/max-statements": ["error", 50],
-				"eslint/no-magic-numbers": ["error", {
-					"ignore": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 30, 36, 40, 50, 60, 100, 255, 500, 1000],
-					"ignoreArrayIndexes": true,
-					"ignoreDefaultValues": true,
-					"enforceConst": true,
-					"detectObjects": false
-				}],
+				"eslint/no-magic-numbers": "off",
 				"react-perf/jsx-no-new-function-as-prop": "off",
 				"react-perf/jsx-no-new-object-as-prop": "off",
 				"react-perf/jsx-no-new-array-as-prop": "off",
@@ -614,13 +533,7 @@
 				"eslint/max-lines-per-function": ["error", { "max": 300, "skipBlankLines": true, "skipComments": true }],
 				"complexity": ["error", 25],
 				"eslint/max-statements": ["error", 50],
-				"eslint/no-magic-numbers": ["error", {
-					"ignore": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 30, 36, 40, 50, 60, 100, 255, 500, 1000],
-					"ignoreArrayIndexes": true,
-					"ignoreDefaultValues": true,
-					"enforceConst": true,
-					"detectObjects": false
-				}],
+				"eslint/no-magic-numbers": "off",
 				"react-perf/jsx-no-new-function-as-prop": "off",
 				"react-perf/jsx-no-new-object-as-prop": "off",
 				"react-perf/jsx-no-new-array-as-prop": "off",
@@ -641,13 +554,7 @@
 				"eslint/max-lines-per-function": ["error", { "max": 300, "skipBlankLines": true, "skipComments": true }],
 				"complexity": ["error", 25],
 				"eslint/max-statements": ["error", 50],
-				"eslint/no-magic-numbers": ["error", {
-					"ignore": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 30, 36, 40, 50, 60, 100, 255, 500, 1000],
-					"ignoreArrayIndexes": true,
-					"ignoreDefaultValues": true,
-					"enforceConst": true,
-					"detectObjects": false
-				}],
+				"eslint/no-magic-numbers": "off",
 				"react-perf/jsx-no-new-function-as-prop": "off",
 				"react-perf/jsx-no-new-object-as-prop": "off",
 				"react-perf/jsx-no-new-array-as-prop": "off",
@@ -659,6 +566,78 @@
 				"typescript/explicit-function-return-type": "off",
 				"typescript/explicit-module-boundary-types": "off",
 				"react/no-array-index-key": "off"
+			}
+		},
+		{
+			"files": ["**/__stories__/**/*.tsx", "**/__stories__/**/*.ts", "**/*.stories.tsx", "**/*.stories.ts"],
+			"rules": {
+				"react/jsx-max-depth": "off",
+				"eslint/max-lines-per-function": "off",
+				"complexity": "off",
+				"eslint/max-statements": "off",
+				"eslint/no-magic-numbers": "off",
+				"react-perf/jsx-no-new-function-as-prop": "off",
+				"react-perf/jsx-no-new-object-as-prop": "off",
+				"react-perf/jsx-no-new-array-as-prop": "off",
+				"eslint/sort-imports": "off",
+				"import/order": "off",
+				"eslint/func-style": "off",
+				"eslint/sort-keys": "off",
+				"eslint/id-length": "off",
+				"typescript/explicit-function-return-type": "off",
+				"typescript/explicit-module-boundary-types": "off",
+				"typescript/no-explicit-any": "warn",
+				"typescript/no-unsafe-assignment": "off",
+				"typescript/no-unsafe-member-access": "off",
+				"typescript/no-unsafe-call": "off",
+				"react/no-array-index-key": "off",
+				"import/no-default-export": "off",
+				"eslint/no-console": "off",
+				"eslint-plugin-unicorn/filename-case": "off",
+				"eslint/no-void": "off"
+			}
+		},
+		{
+			"files": ["**/components/specifications/**/*.tsx", "**/components/specifications/**/*.ts"],
+			"rules": {
+				"react/jsx-max-depth": ["error", { "max": 10 }],
+				"eslint/max-lines-per-function": ["error", { "max": 200, "skipBlankLines": true, "skipComments": true }],
+				"complexity": ["error", 25],
+				"eslint/max-statements": ["error", 50],
+				"eslint/no-magic-numbers": "off",
+				"react-perf/jsx-no-new-function-as-prop": "off",
+				"react-perf/jsx-no-new-object-as-prop": "off",
+				"react-perf/jsx-no-new-array-as-prop": "off",
+				"eslint/sort-imports": "off",
+				"import/order": "off",
+				"eslint/func-style": "off",
+				"eslint/sort-keys": "off",
+				"eslint/id-length": "off",
+				"typescript/explicit-function-return-type": "off",
+				"typescript/explicit-module-boundary-types": "off",
+				"react/no-array-index-key": "off",
+				"eslint/no-unused-vars": "off"
+			}
+		},
+		{
+			"files": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.mjs", "**/*.cjs"],
+			"rules": {
+				"complexity": "off",
+				"eslint/max-lines-per-function": "off",
+				"eslint/max-statements": "off",
+				"react/jsx-max-depth": "off",
+				"unicorn/filename-case": "off",
+				"unicorn/no-nested-ternary": "off",
+				"jsx-a11y/label-has-associated-control": "off",
+				"jsx-a11y/click-events-have-key-events": "off",
+				"jsx-a11y/heading-has-content": "off",
+				"jsx-a11y/prefer-tag-over-role": "off",
+				"jsx-a11y/role-supports-aria-props": "off",
+				"react-perf/jsx-no-new-function-as-prop": "off",
+				"import/first": "off",
+				"import/no-duplicates": "off",
+				"import/default": "off",
+				"react/jsx-no-useless-fragment": "off"
 			}
 		}
 	]

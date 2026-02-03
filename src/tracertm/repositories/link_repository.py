@@ -1,12 +1,12 @@
 """Link repository for TraceRTM."""
 
 import uuid
+from typing import Any
 from uuid import uuid4
 
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from typing import Any
 from tracertm.models.link import Link
 
 

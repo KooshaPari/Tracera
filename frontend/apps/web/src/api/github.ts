@@ -1,10 +1,9 @@
-/* eslint-disable oxc/no-async-await */
 /**
  * GitHub API client functions.
  * Sends Bearer token via getAuthHeaders() for backend auth.
  */
 
-import client from "@/api/client";
+import { client } from "@/api/client";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 

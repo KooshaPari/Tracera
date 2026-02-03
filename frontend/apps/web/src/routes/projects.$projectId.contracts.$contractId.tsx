@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ContractDetailView } from "@/views/ContractDetailView";
 import { requireAuth } from "@/lib/route-guards";
+import { ContractDetailView } from "@/views/ContractDetailView";
 
 export const Route = createFileRoute(
 	"/projects/$projectId/contracts/$contractId" as any,
@@ -9,7 +9,7 @@ export const Route = createFileRoute(
 	component: ContractDetailPage,
 });
 
-function ContractDetailPage() {
+const ContractDetailPage = () => {
 	// ContractDetailView uses useParams internally
 	return <ContractDetailView />;
-}
+};

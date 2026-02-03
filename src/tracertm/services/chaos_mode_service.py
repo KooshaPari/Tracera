@@ -10,6 +10,10 @@ from tracertm.repositories.event_repository import EventRepository
 from tracertm.repositories.item_repository import ItemRepository
 from tracertm.repositories.link_repository import LinkRepository
 
+MIN_LINE_LEN_FOR_ITEM = 10
+HEADER_LEVEL_PARENT_1 = 1
+HEADER_LEVEL_PARENT_2 = 2
+
 
 class ChaosModeService:
     """Service for advanced chaos mode features."""
@@ -283,8 +287,8 @@ class ChaosModeService:
                     )
                     items_created += 1
 
-                    # Set as parent for next level
-                    if level == 1 or level == 2:
+                    # Set as parent for next level (header levels that become parents)
+                    if level in (HEADER_LEVEL_PARENT_1, HEADER_LEVEL_PARENT_2):
                         current_parent = item.id
 
             # YAML list items (- Item)
@@ -302,7 +306,7 @@ class ChaosModeService:
                     items_created += 1
 
             # Plain text lines (treat as items)
-            elif len(line) > 10:  # Only create items for substantial lines
+            elif len(line) > MIN_LINE_LEN_FOR_ITEM:
                 await self.items.create(
                     project_id=project_id,
                     title=line[:100],  # Truncate long lines

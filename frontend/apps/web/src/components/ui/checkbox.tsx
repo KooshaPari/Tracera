@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useCallback } from "react";
 import { cn } from "@/lib/utils";
 
 export interface CheckboxProps
@@ -9,15 +10,13 @@ export interface CheckboxProps
 
 const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
 	({ className, onCheckedChange, onChange, ...props }, ref) => {
-		const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-			if (onCheckedChange) {
-				onCheckedChange(e.currentTarget.checked);
-			}
-			// Also call the original onChange if provided
-			if (onChange) {
-				onChange(e);
-			}
-		};
+		const handleChange = useCallback(
+			(e: React.ChangeEvent<HTMLInputElement>) => {
+				onCheckedChange?.(e.currentTarget.checked);
+				onChange?.(e);
+			},
+			[onCheckedChange, onChange],
+		);
 
 		return (
 			<input

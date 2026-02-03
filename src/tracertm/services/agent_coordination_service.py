@@ -11,6 +11,8 @@ from tracertm.models.agent import Agent
 from tracertm.repositories.agent_repository import AgentRepository
 from tracertm.repositories.event_repository import EventRepository
 
+CONCURRENT_ACTIVITY_WINDOW_SECONDS = 60
+
 
 @dataclass
 class ConflictResolution:
@@ -90,7 +92,7 @@ class AgentCoordinationService:
                     time1 = datetime.fromisoformat(agent1.last_activity_at)
                     time2 = datetime.fromisoformat(agent2.last_activity_at)
 
-                    if abs((time1 - time2).total_seconds()) < 60:
+                    if abs((time1 - time2).total_seconds()) < CONCURRENT_ACTIVITY_WINDOW_SECONDS:
                         conflicts.append(
                             AgentConflict(
                                 agent1_id=str(agent1.id),

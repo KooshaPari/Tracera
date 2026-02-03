@@ -1,5 +1,5 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
+import { createFileRoute, useParams, useNavigate } from "@tanstack/react-router";
 import { useItem } from "@/hooks/useItems";
 import { requireAuth } from "@/lib/route-guards";
 
@@ -8,15 +8,15 @@ import { requireAuth } from "@/lib/route-guards";
  * Maintains backward compatibility by redirecting to new format:
  * /projects/:projectId/views/:viewType/:itemId
  */
-function ItemRedirectComponent() {
-	const params = Route.useParams();
+const ItemRedirectComponent = () => {
+	const params = useParams();
 	const navigate = useNavigate();
-	const { data: item, isLoading, error } = useItem(params.itemId);
+	const { data: item, error, isLoading } = useItem(params.itemId);
 
 	useEffect(() => {
 		if (item) {
 			// Redirect to new URL format
-			undefined;
+			navigate(`/projects/${item.projectId}/views/items/${item.id}`);
 		}
 	}, [item, navigate]);
 
@@ -50,7 +50,7 @@ function ItemRedirectComponent() {
 
 	// Show nothing while redirecting
 	return null;
-}
+};
 
 export const Route = createFileRoute("/items/$itemId")({
 	beforeLoad: () => requireAuth(),

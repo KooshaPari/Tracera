@@ -17,6 +17,8 @@ from tracertm.models.integration import (
 )
 from tracertm.services.encryption_service import get_encryption_service
 
+SYNC_ERROR_FAILURE_THRESHOLD = 5
+
 
 class IntegrationCredentialRepository:
     """Repository for integration credentials."""
@@ -374,7 +376,7 @@ class IntegrationMappingRepository:
             mapping = await self.get_by_id(mapping_id)
             if mapping:
                 update_data["consecutive_failures"] = mapping.consecutive_failures + 1
-                if update_data["consecutive_failures"] >= 5:
+                if update_data["consecutive_failures"] >= SYNC_ERROR_FAILURE_THRESHOLD:
                     update_data["status"] = "sync_error"
 
         await self.session.execute(

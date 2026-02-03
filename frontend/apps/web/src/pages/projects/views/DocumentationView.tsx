@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
 	Book,
 	ChevronRight,
@@ -7,7 +8,6 @@ import {
 	Plus,
 	Search,
 } from "lucide-react";
-import { useState } from "react";
 
 interface Doc {
 	id: string;
@@ -103,7 +103,7 @@ const statusColors = {
 	published: "text-green-600",
 };
 
-export function DocumentationView() {
+export const DocumentationView = () => {
 	const [search, setSearch] = useState("");
 	const [typeFilter, setTypeFilter] = useState<string | null>(null);
 
@@ -194,4 +194,4 @@ export function DocumentationView() {
 			</div>
 		</div>
 	);
-}
+};

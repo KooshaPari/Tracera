@@ -4,8 +4,6 @@ Visualization service for TraceRTM.
 Provides ASCII graph and tree visualization for items and links.
 """
 
-from typing import Any
-
 
 def _get_item_level(
     item_id: str,
@@ -118,7 +116,7 @@ class VisualizationService:
 
             # Add children
             children = item.get("children", [])
-            if isinstance(children, list[Any]):
+            if isinstance(children, list):
                 extension = "    " if is_last_item else "│   "
                 child_prefix = prefix + extension if prefix else extension
                 child_tree = VisualizationService.render_tree(

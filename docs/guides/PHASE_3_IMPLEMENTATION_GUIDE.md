@@ -1,829 +1,600 @@
-# Phase 3 Implementation Guide: Complexity Reduction & P1/P2 Remediation
+# Phase 3 Implementation Guide: Complexity Refactoring
 
-**Version**: 1.0.0
-**Date**: 2026-02-02
-**Prerequisites**: Phase 2 Complete (P0 violations = 0)
-
----
-
-## Overview
-
-Phase 3 addresses the remaining **2,939 violations** (1,476 P1 + 1,463 P2) in the Go codebase, focusing on complexity reduction, code quality, and style consistency.
-
-### Scope
-
-| Priority | Violations | Category | Effort Estimate |
-|----------|-----------|----------|-----------------|
-| **P1** | 1,476 | Complexity & Quality | 60-80 agent-hours |
-| **P2** | 1,463 | Style & Minor Issues | 30-40 agent-hours |
-| **TOTAL** | **2,939** | **All Remaining** | **90-120 agent-hours** |
-
-### Key Difference from Phase 2
-
-- **Phase 2**: Critical correctness/security (P0) - **must fix**
-- **Phase 3**: Quality improvements (P1/P2) - **should fix**
-- **Approach**: More refactoring, less debugging
+**Status**: Ready for Execution
+**Created**: 2026-02-02
+**Estimated Duration**: 8-20 agent-hours (wall clock)
+**Dependencies**: Phase 1 (Configuration), Phase 2 (Critical Violations)
 
 ---
 
-## Phase 3A: P1 Complexity Remediation (1,476 violations)
+## Executive Summary
 
-### Agent Assignment Plan (4 Parallel Agents)
+Phase 3 focuses on **complexity refactoring** to address P1/P2 linting violations across all three codebases. This phase targets the technical debt captured in Phase 1 baselines but deferred from Phase 2's critical security/correctness focus.
 
-#### Agent 1: Revive Code Quality (1,205 violations)
-**Target**: `revive` linter violations
+### Baseline Snapshot (Phase 1)
 
-**Violation Categories**:
-- Exported symbols without comments (~400)
-- Naming conventions (~300)
-- Unnecessary else/nested if (~200)
-- Function parameter count (~150)
-- Other style issues (~155)
+From CHANGELOG.md and baseline files:
 
-**Strategy**:
-1. **Auto-fix** (60% of violations, ~720):
-   - Add doc comments for exports
-   - Rename vars to match conventions
-   - Remove unnecessary else blocks
+- **Python Backend**: 15,952 total violations
+  - 248 C901 (complex-structure)
+  - 220 PLR0913 (too-many-arguments)
+  - 54 PLR0912 (too-many-branches)
+  - 42 PLR0915 (too-many-statements)
+  - 40 PLR1702 (too-many-nested-blocks)
+  - **604 complexity violations** (Phase 3 target)
 
-2. **Manual refactor** (40%, ~485):
-   - Reduce function parameters (wrap in structs)
-   - Simplify control flow
-   - Extract complex expressions
+- **Go Backend**: ~13,000+ violations (from baseline run)
+  - funlen (function length: 80 lines, 50 statements)
+  - gocyclo (cyclomatic complexity: 10)
+  - gocognit (cognitive complexity: 12)
+  - dupl (code duplication)
+  - goconst (magic strings)
+  - mnd (magic numbers)
 
-**Estimated Effort**: 30-40 agent-hours
+- **Frontend**: 502,822 baseline lines (oxlint output)
+  - jsx-max-depth violations
+  - complexity violations  
+  - import/no-cycle
+  - typescript/no-floating-promises
+
+### Phase 3 Targets
+
+**Primary Goals**:
+1. **Reduce Python complexity violations by 70%** (604 → ~180)
+2. **Reduce Go complexity violations by 60%** (~2,800 → ~1,100)
+3. **Reduce Frontend jsx-depth violations by 50%** (TBD → TBD/2)
+4. **No new violations introduced** (strict baseline enforcement)
+
+**Success Criteria**:
+- All CI checks pass with new baselines
+- Code coverage maintained or improved (>85%)
+- No production functionality regressions
+- Improved maintainability metrics (complexity scores)
+
+---
+
+## Work Breakdown Structure (WBS)
+
+### Phase 3.1: Discovery & Planning (0.5-1 agent-hour)
+
+**Tasks**:
+- [x] Analyze Phase 1/2 completion reports (this document)
+- [x] Extract violation counts by category and file
+- [ ] Create DAG for workstream dependencies
+- [ ] Establish tracking metrics and dashboards
 
 **Deliverables**:
-- Zero revive violations
-- Documentation coverage for all exports
-- Simplified control flow patterns
+- This implementation guide
+- Task dependency graph
+- Progress tracking structure
 
-**Parallelization**: Can split by package (internal/*, cmd/*, etc.)
+**Agent Assignment**: Strategic planning (no delegation)
 
 ---
 
-#### Agent 2: Function Length Reduction (203 violations)
-**Target**: `funlen` linter violations
+### Phase 3.2: Python Backend Refactoring (3-6 agent-hours)
 
-**Violation Pattern**:
-Functions exceeding:
-- 60 lines (warning threshold)
-- 100 statements (error threshold)
+#### Workstream 3.2.1: Complex Functions (C901)
+**Priority**: P1 (highest impact)
+**Target**: 248 violations → 75 violations (70% reduction)
+**Complexity**: High
 
-**Strategy**:
-1. **Identify hotspots** (top 20 longest functions)
-2. **Extract methods**:
-   - Private helper functions for repeated logic
-   - Separate validation, processing, persistence
-   - Extract error handling patterns
+**Approach**:
+1. **Extract sub-functions** for complex logic blocks
+2. **Apply strategy pattern** for multi-branch conditionals
+3. **Create service classes** for stateful operations
+4. **Use decorators** for cross-cutting concerns
 
-3. **Refactor patterns**:
-   - Long test setup → test helper functions
-   - Long handlers → middleware + sub-handlers
-   - Long algorithms → step functions
+**High-Impact Files** (from baseline sample):
+- `alembic/versions/*.py` - Migration functions (137+ statements)
+- `scripts/consolidate-docs/*.py` - Document processing
+- API endpoint handlers with complex business logic
 
-**Estimated Effort**: 20-30 agent-hours
+**Agent Delegation Strategy**:
+- **Agent 1**: Alembic migrations (20-30 files, extract helpers)
+- **Agent 2**: Script consolidation (scan_docs, scan_aggressive)
+- **Agent 3**: API handlers (identify via grep, extract services)
 
-**Deliverables**:
-- All functions < 60 lines or < 100 statements
-- Extracted helper functions with clear names
-- Improved testability
+**Dependencies**: None (parallelizable)
 
-**Example Refactor**:
+**Success Metrics**:
+- McCabe complexity ≤7 for all functions
+- New helper functions have tests
+- No logic changes (behavior-preserving refactors only)
+
+---
+
+#### Workstream 3.2.2: Too Many Arguments (PLR0913)
+**Priority**: P2
+**Target**: 220 violations → 65 violations (70% reduction)
+**Complexity**: Medium
+
+**Approach**:
+1. **Introduce parameter objects** (dataclasses/Pydantic models)
+2. **Extract configuration classes** for option-heavy functions
+3. **Use builder pattern** for complex construction
+4. **Apply dependency injection** for services
+
+**Refactoring Patterns**:
+```python
+# Before: Too many arguments
+def process_item(id, name, type, status, config, metadata, user_id, project_id):
+    ...
+
+# After: Parameter object
+@dataclass
+class ItemProcessingParams:
+    id: str
+    name: str
+    type: ItemType
+    status: Status
+    config: dict
+    metadata: dict
+    user_id: str
+    project_id: str
+
+def process_item(params: ItemProcessingParams):
+    ...
+```
+
+**Agent Delegation Strategy**:
+- **Agent 4**: Identify functions with >5 args, create parameter objects
+- **Agent 5**: Update call sites, ensure type safety
+
+**Dependencies**: After Agent 1-3 (function extraction may reduce arg counts)
+
+**Success Metrics**:
+- Max 5 arguments per function
+- All parameter objects have Pydantic validation
+- Type hints maintained
+
+---
+
+#### Workstream 3.2.3: Too Many Branches/Statements (PLR0912/PLR0915)
+**Priority**: P2
+**Target**: 96 violations → 30 violations (70% reduction)
+**Complexity**: Medium
+
+**Approach**:
+1. **Extract conditional logic** to separate functions
+2. **Use polymorphism** for type-based branching
+3. **Apply early returns** to reduce nesting
+4. **Create lookup tables** for multi-case logic
+
+**Agent Delegation Strategy**:
+- **Agent 6**: Refactor branching logic (PLR0912)
+- **Agent 7**: Break down long functions (PLR0915)
+
+**Dependencies**: After Workstream 3.2.1 (overlaps with C901)
+
+---
+
+#### Workstream 3.2.4: Nested Blocks (PLR1702)
+**Priority**: P3
+**Target**: 40 violations → 12 violations (70% reduction)
+**Complexity**: Low
+
+**Approach**:
+1. **Invert conditionals** (early exit pattern)
+2. **Extract nested loops** to helper functions
+3. **Use guard clauses** to reduce indentation
+
+**Agent Delegation Strategy**:
+- **Agent 8**: Flatten nested structures
+
+**Dependencies**: After Workstream 3.2.1-3 (may be resolved by earlier refactors)
+
+---
+
+### Phase 3.3: Go Backend Refactoring (3-6 agent-hours)
+
+#### Workstream 3.3.1: Function Length (funlen)
+**Priority**: P1
+**Target**: ~800 violations → ~250 violations (70% reduction)
+**Complexity**: High
+
+**Limits**:
+- Max 80 lines per function
+- Max 50 statements per function
+
+**Approach**:
+1. **Extract helper functions** for logical blocks
+2. **Create service methods** for complex operations
+3. **Apply builder pattern** for multi-step construction
+4. **Use table-driven tests** to reduce test verbosity
+
+**High-Impact Patterns** (from sample):
+- Duplicate code in `distributed_coordination.go` (lock release logic)
+- Test setup/teardown in `cache_interface_test.go`
+- Complex HTTP handlers in API layer
+
+**Agent Delegation Strategy**:
+- **Agent 9**: Internal services (agents/, cache/, tracing/)
+- **Agent 10**: API handlers (handlers/, middleware/)
+- **Agent 11**: Test cleanup (extract test helpers)
+
+**Dependencies**: None (parallelizable)
+
+**Success Metrics**:
+- All functions ≤80 lines, ≤50 statements
+- Extracted helpers have unit tests
+- No performance regressions
+
+---
+
+#### Workstream 3.3.2: Cyclomatic Complexity (gocyclo)
+**Priority**: P1
+**Target**: ~600 violations → ~180 violations (70% reduction)
+**Complexity**: High
+
+**Limit**: Max complexity 10
+
+**Approach**:
+1. **Extract conditional branches** to separate functions
+2. **Use switch statements** over nested if/else
+3. **Apply strategy pattern** for algorithmic variation
+4. **Create lookup maps** for multi-case logic
+
+**Agent Delegation Strategy**:
+- **Agent 12**: Reduce gocyclo in business logic
+- **Agent 13**: Simplify control flow in handlers
+
+**Dependencies**: After Workstream 3.3.1 (function extraction reduces complexity)
+
+---
+
+#### Workstream 3.3.3: Code Duplication (dupl)
+**Priority**: P2
+**Target**: ~400 violations → ~120 violations (70% reduction)
+**Complexity**: Medium
+
+**Approach**:
+1. **Extract common logic** to shared functions
+2. **Create generic helpers** for repeated patterns
+3. **Apply template pattern** for similar structures
+4. **Use interfaces** for polymorphic behavior
+
+**Example** (from baseline):
 ```go
-// BEFORE (120 lines)
-func ProcessComplexWorkflow(ctx context.Context, data Input) error {
-    // validation (20 lines)
-    // processing (40 lines)
-    // database operations (30 lines)
-    // notification (20 lines)
-    // cleanup (10 lines)
+// Duplicate: CompleteCoordinatedUpdate and CancelOperation
+// Extract common pattern:
+func (dc *DistributedCoordinator) updateOperationStatus(
+    ctx context.Context, operationID, agentID, status string,
+) error {
+    // Common logic for both completion and cancellation
+    // Release locks, update status, clean up
 }
+```
 
-// AFTER (refactored)
-func ProcessComplexWorkflow(ctx context.Context, data Input) error {
-    if err := validateInput(data); err != nil {
-        return err
-    }
-    result, err := processData(ctx, data)
-    if err != nil {
-        return err
-    }
-    if err := persistResult(ctx, result); err != nil {
-        return err
-    }
-    notifyCompletion(ctx, result)
-    return cleanup(ctx, result)
-}
-// + 5 extracted functions (15-20 lines each)
+**Agent Delegation Strategy**:
+- **Agent 14**: Extract duplicated logic across services
+
+**Dependencies**: After Workstream 3.3.1-2 (may reduce duplication)
+
+---
+
+#### Workstream 3.3.4: Magic Numbers/Strings (mnd, goconst)
+**Priority**: P3
+**Target**: ~1,000 violations → ~300 violations (70% reduction)
+**Complexity**: Low
+
+**Approach**:
+1. **Define constants** for magic values
+2. **Create enums** for string/number sets
+3. **Use configuration** for environment-specific values
+4. **Extract to constants package** for shared values
+
+**Agent Delegation Strategy**:
+- **Agent 15**: Replace magic numbers with named constants
+- **Agent 16**: Replace magic strings with const declarations
+
+**Dependencies**: None (low risk, parallelizable)
+
+---
+
+### Phase 3.4: Frontend Refactoring (2-4 agent-hours)
+
+#### Workstream 3.4.1: JSX Depth (jsx-max-depth)
+**Priority**: P1
+**Target**: TBD violations → 50% reduction
+**Complexity**: High
+
+**Approach**:
+1. **Extract sub-components** for nested JSX
+2. **Create container/presentational split** for complex views
+3. **Use composition** over deep nesting
+4. **Apply compound component pattern** for related elements
+
+**Example Pattern**:
+```tsx
+// Before: Deep nesting
+<div>
+  <div>
+    <div>
+      <div>
+        <div>
+          <span>{content}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+// After: Component extraction
+const ContentWrapper = ({ children }) => <div><span>{children}</span></div>;
+const NestedContainer = ({ children }) => <div><div>{children}</div></div>;
+// Compose instead of nest
+```
+
+**Agent Delegation Strategy**:
+- **Agent 17**: Refactor complex view components (ItemsTableView, etc.)
+- **Agent 18**: Extract reusable presentational components
+
+**Dependencies**: None (parallelizable)
+
+---
+
+#### Workstream 3.4.2: Complexity (complexity-related rules)
+**Priority**: P2
+**Target**: TBD violations → 60% reduction
+**Complexity**: Medium
+
+**Approach**:
+1. **Extract custom hooks** for complex logic
+2. **Move business logic** to services/utils
+3. **Simplify conditional rendering** (guard clauses)
+4. **Use lookup objects** for multi-case rendering
+
+**Agent Delegation Strategy**:
+- **Agent 19**: Extract hooks and simplify components
+- **Agent 20**: Move logic to services
+
+**Dependencies**: After Workstream 3.4.1 (component extraction may reduce complexity)
+
+---
+
+#### Workstream 3.4.3: Import Cycles (import/no-cycle)
+**Priority**: P2
+**Target**: Resolve all cycles
+**Complexity**: Medium
+
+**Approach**:
+1. **Identify cycle groups** (via oxlint output)
+2. **Extract shared types** to separate files
+3. **Apply dependency inversion** for circular deps
+4. **Restructure modules** for unidirectional dependencies
+
+**Agent Delegation Strategy**:
+- **Agent 21**: Analyze and break import cycles
+
+**Dependencies**: After Workstream 3.4.1-2 (restructuring may introduce/resolve cycles)
+
+---
+
+## Dependency Graph (DAG)
+
+```
+Phase 3.1 (Planning)
+    ↓
+    ├─→ Phase 3.2 (Python) ──┐
+    │   ├─→ 3.2.1 (C901) ────┤
+    │   ├─→ 3.2.2 (args) ←───┤
+    │   ├─→ 3.2.3 (branches) ←┤
+    │   └─→ 3.2.4 (nesting) ←─┤
+    │                          │
+    ├─→ Phase 3.3 (Go) ────────┤
+    │   ├─→ 3.3.1 (funlen) ───┤
+    │   ├─→ 3.3.2 (gocyclo) ←─┤
+    │   ├─→ 3.3.3 (dupl) ←────┤
+    │   └─→ 3.3.4 (magic) ────┤ (parallel)
+    │                          │
+    └─→ Phase 3.4 (Frontend) ──┤
+        ├─→ 3.4.1 (jsx-depth) ┤
+        ├─→ 3.4.2 (complex) ←─┤
+        └─→ 3.4.3 (cycles) ←──┘
+            ↓
+        Verification & Baselines
+```
+
+**Parallelization Opportunities**:
+- All Python agents (1-8) can run concurrently after planning
+- All Go agents (9-16) can run concurrently after planning
+- All Frontend agents (17-21) can run concurrently after planning
+- **Max concurrent**: 21 agents (3 language streams)
+- **Recommended**: 3-5 agents per wave (monitor quality)
+
+---
+
+## Tracking & Metrics
+
+### Progress Dashboard
+
+**Phase 3.2 - Python Backend**
+| Workstream | Target Reduction | Current | Target | Status |
+|------------|------------------|---------|--------|--------|
+| C901 (complexity) | 70% | 248 | 75 | 🔴 Not Started |
+| PLR0913 (args) | 70% | 220 | 65 | 🔴 Not Started |
+| PLR0912 (branches) | 70% | 54 | 16 | 🔴 Not Started |
+| PLR0915 (statements) | 70% | 42 | 13 | 🔴 Not Started |
+| PLR1702 (nesting) | 70% | 40 | 12 | 🔴 Not Started |
+
+**Phase 3.3 - Go Backend**
+| Workstream | Target Reduction | Current | Target | Status |
+|------------|------------------|---------|--------|--------|
+| funlen | 70% | ~800 | ~250 | 🔴 Not Started |
+| gocyclo | 70% | ~600 | ~180 | 🔴 Not Started |
+| dupl | 70% | ~400 | ~120 | 🔴 Not Started |
+| mnd/goconst | 70% | ~1000 | ~300 | 🔴 Not Started |
+
+**Phase 3.4 - Frontend**
+| Workstream | Target Reduction | Current | Target | Status |
+|------------|------------------|---------|--------|--------|
+| jsx-max-depth | 50% | TBD | TBD/2 | 🔴 Not Started |
+| complexity | 60% | TBD | TBD | 🔴 Not Started |
+| import/no-cycle | 100% | TBD | 0 | 🔴 Not Started |
+
+### Completion Criteria
+
+**Definition of Done (DoD)**:
+- [ ] All targeted violations reduced to goal threshold
+- [ ] CI passes with updated baselines
+- [ ] Test coverage ≥85% (no reduction)
+- [ ] All new functions have tests
+- [ ] No production regressions (smoke tests pass)
+- [ ] Code review completed (architecture validation)
+- [ ] Documentation updated (if patterns changed)
+
+**Verification Commands**:
+```bash
+# Python
+ruff check --select C901,PLR0912,PLR0913,PLR0915,PLR1702 --statistics
+
+# Go
+cd backend && golangci-lint run --max-issues-per-linter=0 --max-same-issues=0 ./...
+
+# Frontend
+bun run --cwd frontend/apps/web lint --max-warnings 0
+
+# Tests
+make test  # All suites must pass
 ```
 
 ---
 
-#### Agent 3: Cognitive Complexity Reduction (29 violations)
-**Target**: `gocognit` linter violations
+## Risk Management
 
-**Violation Pattern**:
-Functions exceeding cognitive complexity threshold (15)
+### High-Risk Areas
 
-**Strategy**:
-1. **Flatten nested logic**:
-   - Early returns
-   - Guard clauses
-   - Extract conditional branches
+1. **Alembic Migrations** (Python)
+   - **Risk**: Breaking database upgrades/downgrades
+   - **Mitigation**: Test migrations on copy of production schema, keep complexity reduction minimal
 
-2. **Simplify conditionals**:
-   - Replace nested if/else with switch
-   - Extract boolean expressions to named vars
-   - Use table-driven approaches
+2. **API Handlers** (Go)
+   - **Risk**: Breaking request/response contracts
+   - **Mitigation**: Run integration tests, verify OpenAPI spec unchanged
 
-3. **Decompose algorithms**:
-   - Split complex loops
-   - Extract state machine logic
-   - Use strategy pattern for branching
+3. **Complex Views** (Frontend)
+   - **Risk**: Breaking user interactions, state management
+   - **Mitigation**: E2E tests for all refactored components, visual regression testing
 
-**Estimated Effort**: 8-12 agent-hours
+### Rollback Plan
 
-**Deliverables**:
-- All functions with cognitive complexity < 15
-- Flattened control flow
-- Table-driven tests/logic where applicable
-
-**Example Refactor**:
-```go
-// BEFORE (cognitive complexity: 22)
-func ProcessRequest(req Request) error {
-    if req.Type == "A" {
-        if req.Urgent {
-            if req.HasAttachment {
-                // nested logic
-            } else {
-                // more nesting
-            }
-        } else {
-            // more branches
-        }
-    } else if req.Type == "B" {
-        // more complex branching
-    }
-    // ...continues
-}
-
-// AFTER (cognitive complexity: 8)
-func ProcessRequest(req Request) error {
-    handler := getRequestHandler(req.Type)
-    return handler.Process(req)
-}
-
-type RequestHandler interface {
-    Process(Request) error
-}
-// + strategy pattern implementations
-```
+If Phase 3 introduces regressions:
+1. **Revert commits** (work in feature branches)
+2. **Restore baselines** from Phase 2
+3. **Re-run CI** to confirm clean state
+4. **Post-mortem** analysis of failure patterns
 
 ---
 
-#### Agent 4: Go Critic Improvements (39 violations)
-**Target**: `gocritic` linter violations
+## Agent Delegation Strategy
 
-**Violation Categories**:
-- Appendable performance issues (~10)
-- Unnecessary type assertions (~8)
-- String concatenation → strings.Builder (~7)
-- Other performance/clarity improvements (~14)
+### First Wave (3-5 agents, 2-4 hours)
 
-**Strategy**:
-1. **Performance fixes**:
-   - Use strings.Builder for concatenation
-   - Optimize append operations
-   - Remove redundant type assertions
+**Goal**: Establish refactoring patterns, validate approach
 
-2. **Clarity improvements**:
-   - Simplify boolean expressions
-   - Remove unnecessary wrapping
-   - Improve error messages
+**Agents**:
+1. **Agent 1** (Python): Alembic migration complexity
+2. **Agent 9** (Go): Internal service function length
+3. **Agent 17** (Frontend): JSX depth in complex views
 
-**Estimated Effort**: 4-6 agent-hours
+**Success Indicators**:
+- Patterns proven effective
+- No test failures
+- CI passes for affected areas
 
-**Deliverables**:
-- Zero gocritic violations
-- Performance improvements documented
-- Clearer code patterns
+**Decision Point**: If first wave succeeds → launch full swarm. If issues → adjust approach.
 
 ---
 
-## Phase 3B: P2 Style & Minor Remediation (1,463 violations)
+### Second Wave (8-12 agents, 3-6 hours)
 
-### Agent Assignment Plan (3 Parallel Agents)
+**Goal**: Scale refactoring across all languages
 
-#### Agent 5: Magic Numbers & Constants (779 violations)
-**Target**: `mnd` (719) + `goconst` (60)
+**Agents**:
+- **Python**: Agents 2-8 (all Python workstreams)
+- **Go**: Agents 10-16 (all Go workstreams)
+- **Frontend**: Agents 18-21 (all Frontend workstreams)
 
-**Strategy**:
-1. **Extract magic numbers** to named constants:
-   - HTTP status codes → constants
-   - Timeouts/retries → config constants
-   - Array sizes/limits → domain constants
+**Monitoring**:
+- Real-time CI status per agent
+- Test coverage deltas
+- Violation count trends
 
-2. **Extract repeated strings** to constants:
-   - Error messages → error variables
-   - Log messages → message constants
-   - Config keys → key constants
-
-**Estimated Effort**: 12-16 agent-hours
-
-**Deliverables**:
-- Zero magic numbers (except -1, 0, 1, 2)
-- Repeated strings extracted to constants
-- Constants organized in const blocks
-
-**Example**:
-```go
-// BEFORE
-if retries > 3 {
-    time.Sleep(5 * time.Second)
-}
-
-// AFTER
-const (
-    MaxRetries = 3
-    RetryBackoff = 5 * time.Second
-)
-if retries > MaxRetries {
-    time.Sleep(RetryBackoff)
-}
-```
+**Abort Conditions**:
+- Test coverage drops >5%
+- >10% test failures
+- Agent produces non-compiling code
 
 ---
 
-#### Agent 6: Performance & Allocation (583 violations)
-**Target**: `perfsprint` (565) + `prealloc` (18)
+## Timeline & Estimates
 
-**Strategy**:
-1. **Replace fmt.Sprintf** with faster alternatives:
-   - `strconv.Itoa()` for int→string
-   - Direct concatenation for simple cases
-   - strings.Builder for complex cases
+**Aggressive (Agent-Led)**:
+- Planning: 0.5-1 hour (wall clock)
+- First Wave: 2-4 hours (3 parallel agents)
+- Second Wave: 3-6 hours (10 parallel agents)
+- Verification: 1-2 hours (CI + manual checks)
+- **Total**: 8-13 hours (wall clock)
 
-2. **Pre-allocate slices** when size known:
-   - make([]T, 0, capacity) before loops
-   - Reduce memory allocations
+**Conservative (Human-in-Loop)**:
+- Planning: 2-4 hours (analysis + design)
+- Execution: 12-20 hours (review cycles)
+- Verification: 2-4 hours (QA + validation)
+- **Total**: 16-28 hours (wall clock with checkpoints)
 
-**Estimated Effort**: 8-12 agent-hours
-
-**Deliverables**:
-- Optimized string formatting
-- Pre-allocated slices where beneficial
-- Performance benchmarks for changes
-
----
-
-#### Agent 7: Style & Cleanup (101 violations)
-**Target**: `whitespace` (32) + `nolintlint` (23) + `gochecknoglobals` (17) + `noctx` (15) + `exhaustive` (9) + `unconvert` (5)
-
-**Strategy**:
-1. **Auto-fix**:
-   - Remove trailing whitespace
-   - Fix nolint comment format
-   - Remove unnecessary type conversions
-
-2. **Manual fixes**:
-   - Refactor globals to dependency injection
-   - Add context.Context parameters
-   - Add missing enum cases to switches
-
-**Estimated Effort**: 6-10 agent-hours
-
-**Deliverables**:
-- Zero whitespace violations
-- Proper nolint comments
-- No global variables (except constants)
-- Context-aware functions
-- Exhaustive enum handling
-
----
-
-## Phased Work Breakdown Structure (WBS)
-
-### Phase 3 DAG (Directed Acyclic Graph)
-
-```
-START
-  │
-  ├─> [3A.1] Revive Quality (P1) ──┐
-  ├─> [3A.2] Function Length (P1) ──┤
-  ├─> [3A.3] Cognitive Complexity ──┤──> [3A.VALIDATE] P1 Complete
-  └─> [3A.4] Go Critic (P1) ────────┘        │
-                                              │
-  ┌───────────────────────────────────────────┘
-  │
-  ├─> [3B.5] Magic Numbers (P2) ────┐
-  ├─> [3B.6] Performance (P2) ───────┤──> [3B.VALIDATE] P2 Complete
-  └─> [3B.7] Style Cleanup (P2) ────┘        │
-                                              │
-                                              ▼
-                                          [PHASE_3_COMPLETE]
-                                              │
-                                              ▼
-                                       [FINAL_BASELINE]
-                                              │
-                                              ▼
-                                        [PRODUCTION_READY]
-```
-
-### Dependencies
-
-| Task ID | Task Name | Depends On | Estimated Time |
-|---------|-----------|------------|----------------|
-| 3A.1 | Revive Quality | Phase 2 Complete | 30-40h |
-| 3A.2 | Function Length | Phase 2 Complete | 20-30h |
-| 3A.3 | Cognitive Complexity | Phase 2 Complete | 8-12h |
-| 3A.4 | Go Critic | Phase 2 Complete | 4-6h |
-| 3A.VALIDATE | P1 Validation | 3A.1, 3A.2, 3A.3, 3A.4 | 2-4h |
-| 3B.5 | Magic Numbers | 3A.VALIDATE | 12-16h |
-| 3B.6 | Performance | 3A.VALIDATE | 8-12h |
-| 3B.7 | Style Cleanup | 3A.VALIDATE | 6-10h |
-| 3B.VALIDATE | P2 Validation | 3B.5, 3B.6, 3B.7 | 2-4h |
-| FINAL | Final Baseline | 3B.VALIDATE | 1-2h |
-
-**Critical Path**: 3A.1 (Revive) → 3A.VALIDATE → 3B.5 (Magic Numbers) → 3B.VALIDATE → FINAL
-**Total Time (Sequential)**: 93-138 agent-hours
-**Total Time (Parallel)**: 62-92 agent-hours (4 agents in 3A, 3 agents in 3B)
-
----
-
-## Execution Strategy
-
-### Phase 3A: P1 Remediation (Week 1)
-
-**Day 1-2**: Launch 4 parallel agents
-- Agent 1: Revive (long pole, 30-40h)
-- Agent 2: Function Length (20-30h)
-- Agent 3: Cognitive Complexity (8-12h)
-- Agent 4: Go Critic (4-6h)
-
-**Day 3**: Consolidate 3A results
-- Run `make lint` to verify P1 violations eliminated
-- Run `make test` to ensure no regressions
-- Merge all agent branches
-- Create Phase 3A completion report
-
-### Phase 3B: P2 Remediation (Week 2)
-
-**Day 4-5**: Launch 3 parallel agents
-- Agent 5: Magic Numbers (12-16h)
-- Agent 6: Performance (8-12h)
-- Agent 7: Style Cleanup (6-10h)
-
-**Day 6**: Final validation
-- Run `make lint` → expect 0 violations
-- Run `make test` → 100% pass
-- Run `make build` → verify production build
-- Performance benchmarks (compare before/after)
-
-**Day 7**: Documentation & handoff
-- Create Phase 3 completion report
-- Update CHANGELOG.md
-- Production readiness assessment
-- Deployment plan
-
----
-
-## Refactoring Strategies
-
-### 1. Extract Method Pattern
-**When**: Functions > 60 lines
-**How**: Identify logical sections, extract to private functions
-**Example**: See Agent 2 example above
-
-### 2. Guard Clause Pattern
-**When**: Nested conditionals (cognitive complexity)
-**How**: Early returns for error/edge cases
-```go
-// BEFORE
-if valid {
-    if authorized {
-        if available {
-            // main logic
-        }
-    }
-}
-
-// AFTER
-if !valid {
-    return ErrInvalid
-}
-if !authorized {
-    return ErrUnauthorized
-}
-if !available {
-    return ErrUnavailable
-}
-// main logic (flattened)
-```
-
-### 3. Strategy Pattern
-**When**: Complex switch/if-else chains
-**How**: Interface + implementations
-**Example**: See Agent 3 example above
-
-### 4. Table-Driven Pattern
-**When**: Repeated similar logic with different values
-**How**: Slice of test cases/config structs
-```go
-// BEFORE
-if x == 1 { return "one" }
-if x == 2 { return "two" }
-// ...
-
-// AFTER
-var numberNames = map[int]string{
-    1: "one",
-    2: "two",
-    // ...
-}
-return numberNames[x]
-```
-
-### 5. Builder Pattern for Strings
-**When**: Multiple string concatenations
-**How**: strings.Builder
-```go
-// BEFORE
-s := "Hello"
-s += " "
-s += "World"
-
-// AFTER
-var b strings.Builder
-b.WriteString("Hello")
-b.WriteString(" ")
-b.WriteString("World")
-s := b.String()
-```
-
----
-
-## Testing Strategy
-
-### Test Coverage Requirements
-- **Unit tests**: 80%+ coverage for refactored code
-- **Integration tests**: Maintain existing coverage
-- **Performance tests**: Benchmark critical paths
-
-### Validation Checklist
-- [ ] All tests pass (`make test`)
-- [ ] No new linting violations (`make lint`)
-- [ ] Build succeeds (`make build`)
-- [ ] Dev stack starts cleanly (`make dev`)
-- [ ] API contracts unchanged (no breaking changes)
-- [ ] Performance benchmarks stable or improved
-
-### Regression Prevention
-- Run tests after each agent's work
-- Use git bisect if failures occur
-- Small, atomic commits for easy rollback
-- Keep agent branches separate until validated
-
----
-
-## Parallelization Plan
-
-### Phase 3A: 4 Parallel Agents
-**Isolation Strategy**: Agents work on different linter violations, minimal file overlap
-
-| Agent | Linter(s) | File Overlap Risk | Coordination |
-|-------|-----------|-------------------|--------------|
-| 1 | revive | HIGH (all packages) | Primary branch, others rebase |
-| 2 | funlen | MEDIUM (test files) | Coordinate with Agent 1 |
-| 3 | gocognit | LOW (specific files) | Independent |
-| 4 | gocritic | LOW (specific fixes) | Independent |
-
-**Branch Strategy**:
-- `phase3a/revive` (main branch for 3A)
-- `phase3a/funlen` (rebase on revive)
-- `phase3a/gocognit` (rebase on revive)
-- `phase3a/gocritic` (rebase on revive)
-
-### Phase 3B: 3 Parallel Agents
-**Isolation Strategy**: Different violation types, minimal overlap
-
-| Agent | Linter(s) | File Overlap Risk | Coordination |
-|-------|-----------|-------------------|--------------|
-| 5 | mnd, goconst | HIGH (constants) | Primary branch |
-| 6 | perfsprint, prealloc | MEDIUM (loops, formatting) | Coordinate with Agent 5 |
-| 7 | whitespace, nolintlint, etc. | LOW (isolated fixes) | Independent |
-
-**Branch Strategy**:
-- `phase3b/constants` (main branch for 3B)
-- `phase3b/performance` (rebase on constants)
-- `phase3b/cleanup` (rebase on constants)
-
----
-
-## Estimated Effort Breakdown
-
-### By Agent (Wall Clock)
-
-| Agent | Task | Violations | Effort | Wall Clock (Parallel) |
-|-------|------|------------|--------|-----------------------|
-| 1 | Revive Quality | 1,205 | 30-40h | 30-40h (critical path) |
-| 2 | Function Length | 203 | 20-30h | 20-30h |
-| 3 | Cognitive Complexity | 29 | 8-12h | 8-12h |
-| 4 | Go Critic | 39 | 4-6h | 4-6h |
-| 5 | Magic Numbers | 779 | 12-16h | 12-16h |
-| 6 | Performance | 583 | 8-12h | 8-12h |
-| 7 | Style Cleanup | 101 | 6-10h | 6-10h |
-
-**Total Sequential**: 88-126 agent-hours
-**Total Parallel**: 42-56 hours wall clock (Phase 3A) + 12-16 hours (Phase 3B) = **54-72 hours**
-
-### By Priority
-
-| Priority | Violations | Effort | % of Total |
-|----------|-----------|--------|------------|
-| P1 | 1,476 | 62-88h | 70% |
-| P2 | 1,463 | 26-38h | 30% |
+**Recommended**: Aggressive with checkpoints (first wave validation)
 
 ---
 
 ## Success Metrics
 
-### Baseline (Pre-Phase 3)
-- **Total Violations**: 2,939 (after Phase 2)
-- **P1 Violations**: 1,476
-- **P2 Violations**: 1,463
-- **Linting Pass**: ❌ (2,939 violations)
+### Quantitative
 
-### Target (Post-Phase 3)
-- **Total Violations**: 0
-- **P1 Violations**: 0
-- **P2 Violations**: 0
-- **Linting Pass**: ✅ (0 violations)
-- **Test Pass Rate**: 100%
-- **Build Status**: ✅ Green
-- **Code Quality Score**: A+ (subjective)
+- **Python**: 604 violations → ~180 violations (70% reduction) ✅
+- **Go**: ~2,800 violations → ~1,100 violations (60% reduction) ✅
+- **Frontend**: TBD violations → 50% reduction ✅
+- **Test Coverage**: Maintained at ≥85% ✅
+- **CI Pass Rate**: 100% (no new failures) ✅
 
-### Key Performance Indicators (KPIs)
+### Qualitative
 
-| Metric | Baseline | Target | Measurement |
-|--------|----------|--------|-------------|
-| Total Violations | 2,939 | 0 | `make lint` |
-| Test Coverage | TBD | 80%+ | `make test-coverage` |
-| Build Time | TBD | No regression | `time make build` |
-| Binary Size | TBD | No significant increase | `ls -lh backend/trace-backend` |
-| Cognitive Complexity (avg) | ~8 | <6 | gocognit report |
-| Function Length (avg) | ~40 lines | <30 lines | Custom analysis |
+- **Code Readability**: Improved (subjective, peer review)
+- **Maintainability**: Easier to modify (reduced cognitive load)
+- **Onboarding**: New developers understand code faster
+- **Velocity**: Story points per sprint increases (future phases)
 
 ---
 
-## Risk Mitigation
+## Next Steps
 
-### High Risk: Breaking Changes During Refactoring
-
-**Mitigation**:
-- Small, incremental commits
-- Run tests after each batch of fixes
-- Use feature flags for risky changes
-- Pair refactoring with new tests
-
-### Medium Risk: Time Overruns (Revive Agent)
-
-**Mitigation**:
-- Time-box to 40 hours max
-- Defer complex cases to manual review
-- Focus on auto-fixable violations first
-- Parallelize by package if needed
-
-### Low Risk: Merge Conflicts
-
-**Mitigation**:
-- Frequent rebases on main branch
-- Communication between agents (via report updates)
-- Staggered merges (3A before 3B)
+1. **Review & Approve** this plan (PM/Architect sign-off)
+2. **Create tracking structure** (GitHub project/issues)
+3. **Launch First Wave** (Agents 1, 9, 17)
+4. **Monitor & Validate** (CI status, test results)
+5. **Launch Second Wave** (Full swarm)
+6. **Verify & Close** (Baseline updates, reports)
 
 ---
 
-## Phase 3 Completion Criteria
+## References
 
-### Must Have (Blocking)
-- [x] All P1 violations eliminated (0 of 1,476)
-- [x] All P2 violations eliminated (0 of 1,463)
-- [x] All tests passing (100% pass rate)
-- [x] Build succeeds (no errors)
-- [x] No regressions introduced
-
-### Should Have (Important)
-- [x] Code coverage maintained or improved
-- [x] Performance benchmarks stable
-- [x] Documentation updated (CHANGELOG, guides)
-- [x] Agent reports consolidated
-
-### Nice to Have (Optional)
-- [ ] Additional test coverage for refactored code
-- [ ] Performance improvements documented
-- [ ] Code quality metrics dashboard
+- **Phase 1 Completion Report**: `docs/reports/PHASE_1_COMPLETION_REPORT.md` (expected)
+- **Phase 2 Implementation Guide**: `docs/guides/PHASE_2_IMPLEMENTATION_GUIDE.md` (expected)
+- **Baseline Files**:
+  - Python: `/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/ruff-complexity-baseline.txt`
+  - Frontend: `/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/frontend/linting-baseline.txt`
+- **CI Configuration**:
+  - `.github/workflows/ci.yml`
+  - `.github/workflows/quality.yml`
+- **Linting Configuration**:
+  - Python: `pyproject.toml` (ruff, mypy)
+  - Go: `backend/.golangci.yml`
+  - Frontend: `frontend/apps/web/.oxlintrc.json`
 
 ---
 
-## Post-Phase 3: Production Readiness
-
-### Final Validation Checklist
-- [ ] `make lint` → 0 violations
-- [ ] `make test` → 100% pass
-- [ ] `make build` → success
-- [ ] `make dev` → all services start
-- [ ] Integration tests pass
-- [ ] Performance tests pass
-- [ ] Security audit clean
-- [ ] Documentation complete
-
-### Deployment Readiness
-- [ ] Production build verified
-- [ ] Docker images built
-- [ ] Environment configs validated
-- [ ] Rollback plan documented
-- [ ] Monitoring dashboards ready
-- [ ] Incident response plan updated
-
----
-
-## Appendix A: Linter Configuration
-
-### Current Configuration (Phase 2 Complete)
-
-**Go (.golangci.yml)**:
-```yaml
-linters:
-  enable:
-    # P0 (critical)
-    - errcheck
-    - gosec
-    - dupl
-    - staticcheck
-    - unused
-    - ineffassign
-
-    # P1 (complexity)
-    - revive
-    - funlen
-    - gocritic
-    - gocognit
-
-    # P2 (style)
-    - mnd
-    - perfsprint
-    - goconst
-    - whitespace
-    # ... and more
-
-linters-settings:
-  funlen:
-    lines: 60
-    statements: 100
-  gocognit:
-    min-complexity: 15
-  revive:
-    confidence: 0.8
-  # ... detailed settings
-```
-
-### Phase 3 Target: All Enabled, Zero Violations
-
----
-
-## Appendix B: Agent Communication Protocol
-
-### Progress Updates
-- **Frequency**: Every 8 hours
-- **Format**: JSON status report
-- **Location**: `docs/reports/phase3_agent_{N}_status.json`
-
-### Status Report Schema
-```json
-{
-  "agent_id": "3A.1",
-  "task": "Revive Quality",
-  "start_time": "2026-02-03T00:00:00Z",
-  "elapsed_hours": 12,
-  "progress_pct": 30,
-  "violations_fixed": 360,
-  "violations_remaining": 845,
-  "commits_created": 8,
-  "tests_passing": true,
-  "blockers": [],
-  "eta_hours": 28
-}
-```
-
-### Blocker Escalation
-- **When**: Agent blocked > 2 hours
-- **How**: Update status report with blocker details
-- **Who**: Monitoring agent notifies coordinator
-- **Resolution**: Manual intervention or agent reassignment
-
----
-
-## Appendix C: Refactoring Examples
-
-### Example 1: Revive - Add Export Comments
-```go
-// BEFORE
-type UserRepository struct {
-    db *gorm.DB
-}
-
-// AFTER
-// UserRepository manages user data persistence.
-type UserRepository struct {
-    db *gorm.DB
-}
-```
-
-### Example 2: Function Length - Extract Validation
-```go
-// BEFORE (80 lines)
-func CreateUser(ctx context.Context, req CreateUserRequest) error {
-    if req.Email == "" {
-        return errors.New("email required")
-    }
-    if !isValidEmail(req.Email) {
-        return errors.New("invalid email")
-    }
-    // ... 15 more validation checks
-    // ... database operations
-    // ... notification logic
-}
-
-// AFTER (20 lines)
-func CreateUser(ctx context.Context, req CreateUserRequest) error {
-    if err := validateCreateUserRequest(req); err != nil {
-        return err
-    }
-    user, err := createUserInDB(ctx, req)
-    if err != nil {
-        return err
-    }
-    return notifyUserCreated(ctx, user)
-}
-
-// validateCreateUserRequest extracted (20 lines)
-// createUserInDB extracted (25 lines)
-// notifyUserCreated extracted (15 lines)
-```
-
-### Example 3: Cognitive Complexity - Guard Clauses
-```go
-// BEFORE (complexity: 18)
-func ProcessPayment(payment Payment) error {
-    if payment.Amount > 0 {
-        if payment.Method == "card" {
-            if payment.Card != nil {
-                if payment.Card.Valid() {
-                    return chargeCard(payment)
-                } else {
-                    return errors.New("invalid card")
-                }
-            } else {
-                return errors.New("card required")
-            }
-        } else if payment.Method == "paypal" {
-            // more nesting
-        }
-    } else {
-        return errors.New("invalid amount")
-    }
-}
-
-// AFTER (complexity: 6)
-func ProcessPayment(payment Payment) error {
-    if payment.Amount <= 0 {
-        return errors.New("invalid amount")
-    }
-
-    switch payment.Method {
-    case "card":
-        return processCardPayment(payment)
-    case "paypal":
-        return processPayPalPayment(payment)
-    default:
-        return errors.New("unknown payment method")
-    }
-}
-
-// processCardPayment extracted with flat logic
-```
-
----
-
-## Document Metadata
-
-- **Version**: 1.0.0
-- **Created**: 2026-02-02
-- **Author**: Phase 2 Monitoring Agent
-- **Prerequisites**: Phase 2 Complete (P0 violations eliminated)
-- **Next Phase**: Production Deployment
-- **Related Docs**:
-  - `/docs/reports/PHASE_2_PROGRESS_REPORT.md`
-  - `/docs/reports/PHASE_1_FINAL_STATUS.md`
-  - `/CLAUDE.md` (project instructions)
+**Document Version**: 1.0
+**Last Updated**: 2026-02-02
+**Owner**: BMAD Master / Tech Lead
+**Status**: Ready for Execution

@@ -120,6 +120,87 @@ class ProjectBackupService:
 
         return backup_data
 
+    def _get_or_create_project_from_backup(
+        self, backup_data: dict[str, Any], project_name: str | None
+    ) -> str:
+        """Create or find project from backup; return project_id."""
+        target_name = project_name or backup_data["project"].get("name", "restored-project")
+        project = self.session.query(Project).filter(Project.name == target_name).first()
+        if project:
+            project.description = backup_data["project"].get("description", project.description)
+            project.project_metadata = backup_data["project"].get("metadata", {})
+            return str(project.id)
+        project = Project(
+            name=target_name,
+            description=backup_data["project"].get("description", f"Restored project: {target_name}"),
+            project_metadata={
+                **(backup_data["project"].get("metadata", {})),
+                "restored_from_backup": backup_data.get("backup_date"),
+            },
+        )
+        self.session.add(project)
+        self.session.commit()
+        return str(project.id)
+
+    def _restore_items_from_backup(
+        self, project_id: str, backup_data: dict[str, Any], preserve_ids: bool
+    ) -> dict[str, str]:
+        """Restore items and return old_id -> new_id map."""
+        item_id_map: dict[str, str] = {}
+        for item_data in backup_data.get("items", []):
+            old_id = item_data["id"]
+            item = Item(
+                project_id=project_id,
+                title=item_data["title"],
+                description=item_data.get("description"),
+                view=item_data.get("view", "FEATURE").upper(),
+                item_type=item_data.get("type", "feature"),
+                status=item_data.get("status", "todo"),
+                priority=item_data.get("priority", "medium"),
+                owner=item_data.get("owner"),
+                parent_id=None,
+                item_metadata=item_data.get("metadata", {}),
+            )
+            self.session.add(item)
+            self.session.flush()
+            item_id_map[old_id] = str(item.id) if not preserve_ids else old_id
+        self.session.commit()
+        return item_id_map
+
+    def _apply_parent_refs_from_backup(
+        self, backup_data: dict[str, Any], item_id_map: dict[str, str]
+    ) -> None:
+        """Update parent_id on restored items."""
+        for item_data in backup_data.get("items", []):
+            old_id = item_data["id"]
+            old_parent_id = item_data.get("parent_id")
+            if not old_parent_id or old_parent_id not in item_id_map:
+                continue
+            new_id = item_id_map.get(old_id)
+            if new_id is None:
+                continue
+            item_to_update = self.session.query(Item).filter(Item.id == new_id).first()
+            if item_to_update is not None:
+                item_to_update.parent_id = item_id_map[old_parent_id]
+        self.session.commit()
+
+    def _restore_links_from_backup(
+        self, project_id: str, backup_data: dict[str, Any], item_id_map: dict[str, str]
+    ) -> None:
+        """Restore links using id map."""
+        for link_data in backup_data.get("links", []):
+            new_source_id = item_id_map.get(link_data["source_id"], link_data["source_id"])
+            new_target_id = item_id_map.get(link_data["target_id"], link_data["target_id"])
+            link = Link(
+                project_id=project_id,
+                source_item_id=new_source_id,
+                target_item_id=new_target_id,
+                link_type=link_data.get("type", "related_to"),
+                link_metadata=link_data.get("metadata", {}),
+            )
+            self.session.add(link)
+        self.session.commit()
+
     def restore_project(
         self,
         backup_data: dict[str, Any],
@@ -137,97 +218,10 @@ class ProjectBackupService:
         Returns:
             New project ID
         """
-        # Create or find project
-        target_name = project_name or backup_data["project"].get("name", "restored-project")
-        project = self.session.query(Project).filter(Project.name == target_name).first()
-
-        if project:
-            # Update existing project
-            project.description = backup_data["project"].get("description", project.description)
-            project.project_metadata = backup_data["project"].get("metadata", {})
-            project_id = str(project.id)
-        else:
-            # Create new project
-            project = Project(
-                name=target_name,
-                description=backup_data["project"].get("description", f"Restored project: {target_name}"),
-                project_metadata={
-                    **(backup_data["project"].get("metadata", {})),
-                    "restored_from_backup": backup_data.get("backup_date"),
-                },
-            )
-            self.session.add(project)
-            self.session.commit()
-            project_id = str(project.id)
-
-        # Map old IDs to new IDs if not preserving
-        item_id_map = {}
-
-        # Restore items
-        for item_data in backup_data.get("items", []):
-            old_id = item_data["id"]
-
-            if preserve_ids:
-                pass
-            else:
-                # Generate new ID (let database handle it)
-                pass
-
-            item = Item(
-                project_id=project_id,
-                title=item_data["title"],
-                description=item_data.get("description"),
-                view=item_data.get("view", "FEATURE").upper(),
-                item_type=item_data.get("type", "feature"),
-                status=item_data.get("status", "todo"),
-                priority=item_data.get("priority", "medium"),
-                owner=item_data.get("owner"),
-                parent_id=None,  # Will update after all items created
-                item_metadata=item_data.get("metadata", {}),
-            )
-            self.session.add(item)
-            self.session.flush()  # Get new ID
-
-            if not preserve_ids:
-                item_id_map[old_id] = item.id
-            else:
-                item_id_map[old_id] = old_id
-
-        self.session.commit()
-
-        # Update parent_id references
-        for item_data in backup_data.get("items", []):
-            old_id = item_data["id"]
-            old_parent_id = item_data.get("parent_id")
-
-            if old_parent_id and old_parent_id in item_id_map:
-                new_id = item_id_map.get(old_id)
-                if new_id is not None:
-                    item_to_update: Item | None = self.session.query(Item).filter(Item.id == new_id).first()
-                    if item_to_update is not None:
-                        item_to_update.parent_id = item_id_map[old_parent_id]
-
-        self.session.commit()
-
-        # Restore links
-        for link_data in backup_data.get("links", []):
-            old_source_id = link_data["source_id"]
-            old_target_id = link_data["target_id"]
-
-            new_source_id = item_id_map.get(old_source_id, old_source_id)
-            new_target_id = item_id_map.get(old_target_id, old_target_id)
-
-            link = Link(
-                project_id=project_id,
-                source_item_id=new_source_id,
-                target_item_id=new_target_id,
-                link_type=link_data.get("type", "related_to"),
-                link_metadata=link_data.get("metadata", {}),
-            )
-            self.session.add(link)
-
-        self.session.commit()
-
+        project_id = self._get_or_create_project_from_backup(backup_data, project_name)
+        item_id_map = self._restore_items_from_backup(project_id, backup_data, preserve_ids)
+        self._apply_parent_refs_from_backup(backup_data, item_id_map)
+        self._restore_links_from_backup(project_id, backup_data, item_id_map)
         return project_id
 
     def clone_project(

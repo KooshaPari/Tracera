@@ -15,6 +15,7 @@ Implements:
 """
 
 import re
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any, ClassVar
 
@@ -22,6 +23,41 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.models.item import Item
+
+# Singularity / conjunctions
+MAX_CONJUNCTIONS_SINGULARITY_WARNING = 2
+
+# CPI risk thresholds (0-1)
+CPI_CRITICAL = 0.5
+CPI_HIGH = 0.3
+CPI_MEDIUM = 0.1
+CPI_REQUIRES_REVIEW = 0.2
+CPI_NOTIFICATION_NEEDED = 0.15
+
+# Volatility / flakiness categorization
+VOLATILITY_CRITICAL = 0.7
+VOLATILITY_HIGH = 0.4
+VOLATILITY_MEDIUM = 0.2
+VOLATILITY_LOW = 0.05
+
+# WSJF
+WSJF_JOB_SIZE_FLOOR = 0.01
+
+# Dashboard / health
+QUALITY_ISSUE_THRESHOLD = 0.6
+HIGH_VOLATILITY_INDEX = 0.5
+HIGH_IMPACT_INDEX = 0.3
+HEALTH_WEIGHT_QUALITY = 0.5
+HEALTH_WEIGHT_VOLATILITY = 0.3
+HEALTH_WEIGHT_CPI = 0.2
+
+# Flakiness pattern
+MIN_FAILURES_FOR_PATTERN = 3
+FLAKINESS_TRANSITION_WEIGHT = 0.3
+FLAKINESS_BASE_WEIGHT = 0.7
+FLAKINESS_ERROR_VARIANCE_WEIGHT = 0.2
+FLAKINESS_ERROR_BASE_WEIGHT = 0.8
+
 from tracertm.models.link import Link
 from tracertm.models.requirement_quality import RequirementQuality
 from tracertm.repositories.item_repository import ItemRepository
@@ -248,7 +284,7 @@ class RequirementQualityAnalyzer:
         singularity_score = max(0, 1 - conjunction_count * 0.15)
         scores["singularity"] = singularity_score
 
-        if conjunction_count > 2:
+        if conjunction_count > MAX_CONJUNCTIONS_SINGULARITY_WARNING:
             issues.append({
                 "dimension": "singularity",
                 "severity": "warning",
@@ -349,11 +385,11 @@ class ImpactAnalyzer:
         cpi = min(1.0, weighted_downstream / max(total_items, 1))
 
         # Determine risk level
-        if cpi > 0.5:
+        if cpi > CPI_CRITICAL:
             risk_level = "critical"
-        elif cpi > 0.3:
+        elif cpi > CPI_HIGH:
             risk_level = "high"
-        elif cpi > 0.1:
+        elif cpi > CPI_MEDIUM:
             risk_level = "medium"
         else:
             risk_level = "low"
@@ -367,10 +403,10 @@ class ImpactAnalyzer:
             "upstream": upstream,
             "impact_breadth": len(set(direct_downstream + upstream)),
             "impact_assessment": {
-                "high_impact": cpi > 0.3,
+                "high_impact": cpi > CPI_HIGH,
                 "risk_level": risk_level,
-                "requires_review": cpi > 0.2,
-                "notification_needed": cpi > 0.15,
+                "requires_review": cpi > CPI_REQUIRES_REVIEW,
+                "notification_needed": cpi > CPI_NOTIFICATION_NEEDED,
             },
         }
 
@@ -427,13 +463,13 @@ class VolatilityTracker:
 
     def categorize_volatility(self, volatility_score: float) -> str:
         """Categorize volatility into levels."""
-        if volatility_score > 0.7:
+        if volatility_score > VOLATILITY_CRITICAL:
             return "critical"
-        if volatility_score > 0.4:
+        if volatility_score > VOLATILITY_HIGH:
             return "high"
-        if volatility_score > 0.2:
+        if volatility_score > VOLATILITY_MEDIUM:
             return "medium"
-        if volatility_score > 0.05:
+        if volatility_score > VOLATILITY_LOW:
             return "low"
         return "stable"
 
@@ -476,8 +512,8 @@ class WSJFCalculator:
         job_size = max(0, min(1, job_size))
 
         # Avoid division by zero
-        if job_size < 0.01:
-            job_size = 0.01
+        if job_size < WSJF_JOB_SIZE_FLOOR:
+            job_size = WSJF_JOB_SIZE_FLOOR
 
         # Standard WSJF formula with weights
         numerator = (business_value * 0.4) + (time_sensitivity * 0.3) + (risk_reduction * 0.3)
@@ -485,6 +521,18 @@ class WSJFCalculator:
 
         # Normalize to 0-1 range
         return min(1.0, wsjf)
+
+
+@dataclass
+class RecordChangeInput:
+    """Input for recording a change on a requirement spec."""
+
+    item_id: str
+    changed_by: str
+    change_type: str
+    summary: str
+    previous_values: dict | None = None
+    new_values: dict | None = None
 
 
 class RequirementSpecService:
@@ -637,41 +685,30 @@ class RequirementSpecService:
 
         return spec
 
-    async def record_change(
-        self,
-        item_id: str,
-        changed_by: str,
-        change_type: str,
-        summary: str,
-        previous_values: dict | None = None,
-        new_values: dict | None = None,
-    ) -> RequirementQuality:
+    async def record_change(self, input: RecordChangeInput) -> RequirementQuality:
         """
         Record a change and update volatility metrics.
 
         Args:
-            item_id: Item that changed
-            changed_by: User who made the change
-            change_type: Type of change (modified, linked, verified, etc.)
-            summary: Change summary
-            previous_values: Previous field values
-            new_values: New field values
+            input: Change record (item_id, changed_by, change_type, summary, previous_values, new_values).
 
         Returns:
             Updated RequirementQuality with volatility
         """
-        spec = await self.quality_repo.get_by_item_id(item_id)
-        if not spec:
-            raise ValueError(f"RequirementQuality for item {item_id} not found")
+        return await self._apply_record_change(input)
 
-        # Create change entry
+    async def _apply_record_change(self, input: RecordChangeInput) -> RequirementQuality:
+        spec = await self.quality_repo.get_by_item_id(input.item_id)
+        if not spec:
+            raise ValueError(f"RequirementQuality for item {input.item_id} not found")
+
         entry = {
             "timestamp": datetime.now(UTC).isoformat(),
-            "changed_by": changed_by,
-            "change_type": change_type,
-            "summary": summary,
-            "previous_values": previous_values,
-            "new_values": new_values,
+            "changed_by": input.changed_by,
+            "change_type": input.change_type,
+            "summary": input.summary,
+            "previous_values": input.previous_values,
+            "new_values": input.new_values,
         }
 
         # Update change history
@@ -801,9 +838,9 @@ class RequirementSpecService:
             }
 
         # Analyze metrics
-        quality_issues = [s for s in all_specs if s.overall_quality_score < 0.6]
-        high_volatility = [s for s in all_specs if (s.volatility_index or 0) > 0.5]
-        high_impact = [s for s in all_specs if (s.change_propagation_index or 0) > 0.3]
+        quality_issues = [s for s in all_specs if s.overall_quality_score < QUALITY_ISSUE_THRESHOLD]
+        high_volatility = [s for s in all_specs if (s.volatility_index or 0) > HIGH_VOLATILITY_INDEX]
+        high_impact = [s for s in all_specs if (s.change_propagation_index or 0) > HIGH_IMPACT_INDEX]
         unverified = [s for s in all_specs if not s.is_verified]
 
         # Calculate average scores
@@ -812,7 +849,11 @@ class RequirementSpecService:
         avg_cpi = sum(s.change_propagation_index or 0 for s in all_specs) / len(all_specs)
 
         # Health score (weighted)
-        health_score = avg_quality * 0.5 + (1 - avg_volatility) * 0.3 + (1 - avg_cpi) * 0.2
+        health_score = (
+            avg_quality * HEALTH_WEIGHT_QUALITY
+            + (1 - avg_volatility) * HEALTH_WEIGHT_VOLATILITY
+            + (1 - avg_cpi) * HEALTH_WEIGHT_CPI
+        )
 
         return {
             "total_requirements": len(all_specs),
@@ -878,35 +919,39 @@ class TestSpecFlakinessDector:
         base_score = failure_rate
 
         # Pattern analysis: check for intermittent failures
-        if len(recent_failures) >= 3:
-            # Alternating pass/fail pattern indicates flakiness
+        if len(recent_failures) >= MIN_FAILURES_FOR_PATTERN:
             transitions = sum(
                 1
                 for i in range(len(recent_failures) - 1)
                 if recent_failures[i].get("status") != recent_failures[i + 1].get("status")
             )
             transition_rate = transitions / len(recent_failures)
-            base_score = base_score * 0.7 + transition_rate * 0.3
+            base_score = (
+                base_score * FLAKINESS_BASE_WEIGHT
+                + transition_rate * FLAKINESS_TRANSITION_WEIGHT
+            )
 
         # Environment factor: same error in different environments suggests flakiness
         error_messages = [f.get("error") for f in recent_failures if f.get("error")]
         if error_messages:
             unique_errors = len(set(error_messages))
             error_variance = unique_errors / max(1, len(error_messages))
-            # High variance = different errors = flaky
-            base_score = base_score * 0.8 + error_variance * 0.2
+            base_score = (
+                base_score * FLAKINESS_ERROR_BASE_WEIGHT
+                + error_variance * FLAKINESS_ERROR_VARIANCE_WEIGHT
+            )
 
         return min(1.0, base_score)
 
     def categorize_flakiness(self, score: float) -> str:
         """Categorize flakiness level."""
-        if score > 0.7:
+        if score > VOLATILITY_CRITICAL:
             return "critical"
-        if score > 0.4:
+        if score > VOLATILITY_HIGH:
             return "high"
-        if score > 0.2:
+        if score > VOLATILITY_MEDIUM:
             return "medium"
-        if score > 0.05:
+        if score > VOLATILITY_LOW:
             return "low"
         return "stable"
 

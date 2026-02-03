@@ -37,7 +37,10 @@ describe("Screenshot Utilities", () => {
 			const emptyData = "";
 
 			// When: Attempting upload
-			const result = uploadScreenshot(emptyData, "component-1");
+			const result = uploadScreenshot({
+				componentId: "component-1",
+				screenshotData: emptyData,
+			});
 
 			// Then: Verify error is thrown
 			await expect(result).rejects.toThrow("empty");
@@ -50,10 +53,10 @@ describe("Screenshot Utilities", () => {
 			);
 
 			// When: Uploading with network error
-			const result = uploadScreenshot(
-				"data:image/png;base64,ABC123",
-				"component-1",
-			);
+			const result = uploadScreenshot({
+				componentId: "component-1",
+				screenshotData: "data:image/png;base64,ABC123",
+			});
 
 			// Then: Verify error is caught
 			await expect(result).rejects.toThrow();
@@ -68,10 +71,10 @@ describe("Screenshot Utilities", () => {
 			});
 
 			// When: Attempting upload
-			const result = uploadScreenshot(
-				"data:image/png;base64,ABC123",
-				"component-1",
-			);
+			const result = uploadScreenshot({
+				componentId: "component-1",
+				screenshotData: "data:image/png;base64,ABC123",
+			});
 
 			// Then: Verify error is thrown
 			await expect(result).rejects.toThrow();
@@ -83,7 +86,10 @@ describe("Screenshot Utilities", () => {
 
 			// When: Attempting upload
 			try {
-				await uploadScreenshot(emptyData, "component-1");
+				await uploadScreenshot({
+					componentId: "component-1",
+					screenshotData: emptyData,
+				});
 			} catch (error) {
 				// Then: Verify error has proper structure
 				expect(error).toHaveProperty("code");
@@ -369,7 +375,10 @@ describe("Screenshot Utilities", () => {
 		it("should provide error with code property", async () => {
 			// When: Attempting upload with empty data
 			try {
-				await uploadScreenshot("", "component-1");
+				await uploadScreenshot({
+					componentId: "component-1",
+					screenshotData: "",
+				});
 			} catch (error) {
 				// Then: Verify error has code
 				expect((error as any).code).toBeDefined();
@@ -384,7 +393,10 @@ describe("Screenshot Utilities", () => {
 			(globalThis.fetch as any).mockRejectedValueOnce(new Error("Network"));
 
 			try {
-				await uploadScreenshot("data:image/png;base64,ABC", "comp-1");
+				await uploadScreenshot({
+					componentId: "comp-1",
+					screenshotData: "data:image/png;base64,ABC",
+				});
 			} catch (error) {
 				expect((error as any).code).toBeDefined();
 			}

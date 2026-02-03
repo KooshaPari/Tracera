@@ -15,6 +15,8 @@ from tracertm.repositories.item_repository import ItemRepository
 
 logger = logging.getLogger(__name__)
 
+BULK_WARN_THRESHOLD = 100
+
 
 @dataclass
 class BulkPreview:
@@ -51,7 +53,7 @@ class BulkOperationService:
 
         # Validation warnings
         warnings = []
-        if len(matching_items) > 100:
+        if len(matching_items) > BULK_WARN_THRESHOLD:
             warnings.append(f"Large operation: {len(matching_items)} items will be updated")
 
         if "status" in updates:

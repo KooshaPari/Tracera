@@ -19,14 +19,17 @@ class GraphReportService:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def build_report(self, project_id: str, graph_id: str) -> dict[str, Any]:
-        graph_result = await self.session.execute(
+    async def _fetch_graph(self, project_id: str, graph_id: str) -> Graph | None:
+        """Load graph by id and project; return None if not found."""
+        result = await self.session.execute(
             select(Graph).where(Graph.id == graph_id, Graph.project_id == project_id)
         )
-        graph = graph_result.scalar_one_or_none()
-        if not graph:
-            return {"errors": ["graph_not_found"]}
+        return result.scalar_one_or_none()
 
+    async def _fetch_nodes_links_orphans(
+        self, graph_id: str
+    ) -> tuple[set[str], dict[str, str], list[Link], list[str]]:
+        """Return (node_ids, node_kind_by_id, links, orphan_nodes)."""
         nodes_result = await self.session.execute(
             select(Item).join(GraphNode, GraphNode.item_id == Item.id).where(GraphNode.graph_id == graph_id)
         )
@@ -40,71 +43,99 @@ class GraphReportService:
         for link in links:
             linked_nodes.add(link.source_item_id)
             linked_nodes.add(link.target_item_id)
-
         orphan_nodes = sorted([n for n in node_ids if n not in linked_nodes])
+        return node_ids, node_kind_by_id, links, orphan_nodes
 
-        # Missing mappings for user requirements
-        mapping_graph = await self.session.execute(
+    async def _fetch_missing_mappings(
+        self, project_id: str, graph_type: str, node_kind_by_id: dict[str, str]
+    ) -> list[str]:
+        """Return node ids that are required but not in mapping graph."""
+        mapping_result = await self.session.execute(
             select(Graph).where(
                 Graph.project_id == project_id,
                 Graph.graph_type == "mapping",
             )
         )
-        mapping_graph_obj = mapping_graph.scalar_one_or_none()
-        mapping_links: list[Link] = []
+        mapping_graph_obj = mapping_result.scalar_one_or_none()
+        mapping_linked: set[str] = set()
         if mapping_graph_obj:
-            mapping_links_result = await self.session.execute(select(Link).where(Link.graph_id == mapping_graph_obj.id))
-            mapping_links = list(mapping_links_result.scalars().all())
-        mapping_linked = set()
-        for link in mapping_links:
-            mapping_linked.add(link.source_item_id)
-            mapping_linked.add(link.target_item_id)
+            mapping_links_result = await self.session.execute(
+                select(Link).where(Link.graph_id == mapping_graph_obj.id)
+            )
+            for link in mapping_links_result.scalars().all():
+                mapping_linked.add(link.source_item_id)
+                mapping_linked.add(link.target_item_id)
 
-        missing_mappings: list[str] = []
-        if graph.graph_type == "user_requirements":
-            for node_id, kind in node_kind_by_id.items():
-                if kind in {"capability", "expectation", "acceptance_check"} and node_id not in mapping_linked:
-                    missing_mappings.append(node_id)
+        if graph_type != "user_requirements":
+            return []
+        required_kinds = {"capability", "expectation", "acceptance_check"}
+        return [
+            nid for nid, kind in node_kind_by_id.items()
+            if kind in required_kinds and nid not in mapping_linked
+        ]
 
-        # API endpoints unreachable from journey or mapping graphs
-        unreachable_api: list[str] = []
-        tech_graph = await self.session.execute(
+    async def _fetch_unreachable_api(self, project_id: str, mapping_graph_obj: Graph | None) -> list[str]:
+        """Return sorted list of API endpoint node ids not covered by journey or mapping."""
+        tech_result = await self.session.execute(
             select(Graph).where(
                 Graph.project_id == project_id,
                 Graph.graph_type == "technical_requirements",
             )
         )
-        tech_graph_obj = tech_graph.scalar_one_or_none()
-        journey_graph = await self.session.execute(
+        tech_graph_obj = tech_result.scalar_one_or_none()
+        if not tech_graph_obj:
+            return []
+
+        journey_result = await self.session.execute(
             select(Graph).where(
                 Graph.project_id == project_id,
                 Graph.graph_type == "journey",
             )
         )
-        journey_graph_obj = journey_graph.scalar_one_or_none()
+        journey_graph_obj = journey_result.scalar_one_or_none()
 
-        if tech_graph_obj:
-            tech_nodes_result = await self.session.execute(
-                select(Item)
-                .join(GraphNode, GraphNode.item_id == Item.id)
-                .where(GraphNode.graph_id == tech_graph_obj.id)
+        tech_nodes_result = await self.session.execute(
+            select(Item)
+            .join(GraphNode, GraphNode.item_id == Item.id)
+            .where(GraphNode.graph_id == tech_graph_obj.id)
+        )
+        tech_nodes = list(tech_nodes_result.scalars().all())
+        api_nodes = [n.id for n in tech_nodes if n.item_type == "api_endpoint"]
+
+        covered_nodes: set[str] = set()
+        if journey_graph_obj:
+            journey_nodes_result = await self.session.execute(
+                select(GraphNode.item_id).where(GraphNode.graph_id == journey_graph_obj.id)
             )
-            tech_nodes = list(tech_nodes_result.scalars().all())
-            api_nodes = [n.id for n in tech_nodes if n.item_type == "api_endpoint"]
+            covered_nodes.update(row[0] for row in journey_nodes_result.all())
+        if mapping_graph_obj:
+            mapping_nodes_result = await self.session.execute(
+                select(GraphNode.item_id).where(GraphNode.graph_id == mapping_graph_obj.id)
+            )
+            covered_nodes.update(row[0] for row in mapping_nodes_result.all())
 
-            covered_nodes = set()
-            if journey_graph_obj:
-                journey_nodes_result = await self.session.execute(
-                    select(GraphNode.item_id).where(GraphNode.graph_id == journey_graph_obj.id)
-                )
-                covered_nodes.update([row[0] for row in journey_nodes_result.all()])
-            if mapping_graph_obj:
-                mapping_nodes_result = await self.session.execute(
-                    select(GraphNode.item_id).where(GraphNode.graph_id == mapping_graph_obj.id)
-                )
-                covered_nodes.update([row[0] for row in mapping_nodes_result.all()])
+        return sorted([n for n in api_nodes if n not in covered_nodes])
 
-            unreachable_api = sorted([n for n in api_nodes if n not in covered_nodes])
+    async def build_report(self, project_id: str, graph_id: str) -> dict[str, Any]:
+        graph = await self._fetch_graph(project_id, graph_id)
+        if not graph:
+            return {"errors": ["graph_not_found"]}
+
+        node_ids, node_kind_by_id, links, orphan_nodes = await self._fetch_nodes_links_orphans(
+            graph_id
+        )
+        missing_mappings = await self._fetch_missing_mappings(
+            project_id, graph.graph_type, node_kind_by_id
+        )
+
+        mapping_result = await self.session.execute(
+            select(Graph).where(
+                Graph.project_id == project_id,
+                Graph.graph_type == "mapping",
+            )
+        )
+        mapping_graph_obj = mapping_result.scalar_one_or_none()
+        unreachable_api = await self._fetch_unreachable_api(project_id, mapping_graph_obj)
 
         return {
             "graph_id": graph_id,

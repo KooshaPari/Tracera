@@ -24,12 +24,12 @@ interface DiffViewerProps {
 const COPY_RESET_MS = 2000;
 
 export const DiffViewer = ({ fieldChanges, compact = false }: DiffViewerProps) => {
-	const [copiedField, setCopiedField] = useState<string | null>(null);
+	const [_copiedField, setCopiedField] = useState<string | null>(null);
 
 	const handleCopyValue = useCallback(
-		(value: unknown, field: string) => {
-			const text = formatValueForCopy(value);
-			navigator.clipboard?.writeText(text).catch(() => {});
+		(_value: unknown, field: string) => {
+			const _text = formatValueForCopy(_value);
+			navigator.clipboard?.writeText(_text).catch(() => {});
 			setCopiedField(field);
 			setTimeout(() => setCopiedField(null), COPY_RESET_MS);
 		},
@@ -49,14 +49,14 @@ export const DiffViewer = ({ fieldChanges, compact = false }: DiffViewerProps) =
 						key={change.field}
 						change={change}
 						onCopy={handleCopyValue}
-						isCopied={copiedField === change.field}
+						isCopied={_copiedField === change.field}
 						compact={compact}
 					/>
 				))}
 			</div>
 		</div>
 	);
-}
+};
 
 interface FieldChangeRowProps {
 	change: FieldDiffChange;

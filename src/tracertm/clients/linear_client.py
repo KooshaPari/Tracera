@@ -1,6 +1,6 @@
 """Linear API client using GraphQL with wait+retry."""
 
-from datetime import UTC, datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 import httpx

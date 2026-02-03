@@ -28,6 +28,8 @@ from tracertm.config.manager import ConfigManager
 from tracertm.mcp.api_client import get_api_client
 from tracertm.mcp.core import mcp
 
+HTTP_NOT_FOUND = 404
+
 # ==========================================================================
 # Utilities
 # ==========================================================================
@@ -367,7 +369,7 @@ def update_item(
     try:
         item = client.put(f"/api/v1/items/{resolved_id}", json=payload)
     except TraceRTMHttpError as exc:
-        if exc.status != 404:
+        if exc.status != HTTP_NOT_FOUND:
             raise ToolError(str(exc)) from exc
         try:
             result = client.get(
@@ -418,7 +420,7 @@ def delete_item(item_id: str) -> dict[str, Any]:
     try:
         result = client.delete(f"/api/v1/items/{resolved_id}")
     except TraceRTMHttpError as exc:
-        if exc.status != 404:
+        if exc.status != HTTP_NOT_FOUND:
             raise ToolError(str(exc)) from exc
         try:
             items = client.get(

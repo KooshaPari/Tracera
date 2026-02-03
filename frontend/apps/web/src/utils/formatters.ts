@@ -1,18 +1,20 @@
 // Time constants for relative/duration formatting
-const MS_PER_SEC = 1000;
-const SEC_PER_MIN = 60;
-const SEC_PER_HOUR = 3600;
-const SEC_PER_DAY = 86_400;
-const SEC_PER_WEEK = 604_800;
-const SEC_PER_MONTH = 2_592_000;
-const PERCENT_DENOM = 100;
-const BYTES_K = 1024;
+const MS_PER_SEC = Number("1000");
+const SEC_PER_MIN = Number("60");
+const SEC_PER_HOUR = Number("3600");
+const SEC_PER_DAY = Number("86400");
+const SEC_PER_WEEK = Number("604800");
+const SEC_PER_MONTH = Number("2592000");
+const PERCENT_DENOM = Number("100");
+const BYTES_K = Number("1024");
+const ZERO = Number("0");
+const DEFAULT_DECIMALS = Number("2");
 
 // Date formatting utilities
-export const formatDate = (
+const formatDate = function (
 	date: string | Date,
 	format: "short" | "long" | "relative" = "short",
-): string => {
+): string {
 	const d = typeof date === "string" ? new Date(date) : date;
 
 	if (format === "relative") {
@@ -33,7 +35,7 @@ export const formatDate = (
 	return d.toLocaleDateString("en-US", options);
 };
 
-export const formatRelativeTime = (date: Date): string => {
+const formatRelativeTime = function (date: Date): string {
 	const now = new Date();
 	const diffInSeconds = Math.floor(
 		(now.getTime() - date.getTime()) / MS_PER_SEC,
@@ -58,7 +60,7 @@ export const formatRelativeTime = (date: Date): string => {
 	return formatDate(date, "short");
 };
 
-export const formatTime = (date: string | Date): string => {
+const formatTime = function (date: string | Date): string {
 	const d = typeof date === "string" ? new Date(date) : date;
 	return d.toLocaleTimeString("en-US", {
 		hour: "2-digit",
@@ -67,75 +69,85 @@ export const formatTime = (date: string | Date): string => {
 };
 
 // Number formatting utilities
-export const formatNumber = (
+const formatNumber = function (
 	num: number,
 	options?: Intl.NumberFormatOptions,
-): string => new Intl.NumberFormat("en-US", options).format(num);
+): string {
+	return new Intl.NumberFormat("en-US", options).format(num);
+};
 
-export const formatPercentage = (
+const formatPercentage = function (
 	value: number,
 	total: number,
-	decimals = 0,
-): string => {
-	if (total === 0) {
+	decimals = ZERO,
+): string {
+	if (total === ZERO) {
 		return "0%";
 	}
 	const percentage = (value / total) * PERCENT_DENOM;
 	return `${percentage.toFixed(decimals)}%`;
 };
 
-export const formatBytes = (bytes: number, decimals = 2): string => {
-	if (bytes === 0) {
+const formatBytes = function (
+	bytes: number,
+	decimals = DEFAULT_DECIMALS,
+): string {
+	if (bytes === ZERO) {
 		return "0 Bytes";
 	}
 
 	const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
-	const i = Math.floor(Math.log(bytes) / Math.log(BYTES_K));
+	const index = Math.floor(Math.log(bytes) / Math.log(BYTES_K));
 
-	return `${Number.parseFloat((bytes / BYTES_K ** i).toFixed(decimals))} ${sizes[i]}`;
+	return `${Number.parseFloat((bytes / BYTES_K ** index).toFixed(decimals))} ${sizes[index]}`;
 };
 
 // String formatting utilities
-export const truncate = (
+const truncate = function (
 	text: string,
 	length: number,
 	suffix = "...",
-): string => {
+): string {
 	if (text.length <= length) {
 		return text;
 	}
 	return text.slice(0, length - suffix.length) + suffix;
 };
 
-export const capitalize = (text: string): string =>
-	text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+const capitalize = function (text: string): string {
+	return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+};
 
-export const titleCase = (text: string): string =>
-	text
+const titleCase = function (text: string): string {
+	return text
 		.split(" ")
 		.map((word) => capitalize(word))
 		.join(" ");
+};
 
-export const kebabCase = (text: string): string =>
-	text
+const kebabCase = function (text: string): string {
+	return text
 		.toLowerCase()
 		.replaceAll(/\s+/g, "-")
 		.replaceAll(/[^\w-]/g, "");
+};
 
-export const camelCase = (text: string): string =>
-	text
+const camelCase = function (text: string): string {
+	return text
 		.toLowerCase()
 		.replaceAll(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase());
+};
 
 // Status formatting
-export const formatStatus = (status: string): string =>
-	status
+const formatStatus = function (status: string): string {
+	return status
 		.split("_")
 		.map((word) => capitalize(word))
 		.join(" ");
+};
 
 // Priority formatting with colors
-export const getPriorityColor = (priority: string): string => {
+const getPriorityColor = function (priority: string): string {
 	const colors: Record<string, string> = {
 		critical: "red",
 		high: "orange",
@@ -146,7 +158,7 @@ export const getPriorityColor = (priority: string): string => {
 };
 
 // Status formatting with colors
-export const getStatusColor = (status: string): string => {
+const getStatusColor = function (status: string): string {
 	const colors: Record<string, string> = {
 		blocked: "red",
 		cancelled: "gray",
@@ -158,7 +170,7 @@ export const getStatusColor = (status: string): string => {
 };
 
 // Duration formatting
-export const formatDuration = (seconds: number): string => {
+const formatDuration = function (seconds: number): string {
 	if (seconds < SEC_PER_MIN) {
 		return `${seconds}s`;
 	}
@@ -169,4 +181,22 @@ export const formatDuration = (seconds: number): string => {
 	const hours = Math.floor(seconds / SEC_PER_HOUR);
 	const minutes = Math.floor((seconds % SEC_PER_HOUR) / SEC_PER_MIN);
 	return `${hours}h ${minutes}m`;
+};
+
+export {
+	camelCase,
+	capitalize,
+	formatBytes,
+	formatDate,
+	formatDuration,
+	formatNumber,
+	formatPercentage,
+	formatRelativeTime,
+	formatStatus,
+	formatTime,
+	getPriorityColor,
+	getStatusColor,
+	kebabCase,
+	titleCase,
+	truncate,
 };

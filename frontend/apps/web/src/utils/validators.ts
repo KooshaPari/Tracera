@@ -1,51 +1,63 @@
 // Validation utilities
 
-const MAX_ITEM_TITLE_LENGTH = 200;
-const MAX_PROJECT_NAME_LENGTH = 50;
-const MIN_PROJECT_NAME_LENGTH = 3;
-const MAX_DESCRIPTION_LENGTH = 500;
+const MAX_ITEM_TITLE_LENGTH = Number("200");
+const MAX_PROJECT_NAME_LENGTH = Number("50");
+const MIN_PROJECT_NAME_LENGTH = Number("3");
+const MAX_DESCRIPTION_LENGTH = Number("500");
 
-export const isEmail = (email: string): boolean => {
+const isEmail = function (email: string): boolean {
 	const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 	return emailRegex.test(email);
 };
 
-export const isUrl = (url: string): boolean => URL.canParse(url);
+const isUrl = function (url: string): boolean {
+	return URL.canParse(url);
+};
 
-export const isValidProjectName = (name: string): boolean => {
+const isValidProjectName = function (name: string): boolean {
 	const nameRegex = new RegExp(
 		`^[a-zA-Z0-9\\s-_]{${MIN_PROJECT_NAME_LENGTH},${MAX_PROJECT_NAME_LENGTH}}$`,
 	);
 	return nameRegex.test(name);
 };
 
-export const isValidItemTitle = (title: string): boolean =>
-	title.length > 0 && title.length <= MAX_ITEM_TITLE_LENGTH;
+const isValidItemTitle = function (title: string): boolean {
+	return title.length > 0 && title.length <= MAX_ITEM_TITLE_LENGTH;
+};
 
-export const isValidId = (id: string): boolean => {
+const isValidId = function (id: string): boolean {
 	const uuidRegex =
 		/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 	const simpleIdRegex = /^[a-zA-Z0-9_-]+$/;
 	return uuidRegex.test(id) || simpleIdRegex.test(id);
 };
 
-export const isNumeric = (value: string): boolean =>
-	!Number.isNaN(Number.parseFloat(value)) && Number.isFinite(Number(value));
+const isNumeric = function (value: string): boolean {
+	return (
+		!Number.isNaN(Number.parseFloat(value)) &&
+		Number.isFinite(Number(value))
+	);
+};
 
-export const isInRange = (
+const isInRange = function (
 	value: number,
 	min: number,
 	max: number,
-): boolean => value >= min && value <= max;
+): boolean {
+	return value >= min && value <= max;
+};
 
-export const hasMinLength = (text: string, min: number): boolean =>
-	text.length >= min;
+const hasMinLength = function (text: string, min: number): boolean {
+	return text.length >= min;
+};
 
-export const hasMaxLength = (text: string, max: number): boolean =>
-	text.length <= max;
+const hasMaxLength = function (text: string, max: number): boolean {
+	return text.length <= max;
+};
 
-export const matchesPattern = (text: string, pattern: RegExp): boolean =>
-	pattern.test(text);
+const matchesPattern = function (text: string, pattern: RegExp): boolean {
+	return pattern.test(text);
+};
 
 // Complex validation
 export interface ValidationResult {
@@ -53,10 +65,10 @@ export interface ValidationResult {
 	errors: string[];
 }
 
-export const validateProject = (data: {
+const validateProject = function (data: {
 	description?: string;
 	name?: string;
-}): ValidationResult => {
+}): ValidationResult {
 	const errors: string[] = [];
 
 	if (!data.name) {
@@ -77,13 +89,13 @@ export const validateProject = (data: {
 	};
 };
 
-export const validateItem = (data: {
+const validateItem = function (data: {
 	priority?: string;
 	status?: string;
 	title?: string;
 	type?: string;
 	view?: string;
-}): ValidationResult => {
+}): ValidationResult {
 	const errors: string[] = [];
 
 	if (!data.title) {
@@ -114,11 +126,11 @@ export const validateItem = (data: {
 	};
 };
 
-export const validateLink = (data: {
+const validateLink = function (data: {
 	sourceId?: string;
 	targetId?: string;
 	type?: string;
-}): ValidationResult => {
+}): ValidationResult {
 	const errors: string[] = [];
 
 	if (!data.sourceId) {
@@ -141,4 +153,20 @@ export const validateLink = (data: {
 		errors,
 		valid: errors.length === 0,
 	};
+};
+
+export {
+	hasMaxLength,
+	hasMinLength,
+	isEmail,
+	isInRange,
+	isNumeric,
+	isUrl,
+	isValidId,
+	isValidItemTitle,
+	isValidProjectName,
+	matchesPattern,
+	validateItem,
+	validateLink,
+	validateProject,
 };

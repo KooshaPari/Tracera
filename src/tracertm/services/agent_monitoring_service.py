@@ -12,6 +12,8 @@ from sqlalchemy.orm import Session
 from tracertm.models.agent import Agent
 from tracertm.models.event import Event
 
+CONFLICT_RATE_ALERT_THRESHOLD = 10.0
+
 
 class AgentMonitoringService:
     """
@@ -140,7 +142,7 @@ class AgentMonitoringService:
                     "message": f"Agent {metric['agent_name']} has {metric['conflict_rate']:.1f}% conflict rate",
                 }
                 for metric in metrics.get("metrics", [])
-                if metric.get("conflict_rate", 0) > 10.0
+                if metric.get("conflict_rate", 0) > CONFLICT_RATE_ALERT_THRESHOLD
             )
 
         # Check for error rates

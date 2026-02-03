@@ -1,9 +1,10 @@
 """FastAPI routes for execution system (QA Integration executions, artifacts, config)."""
 
+from typing import Any
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from typing import Any
 from tracertm.api.deps import auth_guard, get_db
 from tracertm.schemas.execution import (
     ExecutionArtifactCreate,

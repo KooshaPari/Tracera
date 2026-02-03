@@ -411,6 +411,9 @@ MAX_FILE_SIZE = 10 * 1024 * 1024
 # Maximum command output size (1MB)
 MAX_OUTPUT_SIZE = 1 * 1024 * 1024
 
+MAX_LIST_DIR_ENTRIES = 1000
+MAX_LIST_DIR_RESULT = 500
+
 
 def set_allowed_paths(paths: list[str]) -> None:
     """Configure allowed paths for filesystem operations."""
@@ -619,7 +622,7 @@ def _list_directory(params: dict[str, Any], base_dir: str | None) -> dict[str, A
                 for name in files + dirs
                 if fnmatch.fnmatch(name, pattern)
             ])
-            if len(results) > 1000:
+            if len(results) > MAX_LIST_DIR_ENTRIES:
                 break
     else:
         # Use scandir for better performance (avoids extra stat calls)
@@ -635,7 +638,7 @@ def _list_directory(params: dict[str, Any], base_dir: str | None) -> dict[str, A
 
     return {
         "success": True,
-        "result": {"path": path, "entries": results[:500]},
+        "result": {"path": path, "entries": results[:MAX_LIST_DIR_RESULT]},
     }
 
 
@@ -663,10 +666,10 @@ def _search_files(params: dict[str, Any], base_dir: str | None) -> dict[str, Any
     # Directories to skip for performance
     skip_dirs = {"node_modules", "__pycache__", "venv", ".git", ".venv", "dist", "build", ".next", ".nuxt"}
 
-    for root, dirs, files in os.walk(path):
+    for current_root, dirs, files in os.walk(path):
         # Filter directories in-place for efficiency
         dirs[:] = [d for d in dirs if not d.startswith(".") and d not in skip_dirs]
-        root_path = pathlib.Path(root)
+        root_path = pathlib.Path(current_root)
 
         for name in files:
             # Skip binary files for efficiency

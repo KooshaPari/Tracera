@@ -1,12 +1,12 @@
 import logging
 from datetime import UTC, datetime
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import select, text, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from typing import Any
 from tracertm.api.deps import auth_guard, get_db
 from tracertm.models.notification import Notification
 

@@ -55,7 +55,9 @@ interface ItemsActions {
 type ItemsState = ItemsDataState & ItemsActions;
 
 type StoreSetter = (
-	fn: (state: ItemsState) => Partial<ItemsState> | ItemsState,
+	partial:
+		| Partial<ItemsState>
+		| ((state: ItemsState) => Partial<ItemsState> | ItemsState),
 ) => void;
 
 type StoreGetter = () => ItemsState;
@@ -95,15 +97,12 @@ const buildTempItem = (tempId: string, data: CreateItemInput): Item => {
 	};
 };
 
-const createCrudActions = (set: StoreSetter, get: StoreGetter): Pick<
+const createCollectionActions = (set: StoreSetter, get: StoreGetter): Pick<
 	ItemsActions,
 	| "addItem"
 	| "addItems"
 	| "clearItems"
-	| "getItem"
-	| "getItemsByProject"
 	| "removeItem"
-	| "updateItem"
 > => ({
 	addItem: (item) => {
 		set((state) => {
@@ -131,18 +130,6 @@ const createCrudActions = (set: StoreSetter, get: StoreGetter): Pick<
 			itemsByProject: new Map(),
 		});
 	},
-	getItem: (id) => get().items.get(id),
-	getItemsByProject: (projectId) => {
-		const itemIds = get().itemsByProject.get(projectId) || [];
-		const itemsMap = get().items;
-		return itemIds.reduce<Item[]>((acc, id) => {
-			const item = itemsMap.get(id);
-			if (item) {
-				acc.push(item);
-			}
-			return acc;
-		}, []);
-	},
 	removeItem: (id) => {
 		set((state) => {
 			const item = state.items.get(id);
@@ -166,6 +153,28 @@ const createCrudActions = (set: StoreSetter, get: StoreGetter): Pick<
 			};
 		});
 	},
+});
+
+const createQueryActions = (get: StoreGetter): Pick<
+	ItemsActions,
+	"getItem" | "getItemsByProject"
+> => ({
+	getItem: (id) => get().items.get(id),
+	getItemsByProject: (projectId) => {
+		const itemIds = get().itemsByProject.get(projectId) || [];
+		const itemsMap = get().items;
+		const items: Item[] = [];
+		for (const itemId of itemIds) {
+			const item = itemsMap.get(itemId);
+			if (item) {
+				items.push(item);
+			}
+		}
+		return items;
+	},
+});
+
+const createUpdateActions = (set: StoreSetter): Pick<ItemsActions, "updateItem"> => ({
 	updateItem: (id, updates) => {
 		set((state) => {
 			const item = state.items.get(id);
@@ -321,7 +330,9 @@ const createLoadingActions = (set: StoreSetter): Pick<
 
 const buildItemsStore = (set: StoreSetter, get: StoreGetter): ItemsState => ({
 	...createInitialState(),
-	...createCrudActions(set, get),
+	...createCollectionActions(set, get),
+	...createQueryActions(get),
+	...createUpdateActions(set),
 	...createOptimisticCreateActions(set, get),
 	...createOptimisticUpdateActions(set, get),
 	...createOptimisticDeleteActions(set, get),

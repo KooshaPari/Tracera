@@ -1,4 +1,3 @@
-/* oxlint-disable oxc/no-async-await */
 // Re-export links API from endpoints
 import { linksApi } from "./endpoints";
 

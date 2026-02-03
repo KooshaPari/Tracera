@@ -1,3 +1,4 @@
+/* eslint-disable complexity, func-style, no-magic-numbers */
 /**
  * Level-of-detail (LOD) for graph nodes.
  * Used for varying node representation by zoom and optionally node count

@@ -20,7 +20,7 @@ import {
 	TabsTrigger,
 } from "@tracertm/ui/components/Tabs";
 import { useState } from "react";
-import client from "@/api/client";
+import { client } from "@/api/client";
 // Note: useParams from @tanstack/react-router requires route context
 // For now, we'll handle project_id via filters
 import type { SearchResult } from "../api/types";

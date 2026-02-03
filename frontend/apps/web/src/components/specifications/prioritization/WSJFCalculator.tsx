@@ -221,14 +221,14 @@ export function WSJFScoreBadge({
 	size = "md",
 	className,
 }: WSJFScoreBadgeProps) {
-	const color =
-		score >= 5
-			? "bg-green-100 text-green-700 border-green-300"
-			: score >= 3
-				? "bg-blue-100 text-blue-700 border-blue-300"
-				: score >= 1
-					? "bg-yellow-100 text-yellow-700 border-yellow-300"
-					: "bg-gray-100 text-gray-700 border-gray-300";
+	let color = "bg-gray-100 text-gray-700 border-gray-300";
+	if (score >= 5) {
+		color = "bg-green-100 text-green-700 border-green-300";
+	} else if (score >= 3) {
+		color = "bg-blue-100 text-blue-700 border-blue-300";
+	} else if (score >= 1) {
+		color = "bg-yellow-100 text-yellow-700 border-yellow-300";
+	}
 
 	const sizeClass = {
 		lg: "text-base px-3 py-1.5",

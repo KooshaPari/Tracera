@@ -49,7 +49,7 @@ import {
 	useProjects,
 	useUpdateProject,
 } from "../hooks/useProjects";
-import client from "@/api/client";
+import { client } from "@/api/client";
 
 const { getAuthHeaders } = client;
 

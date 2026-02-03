@@ -2,9 +2,10 @@
 Specification tools for MCP.
 """
 
+from typing import Any
+
 from fastmcp.exceptions import ToolError
 
-from typing import Any
 from tracertm.api.http_client import TraceRTMHttpClient, TraceRTMHttpError
 from tracertm.mcp.api_client import get_api_client
 from tracertm.mcp.core import mcp

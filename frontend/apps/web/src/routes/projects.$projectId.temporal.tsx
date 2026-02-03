@@ -1,16 +1,42 @@
+import { useEffect, useState } from "react";
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import type { Milestone, Sprint } from "@tracertm/types";
-import { useEffect, useState } from "react";
 import type { Branch, Version } from "@/components/temporal";
 import { ProgressDashboard, TemporalNavigator } from "@/components/temporal";
-import { requireAuth } from "@/lib/route-guards";
 import { logger } from "@/lib/logger";
+import { requireAuth } from "@/lib/route-guards";
+
+// Animation constants
+const ANIMATION_DURATION_MS = 500;
+
+// Mock branch data factory
+const createMockBranches = (): Branch[] => [
+	{
+		createdAt: new Date(),
+		id: "main",
+		mergeRequestCount: 0,
+		name: "Main",
+		status: "active",
+		updatedAt: new Date(),
+	},
+];
+
+// Mock version data factory
+const createMockVersions = (branchId: string): Version[] => [
+	{
+		branchId,
+		id: "v1",
+		status: "published",
+		timestamp: new Date(),
+		title: "Version 1.0",
+	},
+];
 
 /**
  * Temporal Navigation View
  * Provides version/branch navigation and progress tracking
  */
-export function TemporalView() {
+export const TemporalView = () => {
 	const { projectId } = useParams({ from: "/projects/$projectId/temporal" });
 	const [branches, setBranches] = useState<Branch[]>([]);
 	const [versions, setVersions] = useState<Version[]>([]);
@@ -35,32 +61,15 @@ export function TemporalView() {
 				// Const sprintsData = await api.sprints.list({ projectId });
 
 				// Mock data for now
-				const mockBranches: Branch[] = [
-					{
-						createdAt: new Date(),
-						id: "main",
-						mergeRequestCount: 0,
-						name: "Main",
-						status: "active",
-						updatedAt: new Date(),
-					},
-				];
-
-				const mockVersions: Version[] = [
-					{
-						branchId: "main",
-						id: "v1",
-						status: "published",
-						timestamp: new Date(),
-						title: "Version 1.0",
-					},
-				];
+				const mockBranches = createMockBranches();
+				const firstBranchId = mockBranches[0]?.id || "";
+				const mockVersions = createMockVersions(firstBranchId);
 
 				setBranches(mockBranches);
 				setVersions(mockVersions);
 				setMilestones([]);
 				setSprints([]);
-				setCurrentBranchId(mockBranches[0]?.id || "");
+				setCurrentBranchId(firstBranchId);
 				setCurrentVersionId(mockVersions[0]?.id || "");
 			} catch (error) {
 				logger.error("Failed to load temporal data:", error);
@@ -69,8 +78,8 @@ export function TemporalView() {
 			}
 		};
 
-		undefined;
-	}, []);
+		loadTemporalData();
+	}, [projectId]);
 
 	const handleBranchChange = (branchId: string) => {
 		setCurrentBranchId(branchId);
@@ -85,6 +94,29 @@ export function TemporalView() {
 	const handleVersionChange = (versionId: string) => {
 		setCurrentVersionId(versionId);
 	};
+
+	const handleMilestoneClick = (id: string) => {
+		logger.info("Milestone clicked:", id);
+	};
+
+	const handleSprintClick = (id: string) => {
+		logger.info("Sprint clicked:", id);
+	};
+
+	const handleNavigatorTabClick = () => {
+		setActiveTab("navigator");
+	};
+
+	const handleProgressTabClick = () => {
+		setActiveTab("progress");
+	};
+
+	const getNavigatorClassName = (tab: string) =>
+		`px-4 py-2 font-medium transition-colors ${
+			activeTab === tab
+				? "border-b-2 border-primary text-primary"
+				: "text-muted-foreground hover:text-foreground"
+		}`;
 
 	return (
 		<div className="flex-1 p-6 space-y-6">
@@ -101,22 +133,14 @@ export function TemporalView() {
 
 			<div className="flex gap-2 border-b">
 				<button
-					onClick={() => setActiveTab("navigator")}
-					className={`px-4 py-2 font-medium transition-colors ${
-						activeTab === "navigator"
-							? "border-b-2 border-primary text-primary"
-							: "text-muted-foreground hover:text-foreground"
-					}`}
+					onClick={handleNavigatorTabClick}
+					className={getNavigatorClassName("navigator")}
 				>
 					Version Navigator
 				</button>
 				<button
-					onClick={() => setActiveTab("progress")}
-					className={`px-4 py-2 font-medium transition-colors ${
-						activeTab === "progress"
-							? "border-b-2 border-primary text-primary"
-							: "text-muted-foreground hover:text-foreground"
-					}`}
+					onClick={handleProgressTabClick}
+					className={getNavigatorClassName("progress")}
 				>
 					Progress Dashboard
 				</button>
@@ -142,14 +166,14 @@ export function TemporalView() {
 						milestones={milestones}
 						sprints={sprints}
 						isLoading={isLoading}
-						onMilestoneClick={(id) => logger.info("Milestone clicked:", id)}
-						onSprintClick={(id) => logger.info("Sprint clicked:", id)}
+						onMilestoneClick={handleMilestoneClick}
+						onSprintClick={handleSprintClick}
 					/>
 				)}
 			</div>
 		</div>
 	);
-}
+};
 
 export const TEMPORAL_VIEW = TemporalView;
 

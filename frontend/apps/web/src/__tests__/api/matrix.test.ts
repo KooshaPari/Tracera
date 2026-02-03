@@ -8,8 +8,7 @@ import { exportMatrix, fetchMatrix } from "@/api/matrix";
 
 // Mock the API client
 vi.mock("@/api/client", () => ({
-	__esModule: true,
-	default: {
+	client: {
 		apiClient: {
 			GET: vi.fn(),
 		},
@@ -17,7 +16,7 @@ vi.mock("@/api/client", () => ({
 	},
 }));
 
-import client from "@/api/client";
+import { client } from "@/api/client";
 import { mockItems, mockLinks } from "../mocks/data";
 
 const { apiClient, safeApiCall } = client;

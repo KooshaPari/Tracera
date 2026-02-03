@@ -20,6 +20,12 @@ from tracertm.infrastructure.nats_client import NATSClient
 
 router = APIRouter(prefix="/health", tags=["health"])
 
+# Latency thresholds (ms) for health status
+LATENCY_DEGRADED_MS = 1000
+LATENCY_DEGRADED_REDIS_NATS_MS = 500
+LATENCY_DEGRADED_GO_MS = 2000
+HTTP_SERVER_ERROR_START = 500
+
 
 class ComponentHealth(BaseModel):
     """Health status of a single component."""
@@ -76,7 +82,7 @@ async def check_database(db: AsyncSession) -> ComponentHealth:
         message = None
 
         # Check for degraded performance
-        if latency_ms > 1000:
+        if latency_ms > LATENCY_DEGRADED_MS:
             status = "degraded"
             message = "High latency detected"
 
@@ -125,7 +131,7 @@ async def check_redis(redis: Redis | None) -> ComponentHealth:
         status = "healthy"
         message = None
 
-        if latency_ms > 500:
+        if latency_ms > LATENCY_DEGRADED_REDIS_NATS_MS:
             status = "degraded"
             message = "High latency detected"
 
@@ -181,7 +187,7 @@ def check_nats(nats: NATSClient | None) -> ComponentHealth:
         status = "healthy"
         message = None
 
-        if latency_ms > 500:
+        if latency_ms > LATENCY_DEGRADED_REDIS_NATS_MS:
             status = "degraded"
             message = "High latency detected"
 
@@ -227,7 +233,7 @@ async def check_go_backend(base_url: str) -> ComponentHealth:
             resp = await client.get(f"{base_url}/health")
             latency_ms = (time.time() - start) * 1000
 
-            if resp.status_code >= 500:
+            if resp.status_code >= HTTP_SERVER_ERROR_START:
                 return ComponentHealth(
                     status="unhealthy",
                     message=f"HTTP {resp.status_code}",
@@ -238,7 +244,7 @@ async def check_go_backend(base_url: str) -> ComponentHealth:
             status = "healthy"
             message = None
 
-            if latency_ms > 2000:
+            if latency_ms > LATENCY_DEGRADED_GO_MS:
                 status = "degraded"
                 message = "High latency detected"
 

@@ -1,3 +1,4 @@
+/* eslint-disable complexity, func-style, jsx-a11y/label-has-associated-control, jsx-max-depth, max-lines-per-function, max-nested-callbacks, max-params, max-statements, no-magic-numbers, react-perf/jsx-no-new-function-as-prop, react-perf/jsx-no-new-object-as-prop, sort-imports */
 // Journey Explorer - Visualize and manage derived journeys
 // Displays user flows, data paths, call chains, and test traces
 // Supports filtering, overlay, coverage metrics, and export

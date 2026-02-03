@@ -13,12 +13,12 @@ import logging
 import secrets
 import time
 import uuid
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from typing import Any
 from tracertm.api.deps import auth_guard, get_db
 from tracertm.services.workos_auth_service import WorkOSAuthService, get_user
 
@@ -346,7 +346,8 @@ async def refresh_access_token(
 
     # Verify refresh token
     # In production, look up in database
-    if not refresh_token or len(refresh_token) < 10:
+    MIN_REFRESH_TOKEN_LEN = 10
+    if not refresh_token or len(refresh_token) < MIN_REFRESH_TOKEN_LEN:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid refresh token",

@@ -26,7 +26,8 @@ def _uuid() -> str:
     return str(uuid.uuid4())
 
 
-def upgrade() -> None:
+def _create_tables() -> None:
+    """Create new tables for views, node kinds, item views, link types, and external links."""
     op.create_table(
         "views",
         sa.Column("id", sa.String(length=255), primary_key=True),
@@ -129,6 +130,9 @@ def upgrade() -> None:
     op.create_index("idx_external_links_item", "external_links", ["item_id"])
     op.create_index("idx_external_links_project", "external_links", ["project_id"])
 
+
+def _add_columns() -> None:
+    """Add new columns to existing tables."""
     op.add_column(
         "items",
         sa.Column(
@@ -137,21 +141,9 @@ def upgrade() -> None:
     )
     op.create_index("idx_items_project_node_kind", "items", ["project_id", "node_kind_id"])
 
-    if context.is_offline_mode():
-        return
 
-    conn = op.get_bind()
-    if conn is None:
-        return
-
-    _items_table = sa.table(
-        "items",
-        sa.column("id", sa.String),
-        sa.column("project_id", sa.String),
-        sa.column("view", sa.String),
-        sa.column("item_type", sa.String),
-        sa.column("node_kind_id", sa.String),
-    )
+def _backfill_views_and_kinds(conn: sa.engine.Connection) -> tuple[dict[tuple[str, str], str], dict[tuple[str, str], str]]:
+    """Backfill views and node kinds from existing items data."""
     views_table = sa.table(
         "views",
         sa.column("id", sa.String),
@@ -167,21 +159,6 @@ def upgrade() -> None:
         sa.column("name", sa.String),
         sa.column("description", sa.Text),
         sa.column("kind_metadata", JSONType),
-    )
-    item_views_table = sa.table(
-        "item_views",
-        sa.column("item_id", sa.String),
-        sa.column("view_id", sa.String),
-        sa.column("project_id", sa.String),
-        sa.column("is_primary", sa.Boolean),
-    )
-    link_types_table = sa.table(
-        "link_types",
-        sa.column("id", sa.String),
-        sa.column("project_id", sa.String),
-        sa.column("name", sa.String),
-        sa.column("description", sa.Text),
-        sa.column("link_metadata", JSONType),
     )
 
     # Backfill views from items.view
@@ -217,6 +194,27 @@ def upgrade() -> None:
                 kind_metadata={},
             )
         )
+
+    return view_id_map, kind_id_map
+
+
+def _migrate_data(conn: sa.engine.Connection, view_id_map: dict[tuple[str, str], str]) -> None:
+    """Migrate existing data to new tables."""
+    item_views_table = sa.table(
+        "item_views",
+        sa.column("item_id", sa.String),
+        sa.column("view_id", sa.String),
+        sa.column("project_id", sa.String),
+        sa.column("is_primary", sa.Boolean),
+    )
+    link_types_table = sa.table(
+        "link_types",
+        sa.column("id", sa.String),
+        sa.column("project_id", sa.String),
+        sa.column("name", sa.String),
+        sa.column("description", sa.Text),
+        sa.column("link_metadata", JSONType),
+    )
 
     # Update items.node_kind_id using item_type
     conn.execute(
@@ -262,6 +260,21 @@ def upgrade() -> None:
                 link_metadata={},
             )
         )
+
+
+def upgrade() -> None:
+    _create_tables()
+    _add_columns()
+
+    if context.is_offline_mode():
+        return
+
+    conn = op.get_bind()
+    if conn is None:
+        return
+
+    view_id_map, _kind_id_map = _backfill_views_and_kinds(conn)
+    _migrate_data(conn, view_id_map)
 
 
 def downgrade() -> None:

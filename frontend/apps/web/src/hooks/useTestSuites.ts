@@ -6,7 +6,7 @@ import type {
 	TestSuiteStatus,
 	TestSuiteTestCase,
 } from "@tracertm/types";
-import client from "@/api/client";
+import { client } from "@/api/client";
 
 const { getAuthHeaders } = client;
 

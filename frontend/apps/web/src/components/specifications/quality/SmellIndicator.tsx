@@ -33,7 +33,10 @@ const smellDescriptions: Record<SmellType, string> = {
 	vague_pronouns: "Avoid 'it', 'this', 'that' without clear antecedent.",
 };
 
-export function SmellIndicator({ smells, className }: SmellIndicatorProps) {
+export const SmellIndicator = ({
+	smells,
+	className = "",
+}: SmellIndicatorProps): JSX.Element | null => {
 	if (!smells || smells.length === 0) {
 		return null;
 	}
@@ -61,4 +64,4 @@ export function SmellIndicator({ smells, className }: SmellIndicatorProps) {
 			))}
 		</div>
 	);
-}
+};

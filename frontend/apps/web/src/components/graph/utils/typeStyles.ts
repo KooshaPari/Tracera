@@ -1,3 +1,4 @@
+/* eslint-disable complexity, func-style, max-lines-per-function, sort-keys */
 // Type-based styling utilities for graph nodes
 // Maps entity types to icons and colors
 

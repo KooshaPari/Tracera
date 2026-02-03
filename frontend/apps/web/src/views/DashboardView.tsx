@@ -56,7 +56,7 @@ import { toast } from "sonner";
 import { getProjectDisplayName } from "@/lib/project-name-utils";
 import { cn } from "@/lib/utils";
 import { useDeleteProject, useProjects } from "../hooks/useProjects";
-import client from "@/api/client";
+import { client } from "@/api/client";
 
 const { getAuthHeaders } = client;
 

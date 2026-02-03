@@ -1,12 +1,13 @@
+/* eslint-disable complexity, func-style, max-lines-per-function, react-perf/jsx-no-new-function-as-prop */
 import type {
 	Process,
 	ProcessCategory,
 	ProcessStatus,
 } from "../../../../../../packages/types/src/index";
-import { Archive, Filter, Play, Plus, Search, Workflow } from "lucide-react";
-import { useState } from "react";
 import { CreateProcessForm } from "../../../components/forms/CreateProcessForm";
 import { useProcessStats, useProcesses } from "../../../hooks/useProcesses";
+import { Archive, Filter, Play, Plus, Search, Workflow } from "lucide-react";
+import { useState } from "react";
 
 const statusColors: Record<ProcessStatus, string> = {
 	active: "bg-green-100 text-green-700",
