@@ -4,8 +4,6 @@ import asyncio
 import inspect
 import logging
 import os
-import re
-import sys
 import warnings
 
 # Suppress websockets legacy ws_handler deprecation (uvicorn/starlette integration).
@@ -33,13 +31,13 @@ def _path_name_str(path_str: str) -> str:
 
 
 if TYPE_CHECKING:
-    from tracertm.preflight import PreflightCheck
+    pass
 
 # Disable optional Pydantic plugins that are not part of this repo (ex: logfire).
 if os.getenv("PYDANTIC_DISABLE_PLUGINS") is None:
     os.environ["PYDANTIC_DISABLE_PLUGINS"] = "logfire-plugin"
 
-from fastapi import Depends, FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
+from fastapi import Depends, FastAPI, HTTPException, Request, WebSocket
 
 # ClientDisconnected: uvicorn raises when sending on closed WebSocket (wrapped as WebSocketDisconnect by Starlette)
 try:
@@ -50,7 +48,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel
 from sqlalchemy import func, or_, select, update
-from sqlalchemy.exc import OperationalError, ProgrammingError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 # Load .env file if it exists
@@ -73,32 +70,31 @@ except ImportError:
 
 from datetime import UTC
 
-from tracertm.repositories import item_repository
-from tracertm.repositories import link_repository
-from tracertm.repositories import project_repository
-from tracertm.services import cycle_detection_service
-from tracertm.services import impact_analysis_service
-from tracertm.services import performance_service
-from tracertm.services import shortest_path_service
-from tracertm.services import traceability_matrix_service
-from tracertm.services import traceability_service
+# Imported extracted modules to reduce C901 complexity
+from tracertm.api.config.rate_limiting import enforce_rate_limit
+from tracertm.api.config.startup import startup_initialization
+from tracertm.api.handlers.websocket import websocket_endpoint as _websocket_endpoint_impl
 from tracertm.core.concurrency import ConcurrencyError
 from tracertm.models.integration import IntegrationCredential
 from tracertm.models.item import Item
 from tracertm.models.link import Link
+from tracertm.repositories import item_repository, link_repository, project_repository
 from tracertm.schemas.execution import (
     ExecutionComplete,
     ExecutionCreate,
     ExecutionEnvironmentConfigUpdate,
 )
-from tracertm.services import workos_auth_service
+from tracertm.services import (
+    cycle_detection_service,
+    impact_analysis_service,
+    performance_service,
+    shortest_path_service,
+    traceability_matrix_service,
+    traceability_service,
+    workos_auth_service,
+)
 from tracertm.services.cache_service import RedisUnavailableError
 from tracertm.services.temporal_service import TemporalService
-
-# Imported extracted modules to reduce C901 complexity
-from tracertm.api.config.rate_limiting import enforce_rate_limit
-from tracertm.api.config.startup import startup_initialization
-from tracertm.api.handlers.websocket import websocket_endpoint as _websocket_endpoint_impl
 
 logger = logging.getLogger(__name__)
 
@@ -654,16 +650,6 @@ from tracertm.api.handlers.items import (
     resolve_view_matches,
     try_get_from_cache,
 )
-from tracertm.api.handlers.links import (
-    build_links_response,
-    detect_link_columns,
-    parse_exclude_types,
-    query_links_by_project,
-    query_links_by_source,
-    query_links_by_source_and_target,
-    query_links_by_target,
-    try_get_links_from_cache,
-)
 from tracertm.services.cache_service import CacheService
 
 
@@ -1027,249 +1013,44 @@ async def list_links(
         if project_id:
             ensure_project_access(project_id, claims)
 
-        # ✅ NEW: Parse exclude_types from comma-separated string
-        exclude_types_list = []
-        if exclude_types:
-            exclude_types_list = [t.strip() for t in exclude_types.split(",") if t.strip()]
+        # Parse exclude_types from comma-separated string
+        exclude_types_list = parse_exclude_types(exclude_types)
 
-        # Try to get from cache (when project_id is specified)
-        cache_key = None
+        # Try to get from cache
+        cache_key, cached = await try_get_links_from_cache(
+            cache, project_id, source_id, target_id, skip, limit, exclude_types
+        )
+        if cached is not None:
+            return cached
+
+        # Detect actual column names from the database
+        src_col, tgt_col, typ_col, meta_col = await detect_link_columns(db)
+
+        # Query links based on filter criteria
         if project_id:
-            cache_key = cache._generate_key(
-                "links",
-                project_id=project_id,
-                source_id=source_id or "",
-                target_id=target_id or "",
-                skip=skip,
-                limit=limit,
-                exclude_types=exclude_types or "",  # ✅ NEW: Include in cache key
+            total_count, links_result = await query_links_by_project(
+                db, project_id, exclude_types_list, src_col, tgt_col, typ_col, meta_col, skip, limit
             )
-            cached = await cache.get(cache_key)
-            if cached is not None:
-                return cached
-
-        # Use raw SQL to query links. Support both column naming conventions:
-        # - source_item_id/target_item_id/link_type (Alembic 000)
-        # - source_id/target_id/type or source_id/target_id/link_type (Go / 045 or mixed schema)
-        from sqlalchemy import text
-
-        # Detect actual column names from the database (supports mixed schemas)
-        src_col = "source_id"
-        tgt_col = "target_id"
-        typ_col = "type"
-        meta_col = "metadata"  # Go-style default; many DBs have "metadata" not "link_metadata"
-        try:
-            # Find schema where links table lives (current_schema() may not match)
-            schema_row = await db.execute(
-                text(
-
-                        "SELECT table_schema FROM information_schema.tables "
-                        "WHERE table_name = 'links' ORDER BY table_schema LIMIT 1"
-
-                ),
-            )
-            schema_name = (schema_row.scalar() or "public")
-            cols_result = await db.execute(
-                text(
-
-                        "SELECT column_name FROM information_schema.columns "
-                        "WHERE table_schema = :schema AND table_name = 'links'"
-
-                ),
-                {"schema": schema_name},
-            )
-            cols = {row[0] for row in cols_result}
-            if not cols:
-                # Table not found in info_schema; use Go-style names
-                src_col, tgt_col, typ_col, meta_col = "source_id", "target_id", "link_type", "metadata"
-            else:
-                if "source_item_id" in cols and "source_id" not in cols:
-                    src_col = "source_item_id"
-                elif "source_id" in cols:
-                    src_col = "source_id"
-                if "target_item_id" in cols and "target_id" not in cols:
-                    tgt_col = "target_item_id"
-                elif "target_id" in cols:
-                    tgt_col = "target_id"
-                if "link_type" in cols and "type" not in cols:
-                    typ_col = "link_type"
-                elif "type" in cols:
-                    typ_col = "type"
-                if "metadata" in cols and "link_metadata" not in cols:
-                    meta_col = "metadata"
-                elif "link_metadata" in cols:
-                    meta_col = "link_metadata"
-                else:
-                    meta_col = "metadata"  # fallback if neither column present
-        except Exception:
-            src_col, tgt_col, typ_col = "source_id", "target_id", "link_type"
-            meta_col = "metadata"
-
-        if project_id:
-            # Get links for a project by joining with items
-            count_sql = f"""
-                SELECT COUNT(DISTINCT l.id)
-                FROM links l
-                INNER JOIN items i1 ON l.{src_col} = i1.id
-                INNER JOIN items i2 ON l.{tgt_col} = i2.id
-                WHERE (i1.project_id = :project_id OR i2.project_id = :project_id)
-                  AND i1.deleted_at IS NULL
-                  AND i2.deleted_at IS NULL
-            """
-            if exclude_types_list:
-                placeholders = ", ".join([f":exclude_type_{i}" for i in range(len(exclude_types_list))])
-                count_sql += f" AND l.{typ_col} NOT IN ({placeholders})"
-
-            count_params = {"project_id": project_id}
-            if exclude_types_list:
-                for i, t in enumerate(exclude_types_list):
-                    count_params[f"exclude_type_{i}"] = t
-
-            count_result = await db.execute(text(count_sql), count_params)
-            total_count = count_result.scalar() or 0
-
-            base_sql = f"""
-                SELECT DISTINCT l.id, l.{src_col}, l.{tgt_col}, l.{typ_col}, l.created_at, l.{meta_col}
-                FROM links l
-                INNER JOIN items i1 ON l.{src_col} = i1.id
-                INNER JOIN items i2 ON l.{tgt_col} = i2.id
-                WHERE (i1.project_id = :project_id OR i2.project_id = :project_id)
-                  AND i1.deleted_at IS NULL
-                  AND i2.deleted_at IS NULL
-            """  # noqa: S608
-            if exclude_types_list:
-                placeholders = ", ".join([f":exclude_type_{i}" for i in range(len(exclude_types_list))])
-                base_sql += f" AND l.{typ_col} NOT IN ({placeholders})"
-
-            base_sql += " ORDER BY l.created_at DESC"
-
-            params = {"project_id": project_id}
-            if exclude_types_list:
-                for i, t in enumerate(exclude_types_list):
-                    params[f"exclude_type_{i}"] = t
-
-            if limit is not None and limit > 0:
-                base_sql += " LIMIT :limit OFFSET :skip"
-                params.update({"limit": limit, "skip": skip})
-            links_result = await db.execute(text(base_sql), params)
         elif source_id and target_id:
-            count_sql = f"""
-                SELECT COUNT(*) FROM links
-                WHERE {src_col} = :source_id AND {tgt_col} = :target_id
-            """  # noqa: S608
-            if exclude_types_list:
-                placeholders = ", ".join([f":exclude_type_{i}" for i in range(len(exclude_types_list))])
-                count_sql += f" AND {typ_col} NOT IN ({placeholders})"
-
-            count_params = {"source_id": source_id, "target_id": target_id}
-            if exclude_types_list:
-                for i, t in enumerate(exclude_types_list):
-                    count_params[f"exclude_type_{i}"] = t
-
-            count_result = await db.execute(text(count_sql), count_params)
-            total_count = count_result.scalar() or 0
-
-            base_sql = f"""
-                SELECT id, {src_col}, {tgt_col}, {typ_col}, created_at, {meta_col}
-                FROM links
-                WHERE {src_col} = :source_id AND {tgt_col} = :target_id
-            """  # noqa: S608
-            if exclude_types_list:
-                placeholders = ", ".join([f":exclude_type_{i}" for i in range(len(exclude_types_list))])
-                base_sql += f" AND {typ_col} NOT IN ({placeholders})"
-
-            base_sql += " ORDER BY created_at DESC"
-
-            params = {"source_id": source_id, "target_id": target_id}
-            if exclude_types_list:
-                for i, t in enumerate(exclude_types_list):
-                    params[f"exclude_type_{i}"] = t
-
-            if limit is not None and limit > 0:
-                base_sql += " LIMIT :limit OFFSET :skip"
-                params.update({"limit": limit, "skip": skip})
-            links_result = await db.execute(text(base_sql), params)
+            total_count, links_result = await query_links_by_source_and_target(
+                db, source_id, target_id, exclude_types_list, src_col, tgt_col, typ_col, meta_col, skip, limit
+            )
         elif source_id:
-            count_sql = f"SELECT COUNT(*) FROM links WHERE {src_col} = :source_id"  # noqa: S608
-            if exclude_types_list:
-                placeholders = ", ".join([f":exclude_type_{i}" for i in range(len(exclude_types_list))])
-                count_sql += f" AND {typ_col} NOT IN ({placeholders})"
-
-            count_params = {"source_id": source_id}
-            if exclude_types_list:
-                for i, t in enumerate(exclude_types_list):
-                    count_params[f"exclude_type_{i}"] = t
-
-            count_result = await db.execute(text(count_sql), count_params)
-            total_count = count_result.scalar() or 0
-
-            base_sql = f"""
-                SELECT id, {src_col}, {tgt_col}, {typ_col}, created_at, {meta_col}
-                FROM links
-                WHERE {src_col} = :source_id
-            """  # noqa: S608
-            if exclude_types_list:
-                placeholders = ", ".join([f":exclude_type_{i}" for i in range(len(exclude_types_list))])
-                base_sql += f" AND {typ_col} NOT IN ({placeholders})"
-
-            base_sql += " ORDER BY created_at DESC"
-
-            params = {"source_id": source_id}
-            if exclude_types_list:
-                for i, t in enumerate(exclude_types_list):
-                    params[f"exclude_type_{i}"] = t
-
-            if limit is not None and limit > 0:
-                base_sql += " LIMIT :limit OFFSET :skip"
-                params.update({"limit": limit, "skip": skip})
-            links_result = await db.execute(text(base_sql), params)
+            total_count, links_result = await query_links_by_source(
+                db, source_id, exclude_types_list, src_col, tgt_col, typ_col, meta_col, skip, limit
+            )
         elif target_id:
-            count_sql = f"SELECT COUNT(*) FROM links WHERE {tgt_col} = :target_id"  # noqa: S608
-            if exclude_types_list:
-                placeholders = ", ".join([f":exclude_type_{i}" for i in range(len(exclude_types_list))])
-                count_sql += f" AND {typ_col} NOT IN ({placeholders})"
-
-            count_params = {"target_id": target_id}
-            if exclude_types_list:
-                for i, t in enumerate(exclude_types_list):
-                    count_params[f"exclude_type_{i}"] = t
-
-            count_result = await db.execute(text(count_sql), count_params)
-            total_count = count_result.scalar() or 0
-
-            base_sql = f"""
-                SELECT id, {src_col}, {tgt_col}, {typ_col}, created_at, {meta_col}
-                FROM links
-                WHERE {tgt_col} = :target_id
-            """  # noqa: S608
-            if exclude_types_list:
-                placeholders = ", ".join([f":exclude_type_{i}" for i in range(len(exclude_types_list))])
-                base_sql += f" AND {typ_col} NOT IN ({placeholders})"
-
-            base_sql += " ORDER BY created_at DESC"
-
-            params = {"target_id": target_id}
-            if exclude_types_list:
-                for i, t in enumerate(exclude_types_list):
-                    params[f"exclude_type_{i}"] = t
-
-            if limit is not None and limit > 0:
-                base_sql += " LIMIT :limit OFFSET :skip"
-                params.update({"limit": limit, "skip": skip})
-            links_result = await db.execute(text(base_sql), params)
+            total_count, links_result = await query_links_by_target(
+                db, target_id, exclude_types_list, src_col, tgt_col, typ_col, meta_col, skip, limit
+            )
         else:
             total_count = 0
             links_result = None
 
-        links_list = []
-        if links_result:
-            links_list.extend(_link_row_to_dict(row, project_id) for row in links_result)
+        # Build response
+        result = build_links_response(links_result, total_count, project_id)
 
-        result = {
-            "total": total_count,
-            "links": links_list,
-        }
-
+        # Cache the result
         if cache_key:
             await cache.set(cache_key, result, cache_type="links")
 
@@ -1284,7 +1065,6 @@ async def list_links(
             e,
         )
         raise HTTPException(status_code=500, detail="Internal server error") from e
-
 
 @app.get("/api/v1/links/grouped")
 async def list_links_grouped(
