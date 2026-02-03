@@ -91,107 +91,102 @@ def lookup_user_id_by_email(conn, email: str) -> str | None:
     return None
 
 
-def run(link_user_id: str | None, link_email: str | None) -> int:
-    engine = get_engine()
-    ok = True
-    if link_email and not link_user_id:
-        with engine.connect() as conn:
-            link_user_id = lookup_user_id_by_email(conn, link_email)
-            if not link_user_id:
-                print(
-                    f"User not found for email {link_email} (log in once so tracertm.users is synced, or use --link-user)",
-                    file=sys.stderr,
-                )
-                return 2
-            print(f"Resolved email {link_email} -> user_id {link_user_id}")
+def resolve_user_id(conn, link_email: str | None, link_user_id: str | None) -> str | None:
+    """Resolve user ID from email if provided."""
+    if not link_email or link_user_id:
+        return link_user_id
 
-    with engine.connect() as conn:
-        # Ensure account exists
-        try:
-            created = ensure_account(conn)
-            if created:
-                print(f"Created account {SEED_ACCOUNT_ID} ({SEED_ACCOUNT_SLUG})")
-            else:
-                print(f"Account {SEED_ACCOUNT_ID} exists")
-        except Exception as e:
-            print(f"Account check/create failed: {e}", file=sys.stderr)
-            ok = False
+    resolved_id = lookup_user_id_by_email(conn, link_email)
+    if not resolved_id:
+        print(
+            f"User not found for email {link_email} (log in once so tracertm.users is synced, or use --link-user)",
+            file=sys.stderr,
+        )
+        return None
 
-        # Counts for seed account
-        projects = []
-        try:
-            r = conn.execute(
-                text("SELECT id, name FROM tracertm.projects WHERE account_id = :aid"),
-                {"aid": SEED_ACCOUNT_ID},
-            )
-            projects = list(r.fetchall())
-        except Exception as e:
-            print(f"Projects check failed: {e}", file=sys.stderr)
-            ok = False
-        if not projects:
-            print("No projects found for seed account (run scripts/seed_rich_single_project.py first)")
-            ok = False
+    print(f"Resolved email {link_email} -> user_id {resolved_id}")
+    return resolved_id
+
+
+def validate_account(conn) -> bool:
+    """Ensure account exists and report status."""
+    try:
+        created = ensure_account(conn)
+        if created:
+            print(f"Created account {SEED_ACCOUNT_ID} ({SEED_ACCOUNT_SLUG})")
         else:
-            print(f"Projects in seed account: {len(projects)}")
-            for pid, pname in projects[:5]:
-                print(f"  - {pid}  {pname}")
-            if len(projects) > 5:
-                print(f"  ... and {len(projects) - 5} more")
+            print(f"Account {SEED_ACCOUNT_ID} exists")
+        return True
+    except Exception as e:
+        print(f"Account check/create failed: {e}", file=sys.stderr)
+        return False
 
-        if not projects:
-            print("\nRun: DATABASE_URL=... uv run python scripts/seed_rich_single_project.py")
-            return 2
 
-        # Totals across all projects in seed account
-        project_ids = [str(r[0]) for r in projects]
-        print()
-        for label, sql, params in [
-            (
-                "Items",
-                "SELECT COUNT(*) FROM tracertm.items i JOIN tracertm.projects p ON p.id = i.project_id WHERE p.account_id = :aid",
-                {"aid": SEED_ACCOUNT_ID},
-            ),
-            (
-                "Links",
-                "SELECT COUNT(*) FROM tracertm.links l JOIN tracertm.items i ON i.id = l.source_id JOIN tracertm.projects p ON p.id = i.project_id WHERE p.account_id = :aid",
-                {"aid": SEED_ACCOUNT_ID},
-            ),
-            (
-                "Events",
-                "SELECT COUNT(*) FROM tracertm.events e JOIN tracertm.projects p ON p.id = e.project_id WHERE p.account_id = :aid",
-                {"aid": SEED_ACCOUNT_ID},
-            ),
-            (
-                "Milestones",
-                "SELECT COUNT(*) FROM tracertm.milestones m JOIN tracertm.projects p ON p.id = m.project_id WHERE p.account_id = :aid",
-                {"aid": SEED_ACCOUNT_ID},
-            ),
-            (
-                "Sprints",
-                "SELECT COUNT(*) FROM tracertm.sprints s JOIN tracertm.projects p ON p.id = s.project_id WHERE p.account_id = :aid",
-                {"aid": SEED_ACCOUNT_ID},
-            ),
-        ]:
-            try:
-                r = conn.execute(text(sql), params)
-                n = r.scalar()
-                print(f"{label}: {n}")
-            except Exception as e:
-                print(f"{label}: error - {e}", file=sys.stderr)
-                ok = False
+def get_and_display_projects(conn) -> tuple[list, bool]:
+    """Get projects for seed account and display them."""
+    try:
+        r = conn.execute(
+            text("SELECT id, name FROM tracertm.projects WHERE account_id = :aid"),
+            {"aid": SEED_ACCOUNT_ID},
+        )
+        projects = list(r.fetchall())
+    except Exception as e:
+        print(f"Projects check failed: {e}", file=sys.stderr)
+        return [], False
 
-        # Optional: link user to account
-        if link_user_id:
-            try:
-                inserted = link_user(conn, link_user_id)
-                if inserted:
-                    print(f"Linked user {link_user_id} to seed account as owner")
-                else:
-                    print(f"User {link_user_id} already in seed account")
-            except Exception as e:
-                print(f"Link user failed: {e}", file=sys.stderr)
-                ok = False
+    if not projects:
+        print("No projects found for seed account (run scripts/seed_rich_single_project.py first)")
+        return [], False
 
+    print(f"Projects in seed account: {len(projects)}")
+    for pid, pname in projects[:5]:
+        print(f"  - {pid}  {pname}")
+    if len(projects) > 5:
+        print(f"  ... and {len(projects) - 5} more")
+
+    return projects, True
+
+
+def display_entity_counts(conn) -> bool:
+    """Display counts for various entities in seed account."""
+    queries = [
+        ("Items", "SELECT COUNT(*) FROM tracertm.items i JOIN tracertm.projects p ON p.id = i.project_id WHERE p.account_id = :aid"),
+        ("Links", "SELECT COUNT(*) FROM tracertm.links l JOIN tracertm.items i ON i.id = l.source_id JOIN tracertm.projects p ON p.id = i.project_id WHERE p.account_id = :aid"),
+        ("Events", "SELECT COUNT(*) FROM tracertm.events e JOIN tracertm.projects p ON p.id = e.project_id WHERE p.account_id = :aid"),
+        ("Milestones", "SELECT COUNT(*) FROM tracertm.milestones m JOIN tracertm.projects p ON p.id = m.project_id WHERE p.account_id = :aid"),
+        ("Sprints", "SELECT COUNT(*) FROM tracertm.sprints s JOIN tracertm.projects p ON p.id = s.project_id WHERE p.account_id = :aid"),
+    ]
+
+    ok = True
+    print()
+    for label, sql in queries:
+        try:
+            r = conn.execute(text(sql), {"aid": SEED_ACCOUNT_ID})
+            n = r.scalar()
+            print(f"{label}: {n}")
+        except Exception as e:
+            print(f"{label}: error - {e}", file=sys.stderr)
+            ok = False
+
+    return ok
+
+
+def link_user_to_account(conn, link_user_id: str) -> bool:
+    """Link a user to the seed account."""
+    try:
+        inserted = link_user(conn, link_user_id)
+        if inserted:
+            print(f"Linked user {link_user_id} to seed account as owner")
+        else:
+            print(f"User {link_user_id} already in seed account")
+        return True
+    except Exception as e:
+        print(f"Link user failed: {e}", file=sys.stderr)
+        return False
+
+
+def print_access_instructions(projects: list) -> None:
+    """Print instructions for accessing the seed data."""
     print()
     print("kooshapari@gmail.com access:")
     print("  - With TRACERTM_SYSTEM_ADMIN_EMAILS=kooshapari@gmail.com you can access any project by ID (bypass RLS).")
@@ -200,7 +195,44 @@ def run(link_user_id: str | None, link_email: str | None) -> int:
     print("    (or --link-user YOUR_USER_ID from GET /api/v1/auth/me if not in tracertm.users)")
     print()
     if projects:
+        project_ids = [str(r[0]) for r in projects]
         print(f"  Seeded project IDs: {', '.join(project_ids[:3])}{' ...' if len(project_ids) > 3 else ''}")
+
+
+def run(link_user_id: str | None, link_email: str | None) -> int:
+    """Validate seed data and optionally link user to account."""
+    engine = get_engine()
+    ok = True
+
+    # Resolve user ID from email if needed
+    if link_email and not link_user_id:
+        with engine.connect() as conn:
+            link_user_id = resolve_user_id(conn, link_email, link_user_id)
+            if not link_user_id:
+                return 2
+
+    with engine.connect() as conn:
+        # Validate account
+        ok = validate_account(conn) and ok
+
+        # Get and display projects
+        projects, projects_ok = get_and_display_projects(conn)
+        ok = ok and projects_ok
+
+        if not projects:
+            print("\nRun: DATABASE_URL=... uv run python scripts/seed_rich_single_project.py")
+            return 2
+
+        # Display entity counts
+        ok = display_entity_counts(conn) and ok
+
+        # Link user if requested
+        if link_user_id:
+            ok = link_user_to_account(conn, link_user_id) and ok
+
+    # Print access instructions
+    print_access_instructions(projects)
+
     return 0 if ok else 1
 
 
