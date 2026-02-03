@@ -103,5 +103,5 @@ type RoObject<T> = {
     [K in keyof T]: T[K] | Ro<T[K]>;
 };
 export declare function parse<T>(map: T): Exclude<T, string>;
-export {};
+
 //# sourceMappingURL=types.d.ts.map

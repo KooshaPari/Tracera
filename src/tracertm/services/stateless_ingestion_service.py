@@ -1,8 +1,9 @@
 """Stateless ingestion service for MD/MDX/YAML/OpenSpec/BMad formats."""
 
 import re
+import uuid
 from pathlib import Path
-from typing import Any, TypeAlias, cast
+from typing import Any, cast
 from uuid import uuid4
 
 import yaml
@@ -43,7 +44,7 @@ class StatelessIngestionService:
     def ingest_markdown(
         self,
         file_path: str,
-        project_id: str | None = None,
+        project_id: str | uuid.UUID | None = None,
         view: str = "FEATURE",
         dry_run: bool = False,
         validate: bool = True,
@@ -67,6 +68,8 @@ class StatelessIngestionService:
         Returns:
             Dictionary with ingestion results
         """
+        if project_id is not None:
+            project_id = str(project_id)
         path = Path(file_path)
         if not path.exists():
             raise FileNotFoundError(f"File not found: {file_path}")
@@ -116,7 +119,7 @@ class StatelessIngestionService:
                 )
                 self.session.add(project)
                 self.session.flush()
-            project_id = project.id
+            project_id = str(project.id)
         else:
             project = self.session.query(Project).filter(Project.id == project_id).first()
             if not project:
@@ -168,14 +171,14 @@ class StatelessIngestionService:
                 self.session.add(item)
                 self.session.flush()
 
-                items_created.append(item.id)
+                items_created.append(str(item.id))
                 headers.append((level, item.id, title))
 
                 # Update parent stack
                 if len(parent_stack) <= level:
-                    parent_stack.append(item.id)
+                    parent_stack.append(str(item.id))
                 else:
-                    parent_stack[level - 1] = item.id
+                    parent_stack[level - 1] = str(item.id)
 
         # Extract markdown links
         link_pattern = r"\[([^\]]+)\]\(([^\)]+)\)"
@@ -214,7 +217,7 @@ class StatelessIngestionService:
     def ingest_mdx(
         self,
         file_path: str,
-        project_id: str | None = None,
+        project_id: str | uuid.UUID | None = None,
         view: str = "FEATURE",
         dry_run: bool = False,
         validate: bool = True,
@@ -275,7 +278,8 @@ class StatelessIngestionService:
         jsx_components = re.findall(jsx_pattern, body)
 
         # Get or create project
-        if not project_id:
+        pid: str | None = str(project_id) if project_id is not None else None
+        if not pid:
             project_name = metadata.get("project", path.stem)
             project = self.session.query(Project).filter(Project.name == project_name).first()
             if not project:
@@ -286,10 +290,10 @@ class StatelessIngestionService:
                 )
                 self.session.add(project)
                 self.session.flush()
-            project_id = project.id
+            pid = str(project.id)
 
         # Process as markdown first
-        result = self.ingest_markdown(file_path, project_id, view)
+        result = self.ingest_markdown(file_path, pid, view)
 
         # Add JSX components as CODE view items
         items_created = []
@@ -312,7 +316,7 @@ class StatelessIngestionService:
             )
             self.session.add(item)
             self.session.flush()
-            items_created.append(item.id)
+            items_created.append(str(item.id))
 
         result["jsx_components_created"] = len(items_created)
         return result
@@ -320,7 +324,7 @@ class StatelessIngestionService:
     def ingest_yaml(
         self,
         file_path: str,
-        project_id: str | None = None,
+        project_id: str | uuid.UUID | None = None,
         view: str = "FEATURE",
         dry_run: bool = False,
         validate: bool = True,
@@ -343,6 +347,7 @@ class StatelessIngestionService:
         Returns:
             Dictionary with ingestion results
         """
+        pid: str | None = str(project_id) if project_id is not None else None
         path = Path(file_path)
         if not path.exists():
             raise FileNotFoundError(f"File not found: {file_path}")
@@ -365,7 +370,12 @@ class StatelessIngestionService:
         format_type = "yaml"
         if "openapi" in data or "swagger" in data:
             format_type = "openapi"
-        elif "bmad" in str(path).lower() or "bmad" in data or "requirements" in data or ("spec" in data and "requirements" in data.get("spec", {})):
+        elif (
+            "bmad" in str(path).lower()
+            or "bmad" in data
+            or "requirements" in data
+            or ("spec" in data and "requirements" in data.get("spec", {}))
+        ):
             format_type = "bmad"
 
         if dry_run:
@@ -376,11 +386,16 @@ class StatelessIngestionService:
                 return {
                     "dry_run": True,
                     "format": "openapi",
-                    "endpoints_found": sum(len([m for m in methods if not m.startswith("x-")]) for methods in paths.values()),
+                    "endpoints_found": sum(
+                        len([m for m in methods if not m.startswith("x-")]) for methods in paths.values()
+                    ),
                     "schemas_found": len(schemas),
-                    "would_create_items": sum(len([m for m in methods if not m.startswith("x-")]) for methods in paths.values()) + len(schemas),
+                    "would_create_items": sum(
+                        len([m for m in methods if not m.startswith("x-")]) for methods in paths.values()
+                    )
+                    + len(schemas),
                 }
-            elif format_type == "bmad":
+            if format_type == "bmad":
                 requirements = data.get("requirements", []) or data.get("spec", {}).get("requirements", [])
                 return {
                     "dry_run": True,
@@ -388,38 +403,36 @@ class StatelessIngestionService:
                     "requirements_found": len(requirements),
                     "would_create_items": len(requirements),
                 }
-            else:
-                # Generic YAML - estimate from structure
-                def count_items(d: Any) -> int:
-                    count = 0
-                    if isinstance(d, dict):
-                        count += len(d)
-                        for v in d.values():
-                            count += count_items(v)
-                    elif isinstance(d, list):
-                        count += len(d)
-                        for item in d:
-                            count += count_items(item)
-                    return count
-                item_count = count_items(data)
-                return {
-                    "dry_run": True,
-                    "format": "yaml",
-                    "items_found": item_count,
-                    "would_create_items": item_count,
-                }
+
+            # Generic YAML - estimate from structure
+            def count_items(d: Any) -> int:
+                count = 0
+                if isinstance(d, dict):
+                    count += len(d)
+                    for v in d.values():
+                        count += count_items(v)
+                elif isinstance(d, list):
+                    count += len(d)
+                    for item in d:
+                        count += count_items(item)
+                return count
+
+            item_count = count_items(data)
+            return {
+                "dry_run": True,
+                "format": "yaml",
+                "items_found": item_count,
+                "would_create_items": item_count,
+            }
 
         # Actual ingestion
         if format_type == "openapi":
-            return self._ingest_openapi_spec(data, file_path, project_id)
-        elif format_type == "bmad":
-            return self._ingest_bmad_format(data, file_path, project_id)
-        else:
-            return self._ingest_generic_yaml(data, file_path, project_id, view)
+            return self._ingest_openapi_spec(data, file_path, pid)
+        if format_type == "bmad":
+            return self._ingest_bmad_format(data, file_path, pid)
+        return self._ingest_generic_yaml(data, file_path, pid, view)
 
-    def _ingest_openapi_spec(
-        self, data: dict[str, Any], file_path: str, project_id: str | None
-    ) -> dict[str, Any]:
+    def _ingest_openapi_spec(self, data: dict[str, Any], file_path: str, project_id: str | None) -> dict[str, Any]:
         """Ingest OpenAPI/Swagger specification with enhanced component extraction."""
         # Get or create project
         if not project_id:
@@ -433,7 +446,7 @@ class StatelessIngestionService:
                 )
                 self.session.add(project)
                 self.session.flush()
-            project_id = project.id
+            project_id = str(project.id)
 
         items_created = []
         links_created = []
@@ -467,8 +480,8 @@ class StatelessIngestionService:
             )
             self.session.add(item)
             self.session.flush()
-            schema_items[schema_name] = item.id
-            items_created.append(item.id)
+            schema_items[schema_name] = str(item.id)
+            items_created.append(str(item.id))
 
         # Create API view items for paths
         paths = data.get("paths", {})
@@ -501,14 +514,14 @@ class StatelessIngestionService:
                 )
                 self.session.add(item)
                 self.session.flush()
-                path_item_map[path][method] = item.id
-                items_created.append(item.id)
+                path_item_map[path][method] = str(item.id)
+                items_created.append(str(item.id))
 
                 # Link to request/response schemas
                 request_body = operation.get("requestBody", {})
                 if request_body:
                     content = request_body.get("content", {})
-                    for _content_type, content_schema in content.items():
+                    for content_schema in content.values():
                         schema_ref = content_schema.get("schema", {}).get("$ref", "")
                         if schema_ref:
                             schema_name = schema_ref.split("/")[-1]
@@ -525,10 +538,10 @@ class StatelessIngestionService:
 
                 # Link to response schemas
                 responses_op = operation.get("responses", {})
-                for _status_code, response_def in responses_op.items():
+                for response_def in responses_op.values():
                     if isinstance(response_def, dict):
                         content = response_def.get("content", {})
-                        for _content_type, content_schema in content.items():
+                        for content_schema in content.values():
                             schema_ref = content_schema.get("schema", {}).get("$ref", "")
                             if schema_ref:
                                 schema_name = schema_ref.split("/")[-1]
@@ -544,7 +557,7 @@ class StatelessIngestionService:
                                     links_created.append((item.id, schema_items[schema_name]))
 
         # Create links between related endpoints (same path, different methods)
-        for _path, methods in path_item_map.items():
+        for methods in path_item_map.values():
             method_items = list(methods.values())
             for i in range(len(method_items)):
                 for j in range(i + 1, len(method_items)):
@@ -568,9 +581,7 @@ class StatelessIngestionService:
             "endpoints_created": len(items_created) - len(schema_items),
         }
 
-    def _ingest_bmad_format(
-        self, data: dict[str, Any], file_path: str, project_id: str | None
-    ) -> dict[str, Any]:
+    def _ingest_bmad_format(self, data: dict[str, Any], file_path: str, project_id: str | None) -> dict[str, Any]:
         """Ingest BMad format with enhanced requirement linking and traceability."""
         # Get or create project
         if not project_id:
@@ -584,7 +595,7 @@ class StatelessIngestionService:
                 )
                 self.session.add(project)
                 self.session.flush()
-            project_id = project.id
+            project_id = str(project.id)
 
         items_created = []
         links_created = []
@@ -627,14 +638,18 @@ class StatelessIngestionService:
                     "priority": req.get("priority", "medium"),
                     "owner": req.get("owner"),
                     "tags": req.get("tags", []),
-                    **{k: v for k, v in req.items() if k not in ["id", "title", "description", "text", "type", "status", "parent_id"]},
+                    **{
+                        k: v
+                        for k, v in req.items()
+                        if k not in ["id", "title", "description", "text", "type", "status", "parent_id"]
+                    },
                 },
                 version=1,
             )
             self.session.add(item)
             self.session.flush()
-            req_id_map[req_id] = item.id
-            items_created.append(item.id)
+            req_id_map[req_id] = str(item.id)
+            items_created.append(str(item.id))
 
         # Create traceability links
         traceability = data.get("traceability", [])
@@ -726,7 +741,7 @@ class StatelessIngestionService:
                 )
                 self.session.add(project)
                 self.session.flush()
-            project_id = project.id
+            project_id = str(project.id)
 
         items_created = []
 
@@ -753,9 +768,9 @@ class StatelessIngestionService:
                     )
                     self.session.add(item)
                     self.session.flush()
-                    items_created.append(item.id)
+                    items_created.append(str(item.id))
                     # Recursively process nested dict
-                    process_dict(value, item.id)
+                    process_dict(value, str(item.id))
                 elif isinstance(value, list):
                     for i, item_data in enumerate(value):
                         if isinstance(item_data, dict):
@@ -777,7 +792,7 @@ class StatelessIngestionService:
                             )
                             self.session.add(item)
                             self.session.flush()
-                            items_created.append(item.id)
+                            items_created.append(str(item.id))
 
         process_dict(data)
 
@@ -819,5 +834,4 @@ class StatelessIngestionService:
                 end_idx = i
                 break
 
-        content = "\n".join(lines[start_idx:end_idx]).strip()
-        return content
+        return "\n".join(lines[start_idx:end_idx]).strip()

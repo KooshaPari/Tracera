@@ -8673,7 +8673,7 @@ var RequestResponse = class {
       const file = await filePath.open({
         write: true,
         create: true,
-        ...options ?? {}
+        ...options
       });
       try {
         await body.pipeTo(file.writable, {

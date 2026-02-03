@@ -4,8 +4,9 @@ API key management and security tests.
 Tests for API key generation, validation, rotation, and security.
 """
 
-from datetime import datetime, timedelta
-from unittest.mock import MagicMock, patch
+from datetime import UTC, datetime, timedelta, timezone
+from unittest.mock import patch
+
 import pytest
 
 
@@ -30,7 +31,7 @@ class TestAPIKeyGeneration:
         mock_api_key_manager.generate.return_value = {
             "api_key": "sk_live_1234567890abcdefghijklmnop",
             "api_key_id": "key_1234567890",
-            "created_at": datetime.utcnow().isoformat(),
+            "created_at": datetime.now(UTC).isoformat(),
         }
 
         key = mock_api_key_manager.generate(user_id="user123")
@@ -64,14 +65,8 @@ class TestAPIKeyGeneration:
             {"api_key": "sk_live_5678"},
         ]
 
-        test_key = mock_api_key_manager.generate(
-            user_id="user123",
-            environment="test"
-        )
-        live_key = mock_api_key_manager.generate(
-            user_id="user123",
-            environment="live"
-        )
+        test_key = mock_api_key_manager.generate(user_id="user123", environment="test")
+        live_key = mock_api_key_manager.generate(user_id="user123", environment="live")
 
         assert test_key["api_key"].startswith("sk_test_")
         assert live_key["api_key"].startswith("sk_live_")
@@ -180,17 +175,14 @@ class TestAPIKeyExpiration:
 
     def test_api_key_with_expiration(self, mock_api_key_manager):
         """Test API key with expiration date."""
-        expiration = datetime.utcnow() + timedelta(days=365)
+        expiration = datetime.now(UTC) + timedelta(days=365)
 
         mock_api_key_manager.generate.return_value = {
             "api_key": "sk_live_1234",
             "expires_at": expiration.isoformat(),
         }
 
-        key = mock_api_key_manager.generate(
-            user_id="user123",
-            expires_at=expiration
-        )
+        key = mock_api_key_manager.generate(user_id="user123", expires_at=expiration)
 
         assert "expires_at" in key
 
@@ -220,10 +212,7 @@ class TestAPIKeyExpiration:
             "expires_at": None,
         }
 
-        key = mock_api_key_manager.generate(
-            user_id="user123",
-            expires_at=None
-        )
+        key = mock_api_key_manager.generate(user_id="user123", expires_at=None)
 
         assert key["expires_at"] is None
 
@@ -231,10 +220,7 @@ class TestAPIKeyExpiration:
         """Test warning for API keys nearing expiration."""
         mock_api_key_manager.is_expiring_soon.return_value = True
 
-        is_expiring = mock_api_key_manager.is_expiring_soon(
-            "sk_live_1234",
-            days=30
-        )
+        is_expiring = mock_api_key_manager.is_expiring_soon("sk_live_1234", days=30)
 
         assert is_expiring is True
 
@@ -249,7 +235,7 @@ class TestAPIKeyRotation:
         mock_api_key_manager.rotate.return_value = {
             "old_key": old_key,
             "new_key": "sk_live_new_key",
-            "rotated_at": datetime.utcnow().isoformat(),
+            "rotated_at": datetime.now(UTC).isoformat(),
         }
 
         result = mock_api_key_manager.rotate(old_key)
@@ -338,10 +324,7 @@ class TestAPIKeyMetadata:
             "name": "Production Server",
         }
 
-        key = mock_api_key_manager.generate(
-            user_id="user123",
-            name="Production Server"
-        )
+        key = mock_api_key_manager.generate(user_id="user123", name="Production Server")
 
         assert key["name"] == "Production Server"
 
@@ -352,16 +335,13 @@ class TestAPIKeyMetadata:
             "description": "For staging environment",
         }
 
-        key = mock_api_key_manager.generate(
-            user_id="user123",
-            description="For staging environment"
-        )
+        key = mock_api_key_manager.generate(user_id="user123", description="For staging environment")
 
         assert "description" in key
 
     def test_api_key_creation_timestamp(self, mock_api_key_manager):
         """Test API key creation timestamp."""
-        now = datetime.utcnow().isoformat()
+        now = datetime.now(UTC).isoformat()
 
         mock_api_key_manager.generate.return_value = {
             "api_key": "sk_live_1234",
@@ -375,7 +355,7 @@ class TestAPIKeyMetadata:
     def test_api_key_last_used(self, mock_api_key_manager):
         """Test API key last used timestamp."""
         mock_api_key_manager.get_metadata.return_value = {
-            "last_used_at": datetime.utcnow().isoformat(),
+            "last_used_at": datetime.now(UTC).isoformat(),
         }
 
         metadata = mock_api_key_manager.get_metadata("sk_live_1234")
@@ -419,8 +399,8 @@ class TestAPIKeyListAndManagement:
         mock_api_key_manager.get_key_details.return_value = {
             "key_id": "key_1",
             "name": "Production Server",
-            "created_at": datetime.utcnow().isoformat(),
-            "last_used_at": datetime.utcnow().isoformat(),
+            "created_at": datetime.now(UTC).isoformat(),
+            "last_used_at": datetime.now(UTC).isoformat(),
             "scopes": ["read:projects", "write:items"],
         }
 

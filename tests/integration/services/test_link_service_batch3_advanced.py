@@ -10,20 +10,19 @@ Focus areas:
 - Bulk operations and performance
 """
 
+from datetime import UTC, datetime
+from unittest.mock import AsyncMock, Mock
+
 import pytest
-from unittest.mock import AsyncMock, Mock, patch
-from datetime import datetime, timezone
-from typing import Any
-import asyncio
 
-from tracertm.services.link_service import LinkService
-from tracertm.models.link import Link
 from tracertm.models.item import Item
-
+from tracertm.models.link import Link
+from tracertm.services.link_service import LinkService
 
 # ==============================================================================
 # FIXTURES
 # ==============================================================================
+
 
 @pytest.fixture
 def async_session():
@@ -47,12 +46,12 @@ def create_link(
     source_id: str = "item-1",
     target_id: str = "item-2",
     link_type: str = "relates_to",
-    **kwargs
+    **kwargs,
 ) -> Mock:
     """Helper to create mock link."""
     defaults = {
-        "created_at": datetime.now(timezone.utc),
-        "updated_at": datetime.now(timezone.utc),
+        "created_at": datetime.now(UTC),
+        "updated_at": datetime.now(UTC),
         "strength": 1.0,
         "properties": {},
     }
@@ -81,6 +80,7 @@ def create_item(item_id: str, project_id: str = "proj-1") -> Mock:
 # LINK CREATION TESTS (14 tests)
 # ==============================================================================
 
+
 class TestLinkCreation:
     """Tests for creating links between items."""
 
@@ -90,9 +90,7 @@ class TestLinkCreation:
         link = create_link()
         link_service.links.create.return_value = link
 
-        result = await link_service.create_link(
-            "proj-1", "item-1", "item-2", "relates_to"
-        )
+        result = await link_service.create_link("proj-1", "item-1", "item-2", "relates_to")
 
         assert result.source_item_id == "item-1"
         assert result.target_item_id == "item-2"
@@ -102,17 +100,21 @@ class TestLinkCreation:
     async def test_create_link_all_types(self, link_service):
         """Test creating links with all valid relationship types."""
         link_types = [
-            "relates_to", "implements", "tested_by", "depends_on",
-            "blocks", "is_blocked_by", "duplicates", "duplicated_by"
+            "relates_to",
+            "implements",
+            "tested_by",
+            "depends_on",
+            "blocks",
+            "is_blocked_by",
+            "duplicates",
+            "duplicated_by",
         ]
 
         for link_type in link_types:
             link = create_link(link_type=link_type)
             link_service.links.create.return_value = link
 
-            result = await link_service.create_link(
-                "proj-1", "item-1", "item-2", link_type
-            )
+            result = await link_service.create_link("proj-1", "item-1", "item-2", link_type)
 
             assert result.link_type == link_type
 
@@ -123,10 +125,7 @@ class TestLinkCreation:
         link = create_link(properties=props)
         link_service.links.create.return_value = link
 
-        result = await link_service.create_link(
-            "proj-1", "item-1", "item-2", "relates_to",
-            properties=props
-        )
+        result = await link_service.create_link("proj-1", "item-1", "item-2", "relates_to", properties=props)
 
         assert result.properties == props
 
@@ -138,13 +137,9 @@ class TestLinkCreation:
 
         link_service.links.create.side_effect = [forward, backward]
 
-        forward_result = await link_service.create_link(
-            "proj-1", "item-1", "item-2", "relates_to"
-        )
+        forward_result = await link_service.create_link("proj-1", "item-1", "item-2", "relates_to")
 
-        backward_result = await link_service.create_link(
-            "proj-1", "item-2", "item-1", "relates_to"
-        )
+        backward_result = await link_service.create_link("proj-1", "item-2", "item-1", "relates_to")
 
         assert forward_result.source_item_id == "item-1"
         assert backward_result.source_item_id == "item-2"
@@ -154,13 +149,11 @@ class TestLinkCreation:
         """Test validating that items exist before creating link."""
         link_service.items.get.side_effect = [
             create_item("item-1"),
-            None  # item-2 doesn't exist
+            None,  # item-2 doesn't exist
         ]
 
         with pytest.raises(Exception):
-            await link_service.create_link(
-                "proj-1", "item-1", "item-2", "relates_to"
-            )
+            await link_service.create_link("proj-1", "item-1", "item-2", "relates_to")
 
     @pytest.mark.asyncio
     async def test_create_link_same_project(self, link_service):
@@ -168,9 +161,7 @@ class TestLinkCreation:
         link = create_link()
         link_service.links.create.return_value = link
 
-        result = await link_service.create_link(
-            "proj-1", "item-1", "item-2", "relates_to"
-        )
+        result = await link_service.create_link("proj-1", "item-1", "item-2", "relates_to")
 
         assert result.project_id == "proj-1"
 
@@ -180,9 +171,7 @@ class TestLinkCreation:
         link_service.links.create.side_effect = ValueError("Cannot link to self")
 
         with pytest.raises(ValueError):
-            await link_service.create_link(
-                "proj-1", "item-1", "item-1", "relates_to"
-            )
+            await link_service.create_link("proj-1", "item-1", "item-1", "relates_to")
 
     @pytest.mark.asyncio
     async def test_create_link_with_strength_weight(self, link_service):
@@ -190,10 +179,7 @@ class TestLinkCreation:
         link = create_link(strength=0.7)
         link_service.links.create.return_value = link
 
-        result = await link_service.create_link(
-            "proj-1", "item-1", "item-2", "relates_to",
-            strength=0.7
-        )
+        result = await link_service.create_link("proj-1", "item-1", "item-2", "relates_to", strength=0.7)
 
         assert result.strength == 0.7
 
@@ -201,6 +187,7 @@ class TestLinkCreation:
 # ==============================================================================
 # LINK QUERY & TRAVERSAL TESTS (15 tests)
 # ==============================================================================
+
 
 class TestLinkQueriesAndTraversal:
     """Tests for querying and traversing links."""
@@ -256,10 +243,7 @@ class TestLinkQueriesAndTraversal:
         ]
         link_service.links.get_outgoing.return_value = [links[0]]
 
-        result = await link_service.get_outgoing_links(
-            "proj-1", "item-1",
-            link_type="implements"
-        )
+        result = await link_service.get_outgoing_links("proj-1", "item-1", link_type="implements")
 
         assert len(result) == 1
         assert result[0].link_type == "implements"
@@ -283,9 +267,7 @@ class TestLinkQueriesAndTraversal:
             if current not in visited:
                 visited.add(current)
                 links = await link_service.links.get_outgoing("proj-1", current)
-                for link in links:
-                    if link.target_item_id not in visited:
-                        to_visit.append(link.target_item_id)
+                to_visit.extend(link.target_item_id for link in links if link.target_item_id not in visited)
 
         assert "item-1" in visited
         assert "item-2" in visited
@@ -311,9 +293,7 @@ class TestLinkQueriesAndTraversal:
             if current not in visited:
                 visited.add(current)
                 links = await link_service.links.get_outgoing("proj-1", current)
-                for link in links:
-                    if link.target_item_id not in visited:
-                        to_visit.append(link.target_item_id)
+                to_visit.extend(link.target_item_id for link in links if link.target_item_id not in visited)
 
         assert len(visited) == 3
 
@@ -321,6 +301,7 @@ class TestLinkQueriesAndTraversal:
 # ==============================================================================
 # CIRCULAR DEPENDENCY DETECTION TESTS (10 tests)
 # ==============================================================================
+
 
 class TestCircularDependencyDetection:
     """Tests for detecting circular dependencies."""
@@ -387,6 +368,7 @@ class TestCircularDependencyDetection:
 # LINK VALIDATION & CONSTRAINTS TESTS (12 tests)
 # ==============================================================================
 
+
 class TestLinkValidation:
     """Tests for link validation and constraints."""
 
@@ -416,9 +398,7 @@ class TestLinkValidation:
         link_service.links.create.side_effect = ValueError("Link already exists")
 
         with pytest.raises(ValueError):
-            await link_service.create_link(
-                "proj-1", "item-1", "item-2", "relates_to"
-            )
+            await link_service.create_link("proj-1", "item-1", "item-2", "relates_to")
 
     @pytest.mark.asyncio
     async def test_validate_strength_range(self, link_service):
@@ -437,9 +417,7 @@ class TestLinkValidation:
         link_service.links.create.side_effect = ValueError("Cardinality constraint")
 
         with pytest.raises(ValueError):
-            await link_service.create_link(
-                "proj-1", "item-1", "item-2", "replaces"
-            )
+            await link_service.create_link("proj-1", "item-1", "item-2", "replaces")
 
     @pytest.mark.asyncio
     async def test_validate_link_consistency(self, link_service):
@@ -457,6 +435,7 @@ class TestLinkValidation:
 # BULK LINK OPERATIONS TESTS (10 tests)
 # ==============================================================================
 
+
 class TestBulkLinkOperations:
     """Tests for bulk link operations."""
 
@@ -470,11 +449,14 @@ class TestBulkLinkOperations:
         ]
         link_service.links.bulk_create.return_value = links
 
-        result = await link_service.bulk_create_links("proj-1", [
-            ("item-1", "item-2", "relates_to"),
-            ("item-1", "item-3", "relates_to"),
-            ("item-1", "item-4", "relates_to"),
-        ])
+        result = await link_service.bulk_create_links(
+            "proj-1",
+            [
+                ("item-1", "item-2", "relates_to"),
+                ("item-1", "item-3", "relates_to"),
+                ("item-1", "item-4", "relates_to"),
+            ],
+        )
 
         assert len(result) == 3
 
@@ -483,26 +465,24 @@ class TestBulkLinkOperations:
         """Test deleting multiple links."""
         link_service.links.bulk_delete.return_value = 5
 
-        result = await link_service.bulk_delete_links(
-            "proj-1",
-            [f"link-{i}" for i in range(1, 6)]
-        )
+        result = await link_service.bulk_delete_links("proj-1", [f"link-{i}" for i in range(1, 6)])
 
         assert result == 5
 
     @pytest.mark.asyncio
     async def test_bulk_update_link_properties(self, link_service):
         """Test updating properties on multiple links."""
-        links = [
-            create_link(f"link-{i}", strength=0.8) for i in range(1, 4)
-        ]
+        links = [create_link(f"link-{i}", strength=0.8) for i in range(1, 4)]
         link_service.links.bulk_update.return_value = links
 
-        result = await link_service.bulk_update_links("proj-1", [
-            ("link-1", {"strength": 0.8}),
-            ("link-2", {"strength": 0.8}),
-            ("link-3", {"strength": 0.8}),
-        ])
+        result = await link_service.bulk_update_links(
+            "proj-1",
+            [
+                ("link-1", {"strength": 0.8}),
+                ("link-2", {"strength": 0.8}),
+                ("link-3", {"strength": 0.8}),
+            ],
+        )
 
         assert len(result) == 3
 
@@ -514,10 +494,13 @@ class TestBulkLinkOperations:
             create_link("link-2"),
         ]
 
-        result = await link_service.bulk_create_links("proj-1", [
-            ("item-1", "item-2", "relates_to"),
-            ("item-1", "item-3", "relates_to"),
-        ])
+        result = await link_service.bulk_create_links(
+            "proj-1",
+            [
+                ("item-1", "item-2", "relates_to"),
+                ("item-1", "item-3", "relates_to"),
+            ],
+        )
 
         assert len(result) == 2
 
@@ -525,6 +508,7 @@ class TestBulkLinkOperations:
 # ==============================================================================
 # LINK METADATA & PROPERTIES TESTS (8 tests)
 # ==============================================================================
+
 
 class TestLinkMetadataAndProperties:
     """Tests for managing link metadata."""
@@ -536,10 +520,7 @@ class TestLinkMetadataAndProperties:
         link = create_link(properties=props)
         link_service.links.update.return_value = link
 
-        result = await link_service.update_link(
-            "proj-1", "link-1",
-            properties=props
-        )
+        result = await link_service.update_link("proj-1", "link-1", properties=props)
 
         assert result.properties == props
 
@@ -549,10 +530,7 @@ class TestLinkMetadataAndProperties:
         links = [create_link("link-1", properties={"priority": "high"})]
         link_service.links.query.return_value = links
 
-        result = await link_service.query_links(
-            "proj-1",
-            properties={"priority": "high"}
-        )
+        result = await link_service.query_links("proj-1", properties={"priority": "high"})
 
         assert len(result) == 1
 
@@ -562,25 +540,19 @@ class TestLinkMetadataAndProperties:
         link = create_link("link-1", strength=0.9)
         link_service.links.update.return_value = link
 
-        result = await link_service.update_link(
-            "proj-1", "link-1",
-            strength=0.9
-        )
+        result = await link_service.update_link("proj-1", "link-1", strength=0.9)
 
         assert result.strength == 0.9
 
     @pytest.mark.asyncio
     async def test_timestamp_link_metadata(self, link_service):
         """Test automatic timestamp management."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         link = create_link("link-1", updated_at=now)
 
         link_service.links.update.return_value = link
 
-        result = await link_service.update_link(
-            "proj-1", "link-1",
-            properties={"reviewed": True}
-        )
+        result = await link_service.update_link("proj-1", "link-1", properties={"reviewed": True})
 
         assert result.updated_at is not None
 
@@ -589,19 +561,16 @@ class TestLinkMetadataAndProperties:
 # IMPACT ANALYSIS TESTS (6 tests)
 # ==============================================================================
 
+
 class TestImpactAnalysis:
     """Tests for impact chain analysis."""
 
     @pytest.mark.asyncio
     async def test_calculate_impact_depth_one(self, link_service):
         """Test impact calculation with one level."""
-        link_service.get_outgoing_links.return_value = [
-            create_link("link-1", source_id="item-1", target_id="item-2")
-        ]
+        link_service.get_outgoing_links.return_value = [create_link("link-1", source_id="item-1", target_id="item-2")]
 
-        result = await link_service.calculate_impact_chain(
-            "proj-1", "item-1", max_depth=1
-        )
+        result = await link_service.calculate_impact_chain("proj-1", "item-1", max_depth=1)
 
         assert result is not None
 
@@ -614,18 +583,14 @@ class TestImpactAnalysis:
             [],
         ]
 
-        result = await link_service.calculate_impact_chain(
-            "proj-1", "item-1", max_depth=3
-        )
+        result = await link_service.calculate_impact_chain("proj-1", "item-1", max_depth=3)
 
         assert result is not None
 
     @pytest.mark.asyncio
     async def test_estimate_change_effort(self, link_service):
         """Test estimating effort to change item."""
-        link_service.get_outgoing_links.return_value = [
-            create_link("link-1") for _ in range(10)
-        ]
+        link_service.get_outgoing_links.return_value = [create_link("link-1") for _ in range(10)]
 
         effort = await link_service.estimate_change_effort("proj-1", "item-1")
 

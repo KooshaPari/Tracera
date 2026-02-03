@@ -56,15 +56,15 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
   return {
     description: page.data.description,
     openGraph: {
-      title: page.data.title,
       description: page.data.description ?? '',
+      title: page.data.title,
       type: 'article',
     },
     title: page.data.title,
     twitter: {
       card: 'summary_large_image',
-      title: page.data.title,
       description: page.data.description ?? '',
+      title: page.data.title,
     },
   };
 }

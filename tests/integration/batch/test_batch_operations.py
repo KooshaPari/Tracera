@@ -3,9 +3,10 @@ Integration tests for Epic 5: Batch Operations (Story 5.5, FR44).
 """
 
 import pytest
+
 pytestmark = pytest.mark.integration
 
-from tracertm.api.client import TraceRTMClient
+from tracertm.api.client import BatchResult, TraceRTMClient
 
 
 @pytest.fixture
@@ -16,6 +17,7 @@ def temp_project_setup(tmp_path, monkeypatch):
     monkeypatch.setenv("HOME", str(tmp_path))
 
     from tracertm.config.manager import ConfigManager
+
     config_manager = ConfigManager()
 
     db_path = tmp_path / "test.db"
@@ -50,15 +52,12 @@ def temp_project_setup(tmp_path, monkeypatch):
 def test_batch_create_items(temp_project_setup):
     """Test batch item creation (Story 5.5, FR44)."""
     client = TraceRTMClient()
-    client.register_agent("test-agent", "ai_agent")
+    client.register_agent("test-agent", agent_type="ai_agent")
 
-    items = [
-        {"title": f"Item {i}", "view": "FEATURE", "type": "feature", "status": "todo"}
-        for i in range(10)
-    ]
+    items = [{"title": f"Item {i}", "view": "FEATURE", "type": "feature", "status": "todo"} for i in range(10)]
 
     result = client.batch_create_items(items)
-
+    assert isinstance(result, BatchResult)
     assert result["items_created"] == 10
 
     # Verify items were created
@@ -71,7 +70,7 @@ def test_batch_create_items(temp_project_setup):
 def test_batch_update_items(temp_project_setup):
     """Test batch item updates (Story 5.5, FR44)."""
     client = TraceRTMClient()
-    client.register_agent("test-agent", "ai_agent")
+    client.register_agent("test-agent", agent_type="ai_agent")
 
     # Create items
     item1 = client.create_item("Item 1", "FEATURE", "feature")
@@ -84,14 +83,16 @@ def test_batch_update_items(temp_project_setup):
     ]
 
     result = client.batch_update_items(updates)
-
+    assert isinstance(result, BatchResult)
     assert result["items_updated"] == 2
 
     # Verify updates
     updated1 = client.get_item(item1["id"])
+    assert updated1 is not None
     assert updated1["status"] == "in_progress"
 
     updated2 = client.get_item(item2["id"])
+    assert updated2 is not None
     assert updated2["status"] == "complete"
 
     client.close()
@@ -100,7 +101,7 @@ def test_batch_update_items(temp_project_setup):
 def test_batch_delete_items(temp_project_setup):
     """Test batch item deletion (Story 5.5, FR44)."""
     client = TraceRTMClient()
-    client.register_agent("test-agent", "ai_agent")
+    client.register_agent("test-agent", agent_type="ai_agent")
 
     # Create items
     item1 = client.create_item("Item 1", "FEATURE", "feature")
@@ -108,7 +109,7 @@ def test_batch_delete_items(temp_project_setup):
 
     # Batch delete
     result = client.batch_delete_items([item1["id"], item2["id"]])
-
+    assert isinstance(result, BatchResult)
     assert result["items_deleted"] == 2
 
     # Verify items are deleted (soft delete) - query_items should not return them
@@ -123,7 +124,7 @@ def test_batch_delete_items(temp_project_setup):
 def test_batch_operations_atomicity(temp_project_setup):
     """Test that batch operations are atomic (Story 5.5, FR44)."""
     client = TraceRTMClient()
-    client.register_agent("test-agent", "ai_agent")
+    client.register_agent("test-agent", agent_type="ai_agent")
 
     # Create items - note: empty title might be allowed by model
     # Instead, test with a constraint that will definitely fail
@@ -134,6 +135,7 @@ def test_batch_operations_atomicity(temp_project_setup):
 
     # Batch create should succeed
     result = client.batch_create_items(items)
+    assert isinstance(result, BatchResult)
     assert result["items_created"] == 2
 
     # Verify all items were created (atomicity - all or nothing)

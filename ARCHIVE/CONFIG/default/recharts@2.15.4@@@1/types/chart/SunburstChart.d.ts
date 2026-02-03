@@ -42,4 +42,4 @@ export interface SunburstChartProps {
     onClick?: (node: SunburstData) => void;
 }
 export declare const SunburstChart: ({ className, data, children, width, height, padding, dataKey, ringPadding, innerRadius, fill, stroke, textOptions, outerRadius, cx, cy, startAngle, endAngle, onClick, onMouseEnter, onMouseLeave, }: SunburstChartProps) => React.JSX.Element;
-export {};
+

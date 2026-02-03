@@ -293,13 +293,13 @@ class ListView {
         }
         let scrollableOptions;
         if (options.scrollByPage !== undefined) {
-            scrollableOptions = { ...(scrollableOptions ?? {}), scrollByPage: options.scrollByPage };
+            scrollableOptions = { ...scrollableOptions, scrollByPage: options.scrollByPage };
         }
         if (options.mouseWheelScrollSensitivity !== undefined) {
-            scrollableOptions = { ...(scrollableOptions ?? {}), mouseWheelScrollSensitivity: options.mouseWheelScrollSensitivity };
+            scrollableOptions = { ...scrollableOptions, mouseWheelScrollSensitivity: options.mouseWheelScrollSensitivity };
         }
         if (options.fastScrollSensitivity !== undefined) {
-            scrollableOptions = { ...(scrollableOptions ?? {}), fastScrollSensitivity: options.fastScrollSensitivity };
+            scrollableOptions = { ...scrollableOptions, fastScrollSensitivity: options.fastScrollSensitivity };
         }
         if (scrollableOptions) {
             this.scrollableElement.updateOptions(scrollableOptions);

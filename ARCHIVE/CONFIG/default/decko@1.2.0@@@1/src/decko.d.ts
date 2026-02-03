@@ -2,7 +2,7 @@
  *
  */
 export function bind<T>(
-    target: Object,
+    target: object,
     propertyKey: string | symbol,
     descriptor?: TypedPropertyDescriptor<T>
 ): TypedPropertyDescriptor<T> | void;
@@ -14,16 +14,16 @@ export function bind(): MethodDecorator;
  */
 
 export function memoize<T>(
-    target: Object,
+    target: object,
     propertyKey: string | symbol,
     descriptor?: TypedPropertyDescriptor<T>
 ): TypedPropertyDescriptor<T> | void;
-export function memoize(caseSensitive?: boolean, cache?: Object): MethodDecorator;
+export function memoize(caseSensitive?: boolean, cache?: object): MethodDecorator;
 /**
  * @param delay number
  */
 export function debounce<T>(
-    target: Object,
+    target: object,
     propertyKey: string | symbol,
     descriptor?: TypedPropertyDescriptor<T>
 ): TypedPropertyDescriptor<T> | void;

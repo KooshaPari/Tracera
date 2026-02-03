@@ -34,4 +34,4 @@ const update2: UpdateRequest<User> = {};
 */
 export type NonEmptyObject<T extends object> = HasRequiredKeys<T> extends true ? T : RequireAtLeastOne<T, keyof T>;
 
-export {};
+

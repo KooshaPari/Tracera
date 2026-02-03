@@ -60,7 +60,7 @@ make proto-watch
 make proto-test
 
 # Or use the test script directly
-python scripts/test-grpc.py
+python scripts/python/test_grpc.py
 ```
 
 ---
@@ -483,7 +483,7 @@ async def test_error_handling():
 
 ```bash
 # Run test script
-python scripts/test-grpc.py
+python scripts/python/test_grpc.py
 
 # Or use pytest
 pytest tests/grpc/ -v

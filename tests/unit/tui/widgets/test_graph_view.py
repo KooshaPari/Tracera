@@ -12,13 +12,15 @@ Tests cover:
 import pytest
 
 try:
-    from textual.widgets import Static
+    from textual.widgets import Static  # type: ignore[import-untyped]
+
     TEXTUAL_AVAILABLE = True
 except ImportError:
     TEXTUAL_AVAILABLE = False
     Static = None
 
-from tracertm.tui.widgets.graph_view import GraphViewWidget, TEXTUAL_AVAILABLE as WIDGET_TEXTUAL
+from tracertm.tui.widgets.graph_view import TEXTUAL_AVAILABLE as WIDGET_TEXTUAL
+from tracertm.tui.widgets.graph_view import GraphViewWidget
 
 
 @pytest.mark.skipif(not TEXTUAL_AVAILABLE, reason="Textual not installed")
@@ -190,7 +192,7 @@ class TestGraphViewWidgetEdgeCases:
         """Test widget with special characters."""
         widget = GraphViewWidget()
         if hasattr(widget, "update"):
-            content = "Graph <test> & \"quotes\""
+            content = 'Graph <test> & "quotes"'
             widget.update(content)
             assert widget is not None
 
@@ -262,12 +264,7 @@ class TestGraphViewWidgetIntegration:
         """Test progressive content updates."""
         widget = GraphViewWidget()
         if hasattr(widget, "update"):
-            states = [
-                "Loading...",
-                "Building graph...",
-                "Rendering nodes...",
-                "Complete: 10 nodes, 15 edges"
-            ]
+            states = ["Loading...", "Building graph...", "Rendering nodes...", "Complete: 10 nodes, 15 edges"]
             for state in states:
                 widget.update(state)
             assert widget is not None
@@ -431,10 +428,7 @@ class TestGraphViewWidgetPerformance:
         widget = GraphViewWidget()
         if hasattr(widget, "update"):
             # Build complex graph text
-            lines = []
-            for i in range(100):
-                for j in range(i + 1, min(i + 10, 100)):
-                    lines.append(f"Node_{i} -> Node_{j}")
+            lines = [f"Node_{i} -> Node_{j}" for i in range(100) for j in range(i + 1, min(i + 10, 100))]
             content = "\n".join(lines)
             widget.update(content)
             assert widget is not None

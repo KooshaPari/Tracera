@@ -35,7 +35,7 @@ inside an EOL comment is more acceptable than the opposite.
 adjacent to operands.
 */
     operator: {
-      pattern: /(\s)(?:\*\*?|<[=>]?|>=?|\?=|[-+\/=])(?=\s)/,
+      pattern: /(\s)(?:\*\*?|<[=>]?|>=?|\?=|[-+/=])(?=\s)/,
       lookbehind: true
     },
     'string-operator': {

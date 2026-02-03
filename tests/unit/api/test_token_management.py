@@ -5,8 +5,9 @@ Tests for JWT token lifecycle, refresh tokens, token revocation,
 and token management scenarios.
 """
 
-from datetime import datetime, timedelta
-from unittest.mock import MagicMock, patch, AsyncMock
+from datetime import UTC, datetime, timedelta, timezone
+from unittest.mock import patch
+
 import pytest
 
 
@@ -71,10 +72,7 @@ class TestAccessTokenGeneration:
             "scopes": ["read:projects", "write:items"],
         }
 
-        token = mock_token_manager.generate_access_token(
-            user_id="user123",
-            scopes=["read:projects", "write:items"]
-        )
+        token = mock_token_manager.generate_access_token(user_id="user123", scopes=["read:projects", "write:items"])
 
         assert "scopes" in token
 
@@ -127,7 +125,7 @@ class TestRefreshTokenFlow:
         """Test that expired refresh token is rejected."""
         mock_token_manager.validate_refresh_token.side_effect = ValueError("Refresh token expired")
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Refresh token expired"):
             mock_token_manager.validate_refresh_token("expired_refresh")
 
     def test_refresh_token_single_use(self, mock_refresh_token, mock_token_manager):
@@ -144,7 +142,7 @@ class TestRefreshTokenFlow:
         # Second use with same refresh token should fail (token rotation)
         mock_token_manager.refresh_access_token.side_effect = ValueError("Refresh token already used")
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Refresh token already used"):
             mock_token_manager.refresh_access_token(mock_refresh_token)
 
 
@@ -167,7 +165,7 @@ class TestTokenRevocation:
 
         mock_token_manager.validate_token.side_effect = ValueError("Token is revoked")
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Token is revoked"):
             mock_token_manager.validate_token(token)
 
     def test_logout_revokes_all_tokens(self, mock_token_manager):
@@ -198,7 +196,7 @@ class TestTokenExpiration:
     def test_token_expiration_check(self, mock_token_manager):
         """Test token expiration validation."""
         token = {
-            "exp": (datetime.utcnow() + timedelta(hours=1)).timestamp(),
+            "exp": (datetime.now(UTC) + timedelta(hours=1)).timestamp(),
         }
 
         mock_token_manager.is_token_expired.return_value = False
@@ -210,7 +208,7 @@ class TestTokenExpiration:
     def test_expired_token_detected(self, mock_token_manager):
         """Test detection of expired tokens."""
         token = {
-            "exp": (datetime.utcnow() - timedelta(hours=1)).timestamp(),
+            "exp": (datetime.now(UTC) - timedelta(hours=1)).timestamp(),
         }
 
         mock_token_manager.is_token_expired.return_value = True
@@ -222,7 +220,7 @@ class TestTokenExpiration:
     def test_token_near_expiration_warning(self, mock_token_manager):
         """Test warning for tokens nearing expiration."""
         token = {
-            "exp": (datetime.utcnow() + timedelta(minutes=5)).timestamp(),
+            "exp": (datetime.now(UTC) + timedelta(minutes=5)).timestamp(),
         }
 
         mock_token_manager.is_token_expiring_soon.return_value = True
@@ -234,7 +232,7 @@ class TestTokenExpiration:
     def test_token_grace_period(self, mock_token_manager):
         """Test grace period for just-expired tokens."""
         token = {
-            "exp": (datetime.utcnow() - timedelta(seconds=10)).timestamp(),
+            "exp": (datetime.now(UTC) - timedelta(seconds=10)).timestamp(),
         }
 
         mock_token_manager.is_token_expired.return_value = False  # Within grace period
@@ -279,10 +277,7 @@ class TestTokenScopes:
 
         mock_token_manager.has_scopes.return_value = True
 
-        has_scopes = mock_token_manager.has_scopes(
-            token,
-            ["read:projects", "write:items"]
-        )
+        has_scopes = mock_token_manager.has_scopes(token, ["read:projects", "write:items"])
 
         assert has_scopes is True
 
@@ -379,7 +374,7 @@ class TestTokenAudience:
 
         mock_token_manager.validate_audience.side_effect = ValueError("Missing audience claim")
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Missing audience claim"):
             mock_token_manager.validate_audience(token, "api.tracertm.com")
 
 
@@ -417,7 +412,7 @@ class TestTokenNotBefore:
     def test_token_not_before_validation(self, mock_token_manager):
         """Test token not-before claim validation."""
         token = {
-            "nbf": (datetime.utcnow() - timedelta(hours=1)).timestamp(),
+            "nbf": (datetime.now(UTC) - timedelta(hours=1)).timestamp(),
         }
 
         mock_token_manager.is_token_valid_yet.return_value = True
@@ -429,7 +424,7 @@ class TestTokenNotBefore:
     def test_token_not_yet_valid(self, mock_token_manager):
         """Test token not yet valid (future nbf)."""
         token = {
-            "nbf": (datetime.utcnow() + timedelta(hours=1)).timestamp(),
+            "nbf": (datetime.now(UTC) + timedelta(hours=1)).timestamp(),
         }
 
         mock_token_manager.is_token_valid_yet.return_value = False
@@ -468,7 +463,7 @@ class TestTokenMetadata:
 
     def test_token_issued_at_claim(self, mock_token_manager):
         """Test token issued-at claim."""
-        now = datetime.utcnow().timestamp()
+        now = datetime.now(UTC).timestamp()
         token = {
             "iat": now,
         }

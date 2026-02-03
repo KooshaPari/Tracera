@@ -620,7 +620,7 @@ Command.prototype.normalize = function(args) {
       arg.slice(1).split('').forEach(function(c) {
         ret.push('-' + c);
       });
-    } else if (/^--/.test(arg) && ~(index = arg.indexOf('='))) {
+    } else if (arg.startsWith('--') && ~(index = arg.indexOf('='))) {
       ret.push(arg.slice(0, index), arg.slice(index + 1));
     } else {
       ret.push(arg);

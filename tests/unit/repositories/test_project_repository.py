@@ -6,7 +6,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from tracertm.repositories.project_repository import ProjectRepository
 
 
-
 @pytest.mark.unit
 @pytest.mark.asyncio
 async def test_create_project(db_session: AsyncSession):
@@ -61,8 +60,10 @@ async def test_update_project(db_session: AsyncSession):
         description="Updated description",
     )
 
-    assert updated.name == "Updated Name"
-    assert updated.description == "Updated description"
+    assert updated is not None
+    u = updated
+    assert u.name == "Updated Name"
+    assert u.description == "Updated description"
 
 
 @pytest.mark.unit
@@ -116,4 +117,6 @@ async def test_project_with_description(db_session: AsyncSession):
     )
 
     retrieved = await repo.get_by_id(project.id)
-    assert retrieved.description == "Detailed description with special chars: !@#$%"
+    assert retrieved is not None
+    r = retrieved
+    assert r.description == "Detailed description with special chars: !@#$%"

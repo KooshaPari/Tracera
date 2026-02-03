@@ -100,7 +100,7 @@ export default function kumir(Prism) {
         lookbehind: true
       },
       /** Should be performed after searching for words. */
-      punctuation: /:=|[(),:;\[\]]/,
+      punctuation: /:=|[(),:;[\]]/,
       /**
        * Should be performed after searching for
        * - numeric constants (because of "+" and "-");

@@ -18,4 +18,4 @@ declare module '../vanilla.mjs' {
     }
 }
 export declare const redux: Redux;
-export {};
+

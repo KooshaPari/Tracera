@@ -37,7 +37,7 @@ export default function twig(Prism) {
       },
       /[=<>]=?|!=|\*\*?|\/\/?|\?:?|[-+~%|]/
     ],
-    punctuation: /[()\[\]{}:.,]/
+    punctuation: /[()[\]{}:.,]/
   }
   Prism.hooks.add('before-tokenize', function (env) {
     if (env.language !== 'twig') {

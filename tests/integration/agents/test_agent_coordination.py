@@ -3,6 +3,7 @@ Integration tests for Epic 5: Agent Coordination (Story 5.4).
 """
 
 import pytest
+
 pytestmark = pytest.mark.integration
 
 from tracertm.api.client import TraceRTMClient
@@ -16,6 +17,7 @@ def temp_project_setup(tmp_path, monkeypatch):
     monkeypatch.setenv("HOME", str(tmp_path))
 
     from tracertm.config.manager import ConfigManager
+
     config_manager = ConfigManager()
 
     db_path = tmp_path / "test.db"
@@ -46,10 +48,10 @@ def temp_project_setup(tmp_path, monkeypatch):
 def test_agent_coordination_detection(temp_project_setup):
     """Test agent coordination conflict detection (Story 5.4)."""
     client1 = TraceRTMClient()
-    agent1_id = client1.register_agent("agent-1", "ai_agent")
+    agent1_id = client1.register_agent("agent-1", agent_type="ai_agent")
 
     client2 = TraceRTMClient()
-    agent2_id = client2.register_agent("agent-2", "ai_agent")
+    agent2_id = client2.register_agent("agent-2", agent_type="ai_agent")
 
     # Create item
     item = client1.create_item("Shared Item", "FEATURE", "feature")

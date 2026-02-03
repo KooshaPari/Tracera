@@ -15,11 +15,10 @@ Event Subject Schema:
     tracertm.sandbox.{session_id}.snapshot_restored
 """
 
-import json
 import logging
-from datetime import datetime, timezone
-from enum import Enum
-from typing import Any, Optional
+from datetime import UTC, datetime
+from enum import StrEnum
+from typing import Any
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
@@ -27,7 +26,7 @@ from pydantic import BaseModel, Field
 logger = logging.getLogger(__name__)
 
 
-class EventType(str, Enum):
+class EventType(StrEnum):
     """Agent event types."""
 
     # Session lifecycle
@@ -46,7 +45,7 @@ class EventType(str, Enum):
     SNAPSHOT_RESTORED = "snapshot.restored"
 
 
-class EventSource(str, Enum):
+class EventSource(StrEnum):
     """Event source identifiers."""
 
     AGENT_SERVICE = "agent_service"
@@ -56,7 +55,7 @@ class EventSource(str, Enum):
     CHAT_HANDLER = "chat_handler"
 
 
-class SessionStatus(str, Enum):
+class SessionStatus(StrEnum):
     """Session status values."""
 
     ACTIVE = "ACTIVE"
@@ -70,7 +69,7 @@ class EventMetadata(BaseModel):
 
     source: EventSource
     version: str = "1.0"
-    environment: Optional[str] = None
+    environment: str | None = None
 
 
 class BaseEvent(BaseModel):
@@ -78,9 +77,9 @@ class BaseEvent(BaseModel):
 
     event_id: str = Field(default_factory=lambda: str(uuid4()))
     event_type: EventType
-    timestamp: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp: str = Field(default_factory=lambda: datetime.now(UTC).isoformat())
     session_id: str
-    project_id: Optional[str] = None
+    project_id: str | None = None
     data: dict[str, Any] = Field(default_factory=dict)
     metadata: EventMetadata
 
@@ -120,10 +119,10 @@ class AgentEventPublisher:
     async def publish_session_created(
         self,
         session_id: str,
-        project_id: Optional[str],
+        project_id: str | None,
         sandbox_root: str,
         provider: str,
-        model: Optional[str] = None,
+        model: str | None = None,
     ) -> None:
         """Publish session created event.
 
@@ -157,11 +156,11 @@ class AgentEventPublisher:
     async def publish_session_checkpoint(
         self,
         session_id: str,
-        project_id: Optional[str],
+        project_id: str | None,
         checkpoint_id: str,
         turn_number: int,
-        s3_key: Optional[str] = None,
-        metadata: Optional[dict] = None,
+        s3_key: str | None = None,
+        metadata: dict | None = None,
     ) -> None:
         """Publish session checkpoint event.
 
@@ -197,8 +196,8 @@ class AgentEventPublisher:
     async def publish_session_destroyed(
         self,
         session_id: str,
-        project_id: Optional[str],
-        reason: Optional[str] = None,
+        project_id: str | None,
+        reason: str | None = None,
     ) -> None:
         """Publish session destroyed event.
 
@@ -228,10 +227,10 @@ class AgentEventPublisher:
     async def publish_session_status_changed(
         self,
         session_id: str,
-        project_id: Optional[str],
+        project_id: str | None,
         old_status: SessionStatus,
         new_status: SessionStatus,
-        details: Optional[dict] = None,
+        details: dict | None = None,
     ) -> None:
         """Publish session status change event.
 
@@ -265,11 +264,11 @@ class AgentEventPublisher:
     async def publish_chat_message(
         self,
         session_id: str,
-        project_id: Optional[str],
+        project_id: str | None,
         role: str,
         content: str,
         turn_number: int,
-        metadata: Optional[dict] = None,
+        metadata: dict | None = None,
     ) -> None:
         """Publish chat message event.
 
@@ -309,12 +308,12 @@ class AgentEventPublisher:
     async def publish_chat_tool_use(
         self,
         session_id: str,
-        project_id: Optional[str],
+        project_id: str | None,
         tool_name: str,
         tool_input: dict,
-        tool_output: Optional[Any] = None,
+        tool_output: Any | None = None,
         success: bool = True,
-        error: Optional[str] = None,
+        error: str | None = None,
     ) -> None:
         """Publish tool use event.
 
@@ -356,10 +355,10 @@ class AgentEventPublisher:
     async def publish_chat_error(
         self,
         session_id: str,
-        project_id: Optional[str],
+        project_id: str | None,
         error_type: str,
         error_message: str,
-        stack_trace: Optional[str] = None,
+        stack_trace: str | None = None,
     ) -> None:
         """Publish chat error event.
 
@@ -393,7 +392,7 @@ class AgentEventPublisher:
     async def publish_snapshot_created(
         self,
         session_id: str,
-        project_id: Optional[str],
+        project_id: str | None,
         snapshot_id: str,
         s3_key: str,
         size_bytes: int,
@@ -433,7 +432,7 @@ class AgentEventPublisher:
     async def publish_snapshot_restored(
         self,
         session_id: str,
-        project_id: Optional[str],
+        project_id: str | None,
         snapshot_id: str,
         s3_key: str,
         restored_to: str,

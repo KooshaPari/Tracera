@@ -40,4 +40,4 @@ export declare class NotImplementedError extends UnsupportedOperationError {
 export declare class UnsupportedOperationError extends ApiDOMError {
 }
 
-export { }
+

@@ -1,7 +1,7 @@
 """Materialized view management service for TraceRTM."""
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime, timezone
 from typing import Any
 
 from sqlalchemy import text
@@ -32,9 +32,7 @@ class MaterializedViewService:
         Returns:
             Dict with refresh statistics
         """
-        await self.session.execute(
-            text("SELECT refresh_materialized_views_incremental()")
-        )
+        await self.session.execute(text("SELECT refresh_materialized_views_incremental()"))
         await self.session.commit()
 
         # Get statistics
@@ -43,7 +41,7 @@ class MaterializedViewService:
         return {
             "status": "success",
             "refresh_type": "incremental",
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "stats": stats,
         }
 
@@ -54,9 +52,7 @@ class MaterializedViewService:
         Returns:
             Dict with refresh statistics
         """
-        await self.session.execute(
-            text("SELECT refresh_materialized_views_full()")
-        )
+        await self.session.execute(text("SELECT refresh_materialized_views_full()"))
         await self.session.commit()
 
         stats = await self.get_refresh_stats()
@@ -64,7 +60,7 @@ class MaterializedViewService:
         return {
             "status": "success",
             "refresh_type": "full",
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "stats": stats,
         }
 
@@ -107,9 +103,7 @@ class MaterializedViewService:
         Returns:
             Number of entries deleted
         """
-        result = await self.session.execute(
-            text(f"SELECT cleanup_change_log({days_to_keep})")
-        )
+        result = await self.session.execute(text(f"SELECT cleanup_change_log({days_to_keep})"))
         await self.session.commit()
 
         deleted_count = result.scalar()
@@ -123,15 +117,9 @@ class MaterializedViewService:
             Dict with view statistics
         """
         # Get row counts for each view
-        traceability_count = await self.session.execute(
-            text("SELECT COUNT(*) FROM traceability_matrix")
-        )
-        impact_count = await self.session.execute(
-            text("SELECT COUNT(*) FROM impact_analysis")
-        )
-        coverage_count = await self.session.execute(
-            text("SELECT COUNT(*) FROM coverage_analysis")
-        )
+        traceability_count = await self.session.execute(text("SELECT COUNT(*) FROM traceability_matrix"))
+        impact_count = await self.session.execute(text("SELECT COUNT(*) FROM impact_analysis"))
+        coverage_count = await self.session.execute(text("SELECT COUNT(*) FROM coverage_analysis"))
 
         # Get change log stats
         change_log_stats = await self.session.execute(
@@ -178,10 +166,7 @@ class MaterializedViewService:
         """
         staleness = await self.get_staleness()
 
-        if (
-            staleness.staleness_seconds
-            and staleness.staleness_seconds > max_staleness_seconds
-        ):
+        if staleness.staleness_seconds and staleness.staleness_seconds > max_staleness_seconds:
             await self.refresh_incremental()
             return True
 

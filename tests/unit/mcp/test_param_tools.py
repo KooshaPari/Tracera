@@ -1,5 +1,8 @@
-import pytest
+import asyncio
 from types import SimpleNamespace
+
+import pytest
+from fastmcp.exceptions import ToolError
 
 from tracertm.mcp.tools import param as param_tools
 
@@ -68,15 +71,17 @@ async def test_project_scope_enforced(monkeypatch):
     monkeypatch.setattr(param_tools, "_get_access_token_from_ctx", lambda: token)
 
     async def noop_select_project(project_id):
+        await asyncio.sleep(0)
         return {"project_id": project_id}
 
     async def noop_query_items(**_kwargs):
+        await asyncio.sleep(0)
         return {"items": []}
 
     monkeypatch.setattr(param_tools.core, "select_project", noop_select_project)
     monkeypatch.setattr(param_tools.core, "query_items", noop_query_items)
 
-    with pytest.raises(Exception):
+    with pytest.raises(ToolError, match="project_id required"):
         await param_tools._item_manage_impl(action="query", payload={}, ctx=SimpleNamespace())
 
     allowed = await param_tools._item_manage_impl(
@@ -119,6 +124,7 @@ async def test_test_manage_discover(monkeypatch):
         )
     ]
     from tracertm.cli.commands.test.discovery import TestDiscovery
+
     monkeypatch.setattr(TestDiscovery, "discover", lambda self, languages=None, scope="all": dummy)
     result = await param_tools._test_manage_impl(action="discover", payload={}, ctx=None)
     assert result["data"]["count"] == 1

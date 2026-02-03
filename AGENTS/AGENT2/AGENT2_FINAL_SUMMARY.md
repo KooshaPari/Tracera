@@ -217,3 +217,9 @@ All services integrate seamlessly with:
 2. Load testing with 100+ concurrent agents
 3. Documentation updates
 4. Final QA and release preparation
+
+
+## Opinionated Quality Enforcement
+- We want opinionated rules that enforce opinionated styling to a strict degree.
+- This is an exclusively agent/vibecoded project; programmatic enforcement must guard against bad quality and antipatterns.
+- Rather than disables or ignores, fix code properly.

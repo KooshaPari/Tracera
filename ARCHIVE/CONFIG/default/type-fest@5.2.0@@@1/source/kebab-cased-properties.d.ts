@@ -39,4 +39,4 @@ export type KebabCasedProperties<
 	Options extends WordsOptions = {},
 > = DelimiterCasedProperties<Value, '-', ApplyDefaultOptions<WordsOptions, _DefaultDelimiterCaseOptions, Options>>;
 
-export {};
+

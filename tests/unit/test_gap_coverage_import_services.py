@@ -3,9 +3,10 @@ Gap coverage tests for import services.
 Targets: services/github_import_service.py (22.73%), services/jira_import_service.py (18.26%)
 """
 
-import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
 import json
+from unittest.mock import AsyncMock, MagicMock
+
+import pytest
 
 
 class TestGitHubImportService:
@@ -14,6 +15,7 @@ class TestGitHubImportService:
     def test_github_import_service_import(self):
         """Test GitHubImportService can be imported."""
         from tracertm.services.github_import_service import GitHubImportService
+
         assert GitHubImportService is not None
 
     def test_github_import_service_init(self):
@@ -109,18 +111,18 @@ class TestGitHubImportService:
         # Mock project creation
         mock_project = MagicMock()
         mock_project.id = "proj-123"
-        service.projects.create = AsyncMock(return_value=mock_project)
+        service.projects.create = AsyncMock(return_value=mock_project)  # type: ignore[assignment]
 
         # Mock item creation
         mock_item = MagicMock()
         mock_item.id = "item-123"
-        service.items.create = AsyncMock(return_value=mock_item)
+        service.items.create = AsyncMock(return_value=mock_item)  # type: ignore[assignment]
 
         # Mock event logging
-        service.events.log = AsyncMock()
+        service.events.log = AsyncMock()  # type: ignore[assignment]
 
         # Mock links
-        service.links.create = AsyncMock()
+        service.links.create = AsyncMock()  # type: ignore[assignment]
 
         valid_data = json.dumps({
             "items": [
@@ -145,17 +147,15 @@ class TestGitHubImportService:
 
         mock_project = MagicMock()
         mock_project.id = "proj-123"
-        service.projects.create = AsyncMock(return_value=mock_project)
+        service.projects.create = AsyncMock(return_value=mock_project)  # type: ignore[assignment]
 
         mock_item = MagicMock()
         mock_item.id = "item-123"
-        service.items.create = AsyncMock(return_value=mock_item)
-        service.events.log = AsyncMock()
-        service.links.create = AsyncMock()
+        service.items.create = AsyncMock(return_value=mock_item)  # type: ignore[assignment]
+        service.events.log = AsyncMock()  # type: ignore[assignment]
+        service.links.create = AsyncMock()  # type: ignore[assignment]
 
-        valid_data = json.dumps({
-            "issues": [{"number": 1, "title": "Issue 1", "state": "open"}]
-        })
+        valid_data = json.dumps({"issues": [{"number": 1, "title": "Issue 1", "state": "open"}]})
 
         result = await service.import_github_project("test-project", valid_data)
 
@@ -172,15 +172,15 @@ class TestGitHubImportService:
 
         mock_project = MagicMock()
         mock_project.id = "proj-123"
-        service.projects.create = AsyncMock(return_value=mock_project)
+        service.projects.create = AsyncMock(return_value=mock_project)  # type: ignore[assignment]
 
         mock_item = MagicMock()
         mock_item.id = "item-123"
-        service.items.create = AsyncMock(return_value=mock_item)
-        service.events.log = AsyncMock()
+        service.items.create = AsyncMock(return_value=mock_item)  # type: ignore[assignment]
+        service.events.log = AsyncMock()  # type: ignore[assignment]
 
         mock_link = MagicMock()
-        service.links.create = AsyncMock(return_value=mock_link)
+        service.links.create = AsyncMock(return_value=mock_link)  # type: ignore[assignment]
 
         valid_data = json.dumps({
             "items": [
@@ -201,7 +201,7 @@ class TestGitHubImportService:
         mock_session = MagicMock()
         service = GitHubImportService(mock_session)
 
-        service.projects.create = AsyncMock(side_effect=Exception("DB error"))
+        service.projects.create = AsyncMock(side_effect=Exception("DB error"))  # type: ignore[assignment]
 
         valid_data = json.dumps({"items": []})
 
@@ -217,6 +217,7 @@ class TestJiraImportService:
     def test_jira_import_service_import(self):
         """Test JiraImportService can be imported."""
         from tracertm.services.jira_import_service import JiraImportService
+
         assert JiraImportService is not None
 
     def test_jira_import_service_init(self):
@@ -319,11 +320,7 @@ class TestJiraImportService:
         mock_session = MagicMock()
         service = JiraImportService(mock_session)
 
-        valid_data = json.dumps({
-            "issues": [
-                {"key": "TEST-1", "id": "10001", "fields": {"summary": "Test"}}
-            ]
-        })
+        valid_data = json.dumps({"issues": [{"key": "TEST-1", "id": "10001", "fields": {"summary": "Test"}}]})
         errors = await service.validate_jira_export(valid_data)
 
         assert len(errors) == 0
@@ -351,13 +348,13 @@ class TestJiraImportService:
 
         mock_project = MagicMock()
         mock_project.id = "proj-123"
-        service.projects.create = AsyncMock(return_value=mock_project)
+        service.projects.create = AsyncMock(return_value=mock_project)  # type: ignore[assignment]
 
         mock_item = MagicMock()
         mock_item.id = "item-123"
-        service.items.create = AsyncMock(return_value=mock_item)
-        service.events.log = AsyncMock()
-        service.links.create = AsyncMock()
+        service.items.create = AsyncMock(return_value=mock_item)  # type: ignore[assignment]
+        service.events.log = AsyncMock()  # type: ignore[assignment]
+        service.links.create = AsyncMock()  # type: ignore[assignment]
 
         valid_data = json.dumps({
             "issues": [
@@ -369,7 +366,7 @@ class TestJiraImportService:
                         "description": "Description",
                         "status": {"name": "To Do"},
                         "issuetype": {"name": "Story"},
-                    }
+                    },
                 }
             ]
         })
@@ -390,39 +387,27 @@ class TestJiraImportService:
 
         mock_project = MagicMock()
         mock_project.id = "proj-123"
-        service.projects.create = AsyncMock(return_value=mock_project)
+        service.projects.create = AsyncMock(return_value=mock_project)  # type: ignore[assignment]
 
         mock_item = MagicMock()
         mock_item.id = "item-123"
-        service.items.create = AsyncMock(return_value=mock_item)
-        service.events.log = AsyncMock()
+        service.items.create = AsyncMock(return_value=mock_item)  # type: ignore[assignment]
+        service.events.log = AsyncMock()  # type: ignore[assignment]
 
         mock_link = MagicMock()
-        service.links.create = AsyncMock(return_value=mock_link)
+        service.links.create = AsyncMock(return_value=mock_link)  # type: ignore[assignment]
 
         valid_data = json.dumps({
             "issues": [
-                {
-                    "key": "TEST-1",
-                    "id": "10001",
-                    "fields": {
-                        "summary": "Test Issue 1",
-                        "issuelinks": []
-                    }
-                },
+                {"key": "TEST-1", "id": "10001", "fields": {"summary": "Test Issue 1", "issuelinks": []}},
                 {
                     "key": "TEST-2",
                     "id": "10002",
                     "fields": {
                         "summary": "Test Issue 2",
-                        "issuelinks": [
-                            {
-                                "type": {"name": "blocks"},
-                                "outwardIssue": {"key": "TEST-1"}
-                            }
-                        ]
-                    }
-                }
+                        "issuelinks": [{"type": {"name": "blocks"}, "outwardIssue": {"key": "TEST-1"}}],
+                    },
+                },
             ]
         })
 
@@ -441,15 +426,15 @@ class TestJiraImportService:
 
         mock_project = MagicMock()
         mock_project.id = "proj-123"
-        service.projects.create = AsyncMock(return_value=mock_project)
+        service.projects.create = AsyncMock(return_value=mock_project)  # type: ignore[assignment]
 
         mock_item = MagicMock()
         mock_item.id = "item-123"
-        service.items.create = AsyncMock(return_value=mock_item)
-        service.events.log = AsyncMock()
+        service.items.create = AsyncMock(return_value=mock_item)  # type: ignore[assignment]
+        service.events.log = AsyncMock()  # type: ignore[assignment]
 
         mock_link = MagicMock()
-        service.links.create = AsyncMock(return_value=mock_link)
+        service.links.create = AsyncMock(return_value=mock_link)  # type: ignore[assignment]
 
         valid_data = json.dumps({
             "issues": [
@@ -458,19 +443,10 @@ class TestJiraImportService:
                     "id": "10001",
                     "fields": {
                         "summary": "Test Issue 1",
-                        "issuelinks": [
-                            {
-                                "type": {"name": "relates to"},
-                                "inwardIssue": {"key": "TEST-2"}
-                            }
-                        ]
-                    }
+                        "issuelinks": [{"type": {"name": "relates to"}, "inwardIssue": {"key": "TEST-2"}}],
+                    },
                 },
-                {
-                    "key": "TEST-2",
-                    "id": "10002",
-                    "fields": {"summary": "Test Issue 2", "issuelinks": []}
-                }
+                {"key": "TEST-2", "id": "10002", "fields": {"summary": "Test Issue 2", "issuelinks": []}},
             ]
         })
 
@@ -486,7 +462,7 @@ class TestJiraImportService:
         mock_session = MagicMock()
         service = JiraImportService(mock_session)
 
-        service.projects.create = AsyncMock(side_effect=Exception("DB error"))
+        service.projects.create = AsyncMock(side_effect=Exception("DB error"))  # type: ignore[assignment]
 
         valid_data = json.dumps({"issues": []})
 

@@ -12,8 +12,9 @@ Provides helper functions for testing gRPC services:
 import asyncio
 import logging
 import time
+from collections.abc import Callable
 from contextlib import asynccontextmanager
-from typing import Any, Callable, Dict, Optional
+from typing import Any
 
 import grpc
 from grpc import aio
@@ -27,8 +28,8 @@ class GRPCTestLogger:
     def __init__(self, service_name: str, verbose: bool = True):
         self.service_name = service_name
         self.verbose = verbose
-        self.requests: list[Dict[str, Any]] = []
-        self.responses: list[Dict[str, Any]] = []
+        self.requests: list[dict[str, Any]] = []
+        self.responses: list[dict[str, Any]] = []
 
     def log_request(self, method: str, request: Any) -> None:
         """Log a gRPC request."""
@@ -54,7 +55,7 @@ class GRPCTestLogger:
         self.responses.append(entry)
 
         if self.verbose:
-            logger.info(f"📥 {self.service_name}.{method} ({duration*1000:.2f}ms)")
+            logger.info(f"📥 {self.service_name}.{method} ({duration * 1000:.2f}ms)")
             logger.debug(f"   Response: {response}")
 
     def log_error(self, method: str, error: Exception, duration: float) -> None:
@@ -69,7 +70,7 @@ class GRPCTestLogger:
         self.responses.append(entry)
 
         if self.verbose:
-            logger.error(f"❌ {self.service_name}.{method} failed ({duration*1000:.2f}ms)")
+            logger.error(f"❌ {self.service_name}.{method} failed ({duration * 1000:.2f}ms)")
             logger.error(f"   Error: {error}")
 
     def clear(self) -> None:
@@ -77,7 +78,7 @@ class GRPCTestLogger:
         self.requests.clear()
         self.responses.clear()
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get statistics about logged requests."""
         total_requests = len(self.requests)
         successful = sum(1 for r in self.responses if "error" not in r)
@@ -106,7 +107,7 @@ class GRPCTestClient:
         self,
         channel: aio.Channel,
         service_name: str,
-        logger: Optional[GRPCTestLogger] = None,
+        logger: GRPCTestLogger | None = None,
     ):
         self.channel = channel
         self.service_name = service_name
@@ -117,7 +118,7 @@ class GRPCTestClient:
         method_name: str,
         stub_method: Callable,
         request: Any,
-        timeout: Optional[float] = None,
+        timeout_sec: float | None = None,
     ) -> Any:
         """
         Call a unary RPC method with logging and error handling.
@@ -126,7 +127,7 @@ class GRPCTestClient:
             method_name: Name of the method being called
             stub_method: The stub method to call
             request: Request message
-            timeout: Optional timeout in seconds
+            timeout_sec: Optional timeout in seconds
 
         Returns:
             Response message
@@ -138,7 +139,7 @@ class GRPCTestClient:
         start_time = time.time()
 
         try:
-            response = await stub_method(request, timeout=timeout)
+            response = await stub_method(request, timeout=timeout_sec)
             duration = time.time() - start_time
             self.logger.log_response(method_name, response, duration)
             return response
@@ -152,7 +153,7 @@ class GRPCTestClient:
         method_name: str,
         stub_method: Callable,
         request: Any,
-        timeout: Optional[float] = None,
+        timeout_sec: float | None = None,
     ) -> list[Any]:
         """
         Call a server-streaming RPC method with logging.
@@ -161,7 +162,7 @@ class GRPCTestClient:
             method_name: Name of the method being called
             stub_method: The stub method to call
             request: Request message
-            timeout: Optional timeout in seconds
+            timeout_sec: Optional timeout in seconds
 
         Returns:
             List of response messages
@@ -174,13 +175,10 @@ class GRPCTestClient:
         responses = []
 
         try:
-            async for response in stub_method(request, timeout=timeout):
-                responses.append(response)
+            responses.extend([response async for response in stub_method(request, timeout=timeout_sec)])
 
             duration = time.time() - start_time
-            self.logger.log_response(
-                method_name, f"Received {len(responses)} messages", duration
-            )
+            self.logger.log_response(method_name, f"Received {len(responses)} messages", duration)
             return responses
         except grpc.RpcError as e:
             duration = time.time() - start_time
@@ -193,7 +191,7 @@ async def grpc_test_channel(
     host: str = "localhost",
     port: int = 50051,
     insecure: bool = True,
-    options: Optional[list] = None,
+    options: list | None = None,
 ):
     """
     Create a test gRPC channel with proper cleanup.
@@ -225,7 +223,7 @@ async def grpc_test_channel(
 async def wait_for_server(
     host: str = "localhost",
     port: int = 50051,
-    timeout: float = 10.0,
+    timeout_sec: float = 10.0,
     interval: float = 0.5,
 ) -> bool:
     """
@@ -234,14 +232,14 @@ async def wait_for_server(
     Args:
         host: Server host
         port: Server port
-        timeout: Maximum time to wait (seconds)
+        timeout_sec: Maximum time to wait (seconds)
         interval: Time between connection attempts (seconds)
 
     Returns:
         True if server is ready, False if timeout
 
     Example:
-        if await wait_for_server("localhost", 50051, timeout=5.0):
+        if await wait_for_server("localhost", 50051, timeout_sec=5.0):
             print("Server is ready!")
         else:
             print("Server failed to start")
@@ -249,7 +247,7 @@ async def wait_for_server(
     start_time = time.time()
     target = f"{host}:{port}"
 
-    while time.time() - start_time < timeout:
+    while time.time() - start_time < timeout_sec:
         try:
             async with aio.insecure_channel(target) as channel:
                 # Try to check channel state
@@ -259,14 +257,14 @@ async def wait_for_server(
         except Exception:
             await asyncio.sleep(interval)
 
-    logger.error(f"❌ gRPC server at {target} not ready after {timeout}s")
+    logger.error(f"❌ gRPC server at {target} not ready after {timeout_sec}s")
     return False
 
 
 def assert_grpc_error(
     error: grpc.RpcError,
     expected_code: grpc.StatusCode,
-    expected_message: Optional[str] = None,
+    expected_message: str | None = None,
 ) -> None:
     """
     Assert that a gRPC error has the expected status code and message.
@@ -286,12 +284,11 @@ def assert_grpc_error(
             assert_grpc_error(e, grpc.StatusCode.INVALID_ARGUMENT, "invalid item_id")
     """
     assert isinstance(error, grpc.RpcError), f"Expected grpc.RpcError, got {type(error)}"
-    assert error.code() == expected_code, (
-        f"Expected status code {expected_code}, got {error.code()}"
-    )
+    code = getattr(error, "code", lambda: None)()
+    assert code == expected_code, f"Expected status code {expected_code}, got {code}"
 
     if expected_message:
-        details = error.details()
+        details = getattr(error, "details", lambda: None)()
         # Add null check for details() which may return None or str
         assert details and expected_message in details, (
             f"Expected message containing '{expected_message}', got '{details}'"
@@ -302,7 +299,7 @@ class MockGRPCServicer:
     """Base class for mock gRPC servicers in tests."""
 
     def __init__(self):
-        self.calls: list[Dict[str, Any]] = []
+        self.calls: list[dict[str, Any]] = []
 
     def record_call(self, method: str, request: Any) -> None:
         """Record a method call for verification."""
@@ -312,13 +309,13 @@ class MockGRPCServicer:
             "timestamp": time.time(),
         })
 
-    def get_call_count(self, method: Optional[str] = None) -> int:
+    def get_call_count(self, method: str | None = None) -> int:
         """Get the number of calls made (optionally filtered by method)."""
         if method:
             return sum(1 for call in self.calls if call["method"] == method)
         return len(self.calls)
 
-    def get_last_request(self, method: str) -> Optional[Any]:
+    def get_last_request(self, method: str) -> Any | None:
         """Get the last request for a specific method."""
         for call in reversed(self.calls):
             if call["method"] == method:

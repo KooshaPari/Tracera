@@ -835,4 +835,4 @@ export declare interface YamlTagOptions extends NodeOptions {
     readonly kind: YamlNodeKind;
 }
 
-export { }
+

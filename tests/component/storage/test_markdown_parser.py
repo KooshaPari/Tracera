@@ -1,7 +1,5 @@
-from datetime import datetime
+from datetime import UTC, datetime, timezone
 from pathlib import Path
-
-import pytest
 
 from tracertm.storage.markdown_parser import ItemData, LinkData
 
@@ -27,7 +25,7 @@ def test_itemdata_round_trip(tmp_path: Path):
 
 
 def test_linkdata_to_from_dict():
-    now = datetime.utcnow()
+    now = datetime.now(UTC)
     link = LinkData(id="l1", source="s", target="t", link_type="implements", created=now, metadata={"k": "v"})
     data = link.to_dict()
     roundtrip = LinkData.from_dict(data)

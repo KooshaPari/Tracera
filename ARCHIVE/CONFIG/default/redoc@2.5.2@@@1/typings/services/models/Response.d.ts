@@ -23,4 +23,4 @@ export declare class ResponseModel {
     constructor({ parser, code, defaultAsError, infoOrRef, options, isEvent: isRequest, }: ResponseProps);
     toggle(): void;
 }
-export {};
+

@@ -15,45 +15,31 @@ Focus areas:
 - Malformed data handling
 """
 
-import asyncio
-import csv
-import json
-from datetime import datetime, timedelta
-from io import StringIO
-from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, Mock, PropertyMock, patch
+from datetime import UTC, datetime, timedelta, timezone
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import httpx
 import pytest
-import yaml
 from sqlalchemy.exc import IntegrityError, OperationalError
-from sqlalchemy.orm import Session
 
 from tracertm.api.sync_client import (
     ApiClient,
     ApiConfig,
     ApiError,
-    AuthenticationError,
     Change,
     Conflict,
     ConflictError,
     ConflictStrategy,
-    NetworkError,
     RateLimitError,
     SyncOperation,
     SyncStatus,
     UploadResult,
 )
-from tracertm.models.event import Event
-from tracertm.models.item import Item
-from tracertm.schemas.item import ItemCreate
 from tracertm.services.bulk_operation_service import BulkOperationService
 from tracertm.storage.markdown_parser import (
     ItemData,
     LinkData,
-    get_config_path,
     get_item_path,
-    get_links_path,
     list_items,
     parse_config_yaml,
     parse_item_markdown,
@@ -62,7 +48,6 @@ from tracertm.storage.markdown_parser import (
     write_item_markdown,
     write_links_yaml,
 )
-
 
 # ============================================================================
 # SYNC CLIENT EDGE CASES
@@ -100,7 +85,7 @@ class TestSyncClientEdgeCases:
         mock_manager.get.side_effect = lambda key, default=None: {
             "api_url": "https://test.api.com",
             "api_timeout": "45.5",
-            "api_max_retries": "5"
+            "api_max_retries": "5",
         }.get(key, default)
 
         with patch("tracertm.api.sync_client.ConfigManager", return_value=mock_manager):
@@ -172,17 +157,15 @@ class TestSyncClientEdgeCases:
         mock_response.json.return_value = {"error": "Server error"}
 
         with patch.object(client.client, "request", new_callable=AsyncMock) as mock_request:
-            mock_request.side_effect = httpx.HTTPStatusError(
-                "Server error",
-                request=Mock(),
-                response=mock_response
-            )
+            mock_request.side_effect = httpx.HTTPStatusError("Server error", request=Mock(), response=mock_response)
 
             with pytest.raises(ApiError) as exc_info:
                 await client._retry_request("GET", "/test")
 
-            assert "after 3 retries" in str(exc_info.value)
-            assert exc_info.value.status_code == 500
+            err = exc_info.value
+            assert "after 3 retries" in str(err)
+            assert isinstance(err, ApiError)
+            assert err.status_code == 500
             assert mock_request.call_count == 3
 
     @pytest.mark.asyncio
@@ -208,10 +191,7 @@ class TestSyncClientEdgeCases:
         with patch("tracertm.api.sync_client.asyncio.sleep", new_callable=AsyncMock) as mock_sleep:
             with patch.object(client.client, "request", new_callable=AsyncMock) as mock_request:
                 # First call: rate limit, second call: success
-                mock_request.side_effect = [
-                    mock_rate_limit_response,
-                    mock_success_response
-                ]
+                mock_request.side_effect = [mock_rate_limit_response, mock_success_response]
 
                 result = await client._retry_request("GET", "/test")
 
@@ -241,7 +221,9 @@ class TestSyncClientEdgeCases:
             with pytest.raises(RateLimitError) as exc_info:
                 await client._retry_request("GET", "/test")
 
-            assert exc_info.value.retry_after == 60
+            err = exc_info.value
+            assert isinstance(err, RateLimitError)
+            assert err.retry_after == 60
 
     @pytest.mark.asyncio
     async def test_health_check_unhealthy_status(self):
@@ -283,7 +265,7 @@ class TestSyncClientEdgeCases:
                 entity_id="item-001",
                 operation=SyncOperation.CREATE,
                 data={"title": "Test"},
-                version=1
+                version=1,
             )
         ]
 
@@ -291,8 +273,8 @@ class TestSyncClientEdgeCases:
         mock_response.json.return_value = {
             "applied": ["item-001"],
             "conflicts": [],
-            "server_time": datetime.utcnow().isoformat(),
-            "errors": []
+            "server_time": datetime.now(UTC).isoformat(),
+            "errors": [],
         }
 
         with patch.object(client, "_retry_request", new_callable=AsyncMock) as mock_request:
@@ -316,7 +298,7 @@ class TestSyncClientEdgeCases:
         config = ApiConfig(base_url="https://test.api.com")
         client = ApiClient(config)
 
-        since = datetime.utcnow() - timedelta(hours=1)
+        since = datetime.now(UTC) - timedelta(hours=1)
 
         mock_response = Mock()
         mock_response.json.return_value = {"changes": []}
@@ -349,11 +331,7 @@ class TestSyncClientEdgeCases:
         with patch.object(client, "_retry_request", new_callable=AsyncMock) as mock_request:
             mock_request.return_value = mock_response
 
-            await client.resolve_conflict(
-                "conflict-001",
-                ConflictStrategy.REMOTE_WINS,
-                merged_data=None
-            )
+            await client.resolve_conflict("conflict-001", ConflictStrategy.REMOTE_WINS, merged_data=None)
 
             call_args = mock_request.call_args
             assert "merged_data" not in call_args[1]["json"]
@@ -367,13 +345,7 @@ class TestSyncClientEdgeCases:
         When: Creating SyncStatus from dict
         Then: Timestamps are None
         """
-        data = {
-            "last_sync": None,
-            "pending_changes": 0,
-            "online": True,
-            "server_time": None,
-            "conflicts_pending": 0
-        }
+        data = {"last_sync": None, "pending_changes": 0, "online": True, "server_time": None, "conflicts_pending": 0}
 
         status = SyncStatus.from_dict(data)
 
@@ -398,7 +370,7 @@ class TestSyncClientEdgeCases:
                 entity_id="item-001",
                 operation=SyncOperation.UPDATE,
                 data={"title": "Local"},
-                version=2
+                version=2,
             )
         ]
 
@@ -409,21 +381,14 @@ class TestSyncClientEdgeCases:
             local_version=2,
             remote_version=3,
             local_data={"title": "Local"},
-            remote_data={"title": "Remote"}
+            remote_data={"title": "Remote"},
         )
 
         with patch.object(client, "upload_changes", new_callable=AsyncMock) as mock_upload:
-            mock_upload.side_effect = ConflictError(
-                "Conflict detected",
-                conflicts=[conflict],
-                status_code=409
-            )
+            mock_upload.side_effect = ConflictError("Conflict detected", conflicts=[conflict], status_code=409)
 
             with pytest.raises(ConflictError):
-                await client.full_sync(
-                    changes,
-                    conflict_strategy=ConflictStrategy.MANUAL
-                )
+                await client.full_sync(changes, conflict_strategy=ConflictStrategy.MANUAL)
 
     @pytest.mark.asyncio
     async def test_full_sync_local_wins_conflict_resolution(self):
@@ -443,7 +408,7 @@ class TestSyncClientEdgeCases:
                 entity_id="item-001",
                 operation=SyncOperation.UPDATE,
                 data={"title": "Local"},
-                version=2
+                version=2,
             )
         ]
 
@@ -454,15 +419,10 @@ class TestSyncClientEdgeCases:
             local_version=2,
             remote_version=3,
             local_data={"title": "Local"},
-            remote_data={"title": "Remote"}
+            remote_data={"title": "Remote"},
         )
 
-        upload_result = UploadResult(
-            applied=["item-001"],
-            conflicts=[],
-            server_time=datetime.utcnow(),
-            errors=[]
-        )
+        upload_result = UploadResult(applied=["item-001"], conflicts=[], server_time=datetime.now(UTC), errors=[])
 
         with patch.object(client, "upload_changes", new_callable=AsyncMock) as mock_upload:
             with patch.object(client, "resolve_conflict", new_callable=AsyncMock) as mock_resolve:
@@ -470,15 +430,12 @@ class TestSyncClientEdgeCases:
                     # First upload fails with conflict, second succeeds
                     mock_upload.side_effect = [
                         ConflictError("Conflict", conflicts=[conflict], status_code=409),
-                        upload_result
+                        upload_result,
                     ]
                     mock_resolve.return_value = True
                     mock_download.return_value = []
 
-                    result, remote = await client.full_sync(
-                        changes,
-                        conflict_strategy=ConflictStrategy.LOCAL_WINS
-                    )
+                    result, remote = await client.full_sync(changes, conflict_strategy=ConflictStrategy.LOCAL_WINS)
 
                     # Verify conflict was resolved with local data
                     mock_resolve.assert_called_once()
@@ -504,7 +461,7 @@ class TestSyncClientEdgeCases:
                 entity_id="item-001",
                 operation=SyncOperation.UPDATE,
                 data={"title": "Local"},
-                version=2
+                version=2,
             )
         ]
 
@@ -515,29 +472,22 @@ class TestSyncClientEdgeCases:
             local_version=2,
             remote_version=3,
             local_data={"title": "Local"},
-            remote_data={"title": "Remote"}
+            remote_data={"title": "Remote"},
         )
 
-        upload_result = UploadResult(
-            applied=["item-001"],
-            conflicts=[],
-            server_time=datetime.utcnow()
-        )
+        upload_result = UploadResult(applied=["item-001"], conflicts=[], server_time=datetime.now(UTC))
 
         with patch.object(client, "upload_changes", new_callable=AsyncMock) as mock_upload:
             with patch.object(client, "resolve_conflict", new_callable=AsyncMock) as mock_resolve:
                 with patch.object(client, "download_changes", new_callable=AsyncMock) as mock_download:
                     mock_upload.side_effect = [
                         ConflictError("Conflict", conflicts=[conflict], status_code=409),
-                        upload_result
+                        upload_result,
                     ]
                     mock_resolve.return_value = True
                     mock_download.return_value = []
 
-                    await client.full_sync(
-                        changes,
-                        conflict_strategy=ConflictStrategy.REMOTE_WINS
-                    )
+                    await client.full_sync(changes, conflict_strategy=ConflictStrategy.REMOTE_WINS)
 
                     # Verify remote data was used
                     args = mock_resolve.call_args
@@ -555,13 +505,15 @@ class TestSyncClientEdgeCases:
         config = ApiConfig(base_url="https://test.api.com")
         client = ApiClient(config)
 
-        changes = [Change(
-            entity_type="item",
-            entity_id="item-001",
-            operation=SyncOperation.UPDATE,
-            data={"title": "Local"},
-            version=2
-        )]
+        changes = [
+            Change(
+                entity_type="item",
+                entity_id="item-001",
+                operation=SyncOperation.UPDATE,
+                data={"title": "Local"},
+                version=2,
+            )
+        ]
 
         conflict = Conflict(
             conflict_id="c1",
@@ -570,29 +522,22 @@ class TestSyncClientEdgeCases:
             local_version=2,
             remote_version=5,
             local_data={"title": "Local"},
-            remote_data={"title": "Remote"}
+            remote_data={"title": "Remote"},
         )
 
-        upload_result = UploadResult(
-            applied=["item-001"],
-            conflicts=[],
-            server_time=datetime.utcnow()
-        )
+        upload_result = UploadResult(applied=["item-001"], conflicts=[], server_time=datetime.now(UTC))
 
         with patch.object(client, "upload_changes", new_callable=AsyncMock) as mock_upload:
             with patch.object(client, "resolve_conflict", new_callable=AsyncMock) as mock_resolve:
                 with patch.object(client, "download_changes", new_callable=AsyncMock) as mock_download:
                     mock_upload.side_effect = [
                         ConflictError("Conflict", conflicts=[conflict], status_code=409),
-                        upload_result
+                        upload_result,
                     ]
                     mock_resolve.return_value = True
                     mock_download.return_value = []
 
-                    await client.full_sync(
-                        changes,
-                        conflict_strategy=ConflictStrategy.LAST_WRITE_WINS
-                    )
+                    await client.full_sync(changes, conflict_strategy=ConflictStrategy.LAST_WRITE_WINS)
 
                     # Verify remote data was used (higher version)
                     args = mock_resolve.call_args
@@ -636,15 +581,7 @@ class TestBulkOperationServiceEdgeCases:
         When: Bulk update preview is requested
         Then: All filters are applied to query
         """
-        mock_items = [
-            Mock(
-                id="item-001-long",
-                title="Test Item 1",
-                status="todo",
-                priority="high",
-                owner="user1"
-            )
-        ]
+        mock_items = [Mock(id="item-001-long", title="Test Item 1", status="todo", priority="high", owner="user1")]
         # Configure the query chain
         query_chain = mock_session.query.return_value
         query_chain.filter.return_value = query_chain
@@ -653,13 +590,7 @@ class TestBulkOperationServiceEdgeCases:
         query_chain.all.return_value = mock_items
 
         service = BulkOperationService(mock_session)
-        filters = {
-            "view": "epic",
-            "status": "todo",
-            "item_type": "feature",
-            "priority": "high",
-            "owner": "user1"
-        }
+        filters = {"view": "epic", "status": "todo", "item_type": "feature", "priority": "high", "owner": "user1"}
         updates = {"status": "in_progress"}
 
         result = service.bulk_update_preview("proj-1", filters, updates)
@@ -679,11 +610,7 @@ class TestBulkOperationServiceEdgeCases:
         mock_session.count.return_value = 150
         mock_session.limit.return_value.all.return_value = []
 
-        result = service.bulk_update_preview(
-            "proj-1",
-            {"view": "epic"},
-            {"status": "done"}
-        )
+        result = service.bulk_update_preview("proj-1", {"view": "epic"}, {"status": "done"})
 
         assert any("150 items" in w for w in result["warnings"])
 
@@ -702,11 +629,7 @@ class TestBulkOperationServiceEdgeCases:
         mock_session.count.return_value = 2
         mock_session.limit.return_value.all.return_value = mock_items
 
-        result = service.bulk_update_preview(
-            "proj-1",
-            {},
-            {"status": "in_progress"}
-        )
+        result = service.bulk_update_preview("proj-1", {}, {"status": "in_progress"})
 
         assert any("Mixed statuses" in w for w in result["warnings"])
 
@@ -719,14 +642,7 @@ class TestBulkOperationServiceEdgeCases:
         Then: All fields are updated for each item
         """
         mock_items = [
-            Mock(
-                id="item-1",
-                title="Old Title",
-                status="todo",
-                priority="low",
-                owner=None,
-                description="Old"
-            )
+            Mock(id="item-1", title="Old Title", status="todo", priority="low", owner=None, description="Old")
         ]
         mock_session.all.return_value = mock_items
 
@@ -735,7 +651,7 @@ class TestBulkOperationServiceEdgeCases:
             "priority": "high",
             "owner": "user@example.com",
             "title": "New Title",
-            "description": "New Description"
+            "description": "New Description",
         }
 
         result = service.bulk_update_items("proj-1", {}, updates, agent_id="agent-1")
@@ -754,7 +670,7 @@ class TestBulkOperationServiceEdgeCases:
         Then: Transaction is rolled back and error is raised
         """
         mock_session.all.return_value = [Mock(id="1", title="Test")]
-        mock_session.commit.side_effect = OperationalError("DB Error", None, None)
+        mock_session.commit.side_effect = OperationalError("DB Error", None, Exception("db error"))
 
         with pytest.raises(OperationalError):
             service.bulk_update_items("proj-1", {}, {"status": "done"})
@@ -769,17 +685,10 @@ class TestBulkOperationServiceEdgeCases:
         When: Bulk delete is executed
         Then: Only matching items are soft-deleted
         """
-        mock_items = [
-            Mock(id="1", title="Item 1", deleted_at=None),
-            Mock(id="2", title="Item 2", deleted_at=None)
-        ]
+        mock_items = [Mock(id="1", title="Item 1", deleted_at=None), Mock(id="2", title="Item 2", deleted_at=None)]
         mock_session.all.return_value = mock_items
 
-        filters = {
-            "view": "epic",
-            "status": "obsolete",
-            "item_type": "deprecated"
-        }
+        filters = {"view": "epic", "status": "obsolete", "item_type": "deprecated"}
 
         result = service.bulk_delete_items("proj-1", filters, agent_id="agent-1")
 
@@ -909,8 +818,7 @@ Duplicate Item,EPIC,feature
         """
         # Generate CSV with 101 rows
         rows = ["Title,View,Type"]
-        for i in range(101):
-            rows.append(f"Item {i},EPIC,feature")
+        rows.extend(f"Item {i},EPIC,feature" for i in range(101))
         csv_data = "\n".join(rows)
 
         result = service.bulk_create_preview("proj-1", csv_data, limit=5)
@@ -983,7 +891,7 @@ Bad JSON,EPIC,feature,"{invalid"
         Then: Transaction is rolled back and error is raised
         """
         csv_data = "Title,View,Type\nTest,EPIC,feature\n"
-        mock_session.commit.side_effect = IntegrityError("Duplicate", None, None)
+        mock_session.commit.side_effect = IntegrityError("Duplicate", None, Exception("duplicate"))
 
         with pytest.raises(IntegrityError):
             service.bulk_create_items("proj-1", csv_data)
@@ -1093,7 +1001,7 @@ type: epic
             id="",  # Empty ID
             external_id="EXT-001",
             item_type="epic",
-            status="todo"
+            status="todo",
         )
 
         with pytest.raises(ValueError, match="missing required fields"):
@@ -1204,7 +1112,7 @@ links:
             figma_node_id="1:2",
             components=["Button", "Input"],
             screens=["Login", "Dashboard"],
-            implements=["STORY-001"]
+            implements=["STORY-001"],
         )
 
         fm = item.to_frontmatter_dict()
@@ -1234,7 +1142,7 @@ links:
             figma_file_key="abc123",
             figma_node_id="1:2",
             components=["Button", "Input Field"],
-            screens=["Login Page", "Signup Page"]
+            screens=["Login Page", "Signup Page"],
         )
 
         body = item.to_markdown_body()
@@ -1260,7 +1168,7 @@ links:
             item_type="wireframe",
             status="draft",
             title="Screen",
-            figma_url="https://figma.com/file/abc"
+            figma_url="https://figma.com/file/abc",
         )
 
         body = item.to_markdown_body()
@@ -1281,7 +1189,7 @@ links:
             "source": "EPIC-1",
             "target": "STORY-1",
             "type": "implements",
-            "created": "2024-01-01T12:00:00Z"
+            "created": "2024-01-01T12:00:00Z",
         }
 
         link = LinkData.from_dict(data)
@@ -1301,8 +1209,8 @@ links:
             source="EPIC-1",
             target="STORY-1",
             link_type="implements",
-            created=datetime.utcnow(),
-            metadata={"confidence": 0.95}
+            created=datetime.now(UTC),
+            metadata={"confidence": 0.95},
         )
 
         result = link.to_dict()
@@ -1323,8 +1231,8 @@ links:
             source="EPIC-1",
             target="STORY-1",
             link_type="implements",
-            created=datetime.utcnow(),
-            metadata={}
+            created=datetime.now(UTC),
+            metadata={},
         )
 
         result = link.to_dict()
@@ -1551,13 +1459,7 @@ Body
         When: write_item_markdown is called
         Then: Parent directory is created
         """
-        item = ItemData(
-            id="item-1",
-            external_id="EPIC-001",
-            item_type="epic",
-            status="todo",
-            title="Test"
-        )
+        item = ItemData(id="item-1", external_id="EPIC-001", item_type="epic", status="todo", title="Test")
         path = temp_dir / "new" / "dir" / "epic.md"
 
         write_item_markdown(item, path)
@@ -1579,7 +1481,7 @@ Body
             "type": "epic",
             "status": "todo",
             "custom_field_1": "value1",
-            "custom_field_2": "value2"
+            "custom_field_2": "value2",
         }
         body = "# Title"
 
@@ -1601,7 +1503,7 @@ Body
             external_id="EPIC-001",
             item_type="epic",
             status="todo",
-            custom_fields={"custom_key": "custom_value"}
+            custom_fields={"custom_key": "custom_value"},
         )
 
         fm = item.to_frontmatter_dict()
@@ -1623,7 +1525,7 @@ Body
             "local_version": 1,
             "remote_version": 2,
             "local_data": {},
-            "remote_data": {}
+            "remote_data": {},
         }
 
         conflict = Conflict.from_dict(data)
@@ -1638,9 +1540,7 @@ Body
         When: from_dict is called
         Then: Uses defaults for other fields
         """
-        data = {
-            "server_time": datetime.utcnow().isoformat()
-        }
+        data = {"server_time": datetime.now(UTC).isoformat()}
 
         result = UploadResult.from_dict(data)
 
@@ -1656,9 +1556,7 @@ Body
         When: from_dict is called
         Then: Uses defaults for missing fields
         """
-        data = {
-            "online": False
-        }
+        data = {"online": False}
 
         status = SyncStatus.from_dict(data)
 
@@ -1686,11 +1584,7 @@ Body
         When: RateLimitError is created
         Then: retry_after is accessible
         """
-        error = RateLimitError(
-            "Rate limited",
-            retry_after=120,
-            status_code=429
-        )
+        error = RateLimitError("Rate limited", retry_after=120, status_code=429)
 
         assert error.retry_after == 120
         assert error.status_code == 429
@@ -1711,7 +1605,7 @@ Body
                 local_version=1,
                 remote_version=2,
                 local_data={},
-                remote_data={}
+                remote_data={},
             )
         ]
 

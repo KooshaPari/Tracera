@@ -167,7 +167,7 @@ export async function prerender({
             withBase(page.path, routerBasePath),
             {
               headers: {
-                ...(prerenderOptions.headers ?? {}),
+                ...prerenderOptions.headers,
               },
             },
             prerenderOptions.maxRedirects,

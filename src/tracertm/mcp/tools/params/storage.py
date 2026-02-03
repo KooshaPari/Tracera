@@ -2,27 +2,43 @@
 
 from __future__ import annotations
 
-from datetime import datetime
 import gzip
 import json
+import re
+from datetime import UTC, datetime, timezone
 from pathlib import Path
 from typing import Any
 
 from fastmcp.exceptions import ToolError
+from sqlalchemy import text
+
+# Table names from sqlite_master or backup JSON; must be identifier-safe.
+_TABLE_NAME_RE = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_]*$")
+
+
+def _safe_table_name(name: str) -> str:
+    if not _TABLE_NAME_RE.match(name):
+        raise ToolError(f"Invalid table name: {name!r}")
+    return name
+
 
 try:
     from tracertm.mcp.core import mcp
 except Exception:  # pragma: no cover
+
     class _StubMCP:
         def tool(self, *args: Any, **kwargs: Any):
             def decorator(fn):
                 return fn
+
             return decorator
+
     mcp = _StubMCP()  # type: ignore[assignment]
 
-from tracertm.storage.local_storage import LocalStorageManager
 from tracertm.storage.file_watcher import TraceFileWatcher
-from .common import _wrap, _build_sync_engine, _WATCHERS
+from tracertm.storage.local_storage import LocalStorageManager
+
+from .common import _WATCHERS, _build_sync_engine, _wrap
 
 
 @mcp.tool(description="Unified sync operations")
@@ -97,7 +113,7 @@ async def _sync_manage_impl(
 
 
 @mcp.tool(description="Unified backup operations")
-async def backup_manage(
+def backup_manage(
     action: str,
     payload: dict[str, Any] | None = None,
     ctx: Any | None = None,
@@ -120,26 +136,25 @@ async def backup_manage(
         compress = bool(payload.get("compress", True))
 
         if not output:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
             suffix = ".json.gz" if compress else ".json"
             output = f"tracertm_backup_{timestamp}{suffix}"
 
         backup_data: dict[str, Any] = {
             "version": "1.0",
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "project_id": project_id,
             "tables": {},
         }
 
         with storage.get_session() as session:
-            result = session.execute(
-                "SELECT name FROM sqlite_master WHERE type='table'"
-            )
+            result = session.execute(text("SELECT name FROM sqlite_master WHERE type='table'"))
             tables = [row[0] for row in result]
             for table in tables:
                 if table.startswith("alembic"):
                     continue
-                rows = session.execute(f"SELECT * FROM {table}").all()
+                safe_name = _safe_table_name(table)
+                rows = session.execute(text(f"SELECT * FROM {safe_name}")).all()  # noqa: S608
                 records = [dict(row._mapping) for row in rows]
                 for row in records:
                     for key, value in row.items():
@@ -174,12 +189,13 @@ async def backup_manage(
 
         with storage.get_session() as session:
             for table, rows in backup_data["tables"].items():
-                session.execute(f"DELETE FROM {table}")
+                safe_name = _safe_table_name(table)
+                session.execute(text(f"DELETE FROM {safe_name}"))  # noqa: S608
                 for row in rows:
-                    columns = ", ".join(row.keys())
-                    placeholders = ", ".join([f":{k}" for k in row.keys()])
+                    columns = ", ".join(row)
+                    placeholders = ", ".join([f":{k}" for k in row])
                     session.execute(
-                        f"INSERT INTO {table} ({columns}) VALUES ({placeholders})",
+                        text(f"INSERT INTO {safe_name} ({columns}) VALUES ({placeholders})"),  # noqa: S608
                         row,
                     )
             session.commit()
@@ -190,7 +206,7 @@ async def backup_manage(
 
 
 @mcp.tool(description="Unified file watch operations")
-async def file_watch_manage(
+def file_watch_manage(
     action: str,
     payload: dict[str, Any] | None = None,
     ctx: Any | None = None,

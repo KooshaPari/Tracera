@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+import uuid
 from dataclasses import dataclass
 from typing import Any
 
@@ -39,31 +40,26 @@ class BulkOperationService:
 
     async def preview_bulk_update(
         self,
-        project_id: str,
+        project_id: str | uuid.UUID,
         filters: dict[str, Any],
         updates: dict[str, Any],
     ) -> BulkPreview:
         """Preview bulk update before execution."""
+        project_id = str(project_id)
         # Query matching items
         matching_items = await self.items.query(project_id, filters)
 
         # Validation warnings
         warnings = []
         if len(matching_items) > 100:
-            warnings.append(
-                f"Large operation: {len(matching_items)} items will be updated"
-            )
+            warnings.append(f"Large operation: {len(matching_items)} items will be updated")
 
         if "status" in updates:
             new_status = updates["status"]
             if new_status == "complete":
-                blocked_count = sum(
-                    1 for item in matching_items if item.status == "blocked"
-                )
+                blocked_count = sum(1 for item in matching_items if item.status == "blocked")
                 if blocked_count > 0:
-                    warnings.append(
-                        f"{blocked_count} blocked items will be marked complete"
-                    )
+                    warnings.append(f"{blocked_count} blocked items will be marked complete")
 
         # Sample items (first 5)
         sample = [
@@ -88,7 +84,7 @@ class BulkOperationService:
 
     async def execute_bulk_update(
         self,
-        project_id: str,
+        project_id: str | uuid.UUID,
         filters: dict[str, Any],
         updates: dict[str, Any],
         agent_id: str,
@@ -118,24 +114,23 @@ class BulkOperationService:
         Raises:
             ValueError: If preview validation fails
         """
+        pid = str(project_id) if isinstance(project_id, uuid.UUID) else project_id
         if not skip_preview:
-            preview = await self.preview_bulk_update(project_id, filters, updates)
+            preview = await self.preview_bulk_update(pid, filters, updates)
             if not preview.is_safe():
-                raise ValueError(
-                    f"Bulk operation has warnings: {preview.validation_warnings}"
-                )
+                raise ValueError(f"Bulk operation has warnings: {preview.validation_warnings}")
 
         # Execute bulk update with parallel processing
-        matching_items = await self.items.query(project_id, filters)
+        matching_items = await self.items.query(pid, filters)
 
         if not matching_items:
-            logger.info(f"No items matched filters for bulk update in project {project_id}")
+            logger.info(f"No items matched filters for bulk update in project {pid}")
             return []
 
         # Create parallel update tasks for all matching items
         update_tasks = [
             self.items.update(
-                item_id=item.id,
+                item_id=str(item.id),
                 expected_version=item.version,
                 **updates,
             )
@@ -153,14 +148,10 @@ class BulkOperationService:
             if isinstance(result, Exception):
                 # Log the specific error for debugging
                 if isinstance(result, ConcurrencyError):
-                    logger.warning(
-                        f"Conflict updating item {matching_items[i].id}: {result}"
-                    )
+                    logger.warning(f"Conflict updating item {matching_items[i].id}: {result}")
                     conflicts += 1
                 else:
-                    logger.error(
-                        f"Failed to update item {matching_items[i].id}: {result}"
-                    )
+                    logger.error(f"Failed to update item {matching_items[i].id}: {result}")
             else:
                 updated_items.append(result)
 

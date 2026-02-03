@@ -49,4 +49,4 @@ export declare type _Range<From extends number, To extends number, way extends W
  * ```
  */
 export declare type Range<From extends number, To extends number, way extends Way = '->'> = From extends unknown ? To extends unknown ? _Range<From, To, way> : never : never;
-export {};
+

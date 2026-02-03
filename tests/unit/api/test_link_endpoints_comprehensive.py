@@ -6,9 +6,10 @@ Tests:
 - PUT /api/v1/links/{link_id}
 """
 
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import AsyncMock, MagicMock, patch
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -38,6 +39,7 @@ def mock_db_connection():
 def client(mock_config_manager, mock_db_connection):
     """Create test client with mocked dependencies."""
     from tracertm.api.main import app
+
     return TestClient(app)
 
 
@@ -66,7 +68,7 @@ class TestListLinksEndpoint:
             MagicMock(
                 id=f"link-{i}",
                 source_item_id=f"item-{i}",
-                target_item_id=f"item-{i+1}",
+                target_item_id=f"item-{i + 1}",
                 link_type="implements",
             )
             for i in range(5)

@@ -58,7 +58,7 @@ export default function bsl(Prism) {
         pattern: /\b(?:and|not|or)\b/i
       }
     ],
-    punctuation: /\(\.|\.\)|[()\[\]:;,.]/,
+    punctuation: /\(\.|\.\)|[()[\]:;,.]/,
     directive: [
       // Теги препроцессора вида &Клиент, &Сервер, ...
       // Preprocessor tags of the type &Client, &Server, ...

@@ -22,7 +22,7 @@ export default function v(Prism) {
         inside: {
           interpolation: {
             pattern:
-              /((?:^|[^\\])(?:\\{2})*)\$(?:\{[^{}]*\}|\w+(?:\.\w+(?:\([^\(\)]*\))?|\[[^\[\]]+\])*)/,
+              /((?:^|[^\\])(?:\\{2})*)\$(?:\{[^{}]*\}|\w+(?:\.\w+(?:\([^()]*\))?|\[[^[\]]+\])*)/,
             lookbehind: true,
             inside: {
               'interpolation-variable': {
@@ -47,7 +47,7 @@ export default function v(Prism) {
       number:
         /\b(?:0x[a-f\d]+(?:_[a-f\d]+)*|0b[01]+(?:_[01]+)*|0o[0-7]+(?:_[0-7]+)*|\d+(?:_\d+)*(?:\.\d+(?:_\d+)*)?)\b/i,
       operator:
-        /~|\?|[*\/%^!=]=?|\+[=+]?|-[=-]?|\|[=|]?|&(?:=|&|\^=?)?|>(?:>=?|=)?|<(?:<=?|=|-)?|:=|\.\.\.?/,
+        /~|\?|[*/%^!=]=?|\+[=+]?|-[=-]?|\|[=|]?|&(?:=|&|\^=?)?|>(?:>=?|=)?|<(?:<=?|=|-)?|:=|\.\.\.?/,
       builtin:
         /\b(?:any(?:_float|_int)?|bool|byte(?:ptr)?|charptr|f(?:32|64)|i(?:8|16|64|128|nt)|rune|size_t|string|u(?:16|32|64|128)|voidptr)\b/
     })
@@ -66,12 +66,12 @@ export default function v(Prism) {
         lookbehind: true,
         alias: 'annotation',
         inside: {
-          punctuation: /[\[\]]/,
+          punctuation: /[[\]]/,
           keyword: /\w+/
         }
       },
       generic: {
-        pattern: /<\w+>(?=\s*[\)\{])/,
+        pattern: /<\w+>(?=\s*[){])/,
         inside: {
           punctuation: /[<>]/,
           'class-name': /\w+/

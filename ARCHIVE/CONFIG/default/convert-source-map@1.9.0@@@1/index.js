@@ -11,7 +11,7 @@ Object.defineProperty(exports, 'commentRegex', {
 Object.defineProperty(exports, 'mapFileCommentRegex', {
   get: function getMapFileCommentRegex () {
     // Matches sourceMappingURL in either // or /* comment styles.
-    return /(?:\/\/[@#][ \t]+sourceMappingURL=([^\s'"`]+?)[ \t]*$)|(?:\/\*[@#][ \t]+sourceMappingURL=([^\*]+?)[ \t]*(?:\*\/){1}[ \t]*$)/mg;
+    return /(?:\/\/[@#][ \t]+sourceMappingURL=([^\s'"`]+?)[ \t]*$)|(?:\/\*[@#][ \t]+sourceMappingURL=([^*]+?)[ \t]*(?:\*\/){1}[ \t]*$)/mg;
   }
 });
 

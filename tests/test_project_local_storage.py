@@ -64,9 +64,7 @@ class TestProjectLocalStorage:
         project_dir = temp_dir / "my-project"
         project_dir.mkdir()
 
-        trace_dir, project_id = storage.init_project(
-            project_dir, project_name="My Project", description="Test project"
-        )
+        trace_dir, project_id = storage.init_project(project_dir, project_name="My Project", description="Test project")
 
         # Check directory structure
         assert trace_dir.exists()
@@ -157,9 +155,7 @@ class TestProjectLocalStorage:
         storage.init_project(project_dir)
 
         # Increment epic counter
-        counter_value, external_id = storage.increment_project_counter(
-            project_dir, "epic"
-        )
+        counter_value, external_id = storage.increment_project_counter(project_dir, "epic")
 
         assert counter_value == 1
         assert external_id == "EPIC-001"
@@ -169,9 +165,7 @@ class TestProjectLocalStorage:
         assert counters["epic"] == 1
 
         # Increment again
-        counter_value2, external_id2 = storage.increment_project_counter(
-            project_dir, "epic"
-        )
+        counter_value2, external_id2 = storage.increment_project_counter(project_dir, "epic")
 
         assert counter_value2 == 2
         assert external_id2 == "EPIC-002"
@@ -293,9 +287,7 @@ Create login page with email and password fields.
     def test_project_storage_local_mode(self, temp_dir, storage):
         """Test ProjectStorage works in project-local mode."""
         project_dir = temp_dir / "my-project"
-        trace_dir, project_id = storage.init_project(
-            project_dir, project_name="My Project"
-        )
+        trace_dir, project_id = storage.init_project(project_dir, project_name="My Project")
 
         project_storage = storage.get_project_storage_for_path(project_dir)
 

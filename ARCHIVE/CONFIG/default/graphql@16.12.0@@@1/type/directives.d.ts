@@ -87,4 +87,4 @@ export declare const specifiedDirectives: ReadonlyArray<GraphQLDirective>;
 export declare function isSpecifiedDirective(
   directive: GraphQLDirective,
 ): boolean;
-export {};
+

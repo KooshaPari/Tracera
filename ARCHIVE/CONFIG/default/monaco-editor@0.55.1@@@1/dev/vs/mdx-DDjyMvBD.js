@@ -55,7 +55,7 @@ define("vs/mdx-DDjyMvBD", ["exports", "./editor.api-CykLys8L"], (function(export
   const language = {
     defaultToken: "",
     tokenPostfix: ".mdx",
-    control: /[!#()*+.[\\\]_`{}\-]/,
+    control: /[!#()*+.[\\\]_`{}-]/,
     escapes: /\\@control/,
     tokenizer: {
       root: [

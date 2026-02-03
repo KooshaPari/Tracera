@@ -72,4 +72,4 @@ type RequiredObjectDeep<ObjectType extends object> = {
 	[KeyType in keyof ObjectType]-?: RequiredDeep<ObjectType[KeyType]>
 };
 
-export {};
+

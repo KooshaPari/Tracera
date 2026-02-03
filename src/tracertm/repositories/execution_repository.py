@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Any
 from uuid import uuid4
 
-from sqlalchemy import select, update
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.models.execution import Execution, ExecutionArtifact
@@ -49,9 +49,7 @@ class ExecutionRepository:
 
     async def get_by_id(self, execution_id: str) -> Execution | None:
         """Get execution by ID."""
-        result = await self.session.execute(
-            select(Execution).where(Execution.id == execution_id)
-        )
+        result = await self.session.execute(select(Execution).where(Execution.id == execution_id))
         return result.scalar_one_or_none()
 
     async def list_by_project(
@@ -152,9 +150,7 @@ class ExecutionArtifactRepository:
 
     async def get_by_id(self, artifact_id: str) -> ExecutionArtifact | None:
         """Get artifact by ID."""
-        result = await self.session.execute(
-            select(ExecutionArtifact).where(ExecutionArtifact.id == artifact_id)
-        )
+        result = await self.session.execute(select(ExecutionArtifact).where(ExecutionArtifact.id == artifact_id))
         return result.scalar_one_or_none()
 
     async def list_by_execution(
@@ -164,9 +160,7 @@ class ExecutionArtifactRepository:
         artifact_type: str | None = None,
     ) -> list[ExecutionArtifact]:
         """List artifacts for an execution."""
-        q = select(ExecutionArtifact).where(
-            ExecutionArtifact.execution_id == execution_id
-        )
+        q = select(ExecutionArtifact).where(ExecutionArtifact.execution_id == execution_id)
         if artifact_type:
             q = q.where(ExecutionArtifact.artifact_type == artifact_type)
         q = q.order_by(ExecutionArtifact.captured_at.desc())
@@ -183,9 +177,7 @@ class ExecutionEnvironmentConfigRepository:
     async def get_by_project(self, project_id: str) -> ExecutionEnvironmentConfig | None:
         """Get config by project ID (one per project)."""
         result = await self.session.execute(
-            select(ExecutionEnvironmentConfig).where(
-                ExecutionEnvironmentConfig.project_id == project_id
-            )
+            select(ExecutionEnvironmentConfig).where(ExecutionEnvironmentConfig.project_id == project_id)
         )
         return result.scalar_one_or_none()
 

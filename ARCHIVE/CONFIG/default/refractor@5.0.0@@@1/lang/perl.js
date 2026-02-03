@@ -33,7 +33,7 @@ export default function perl(Prism) {
               '(?:' +
               [
                 // q/.../
-                /([^a-zA-Z0-9\s{(\[<])(?:(?!\1)[^\\]|\\[\s\S])*\1/.source,
+                /([^a-zA-Z0-9\s{([<])(?:(?!\1)[^\\]|\\[\s\S])*\1/.source,
                 // q a...a
                 // eslint-disable-next-line regexp/strict
                 /([a-zA-Z0-9])(?:(?!\2)[^\\]|\\[\s\S])*\2/.source,
@@ -66,7 +66,7 @@ export default function perl(Prism) {
               '(?:' +
               [
                 // m/.../
-                /([^a-zA-Z0-9\s{(\[<])(?:(?!\1)[^\\]|\\[\s\S])*\1/.source,
+                /([^a-zA-Z0-9\s{([<])(?:(?!\1)[^\\]|\\[\s\S])*\1/.source,
                 // m a...a
                 // eslint-disable-next-line regexp/strict
                 /([a-zA-Z0-9])(?:(?!\2)[^\\]|\\[\s\S])*\2/.source,
@@ -89,7 +89,7 @@ export default function perl(Prism) {
               [
                 // s/.../.../
                 // eslint-disable-next-line regexp/strict
-                /([^a-zA-Z0-9\s{(\[<])(?:(?!\2)[^\\]|\\[\s\S])*\2(?:(?!\2)[^\\]|\\[\s\S])*\2/
+                /([^a-zA-Z0-9\s{([<])(?:(?!\2)[^\\]|\\[\s\S])*\2(?:(?!\2)[^\\]|\\[\s\S])*\2/
                   .source,
                 // s a...a...a
                 // eslint-disable-next-line regexp/strict
@@ -114,7 +114,7 @@ export default function perl(Prism) {
         // This does not support multi-line regex.
         {
           pattern:
-            /\/(?:[^\/\\\r\n]|\\.)*\/[msixpodualngc]*(?=\s*(?:$|[\r\n,.;})&|\-+*~<>!?^]|(?:and|cmp|eq|ge|gt|le|lt|ne|not|or|x|xor)\b))/,
+            /\/(?:[^/\\\r\n]|\\.)*\/[msixpodualngc]*(?=\s*(?:$|[\r\n,.;})&|\-+*~<>!?^]|(?:and|cmp|eq|ge|gt|le|lt|ne|not|or|x|xor)\b))/,
           greedy: true
         }
       ],
@@ -132,7 +132,7 @@ export default function perl(Prism) {
         /[&*$@%]\d+/,
         // $_, @_, %!
         // The negative lookahead prevents from breaking the %= operator
-        /(?!%=)[$@%][!"#$%&'()*+,\-.\/:;<=>?@[\\\]^_`{|}~]/
+        /(?!%=)[$@%][!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/
       ],
       filehandle: {
         // <>, <FOO>, _

@@ -24,7 +24,7 @@ export default function apl(Prism) {
     function:
       /[-+×÷⌈⌊∣|⍳⍸?*⍟○!⌹<≤=>≥≠≡≢∊⍷∪∩~∨∧⍱⍲⍴,⍪⌽⊖⍉↑↓⊂⊃⊆⊇⌷⍋⍒⊤⊥⍕⍎⊣⊢⍁⍂≈⍯↗¤→]/,
     'monadic-operator': {
-      pattern: /[\\\/⌿⍀¨⍨⌶&∥]/,
+      pattern: /[\\/⌿⍀¨⍨⌶&∥]/,
       alias: 'operator'
     },
     'dyadic-operator': {
@@ -35,7 +35,7 @@ export default function apl(Prism) {
       pattern: /←/,
       alias: 'keyword'
     },
-    punctuation: /[\[;\]()◇⋄]/,
+    punctuation: /[[;\]()◇⋄]/,
     dfn: {
       pattern: /[{}⍺⍵⍶⍹∇⍫:]/,
       alias: 'builtin'

@@ -8,7 +8,6 @@ Targets: cli/commands/test.py (0%), cli/commands/test/app.py (0%),
 """
 
 import pytest
-from unittest.mock import MagicMock, patch, AsyncMock
 
 
 class TestTestCommand:
@@ -17,12 +16,14 @@ class TestTestCommand:
     def test_test_module_import(self):
         """Test test module can be imported."""
         from tracertm.cli.commands import test
+
         assert test is not None
 
     def test_test_app_exists(self):
         """Test test module has app."""
         from tracertm.cli.commands import test
-        assert hasattr(test, 'app')
+
+        assert hasattr(test, "app")
 
 
 class TestTestAppModule:
@@ -32,6 +33,7 @@ class TestTestAppModule:
         """Test test.app module can be imported."""
         try:
             from tracertm.cli.commands.test import app
+
             assert app is not None
         except ImportError:
             pytest.skip("test.app module not available")
@@ -44,6 +46,7 @@ class TestTestCoverageModule:
         """Test test.coverage module can be imported."""
         try:
             from tracertm.cli.commands.test import coverage
+
             assert coverage is not None
         except ImportError:
             pytest.skip("test.coverage module not available")
@@ -56,6 +59,7 @@ class TestTestDiscoverModule:
         """Test test.discover module can be imported."""
         try:
             from tracertm.cli.commands.test import discover
+
             assert discover is not None
         except ImportError:
             pytest.skip("test.discover module not available")
@@ -68,6 +72,7 @@ class TestTestDiscoveryModule:
         """Test test.discovery module can be imported."""
         try:
             from tracertm.cli.commands.test import discovery
+
             assert discovery is not None
         except ImportError:
             pytest.skip("test.discovery module not available")
@@ -76,10 +81,13 @@ class TestTestDiscoveryModule:
         """Test discovery module has discover tests function."""
         try:
             from tracertm.cli.commands.test import discovery
+
             # Check for common discovery patterns
-            assert hasattr(discovery, 'discover_tests') or \
-                   hasattr(discovery, 'TestDiscovery') or \
-                   hasattr(discovery, 'find_tests')
+            assert (
+                hasattr(discovery, "discover_tests")
+                or hasattr(discovery, "TestDiscovery")
+                or hasattr(discovery, "find_tests")
+            )
         except ImportError:
             pytest.skip("test.discovery module not available")
 
@@ -91,6 +99,7 @@ class TestTestEnvManagerModule:
         """Test test.env_manager module can be imported."""
         try:
             from tracertm.cli.commands.test import env_manager
+
             assert env_manager is not None
         except ImportError:
             pytest.skip("test.env_manager module not available")
@@ -103,6 +112,7 @@ class TestTestGroupingModule:
         """Test test.grouping module can be imported."""
         try:
             from tracertm.cli.commands.test import grouping
+
             assert grouping is not None
         except ImportError:
             pytest.skip("test.grouping module not available")
@@ -115,6 +125,7 @@ class TestTestOrchestratorModule:
         """Test test.orchestrator module can be imported."""
         try:
             from tracertm.cli.commands.test import orchestrator
+
             assert orchestrator is not None
         except ImportError:
             pytest.skip("test.orchestrator module not available")
@@ -123,9 +134,12 @@ class TestTestOrchestratorModule:
         """Test orchestrator module has run function."""
         try:
             from tracertm.cli.commands.test import orchestrator
-            assert hasattr(orchestrator, 'run_tests') or \
-                   hasattr(orchestrator, 'TestOrchestrator') or \
-                   hasattr(orchestrator, 'orchestrate')
+
+            assert (
+                hasattr(orchestrator, "run_tests")
+                or hasattr(orchestrator, "TestOrchestrator")
+                or hasattr(orchestrator, "orchestrate")
+            )
         except ImportError:
             pytest.skip("test.orchestrator module not available")
 
@@ -137,6 +151,7 @@ class TestTestReportingModule:
         """Test test.reporting module can be imported."""
         try:
             from tracertm.cli.commands.test import reporting
+
             assert reporting is not None
         except ImportError:
             pytest.skip("test.reporting module not available")
@@ -145,9 +160,12 @@ class TestTestReportingModule:
         """Test reporting module has report function."""
         try:
             from tracertm.cli.commands.test import reporting
-            assert hasattr(reporting, 'generate_report') or \
-                   hasattr(reporting, 'TestReporter') or \
-                   hasattr(reporting, 'report')
+
+            assert (
+                hasattr(reporting, "generate_report")
+                or hasattr(reporting, "TestReporter")
+                or hasattr(reporting, "report")
+            )
         except ImportError:
             pytest.skip("test.reporting module not available")
 
@@ -159,6 +177,7 @@ class TestTestMainModule:
         """Test test.main module can be imported."""
         try:
             from tracertm.cli.commands.test import main
+
             assert main is not None
         except ImportError:
             pytest.skip("test.main module not available")
@@ -171,6 +190,7 @@ class TestTestRunnerModule:
         """Test test.runner module can be imported."""
         try:
             from tracertm.cli.commands.test import runner
+
             assert runner is not None
         except ImportError:
             pytest.skip("test.runner module not available")
@@ -179,9 +199,8 @@ class TestTestRunnerModule:
         """Test runner module has run function."""
         try:
             from tracertm.cli.commands.test import runner
-            assert hasattr(runner, 'run') or \
-                   hasattr(runner, 'TestRunner') or \
-                   hasattr(runner, 'run_test')
+
+            assert hasattr(runner, "run") or hasattr(runner, "TestRunner") or hasattr(runner, "run_test")
         except ImportError:
             pytest.skip("test.runner module not available")
 
@@ -192,13 +211,16 @@ class TestAgentsCommand:
     def test_agents_module_import(self):
         """Test agents module can be imported."""
         from tracertm.cli.commands import agents
+
         assert agents is not None
         assert agents.app is not None
 
     def test_agents_app_registered(self):
         """Test agents app is a Typer app."""
-        from tracertm.cli.commands.agents import app
         import typer
+
+        from tracertm.cli.commands.agents import app
+
         assert isinstance(app, typer.Typer)
 
 
@@ -208,13 +230,16 @@ class TestItemCommand:
     def test_item_module_import(self):
         """Test item module can be imported."""
         from tracertm.cli.commands import item
+
         assert item is not None
         assert item.app is not None
 
     def test_item_app_registered(self):
         """Test item app is a Typer app."""
-        from tracertm.cli.commands.item import app
         import typer
+
+        from tracertm.cli.commands.item import app
+
         assert isinstance(app, typer.Typer)
 
 
@@ -224,10 +249,12 @@ class TestInitCommand:
     def test_init_module_import(self):
         """Test init module can be imported."""
         from tracertm.cli.commands import init
+
         assert init is not None
 
     def test_init_has_functions(self):
         """Test init module is a valid Python module."""
         from tracertm.cli.commands import init
+
         # init module should have some content
-        assert hasattr(init, '__name__')
+        assert hasattr(init, "__name__")

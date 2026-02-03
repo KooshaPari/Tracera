@@ -1,6 +1,7 @@
 """Agent repository for TraceRTM."""
 
-from datetime import datetime
+import uuid
+from datetime import UTC, datetime
 from uuid import uuid4
 
 from sqlalchemy import delete, select
@@ -17,7 +18,7 @@ class AgentRepository:
 
     async def create(
         self,
-        project_id: str,
+        project_id: str | uuid.UUID,
         name: str,
         agent_type: str,
         metadata: dict | None = None,
@@ -36,14 +37,14 @@ class AgentRepository:
         await self.session.refresh(agent)
         return agent
 
-    async def get_by_id(self, agent_id: str) -> Agent | None:
+    async def get_by_id(self, agent_id: str | uuid.UUID) -> Agent | None:
         """Get agent by ID."""
         result = await self.session.execute(select(Agent).where(Agent.id == agent_id))
         return result.scalar_one_or_none()
 
     async def get_by_project(
         self,
-        project_id: str,
+        project_id: str | uuid.UUID,
         status: str | None = None,
     ) -> list[Agent]:
         """Get all agents for a project."""
@@ -55,7 +56,7 @@ class AgentRepository:
 
     async def update_status(
         self,
-        agent_id: str,
+        agent_id: str | uuid.UUID,
         status: str,
     ) -> Agent:
         """Update agent status."""
@@ -67,17 +68,17 @@ class AgentRepository:
         await self.session.refresh(agent)
         return agent
 
-    async def update_activity(self, agent_id: str) -> Agent:
+    async def update_activity(self, agent_id: str | uuid.UUID) -> Agent:
         """Update agent last activity timestamp."""
         agent = await self.get_by_id(agent_id)
         if not agent:
             raise ValueError(f"Agent {agent_id} not found")
-        agent.last_activity_at = datetime.utcnow().isoformat()
+        agent.last_activity_at = datetime.now(UTC).isoformat()
         await self.session.flush()
         await self.session.refresh(agent)
         return agent
 
-    async def delete(self, agent_id: str) -> bool:
+    async def delete(self, agent_id: str | uuid.UUID) -> bool:
         """Delete agent."""
         result = await self.session.execute(delete(Agent).where(Agent.id == agent_id))
-        return result.rowcount > 0
+        return getattr(result, "rowcount", 0) > 0

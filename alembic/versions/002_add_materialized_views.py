@@ -5,21 +5,21 @@ Revises: 001
 Create Date: 2025-11-21
 
 """
-from typing import Sequence, Union
+
+from collections.abc import Sequence
 
 from alembic import op
-import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
-revision: str = '002'
-down_revision: Union[str, None] = '001'
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+revision: str = "002"
+down_revision: str | None = "001"
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
     """Create materialized views for 8 attached layers."""
-    
+
     # Layer 1: Traceability Matrix View
     op.execute("""
         CREATE MATERIALIZED VIEW traceability_matrix AS
@@ -42,12 +42,12 @@ def upgrade() -> None:
         JOIN items i2 ON l.target_item_id = i2.id
         WHERE i1.deleted_at IS NULL AND i2.deleted_at IS NULL;
     """)
-    
+
     # Create unique index for concurrent refresh
     op.execute("""
         CREATE UNIQUE INDEX idx_traceability_unique ON traceability_matrix(link_id);
     """)
-    
+
     # Create indexes for performance
     op.execute("CREATE INDEX idx_traceability_project ON traceability_matrix(project_id);")
     op.execute("CREATE INDEX idx_traceability_source ON traceability_matrix(source_id);")
@@ -55,7 +55,7 @@ def upgrade() -> None:
     op.execute("CREATE INDEX idx_traceability_type ON traceability_matrix(link_type);")
     op.execute("CREATE INDEX idx_traceability_source_type ON traceability_matrix(source_id, link_type);")
     op.execute("CREATE INDEX idx_traceability_target_type ON traceability_matrix(target_id, link_type);")
-    
+
     # Layer 2: Impact Analysis View
     op.execute("""
         CREATE MATERIALIZED VIEW impact_analysis AS
@@ -70,9 +70,9 @@ def upgrade() -> None:
                 l.project_id
             FROM links l
             WHERE l.link_type IN ('depends_on', 'blocks', 'implements', 'tests')
-            
+
             UNION ALL
-            
+
             -- Recursive case: transitive relationships
             SELECT
                 ic.root_id,
@@ -96,18 +96,18 @@ def upgrade() -> None:
             project_id
         FROM impact_chain;
     """)
-    
+
     # Create unique index for concurrent refresh
     op.execute("""
         CREATE UNIQUE INDEX idx_impact_unique ON impact_analysis(root_id, affected_id, depth);
     """)
-    
+
     # Create indexes
     op.execute("CREATE INDEX idx_impact_root ON impact_analysis(root_id);")
     op.execute("CREATE INDEX idx_impact_affected ON impact_analysis(affected_id);")
     op.execute("CREATE INDEX idx_impact_depth ON impact_analysis(depth);")
     op.execute("CREATE INDEX idx_impact_project ON impact_analysis(project_id);")
-    
+
     # Layer 3: Coverage Analysis View
     op.execute("""
         CREATE MATERIALIZED VIEW coverage_analysis AS
@@ -142,12 +142,12 @@ def upgrade() -> None:
         WHERE i.deleted_at IS NULL
         GROUP BY i.id, i.project_id, i.title, i.view, i.item_type, i.status;
     """)
-    
+
     # Create unique index for concurrent refresh
     op.execute("""
         CREATE UNIQUE INDEX idx_coverage_unique ON coverage_analysis(item_id);
     """)
-    
+
     # Create indexes
     op.execute("CREATE INDEX idx_coverage_item ON coverage_analysis(item_id);")
     op.execute("CREATE INDEX idx_coverage_project ON coverage_analysis(project_id);")
@@ -157,9 +157,8 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     """Drop materialized views."""
-    
+
     # Drop materialized views
     op.execute("DROP MATERIALIZED VIEW IF EXISTS coverage_analysis;")
     op.execute("DROP MATERIALIZED VIEW IF EXISTS impact_analysis;")
     op.execute("DROP MATERIALIZED VIEW IF EXISTS traceability_matrix;")
-

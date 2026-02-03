@@ -13,4 +13,4 @@ interface Constructor extends Function {
     [Symbol.toStringTag]: string;
   };
 }
-export {};
+

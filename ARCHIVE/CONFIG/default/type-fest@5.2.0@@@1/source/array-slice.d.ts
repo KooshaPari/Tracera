@@ -108,4 +108,4 @@ type ArraySliceByPositiveIndex<
 	? Result
 	: ArraySliceByPositiveIndex<Array_, Sum<Start, 1>, End, [...Result, Array_[Start]]>;
 
-export {};
+

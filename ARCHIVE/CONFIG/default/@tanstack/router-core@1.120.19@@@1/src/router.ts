@@ -1608,10 +1608,10 @@ export class RouterCore<
             if (route.options.validateSearch) {
               validatedSearch = {
                 ...validatedSearch,
-                ...(validateSearch(route.options.validateSearch, {
+                ...validateSearch(route.options.validateSearch, {
                   ...validatedSearch,
                   ...search,
-                }) ?? {}),
+                }),
               }
             }
           } catch {
@@ -1670,10 +1670,10 @@ export class RouterCore<
                   try {
                     const validatedSearch = {
                       ...result,
-                      ...(validateSearch(
+                      ...validateSearch(
                         route.options.validateSearch,
                         result,
-                      ) ?? {}),
+                      ),
                     }
                     return validatedSearch
                   } catch {

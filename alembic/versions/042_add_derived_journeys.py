@@ -8,9 +8,10 @@ Revises: 041_add_figma_sync_state
 Create Date: 2026-01-30
 """
 
-from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
+
+from alembic import op
 
 # revision identifiers, used by Alembic
 revision = "042_add_derived_journeys"
@@ -118,9 +119,7 @@ def upgrade() -> None:
             nullable=False,
         ),
         # Unique constraint per project/slug
-        sa.UniqueConstraint(
-            "project_id", "slug", name="uq_derived_journeys_project_slug"
-        ),
+        sa.UniqueConstraint("project_id", "slug", name="uq_derived_journeys_project_slug"),
     )
 
     # Create indexes
@@ -163,21 +162,13 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     """Drop derived_journeys table."""
-    op.drop_index(
-        "ix_derived_journeys_project_status", table_name="derived_journeys"
-    )
-    op.drop_index(
-        "ix_derived_journeys_project_type", table_name="derived_journeys"
-    )
-    op.drop_index(
-        "ix_derived_journeys_perspectives", table_name="derived_journeys"
-    )
+    op.drop_index("ix_derived_journeys_project_status", table_name="derived_journeys")
+    op.drop_index("ix_derived_journeys_project_type", table_name="derived_journeys")
+    op.drop_index("ix_derived_journeys_perspectives", table_name="derived_journeys")
     op.drop_index("ix_derived_journeys_item_ids", table_name="derived_journeys")
     op.drop_index("ix_derived_journeys_status", table_name="derived_journeys")
     op.drop_index("ix_derived_journeys_confidence", table_name="derived_journeys")
-    op.drop_index(
-        "ix_derived_journeys_detection_method", table_name="derived_journeys"
-    )
+    op.drop_index("ix_derived_journeys_detection_method", table_name="derived_journeys")
     op.drop_index("ix_derived_journeys_exit_item_id", table_name="derived_journeys")
     op.drop_index("ix_derived_journeys_entry_item_id", table_name="derived_journeys")
     op.drop_index("ix_derived_journeys_journey_type", table_name="derived_journeys")

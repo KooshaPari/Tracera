@@ -42,4 +42,4 @@ export type TupleToObject<TArray extends UnknownArray> = If<IsAny<TArray>, any, 
 	]: TArray[Key];
 }>;
 
-export {};
+

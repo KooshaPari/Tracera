@@ -34,7 +34,7 @@ export class $ZodRegistry {
         // inherit metadata
         const p = schema._zod.parent;
         if (p) {
-            const pm = { ...(this.get(p) ?? {}) };
+            const pm = { ...this.get(p) };
             delete pm.id; // do not inherit id
             return { ...pm, ...this._map.get(schema) };
         }

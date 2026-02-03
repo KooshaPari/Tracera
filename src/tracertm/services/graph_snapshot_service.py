@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from typing import Any
+from typing import Any, cast
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -36,9 +36,7 @@ class GraphSnapshotService:
         created_by: str | None = None,
         description: str | None = None,
     ) -> GraphSnapshot:
-        graph = await self.session.execute(
-            select(Graph).where(Graph.id == graph_id, Graph.project_id == project_id)
-        )
+        graph = await self.session.execute(select(Graph).where(Graph.id == graph_id, Graph.project_id == project_id))
         graph_obj = graph.scalar_one_or_none()
         if not graph_obj:
             raise ValueError("Graph not found")
@@ -51,7 +49,7 @@ class GraphSnapshotService:
         )
 
         nodes = sorted(data.get("nodes", []), key=lambda n: n.get("id", ""))
-        links = sorted(data.get("links", []), key=lambda l: l.get("id", ""))
+        links = sorted(data.get("links", []), key=lambda link: link.get("id", ""))
 
         snapshot_payload = {
             "graph": data.get("graph"),
@@ -110,11 +108,19 @@ class GraphSnapshotService:
         if not from_snapshot or not to_snapshot:
             raise ValueError("Snapshots not found")
 
-        from_nodes = {n["id"] for n in from_snapshot.snapshot_json.get("nodes", [])}
-        to_nodes = {n["id"] for n in to_snapshot.snapshot_json.get("nodes", [])}
+        from_nodes_raw = (from_snapshot.snapshot_json or {}).get("nodes")
+        to_nodes_raw = (to_snapshot.snapshot_json or {}).get("nodes")
+        from_nodes_list = from_nodes_raw if isinstance(from_nodes_raw, list) else []
+        to_nodes_list = to_nodes_raw if isinstance(to_nodes_raw, list) else []
+        from_nodes = {cast(dict[str, Any], n).get("id", "") for n in from_nodes_list}
+        to_nodes = {cast(dict[str, Any], n).get("id", "") for n in to_nodes_list}
 
-        from_links = {l["id"] for l in from_snapshot.snapshot_json.get("links", [])}
-        to_links = {l["id"] for l in to_snapshot.snapshot_json.get("links", [])}
+        from_links_raw = (from_snapshot.snapshot_json or {}).get("links")
+        to_links_raw = (to_snapshot.snapshot_json or {}).get("links")
+        from_links_list = from_links_raw if isinstance(from_links_raw, list) else []
+        to_links_list = to_links_raw if isinstance(to_links_raw, list) else []
+        from_links = {cast(dict[str, Any], link).get("id", "") for link in from_links_list}
+        to_links = {cast(dict[str, Any], link).get("id", "") for link in to_links_list}
 
         return {
             "from_version": from_version,

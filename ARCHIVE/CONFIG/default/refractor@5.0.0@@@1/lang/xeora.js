@@ -62,7 +62,7 @@ export default function xeora(Prism) {
         alias: 'function'
       },
       'directive-inline': {
-        pattern: /\$\w(?:#\d+\+?)?(?:\[[-\w.]+\])?:[-\/\w.]+\$/,
+        pattern: /\$\w(?:#\d+\+?)?(?:\[[-\w.]+\])?:[-/\w.]+\$/,
         inside: {
           punctuation: {
             pattern: /\$(?:\w:|C(?:\[|#\d))?|[:{[\]]/,

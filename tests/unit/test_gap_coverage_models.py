@@ -3,8 +3,7 @@ Gap coverage tests for low-coverage model modules.
 Targets: models/agent.py, models/agent_event.py, models/types.py
 """
 
-import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 
 class TestAgentModel:
@@ -13,6 +12,7 @@ class TestAgentModel:
     def test_agent_import(self):
         """Test Agent model can be imported."""
         from tracertm.models.agent import Agent, generate_agent_uuid
+
         assert Agent is not None
         assert generate_agent_uuid is not None
 
@@ -44,6 +44,7 @@ class TestAgentModel:
     def test_agent_table_name(self):
         """Test Agent table name is set."""
         from tracertm.models.agent import Agent
+
         assert Agent.__tablename__ == "agents"
 
 
@@ -53,6 +54,7 @@ class TestAgentEventModel:
     def test_agent_event_import(self):
         """Test AgentEvent model can be imported."""
         from tracertm.models.agent_event import AgentEvent, generate_event_uuid
+
         assert AgentEvent is not None
         assert generate_event_uuid is not None
 
@@ -71,6 +73,7 @@ class TestAgentEventModel:
     def test_agent_event_table_name(self):
         """Test AgentEvent table name is set."""
         from tracertm.models.agent_event import AgentEvent
+
         assert AgentEvent.__tablename__ == "agent_events"
 
     def test_agent_event_repr(self):
@@ -95,11 +98,13 @@ class TestJSONType:
     def test_json_type_import(self):
         """Test JSONType can be imported."""
         from tracertm.models.types import JSONType
+
         assert JSONType is not None
 
     def test_json_type_cache_ok(self):
         """Test JSONType has cache_ok set."""
         from tracertm.models.types import JSONType
+
         assert JSONType.cache_ok is True
 
     def test_json_type_load_dialect_impl_postgresql(self):
@@ -156,9 +161,11 @@ class TestAgentLockModel:
     def test_agent_lock_import(self):
         """Test AgentLock model can be imported."""
         from tracertm.models.agent_lock import AgentLock
+
         assert AgentLock is not None
 
     def test_agent_lock_table_name(self):
         """Test AgentLock table name is set."""
         from tracertm.models.agent_lock import AgentLock
+
         assert AgentLock.__tablename__ == "agent_locks"

@@ -279,3 +279,9 @@ Agent 2 has successfully completed all assigned work for Epics 5, 6, and 7. All 
 - ✅ Verified history, search, and progress tracking with performance targets met
 
 **Status:** ✅ **ALL EPICS COMPLETE - READY FOR INTEGRATION**
+
+
+## Opinionated Quality Enforcement
+- We want opinionated rules that enforce opinionated styling to a strict degree.
+- This is an exclusively agent/vibecoded project; programmatic enforcement must guard against bad quality and antipatterns.
+- Rather than disables or ignores, fix code properly.

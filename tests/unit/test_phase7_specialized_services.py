@@ -52,32 +52,24 @@ class TestQueryOptimization:
 
     def test_index_selection(self):
         """Test index selection."""
-        indexes = {
-            'status': {'selectivity': 0.2},
-            'user_id': {'selectivity': 0.05},
-            'timestamp': {'selectivity': 0.3}
-        }
+        indexes = {"status": {"selectivity": 0.2}, "user_id": {"selectivity": 0.05}, "timestamp": {"selectivity": 0.3}}
 
         def select_best(query_filters):
-            return max(query_filters, key=lambda idx: indexes[idx]['selectivity'])
+            return max(query_filters, key=lambda idx: indexes[idx]["selectivity"])
 
-        result = select_best(['status', 'timestamp'])
-        assert result == 'timestamp'
+        result = select_best(["status", "timestamp"])
+        assert result == "timestamp"
 
     def test_join_order(self):
         """Test join order optimization."""
-        tables = {
-            'users': {'rows': 1000},
-            'orders': {'rows': 50000},
-            'items': {'rows': 100000}
-        }
+        tables = {"users": {"rows": 1000}, "orders": {"rows": 50000}, "items": {"rows": 100000}}
 
         def optimize_order(tables):
-            return sorted(tables.items(), key=lambda x: x[1]['rows'])
+            return sorted(tables.items(), key=lambda x: x[1]["rows"])
 
         result = optimize_order(tables)
-        assert result[0][0] == 'users'
-        assert result[-1][0] == 'items'
+        assert result[0][0] == "users"
+        assert result[-1][0] == "items"
 
 
 class TestEventStreaming:
@@ -93,22 +85,22 @@ class TestEventStreaming:
         def dequeue():
             return queue.pop(0) if queue else None
 
-        enqueue('event1')
-        enqueue('event2')
-        assert dequeue() == 'event1'
+        enqueue("event1")
+        enqueue("event2")
+        assert dequeue() == "event1"
 
     def test_event_filtering(self):
         """Test event filtering."""
         events = [
-            {'type': 'CREATE', 'entity': 'user'},
-            {'type': 'UPDATE', 'entity': 'user'},
-            {'type': 'DELETE', 'entity': 'item'}
+            {"type": "CREATE", "entity": "user"},
+            {"type": "UPDATE", "entity": "user"},
+            {"type": "DELETE", "entity": "item"},
         ]
 
         def filter_events(events, event_type):
-            return [e for e in events if e['type'] == event_type]
+            return [e for e in events if e["type"] == event_type]
 
-        result = filter_events(events, 'CREATE')
+        result = filter_events(events, "CREATE")
         assert len(result) == 1
 
 
@@ -118,21 +110,21 @@ class TestAdvancedFiltering:
     def test_complex_filters(self):
         """Test complex filters."""
         items = [
-            {'id': 1, 'status': 'active', 'priority': 5},
-            {'id': 2, 'status': 'inactive', 'priority': 3},
-            {'id': 3, 'status': 'active', 'priority': 8}
+            {"id": 1, "status": "active", "priority": 5},
+            {"id": 2, "status": "inactive", "priority": 3},
+            {"id": 3, "status": "active", "priority": 8},
         ]
 
         def apply_filters(items, filters):
             result = items
             for field, condition in filters.items():
-                if 'eq' in condition:
-                    result = [i for i in result if i[field] == condition['eq']]
-                if 'min' in condition:
-                    result = [i for i in result if i[field] >= condition['min']]
+                if "eq" in condition:
+                    result = [i for i in result if i[field] == condition["eq"]]
+                if "min" in condition:
+                    result = [i for i in result if i[field] >= condition["min"]]
             return result
 
-        filters = {'status': {'eq': 'active'}, 'priority': {'min': 5}}
+        filters = {"status": {"eq": "active"}, "priority": {"min": 5}}
         result = apply_filters(items, filters)
         assert len(result) == 2
 
@@ -153,25 +145,25 @@ class TestPerformanceTuning:
     def test_slow_query_detection(self):
         """Test slow query detection."""
         queries = [
-            {'sql': 'SELECT *', 'duration_ms': 5},
-            {'sql': 'SELECT * JOIN', 'duration_ms': 500},
-            {'sql': 'SELECT COUNT(*)', 'duration_ms': 10},
-            {'sql': 'SELECT large', 'duration_ms': 2000}
+            {"sql": "SELECT *", "duration_ms": 5},
+            {"sql": "SELECT * JOIN", "duration_ms": 500},
+            {"sql": "SELECT COUNT(*)", "duration_ms": 10},
+            {"sql": "SELECT large", "duration_ms": 2000},
         ]
 
         def find_slow(queries, threshold_ms=100):
-            return [q for q in queries if q['duration_ms'] > threshold_ms]
+            return [q for q in queries if q["duration_ms"] > threshold_ms]
 
         result = find_slow(queries)
         assert len(result) == 2
 
     def test_cache_effectiveness(self):
         """Test cache effectiveness."""
-        stats = {'hits': 450, 'misses': 50}
+        stats = {"hits": 450, "misses": 50}
 
         def hit_rate(stats):
-            total = stats['hits'] + stats['misses']
-            return stats['hits'] / total if total > 0 else 0
+            total = stats["hits"] + stats["misses"]
+            return stats["hits"] / total if total > 0 else 0
 
         result = hit_rate(stats)
         assert result == 0.9
@@ -182,24 +174,24 @@ class TestDataTransformation:
 
     def test_schema_transform(self):
         """Test schema transformation."""
-        old = {'user_id': 'int', 'user_name': 'string'}
+        old = {"user_id": "int", "user_name": "string"}
 
         def transform(old):
-            return {k.replace('user_', ''): v for k, v in old.items()}
+            return {k.replace("user_", ""): v for k, v in old.items()}
 
         result = transform(old)
-        assert 'id' in result
-        assert 'user_name' not in result
+        assert "id" in result
+        assert "user_name" not in result
 
     def test_normalization(self):
         """Test normalization."""
-        data = [{'name': 'JOHN', 'email': 'JOHN@EXAMPLE.COM'}]
+        data = [{"name": "JOHN", "email": "JOHN@EXAMPLE.COM"}]
 
         def normalize(data):
             return [{k: v.lower() if isinstance(v, str) else v for k, v in d.items()} for d in data]
 
         result = normalize(data)
-        assert result[0]['name'] == 'john'
+        assert result[0]["name"] == "john"
 
 
 class TestAuditTrail:
@@ -210,26 +202,21 @@ class TestAuditTrail:
         audit_log = []
 
         def log_action(action, user):
-            audit_log.append({'action': action, 'user': user})
+            audit_log.append({"action": action, "user": user})
 
-        log_action('create', 'user1')
-        log_action('update', 'user2')
+        log_action("create", "user1")
+        log_action("update", "user2")
 
         assert len(audit_log) == 2
-        assert audit_log[0]['action'] == 'create'
+        assert audit_log[0]["action"] == "create"
 
     def test_lineage_tracking(self):
         """Test lineage tracking."""
-        lineage = {
-            'item_1': {
-                'created_by': 'user1',
-                'modified_by': ['user2', 'user3']
-            }
-        }
+        lineage = {"item_1": {"created_by": "user1", "modified_by": ["user2", "user3"]}}
 
         def get_lineage(item_id):
-            return lineage.get(f'item_{item_id}')
+            return lineage.get(f"item_{item_id}")
 
         result = get_lineage(1)
-        assert result['created_by'] == 'user1'
-        assert 'user2' in result['modified_by']
+        assert result["created_by"] == "user1"
+        assert "user2" in result["modified_by"]

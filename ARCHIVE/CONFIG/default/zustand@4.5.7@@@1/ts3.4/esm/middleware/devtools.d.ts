@@ -99,4 +99,4 @@ declare module '../vanilla' {
 }
 export type NamedSet<T> = WithDevtools<StoreApi<T>>['setState'];
 export declare const devtools: Devtools;
-export {};
+

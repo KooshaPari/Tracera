@@ -8,14 +8,13 @@ over time and identify regressions.
 import json
 import time
 from pathlib import Path
-from typing import Any, Dict, List
 
 import pytest
-
 
 # ============================================================
 # Benchmark Fixtures
 # ============================================================
+
 
 @pytest.fixture
 def benchmark_results():
@@ -30,13 +29,14 @@ def benchmark_results():
 
     # Save results after tests
     output_file = Path(__file__).parent / "benchmark_results.json"
-    with open(output_file, "w") as f:
+    with Path(output_file).open("w") as f:
         json.dump(results, f, indent=2)
 
 
 # ============================================================
 # Startup Benchmarks
 # ============================================================
+
 
 class TestStartupBenchmarks:
     """Benchmark CLI startup performance."""
@@ -46,11 +46,13 @@ class TestStartupBenchmarks:
 
         def import_app():
             import sys
+
             # Clear module cache for accurate measurement
-            if 'tracertm.cli.app' in sys.modules:
-                del sys.modules['tracertm.cli.app']
+            if "tracertm.cli.app" in sys.modules:
+                del sys.modules["tracertm.cli.app"]
 
             from tracertm.cli.app import app
+
             return app
 
         result = benchmark(import_app)
@@ -69,14 +71,16 @@ class TestStartupBenchmarks:
 
         def import_performance():
             import sys
-            if 'tracertm.cli.performance' in sys.modules:
-                del sys.modules['tracertm.cli.performance']
+
+            if "tracertm.cli.performance" in sys.modules:
+                del sys.modules["tracertm.cli.performance"]
 
             from tracertm.cli.performance import (
-                get_loader,
                 get_cache,
+                get_loader,
                 get_monitor,
             )
+
             return get_loader, get_cache, get_monitor
 
         result = benchmark(import_performance)
@@ -106,6 +110,7 @@ class TestStartupBenchmarks:
 # ============================================================
 # Lazy Loading Benchmarks
 # ============================================================
+
 
 class TestLazyLoadingBenchmarks:
     """Benchmark lazy loading performance."""
@@ -168,6 +173,7 @@ class TestLazyLoadingBenchmarks:
 # ============================================================
 # Cache Benchmarks
 # ============================================================
+
 
 class TestCacheBenchmarks:
     """Benchmark command cache performance."""
@@ -250,11 +256,7 @@ class TestCacheBenchmarks:
                 cache.set(f"key_{i}", f"value_{i}")
 
             # Get 100 items
-            results = []
-            for i in range(100):
-                results.append(cache.get(f"key_{i}"))
-
-            return results
+            return [cache.get(f"key_{i}") for i in range(100)]
 
         result = benchmark(bulk_operations)
         assert len(result) == 100
@@ -268,6 +270,7 @@ class TestCacheBenchmarks:
 # ============================================================
 # Performance Monitor Benchmarks
 # ============================================================
+
 
 class TestPerformanceMonitorBenchmarks:
     """Benchmark performance monitoring overhead."""
@@ -316,12 +319,14 @@ class TestPerformanceMonitorBenchmarks:
 # Command Execution Benchmarks
 # ============================================================
 
+
 class TestCommandExecutionBenchmarks:
     """Benchmark command execution."""
 
     def test_benchmark_help_command(self, benchmark, benchmark_results):
         """Benchmark help command execution."""
         from typer.testing import CliRunner
+
         from tracertm.cli.app import app
 
         runner = CliRunner()
@@ -340,6 +345,7 @@ class TestCommandExecutionBenchmarks:
     def test_benchmark_version_command(self, benchmark, benchmark_results):
         """Benchmark version command execution."""
         from typer.testing import CliRunner
+
         from tracertm.cli.app import app
 
         runner = CliRunner()
@@ -359,6 +365,7 @@ class TestCommandExecutionBenchmarks:
     def test_benchmark_command_group_help(self, benchmark, command, benchmark_results):
         """Benchmark command group help execution."""
         from typer.testing import CliRunner
+
         from tracertm.cli.app import app
 
         runner = CliRunner()
@@ -381,6 +388,7 @@ class TestCommandExecutionBenchmarks:
 # ============================================================
 # Comparative Benchmarks
 # ============================================================
+
 
 class TestComparativeBenchmarks:
     """Compare different implementation approaches."""
@@ -405,7 +413,6 @@ class TestComparativeBenchmarks:
         direct_times = []
         for _ in range(10):
             start = time.perf_counter()
-            import json
             direct_times.append(time.perf_counter() - start)
 
         avg_lazy = sum(lazy_times) / len(lazy_times) * 1000
@@ -425,8 +432,7 @@ class TestComparativeBenchmarks:
 
         # Expensive computation
         def expensive_operation():
-            result = sum(i ** 2 for i in range(1000))
-            return result
+            return sum(i**2 for i in range(1000))
 
         # Cache result
         cache.set("computation", expensive_operation())
@@ -460,6 +466,7 @@ class TestComparativeBenchmarks:
 # Regression Detection
 # ============================================================
 
+
 class TestRegressionDetection:
     """Detect performance regressions against baselines."""
 
@@ -470,7 +477,7 @@ class TestRegressionDetection:
         if not baselines_file.exists():
             pytest.skip("No baseline file to compare against")
 
-        with open(baselines_file) as f:
+        with Path(baselines_file).open() as f:
             baselines = json.load(f)
 
         # Compare key metrics
@@ -487,6 +494,7 @@ class TestRegressionDetection:
 # Report Generation
 # ============================================================
 
+
 @pytest.fixture(scope="session", autouse=True)
 def generate_benchmark_report(request):
     """Generate comprehensive benchmark report."""
@@ -495,7 +503,7 @@ def generate_benchmark_report(request):
     # Run after all benchmark tests
     output_file = Path(__file__).parent / "benchmark_report.md"
 
-    with open(output_file, "w") as f:
+    with Path(output_file).open("w") as f:
         f.write("# CLI Performance Benchmark Report\n\n")
         f.write(f"Generated: {time.strftime('%Y-%m-%d %H:%M:%S')}\n\n")
 

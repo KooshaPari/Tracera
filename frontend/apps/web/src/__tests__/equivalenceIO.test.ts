@@ -40,10 +40,10 @@ const mockEquivalenceLink: EquivalenceLink = {
 	status: "confirmed",
 	strategies: [
 		{
-			strategy: "manual_link",
 			confidence: 0.95,
 			details: "User confirmed equivalence",
 			detectedAt: "2024-01-15T10:00:00Z",
+			strategy: "manual_link",
 		},
 	],
 	targetItemId: "item-2",
@@ -90,14 +90,14 @@ const mockExportPackage: EquivalenceExportPackage = {
 	exportedAt: "2024-01-15T10:00:00Z",
 	exportedBy: "user-1",
 	metadata: {
-		totalLinks: 1,
-		totalConcepts: 1,
-		totalProjections: 1,
 		confidence: {
-			min: 0.9,
-			max: 0.95,
 			average: 0.925,
+			max: 0.95,
+			min: 0.9,
 		},
+		totalConcepts: 1,
+		totalLinks: 1,
+		totalProjections: 1,
 	},
 	projectId: "proj-1",
 	version: "1.0",

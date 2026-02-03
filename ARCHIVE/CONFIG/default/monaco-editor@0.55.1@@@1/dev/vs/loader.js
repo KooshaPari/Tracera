@@ -96,9 +96,9 @@ var AMDLoader;
 	class y {
 		static fileUriToFilePath(p, h) {
 			if (((h = decodeURI(h).replace(/%23/g, '#')), p)) {
-				if (/^file:\/\/\//.test(h)) return h.substr(8);
-				if (/^file:\/\//.test(h)) return h.substr(5);
-			} else if (/^file:\/\//.test(h)) return h.substr(7);
+				if (h.startsWith('file:///')) return h.substr(8);
+				if (h.startsWith('file://')) return h.substr(5);
+			} else if (h.startsWith('file://')) return h.substr(7);
 			return h;
 		}
 		static startsWith(p, h) {
@@ -108,7 +108,7 @@ var AMDLoader;
 			return p.length >= h.length && p.substr(p.length - h.length) === h;
 		}
 		static containsQueryString(p) {
-			return /^[^\#]*\?/gi.test(p);
+			return /^[^#]*\?/gi.test(p);
 		}
 		static isAbsolutePath(p) {
 			return /^((http:\/\/)|(https:\/\/)|(file:\/\/)|(\/))/.test(p);
@@ -408,7 +408,7 @@ var AMDLoader;
 			e.addEventListener('load', l), e.addEventListener('error', d);
 		}
 		load(e, i, s, n) {
-			if (/^node\|/.test(i)) {
+			if (i.startsWith('node|')) {
 				let l = e.getConfig().getOptionsLiteral(),
 					d = c(e.getRecorder(), l.nodeRequire || u.global.nodeRequire),
 					o = i.split('|'),
@@ -450,7 +450,7 @@ var AMDLoader;
 			);
 		}
 		load(e, i, s, n) {
-			if (/^node\|/.test(i)) {
+			if (i.startsWith('node|')) {
 				const l = e.getConfig().getOptionsLiteral(),
 					d = c(e.getRecorder(), l.nodeRequire || u.global.nodeRequire),
 					o = i.split('|');
@@ -568,7 +568,7 @@ var AMDLoader;
 					};
 			this._init(d), this._initNodeRequire(d, e);
 			let _ = e.getRecorder();
-			if (/^node\|/.test(i)) {
+			if (i.startsWith('node|')) {
 				let f = i.split('|'),
 					g = null;
 				try {
@@ -626,7 +626,7 @@ var AMDLoader;
 		}
 		_getElectronRendererScriptPathOrUri(e) {
 			if (!this._env.isElectronRenderer) return e;
-			let i = e.match(/^([a-z])\:(.*)/i);
+			let i = e.match(/^([a-z]):(.*)/i);
 			return i ? `file:///${(i[1].toUpperCase() + ':' + i[2]).replace(/\\/g, '/')}` : `file://${e}`;
 		}
 		_getCachedDataPath(e, i) {
@@ -748,13 +748,13 @@ var AMDLoader;
 			for (i = /\/\.\//; i.test(e); ) e = e.replace(i, '/');
 			for (
 				e = e.replace(/^\.\//g, ''),
-					i = /\/(([^\/])|([^\/][^\/\.])|([^\/\.][^\/])|([^\/][^\/][^\/]+))\/\.\.\//;
+					i = /\/(([^/])|([^/][^/.])|([^/.][^/])|([^/][^/][^/]+))\/\.\.\//;
 				i.test(e);
 
 			)
 				e = e.replace(i, '/');
 			return (
-				(e = e.replace(/^(([^\/])|([^\/][^\/\.])|([^\/\.][^\/])|([^\/][^\/][^\/]+))\/\.\.\//, '')),
+				(e = e.replace(/^(([^/])|([^/][^/.])|([^/.][^/])|([^/][^/][^/]+))\/\.\.\//, '')),
 				e
 			);
 		}
@@ -1132,7 +1132,7 @@ var AMDLoader;
 			this._knownModules2[t] = !0;
 			let e = this._moduleIdProvider.getStrModuleId(t),
 				i = this._config.moduleIdToPaths(e),
-				s = /^@[^\/]+\/[^\/]+$/;
+				s = /^@[^/]+\/[^/]+$/;
 			this._env.isNode && (e.indexOf('/') === -1 || s.test(e)) && i.push('node|' + e);
 			let n = -1,
 				l = (d) => {

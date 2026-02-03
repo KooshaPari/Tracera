@@ -99,7 +99,7 @@ define("vs/pascaligo-BhBiNdI2", ["exports"], (function(exports) {
       "%"
     ],
     // we include these common regular expressions
-    symbols: /[=><:@\^&|+\-*\/\^%]+/,
+    symbols: /[=><:@^&|+\-*/^%]+/,
     // The main tokenizer for our languages
     tokenizer: {
       root: [
@@ -116,7 +116,7 @@ define("vs/pascaligo-BhBiNdI2", ["exports"], (function(exports) {
         // whitespace
         { include: "@whitespace" },
         // delimiters and operators
-        [/[{}()\[\]]/, "@brackets"],
+        [/[{}()[\]]/, "@brackets"],
         [/[<>](?!@symbols)/, "@brackets"],
         [
           /@symbols/,
@@ -128,7 +128,7 @@ define("vs/pascaligo-BhBiNdI2", ["exports"], (function(exports) {
           }
         ],
         // numbers
-        [/\d*\.\d+([eE][\-+]?\d+)?/, "number.float"],
+        [/\d*\.\d+([eE][-+]?\d+)?/, "number.float"],
         [/\$[0-9a-fA-F]{1,16}/, "number.hex"],
         [/\d+/, "number"],
         // delimiter: after number because of .\d floats
@@ -140,11 +140,11 @@ define("vs/pascaligo-BhBiNdI2", ["exports"], (function(exports) {
         // characters
         [/'[^\\']'/, "string"],
         [/'/, "string.invalid"],
-        [/\#\d+/, "string"]
+        [/#\d+/, "string"]
       ],
       /* */
       comment: [
-        [/[^\(\*]+/, "comment"],
+        [/[^(*]+/, "comment"],
         //[/\(\*/,    'comment', '@push' ],    // nested comment  not allowed :-(
         [/\*\)/, "comment", "@pop"],
         [/\(\*/, "comment"]

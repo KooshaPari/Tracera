@@ -92,4 +92,4 @@ export declare class RadialBar extends PureComponent<RadialBarProps, State> {
     renderBackground(sectors?: RadialBarDataItem[]): React.JSX.Element[];
     render(): React.JSX.Element;
 }
-export {};
+

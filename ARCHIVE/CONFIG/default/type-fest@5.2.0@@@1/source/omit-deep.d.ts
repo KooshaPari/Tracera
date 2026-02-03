@@ -166,4 +166,4 @@ type OmitDeepArrayWithOnePath<ArrayType extends UnknownArray, P extends string |
 				: ArraySplice<ArrayType, ArrayIndex, 1, [unknown]>
 			: ArrayType;
 
-export {};
+

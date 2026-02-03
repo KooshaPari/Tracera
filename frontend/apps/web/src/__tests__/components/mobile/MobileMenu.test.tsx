@@ -14,8 +14,8 @@ vi.mock("@/stores/authStore", () => ({
 	useAuthStore: vi.fn(() => ({
 		logout: vi.fn(),
 		user: {
-			name: "Test User",
 			email: "test@example.com",
+			name: "Test User",
 			role: "user",
 		},
 	})),

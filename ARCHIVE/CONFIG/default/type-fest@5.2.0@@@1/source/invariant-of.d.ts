@@ -75,4 +75,4 @@ keyOfInvariantFooBar(invariantOf(fooBarBaz)); // Error: Argument of type 'Invari
 */
 export type InvariantOf<Type> = Type & {[invariantBrand]: (_: Type) => Type};
 
-export {};
+

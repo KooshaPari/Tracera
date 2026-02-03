@@ -18,4 +18,4 @@ export declare const Symbols: {
     ({ type, size, sizeType, ...rest }: SymbolsProps): React.JSX.Element;
     registerSymbol: (key: string, factory: D3SymbolType) => void;
 };
-export {};
+

@@ -1,7 +1,7 @@
 """Unit tests for Project model - focused on actual model structure."""
 
 import pytest
-from uuid import uuid4
+
 from tracertm.models import Project
 
 pytestmark = pytest.mark.unit
@@ -18,11 +18,7 @@ class TestProjectModelCreation:
     def test_project_creation_with_all_fields(self):
         """Project creates successfully with all fields."""
         metadata = {"env": "test", "version": "1.0"}
-        project = Project(
-            name="Full Project",
-            description="A complete project",
-            project_metadata=metadata
-        )
+        project = Project(name="Full Project", description="A complete project", project_metadata=metadata)
         assert project.name == "Full Project"
         assert project.description == "A complete project"
         assert project.project_metadata == metadata
@@ -47,8 +43,8 @@ class TestProjectModelCreation:
     def test_project_has_timestamp_attributes(self):
         """Project has timestamp attributes from TimestampMixin."""
         project = Project(name="Test")
-        assert hasattr(project, 'created_at')
-        assert hasattr(project, 'updated_at')
+        assert hasattr(project, "created_at")
+        assert hasattr(project, "updated_at")
 
 
 class TestProjectModelMetadataAlias:

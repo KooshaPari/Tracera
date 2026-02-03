@@ -7,10 +7,9 @@ from __future__ import annotations
 
 import os
 import shutil
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
-from uuid import uuid4
 
 
 class ArtifactStorageService:
@@ -74,10 +73,7 @@ class ArtifactStorageService:
             dest_dir = dest_dir / subdir
         dest_dir.mkdir(parents=True, exist_ok=True)
 
-        if filename:
-            name = filename
-        else:
-            name = source.name
+        name = filename or source.name
         dest_path = dest_dir / name
         shutil.copy2(source, dest_path)
         size = dest_path.stat().st_size
@@ -123,7 +119,7 @@ class ArtifactStorageService:
                 "path": str(f),
                 "relative_path": str(f.relative_to(d)),
                 "size": f.stat().st_size,
-                "mtime": datetime.fromtimestamp(f.stat().st_mtime),
+                "mtime": datetime.fromtimestamp(f.stat().st_mtime, UTC),
                 "suggested_type": artifact_type or self._suggest_type(ext),
             })
         return out
@@ -159,13 +155,13 @@ class ArtifactStorageService:
         project_dir = self._base / project_id
         if not project_dir.is_dir():
             return 0
-        now = now or datetime.utcnow()
+        now = now or datetime.now(UTC)
         removed = 0
         for execution_dir in project_dir.iterdir():
             if not execution_dir.is_dir():
                 continue
             try:
-                mtime = datetime.fromtimestamp(execution_dir.stat().st_mtime)
+                mtime = datetime.fromtimestamp(execution_dir.stat().st_mtime, UTC)
                 if (now - mtime).days >= retention_days:
                     shutil.rmtree(execution_dir, ignore_errors=True)
                     removed += 1

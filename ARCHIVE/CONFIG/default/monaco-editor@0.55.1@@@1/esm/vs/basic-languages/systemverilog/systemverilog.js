@@ -416,9 +416,9 @@ const language = {
     "#=#"
   ],
   // we include these common regular expressions
-  symbols: /[=><!~?:&|+\-*\/\^%#]+/,
+  symbols: /[=><!~?:&|+\-*/^%#]+/,
   escapes: /%%|\\(?:[antvf\\"']|x[0-9A-Fa-f]{1,2}|[0-7]{1,3})/,
-  identifier: /(?:[a-zA-Z_][a-zA-Z0-9_$\.]*|\\\S+ )/,
+  identifier: /(?:[a-zA-Z_][a-zA-Z0-9_$.]*|\\\S+ )/,
   systemcall: /[$][a-zA-Z0-9_]+/,
   timeunits: /s|ms|us|ns|ps|fs/,
   // The main tokenizer for our languages
@@ -461,7 +461,7 @@ const language = {
       // Systemcall
       [/@systemcall/, "variable.predefined"],
       // delimiters and operators
-      [/[{}()\[\]]/, "@brackets"],
+      [/[{}()[\]]/, "@brackets"],
       [/[<>](?!@symbols)/, "@brackets"],
       [
         /@symbols/,
@@ -491,7 +491,7 @@ const language = {
       ]
     ],
     numbers: [
-      [/\d+?[\d_]*(?:\.[\d_]+)?[eE][\-+]?\d+/, "number.float"],
+      [/\d+?[\d_]*(?:\.[\d_]+)?[eE][-+]?\d+/, "number.float"],
       [/\d+?[\d_]*\.[\d_]+(?:\s*@timeunits)?/, "number.float"],
       [/(?:\d+?[\d_]*\s*)?'[sS]?[dD]\s*[0-9xXzZ?]+?[0-9xXzZ?_]*/, "number"],
       [/(?:\d+?[\d_]*\s*)?'[sS]?[bB]\s*[0-1xXzZ?]+?[0-1xXzZ?_]*/, "number.binary"],
@@ -504,8 +504,8 @@ const language = {
     module_instance: [
       { include: "@whitespace" },
       [/(#?)(\()/, ["", { token: "@brackets", next: "@port_connection" }]],
-      [/@identifier\s*[;={}\[\],]/, { token: "@rematch", next: "@pop" }],
-      [/@symbols|[;={}\[\],]/, { token: "@rematch", next: "@pop" }],
+      [/@identifier\s*[;={}[\],]/, { token: "@rematch", next: "@pop" }],
+      [/@symbols|[;={}[\],]/, { token: "@rematch", next: "@pop" }],
       [/@identifier/, "type"],
       [/;/, "delimiter", "@pop"]
     ],
@@ -525,9 +525,9 @@ const language = {
       [/\/\/.*$/, "comment"]
     ],
     comment: [
-      [/[^\/*]+/, "comment"],
+      [/[^/*]+/, "comment"],
       [/\*\//, "comment", "@pop"],
-      [/[\/*]/, "comment"]
+      [/[/*]/, "comment"]
     ],
     strings: [
       [/"([^"\\]|\\.)*$/, "string.invalid"],
@@ -542,7 +542,7 @@ const language = {
     ],
     include: [
       [
-        /(\s*)(")([\w*\/*]*)(.\w*)(")/,
+        /(\s*)(")([\w*/*]*)(.\w*)(")/,
         [
           "",
           "string.include.identifier",
@@ -552,7 +552,7 @@ const language = {
         ]
       ],
       [
-        /(\s*)(<)([\w*\/*]*)(.\w*)(>)/,
+        /(\s*)(<)([\w*/*]*)(.\w*)(>)/,
         [
           "",
           "string.include.identifier",

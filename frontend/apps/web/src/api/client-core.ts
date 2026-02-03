@@ -1,10 +1,10 @@
 /* eslint-disable promise/prefer-await-to-then */
-import apiConstants from "./client-constants";
-import createClient from "openapi-fetch";
-import responseHandlers from "./client-response-handlers";
 import { getCSRFHeaders } from "../lib/csrf";
 import { logger } from "@/lib/logger";
 import { useAuthStore } from "../stores/authStore";
+import { apiConstants } from "./client-constants";
+import { responseHandlers } from "./client-response-handlers";
+import createClient from "openapi-fetch";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyPaths = any;

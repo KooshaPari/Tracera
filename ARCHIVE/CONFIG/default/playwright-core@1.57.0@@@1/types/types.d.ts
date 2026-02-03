@@ -16298,7 +16298,7 @@ export const _electron: Electron;
 export const _android: Android;
 
 // This is required to not export everything by default. See https://github.com/Microsoft/TypeScript/issues/19545#issuecomment-340490459
-export {};
+
 
 
 /**
@@ -20186,7 +20186,7 @@ export interface Logger {
    * @param args message arguments
    * @param hints optional formatting hints
    */
-  log(name: string, severity: "verbose"|"info"|"warning"|"error", message: string|Error, args: ReadonlyArray<Object>, hints: {
+  log(name: string, severity: "verbose"|"info"|"warning"|"error", message: string|Error, args: ReadonlyArray<object>, hints: {
     /**
      * Optional preferred logger color.
      */

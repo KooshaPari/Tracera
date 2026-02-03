@@ -1,10 +1,8 @@
-import json
 from pathlib import Path
 
-import pytest
+from sqlalchemy import text
 
 from tracertm.storage.local_storage import LocalStorageManager
-from sqlalchemy import text
 
 
 def test_init_project_creates_trace_structure(tmp_path: Path):

@@ -48,4 +48,4 @@ export interface GeneratorPluginWithTransform extends GeneratorPluginBase {
   }
 }
 
-export {}
+

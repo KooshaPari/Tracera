@@ -228,10 +228,10 @@ export function ClusteredGraphView({
 						label: `${clusterEdge.weight}`,
 						labelBgPadding: [4, 2] as [number, number],
 						labelBgStyle: { fill: "rgba(26, 26, 46, 0.9)" },
-						labelStyle: { fontSize: 10, fill: "#8b5cf6", fontWeight: "bold" },
+						labelStyle: { fill: "#8b5cf6", fontSize: 10, fontWeight: "bold" },
 						markerEnd: {
-							type: MarkerType.ArrowClosed,
 							color: "#8b5cf6",
+							type: MarkerType.ArrowClosed,
 						},
 						source: edge.source,
 						style: {
@@ -248,8 +248,8 @@ export function ClusteredGraphView({
 					animated: false,
 					id: edge.id,
 					markerEnd: {
-						type: MarkerType.ArrowClosed,
 						color: "#64748b",
+						type: MarkerType.ArrowClosed,
 					},
 					source: edge.source,
 					style: {

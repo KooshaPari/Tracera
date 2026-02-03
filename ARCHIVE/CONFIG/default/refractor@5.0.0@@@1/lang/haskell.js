@@ -10,7 +10,7 @@ export default function haskell(Prism) {
   Prism.languages.haskell = {
     comment: {
       pattern:
-        /(^|[^-!#$%*+=?&@|~.:<>^\\\/])(?:--(?:(?=.)[^-!#$%*+=?&@|~.:<>^\\\/].*|$)|\{-[\s\S]*?-\})/m,
+        /(^|[^-!#$%*+=?&@|~.:<>^\\/])(?:--(?:(?=.)[^-!#$%*+=?&@|~.:<>^\\/].*|$)|\{-[\s\S]*?-\})/m,
       lookbehind: true
     },
     char: {
@@ -59,7 +59,7 @@ export default function haskell(Prism) {
       // operator too.
       //
       // This regex means: /[-!#$%*+=?&@|~.:<>^\\\/]+/ without /\./.
-      /[-!#$%*+=?&@|~:<>^\\\/][-!#$%*+=?&@|~.:<>^\\\/]*|\.[-!#$%*+=?&@|~.:<>^\\\/]+/
+      /[-!#$%*+=?&@|~:<>^\\/][-!#$%*+=?&@|~.:<>^\\/]*|\.[-!#$%*+=?&@|~.:<>^\\/]+/
     ],
     // In Haskell, nearly everything is a variable, do not highlight these.
     hvariable: {

@@ -6,6 +6,7 @@ They should be idempotent and handle their own error recovery.
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from typing import Any
 
@@ -27,10 +28,9 @@ async def index_repository(repository_url: str, branch: str = "main") -> dict[st
     Returns:
         dict: Indexing results with status and metadata
     """
+    await asyncio.sleep(0)
     activity_info = activity.info()
-    logger.info(
-        f"Activity {activity_info.activity_id}: Indexing repository {repository_url} (branch: {branch})"
-    )
+    logger.info(f"Activity {activity_info.activity_id}: Indexing repository {repository_url} (branch: {branch})")
 
     # Placeholder implementation - replace with actual indexing logic
     return {
@@ -53,6 +53,7 @@ async def analyze_quality(project_id: str, analysis_type: str = "full") -> dict[
     Returns:
         dict: Analysis results with metrics and findings
     """
+    await asyncio.sleep(0)
     activity_info = activity.info()
     logger.info(
         f"Activity {activity_info.activity_id}: Analyzing quality for project {project_id} (type: {analysis_type})"
@@ -90,9 +91,7 @@ async def create_graph_snapshot(
     activity_info = activity.info()
     workflow_run_id = activity_info.workflow_run_id
 
-    logger.info(
-        f"Activity {activity_info.activity_id}: Creating graph snapshot for {project_id}/{graph_id}"
-    )
+    logger.info(f"Activity {activity_info.activity_id}: Creating graph snapshot for {project_id}/{graph_id}")
 
     return await tasks.graph_snapshot_task(
         project_id=project_id,
@@ -117,9 +116,7 @@ async def validate_graph(project_id: str, graph_id: str) -> dict[str, Any]:
     activity_info = activity.info()
     workflow_run_id = activity_info.workflow_run_id
 
-    logger.info(
-        f"Activity {activity_info.activity_id}: Validating graph {project_id}/{graph_id}"
-    )
+    logger.info(f"Activity {activity_info.activity_id}: Validating graph {project_id}/{graph_id}")
 
     return await tasks.graph_validation_task(
         project_id=project_id,
@@ -141,9 +138,7 @@ async def export_graph(project_id: str) -> dict[str, Any]:
     activity_info = activity.info()
     workflow_run_id = activity_info.workflow_run_id
 
-    logger.info(
-        f"Activity {activity_info.activity_id}: Exporting graph for project {project_id}"
-    )
+    logger.info(f"Activity {activity_info.activity_id}: Exporting graph for project {project_id}")
 
     return await tasks.graph_export_task(
         project_id=project_id,
@@ -198,9 +193,7 @@ async def sync_integrations(limit: int = 50) -> dict[str, Any]:
     activity_info = activity.info()
     workflow_run_id = activity_info.workflow_run_id
 
-    logger.info(
-        f"Activity {activity_info.activity_id}: Processing {limit} pending integration syncs"
-    )
+    logger.info(f"Activity {activity_info.activity_id}: Processing {limit} pending integration syncs")
 
     return await tasks.integration_sync_task(
         limit=limit,
@@ -221,9 +214,7 @@ async def retry_integrations(limit: int = 50) -> dict[str, Any]:
     activity_info = activity.info()
     workflow_run_id = activity_info.workflow_run_id
 
-    logger.info(
-        f"Activity {activity_info.activity_id}: Retrying {limit} failed integration syncs"
-    )
+    logger.info(f"Activity {activity_info.activity_id}: Retrying {limit} failed integration syncs")
 
     return await tasks.integration_retry_task(
         limit=limit,
@@ -249,16 +240,15 @@ async def create_session_checkpoint(
     Returns:
         dict: Checkpoint information including S3 key
     """
+    import os
+
     from tracertm.agent.events import AgentEventPublisher
     from tracertm.infrastructure.nats_client import NATSClient
-    import os
 
     activity_info = activity.info()
     checkpoint_id = f"{session_id}-t{turn_number}"
 
-    logger.info(
-        f"Activity {activity_info.activity_id}: Creating checkpoint {checkpoint_id}"
-    )
+    logger.info(f"Activity {activity_info.activity_id}: Creating checkpoint {checkpoint_id}")
 
     # TODO: Implement actual checkpoint storage to S3/MinIO
     # For now, simulate the checkpoint creation
@@ -308,6 +298,7 @@ async def run_agent_turn(
     created by the API; falls back to global AgentService (in-memory only) when DB is not configured.
     """
     import json
+
     activity_info = activity.info()
     logger.info(
         "Activity %s: Agent turn for session %s",
@@ -316,22 +307,21 @@ async def run_agent_turn(
     )
     try:
         from tracertm.agent import AgentService, get_agent_service
-        from tracertm.agent.session_store import SessionSandboxStoreDB
         from tracertm.agent.sandbox.local_fs import LocalFilesystemSandboxProvider
+        from tracertm.agent.session_store import SessionSandboxStoreDB
         from tracertm.services.ai_tools import set_allowed_paths
 
         path = None
         try:
             from tracertm.mcp.database_adapter import get_mcp_session
+
             async with get_mcp_session() as db:
                 store = SessionSandboxStoreDB(
                     sandbox_provider=LocalFilesystemSandboxProvider(),
                     cache_service=None,
                 )
                 agent_svc = AgentService(session_store=store)
-                path, _ = await agent_svc.get_or_create_session_sandbox(
-                    session_id, config=None, db_session=db
-                )
+                path, _ = await agent_svc.get_or_create_session_sandbox(session_id, config=None, db_session=db)
                 # path set; commit happens on context exit
         except (ValueError, RuntimeError, Exception) as e:
             logger.debug("Agent turn: DB session resolution skipped (%s), using global store", e)
@@ -346,6 +336,7 @@ async def run_agent_turn(
             messages = []
 
         from tracertm.services.ai_service import get_ai_service
+
         ai_svc = get_ai_service()
         reply = await ai_svc.run_chat_turn_with_tools(
             messages=messages,

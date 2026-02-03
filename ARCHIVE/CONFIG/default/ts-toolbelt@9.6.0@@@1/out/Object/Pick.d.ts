@@ -19,4 +19,4 @@ export declare type _Pick<O extends object, K extends Key> = __Pick<O, keyof O &
  * ```
  */
 export declare type Pick<O extends object, K extends Key> = O extends unknown ? _Pick<O, K> : never;
-export {};
+

@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
-import yaml
 from typing import Any
 
-from tracertm.mcp.core import mcp
+import yaml
+
 from tracertm.config.manager import ConfigManager
+from tracertm.mcp.core import mcp
 from tracertm.storage.local_storage import LocalStorageManager
 
 
@@ -22,7 +23,7 @@ def _format_yaml(data: Any) -> str:
 
 
 @mcp.resource("tracertm://projects")
-async def projects_list_resource() -> str:
+def projects_list_resource() -> str:
     """List all projects as YAML.
 
     Returns a YAML-formatted list of all registered projects with their
@@ -32,16 +33,18 @@ async def projects_list_resource() -> str:
         storage = LocalStorageManager()
         with storage.get_session() as session:
             from tracertm.models.project import Project
-            projects = session.query(Project).filter(Project.deleted_at.is_(None)).all()
 
-            result = []
-            for project in projects:
-                result.append({
+            projects = session.query(Project).all()
+
+            result = [
+                {
                     "id": str(project.id),
                     "name": project.name,
                     "description": project.description,
                     "created_at": project.created_at.isoformat() if project.created_at else None,
-                })
+                }
+                for project in projects
+            ]
 
             return _format_yaml({"projects": result, "total": len(result)})
     except Exception as e:
@@ -49,7 +52,7 @@ async def projects_list_resource() -> str:
 
 
 @mcp.resource("tracertm://project/{project_id}")
-async def project_detail_resource(project_id: str) -> str:
+def project_detail_resource(project_id: str) -> str:
     """Project details with item/link counts.
 
     Args:
@@ -60,23 +63,30 @@ async def project_detail_resource(project_id: str) -> str:
     try:
         storage = LocalStorageManager()
         with storage.get_session() as session:
-            from tracertm.models.project import Project
             from tracertm.models.item import Item
             from tracertm.models.link import Link
+            from tracertm.models.project import Project
 
-            project = session.query(Project).filter(
-                Project.id.like(f"{project_id}%"),
-                Project.deleted_at.is_(None),
-            ).first()
+            project = (
+                session
+                .query(Project)
+                .filter(Project.id.like(f"{project_id}%"))
+                .first()
+            )
 
             if not project:
                 return f"# Project not found: {project_id}"
 
             # Count items by view
-            items = session.query(Item).filter(
-                Item.project_id == project.id,
-                Item.deleted_at.is_(None),
-            ).all()
+            items = (
+                session
+                .query(Item)
+                .filter(
+                    Item.project_id == project.id,
+                    Item.deleted_at.is_(None),
+                )
+                .all()
+            )
 
             view_counts: dict[str, int] = {}
             status_counts: dict[str, int] = {}
@@ -85,10 +95,14 @@ async def project_detail_resource(project_id: str) -> str:
                 status_counts[item.status] = status_counts.get(item.status, 0) + 1
 
             # Count links
-            link_count = session.query(Link).filter(
-                Link.project_id == project.id,
-                Link.deleted_at.is_(None),
-            ).count()
+            link_count = (
+                session
+                .query(Link)
+                .filter(
+                    Link.project_id == project.id,
+                )
+                .count()
+            )
 
             return _format_yaml({
                 "project": {
@@ -111,7 +125,7 @@ async def project_detail_resource(project_id: str) -> str:
 
 
 @mcp.resource("tracertm://items/{project_id}")
-async def items_resource(project_id: str) -> str:
+def items_resource(project_id: str) -> str:
     """Items in project (first 100).
 
     Args:
@@ -125,7 +139,8 @@ async def items_resource(project_id: str) -> str:
             from tracertm.models.item import Item
 
             items = (
-                session.query(Item)
+                session
+                .query(Item)
                 .filter(
                     Item.project_id.like(f"{project_id}%"),
                     Item.deleted_at.is_(None),
@@ -134,9 +149,8 @@ async def items_resource(project_id: str) -> str:
                 .all()
             )
 
-            result = []
-            for item in items:
-                result.append({
+            result = [
+                {
                     "id": str(item.id)[:8],
                     "title": item.title,
                     "view": item.view,
@@ -144,7 +158,9 @@ async def items_resource(project_id: str) -> str:
                     "status": item.status,
                     "priority": item.priority,
                     "owner": item.owner,
-                })
+                }
+                for item in items
+            ]
 
             return _format_yaml({
                 "items": result,
@@ -156,7 +172,7 @@ async def items_resource(project_id: str) -> str:
 
 
 @mcp.resource("tracertm://links/{project_id}")
-async def links_resource(project_id: str) -> str:
+def links_resource(project_id: str) -> str:
     """Links in project (first 100).
 
     Args:
@@ -170,23 +186,24 @@ async def links_resource(project_id: str) -> str:
             from tracertm.models.link import Link
 
             links = (
-                session.query(Link)
+                session
+                .query(Link)
                 .filter(
                     Link.project_id.like(f"{project_id}%"),
-                    Link.deleted_at.is_(None),
                 )
                 .limit(100)
                 .all()
             )
 
-            result = []
-            for link in links:
-                result.append({
+            result = [
+                {
                     "id": str(link.id)[:8],
-                    "source_id": str(link.source_id)[:8],
-                    "target_id": str(link.target_id)[:8],
+                    "source_id": str(link.source_item_id)[:8],
+                    "target_id": str(link.target_item_id)[:8],
                     "link_type": link.link_type,
-                })
+                }
+                for link in links
+            ]
 
             return _format_yaml({
                 "links": result,
@@ -198,7 +215,7 @@ async def links_resource(project_id: str) -> str:
 
 
 @mcp.resource("tracertm://matrix/{project_id}")
-async def matrix_resource(project_id: str) -> str:
+def matrix_resource(project_id: str) -> str:
     """Traceability matrix summary.
 
     Args:
@@ -214,7 +231,8 @@ async def matrix_resource(project_id: str) -> str:
 
             # Get all items grouped by view
             items = (
-                session.query(Item)
+                session
+                .query(Item)
                 .filter(
                     Item.project_id.like(f"{project_id}%"),
                     Item.deleted_at.is_(None),
@@ -225,8 +243,6 @@ async def matrix_resource(project_id: str) -> str:
             if not items:
                 return "# No items found in project"
 
-            # Create item lookup
-            item_lookup = {str(item.id): item for item in items}
             view_items: dict[str, list[str]] = {}
             for item in items:
                 if item.view not in view_items:
@@ -235,10 +251,10 @@ async def matrix_resource(project_id: str) -> str:
 
             # Get links
             links = (
-                session.query(Link)
+                session
+                .query(Link)
                 .filter(
                     Link.project_id.like(f"{project_id}%"),
-                    Link.deleted_at.is_(None),
                 )
                 .all()
             )
@@ -255,8 +271,8 @@ async def matrix_resource(project_id: str) -> str:
 
                     linked_sources = set()
                     for link in links:
-                        if str(link.source_id) in source_ids and str(link.target_id) in target_ids:
-                            linked_sources.add(str(link.source_id))
+                        if str(link.source_item_id) in source_ids and str(link.target_item_id) in target_ids:
+                            linked_sources.add(str(link.source_item_id))
 
                     coverage[source_view][target_view] = {
                         "linked": len(linked_sources),
@@ -274,7 +290,7 @@ async def matrix_resource(project_id: str) -> str:
 
 
 @mcp.resource("tracertm://health/{project_id}")
-async def health_resource(project_id: str) -> str:
+def health_resource(project_id: str) -> str:
     """Project health metrics.
 
     Args:
@@ -286,13 +302,15 @@ async def health_resource(project_id: str) -> str:
     try:
         storage = LocalStorageManager()
         with storage.get_session() as session:
-            from datetime import datetime, timedelta
+            from datetime import UTC, datetime, timedelta
+
             from tracertm.models.item import Item
             from tracertm.models.link import Link
 
             # Get all items
             items = (
-                session.query(Item)
+                session
+                .query(Item)
                 .filter(
                     Item.project_id.like(f"{project_id}%"),
                     Item.deleted_at.is_(None),
@@ -303,14 +321,12 @@ async def health_resource(project_id: str) -> str:
             if not items:
                 return "# No items found in project"
 
-            item_ids = {str(item.id) for item in items}
-
             # Get links
             links = (
-                session.query(Link)
+                session
+                .query(Link)
                 .filter(
                     Link.project_id.like(f"{project_id}%"),
-                    Link.deleted_at.is_(None),
                 )
                 .all()
             )
@@ -318,16 +334,13 @@ async def health_resource(project_id: str) -> str:
             # Find orphan items (no links)
             linked_items = set()
             for link in links:
-                linked_items.add(str(link.source_id))
-                linked_items.add(str(link.target_id))
+                linked_items.add(str(link.source_item_id))
+                linked_items.add(str(link.target_item_id))
             orphans = [str(i.id)[:8] for i in items if str(i.id) not in linked_items]
 
             # Find stale items (not updated in 30 days)
-            stale_threshold = datetime.utcnow() - timedelta(days=30)
-            stale_items = [
-                str(i.id)[:8] for i in items
-                if i.updated_at and i.updated_at < stale_threshold
-            ]
+            stale_threshold = datetime.now(UTC) - timedelta(days=30)
+            stale_items = [str(i.id)[:8] for i in items if i.updated_at and i.updated_at < stale_threshold]
 
             # Calculate status distribution
             status_counts: dict[str, int] = {}
@@ -360,7 +373,7 @@ async def health_resource(project_id: str) -> str:
 
 # Materialized view resources
 @mcp.resource("tracertm://views/traceability/{project_id}")
-async def traceability_view_resource(project_id: str) -> str:
+def traceability_view_resource(project_id: str) -> str:
     """Traceability view for a project.
 
     Shows the complete traceability chain from requirements to tests.
@@ -372,7 +385,8 @@ async def traceability_view_resource(project_id: str) -> str:
             from tracertm.models.link import Link
 
             items = (
-                session.query(Item)
+                session
+                .query(Item)
                 .filter(
                     Item.project_id.like(f"{project_id}%"),
                     Item.deleted_at.is_(None),
@@ -381,10 +395,10 @@ async def traceability_view_resource(project_id: str) -> str:
             )
 
             links = (
-                session.query(Link)
+                session
+                .query(Link)
                 .filter(
                     Link.project_id.like(f"{project_id}%"),
-                    Link.deleted_at.is_(None),
                 )
                 .all()
             )
@@ -393,13 +407,13 @@ async def traceability_view_resource(project_id: str) -> str:
             item_lookup = {str(item.id): item for item in items}
             children: dict[str, list[str]] = {}
             for link in links:
-                source = str(link.source_id)
+                source = str(link.source_item_id)
                 if source not in children:
                     children[source] = []
-                children[source].append(str(link.target_id))
+                children[source].append(str(link.target_item_id))
 
             # Find root items (no incoming links)
-            has_parent = {str(link.target_id) for link in links}
+            has_parent = {str(link.target_item_id) for link in links}
             roots = [item for item in items if str(item.id) not in has_parent]
 
             def build_tree(item_id: str, depth: int = 0) -> dict[str, Any]:
@@ -434,7 +448,7 @@ async def traceability_view_resource(project_id: str) -> str:
 
 
 @mcp.resource("tracertm://views/impact/{project_id}")
-async def impact_view_resource(project_id: str) -> str:
+def impact_view_resource(project_id: str) -> str:
     """Impact analysis view for a project.
 
     Shows items with most downstream dependencies (highest impact).
@@ -446,7 +460,8 @@ async def impact_view_resource(project_id: str) -> str:
             from tracertm.models.link import Link
 
             items = (
-                session.query(Item)
+                session
+                .query(Item)
                 .filter(
                     Item.project_id.like(f"{project_id}%"),
                     Item.deleted_at.is_(None),
@@ -455,10 +470,10 @@ async def impact_view_resource(project_id: str) -> str:
             )
 
             links = (
-                session.query(Link)
+                session
+                .query(Link)
                 .filter(
                     Link.project_id.like(f"{project_id}%"),
-                    Link.deleted_at.is_(None),
                 )
                 .all()
             )
@@ -466,10 +481,10 @@ async def impact_view_resource(project_id: str) -> str:
             # Build adjacency list
             children: dict[str, list[str]] = {}
             for link in links:
-                source = str(link.source_id)
+                source = str(link.source_item_id)
                 if source not in children:
                     children[source] = []
-                children[source].append(str(link.target_id))
+                children[source].append(str(link.target_item_id))
 
             # Calculate downstream count for each item
             def count_downstream(item_id: str, visited: set[str] | None = None) -> int:
@@ -484,7 +499,6 @@ async def impact_view_resource(project_id: str) -> str:
                 return count
 
             impact_scores = []
-            item_lookup = {str(item.id): item for item in items}
             for item in items:
                 item_id = str(item.id)
                 downstream = count_downstream(item_id)
@@ -510,7 +524,7 @@ async def impact_view_resource(project_id: str) -> str:
 
 
 @mcp.resource("tracertm://views/coverage/{project_id}")
-async def coverage_view_resource(project_id: str) -> str:
+def coverage_view_resource(project_id: str) -> str:
     """Coverage view for a project.
 
     Shows test coverage and traceability completeness.
@@ -522,7 +536,8 @@ async def coverage_view_resource(project_id: str) -> str:
             from tracertm.models.link import Link
 
             items = (
-                session.query(Item)
+                session
+                .query(Item)
                 .filter(
                     Item.project_id.like(f"{project_id}%"),
                     Item.deleted_at.is_(None),
@@ -531,10 +546,10 @@ async def coverage_view_resource(project_id: str) -> str:
             )
 
             links = (
-                session.query(Link)
+                session
+                .query(Link)
                 .filter(
                     Link.project_id.like(f"{project_id}%"),
-                    Link.deleted_at.is_(None),
                 )
                 .all()
             )
@@ -552,9 +567,9 @@ async def coverage_view_resource(project_id: str) -> str:
                 item_ids = {str(item.id) for item in view_item_list}
                 linked_ids = set()
                 for link in links:
-                    if str(link.source_id) in item_ids or str(link.target_id) in item_ids:
-                        linked_ids.add(str(link.source_id))
-                        linked_ids.add(str(link.target_id))
+                    if str(link.source_item_id) in item_ids or str(link.target_item_id) in item_ids:
+                        linked_ids.add(str(link.source_item_id))
+                        linked_ids.add(str(link.target_item_id))
 
                 covered = len(item_ids & linked_ids)
                 total = len(item_ids)
@@ -562,11 +577,7 @@ async def coverage_view_resource(project_id: str) -> str:
                     "total": total,
                     "covered": covered,
                     "percentage": round(covered / total * 100, 1) if total else 0,
-                    "uncovered": [
-                        str(item.id)[:8]
-                        for item in view_item_list
-                        if str(item.id) not in linked_ids
-                    ][:10],
+                    "uncovered": [str(item.id)[:8] for item in view_item_list if str(item.id) not in linked_ids][:10],
                 }
 
             return _format_yaml({
@@ -578,13 +589,13 @@ async def coverage_view_resource(project_id: str) -> str:
 
 
 __all__ = [
-    "projects_list_resource",
-    "project_detail_resource",
+    "coverage_view_resource",
+    "health_resource",
+    "impact_view_resource",
     "items_resource",
     "links_resource",
     "matrix_resource",
-    "health_resource",
+    "project_detail_resource",
+    "projects_list_resource",
     "traceability_view_resource",
-    "impact_view_resource",
-    "coverage_view_resource",
 ]

@@ -132,9 +132,9 @@ const EquivalenceExportPackageSchema = z.object({
 	metadata: z
 		.object({
 			confidence: z.object({
-				min: z.number(),
-				max: z.number(),
 				average: z.number(),
+				max: z.number(),
+				min: z.number(),
 			}),
 			totalConcepts: z.number(),
 			totalLinks: z.number(),

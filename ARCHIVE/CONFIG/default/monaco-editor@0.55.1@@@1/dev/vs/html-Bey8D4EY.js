@@ -19,7 +19,7 @@ define("vs/html-Bey8D4EY", ["exports", "./editor.api-CykLys8L"], (function(expor
     "wbr"
   ];
   const conf = {
-    wordPattern: /(-?\d*\.\d\w*)|([^\`\~\!\@\$\^\&\*\(\)\=\+\[\{\]\}\\\|\;\:\'\"\,\.\<\>\/\s]+)/g,
+    wordPattern: /(-?\d*\.\d\w*)|([^`~!@$^&*()=+[{\]}\\|;:'",.<>/\s]+)/g,
     comments: {
       blockComment: ["<!--", "-->"]
     },
@@ -79,11 +79,11 @@ define("vs/html-Bey8D4EY", ["exports", "./editor.api-CykLys8L"], (function(expor
       root: [
         [/<!DOCTYPE/, "metatag", "@doctype"],
         [/<!--/, "comment", "@comment"],
-        [/(<)((?:[\w\-]+:)?[\w\-]+)(\s*)(\/>)/, ["delimiter", "tag", "", "delimiter"]],
+        [/(<)((?:[\w-]+:)?[\w-]+)(\s*)(\/>)/, ["delimiter", "tag", "", "delimiter"]],
         [/(<)(script)/, ["delimiter", { token: "tag", next: "@script" }]],
         [/(<)(style)/, ["delimiter", { token: "tag", next: "@style" }]],
-        [/(<)((?:[\w\-]+:)?[\w\-]+)/, ["delimiter", { token: "tag", next: "@otherTag" }]],
-        [/(<\/)((?:[\w\-]+:)?[\w\-]+)/, ["delimiter", { token: "tag", next: "@otherTag" }]],
+        [/(<)((?:[\w-]+:)?[\w-]+)/, ["delimiter", { token: "tag", next: "@otherTag" }]],
+        [/(<\/)((?:[\w-]+:)?[\w-]+)/, ["delimiter", { token: "tag", next: "@otherTag" }]],
         [/</, "delimiter"],
         [/[^<]+/]
         // text
@@ -101,7 +101,7 @@ define("vs/html-Bey8D4EY", ["exports", "./editor.api-CykLys8L"], (function(expor
         [/\/?>/, "delimiter", "@pop"],
         [/"([^"]*)"/, "attribute.value"],
         [/'([^']*)'/, "attribute.value"],
-        [/[\w\-]+/, "attribute.name"],
+        [/[\w-]+/, "attribute.name"],
         [/=/, "delimiter"],
         [/[ \t\r\n]+/]
         // whitespace
@@ -112,7 +112,7 @@ define("vs/html-Bey8D4EY", ["exports", "./editor.api-CykLys8L"], (function(expor
         [/type/, "attribute.name", "@scriptAfterType"],
         [/"([^"]*)"/, "attribute.value"],
         [/'([^']*)'/, "attribute.value"],
-        [/[\w\-]+/, "attribute.name"],
+        [/[\w-]+/, "attribute.name"],
         [/=/, "delimiter"],
         [
           />/,
@@ -197,7 +197,7 @@ define("vs/html-Bey8D4EY", ["exports", "./editor.api-CykLys8L"], (function(expor
         ],
         [/"([^"]*)"/, "attribute.value"],
         [/'([^']*)'/, "attribute.value"],
-        [/[\w\-]+/, "attribute.name"],
+        [/[\w-]+/, "attribute.name"],
         [/=/, "delimiter"],
         [/[ \t\r\n]+/],
         // whitespace
@@ -214,7 +214,7 @@ define("vs/html-Bey8D4EY", ["exports", "./editor.api-CykLys8L"], (function(expor
         [/type/, "attribute.name", "@styleAfterType"],
         [/"([^"]*)"/, "attribute.value"],
         [/'([^']*)'/, "attribute.value"],
-        [/[\w\-]+/, "attribute.name"],
+        [/[\w-]+/, "attribute.name"],
         [/=/, "delimiter"],
         [
           />/,
@@ -285,7 +285,7 @@ define("vs/html-Bey8D4EY", ["exports", "./editor.api-CykLys8L"], (function(expor
         ],
         [/"([^"]*)"/, "attribute.value"],
         [/'([^']*)'/, "attribute.value"],
-        [/[\w\-]+/, "attribute.name"],
+        [/[\w-]+/, "attribute.name"],
         [/=/, "delimiter"],
         [/[ \t\r\n]+/],
         // whitespace

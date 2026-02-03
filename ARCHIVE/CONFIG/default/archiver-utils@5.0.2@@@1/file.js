@@ -17,7 +17,7 @@ var glob = require('glob');
 
 var file = module.exports = {};
 
-var pathSeparatorRe = /[\/\\]/g;
+var pathSeparatorRe = /[/\\]/g;
 
 // Process specified wildcard glob patterns or filenames against a
 // callback, excluding and uniquing files in the result set.
@@ -102,7 +102,7 @@ file.expandMapping = function(patterns, destBase, options) {
     }
     // Change the extension?
     if (options.ext) {
-      destPath = destPath.replace(/(\.[^\/]*)?$/, options.ext);
+      destPath = destPath.replace(/(\.[^/]*)?$/, options.ext);
     }
     // Generate destination filename.
     var dest = options.rename(destBase, destPath, options);

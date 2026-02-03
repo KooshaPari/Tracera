@@ -3,7 +3,7 @@ Agent Lock model for TraceRTM - represents locks on items held by agents.
 """
 
 import uuid
-from datetime import datetime
+from datetime import UTC, datetime
 
 from sqlalchemy import DateTime, ForeignKey, Index, String
 from sqlalchemy.dialects.postgresql import UUID
@@ -29,26 +29,14 @@ class AgentLock(Base, TimestampMixin):
 
     __tablename__ = "agent_locks"
 
-    id: Mapped[str] = mapped_column(
-        String(255), primary_key=True, default=generate_lock_uuid
-    )
-    project_id: Mapped[str] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("projects.id"), nullable=False, index=True
-    )
-    item_id: Mapped[str] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("items.id"), nullable=False, index=True
-    )
-    agent_id: Mapped[str] = mapped_column(
-        String(255), ForeignKey("agents.id"), nullable=False, index=True
-    )
+    id: Mapped[str] = mapped_column(String(255), primary_key=True, default=generate_lock_uuid)
+    project_id: Mapped[str] = mapped_column(UUID(as_uuid=True), ForeignKey("projects.id"), nullable=False, index=True)
+    item_id: Mapped[str] = mapped_column(UUID(as_uuid=True), ForeignKey("items.id"), nullable=False, index=True)
+    agent_id: Mapped[str] = mapped_column(String(255), ForeignKey("agents.id"), nullable=False, index=True)
 
     # Lock details
-    lock_type: Mapped[str] = mapped_column(
-        String(50), default="exclusive"
-    )  # exclusive, shared
-    expires_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
+    lock_type: Mapped[str] = mapped_column(String(50), default="exclusive")  # exclusive, shared
+    expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     __table_args__ = (
         Index("idx_locks_item_agent", "item_id", "agent_id"),
@@ -62,4 +50,4 @@ class AgentLock(Base, TimestampMixin):
         """Check if lock has expired."""
         if not self.expires_at:
             return False
-        return datetime.utcnow() > self.expires_at
+        return datetime.now(UTC) > self.expires_at

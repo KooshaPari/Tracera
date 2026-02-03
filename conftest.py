@@ -2,22 +2,28 @@
 Root pytest configuration - loads pytest-asyncio and shared test utilities
 """
 
-# Load pytest-asyncio and pytest-benchmark plugins BEFORE any other imports
-pytest_plugins = ["pytest_asyncio", "pytest_benchmark"]
+# Load pytest-asyncio; pytest_benchmark is auto-loaded when installed
+pytest_plugins = ["pytest_asyncio"]
 
-import asyncio
-import os
-from pathlib import Path
-import pytest
-import pytest_asyncio
-import unittest.mock as _um
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+import asyncio  # noqa: E402
+import os  # noqa: E402
+import unittest.mock as _um  # noqa: E402
+from pathlib import Path  # noqa: E402
+from typing import Any  # noqa: E402
+
+import pytest  # noqa: E402
+import pytest_asyncio  # noqa: E402
+from sqlalchemy.ext.asyncio import (  # noqa: E402
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 
 # Disable problematic Pydantic plugins during tests
 os.environ.setdefault("PYDANTIC_DISABLE_PLUGINS", "logfire-plugin")
 
 # Ensure Mock supports context manager magic methods in tests that rely on __enter__/__exit__
-_um.Mock = _um.MagicMock
+_um.Mock = _um.MagicMock  # type: ignore[assignment]
 
 # Make Path.mkdir safer when called on a file-like path (e.g., "*.py")
 _original_mkdir = Path.mkdir
@@ -30,40 +36,43 @@ def _safe_mkdir(self: Path, *args, **kwargs):
     return _original_mkdir(self, *args, **kwargs)
 
 
-Path.mkdir = _safe_mkdir
+Path.mkdir = _safe_mkdir  # type: ignore[assignment]
+
 
 # Set asyncio mode to auto for better fixture handling
 @pytest.fixture(scope="session")
 def asyncio_mode():
     return "auto"
 
+
 try:
-    from router import TOOL_REGISTRY, ArchRouter, ToolRegistry
+    from router import TOOL_REGISTRY, ArchRouter, ToolRegistry  # type: ignore[import-untyped,unresolved-import]
 except ImportError:
     # Router module not available in test environment
-    ArchRouter = None
-    ToolRegistry = None
-    TOOL_REGISTRY = None
+    ArchRouter = None  # type: ignore[assignment,misc]
+    ToolRegistry = None  # type: ignore[assignment,misc]
+    TOOL_REGISTRY = None  # type: ignore[assignment,misc]
 
 # Import models to register them with SQLAlchemy
 try:
     from tracertm.models.base import Base
 except ImportError:
-    Base = None
+    Base = None  # type: ignore[assignment,misc]
 
 
 @pytest.fixture(scope="session")
 def sync_engine():
     """Shared synchronous SQLite engine."""
     import tempfile
+
     db_url = os.getenv("TEST_SYNC_DATABASE_URL")
     if db_url is None:
-        temp_db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
-        db_path = temp_db.name
-        temp_db.close()
+        with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as temp_db:
+            db_path = temp_db.name
         db_url = f"sqlite:///{db_path}"
 
     from sqlalchemy import create_engine
+
     engine = create_engine(db_url, connect_args={"check_same_thread": False})
     if Base is not None:
         Base.metadata.create_all(engine)
@@ -76,8 +85,8 @@ def sync_engine():
         if not os.getenv("TEST_SYNC_DATABASE_URL"):
             try:
                 Path(db_url.replace("sqlite:///", "")).unlink()
-            except Exception:
-                pass
+            except Exception as e:
+                __import__("logging").getLogger(__name__).debug("unlink temp db: %s", e)
 
 
 @pytest.fixture
@@ -85,8 +94,8 @@ def db_session(sync_engine):
     """Synchronous SQLAlchemy session."""
     from sqlalchemy.orm import sessionmaker
 
-    SessionLocal = sessionmaker(bind=sync_engine)
-    session = SessionLocal()
+    session_local = sessionmaker(bind=sync_engine)
+    session = session_local()
     try:
         yield session
     finally:
@@ -101,9 +110,8 @@ async def async_db_engine():
 
     db_url = os.getenv("TEST_DATABASE_URL")
     if db_url is None:
-        temp_db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
-        db_path = temp_db.name
-        temp_db.close()
+        with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as temp_db:
+            db_path = temp_db.name
         db_url = f"sqlite+aiosqlite:///{db_path}"
 
     engine = create_async_engine(db_url, echo=False, future=True)
@@ -119,70 +127,69 @@ async def async_db_engine():
     finally:
         if not os.getenv("TEST_DATABASE_URL"):
             try:
-                Path(db_url.replace("sqlite+aiosqlite:///", "")).unlink()
-            except Exception:
-                pass
+                db_path = Path(db_url.replace("sqlite+aiosqlite:///", ""))
+                if db_path.is_file():
+                    await asyncio.to_thread(db_path.unlink)
+            except Exception as e:
+                __import__("logging").getLogger(__name__).debug("unlink temp db: %s", e)
 
 
 @pytest_asyncio.fixture
 async def async_db_session(async_db_engine):
     """Async SQLAlchemy session."""
-    async_session_maker = async_sessionmaker(
-        async_db_engine, class_=AsyncSession, expire_on_commit=False
-    )
+    async_session_maker = async_sessionmaker(async_db_engine, class_=AsyncSession, expire_on_commit=False)
     async with async_session_maker() as session:
         yield session
         await session.rollback()
 
 
 @pytest_asyncio.fixture
-async def project_factory(db_session):
+def project_factory(db_session):
     """Factory for creating test projects."""
+
     async def create_project(name="Test Project", description="Test project", metadata=None):
         from tracertm.repositories.project_repository import ProjectRepository
+
         repo = ProjectRepository(db_session)
         project = await repo.create(name=name, description=description, metadata=metadata)
         await db_session.flush()
         return project
+
     return create_project
 
 
 @pytest_asyncio.fixture
-async def item_factory(db_session):
+def item_factory(db_session):
     """Factory for creating test items."""
-    async def create_item(
-        project_id,
-        title="Test Item",
-        view="FEATURE",
-        item_type="feature",
-        status="todo",
-        **kwargs
-    ):
+
+    async def create_item(project_id, title="Test Item", view="FEATURE", item_type="feature", status="todo", **kwargs):
         from tracertm.repositories.item_repository import ItemRepository
+
         repo = ItemRepository(db_session)
         item = await repo.create(
-            project_id=project_id,
-            title=title,
-            view=view,
-            item_type=item_type,
-            status=status,
-            **kwargs
+            project_id=project_id, title=title, view=view, item_type=item_type, status=status, **kwargs
         )
         await db_session.flush()
         return item
+
     return create_item
 
 
 @pytest.fixture
 def router():
     """Create router instance"""
-    return ArchRouter()
+    router_cls = ArchRouter
+    if router_cls is not None:
+        return router_cls()
+    pytest.skip("router module not available")
 
 
 @pytest.fixture
 def registry():
     """Create registry instance"""
-    return ToolRegistry(TOOL_REGISTRY)
+    if ToolRegistry is not None and TOOL_REGISTRY is not None:
+        return ToolRegistry(TOOL_REGISTRY)
+    pytest.skip("router module not available")
 
 
 @pytest.fixture

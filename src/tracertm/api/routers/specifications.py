@@ -4,43 +4,42 @@ This router provides a comprehensive API surface for all specification-related
 endpoints with proper authentication, validation, and error handling.
 """
 
-from typing import List, Optional, Any
-from datetime import datetime
+from datetime import UTC, datetime
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Path
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
+from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from tracertm.api.deps import get_db, auth_guard, get_event_bus
+from tracertm.api.deps import auth_guard, get_db, get_event_bus
+from tracertm.infrastructure.event_bus import EventBus
+from tracertm.infrastructure.event_publisher_utils import safe_publish
+from tracertm.models.specification import Feature, Scenario
+from tracertm.repositories.event_repository import EventRepository
 from tracertm.schemas.specification import (
     ADRCreate,
-    ADRUpdate,
-    ADRResponse,
     ADRListResponse,
+    ADRResponse,
+    ADRUpdate,
     ContractCreate,
-    ContractUpdate,
-    ContractResponse,
     ContractListResponse,
+    ContractResponse,
+    ContractUpdate,
     FeatureCreate,
-    FeatureUpdate,
-    FeatureResponse,
     FeatureListResponse,
-    ScenarioCreate,
-    ScenarioUpdate,
-    ScenarioResponse,
-    ScenarioListResponse,
+    FeatureResponse,
+    FeatureUpdate,
     ScenarioActivityListResponse,
+    ScenarioCreate,
+    ScenarioListResponse,
+    ScenarioResponse,
+    ScenarioUpdate,
 )
 from tracertm.services.adr_service import ADRService
 from tracertm.services.contract_service import ContractService
 from tracertm.services.feature_service import FeatureService
 from tracertm.services.scenario_service import ScenarioService
-from tracertm.repositories.event_repository import EventRepository
-from tracertm.models.specification import Feature, Scenario
-from tracertm.infrastructure.event_bus import EventBus
-from tracertm.infrastructure.event_publisher_utils import safe_publish
-from sqlalchemy import select
-from fastapi.encoders import jsonable_encoder
 
 # =============================================================================
 # Response Models
@@ -52,8 +51,8 @@ class VerificationResult(BaseModel):
 
     is_valid: bool
     score: float
-    issues: List[str] = []
-    warnings: List[str] = []
+    issues: list[str] = []
+    warnings: list[str] = []
     timestamp: datetime
 
 
@@ -65,7 +64,7 @@ class ScenarioRunResult(BaseModel):
     duration_ms: float
     steps_passed: int
     steps_failed: int
-    error_message: Optional[str] = None
+    error_message: str | None = None
     timestamp: datetime
 
 
@@ -122,15 +121,12 @@ async def create_adr_spec(
             context=adr.context,
             decision=adr.decision,
             consequences=adr.consequences,
-            status=adr.status.value if hasattr(adr.status, 'value') else adr.status,
+            status=adr.status.value if hasattr(adr.status, "value") else adr.status,
             decision_drivers=adr.decision_drivers,
             considered_options=adr.considered_options,
             related_requirements=adr.related_requirements,
             related_adrs=adr.related_adrs,
             tags=adr.tags,
-            stakeholders=adr.stakeholders,
-            date=adr.date,
-            metadata=adr.metadata,
         )
 
         # Publish NATS event
@@ -152,9 +148,7 @@ async def create_adr_spec(
 
         return created_adr
     except Exception as e:
-        raise HTTPException(
-            status_code=400, detail=f"Failed to create ADR: {str(e)}"
-        ) from e
+        raise HTTPException(status_code=400, detail=f"Failed to create ADR: {e!s}") from e
 
 
 @router.get("/adrs/{adr_id}", response_model=ADRResponse)
@@ -186,7 +180,7 @@ async def get_adr_spec(
 @router.put("/adrs/{adr_id}", response_model=ADRResponse)
 async def update_adr_spec(
     adr_id: str = Path(..., description="ADR ID"),
-    updates: ADRUpdate = None,
+    updates: ADRUpdate | None = Body(None),
     claims: dict = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     event_bus: EventBus = Depends(get_event_bus),
@@ -231,9 +225,7 @@ async def update_adr_spec(
 
         return updated_adr
     except Exception as e:
-        raise HTTPException(
-            status_code=400, detail=f"Failed to update ADR: {str(e)}"
-        ) from e
+        raise HTTPException(status_code=400, detail=f"Failed to update ADR: {e!s}") from e
 
 
 @router.delete("/adrs/{adr_id}", status_code=204)
@@ -278,8 +270,8 @@ async def delete_adr_spec(
 @router.get("/projects/{project_id}/adrs", response_model=ADRListResponse)
 async def list_adrs_for_project(
     project_id: str = Path(..., description="Project ID"),
-    status: Optional[str] = Query(None, description="Filter by ADR status"),
-    tags: Optional[List[str]] = Query(None, description="Filter by tags"),
+    status: str | None = Query(None, description="Filter by ADR status"),
+    tags: list[str] | None = Query(None, description="Filter by tags"),
     claims: dict = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
@@ -299,11 +291,9 @@ async def list_adrs_for_project(
 
     try:
         adrs = await service.list_adrs(project_id, status)
-        return ADRListResponse(total=len(adrs), adrs=adrs)
+        return ADRListResponse(total=len(adrs), adrs=[ADRResponse.model_validate(a) for a in adrs])
     except Exception as e:
-        raise HTTPException(
-            status_code=400, detail=f"Failed to list ADRs: {str(e)}"
-        ) from e
+        raise HTTPException(status_code=400, detail=f"Failed to list ADRs: {e!s}") from e
 
 
 @router.post("/adrs/{adr_id}/verify", response_model=VerificationResult)
@@ -370,7 +360,7 @@ async def verify_adr_compliance(
             score=score,
             issues=issues,
             warnings=warnings,
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(UTC),
         )
         repo = EventRepository(db)
         await repo.log(
@@ -387,9 +377,7 @@ async def verify_adr_compliance(
         await db.commit()
         return result
     except Exception as e:
-        raise HTTPException(
-            status_code=400, detail=f"Failed to verify ADR: {str(e)}"
-        ) from e
+        raise HTTPException(status_code=400, detail=f"Failed to verify ADR: {e!s}") from e
 
 
 # =============================================================================
@@ -424,17 +412,14 @@ async def create_contract_spec(
             project_id=contract.project_id,
             item_id=contract.item_id,
             title=contract.title,
-            contract_type=contract.contract_type.value if hasattr(contract.contract_type, 'value') else contract.contract_type,
-            status=contract.status.value if hasattr(contract.status, 'value') else contract.status,
+            contract_type=contract.contract_type.value
+            if hasattr(contract.contract_type, "value")
+            else contract.contract_type,
+            status=contract.status.value if hasattr(contract.status, "value") else contract.status,
             preconditions=contract.preconditions,
             postconditions=contract.postconditions,
             invariants=contract.invariants,
             tags=contract.tags,
-            metadata=contract.metadata,
-            states=contract.states,
-            transitions=contract.transitions,
-            executable_spec=contract.executable_spec,
-            spec_language=contract.spec_language,
         )
 
         # Publish NATS event
@@ -456,9 +441,7 @@ async def create_contract_spec(
 
         return created_contract
     except Exception as e:
-        raise HTTPException(
-            status_code=400, detail=f"Failed to create contract: {str(e)}"
-        ) from e
+        raise HTTPException(status_code=400, detail=f"Failed to create contract: {e!s}") from e
 
 
 @router.get("/contracts/{contract_id}", response_model=ContractResponse)
@@ -490,7 +473,7 @@ async def get_contract_spec(
 @router.put("/contracts/{contract_id}", response_model=ContractResponse)
 async def update_contract_spec(
     contract_id: str = Path(..., description="Contract ID"),
-    updates: ContractUpdate = None,
+    updates: ContractUpdate | None = Body(None),
     claims: dict = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
@@ -521,9 +504,7 @@ async def update_contract_spec(
             raise HTTPException(status_code=404, detail="Contract not found")
         return updated_contract
     except Exception as e:
-        raise HTTPException(
-            status_code=400, detail=f"Failed to update contract: {str(e)}"
-        ) from e
+        raise HTTPException(status_code=400, detail=f"Failed to update contract: {e!s}") from e
 
 
 @router.delete("/contracts/{contract_id}", status_code=204)
@@ -551,9 +532,9 @@ async def delete_contract_spec(
 @router.get("/projects/{project_id}/contracts", response_model=ContractListResponse)
 async def list_contracts_for_project(
     project_id: str = Path(..., description="Project ID"),
-    item_id: Optional[str] = Query(None, description="Filter by item ID"),
-    contract_type: Optional[str] = Query(None, description="Filter by contract type"),
-    status: Optional[str] = Query(None, description="Filter by status"),
+    item_id: str | None = Query(None, description="Filter by item ID"),
+    contract_type: str | None = Query(None, description="Filter by contract type"),
+    status: str | None = Query(None, description="Filter by status"),
     claims: dict = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
@@ -574,11 +555,9 @@ async def list_contracts_for_project(
 
     try:
         contracts = await service.list_contracts(project_id, item_id)
-        return ContractListResponse(total=len(contracts), contracts=contracts)
+        return ContractListResponse(total=len(contracts), contracts=[ContractResponse.model_validate(c) for c in contracts])
     except Exception as e:
-        raise HTTPException(
-            status_code=400, detail=f"Failed to list contracts: {str(e)}"
-        ) from e
+        raise HTTPException(status_code=400, detail=f"Failed to list contracts: {e!s}") from e
 
 
 @router.post("/contracts/{contract_id}/verify", response_model=VerificationResult)
@@ -641,7 +620,7 @@ async def verify_contract_compliance(
             score=score,
             issues=issues,
             warnings=warnings,
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(UTC),
         )
         repo = EventRepository(db)
         await repo.log(
@@ -658,9 +637,7 @@ async def verify_contract_compliance(
         await db.commit()
         return result
     except Exception as e:
-        raise HTTPException(
-            status_code=400, detail=f"Failed to verify contract: {str(e)}"
-        ) from e
+        raise HTTPException(status_code=400, detail=f"Failed to verify contract: {e!s}") from e
 
 
 # =============================================================================
@@ -699,11 +676,9 @@ async def create_feature_spec(
             as_a=feature.as_a,
             i_want=feature.i_want,
             so_that=feature.so_that,
-            status=feature.status.value if hasattr(feature.status, 'value') else feature.status,
+            status=feature.status.value if hasattr(feature.status, "value") else feature.status,
             tags=feature.tags,
             related_requirements=feature.related_requirements,
-            related_adrs=feature.related_adrs,
-            metadata=feature.metadata,
         )
 
         # Publish NATS event
@@ -725,9 +700,7 @@ async def create_feature_spec(
 
         return created_feature
     except Exception as e:
-        raise HTTPException(
-            status_code=400, detail=f"Failed to create feature: {str(e)}"
-        ) from e
+        raise HTTPException(status_code=400, detail=f"Failed to create feature: {e!s}") from e
 
 
 @router.get("/features/{feature_id}", response_model=FeatureResponse)
@@ -760,7 +733,7 @@ async def get_feature_spec(
         scenario_service = ScenarioService(db)
         scenarios = await scenario_service.list_scenarios(feature_id)
         feature_dict = {c.name: getattr(feature, c.name) for c in feature.__table__.columns}
-        feature_dict['scenarios'] = scenarios
+        feature_dict["scenarios"] = scenarios
         return feature_dict
 
     return feature
@@ -769,7 +742,7 @@ async def get_feature_spec(
 @router.put("/features/{feature_id}", response_model=FeatureResponse)
 async def update_feature_spec(
     feature_id: str = Path(..., description="Feature ID"),
-    updates: FeatureUpdate = None,
+    updates: FeatureUpdate | None = Body(None),
     claims: dict = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
@@ -801,13 +774,9 @@ async def update_feature_spec(
             raise HTTPException(status_code=404, detail="Feature not found")
         return updated_feature
     except AttributeError:
-        raise HTTPException(
-            status_code=501, detail="Feature update not yet implemented"
-        )
+        raise HTTPException(status_code=501, detail="Feature update not yet implemented") from None
     except Exception as e:
-        raise HTTPException(
-            status_code=400, detail=f"Failed to update feature: {str(e)}"
-        ) from e
+        raise HTTPException(status_code=400, detail=f"Failed to update feature: {e!s}") from e
 
 
 @router.delete("/features/{feature_id}", status_code=204)
@@ -835,8 +804,8 @@ async def delete_feature_spec(
 @router.get("/projects/{project_id}/features", response_model=FeatureListResponse)
 async def list_features_for_project(
     project_id: str = Path(..., description="Project ID"),
-    status: Optional[str] = Query(None, description="Filter by status"),
-    tags: Optional[List[str]] = Query(None, description="Filter by tags"),
+    status: str | None = Query(None, description="Filter by status"),
+    tags: list[str] | None = Query(None, description="Filter by tags"),
     claims: dict = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
@@ -856,11 +825,9 @@ async def list_features_for_project(
 
     try:
         features = await service.list_features(project_id, status)
-        return FeatureListResponse(total=len(features), features=features)
+        return FeatureListResponse(total=len(features), features=[FeatureResponse.model_validate(f) for f in features])
     except Exception as e:
-        raise HTTPException(
-            status_code=400, detail=f"Failed to list features: {str(e)}"
-        ) from e
+        raise HTTPException(status_code=400, detail=f"Failed to list features: {e!s}") from e
 
 
 # =============================================================================
@@ -871,7 +838,7 @@ async def list_features_for_project(
 @router.post("/features/{feature_id}/scenarios", response_model=ScenarioResponse, status_code=201)
 async def create_scenario_spec(
     feature_id: str = Path(..., description="Feature ID"),
-    scenario: ScenarioCreate = None,
+    scenario: ScenarioCreate | None = Body(None),
     claims: dict = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     event_bus: EventBus = Depends(get_event_bus),
@@ -897,6 +864,8 @@ async def create_scenario_spec(
     feature = await feature_service.get_feature(feature_id)
     if not feature:
         raise HTTPException(status_code=404, detail="Feature not found")
+    if not scenario:
+        raise HTTPException(status_code=400, detail="Scenario payload is required")
 
     try:
         created_scenario = await service.create_scenario(
@@ -904,14 +873,13 @@ async def create_scenario_spec(
             title=scenario.title,
             description=scenario.description,
             gherkin_text=scenario.gherkin_text,
-            status=scenario.status.value if hasattr(scenario.status, 'value') else scenario.status,
+            status=scenario.status.value if hasattr(scenario.status, "value") else scenario.status,
             given_steps=scenario.given_steps,
             when_steps=scenario.when_steps,
             then_steps=scenario.then_steps,
             tags=scenario.tags,
             is_outline=scenario.is_outline,
             examples=scenario.examples,
-            metadata=scenario.metadata,
         )
 
         # Publish NATS event
@@ -933,15 +901,13 @@ async def create_scenario_spec(
 
         return created_scenario
     except Exception as e:
-        raise HTTPException(
-            status_code=400, detail=f"Failed to create scenario: {str(e)}"
-        ) from e
+        raise HTTPException(status_code=400, detail=f"Failed to create scenario: {e!s}") from e
 
 
 @router.get("/features/{feature_id}/scenarios", response_model=ScenarioListResponse)
 async def list_scenarios_for_feature(
     feature_id: str = Path(..., description="Feature ID"),
-    status: Optional[str] = Query(None, description="Filter by status"),
+    status: str | None = Query(None, description="Filter by status"),
     claims: dict = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
@@ -967,17 +933,15 @@ async def list_scenarios_for_feature(
 
     try:
         scenarios = await service.list_scenarios(feature_id)
-        return ScenarioListResponse(total=len(scenarios), scenarios=scenarios)
+        return ScenarioListResponse(total=len(scenarios), scenarios=[ScenarioResponse.model_validate(s) for s in scenarios])
     except Exception as e:
-        raise HTTPException(
-            status_code=400, detail=f"Failed to list scenarios: {str(e)}"
-        ) from e
+        raise HTTPException(status_code=400, detail=f"Failed to list scenarios: {e!s}") from e
 
 
 @router.get("/projects/{project_id}/scenarios", response_model=ScenarioListResponse)
 async def list_scenarios_for_project(
     project_id: str = Path(..., description="Project ID"),
-    status: Optional[str] = Query(None, description="Filter by status"),
+    status: str | None = Query(None, description="Filter by status"),
     claims: dict = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
@@ -992,13 +956,11 @@ async def list_scenarios_for_project(
     Returns:
         ScenarioListResponse: List of scenarios with total count
     """
-    result = await db.execute(
-        select(Scenario).join(Feature).where(Feature.project_id == project_id)
-    )
+    result = await db.execute(select(Scenario).join(Feature).where(Feature.project_id == project_id))
     scenarios = list(result.scalars().all())
     if status:
         scenarios = [s for s in scenarios if getattr(s, "status", None) == status]
-    return ScenarioListResponse(total=len(scenarios), scenarios=scenarios)
+    return ScenarioListResponse(total=len(scenarios), scenarios=[ScenarioResponse.model_validate(s) for s in scenarios])
 
 
 @router.get("/projects/{project_id}/scenarios/activities", response_model=ScenarioActivityListResponse)
@@ -1006,9 +968,9 @@ async def list_scenario_activities_for_project(
     project_id: str = Path(..., description="Project ID"),
     limit: int = Query(200, description="Max activities to return"),
     offset: int = Query(0, description="Offset for pagination"),
-    event_type: Optional[str] = Query(None, description="Filter by event type"),
-    since: Optional[datetime] = Query(None, description="Return events since this time"),
-    until: Optional[datetime] = Query(None, description="Return events until this time"),
+    event_type: str | None = Query(None, description="Filter by event type"),
+    since: datetime | None = Query(None, description="Return events since this time"),
+    until: datetime | None = Query(None, description="Return events until this time"),
     claims: dict = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
@@ -1104,7 +1066,7 @@ async def get_scenario_activities(
 @router.put("/scenarios/{scenario_id}", response_model=ScenarioResponse)
 async def update_scenario_spec(
     scenario_id: str = Path(..., description="Scenario ID"),
-    updates: ScenarioUpdate = None,
+    updates: ScenarioUpdate | None = Body(None),
     claims: dict = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     event_bus: EventBus = Depends(get_event_bus),
@@ -1138,9 +1100,7 @@ async def update_scenario_spec(
 
         # Get feature to obtain project_id
         if updated_scenario.feature_id:
-            feature_result = await db.execute(
-                select(Feature).where(Feature.id == updated_scenario.feature_id)
-            )
+            feature_result = await db.execute(select(Feature).where(Feature.id == updated_scenario.feature_id))
             feature = feature_result.scalar_one_or_none()
             if feature and event_bus:
                 await safe_publish(
@@ -1154,9 +1114,7 @@ async def update_scenario_spec(
 
         return updated_scenario
     except Exception as e:
-        raise HTTPException(
-            status_code=400, detail=f"Failed to update scenario: {str(e)}"
-        ) from e
+        raise HTTPException(status_code=400, detail=f"Failed to update scenario: {e!s}") from e
 
 
 @router.delete("/scenarios/{scenario_id}", status_code=204)
@@ -1187,9 +1145,7 @@ async def delete_scenario_spec(
     # Get feature to obtain project_id
     project_id = None
     if scenario.feature_id:
-        feature_result = await db.execute(
-            select(Feature).where(Feature.id == scenario.feature_id)
-        )
+        feature_result = await db.execute(select(Feature).where(Feature.id == scenario.feature_id))
         feature = feature_result.scalar_one_or_none()
         if feature:
             project_id = feature.project_id
@@ -1240,26 +1196,25 @@ async def run_scenario(
     try:
         # Note: Actual execution would require integrating with a test runner
         # For now, return a placeholder result structure
-        start_time = datetime.utcnow()
+        start_time = datetime.now(UTC)
 
         # Simulate execution
-        steps_passed = len(scenario.given_steps if hasattr(scenario, 'given_steps') else [])
+        given_steps = getattr(scenario, "given_steps", None) or []
+        steps_passed = len(given_steps)
         steps_failed = 0
 
         result = ScenarioRunResult(
             scenario_id=scenario_id,
             passed=steps_failed == 0,
-            duration_ms=(datetime.utcnow() - start_time).total_seconds() * 1000,
+            duration_ms=(datetime.now(UTC) - start_time).total_seconds() * 1000,
             steps_passed=steps_passed,
             steps_failed=steps_failed,
             error_message=None,
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(UTC),
         )
         project_id = ""
         if scenario.feature_id:
-            feature_result = await db.execute(
-                select(Feature).where(Feature.id == scenario.feature_id)
-            )
+            feature_result = await db.execute(select(Feature).where(Feature.id == scenario.feature_id))
             feature = feature_result.scalar_one_or_none()
             if feature:
                 project_id = feature.project_id
@@ -1280,9 +1235,7 @@ async def run_scenario(
         await db.commit()
         return result
     except Exception as e:
-        raise HTTPException(
-            status_code=400, detail=f"Failed to run scenario: {str(e)}"
-        ) from e
+        raise HTTPException(status_code=400, detail=f"Failed to run scenario: {e!s}") from e
 
 
 # =============================================================================
@@ -1325,18 +1278,10 @@ async def get_specifications_summary(
             scenarios = await scenario_service.list_scenarios(feature.id)
             scenario_count += len(scenarios)
 
-        # Calculate overall compliance score
-        compliance_scores = []
-        for adr in adrs:
-            # Use a simplified scoring based on completeness
-            if adr.context and adr.decision and adr.consequences:
-                compliance_scores.append(80.0)
+        # Calculate overall compliance score (simplified scoring based on completeness)
+        compliance_scores = [80.0 for adr in adrs if adr.context and adr.decision and adr.consequences]
 
-        avg_compliance = (
-            sum(compliance_scores) / len(compliance_scores)
-            if compliance_scores
-            else 0.0
-        )
+        avg_compliance = sum(compliance_scores) / len(compliance_scores) if compliance_scores else 0.0
 
         return SpecificationsSummary(
             project_id=project_id,
@@ -1347,6 +1292,4 @@ async def get_specifications_summary(
             compliance_score=avg_compliance,
         )
     except Exception as e:
-        raise HTTPException(
-            status_code=400, detail=f"Failed to get summary: {str(e)}"
-        ) from e
+        raise HTTPException(status_code=400, detail=f"Failed to get summary: {e!s}") from e

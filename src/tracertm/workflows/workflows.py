@@ -9,22 +9,17 @@ from __future__ import annotations
 from datetime import timedelta
 from typing import Any
 
+from temporalio import common as temporalio_common
 from temporalio import workflow
+
+# RetryPolicy lives in temporalio.common, not temporalio.workflow (type checker)
+RetryPolicy = temporalio_common.RetryPolicy
 
 # Import activity functions - note we import them as types for workflow execution
 with workflow.unsafe.imports_passed_through():
     from tracertm.workflows import activities
 
 # Import agent execution workflows
-from tracertm.workflows.agent_execution import (
-    AgentExecutionResumeWorkflow,
-    AgentExecutionWorkflow,
-)
-from tracertm.workflows.sandbox_snapshot import (
-    BulkSnapshotWorkflow,
-    SandboxSnapshotWorkflow,
-    SnapshotCleanupWorkflow,
-)
 
 
 @workflow.defn(name="IndexingWorkflow")
@@ -49,7 +44,7 @@ class IndexingWorkflow:
             activities.index_repository,
             args=[repository_url, branch],
             start_to_close_timeout=timedelta(minutes=30),
-            retry_policy=workflow.RetryPolicy(
+            retry_policy=RetryPolicy(
                 maximum_attempts=3,
                 initial_interval=timedelta(seconds=1),
                 maximum_interval=timedelta(seconds=10),
@@ -83,7 +78,7 @@ class AnalysisWorkflow:
             activities.analyze_quality,
             args=[project_id, analysis_type],
             start_to_close_timeout=timedelta(minutes=20),
-            retry_policy=workflow.RetryPolicy(
+            retry_policy=RetryPolicy(
                 maximum_attempts=3,
                 initial_interval=timedelta(seconds=1),
                 maximum_interval=timedelta(seconds=10),
@@ -124,7 +119,7 @@ class GraphSnapshotWorkflow:
             activities.create_graph_snapshot,
             args=[project_id, graph_id, created_by, description],
             start_to_close_timeout=timedelta(minutes=10),
-            retry_policy=workflow.RetryPolicy(
+            retry_policy=RetryPolicy(
                 maximum_attempts=3,
                 initial_interval=timedelta(seconds=1),
                 maximum_interval=timedelta(seconds=10),
@@ -157,7 +152,7 @@ class GraphValidationWorkflow:
             activities.validate_graph,
             args=[project_id, graph_id],
             start_to_close_timeout=timedelta(minutes=10),
-            retry_policy=workflow.RetryPolicy(
+            retry_policy=RetryPolicy(
                 maximum_attempts=3,
                 initial_interval=timedelta(seconds=1),
                 maximum_interval=timedelta(seconds=10),
@@ -189,7 +184,7 @@ class GraphExportWorkflow:
             activities.export_graph,
             args=[project_id],
             start_to_close_timeout=timedelta(minutes=15),
-            retry_policy=workflow.RetryPolicy(
+            retry_policy=RetryPolicy(
                 maximum_attempts=3,
                 initial_interval=timedelta(seconds=1),
                 maximum_interval=timedelta(seconds=10),
@@ -224,15 +219,13 @@ class GraphDiffWorkflow:
         Returns:
             dict: Diff results
         """
-        workflow.logger.info(
-            f"Generating diff for {project_id}/{graph_id} v{from_version}..v{to_version}"
-        )
+        workflow.logger.info(f"Generating diff for {project_id}/{graph_id} v{from_version}..v{to_version}")
 
         result = await workflow.execute_activity(
             activities.diff_graph,
             args=[project_id, graph_id, from_version, to_version],
             start_to_close_timeout=timedelta(minutes=10),
-            retry_policy=workflow.RetryPolicy(
+            retry_policy=RetryPolicy(
                 maximum_attempts=3,
                 initial_interval=timedelta(seconds=1),
                 maximum_interval=timedelta(seconds=10),
@@ -240,7 +233,7 @@ class GraphDiffWorkflow:
             ),
         )
 
-        workflow.logger.info(f"Diff completed")
+        workflow.logger.info("Diff completed")
         return result
 
 
@@ -264,7 +257,7 @@ class IntegrationSyncWorkflow:
             activities.sync_integrations,
             args=[limit],
             start_to_close_timeout=timedelta(minutes=30),
-            retry_policy=workflow.RetryPolicy(
+            retry_policy=RetryPolicy(
                 maximum_attempts=3,
                 initial_interval=timedelta(seconds=1),
                 maximum_interval=timedelta(seconds=10),
@@ -296,7 +289,7 @@ class IntegrationRetryWorkflow:
             activities.retry_integrations,
             args=[limit],
             start_to_close_timeout=timedelta(minutes=30),
-            retry_policy=workflow.RetryPolicy(
+            retry_policy=RetryPolicy(
                 maximum_attempts=3,
                 initial_interval=timedelta(seconds=1),
                 maximum_interval=timedelta(seconds=10),
@@ -340,7 +333,7 @@ class AgentRunWorkflow:
                 activities.run_agent_turn,
                 args=[session_id, messages],
                 start_to_close_timeout=timedelta(minutes=5),
-                retry_policy=workflow.RetryPolicy(
+                retry_policy=RetryPolicy(
                     maximum_attempts=2,
                     initial_interval=timedelta(seconds=2),
                     maximum_interval=timedelta(seconds=30),
@@ -353,3 +346,11 @@ class AgentRunWorkflow:
                 return result
         workflow.logger.info("Agent run hit max_turns")
         return {"status": "max_turns", "session_id": session_id, "turns": max_turns}
+
+
+# Re-export sandbox workflows so worker can use workflows.SnapshotCleanupWorkflow etc.
+from tracertm.workflows.sandbox_snapshot import (  # noqa: E402, F401
+    BulkSnapshotWorkflow,
+    SandboxSnapshotWorkflow,
+    SnapshotCleanupWorkflow,
+)

@@ -1334,11 +1334,11 @@ define("vs/abap-BxE6jMvt", ["exports"], (function(exports) {
       "/*",
       "//"
     ],
-    symbols: /[=><!~?&+\-*\/\^%#@]+/,
+    symbols: /[=><!~?&+\-*/^%#@]+/,
     tokenizer: {
       root: [
         [
-          /[a-z_\/$%@]([\w\/$%]|-(?!>))*/,
+          /[a-z_/$%@]([\w/$%]|-(?!>))*/,
           // exclude '->' selector
           {
             cases: {
@@ -1359,7 +1359,7 @@ define("vs/abap-BxE6jMvt", ["exports"], (function(exports) {
         // pragmas
         { include: "@whitespace" },
         [/[:,.]/, "delimiter"],
-        [/[{}()\[\]]/, "@brackets"],
+        [/[{}()[\]]/, "@brackets"],
         [
           /@symbols/,
           {
@@ -1376,7 +1376,7 @@ define("vs/abap-BxE6jMvt", ["exports"], (function(exports) {
         [/\d+/, "number"]
       ],
       stringtemplate: [
-        [/[^\\\|]+/, "string"],
+        [/[^\\|]+/, "string"],
         [/\\\|/, "string"],
         [/\|/, { token: "string", bracket: "@close", next: "@pop" }]
       ],
@@ -1391,7 +1391,7 @@ define("vs/abap-BxE6jMvt", ["exports"], (function(exports) {
       whitespace: [
         [/[ \t\r\n]+/, ""],
         [/^\*.*$/, "comment"],
-        [/\".*$/, "comment"]
+        [/".*$/, "comment"]
       ]
     }
   };

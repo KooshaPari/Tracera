@@ -39,7 +39,7 @@ export default function sas(Prism) {
       pattern: RegExp(stringPattern),
       greedy: true
     }
-    var punctuation = /[$%@.(){}\[\];,\\]/
+    var punctuation = /[$%@.(){}[\];,\\]/
     var func = {
       pattern: /%?\b\w+(?=\()/,
       alias: 'keyword'
@@ -47,7 +47,7 @@ export default function sas(Prism) {
     var args = {
       function: func,
       'arg-value': {
-        pattern: /(=\s*)[A-Z\.]+/i,
+        pattern: /(=\s*)[A-Z.]+/i,
         lookbehind: true
       },
       operator: /=/,
@@ -361,7 +361,7 @@ export default function sas(Prism) {
       },
       // Decimal (1.2e23), hexadecimal (0c1x)
       number: number,
-      operator: /\*\*?|\|\|?|!!?|¦¦?|<[>=]?|>[<=]?|[-+\/=&]|[~¬^]=?/,
+      operator: /\*\*?|\|\|?|!!?|¦¦?|<[>=]?|>[<=]?|[-+/=&]|[~¬^]=?/,
       punctuation: punctuation
     }
   })(Prism)

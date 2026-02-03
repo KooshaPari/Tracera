@@ -27,7 +27,7 @@ export default function r(Prism) {
     ],
     keyword:
       /\b(?:NA|NA_character_|NA_complex_|NA_integer_|NA_real_|NULL|break|else|for|function|if|in|next|repeat|while)\b/,
-    operator: /->?>?|<(?:=|<?-)?|[>=!]=?|::?|&&?|\|\|?|[+*\/^$@~]/,
-    punctuation: /[(){}\[\],;]/
+    operator: /->?>?|<(?:=|<?-)?|[>=!]=?|::?|&&?|\|\|?|[+*/^$@~]/,
+    punctuation: /[(){}[\],;]/
   }
 }

@@ -12,6 +12,7 @@ from datetime import timedelta
 from typing import Any
 
 from temporalio import workflow
+from temporalio.common import RetryPolicy
 
 # Import activity functions for workflow execution
 with workflow.unsafe.imports_passed_through():
@@ -91,7 +92,7 @@ class AgentExecutionWorkflow:
                     checkpoint_activities.load_latest_checkpoint,
                     args=[session_id],
                     start_to_close_timeout=timedelta(seconds=30),
-                    retry_policy=workflow.RetryPolicy(
+                    retry_policy=RetryPolicy(
                         maximum_attempts=2,
                         initial_interval=timedelta(seconds=1),
                         maximum_interval=timedelta(seconds=5),
@@ -103,9 +104,7 @@ class AgentExecutionWorkflow:
                     conversation_state = checkpoint_data["state_snapshot"]
                     self._last_checkpoint_turn = checkpoint_data.get("turn_number", 0)
                     self._turn_count = self._last_checkpoint_turn
-                    workflow.logger.info(
-                        f"Resumed from checkpoint at turn {self._last_checkpoint_turn}"
-                    )
+                    workflow.logger.info(f"Resumed from checkpoint at turn {self._last_checkpoint_turn}")
             except Exception as e:
                 workflow.logger.warning(f"Failed to load checkpoint, starting fresh: {e}")
 
@@ -125,7 +124,7 @@ class AgentExecutionWorkflow:
                     ],
                     start_to_close_timeout=timedelta(minutes=5),
                     heartbeat_timeout=timedelta(seconds=30),
-                    retry_policy=workflow.RetryPolicy(
+                    retry_policy=RetryPolicy(
                         maximum_attempts=3,
                         initial_interval=timedelta(seconds=2),
                         maximum_interval=timedelta(seconds=30),
@@ -206,7 +205,7 @@ class AgentExecutionWorkflow:
                     checkpoint_metadata,
                 ],
                 start_to_close_timeout=timedelta(seconds=60),
-                retry_policy=workflow.RetryPolicy(
+                retry_policy=RetryPolicy(
                     maximum_attempts=3,
                     initial_interval=timedelta(seconds=1),
                     maximum_interval=timedelta(seconds=10),
@@ -215,9 +214,7 @@ class AgentExecutionWorkflow:
             )
 
             self._last_checkpoint_turn = self._turn_count
-            workflow.logger.info(
-                f"Checkpoint created at turn {self._turn_count}: {result.get('checkpoint_id')}"
-            )
+            workflow.logger.info(f"Checkpoint created at turn {self._turn_count}: {result.get('checkpoint_id')}")
             return result
 
         except Exception as e:
@@ -254,8 +251,7 @@ class AgentExecutionResumeWorkflow:
             dict: Execution summary
         """
         workflow.logger.info(
-            f"Resuming agent execution for session {session_id} "
-            f"from turn {checkpoint_turn or 'latest'}"
+            f"Resuming agent execution for session {session_id} from turn {checkpoint_turn or 'latest'}"
         )
 
         # Load checkpoint

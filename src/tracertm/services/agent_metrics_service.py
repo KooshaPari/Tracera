@@ -4,7 +4,7 @@ Agent metrics service for Epic 5 (Story 5.6, FR43).
 Calculates and provides agent performance metrics.
 """
 
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from sqlalchemy.orm import Session
@@ -41,14 +41,11 @@ class AgentMetricsService:
             Metrics dictionary
         """
         if not since:
-            since = datetime.utcnow() - timedelta(hours=24)
+            since = datetime.now(UTC) - timedelta(hours=24)
 
-        query = (
-            self.session.query(Event)
-            .filter(
-                Event.project_id == project_id,
-                Event.created_at >= since,
-            )
+        query = self.session.query(Event).filter(
+            Event.project_id == project_id,
+            Event.created_at >= since,
         )
 
         if agent_id:
@@ -76,7 +73,7 @@ class AgentMetricsService:
             conflicts = sum(1 for e in agent_events if e.event_type == "conflict_detected")
 
             # Time range in hours
-            hours = (datetime.utcnow() - since).total_seconds() / 3600
+            hours = (datetime.now(UTC) - since).total_seconds() / 3600
             ops_per_hour = total_ops / hours if hours > 0 else 0
             success_rate = (successful_ops / total_ops * 100) if total_ops > 0 else 0
             conflict_rate = (conflicts / total_ops * 100) if total_ops > 0 else 0
@@ -124,10 +121,10 @@ class AgentMetricsService:
         Returns:
             Workload dictionary
         """
-        from tracertm.models.item import Item
 
         items = (
-            self.session.query(Item)
+            self.session
+            .query(Item)
             .filter(
                 Item.project_id == project_id,
                 Item.owner == agent_id,

@@ -3,8 +3,8 @@
 ## 🎯 Quick Start (Do This First)
 
 ```bash
-# 1. Navigate to docs-site
-cd docs-site
+# 1. Navigate to docs/site
+cd docs/site
 
 # 2. Install dependencies
 npm install
@@ -25,7 +25,7 @@ npm run dev
 ### [ ] Task 1: Verify Current Setup (1 hour)
 
 **Steps:**
-- [ ] `cd docs-site && npm install` completes without errors
+- [ ] `cd docs/site && npm install` completes without errors
 - [ ] `npm run dev` starts server on port 3000
 - [ ] Homepage loads at http://localhost:3000
 - [ ] Navigation menu appears
@@ -70,7 +70,7 @@ redocly lint docs/swagger/swagger.json
 
 ### [ ] Task 3: Create Swagger UI Page (2 hours)
 
-**File:** `docs-site/app/api-explorer/page.tsx`
+**File:** `docs/site/app/api-explorer/page.tsx`
 
 **Steps:**
 - [ ] Create directory: `mkdir -p app/api-explorer`
@@ -91,7 +91,7 @@ redocly lint docs/swagger/swagger.json
 
 ### [ ] Task 4: Create ReDoc Page (2 hours)
 
-**File:** `docs-site/app/api-reference/page.tsx`
+**File:** `docs/site/app/api-reference/page.tsx`
 
 **Steps:**
 - [ ] Create directory: `mkdir -p app/api-reference`
@@ -114,7 +114,7 @@ redocly lint docs/swagger/swagger.json
 
 **Create directories:**
 ```bash
-cd docs-site
+cd docs/site
 mkdir -p content/docs/{
   00-getting-started,
   01-user-guide,
@@ -147,7 +147,7 @@ mkdir -p content/docs/{
 
 **Steps:**
 ```bash
-cd docs-site
+cd docs/site
 
 # Build static site
 npm run build:static
@@ -176,11 +176,11 @@ vercel --prod
 **Option B: GitHub Pages**
 - [ ] Push to GitHub
 - [ ] Enable Pages in settings
-- [ ] Set source to `docs-site/out`
+- [ ] Set source to `docs/site/out`
 
 **Option C: Self-hosted**
 ```bash
-cd docs-site/out
+cd docs/site/out
 python3 -m http.server 8000
 # Visit http://localhost:4000
 ```

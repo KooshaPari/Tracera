@@ -103,11 +103,11 @@ export type Jsonify<T> = IsAny<T> extends true
 					? J // Then T is Jsonable and its Jsonable value is J
 					: Jsonify<J> // Maybe if we look a level deeper we'll find a JsonValue
 				: // Instanced primitives are objects
-				T extends Number
+				T extends number
 					? number
-					: T extends String
+					: T extends string
 						? string
-						: T extends Boolean
+						: T extends boolean
 							? boolean
 							: T extends Map<any, any> | Set<any>
 								? EmptyObject

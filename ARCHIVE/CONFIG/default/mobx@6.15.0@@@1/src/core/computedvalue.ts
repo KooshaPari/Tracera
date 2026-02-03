@@ -100,7 +100,7 @@ export class ComputedValue<T> implements IObservable, IComputedValue<T>, IDeriva
     derivation: () => T // N.B: unminified as it is used by MST
     setter_?: (value: T) => void
     isTracing_: TraceMode = TraceMode.NONE
-    scope_: Object | undefined
+    scope_: object | undefined
     private equals_: IEqualsComparer<any>
     private requiresReaction_: boolean | undefined
     keepAlive_: boolean

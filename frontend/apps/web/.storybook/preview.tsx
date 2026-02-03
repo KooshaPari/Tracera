@@ -11,17 +11,17 @@ const preview: Preview = {
 	],
 	parameters: {
 		chromatic: {
+			delay: 300,
 			modes: {
-				light: {
-					query: "[data-theme='light']",
-					matcherUrl: "**/light",
-				},
 				dark: {
 					query: "[data-theme='dark']",
 					matcherUrl: "**/dark",
 				},
+				light: {
+					query: "[data-theme='light']",
+					matcherUrl: "**/light",
+				},
 			},
-			delay: 300,
 			pauseAnimationAtEnd: true,
 		},
 		controls: {
@@ -36,22 +36,22 @@ const preview: Preview = {
 				desktop: {
 					name: "Desktop",
 					styles: {
-						width: "1440px",
 						height: "900px",
-					},
-				},
-				tablet: {
-					name: "Tablet",
-					styles: {
-						width: "768px",
-						height: "1024px",
+						width: "1440px",
 					},
 				},
 				mobile: {
 					name: "Mobile",
 					styles: {
-						width: "375px",
 						height: "667px",
+						width: "375px",
+					},
+				},
+				tablet: {
+					name: "Tablet",
+					styles: {
+						height: "1024px",
+						width: "768px",
 					},
 				},
 			},

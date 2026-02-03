@@ -5,36 +5,36 @@
 
 export const VIEWPORTS = {
 	desktop: {
+		height: 900,
 		name: "Desktop",
 		width: 1440,
-		height: 900,
 	},
 	mobile: {
+		height: 667,
 		name: "Mobile",
 		width: 375,
-		height: 667,
 	},
 	tablet: {
+		height: 1024,
 		name: "Tablet",
 		width: 768,
-		height: 1024,
 	},
 	widescreen: {
+		height: 1080,
 		name: "Widescreen",
 		width: 1920,
-		height: 1080,
 	},
 } as const;
 
 export const THEMES = {
 	dark: {
-		name: "Dark",
 		colorScheme: "dark",
+		name: "Dark",
 		query: "[data-theme='dark']",
 	},
 	light: {
-		name: "Light",
 		colorScheme: "light",
+		name: "Light",
 		query: "[data-theme='light']",
 	},
 } as const;
@@ -59,29 +59,29 @@ export const CHROMATIC_VIEWPORT_CONFIG = {
 		desktop: {
 			name: "Desktop",
 			styles: {
-				width: "1440px",
 				height: "900px",
+				width: "1440px",
 			},
 		},
 		mobile: {
 			name: "Mobile",
 			styles: {
-				width: "375px",
 				height: "667px",
+				width: "375px",
 			},
 		},
 		tablet: {
 			name: "Tablet",
 			styles: {
-				width: "768px",
 				height: "1024px",
+				width: "768px",
 			},
 		},
 		widescreen: {
 			name: "Widescreen",
 			styles: {
-				width: "1920px",
 				height: "1080px",
+				width: "1920px",
 			},
 		},
 	},
@@ -96,13 +96,13 @@ export const CHROMATIC_PARAMETERS = {
 		delay: 300,
 		disableSnapshot: false,
 		modes: {
-			light: {
-				query: "[data-theme='light']",
-				matcherUrl: "**/light",
-			},
 			dark: {
-				query: "[data-theme='dark']",
 				matcherUrl: "**/dark",
+				query: "[data-theme='dark']",
+			},
+			light: {
+				matcherUrl: "**/light",
+				query: "[data-theme='light']",
 			},
 		},
 		pauseAnimationAtEnd: true,
@@ -114,41 +114,41 @@ export const CHROMATIC_PARAMETERS = {
  */
 export const COMPONENT_VISUAL_CONFIGS = {
 	GraphNodePill: {
-		viewports: ["desktop", "mobile"],
-		themes: ["light", "dark"],
 		delay: 200,
+		themes: ["light", "dark"],
+		viewports: ["desktop", "mobile"],
 	},
 	GraphSearch: {
-		viewports: ["desktop", "tablet", "mobile"],
-		themes: ["light", "dark"],
 		delay: 300,
+		themes: ["light", "dark"],
+		viewports: ["desktop", "tablet", "mobile"],
 	},
 	NodeDetailPanel: {
-		viewports: ["desktop", "tablet"],
-		themes: ["light", "dark"],
 		delay: 300,
+		themes: ["light", "dark"],
+		viewports: ["desktop", "tablet"],
 	},
 	PerspectiveSelector: {
-		viewports: ["desktop", "tablet", "mobile"],
-		themes: ["light", "dark"],
 		delay: 300,
+		themes: ["light", "dark"],
+		viewports: ["desktop", "tablet", "mobile"],
 	},
 	ProgressDashboard: {
-		viewports: ["desktop", "tablet"],
-		themes: ["light", "dark"],
 		delay: 400,
 		pauseAnimationAtEnd: true,
+		themes: ["light", "dark"],
+		viewports: ["desktop", "tablet"],
 	},
 	TemporalNavigator: {
-		viewports: ["desktop", "tablet"],
-		themes: ["light", "dark"],
 		delay: 300,
+		themes: ["light", "dark"],
+		viewports: ["desktop", "tablet"],
 	},
 	UnifiedGraphView: {
-		viewports: ["desktop", "tablet"],
-		themes: ["light", "dark"],
 		delay: 500,
 		pauseAnimationAtEnd: true,
+		themes: ["light", "dark"],
+		viewports: ["desktop", "tablet"],
 	},
 } as const;
 

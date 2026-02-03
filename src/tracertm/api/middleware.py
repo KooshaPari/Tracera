@@ -1,5 +1,7 @@
 """Middleware for TraceRTM API."""
 
+import logging
+
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.responses import Response
@@ -16,15 +18,13 @@ class CacheHeadersMiddleware(BaseHTTPMiddleware):
     - API mutations (POST/PUT/DELETE): no-store
     """
 
-    async def dispatch(
-        self, request: Request, call_next: RequestResponseEndpoint
-    ) -> Response:
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         response = await call_next(request)
 
         path = request.url.path
 
         # Static assets - immutable with long cache
-        if path.startswith("/static") or path.startswith("/assets"):
+        if path.startswith(("/static", "/assets")):
             response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
         # API GET endpoints - short private cache
         elif path.startswith("/api") and request.method == "GET":
@@ -41,9 +41,7 @@ class CacheHeadersMiddleware(BaseHTTPMiddleware):
 
 
 class AuthenticationMiddleware(BaseHTTPMiddleware):
-    async def dispatch(
-        self, request: Request, call_next: RequestResponseEndpoint
-    ) -> Response:
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         token = None
         auth_header = request.headers.get("Authorization")
         if auth_header and auth_header.lower().startswith("bearer "):
@@ -57,12 +55,11 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
                 claims = verify_access_token(token)
                 user_id = claims.get("sub")
                 if user_id:
-                    token_user = current_user_id.set(user_id)
-                    # We might want to clean up the context var after request, 
+                    current_user_id.set(user_id)
+                    # We might want to clean up the context var after request,
                     # but contextvars are request-scoped in asyncio usually.
-            except Exception:
+            except Exception as e:
                 # Ignore errors in middleware, let auth_guard handle them explicitly
-                pass
+                logging.getLogger(__name__).debug("Optional token verification failed: %s", e, exc_info=True)
 
-        response = await call_next(request)
-        return response
+        return await call_next(request)

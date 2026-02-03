@@ -315,7 +315,7 @@ function createMonarchLanguage(ts, is) {
     // >
     // Note: While the JavaCC tokenizer rule only specifies one hex digit,
     // FreeMarker actually interprets up to 4 hex digits.
-    escapedChar: /\\(?:[ntrfbgla\\'"\{=]|(?:x[0-9A-Fa-f]{1,4}))/,
+    escapedChar: /\\(?:[ntrfbgla\\'"{=]|(?:x[0-9A-Fa-f]{1,4}))/,
     // <#ASCII_DIGIT: ["0" - "9"]>
     asciiDigit: /[0-9]/,
     // <INTEGER : (["0"-"9"])+>
@@ -325,9 +325,9 @@ function createMonarchLanguage(ts, is) {
     // 	  // This was generated on JDK 1.8.0_20 Win64 with src/main/misc/identifierChars/IdentifierCharGenerator.java
     //    ...
     // ]
-    nonEscapedIdStartChar: /[\$@-Z_a-z\u00AA\u00B5\u00BA\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u1FFF\u2071\u207F\u2090-\u209C\u2102\u2107\u210A-\u2113\u2115\u2119-\u211D\u2124\u2126\u2128\u212A-\u212D\u212F-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2183-\u2184\u2C00-\u2C2E\u2C30-\u2C5E\u2C60-\u2CE4\u2CEB-\u2CEE\u2CF2-\u2CF3\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D80-\u2D96\u2DA0-\u2DA6\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE\u2DD0-\u2DD6\u2DD8-\u2DDE\u2E2F\u3005-\u3006\u3031-\u3035\u303B-\u303C\u3040-\u318F\u31A0-\u31BA\u31F0-\u31FF\u3300-\u337F\u3400-\u4DB5\u4E00-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA62B\uA640-\uA66E\uA67F-\uA697\uA6A0-\uA6E5\uA717-\uA71F\uA722-\uA788\uA78B-\uA78E\uA790-\uA793\uA7A0-\uA7AA\uA7F8-\uA801\uA803-\uA805\uA807-\uA80A\uA80C-\uA822\uA840-\uA873\uA882-\uA8B3\uA8D0-\uA8D9\uA8F2-\uA8F7\uA8FB\uA900-\uA925\uA930-\uA946\uA960-\uA97C\uA984-\uA9B2\uA9CF-\uA9D9\uAA00-\uAA28\uAA40-\uAA42\uAA44-\uAA4B\uAA50-\uAA59\uAA60-\uAA76\uAA7A\uAA80-\uAAAF\uAAB1\uAAB5-\uAAB6\uAAB9-\uAABD\uAAC0\uAAC2\uAADB-\uAADD\uAAE0-\uAAEA\uAAF2-\uAAF4\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E\uABC0-\uABE2\uABF0-\uABF9\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFB06\uFB13-\uFB17\uFB1D\uFB1F-\uFB28\uFB2A-\uFB36\uFB38-\uFB3C\uFB3E\uFB40-\uFB41\uFB43-\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE70-\uFE74\uFE76-\uFEFC\uFF10-\uFF19\uFF21-\uFF3A\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF\uFFD2-\uFFD7\uFFDA-\uFFDC]/,
+    nonEscapedIdStartChar: /[$@-Z_a-z\u00AA\u00B5\u00BA\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u1FFF\u2071\u207F\u2090-\u209C\u2102\u2107\u210A-\u2113\u2115\u2119-\u211D\u2124\u2126\u2128\u212A-\u212D\u212F-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2183-\u2184\u2C00-\u2C2E\u2C30-\u2C5E\u2C60-\u2CE4\u2CEB-\u2CEE\u2CF2-\u2CF3\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D80-\u2D96\u2DA0-\u2DA6\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE\u2DD0-\u2DD6\u2DD8-\u2DDE\u2E2F\u3005-\u3006\u3031-\u3035\u303B-\u303C\u3040-\u318F\u31A0-\u31BA\u31F0-\u31FF\u3300-\u337F\u3400-\u4DB5\u4E00-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA62B\uA640-\uA66E\uA67F-\uA697\uA6A0-\uA6E5\uA717-\uA71F\uA722-\uA788\uA78B-\uA78E\uA790-\uA793\uA7A0-\uA7AA\uA7F8-\uA801\uA803-\uA805\uA807-\uA80A\uA80C-\uA822\uA840-\uA873\uA882-\uA8B3\uA8D0-\uA8D9\uA8F2-\uA8F7\uA8FB\uA900-\uA925\uA930-\uA946\uA960-\uA97C\uA984-\uA9B2\uA9CF-\uA9D9\uAA00-\uAA28\uAA40-\uAA42\uAA44-\uAA4B\uAA50-\uAA59\uAA60-\uAA76\uAA7A\uAA80-\uAAAF\uAAB1\uAAB5-\uAAB6\uAAB9-\uAABD\uAAC0\uAAC2\uAADB-\uAADD\uAAE0-\uAAEA\uAAF2-\uAAF4\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E\uABC0-\uABE2\uABF0-\uABF9\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFB06\uFB13-\uFB17\uFB1D\uFB1F-\uFB28\uFB2A-\uFB36\uFB38-\uFB3C\uFB3E\uFB40-\uFB41\uFB43-\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE70-\uFE74\uFE76-\uFEFC\uFF10-\uFF19\uFF21-\uFF3A\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF\uFFD2-\uFFD7\uFFDA-\uFFDC]/,
     // <#ESCAPED_ID_CHAR: "\\" ("-" | "." | ":" | "#")>
-    escapedIdChar: /\\[\-\.:#]/,
+    escapedIdChar: /\\[-.:#]/,
     // <#ID_START_CHAR: <NON_ESCAPED_ID_START_CHAR>|<ESCAPED_ID_CHAR>>
     idStartChar: /(?:@nonEscapedIdStartChar)|(?:@escapedIdChar)/,
     // <ID: <ID_START_CHAR> (<ID_START_CHAR>|<ASCII_DIGIT>)*>
@@ -708,7 +708,7 @@ function createMonarchLanguage(ts, is) {
         // <STATIC_TEXT_FALSE_ALARM : "$" | "#" | "<" | "[" | "{"> // to handle a lone dollar sign or "<" or "# or <@ with whitespace after"
         // <STATIC_TEXT_WS : ("\n" | "\r" | "\t" | " ")+>
         // <STATIC_TEXT_NON_WS : (~["$", "<", "#", "[", "{", "\n", "\r", "\t", " "])+>
-        [/[\$#<\[\{]|(?:@blank)+|[^\$<#\[\{\n\r\t ]+/, { token: "source" }]
+        [/[$#<[{]|(?:@blank)+|[^$<#[{\n\r\t ]+/, { token: "source" }]
       ],
       // <STRING_LITERAL :
       // 	(
@@ -809,7 +809,7 @@ function createMonarchLanguage(ts, is) {
         // <OPENING_CURLY_BRACKET : "{">
         // <CLOSING_CURLY_BRACKET : "}">
         [
-          /[\[\]\(\)\{\}]/,
+          /[[\](){}]/,
           {
             cases: {
               "\\[": {
@@ -868,7 +868,7 @@ function createMonarchLanguage(ts, is) {
         // < ( " " | "\t" | "\n" | "\r" )+ >
         [/(?:@blank)+/, { token: "" }],
         // < ("<" | "[") ("#" | "!") "--"> : EXPRESSION_COMMENT
-        [/[<\[][#!]--/, { token: "comment", next: s("@expressionComment__id__") }]
+        [/[<[][#!]--/, { token: "comment", next: s("@expressionComment__id__") }]
       ],
       // <FM_EXPRESSION, NO_SPACE_EXPRESSION, NAMED_PARAMETER_EXPRESSION> TOKEN :
       [s("directive_end_token__id__")]: [
@@ -969,7 +969,7 @@ function createMonarchLanguage(ts, is) {
         // <KEEP_GOING : (~["<", "[", "-"])+>
         // <LONE_LESS_THAN_OR_DASH : ["<", "[", "-"]>
         [
-          /[^<\[\-]+|[<\[\-]/,
+          /[^<[-]+|[<[-]/,
           {
             cases: {
               "$S2==comment": { token: "comment" },
@@ -992,14 +992,14 @@ function createMonarchLanguage(ts, is) {
         // < ">">
         // < "]">
         // < "-">
-        [/[^\->\]]+|[>\]\-]/, { token: "comment" }]
+        [/[^\->\]]+|[>\]-]/, { token: "comment" }]
       ],
       [s("terse_comment_token__id__")]: [
         //  <TERSE_COMMENT_END : "-->" | "--]">
         [r(/--(?:@close__id__)/), { token: "comment", next: "@popall" }],
         // <KEEP_GOING : (~["<", "[", "-"])+>
         // <LONE_LESS_THAN_OR_DASH : ["<", "[", "-"]>
-        [/[^<\[\-]+|[<\[\-]/, { token: "comment" }]
+        [/[^<[-]+|[<[-]/, { token: "comment" }]
       ]
     }
   };

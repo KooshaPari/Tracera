@@ -7,10 +7,12 @@ Revision ID: 019_add_execution_system
 Revises: 018
 Create Date: 2026-01-28 00:00:00.000000
 """
-from alembic import op
+
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.dialects.sqlite import JSON
+
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "019_add_execution_system"
@@ -193,9 +195,7 @@ def upgrade() -> None:
         sa.Column("auto_screenshot", sa.Boolean, nullable=False, server_default="1"),
         sa.Column("auto_video", sa.Boolean, nullable=False, server_default="0"),
         # VHS settings
-        sa.Column(
-            "vhs_theme", sa.String(100), nullable=False, server_default="Dracula"
-        ),
+        sa.Column("vhs_theme", sa.String(100), nullable=False, server_default="Dracula"),
         sa.Column("vhs_font_size", sa.Integer, nullable=False, server_default="14"),
         sa.Column("vhs_width", sa.Integer, nullable=False, server_default="1200"),
         sa.Column("vhs_height", sa.Integer, nullable=False, server_default="600"),
@@ -207,9 +207,7 @@ def upgrade() -> None:
             nullable=False,
             server_default="chromium",
         ),
-        sa.Column(
-            "playwright_headless", sa.Boolean, nullable=False, server_default="1"
-        ),
+        sa.Column("playwright_headless", sa.Boolean, nullable=False, server_default="1"),
         sa.Column(
             "playwright_viewport_width",
             sa.Integer,
@@ -233,13 +231,9 @@ def upgrade() -> None:
         sa.Column("codex_full_auto", sa.Boolean, nullable=False, server_default="0"),
         sa.Column("codex_timeout", sa.Integer, nullable=False, server_default="300"),
         # Storage settings
-        sa.Column(
-            "artifact_retention_days", sa.Integer, nullable=False, server_default="30"
-        ),
+        sa.Column("artifact_retention_days", sa.Integer, nullable=False, server_default="30"),
         sa.Column("storage_path", sa.String(500), nullable=True),
-        sa.Column(
-            "max_artifact_size_mb", sa.Integer, nullable=False, server_default="100"
-        ),
+        sa.Column("max_artifact_size_mb", sa.Integer, nullable=False, server_default="100"),
         # Execution limits
         sa.Column(
             "max_concurrent_executions",
@@ -247,9 +241,7 @@ def upgrade() -> None:
             nullable=False,
             server_default="3",
         ),
-        sa.Column(
-            "execution_timeout", sa.Integer, nullable=False, server_default="600"
-        ),
+        sa.Column("execution_timeout", sa.Integer, nullable=False, server_default="600"),
         # Timestamps
         sa.Column(
             "created_at",
@@ -274,12 +266,8 @@ def upgrade() -> None:
     op.create_index("idx_executions_test_run_id", "executions", ["test_run_id"])
     op.create_index("idx_executions_item_id", "executions", ["item_id"])
 
-    op.create_index(
-        "idx_execution_artifacts_execution_id", "execution_artifacts", ["execution_id"]
-    )
-    op.create_index(
-        "idx_execution_artifacts_item_id", "execution_artifacts", ["item_id"]
-    )
+    op.create_index("idx_execution_artifacts_execution_id", "execution_artifacts", ["execution_id"])
+    op.create_index("idx_execution_artifacts_item_id", "execution_artifacts", ["item_id"])
     op.create_index(
         "idx_execution_artifacts_artifact_type",
         "execution_artifacts",
@@ -296,9 +284,7 @@ def upgrade() -> None:
         "codex_agent_interactions",
         ["execution_id"],
     )
-    op.create_index(
-        "idx_codex_interactions_status", "codex_agent_interactions", ["status"]
-    )
+    op.create_index("idx_codex_interactions_status", "codex_agent_interactions", ["status"])
     op.create_index(
         "idx_codex_interactions_task_type",
         "codex_agent_interactions",

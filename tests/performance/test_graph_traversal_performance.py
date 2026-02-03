@@ -11,19 +11,19 @@ Tests performance-critical paths:
 Target: +2% coverage on performance-sensitive paths
 """
 
-import pytest
-import time
 import asyncio
-from unittest.mock import AsyncMock, MagicMock, patch
+import time
+from unittest.mock import AsyncMock, MagicMock
 
+import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from tracertm.services.critical_path_service import (
-    CriticalPathService,
-    CriticalPathResult,
-)
 from tracertm.models.item import Item
 from tracertm.models.link import Link
+from tracertm.services.critical_path_service import (
+    CriticalPathResult,
+    CriticalPathService,
+)
 
 
 @pytest.fixture
@@ -38,6 +38,7 @@ async def mock_async_session() -> AsyncMock:
 @pytest.fixture
 def create_graph_items(num_nodes: int = 100):
     """Create test graph items."""
+
     def _create_items(project_id: str):
         items = []
         for i in range(num_nodes):
@@ -49,12 +50,14 @@ def create_graph_items(num_nodes: int = 100):
             item.priority = "medium"
             items.append(item)
         return items
+
     return _create_items
 
 
 @pytest.fixture
 def create_graph_links(num_edges: int = 150):
     """Create test graph links."""
+
     def _create_links(project_id: str, num_nodes: int):
         links = []
         edge_count = 0
@@ -66,11 +69,12 @@ def create_graph_links(num_edges: int = 150):
                     link.id = f"link-{edge_count}"
                     link.project_id = project_id
                     link.source_item_id = f"item-{i:04d}"
-                    link.target_item_id = f"item-{i+j:04d}"
+                    link.target_item_id = f"item-{i + j:04d}"
                     link.link_type = "depends_on"
                     links.append(link)
                     edge_count += 1
         return links
+
     return _create_links
 
 
@@ -124,7 +128,7 @@ class TestCriticalPathPerformance:
                 if i + j < 500:
                     link = MagicMock(spec=Link)
                     link.source_item_id = f"item-{i:04d}"
-                    link.target_item_id = f"item-{i+j:04d}"
+                    link.target_item_id = f"item-{i + j:04d}"
                     link.link_type = "depends_on"
                     links.append(link)
 
@@ -147,7 +151,9 @@ class TestCriticalPathPerformance:
         assert result is not None
 
     @pytest.mark.asyncio
-    async def test_critical_path_with_link_type_filter(self, mock_async_session, create_graph_items, create_graph_links):
+    async def test_critical_path_with_link_type_filter(
+        self, mock_async_session, create_graph_items, create_graph_links
+    ):
         """Test critical path with link type filtering."""
         project_id = "proj-003"
         items = create_graph_items(100)(project_id)
@@ -159,7 +165,7 @@ class TestCriticalPathPerformance:
                 if i + j < 100:
                     link = MagicMock(spec=Link)
                     link.source_item_id = f"item-{i:04d}"
-                    link.target_item_id = f"item-{i+j:04d}"
+                    link.target_item_id = f"item-{i + j:04d}"
                     # Vary link types
                     link.link_type = ["depends_on", "implements", "tests"][i % 3]
                     links.append(link)
@@ -175,10 +181,7 @@ class TestCriticalPathPerformance:
         service.links = mock_link_repo
 
         start_time = time.time()
-        result = await service.calculate_critical_path(
-            project_id,
-            link_types=["depends_on"]
-        )
+        result = await service.calculate_critical_path(project_id, link_types=["depends_on"])
         elapsed = time.time() - start_time
 
         assert elapsed < 0.5
@@ -199,7 +202,7 @@ class TestCriticalPathPerformance:
             for i in range(0, num_items - 1, 2):
                 link = MagicMock(spec=Link)
                 link.source_item_id = f"{project_id}-item-{i}"
-                link.target_item_id = f"{project_id}-item-{i+1}"
+                link.target_item_id = f"{project_id}-item-{i + 1}"
                 link.link_type = "depends_on"
                 links.append(link)
 
@@ -216,10 +219,7 @@ class TestCriticalPathPerformance:
 
         # Run 10 concurrent analyses
         start_time = time.time()
-        results = await asyncio.gather(*[
-            run_cp_analysis(f"proj-{i:03d}", 50)
-            for i in range(10)
-        ])
+        results = await asyncio.gather(*[run_cp_analysis(f"proj-{i:03d}", 50) for i in range(10)])
         elapsed = time.time() - start_time
 
         assert len(results) == 10
@@ -257,6 +257,7 @@ class TestCriticalPathPerformance:
         service.links = mock_link_repo
 
         import tracemalloc
+
         tracemalloc.start()
 
         snapshot_before = tracemalloc.take_snapshot()
@@ -265,7 +266,7 @@ class TestCriticalPathPerformance:
 
         tracemalloc.stop()
 
-        stats = snapshot_after.compare_to(snapshot_before, 'lineno')
+        stats = snapshot_after.compare_to(snapshot_before, "lineno")
         total_increase = sum(stat.size_diff for stat in stats) / (1024 * 1024)
 
         # Should use < 10MB for 200 items + 300 links
@@ -368,7 +369,7 @@ class TestCriticalPathPerformance:
         for i in range(99):
             link = MagicMock(spec=Link)
             link.source_item_id = f"item-{i:04d}"
-            link.target_item_id = f"item-{i+1:04d}"
+            link.target_item_id = f"item-{i + 1:04d}"
             link.link_type = "depends_on"
             links.append(link)
 
@@ -407,7 +408,7 @@ class TestCriticalPathPerformance:
                 if i + 1 < 100:
                     link = MagicMock(spec=Link)
                     link.source_item_id = f"item-{i:04d}"
-                    link.target_item_id = f"item-{i+1:04d}"
+                    link.target_item_id = f"item-{i + 1:04d}"
                     link.link_type = "depends_on"
                     links.append(link)
 
@@ -417,7 +418,7 @@ class TestCriticalPathPerformance:
                 if i + j < 100:
                     link = MagicMock(spec=Link)
                     link.source_item_id = f"item-{i:04d}"
-                    link.target_item_id = f"item-{i+j:04d}"
+                    link.target_item_id = f"item-{i + j:04d}"
                     link.link_type = "depends_on"
                     links.append(link)
 

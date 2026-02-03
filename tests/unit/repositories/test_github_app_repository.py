@@ -4,16 +4,16 @@ Tests for GitHubAppInstallationRepository.
 Comprehensive tests covering GitHub App installation CRUD operations.
 """
 
-import pytest
-import pytest_asyncio
+import asyncio
 from datetime import datetime
 from uuid import uuid4
 
+import pytest
+import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from tracertm.repositories.github_app_repository import GitHubAppInstallationRepository
 from tracertm.repositories.account_repository import AccountRepository
-
+from tracertm.repositories.github_app_repository import GitHubAppInstallationRepository
 
 # ==================== Fixtures ====================
 
@@ -21,6 +21,7 @@ from tracertm.repositories.account_repository import AccountRepository
 @pytest_asyncio.fixture
 async def github_app_repo(db_session: AsyncSession):
     """Create a GitHubAppInstallationRepository instance."""
+    await asyncio.sleep(0)
     return GitHubAppInstallationRepository(db_session)
 
 
@@ -28,12 +29,11 @@ async def github_app_repo(db_session: AsyncSession):
 async def account_for_github_app(db_session: AsyncSession):
     """Create an account for GitHub App installation tests (FK requirement)."""
     account_repo = AccountRepository(db_session)
-    account = await account_repo.create(
+    return await account_repo.create(
         name="GitHub Test Account",
         slug=f"github-test-account-{uuid4().hex[:8]}",
         account_type="organization",
     )
-    return account
 
 
 @pytest_asyncio.fixture
@@ -62,9 +62,7 @@ class TestCreate:
     """Tests for GitHubAppInstallationRepository.create."""
 
     @pytest.mark.asyncio
-    async def test_create_happy_path(
-        self, github_app_repo: GitHubAppInstallationRepository, account_for_github_app
-    ):
+    async def test_create_happy_path(self, github_app_repo: GitHubAppInstallationRepository, account_for_github_app):
         """Test creating a GitHub App installation with standard fields."""
         installation = await github_app_repo.create(
             account_id=account_for_github_app.id,
@@ -182,9 +180,7 @@ class TestGetByGitHubInstallationId:
         assert result.installation_id == installation.installation_id
 
     @pytest.mark.asyncio
-    async def test_get_by_github_installation_id_not_found(
-        self, github_app_repo: GitHubAppInstallationRepository
-    ):
+    async def test_get_by_github_installation_id_not_found(self, github_app_repo: GitHubAppInstallationRepository):
         """Test getting by non-existent GitHub installation ID returns None."""
         result = await github_app_repo.get_by_github_installation_id(99999999)
 
@@ -241,9 +237,7 @@ class TestListByAccount:
         assert result[0].id == active.id
 
     @pytest.mark.asyncio
-    async def test_list_by_account_empty_when_none(
-        self, github_app_repo: GitHubAppInstallationRepository
-    ):
+    async def test_list_by_account_empty_when_none(self, github_app_repo: GitHubAppInstallationRepository):
         """Test listing installations for an account with no installations returns empty list."""
         result = await github_app_repo.list_by_account(str(uuid4()))
 
@@ -323,9 +317,7 @@ class TestUpdate:
     @pytest.mark.asyncio
     async def test_update_not_found(self, github_app_repo: GitHubAppInstallationRepository):
         """Test updating a non-existent installation returns None."""
-        result = await github_app_repo.update(
-            str(uuid4()), permissions={"contents": "read"}
-        )
+        result = await github_app_repo.update(str(uuid4()), permissions={"contents": "read"})
 
         assert result is None
 

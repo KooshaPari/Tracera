@@ -15,5 +15,5 @@ export declare function diffChars(oldStr: string, newStr: string, options: DiffC
 export declare function diffChars(oldStr: string, newStr: string, options: DiffCharsOptionsNonabortable & CallbackOptionNonabortable<string>): undefined;
 export declare function diffChars(oldStr: string, newStr: string, options: DiffCharsOptionsAbortable): ChangeObject<string>[] | undefined;
 export declare function diffChars(oldStr: string, newStr: string, options?: DiffCharsOptionsNonabortable): ChangeObject<string>[];
-export {};
+
 //# sourceMappingURL=character.d.ts.map

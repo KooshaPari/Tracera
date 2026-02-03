@@ -7,4 +7,4 @@ interface ContainerOffset {
     left: number;
 }
 export declare const getOffset: (rect: ContainerOffset) => ContainerOffset;
-export {};
+

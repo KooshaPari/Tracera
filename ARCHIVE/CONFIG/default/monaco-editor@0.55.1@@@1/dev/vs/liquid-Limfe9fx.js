@@ -19,7 +19,7 @@ define("vs/liquid-Limfe9fx", ["exports", "./editor.api-CykLys8L"], (function(exp
     "wbr"
   ];
   const conf = {
-    wordPattern: /(-?\d*\.\d\w*)|([^\`\~\!\@\$\^\&\*\(\)\=\+\[\{\]\}\\\|\;\:\'\"\,\.\<\>\/\s]+)/g,
+    wordPattern: /(-?\d*\.\d\w*)|([^`~!@$^&*()=+[{\]}\\|;:'",.<>/\s]+)/g,
     brackets: [
       ["<!--", "-->"],
       ["<", ">"],
@@ -148,19 +148,19 @@ define("vs/liquid-Limfe9fx", ["exports", "./editor.api-CykLys8L"], (function(exp
     identifier: /[a-zA-Z_][\w]*/,
     tokenizer: {
       root: [
-        [/\{\%\s*comment\s*\%\}/, "comment.start.liquid", "@comment"],
+        [/\{%\s*comment\s*%\}/, "comment.start.liquid", "@comment"],
         [/\{\{/, { token: "@rematch", switchTo: "@liquidState.root" }],
-        [/\{\%/, { token: "@rematch", switchTo: "@liquidState.root" }],
-        [/(<)([\w\-]+)(\/>)/, ["delimiter.html", "tag.html", "delimiter.html"]],
+        [/\{%/, { token: "@rematch", switchTo: "@liquidState.root" }],
+        [/(<)([\w-]+)(\/>)/, ["delimiter.html", "tag.html", "delimiter.html"]],
         [/(<)([:\w]+)/, ["delimiter.html", { token: "tag.html", next: "@otherTag" }]],
-        [/(<\/)([\w\-]+)/, ["delimiter.html", { token: "tag.html", next: "@otherTag" }]],
+        [/(<\/)([\w-]+)/, ["delimiter.html", { token: "tag.html", next: "@otherTag" }]],
         [/</, "delimiter.html"],
         [/\{/, "delimiter.html"],
         [/[^<{]+/]
         // text
       ],
       comment: [
-        [/\{\%\s*endcomment\s*\%\}/, "comment.end.liquid", "@pop"],
+        [/\{%\s*endcomment\s*%\}/, "comment.end.liquid", "@pop"],
         [/./, "comment.content.liquid"]
       ],
       otherTag: [
@@ -172,7 +172,7 @@ define("vs/liquid-Limfe9fx", ["exports", "./editor.api-CykLys8L"], (function(exp
           }
         ],
         [
-          /\{\%/,
+          /\{%/,
           {
             token: "@rematch",
             switchTo: "@liquidState.otherTag"
@@ -181,7 +181,7 @@ define("vs/liquid-Limfe9fx", ["exports", "./editor.api-CykLys8L"], (function(exp
         [/\/?>/, "delimiter.html", "@pop"],
         [/"([^"]*)"/, "attribute.value"],
         [/'([^']*)'/, "attribute.value"],
-        [/[\w\-]+/, "attribute.name"],
+        [/[\w-]+/, "attribute.name"],
         [/=/, "delimiter"],
         [/[ \t\r\n]+/]
         // whitespace
@@ -189,16 +189,16 @@ define("vs/liquid-Limfe9fx", ["exports", "./editor.api-CykLys8L"], (function(exp
       liquidState: [
         [/\{\{/, "delimiter.output.liquid"],
         [/\}\}/, { token: "delimiter.output.liquid", switchTo: "@$S2.$S3" }],
-        [/\{\%/, "delimiter.tag.liquid"],
-        [/raw\s*\%\}/, "delimiter.tag.liquid", "@liquidRaw"],
-        [/\%\}/, { token: "delimiter.tag.liquid", switchTo: "@$S2.$S3" }],
+        [/\{%/, "delimiter.tag.liquid"],
+        [/raw\s*%\}/, "delimiter.tag.liquid", "@liquidRaw"],
+        [/%\}/, { token: "delimiter.tag.liquid", switchTo: "@$S2.$S3" }],
         { include: "liquidRoot" }
       ],
       liquidRaw: [
-        [/^(?!\{\%\s*endraw\s*\%\}).+/],
-        [/\{\%/, "delimiter.tag.liquid"],
+        [/^(?!\{%\s*endraw\s*%\}).+/],
+        [/\{%/, "delimiter.tag.liquid"],
         [/@identifier/],
-        [/\%\}/, { token: "delimiter.tag.liquid", next: "@root" }]
+        [/%\}/, { token: "delimiter.tag.liquid", next: "@root" }]
       ],
       liquidRoot: [
         [/\d+(\.\d+)?/, "number.liquid"],

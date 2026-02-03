@@ -3,14 +3,13 @@ End-to-end integration tests
 """
 
 import pytest
-from router import TOOL_REGISTRY, ArchRouter, ToolRegistry
-
 from hooks import (
     auggie_pre_discovery,
     claude_cli_pre_discovery,
     cursor_agent_pre_discovery,
     droid_pre_discovery,
 )
+from router import TOOL_REGISTRY, ArchRouter, ToolRegistry
 
 
 @pytest.mark.asyncio
@@ -30,9 +29,11 @@ class TestEndToEnd:
     @pytest.fixture
     def search_service(self):
         """Create mock search service"""
+
         class MockSearchService:
             async def semantic_search(self, *args, **kwargs):
                 return []
+
         return MockSearchService()
 
     async def test_cursor_agent_flow(self, router, registry, search_service):

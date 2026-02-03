@@ -94,7 +94,7 @@ export default function cssExtras(Prism) {
     }
     Prism.languages.insertBefore('css', 'function', {
       operator: {
-        pattern: /(\s)[+\-*\/](?=\s)/,
+        pattern: /(\s)[+\-*/](?=\s)/,
         lookbehind: true
       },
       // CAREFUL!

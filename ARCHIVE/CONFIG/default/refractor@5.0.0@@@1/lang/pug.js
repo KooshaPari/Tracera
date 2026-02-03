@@ -118,11 +118,11 @@ export default function pug(Prism) {
       },
       'plain-text': {
         pattern:
-          /(^[\t ]*(?!-)[\w\-#.]*[\w\-](?:(?:&[^(]+)?\([^)]+\))*\/?[\t ]).+/m,
+          /(^[\t ]*(?!-)[\w\-#.]*[\w-](?:(?:&[^(]+)?\([^)]+\))*\/?[\t ]).+/m,
         lookbehind: true
       },
       tag: {
-        pattern: /(^[\t ]*)(?!-)[\w\-#.]*[\w\-](?:(?:&[^(]+)?\([^)]+\))*\/?:?/m,
+        pattern: /(^[\t ]*)(?!-)[\w\-#.]*[\w-](?:(?:&[^(]+)?\([^)]+\))*\/?:?/m,
         lookbehind: true,
         inside: {
           attributes: [
@@ -144,8 +144,8 @@ export default function pug(Prism) {
             }
           ],
           punctuation: /:/,
-          'attr-id': /#[\w\-]+/,
-          'attr-class': /\.[\w\-]+/
+          'attr-id': /#[\w-]+/,
+          'attr-class': /\.[\w-]+/
         }
       },
       code: [

@@ -35,7 +35,7 @@ export default function oz(Prism) {
     variable: /`(?:[^`\\]|\\.)+`/,
     'attr-name': /\b\w+(?=[ \t]*:(?![:=]))/,
     operator:
-      /:(?:=|::?)|<[-:=]?|=(?:=|<?:?)|>=?:?|\\=:?|!!?|[|#+\-*\/,~^@]|\b(?:andthen|div|mod|orelse)\b/,
-    punctuation: /[\[\](){}.:;?]/
+      /:(?:=|::?)|<[-:=]?|=(?:=|<?:?)|>=?:?|\\=:?|!!?|[|#+\-*/,~^@]|\b(?:andthen|div|mod|orelse)\b/,
+    punctuation: /[[\](){}.:;?]/
   }
 }

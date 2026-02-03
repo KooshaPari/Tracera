@@ -47,4 +47,4 @@ export type MultidimensionalReadonlyArray<Element, Dimensions extends number> = 
 		? Element
 		: ReadonlyArray<MultidimensionalReadonlyArray<Element, Subtract<Dimensions, 1>>>;
 
-export {};
+

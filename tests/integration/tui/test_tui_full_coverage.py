@@ -20,38 +20,43 @@ Test File Structure:
 - Sync status tests (25+ tests)
 """
 
-import asyncio
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, Mock, call, patch
+from typing import Any, cast
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
 try:
-    from textual.widgets import DataTable, Footer, Header, Input, Static, Tree
-    from textual.containers import Container, Horizontal, Vertical
-    from textual.app import ComposeResult
+    from textual.app import ComposeResult  # type: ignore[import-untyped]
+    from textual.containers import Container, Horizontal, Vertical  # type: ignore[import-untyped]
+    from textual.widgets import DataTable, Footer, Header, Input, Static, Tree  # type: ignore[import-untyped]
+
     TEXTUAL_AVAILABLE = True
 except ImportError:
     TEXTUAL_AVAILABLE = False
 
 
-# Conditionally import TUI modules
+# Conditionally import TUI modules (types may be missing when textual not installed)
 if TEXTUAL_AVAILABLE:
-    from tracertm.tui.apps.browser import BrowserApp
-    from tracertm.tui.apps.dashboard import DashboardApp
-    from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
-    from tracertm.tui.apps.graph import GraphApp
-    from tracertm.tui.widgets.conflict_panel import ConflictPanel
-    from tracertm.tui.widgets.item_list import ItemListWidget
-    from tracertm.tui.widgets.state_display import StateDisplayWidget
-    from tracertm.tui.widgets.sync_status import SyncStatusWidget, CompactSyncStatus
-    from tracertm.tui.widgets.view_switcher import ViewSwitcherWidget
+    from tracertm.tui.apps.browser import BrowserApp  # type: ignore[possibly-missing-import]
+    from tracertm.tui.apps.dashboard import DashboardApp  # type: ignore[possibly-missing-import]
+    from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp  # type: ignore[possibly-missing-import]
+    from tracertm.tui.apps.graph import GraphApp  # type: ignore[possibly-missing-import]
+    from tracertm.tui.widgets.conflict_panel import ConflictPanel  # type: ignore[possibly-missing-import]
+    from tracertm.tui.widgets.item_list import ItemListWidget  # type: ignore[possibly-missing-import]
+    from tracertm.tui.widgets.state_display import StateDisplayWidget  # type: ignore[possibly-missing-import]
+    from tracertm.tui.widgets.sync_status import (  # type: ignore[possibly-missing-import]
+        CompactSyncStatus,
+        SyncStatusWidget,
+    )
+    from tracertm.tui.widgets.view_switcher import ViewSwitcherWidget  # type: ignore[possibly-missing-import]
 
 
 # ============================================================================
 # WIDGET RENDERING TESTS (50+ tests)
 # ============================================================================
+
 
 @pytest.mark.skipif(not TEXTUAL_AVAILABLE, reason="Textual not installed")
 class TestItemListWidgetRendering:
@@ -272,6 +277,7 @@ class TestConflictPanelRendering:
 # EVENT HANDLING TESTS (40+ tests)
 # ============================================================================
 
+
 @pytest.mark.skipif(not TEXTUAL_AVAILABLE, reason="Textual not installed")
 class TestSyncStatusWidgetEventHandling:
     """Test SyncStatusWidget event handling."""
@@ -404,7 +410,7 @@ class TestConflictPanelEventHandling:
             mock_query.return_value = mock_table
             panel.refresh_conflict_list()
             # Verify table was queried
-            assert mock_query.called or True
+            assert True
 
     def test_action_resolve_local(self):
         """Test action_resolve_local."""
@@ -467,6 +473,7 @@ class TestConflictPanelEventHandling:
 # ============================================================================
 # STATE MANAGEMENT TESTS (30+ tests)
 # ============================================================================
+
 
 @pytest.mark.skipif(not TEXTUAL_AVAILABLE, reason="Textual not installed")
 class TestSyncStatusWidgetStateManagement:
@@ -564,7 +571,7 @@ class TestEnhancedDashboardAppStateManagement:
 
     def test_initial_state(self):
         """Test initial app state."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         assert app.current_view == "epic"
         assert app.project_name is None
         assert app._is_syncing is False
@@ -572,7 +579,7 @@ class TestEnhancedDashboardAppStateManagement:
 
     def test_state_view_changes(self):
         """Test view state changes."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         views = ["epic", "story", "test", "task"]
         for view in views:
             app.current_view = view
@@ -580,7 +587,7 @@ class TestEnhancedDashboardAppStateManagement:
 
     def test_state_sync_in_progress(self):
         """Test sync state."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         app._is_syncing = True
         assert app._is_syncing is True
         app._is_syncing = False
@@ -590,6 +597,7 @@ class TestEnhancedDashboardAppStateManagement:
 # ============================================================================
 # APP INTEGRATION TESTS (30+ tests)
 # ============================================================================
+
 
 @pytest.mark.skipif(not TEXTUAL_AVAILABLE, reason="Textual not installed")
 class TestBrowserAppInitialization:
@@ -619,7 +627,7 @@ class TestBrowserAppInitialization:
 
     def test_compose_structure(self):
         """Test BrowserApp compose."""
-        app = BrowserApp()
+        app = cast(Any, BrowserApp())
         try:
             widgets = list(app.compose())
             assert len(widgets) > 0
@@ -652,7 +660,7 @@ class TestDashboardAppInitialization:
 
     def test_compose_includes_header(self):
         """Test compose includes header."""
-        app = DashboardApp()
+        app = cast(Any, DashboardApp())
         try:
             widgets = list(app.compose())
             has_header = any(isinstance(w, Header) for w in widgets)
@@ -706,7 +714,7 @@ class TestEnhancedDashboardAppInitialization:
 
     def test_app_attributes(self):
         """Test app attributes."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         assert app.storage_adapter is not None
         assert app.current_view == "epic"
 
@@ -714,6 +722,7 @@ class TestEnhancedDashboardAppInitialization:
 # ============================================================================
 # SYNC STATUS DISPLAY TESTS (25+ tests)
 # ============================================================================
+
 
 @pytest.mark.skipif(not TEXTUAL_AVAILABLE, reason="Textual not installed")
 class TestSyncStatusWidgetDisplay:
@@ -741,7 +750,7 @@ class TestSyncStatusWidgetDisplay:
     def test_format_time_ago_seconds(self):
         """Test time formatting for seconds."""
         widget = SyncStatusWidget()
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         ago_30s = now - timedelta(seconds=30)
         formatted = widget._format_time_ago(ago_30s)
         assert "just now" in formatted or "ago" in formatted
@@ -749,7 +758,7 @@ class TestSyncStatusWidgetDisplay:
     def test_format_time_ago_minutes(self):
         """Test time formatting for minutes."""
         widget = SyncStatusWidget()
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         ago_5m = now - timedelta(minutes=5)
         formatted = widget._format_time_ago(ago_5m)
         assert "minute" in formatted or "ago" in formatted
@@ -757,7 +766,7 @@ class TestSyncStatusWidgetDisplay:
     def test_format_time_ago_hours(self):
         """Test time formatting for hours."""
         widget = SyncStatusWidget()
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         ago_2h = now - timedelta(hours=2)
         formatted = widget._format_time_ago(ago_2h)
         assert "hour" in formatted or "ago" in formatted
@@ -765,7 +774,7 @@ class TestSyncStatusWidgetDisplay:
     def test_format_time_ago_days(self):
         """Test time formatting for days."""
         widget = SyncStatusWidget()
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         ago_3d = now - timedelta(days=3)
         formatted = widget._format_time_ago(ago_3d)
         assert "day" in formatted or "ago" in formatted
@@ -822,6 +831,7 @@ class TestCompactSyncStatusDisplay:
 # ERROR HANDLING TESTS (25+ tests)
 # ============================================================================
 
+
 @pytest.mark.skipif(not TEXTUAL_AVAILABLE, reason="Textual not installed")
 class TestSyncStatusWidgetErrorHandling:
     """Test SyncStatusWidget error handling."""
@@ -845,7 +855,7 @@ class TestSyncStatusWidgetErrorHandling:
         # This should not raise
         try:
             widget.update_display()
-        except Exception as e:
+        except Exception:
             # Expected if widget methods unavailable
             pass
 
@@ -932,6 +942,7 @@ class TestAppErrorHandling:
 # COMPOUND STATE TESTS (Additional 20+ tests)
 # ============================================================================
 
+
 @pytest.mark.skipif(not TEXTUAL_AVAILABLE, reason="Textual not installed")
 class TestSyncStatusWidgetCompoundStates:
     """Test SyncStatusWidget with compound state combinations."""
@@ -996,7 +1007,7 @@ class TestWidgetComposition:
 
     def test_browser_app_has_tree(self):
         """Test BrowserApp includes tree widget."""
-        app = BrowserApp()
+        app = cast(Any, BrowserApp())
         try:
             widgets = list(app.compose())
             # May be nested, check structure exists
@@ -1006,7 +1017,7 @@ class TestWidgetComposition:
 
     def test_dashboard_app_has_tables(self):
         """Test DashboardApp includes tables."""
-        app = DashboardApp()
+        app = cast(Any, DashboardApp())
         try:
             widgets = list(app.compose())
             assert len(widgets) > 0 or widgets is not None
@@ -1015,7 +1026,7 @@ class TestWidgetComposition:
 
     def test_enhanced_dashboard_has_sync_widget(self):
         """Test EnhancedDashboardApp includes sync widget."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         try:
             widgets = list(app.compose())
             assert len(widgets) > 0 or widgets is not None
@@ -1049,6 +1060,7 @@ class TestBindings:
 # INTEGRATION TESTS (Additional 15+ tests)
 # ============================================================================
 
+
 @pytest.mark.skipif(not TEXTUAL_AVAILABLE, reason="Textual not installed")
 class TestTUIIntegration:
     """Test TUI component integration."""
@@ -1081,7 +1093,7 @@ class TestTUIIntegration:
 
     def test_sync_widget_in_dashboard(self):
         """Test sync widget integration in dashboard."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         assert app.storage_adapter is not None
 
     def test_conflict_panel_independent(self):
@@ -1106,7 +1118,7 @@ class TestTUIEdgeCases:
 
     def test_app_view_cycling(self):
         """Test app view cycling."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         views = ["epic", "story", "test", "task"]
         for view in views:
             app.current_view = view
@@ -1123,6 +1135,7 @@ class TestTUIEdgeCases:
 # ============================================================================
 # EXPANDED WIDGET INTERACTION TESTS (15+ new tests)
 # ============================================================================
+
 
 @pytest.mark.skipif(not TEXTUAL_AVAILABLE, reason="Textual not installed")
 class TestSyncStatusWidgetRenderStates:
@@ -1176,7 +1189,7 @@ class TestSyncStatusWidgetRenderStates:
     def test_format_time_ago_edge_cases(self):
         """Test time formatting edge cases."""
         widget = SyncStatusWidget()
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         # Test at exact boundaries
         test_cases = [
@@ -1209,12 +1222,12 @@ class TestCompactSyncStatusRenderVariations:
 
         states = [
             (False, False, 0, 0),  # offline, not syncing
-            (True, False, 0, 0),   # online, not syncing
-            (False, True, 0, 0),   # offline, syncing
-            (True, True, 0, 0),    # online, syncing
-            (True, False, 5, 0),   # with pending
-            (True, False, 0, 2),   # with conflicts
-            (True, False, 3, 2),   # with both
+            (True, False, 0, 0),  # online, not syncing
+            (False, True, 0, 0),  # offline, syncing
+            (True, True, 0, 0),  # online, syncing
+            (True, False, 5, 0),  # with pending
+            (True, False, 0, 2),  # with conflicts
+            (True, False, 3, 2),  # with both
         ]
 
         for online, syncing, pending, conflicts in states:
@@ -1296,12 +1309,13 @@ class TestConflictPanelStateManagement:
                 panel.on_button_pressed(event)
                 if btn_id in ["btn-local", "btn-remote", "btn-manual", "btn-close"]:
                     # May or may not call depending on implementation
-                    assert mock_action.called or True
+                    assert True
 
 
 # ============================================================================
 # EXPANDED WIDGET COMPOSITION TESTS (10+ new tests)
 # ============================================================================
+
 
 @pytest.mark.skipif(not TEXTUAL_AVAILABLE, reason="Textual not installed")
 class TestViewSwitcherWidgetBehavior:
@@ -1389,6 +1403,7 @@ class TestStateDisplayWidgetBehavior:
 # ENHANCED APP BEHAVIOR TESTS (10+ new tests)
 # ============================================================================
 
+
 @pytest.mark.skipif(not TEXTUAL_AVAILABLE, reason="Textual not installed")
 class TestBrowserAppActionBindings:
     """Test BrowserApp action bindings."""
@@ -1472,12 +1487,12 @@ class TestEnhancedDashboardBehavior:
 
     def test_enhanced_dashboard_storage_adapter(self):
         """Test storage adapter is initialized."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         assert app.storage_adapter is not None
 
     def test_enhanced_dashboard_view_cycling(self):
         """Test view cycling works."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         views = ["epic", "story", "test", "task"]
         for view in views:
             app.current_view = view
@@ -1485,7 +1500,7 @@ class TestEnhancedDashboardBehavior:
 
     def test_enhanced_dashboard_sync_state(self):
         """Test sync state management."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         assert app._is_syncing is False
         app._is_syncing = True
         assert app._is_syncing is True
@@ -1500,6 +1515,7 @@ class TestEnhancedDashboardBehavior:
 # ============================================================================
 # REACTIVE STATE CHANGE TESTS (8+ new tests)
 # ============================================================================
+
 
 @pytest.mark.skipif(not TEXTUAL_AVAILABLE, reason="Textual not installed")
 class TestSyncStatusReactiveChaining:
@@ -1569,6 +1585,7 @@ class TestSyncStatusReactiveChaining:
 # EDGE CASE AND ERROR CONDITION TESTS (10+ new tests)
 # ============================================================================
 
+
 @pytest.mark.skipif(not TEXTUAL_AVAILABLE, reason="Textual not installed")
 class TestWidgetErrorRecovery:
     """Test widget error recovery."""
@@ -1577,7 +1594,7 @@ class TestWidgetErrorRecovery:
         """Test update_display handles unmounted state."""
         widget = SyncStatusWidget()
         # Mock is_mounted as False using PropertyMock
-        with patch.object(type(widget), 'is_mounted', new_callable=lambda: MagicMock(return_value=False)):
+        with patch.object(type(widget), "is_mounted", new_callable=lambda: MagicMock(return_value=False)):
             # Should not raise
             try:
                 widget.update_display()
@@ -1623,8 +1640,7 @@ class TestWidgetErrorRecovery:
     def test_time_formatting_with_timezone_aware(self):
         """Test time formatting with timezone-aware datetime."""
         widget = SyncStatusWidget()
-        from datetime import timezone as tz
-        now = datetime.now(tz.utc)
+        now = datetime.now(UTC)
         past = now - timedelta(hours=1)
         result = widget._format_time_ago(past)
         assert "hour" in result or "ago" in result
@@ -1642,12 +1658,12 @@ class TestWidgetErrorRecovery:
 # SUMMARY TEST COUNTS
 # ============================================================================
 
+
 def test_total_test_count():
     """Summary: Total tests in this file."""
     # This is a marker test to document test count
     # Actual count should be 200+ when run
     # New additions: +40-60 tests targeting TUI widget coverage gaps
-    pass
 
 
 if __name__ == "__main__":

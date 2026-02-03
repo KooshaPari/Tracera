@@ -7,14 +7,12 @@ Create Date: 2026-01-28
 
 from __future__ import annotations
 
-from datetime import datetime
 import uuid
 
-from alembic import op
-from alembic import context
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
+from alembic import context, op
 from tracertm.models.types import JSONType
 
 # revision identifiers, used by Alembic.
@@ -32,7 +30,13 @@ def upgrade() -> None:
     op.create_table(
         "views",
         sa.Column("id", sa.String(length=255), primary_key=True),
-        sa.Column("project_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True),
+        sa.Column(
+            "project_id",
+            postgresql.UUID(as_uuid=True),
+            sa.ForeignKey("projects.id", ondelete="CASCADE"),
+            nullable=False,
+            index=True,
+        ),
         sa.Column("name", sa.String(length=200), nullable=False),
         sa.Column("description", sa.Text(), nullable=True),
         sa.Column("view_metadata", JSONType, nullable=False, server_default=sa.text("'{}'")),
@@ -44,7 +48,13 @@ def upgrade() -> None:
     op.create_table(
         "node_kinds",
         sa.Column("id", sa.String(length=255), primary_key=True),
-        sa.Column("project_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True),
+        sa.Column(
+            "project_id",
+            postgresql.UUID(as_uuid=True),
+            sa.ForeignKey("projects.id", ondelete="CASCADE"),
+            nullable=False,
+            index=True,
+        ),
         sa.Column("name", sa.String(length=200), nullable=False),
         sa.Column("description", sa.Text(), nullable=True),
         sa.Column("kind_metadata", JSONType, nullable=False, server_default=sa.text("'{}'")),
@@ -55,9 +65,17 @@ def upgrade() -> None:
 
     op.create_table(
         "item_views",
-        sa.Column("item_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("items.id", ondelete="CASCADE"), primary_key=True),
+        sa.Column(
+            "item_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("items.id", ondelete="CASCADE"), primary_key=True
+        ),
         sa.Column("view_id", sa.String(length=255), sa.ForeignKey("views.id", ondelete="CASCADE"), primary_key=True),
-        sa.Column("project_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True),
+        sa.Column(
+            "project_id",
+            postgresql.UUID(as_uuid=True),
+            sa.ForeignKey("projects.id", ondelete="CASCADE"),
+            nullable=False,
+            index=True,
+        ),
         sa.Column("is_primary", sa.Boolean(), nullable=False, server_default=sa.false()),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
         sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
@@ -69,7 +87,13 @@ def upgrade() -> None:
     op.create_table(
         "link_types",
         sa.Column("id", sa.String(length=255), primary_key=True),
-        sa.Column("project_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True),
+        sa.Column(
+            "project_id",
+            postgresql.UUID(as_uuid=True),
+            sa.ForeignKey("projects.id", ondelete="CASCADE"),
+            nullable=False,
+            index=True,
+        ),
         sa.Column("name", sa.String(length=100), nullable=False),
         sa.Column("description", sa.Text(), nullable=True),
         sa.Column("link_metadata", JSONType, nullable=False, server_default=sa.text("'{}'")),
@@ -81,8 +105,20 @@ def upgrade() -> None:
     op.create_table(
         "external_links",
         sa.Column("id", sa.String(length=255), primary_key=True),
-        sa.Column("project_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True),
-        sa.Column("item_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("items.id", ondelete="CASCADE"), nullable=False, index=True),
+        sa.Column(
+            "project_id",
+            postgresql.UUID(as_uuid=True),
+            sa.ForeignKey("projects.id", ondelete="CASCADE"),
+            nullable=False,
+            index=True,
+        ),
+        sa.Column(
+            "item_id",
+            postgresql.UUID(as_uuid=True),
+            sa.ForeignKey("items.id", ondelete="CASCADE"),
+            nullable=False,
+            index=True,
+        ),
         sa.Column("provider", sa.String(length=50), nullable=False),
         sa.Column("target", sa.Text(), nullable=False),
         sa.Column("label", sa.String(length=200), nullable=True),
@@ -95,7 +131,9 @@ def upgrade() -> None:
 
     op.add_column(
         "items",
-        sa.Column("node_kind_id", sa.String(length=255), sa.ForeignKey("node_kinds.id", ondelete="SET NULL"), nullable=True),
+        sa.Column(
+            "node_kind_id", sa.String(length=255), sa.ForeignKey("node_kinds.id", ondelete="SET NULL"), nullable=True
+        ),
     )
     op.create_index("idx_items_project_node_kind", "items", ["project_id", "node_kind_id"])
 
@@ -106,7 +144,7 @@ def upgrade() -> None:
     if conn is None:
         return
 
-    items_table = sa.table(
+    _items_table = sa.table(
         "items",
         sa.column("id", sa.String),
         sa.column("project_id", sa.String),
@@ -151,7 +189,7 @@ def upgrade() -> None:
     view_id_map: dict[tuple[str, str], str] = {}
     for project_id, view_name in view_rows:
         view_id = _uuid()
-        view_id_map[(project_id, view_name)] = view_id
+        view_id_map[project_id, view_name] = view_id
         conn.execute(
             views_table.insert().values(
                 id=view_id,
@@ -163,11 +201,13 @@ def upgrade() -> None:
         )
 
     # Backfill node kinds from items.item_type
-    kind_rows = conn.execute(sa.text("select distinct project_id, item_type from items where item_type is not null")).fetchall()
+    kind_rows = conn.execute(
+        sa.text("select distinct project_id, item_type from items where item_type is not null")
+    ).fetchall()
     kind_id_map: dict[tuple[str, str], str] = {}
     for project_id, kind_name in kind_rows:
         kind_id = _uuid()
-        kind_id_map[(project_id, kind_name)] = kind_id
+        kind_id_map[project_id, kind_name] = kind_id
         conn.execute(
             node_kinds_table.insert().values(
                 id=kind_id,
@@ -194,25 +234,24 @@ def upgrade() -> None:
 
     # Backfill item_views from items.view
     item_rows = conn.execute(sa.text("select id, project_id, view from items where view is not null")).fetchall()
-    now = datetime.utcnow()
     item_view_inserts = []
     for item_id, project_id, view_name in item_rows:
         view_id = view_id_map.get((project_id, view_name))
         if not view_id:
             continue
-        item_view_inserts.append(
-            {
-                "item_id": item_id,
-                "view_id": view_id,
-                "project_id": project_id,
-                "is_primary": True,
-            }
-        )
+        item_view_inserts.append({
+            "item_id": item_id,
+            "view_id": view_id,
+            "project_id": project_id,
+            "is_primary": True,
+        })
     if item_view_inserts:
         conn.execute(item_views_table.insert(), item_view_inserts)
 
     # Backfill link types from links.link_type
-    link_type_rows = conn.execute(sa.text("select distinct project_id, link_type from links where link_type is not null")).fetchall()
+    link_type_rows = conn.execute(
+        sa.text("select distinct project_id, link_type from links where link_type is not null")
+    ).fetchall()
     for project_id, link_type_name in link_type_rows:
         conn.execute(
             link_types_table.insert().values(

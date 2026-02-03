@@ -177,4 +177,4 @@ type InternalSharedArrayUnionFieldsDeep<
 				[...ResultTuple, SharedUnionFieldsDeep<Union[ResultTuple['length']], Options>]
 			>;
 
-export {};
+

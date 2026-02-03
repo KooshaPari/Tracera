@@ -4,6 +4,7 @@ Script to systematically fix test_api_comprehensive.py
 Applies all AsyncMock and fixture corrections
 """
 
+import pathlib
 import re
 
 
@@ -11,7 +12,7 @@ def fix_test_file():
     """Apply all fixes to the test file."""
     file_path = "tests/unit/api/test_api_comprehensive.py"
 
-    with open(file_path, "r") as f:
+    with pathlib.Path(file_path).open() as f:
         content = f.read()
 
     # Fix 1: Update create_query_chain signature
@@ -41,7 +42,7 @@ def fix_test_file():
     )
 
     # Write back
-    with open(file_path, "w") as f:
+    with pathlib.Path(file_path).open("w") as f:
         f.write(content)
 
     print("✓ Fixed create_query_chain signature")

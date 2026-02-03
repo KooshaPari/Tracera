@@ -12,30 +12,28 @@ This test suite covers:
 """
 
 import asyncio
-import hashlib
-import json
-import pytest
-import pytest_asyncio
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any
-from unittest.mock import AsyncMock, MagicMock, patch, call
+from unittest.mock import AsyncMock, MagicMock, patch
 
-from sqlalchemy import text, create_engine
-from sqlalchemy.orm import Session, sessionmaker
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+import pytest
+from sqlalchemy import create_engine
 
 from tracertm.models.base import Base
-from tracertm.models.project import Project
-from tracertm.models.item import Item
-from tracertm.models.link import Link
+from tracertm.storage.conflict_resolver import ConflictStrategy
 from tracertm.storage.sync_engine import (
-    SyncEngine, SyncQueue, SyncStateManager, ChangeDetector,
-    SyncStatus, SyncState, SyncResult, QueuedChange,
-    OperationType, EntityType, create_sync_engine,
-    exponential_backoff
+    ChangeDetector,
+    EntityType,
+    OperationType,
+    QueuedChange,
+    SyncEngine,
+    SyncQueue,
+    SyncResult,
+    SyncState,
+    SyncStateManager,
+    SyncStatus,
+    create_sync_engine,
 )
-from tracertm.storage.conflict_resolver import ConflictStrategy, VectorClock
 
 pytestmark = pytest.mark.integration
 
@@ -47,6 +45,7 @@ pytestmark = pytest.mark.integration
 
 class MockDatabaseConnection:
     """Mock database connection for testing."""
+
     def __init__(self, engine):
         self.engine = engine
 
@@ -82,7 +81,7 @@ def sync_engine(db_connection, mock_api_client, mock_storage_manager):
         storage_manager=mock_storage_manager,
         conflict_strategy=ConflictStrategy.LAST_WRITE_WINS,
         max_retries=3,
-        retry_delay=0.1
+        retry_delay=0.1,
     )
     # Ensure tables are initialized
     engine.queue._ensure_tables()
@@ -169,18 +168,12 @@ class TestChangeDetector:
         # Modify file
         file1.write_text("modified content")
 
-        changes = ChangeDetector.detect_changes_in_directory(
-            temp_dir,
-            {"file1.md": old_hash}
-        )
+        changes = ChangeDetector.detect_changes_in_directory(temp_dir, {"file1.md": old_hash})
         assert len(changes) == 1
 
     def test_detect_changes_nonexistent_directory(self):
         """Test detection in nonexistent directory."""
-        changes = ChangeDetector.detect_changes_in_directory(
-            Path("/nonexistent"),
-            {}
-        )
+        changes = ChangeDetector.detect_changes_in_directory(Path("/nonexistent"), {})
         assert changes == []
 
     def test_detect_changes_ignores_non_md_files(self, temp_dir):
@@ -222,34 +215,19 @@ class TestSyncQueue:
     def test_queue_enqueue_create(self, db_connection):
         """Test enqueueing a create operation."""
         queue = SyncQueue(db_connection)
-        queue_id = queue.enqueue(
-            EntityType.PROJECT,
-            "proj-1",
-            OperationType.CREATE,
-            {"name": "Test Project"}
-        )
+        queue_id = queue.enqueue(EntityType.PROJECT, "proj-1", OperationType.CREATE, {"name": "Test Project"})
         assert queue_id > 0
 
     def test_queue_enqueue_update(self, db_connection):
         """Test enqueueing an update operation."""
         queue = SyncQueue(db_connection)
-        queue_id = queue.enqueue(
-            EntityType.ITEM,
-            "item-1",
-            OperationType.UPDATE,
-            {"title": "Updated"}
-        )
+        queue_id = queue.enqueue(EntityType.ITEM, "item-1", OperationType.UPDATE, {"title": "Updated"})
         assert queue_id > 0
 
     def test_queue_enqueue_delete(self, db_connection):
         """Test enqueueing a delete operation."""
         queue = SyncQueue(db_connection)
-        queue_id = queue.enqueue(
-            EntityType.LINK,
-            "link-1",
-            OperationType.DELETE,
-            {}
-        )
+        queue_id = queue.enqueue(EntityType.LINK, "link-1", OperationType.DELETE, {})
         assert queue_id > 0
 
     def test_queue_get_pending_empty(self, db_connection):
@@ -261,12 +239,7 @@ class TestSyncQueue:
     def test_queue_get_pending_single(self, db_connection):
         """Test retrieving a single pending change."""
         queue = SyncQueue(db_connection)
-        queue.enqueue(
-            EntityType.PROJECT,
-            "proj-1",
-            OperationType.CREATE,
-            {"name": "Test"}
-        )
+        queue.enqueue(EntityType.PROJECT, "proj-1", OperationType.CREATE, {"name": "Test"})
         pending = queue.get_pending()
         assert len(pending) == 1
         assert pending[0].entity_type == EntityType.PROJECT
@@ -276,12 +249,7 @@ class TestSyncQueue:
         """Test retrieving multiple pending changes."""
         queue = SyncQueue(db_connection)
         for i in range(5):
-            queue.enqueue(
-                EntityType.ITEM,
-                f"item-{i}",
-                OperationType.CREATE,
-                {"title": f"Item {i}"}
-            )
+            queue.enqueue(EntityType.ITEM, f"item-{i}", OperationType.CREATE, {"title": f"Item {i}"})
         pending = queue.get_pending()
         assert len(pending) == 5
 
@@ -289,24 +257,14 @@ class TestSyncQueue:
         """Test limit parameter in get_pending."""
         queue = SyncQueue(db_connection)
         for i in range(10):
-            queue.enqueue(
-                EntityType.ITEM,
-                f"item-{i}",
-                OperationType.CREATE,
-                {}
-            )
+            queue.enqueue(EntityType.ITEM, f"item-{i}", OperationType.CREATE, {})
         pending = queue.get_pending(limit=3)
         assert len(pending) == 3
 
     def test_queue_remove(self, db_connection):
         """Test removing a queued change."""
         queue = SyncQueue(db_connection)
-        queue_id = queue.enqueue(
-            EntityType.PROJECT,
-            "proj-1",
-            OperationType.CREATE,
-            {}
-        )
+        queue_id = queue.enqueue(EntityType.PROJECT, "proj-1", OperationType.CREATE, {})
         queue.remove(queue_id)
         pending = queue.get_pending()
         assert len(pending) == 0
@@ -314,12 +272,7 @@ class TestSyncQueue:
     def test_queue_update_retry(self, db_connection):
         """Test updating retry count."""
         queue = SyncQueue(db_connection)
-        queue_id = queue.enqueue(
-            EntityType.ITEM,
-            "item-1",
-            OperationType.CREATE,
-            {}
-        )
+        queue_id = queue.enqueue(EntityType.ITEM, "item-1", OperationType.CREATE, {})
         queue.update_retry(queue_id, "Network error")
 
         pending = queue.get_pending()
@@ -329,12 +282,7 @@ class TestSyncQueue:
     def test_queue_update_retry_multiple(self, db_connection):
         """Test multiple retry updates."""
         queue = SyncQueue(db_connection)
-        queue_id = queue.enqueue(
-            EntityType.ITEM,
-            "item-1",
-            OperationType.CREATE,
-            {}
-        )
+        queue_id = queue.enqueue(EntityType.ITEM, "item-1", OperationType.CREATE, {})
         for i in range(3):
             queue.update_retry(queue_id, f"Error {i}")
 
@@ -345,12 +293,7 @@ class TestSyncQueue:
         """Test clearing the queue."""
         queue = SyncQueue(db_connection)
         for i in range(5):
-            queue.enqueue(
-                EntityType.ITEM,
-                f"item-{i}",
-                OperationType.CREATE,
-                {}
-            )
+            queue.enqueue(EntityType.ITEM, f"item-{i}", OperationType.CREATE, {})
         queue.clear()
         assert queue.get_count() == 0
 
@@ -368,19 +311,9 @@ class TestSyncQueue:
     def test_queue_unique_constraint(self, db_connection):
         """Test unique constraint on (entity_type, entity_id, operation)."""
         queue = SyncQueue(db_connection)
-        queue.enqueue(
-            EntityType.PROJECT,
-            "proj-1",
-            OperationType.UPDATE,
-            {"name": "v1"}
-        )
+        queue.enqueue(EntityType.PROJECT, "proj-1", OperationType.UPDATE, {"name": "v1"})
         # Same operation on same entity replaces previous
-        queue.enqueue(
-            EntityType.PROJECT,
-            "proj-1",
-            OperationType.UPDATE,
-            {"name": "v2"}
-        )
+        queue.enqueue(EntityType.PROJECT, "proj-1", OperationType.UPDATE, {"name": "v2"})
         pending = queue.get_pending()
         assert len(pending) == 1
         assert pending[0].payload["name"] == "v2"
@@ -388,18 +321,8 @@ class TestSyncQueue:
     def test_queue_payload_json_serialization(self, db_connection):
         """Test that complex payloads are properly serialized."""
         queue = SyncQueue(db_connection)
-        complex_payload = {
-            "nested": {"key": "value"},
-            "list": [1, 2, 3],
-            "bool": True,
-            "null": None
-        }
-        queue.enqueue(
-            EntityType.ITEM,
-            "item-1",
-            OperationType.CREATE,
-            complex_payload
-        )
+        complex_payload = {"nested": {"key": "value"}, "list": [1, 2, 3], "bool": True, "null": None}
+        queue.enqueue(EntityType.ITEM, "item-1", OperationType.CREATE, complex_payload)
         pending = queue.get_pending()
         assert pending[0].payload == complex_payload
 
@@ -408,12 +331,7 @@ class TestSyncQueue:
         queue = SyncQueue(db_connection)
         ids = []
         for i in range(3):
-            queue_id = queue.enqueue(
-                EntityType.ITEM,
-                f"item-{i}",
-                OperationType.CREATE,
-                {}
-            )
+            queue_id = queue.enqueue(EntityType.ITEM, f"item-{i}", OperationType.CREATE, {})
             ids.append(queue_id)
 
         pending = queue.get_pending()
@@ -423,22 +341,12 @@ class TestSyncQueue:
     def test_queue_retry_count_preserved(self, db_connection):
         """Test that retry count is preserved on replace."""
         queue = SyncQueue(db_connection)
-        queue.enqueue(
-            EntityType.PROJECT,
-            "proj-1",
-            OperationType.UPDATE,
-            {"v": 1}
-        )
+        queue.enqueue(EntityType.PROJECT, "proj-1", OperationType.UPDATE, {"v": 1})
         queue.update_retry(1, "Error 1")
         queue.update_retry(1, "Error 2")
 
         # Replace with new payload
-        queue.enqueue(
-            EntityType.PROJECT,
-            "proj-1",
-            OperationType.UPDATE,
-            {"v": 2}
-        )
+        queue.enqueue(EntityType.PROJECT, "proj-1", OperationType.UPDATE, {"v": 2})
 
         pending = queue.get_pending()
         assert pending[0].retry_count == 2
@@ -469,7 +377,7 @@ class TestSyncStateManager:
 
     def test_state_manager_update_last_sync(self, state_manager):
         """Test updating last sync timestamp."""
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         state_manager.update_last_sync(now)
 
         state = state_manager.get_state()
@@ -478,9 +386,9 @@ class TestSyncStateManager:
 
     def test_state_manager_update_last_sync_default_time(self, state_manager):
         """Test updating with default (current) time."""
-        before = datetime.utcnow()
+        before = datetime.now(UTC)
         state_manager.update_last_sync()
-        after = datetime.utcnow()
+        after = datetime.now(UTC)
 
         state = state_manager.get_state()
         assert before <= state.last_sync <= after
@@ -574,52 +482,30 @@ class TestSyncEngineBasic:
     @pytest.mark.asyncio
     async def test_engine_queue_change(self, sync_engine):
         """Test queueing a change."""
-        queue_id = sync_engine.queue_change(
-            EntityType.PROJECT,
-            "proj-1",
-            OperationType.CREATE,
-            {"name": "Test"}
-        )
+        queue_id = sync_engine.queue_change(EntityType.PROJECT, "proj-1", OperationType.CREATE, {"name": "Test"})
         assert queue_id > 0
 
     @pytest.mark.asyncio
     async def test_engine_queue_multiple_changes(self, sync_engine):
         """Test queueing multiple changes."""
         for i in range(5):
-            sync_engine.queue_change(
-                EntityType.ITEM,
-                f"item-{i}",
-                OperationType.CREATE,
-                {"title": f"Item {i}"}
-            )
+            sync_engine.queue_change(EntityType.ITEM, f"item-{i}", OperationType.CREATE, {"title": f"Item {i}"})
 
         status = sync_engine.get_status()
         assert status.pending_changes == 5
 
     def test_engine_resolve_conflict_last_write_wins(self, sync_engine):
         """Test LAST_WRITE_WINS conflict resolution."""
-        local_data = {
-            "id": "1",
-            "name": "Local",
-            "updated_at": (datetime.utcnow() - timedelta(hours=1)).isoformat()
-        }
-        remote_data = {
-            "id": "1",
-            "name": "Remote",
-            "updated_at": datetime.utcnow().isoformat()
-        }
+        local_data = {"id": "1", "name": "Local", "updated_at": (datetime.now(UTC) - timedelta(hours=1)).isoformat()}
+        remote_data = {"id": "1", "name": "Remote", "updated_at": datetime.now(UTC).isoformat()}
 
         result = sync_engine._resolve_conflict(local_data, remote_data)
         assert result == remote_data
 
     def test_engine_resolve_conflict_local_older(self, sync_engine):
         """Test LAST_WRITE_WINS when local is older."""
-        local_data = {
-            "updated_at": (datetime.utcnow() - timedelta(hours=2)).isoformat()
-        }
-        remote_data = {
-            "updated_at": (datetime.utcnow() - timedelta(hours=1)).isoformat()
-        }
+        local_data = {"updated_at": (datetime.now(UTC) - timedelta(hours=2)).isoformat()}
+        remote_data = {"updated_at": (datetime.now(UTC) - timedelta(hours=1)).isoformat()}
 
         result = sync_engine._resolve_conflict(local_data, remote_data)
         assert result == remote_data
@@ -630,7 +516,7 @@ class TestSyncEngineBasic:
             db_connection=db_connection,
             api_client=mock_api_client,
             storage_manager=mock_storage_manager,
-            conflict_strategy=ConflictStrategy.LOCAL_WINS
+            conflict_strategy=ConflictStrategy.LOCAL_WINS,
         )
 
         local_data = {"id": "1", "value": "local"}
@@ -645,7 +531,7 @@ class TestSyncEngineBasic:
             db_connection=db_connection,
             api_client=mock_api_client,
             storage_manager=mock_storage_manager,
-            conflict_strategy=ConflictStrategy.REMOTE_WINS
+            conflict_strategy=ConflictStrategy.REMOTE_WINS,
         )
 
         local_data = {"id": "1", "value": "local"}
@@ -660,7 +546,7 @@ class TestSyncEngineBasic:
             db_connection=db_connection,
             api_client=mock_api_client,
             storage_manager=mock_storage_manager,
-            conflict_strategy=ConflictStrategy.MANUAL
+            conflict_strategy=ConflictStrategy.MANUAL,
         )
 
         local_data = {"id": "1"}
@@ -681,12 +567,7 @@ class TestSyncEngineBasic:
     @pytest.mark.asyncio
     async def test_engine_clear_queue(self, sync_engine):
         """Test clearing the sync queue."""
-        sync_engine.queue_change(
-            EntityType.ITEM,
-            "item-1",
-            OperationType.CREATE,
-            {}
-        )
+        sync_engine.queue_change(EntityType.ITEM, "item-1", OperationType.CREATE, {})
         assert sync_engine.get_status().pending_changes == 1
 
         await sync_engine.clear_queue()
@@ -728,12 +609,7 @@ class TestSyncEngineWorkflows:
     @pytest.mark.asyncio
     async def test_sync_single_change(self, sync_engine):
         """Test sync with single change."""
-        sync_engine.queue_change(
-            EntityType.PROJECT,
-            "proj-1",
-            OperationType.CREATE,
-            {"name": "Test"}
-        )
+        sync_engine.queue_change(EntityType.PROJECT, "proj-1", OperationType.CREATE, {"name": "Test"})
 
         result = await sync_engine.sync()
         assert result.success is True
@@ -742,12 +618,7 @@ class TestSyncEngineWorkflows:
     async def test_sync_multiple_changes(self, sync_engine):
         """Test sync with multiple changes."""
         for i in range(5):
-            sync_engine.queue_change(
-                EntityType.ITEM,
-                f"item-{i}",
-                OperationType.CREATE,
-                {}
-            )
+            sync_engine.queue_change(EntityType.ITEM, f"item-{i}", OperationType.CREATE, {})
 
         result = await sync_engine.sync()
         assert result.success is True
@@ -755,12 +626,7 @@ class TestSyncEngineWorkflows:
     @pytest.mark.asyncio
     async def test_sync_process_queue_removes_successful(self, sync_engine):
         """Test that process_queue removes successful items."""
-        sync_engine.queue_change(
-            EntityType.PROJECT,
-            "proj-1",
-            OperationType.CREATE,
-            {}
-        )
+        sync_engine.queue_change(EntityType.PROJECT, "proj-1", OperationType.CREATE, {})
 
         initial_count = sync_engine.get_status().pending_changes
         assert initial_count == 1
@@ -783,9 +649,9 @@ class TestSyncEngineWorkflows:
     @pytest.mark.asyncio
     async def test_sync_updates_last_sync_time(self, sync_engine):
         """Test that sync updates last_sync timestamp."""
-        before = datetime.utcnow()
+        before = datetime.now(UTC)
         await sync_engine.sync()
-        after = datetime.utcnow()
+        after = datetime.now(UTC)
 
         state = sync_engine.get_status()
         assert state.last_sync is not None
@@ -803,7 +669,7 @@ class TestSyncEngineWorkflows:
     @pytest.mark.asyncio
     async def test_sync_detects_changes(self, sync_engine):
         """Test that sync calls detect_and_queue_changes."""
-        with patch.object(sync_engine, 'detect_and_queue_changes') as mock_detect:
+        with patch.object(sync_engine, "detect_and_queue_changes") as mock_detect:
             await sync_engine.sync()
             mock_detect.assert_called_once()
 
@@ -818,12 +684,7 @@ class TestSyncEngineWorkflows:
         """Test sync handles conflicts appropriately."""
         # Add items to queue
         for i in range(3):
-            sync_engine.queue_change(
-                EntityType.ITEM,
-                f"item-{i}",
-                OperationType.CREATE,
-                {}
-            )
+            sync_engine.queue_change(EntityType.ITEM, f"item-{i}", OperationType.CREATE, {})
 
         result = await sync_engine.sync()
         # Should complete without error
@@ -832,7 +693,7 @@ class TestSyncEngineWorkflows:
     @pytest.mark.asyncio
     async def test_incremental_sync(self, sync_engine):
         """Test incremental sync (with since parameter)."""
-        since = datetime.utcnow() - timedelta(hours=1)
+        since = datetime.now(UTC) - timedelta(hours=1)
         result = await sync_engine.pull_changes(since=since)
         assert result.success is True
 
@@ -845,7 +706,7 @@ class TestSyncEngineWorkflows:
     @pytest.mark.asyncio
     async def test_sync_error_handling(self, sync_engine):
         """Test that sync handles errors gracefully."""
-        with patch.object(sync_engine, 'detect_and_queue_changes') as mock_detect:
+        with patch.object(sync_engine, "detect_and_queue_changes") as mock_detect:
             mock_detect.side_effect = Exception("Test error")
 
             result = await sync_engine.sync()
@@ -855,7 +716,7 @@ class TestSyncEngineWorkflows:
     @pytest.mark.asyncio
     async def test_sync_error_updates_status(self, sync_engine):
         """Test that sync errors update status."""
-        with patch.object(sync_engine, 'detect_and_queue_changes') as mock_detect:
+        with patch.object(sync_engine, "detect_and_queue_changes") as mock_detect:
             mock_detect.side_effect = Exception("Test error")
 
             await sync_engine.sync()
@@ -865,7 +726,7 @@ class TestSyncEngineWorkflows:
     @pytest.mark.asyncio
     async def test_sync_error_recorded(self, sync_engine):
         """Test that sync errors are recorded in state."""
-        with patch.object(sync_engine, 'detect_and_queue_changes') as mock_detect:
+        with patch.object(sync_engine, "detect_and_queue_changes") as mock_detect:
             error_msg = "Test error message"
             mock_detect.side_effect = Exception(error_msg)
 
@@ -877,15 +738,10 @@ class TestSyncEngineWorkflows:
     async def test_process_queue_retry_logic(self, sync_engine):
         """Test retry logic in process_queue."""
         # Queue a change
-        queue_id = sync_engine.queue_change(
-            EntityType.ITEM,
-            "item-1",
-            OperationType.CREATE,
-            {}
-        )
+        queue_id = sync_engine.queue_change(EntityType.ITEM, "item-1", OperationType.CREATE, {})
 
         # Simulate failed upload
-        with patch.object(sync_engine, '_upload_change') as mock_upload:
+        with patch.object(sync_engine, "_upload_change") as mock_upload:
             mock_upload.return_value = False
 
             result = await sync_engine.process_queue()
@@ -897,12 +753,7 @@ class TestSyncEngineWorkflows:
     @pytest.mark.asyncio
     async def test_process_queue_max_retries(self, sync_engine):
         """Test max retries limit."""
-        queue_id = sync_engine.queue_change(
-            EntityType.ITEM,
-            "item-1",
-            OperationType.CREATE,
-            {}
-        )
+        queue_id = sync_engine.queue_change(EntityType.ITEM, "item-1", OperationType.CREATE, {})
 
         # Manually set retry count to max
         sync_engine.queue.update_retry(queue_id, "Error 1")
@@ -932,12 +783,7 @@ class TestSyncEngineWorkflows:
         ]
 
         for entity_type, entity_id in entities:
-            sync_engine.queue_change(
-                entity_type,
-                entity_id,
-                OperationType.CREATE,
-                {}
-            )
+            sync_engine.queue_change(entity_type, entity_id, OperationType.CREATE, {})
 
         status = sync_engine.get_status()
         assert status.pending_changes == 4
@@ -952,12 +798,7 @@ class TestSyncEngineWorkflows:
         ]
 
         for idx, op in enumerate(operations):
-            sync_engine.queue_change(
-                EntityType.ITEM,
-                f"item-{idx}",
-                op,
-                {}
-            )
+            sync_engine.queue_change(EntityType.ITEM, f"item-{idx}", op, {})
 
         status = sync_engine.get_status()
         assert status.pending_changes == 3
@@ -974,17 +815,9 @@ class TestSyncEngineAdvanced:
     @pytest.mark.asyncio
     async def test_sync_with_large_payload(self, sync_engine):
         """Test sync with large payload."""
-        large_payload = {
-            "data": "x" * 10000,
-            "nested": {"deep": {"data": "y" * 5000}}
-        }
+        large_payload = {"data": "x" * 10000, "nested": {"deep": {"data": "y" * 5000}}}
 
-        sync_engine.queue_change(
-            EntityType.ITEM,
-            "item-1",
-            OperationType.CREATE,
-            large_payload
-        )
+        sync_engine.queue_change(EntityType.ITEM, "item-1", OperationType.CREATE, large_payload)
 
         result = await sync_engine.sync()
         # Should handle without error
@@ -994,16 +827,11 @@ class TestSyncEngineAdvanced:
     async def test_sync_performance_many_items(self, sync_engine):
         """Test sync performance with many items."""
         for i in range(100):
-            sync_engine.queue_change(
-                EntityType.ITEM,
-                f"item-{i}",
-                OperationType.CREATE,
-                {"title": f"Item {i}"}
-            )
+            sync_engine.queue_change(EntityType.ITEM, f"item-{i}", OperationType.CREATE, {"title": f"Item {i}"})
 
-        start = datetime.utcnow()
+        start = datetime.now(UTC)
         result = await sync_engine.sync()
-        duration = (datetime.utcnow() - start).total_seconds()
+        duration = (datetime.now(UTC) - start).total_seconds()
 
         assert result.success is True
         assert duration < 30  # Should complete in reasonable time
@@ -1011,24 +839,9 @@ class TestSyncEngineAdvanced:
     @pytest.mark.asyncio
     async def test_sync_mixed_operations(self, sync_engine):
         """Test sync with mixed operation types."""
-        sync_engine.queue_change(
-            EntityType.ITEM,
-            "item-1",
-            OperationType.CREATE,
-            {}
-        )
-        sync_engine.queue_change(
-            EntityType.ITEM,
-            "item-1",
-            OperationType.UPDATE,
-            {}
-        )
-        sync_engine.queue_change(
-            EntityType.ITEM,
-            "item-2",
-            OperationType.DELETE,
-            {}
-        )
+        sync_engine.queue_change(EntityType.ITEM, "item-1", OperationType.CREATE, {})
+        sync_engine.queue_change(EntityType.ITEM, "item-1", OperationType.UPDATE, {})
+        sync_engine.queue_change(EntityType.ITEM, "item-2", OperationType.DELETE, {})
 
         result = await sync_engine.sync()
         assert result.success is True
@@ -1040,15 +853,10 @@ class TestSyncEngineAdvanced:
             "emoji": "🚀🎉🔥",
             "unicode": "日本語",
             "special": "!@#$%^&*()",
-            "quotes": '"""\'\'\'',
+            "quotes": "\"\"\"'''",
         }
 
-        sync_engine.queue_change(
-            EntityType.ITEM,
-            "item-1",
-            OperationType.CREATE,
-            special_payload
-        )
+        sync_engine.queue_change(EntityType.ITEM, "item-1", OperationType.CREATE, special_payload)
 
         result = await sync_engine.sync()
         assert result.success is True
@@ -1056,18 +864,9 @@ class TestSyncEngineAdvanced:
     @pytest.mark.asyncio
     async def test_sync_with_null_values(self, sync_engine):
         """Test sync with null/None values."""
-        payload = {
-            "required": "value",
-            "optional": None,
-            "nested": {"null_value": None}
-        }
+        payload = {"required": "value", "optional": None, "nested": {"null_value": None}}
 
-        sync_engine.queue_change(
-            EntityType.ITEM,
-            "item-1",
-            OperationType.CREATE,
-            payload
-        )
+        sync_engine.queue_change(EntityType.ITEM, "item-1", OperationType.CREATE, payload)
 
         result = await sync_engine.sync()
         assert result.success is True
@@ -1075,7 +874,7 @@ class TestSyncEngineAdvanced:
     @pytest.mark.asyncio
     async def test_incremental_sync_with_timestamp(self, sync_engine):
         """Test incremental sync respects timestamp."""
-        old_time = datetime.utcnow() - timedelta(days=7)
+        old_time = datetime.now(UTC) - timedelta(days=7)
 
         result = await sync_engine.pull_changes(since=old_time)
         assert isinstance(result, SyncResult)
@@ -1085,21 +884,11 @@ class TestSyncEngineAdvanced:
         projects = ["proj-1", "proj-2", "proj-3"]
 
         for proj_id in projects:
-            sync_engine.queue_change(
-                EntityType.PROJECT,
-                proj_id,
-                OperationType.CREATE,
-                {"name": f"Project {proj_id}"}
-            )
+            sync_engine.queue_change(EntityType.PROJECT, proj_id, OperationType.CREATE, {"name": f"Project {proj_id}"})
 
             # Add items to each project
             for i in range(3):
-                sync_engine.queue_change(
-                    EntityType.ITEM,
-                    f"{proj_id}/item-{i}",
-                    OperationType.CREATE,
-                    {}
-                )
+                sync_engine.queue_change(EntityType.ITEM, f"{proj_id}/item-{i}", OperationType.CREATE, {})
 
         status = sync_engine.get_status()
         assert status.pending_changes == 12  # 3 projects + 9 items
@@ -1107,18 +896,10 @@ class TestSyncEngineAdvanced:
     @pytest.mark.asyncio
     async def test_conflict_resolution_with_timestamps(self, sync_engine):
         """Test conflict resolution compares timestamps correctly."""
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
 
-        local_data = {
-            "id": "1",
-            "value": "local",
-            "updated_at": (now - timedelta(minutes=10)).isoformat()
-        }
-        remote_data = {
-            "id": "1",
-            "value": "remote",
-            "updated_at": now.isoformat()
-        }
+        local_data = {"id": "1", "value": "local", "updated_at": (now - timedelta(minutes=10)).isoformat()}
+        remote_data = {"id": "1", "value": "remote", "updated_at": now.isoformat()}
 
         result = sync_engine._resolve_conflict(local_data, remote_data)
         assert result["value"] == "remote"
@@ -1132,7 +913,7 @@ class TestSyncEngineAdvanced:
             entity_id="proj-1",
             operation=OperationType.CREATE,
             payload={"name": "Test"},
-            created_at=datetime.utcnow()
+            created_at=datetime.now(UTC),
         )
 
         result = await sync_engine._upload_change(change)
@@ -1147,7 +928,7 @@ class TestSyncEngineAdvanced:
             entity_id="item-1",
             operation=OperationType.UPDATE,
             payload={"title": "Updated"},
-            created_at=datetime.utcnow()
+            created_at=datetime.now(UTC),
         )
 
         result = await sync_engine._upload_change(change)
@@ -1162,7 +943,7 @@ class TestSyncEngineAdvanced:
             entity_id="link-1",
             operation=OperationType.DELETE,
             payload={},
-            created_at=datetime.utcnow()
+            created_at=datetime.now(UTC),
         )
 
         result = await sync_engine._upload_change(change)
@@ -1171,12 +952,7 @@ class TestSyncEngineAdvanced:
     @pytest.mark.asyncio
     async def test_apply_remote_change(self, sync_engine):
         """Test applying a remote change."""
-        change = {
-            "entity_type": "item",
-            "entity_id": "item-1",
-            "operation": "create",
-            "data": {"title": "Remote"}
-        }
+        change = {"entity_type": "item", "entity_id": "item-1", "operation": "create", "data": {"title": "Remote"}}
 
         # Should not raise
         await sync_engine._apply_remote_change(change)
@@ -1187,7 +963,7 @@ class TestSyncEngineAdvanced:
         # This would sleep in real usage, so we verify the calculation
         delays = []
         for attempt in range(4):
-            delay = min(1.0 * (2 ** attempt), 60.0)
+            delay = min(1.0 * (2**attempt), 60.0)
             delays.append(delay)
 
         assert delays == [1.0, 2.0, 4.0, 8.0]
@@ -1195,7 +971,7 @@ class TestSyncEngineAdvanced:
     @pytest.mark.asyncio
     async def test_exponential_backoff_max_delay(self):
         """Test exponential backoff respects max delay."""
-        delay = min(1.0 * (2 ** 10), 60.0)
+        delay = min(1.0 * (2**10), 60.0)
         assert delay == 60.0
 
     def test_create_sync_engine_factory(self, db_connection, mock_api_client, mock_storage_manager):
@@ -1204,7 +980,7 @@ class TestSyncEngineAdvanced:
             db_connection=db_connection,
             api_client=mock_api_client,
             storage_manager=mock_storage_manager,
-            conflict_strategy=ConflictStrategy.REMOTE_WINS
+            conflict_strategy=ConflictStrategy.REMOTE_WINS,
         )
 
         assert engine.conflict_strategy == ConflictStrategy.REMOTE_WINS
@@ -1217,7 +993,7 @@ class TestSyncEngineAdvanced:
             entities_synced=5,
             conflicts=[{"id": "1", "type": "concurrent"}],
             errors=["Error 1"],
-            duration_seconds=1.5
+            duration_seconds=1.5,
         )
 
         assert result.success is True
@@ -1234,9 +1010,9 @@ class TestSyncEngineAdvanced:
             entity_id="proj-1",
             operation=OperationType.CREATE,
             payload={"name": "Test"},
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(UTC),
             retry_count=2,
-            last_error="Network timeout"
+            last_error="Network timeout",
         )
 
         assert change.retry_count == 2
@@ -1245,12 +1021,12 @@ class TestSyncEngineAdvanced:
     def test_sync_state_data_class(self, sync_engine):
         """Test SyncState data class."""
         state = SyncState(
-            last_sync=datetime.utcnow(),
+            last_sync=datetime.now(UTC),
             pending_changes=3,
             status=SyncStatus.SYNCING,
             last_error="Some error",
             conflicts_count=1,
-            synced_entities=10
+            synced_entities=10,
         )
 
         assert state.pending_changes == 3
@@ -1269,14 +1045,9 @@ class TestSyncEngineResilience:
     @pytest.mark.asyncio
     async def test_sync_recovers_from_api_error(self, sync_engine):
         """Test sync recovers gracefully from API errors."""
-        sync_engine.queue_change(
-            EntityType.ITEM,
-            "item-1",
-            OperationType.CREATE,
-            {}
-        )
+        sync_engine.queue_change(EntityType.ITEM, "item-1", OperationType.CREATE, {})
 
-        with patch.object(sync_engine, '_upload_change') as mock_upload:
+        with patch.object(sync_engine, "_upload_change") as mock_upload:
             mock_upload.side_effect = Exception("API connection failed")
 
             result = await sync_engine.process_queue()
@@ -1286,14 +1057,9 @@ class TestSyncEngineResilience:
     @pytest.mark.asyncio
     async def test_queue_persists_across_failures(self, sync_engine):
         """Test queue persists items across failures."""
-        sync_engine.queue_change(
-            EntityType.ITEM,
-            "item-1",
-            OperationType.CREATE,
-            {}
-        )
+        sync_engine.queue_change(EntityType.ITEM, "item-1", OperationType.CREATE, {})
 
-        with patch.object(sync_engine, '_upload_change') as mock_upload:
+        with patch.object(sync_engine, "_upload_change") as mock_upload:
             mock_upload.side_effect = Exception("Network error")
 
             await sync_engine.process_queue()
@@ -1305,7 +1071,7 @@ class TestSyncEngineResilience:
     @pytest.mark.asyncio
     async def test_state_consistency_after_error(self, sync_engine):
         """Test state remains consistent after errors."""
-        with patch.object(sync_engine, 'detect_and_queue_changes') as mock_detect:
+        with patch.object(sync_engine, "detect_and_queue_changes") as mock_detect:
             mock_detect.side_effect = Exception("Detect failed")
 
             before_status = sync_engine.get_status()
@@ -1318,12 +1084,7 @@ class TestSyncEngineResilience:
     @pytest.mark.asyncio
     async def test_retry_with_backoff(self, sync_engine):
         """Test retry mechanism uses backoff."""
-        queue_id = sync_engine.queue_change(
-            EntityType.ITEM,
-            "item-1",
-            OperationType.CREATE,
-            {}
-        )
+        queue_id = sync_engine.queue_change(EntityType.ITEM, "item-1", OperationType.CREATE, {})
 
         sync_engine.queue.update_retry(queue_id, "Error 1")
 
@@ -1334,12 +1095,7 @@ class TestSyncEngineResilience:
     async def test_handling_database_errors(self, sync_engine):
         """Test handling of database errors."""
         # Create invalid queue entry to test error handling
-        sync_engine.queue_change(
-            EntityType.ITEM,
-            "item-1",
-            OperationType.CREATE,
-            {}
-        )
+        sync_engine.queue_change(EntityType.ITEM, "item-1", OperationType.CREATE, {})
 
         # Queue operations should work despite any DB issues
         count = sync_engine.queue.get_count()
@@ -1348,12 +1104,7 @@ class TestSyncEngineResilience:
     @pytest.mark.asyncio
     async def test_sync_idempotency(self, sync_engine):
         """Test that repeated sync is idempotent."""
-        sync_engine.queue_change(
-            EntityType.ITEM,
-            "item-1",
-            OperationType.CREATE,
-            {}
-        )
+        sync_engine.queue_change(EntityType.ITEM, "item-1", OperationType.CREATE, {})
 
         result1 = await sync_engine.sync()
         result2 = await sync_engine.sync()
@@ -1387,13 +1138,8 @@ class TestSyncEngineResilience:
             for i in range(10):
                 # Use unique IDs to avoid unique constraint conflicts
                 item_id = f"item-{counter['value']}-{i}"
-                counter['value'] += 1
-                sync_engine.queue_change(
-                    EntityType.ITEM,
-                    item_id,
-                    OperationType.CREATE,
-                    {}
-                )
+                counter["value"] += 1
+                sync_engine.queue_change(EntityType.ITEM, item_id, OperationType.CREATE, {})
                 await asyncio.sleep(0.001)
 
         await asyncio.gather(queue_items(), queue_items())
@@ -1406,12 +1152,7 @@ class TestSyncEngineResilience:
     async def test_partial_sync_failure(self, sync_engine):
         """Test partial failures don't prevent entire sync."""
         for i in range(3):
-            sync_engine.queue_change(
-                EntityType.ITEM,
-                f"item-{i}",
-                OperationType.CREATE,
-                {}
-            )
+            sync_engine.queue_change(EntityType.ITEM, f"item-{i}", OperationType.CREATE, {})
 
         result = await sync_engine.sync()
         # Should still succeed overall
@@ -1426,10 +1167,10 @@ class TestSyncEngineResilience:
             entity_id="item-1",
             operation=OperationType.CREATE,
             payload={},
-            created_at=datetime.utcnow()
+            created_at=datetime.now(UTC),
         )
 
-        with patch.object(sync_engine, '_upload_change') as mock_upload:
+        with patch.object(sync_engine, "_upload_change") as mock_upload:
             mock_upload.side_effect = Exception("Upload failed")
 
             with pytest.raises(Exception):
@@ -1451,12 +1192,7 @@ class TestSyncEngineResilience:
     @pytest.mark.asyncio
     async def test_empty_payload_handling(self, sync_engine):
         """Test handling of empty payloads."""
-        sync_engine.queue_change(
-            EntityType.ITEM,
-            "item-1",
-            OperationType.DELETE,
-            {}
-        )
+        sync_engine.queue_change(EntityType.ITEM, "item-1", OperationType.DELETE, {})
 
         result = await sync_engine.sync()
         assert isinstance(result, SyncResult)
@@ -1466,12 +1202,7 @@ class TestSyncEngineResilience:
         """Test handling of very large queue."""
         # Queue many items
         for i in range(500):
-            sync_engine.queue_change(
-                EntityType.ITEM,
-                f"item-{i}",
-                OperationType.CREATE,
-                {}
-            )
+            sync_engine.queue_change(EntityType.ITEM, f"item-{i}", OperationType.CREATE, {})
 
         status = sync_engine.get_status()
         assert status.pending_changes == 500

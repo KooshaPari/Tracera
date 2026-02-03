@@ -18,6 +18,6 @@ export default function mizar(Prism) {
     variable: /\b\w+(?=:)/,
     number: /(?:\b|-)\d+\b/,
     operator: /\.\.\.|->|&|\.?=/,
-    punctuation: /\(#|#\)|[,:;\[\](){}]/
+    punctuation: /\(#|#\)|[,:;[\](){}]/
   }
 }

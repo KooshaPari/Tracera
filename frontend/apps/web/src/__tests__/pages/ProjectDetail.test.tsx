@@ -42,7 +42,7 @@ describe("Project Detail Page", () => {
 		queryClient = new QueryClient({
 			defaultOptions: {
 				mutations: { retry: false },
-				queries: { retry: false, gcTime: 0 },
+				queries: { gcTime: 0, retry: false },
 			},
 		});
 

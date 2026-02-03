@@ -1,5 +1,7 @@
-import pytest
 from types import SimpleNamespace
+from typing import Any, cast
+
+import pytest
 from sqlalchemy.orm.exc import StaleDataError
 
 from tracertm.api import client as client_mod
@@ -28,6 +30,7 @@ def test_log_operation_rolls_back_on_error(monkeypatch):
 
     class FakeDB:
         engine = None
+
         def connect(self):
             return None
 
@@ -53,8 +56,8 @@ def test_log_operation_rolls_back_on_error(monkeypatch):
 
     c = TraceRTMClient(agent_id="agent-1")
     c.config_manager = FakeConfig()
-    c._db = FakeDB()
-    c._session = FakeSession()
+    c._db = cast(Any, FakeDB())
+    c._session = cast(Any, FakeSession())
 
     # Should swallow errors and not raise
     c._log_operation("evt", "item", "i1", {"a": 1})
@@ -75,6 +78,7 @@ def test_register_agent_stores_assigned_projects(monkeypatch):
 
     class FakeDB:
         engine = None
+
         def connect(self):
             return None
 
@@ -94,7 +98,8 @@ def test_register_agent_stores_assigned_projects(monkeypatch):
     agent_id = c.register_agent("AgentX", project_ids=["p2", "p3"])
 
     assert stored.get("committed") is True
-    assert any("assigned_projects" in getattr(a, "agent_metadata", {}) for a in c._session.items)
+    session_items = getattr(c._session, "items", [])
+    assert any("assigned_projects" in getattr(a, "agent_metadata", {}) for a in session_items)
 
 
 def test_update_item_conflict_raises(monkeypatch):
@@ -105,18 +110,21 @@ def test_update_item_conflict_raises(monkeypatch):
                     return self
 
                 def first(self):
-                    raise StaleDataError()
+                    raise StaleDataError
+
             return _Q()
 
         def commit(self):
-            raise StaleDataError()
+            raise StaleDataError
 
         def rollback(self):
             return None
 
     c = TraceRTMClient(agent_id="agent")
-    c.config_manager = SimpleNamespace(get=lambda key, default=None: "proj" if key == "current_project_id" else "sqlite://")
-    c._get_session = lambda: FakeSession()
+    c.config_manager = SimpleNamespace(
+        get=lambda key, default=None: "proj" if key == "current_project_id" else "sqlite://"
+    )
+    c._get_session = lambda: FakeSession()  # type: ignore[assignment]
 
     with pytest.raises(ConcurrencyError):
         c.update_item("i1", status="done")

@@ -32,7 +32,7 @@ export default function verilog(Prism) {
     // support for time ticks, vectors, and real numbers
     number:
       /\B##?\d+|(?:\b\d+)?'[odbh] ?[\da-fzx_?]+|\b(?:\d*[._])?\d+(?:e[-+]?\d+)?/i,
-    operator: /[-+{}^~%*\/?=!<>&|]+/,
+    operator: /[-+{}^~%*/?=!<>&|]+/,
     punctuation: /[[\];(),.:]/
   }
 }

@@ -30,7 +30,7 @@ describe("Projects List Page", () => {
 		queryClient = new QueryClient({
 			defaultOptions: {
 				mutations: { retry: false },
-				queries: { retry: false, gcTime: 0 },
+				queries: { gcTime: 0, retry: false },
 			},
 		});
 
@@ -58,15 +58,15 @@ describe("Projects List Page", () => {
 			vi.mocked(fetchProjects).mockResolvedValue({
 				data: [
 					{
+						description: "First project",
 						id: "1",
 						name: "Project Alpha",
-						description: "First project",
 						status: "active",
 					},
 					{
+						description: "Second project",
 						id: "2",
 						name: "Project Beta",
-						description: "Second project",
 						status: "active",
 					},
 				],

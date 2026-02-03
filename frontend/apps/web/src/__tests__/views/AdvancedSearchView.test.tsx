@@ -99,9 +99,9 @@ describe(AdvancedSearchView, () => {
 						() =>
 							resolve({
 								json: async () => ({
+									filters: {},
 									project_id: "test",
 									query: "test",
-									filters: {},
 									results: [],
 									total: 0,
 								}),
@@ -142,9 +142,9 @@ describe(AdvancedSearchView, () => {
 		// Mock fetch BEFORE rendering to ensure it's ready
 		(globalThis.fetch as any).mockResolvedValue({
 			json: async () => ({
+				filters: {},
 				project_id: "test",
 				query: "test",
-				filters: {},
 				results: mockResults,
 				total: 1,
 			}),
@@ -177,9 +177,9 @@ describe(AdvancedSearchView, () => {
 		const user = userEvent.setup();
 		(globalThis as any).fetch.mockResolvedValue({
 			json: async () => ({
+				filters: {},
 				project_id: "test",
 				query: "test",
-				filters: {},
 				results: [],
 				total: 0,
 			}),

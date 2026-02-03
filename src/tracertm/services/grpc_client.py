@@ -8,13 +8,13 @@ Primary use case: Python services calling Go's GraphService for high-performance
 import asyncio
 import logging
 import os
-from typing import Dict, List, Optional, Any
 from contextlib import asynccontextmanager
+from typing import Any
 
 import grpc
-from grpc import aio
+from grpc import aio  # type: ignore[possibly-missing-import]
 
-from tracertm.proto import tracertm_pb2, tracertm_pb2_grpc
+from tracertm.proto import tracertm_pb2, tracertm_pb2_grpc  # type: ignore[attr-defined]
 
 logger = logging.getLogger(__name__)
 
@@ -42,8 +42,8 @@ class GoBackendClient:
 
     def __init__(
         self,
-        host: Optional[str] = None,
-        port: Optional[int] = None,
+        host: str | None = None,
+        port: int | None = None,
         max_retries: int = 3,
         timeout: int = 30,
     ):
@@ -72,8 +72,8 @@ class GoBackendClient:
         self.max_retries = max_retries
         self.timeout = timeout
 
-        self._channel: Optional[aio.Channel] = None
-        self._stub: Optional[tracertm_pb2_grpc.GraphServiceStub] = None
+        self._channel: aio.Channel | None = None
+        self._stub: tracertm_pb2_grpc.GraphServiceStub | None = None
 
         logger.info(f"Initialized GoBackendClient for {self.address}")
 
@@ -95,7 +95,7 @@ class GoBackendClient:
                 ("grpc.http2.max_pings_without_data", 0),
                 ("grpc.max_receive_message_length", 10 * 1024 * 1024),  # 10MB
                 ("grpc.max_send_message_length", 10 * 1024 * 1024),
-            ]
+            ],
         )
 
         self._stub = tracertm_pb2_grpc.GraphServiceStub(self._channel)
@@ -113,7 +113,6 @@ class GoBackendClient:
         """Test the gRPC connection with a simple health check."""
         # For now, we'll skip the health check
         # In production, you'd call a health check endpoint
-        pass
 
     async def close(self):
         """Close the gRPC connection."""
@@ -148,25 +147,29 @@ class GoBackendClient:
                 return
             except grpc.RpcError as e:
                 last_error = e
+                code_fn = getattr(e, "code", lambda: None)
+                details_fn = getattr(e, "details", lambda: b"")
+                code = code_fn() if callable(code_fn) else None
+                details = details_fn() if callable(details_fn) else b""
 
                 # Check if error is retryable
-                if e.code() in (
+                if code in (
                     grpc.StatusCode.UNAVAILABLE,
                     grpc.StatusCode.DEADLINE_EXCEEDED,
                     grpc.StatusCode.RESOURCE_EXHAUSTED,
                 ):
                     if attempt < self.max_retries - 1:
-                        wait_time = 2 ** attempt  # Exponential backoff
+                        wait_time = 2**attempt  # Exponential backoff
                         logger.warning(
                             f"{operation_name} failed (attempt {attempt + 1}/{self.max_retries}): "
-                            f"{e.code()} - {e.details()}. Retrying in {wait_time}s..."
+                            f"{code} - {details}. Retrying in {wait_time}s..."
                         )
                         await asyncio.sleep(wait_time)
                     else:
                         logger.error(f"{operation_name} failed after {self.max_retries} attempts")
                 else:
                     # Non-retryable error
-                    logger.error(f"{operation_name} failed with non-retryable error: {e.code()} - {e.details()}")
+                    logger.error(f"{operation_name} failed with non-retryable error: {code} - {details}")
                     raise
             except Exception as e:
                 last_error = e
@@ -183,8 +186,8 @@ class GoBackendClient:
         project_id: str,
         direction: str = "both",
         max_depth: int = 0,
-        link_types: Optional[List[str]] = None,
-    ) -> Dict[str, Any]:
+        link_types: list[str] | None = None,
+    ) -> dict[str, Any]:
         """
         Analyze the impact of changes to an item.
 
@@ -218,9 +221,7 @@ class GoBackendClient:
             link_types=link_types or [],
         )
 
-        logger.debug(
-            f"Analyzing impact for item {item_id} (direction={direction}, max_depth={max_depth})"
-        )
+        logger.debug(f"Analyzing impact for item {item_id} (direction={direction}, max_depth={max_depth})")
 
         async with self._retry_context("analyze_impact"):
             response = await self._stub.AnalyzeImpact(
@@ -254,9 +255,9 @@ class GoBackendClient:
     async def find_cycles(
         self,
         project_id: str,
-        link_types: Optional[List[str]] = None,
+        link_types: list[str] | None = None,
         max_cycle_length: int = 0,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Find circular dependencies in the project graph.
 
@@ -310,8 +311,8 @@ class GoBackendClient:
         project_id: str,
         source_item_id: str,
         target_item_id: str,
-        link_types: Optional[List[str]] = None,
-    ) -> Dict[str, Any]:
+        link_types: list[str] | None = None,
+    ) -> dict[str, Any]:
         """
         Calculate the shortest path between two items.
 
@@ -355,10 +356,7 @@ class GoBackendClient:
             "path_weight": response.path_weight,
         }
 
-        logger.info(
-            f"Path calculation complete: path_exists={result['path_exists']}, "
-            f"length={result['path_length']}"
-        )
+        logger.info(f"Path calculation complete: path_exists={result['path_exists']}, length={result['path_length']}")
         return result
 
 
@@ -368,8 +366,8 @@ async def analyze_impact_sync(
     project_id: str,
     direction: str = "both",
     max_depth: int = 0,
-    link_types: Optional[List[str]] = None,
-) -> Dict[str, Any]:
+    link_types: list[str] | None = None,
+) -> dict[str, Any]:
     """
     Convenience function for one-off impact analysis.
 

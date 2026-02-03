@@ -6,7 +6,7 @@ Provides programmatic access for AI agents to interact with TraceRTM.
 
 import json
 from collections.abc import Iterator
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 from unittest.mock import Mock
 
@@ -32,6 +32,7 @@ class BatchResult:
     Wrapper that behaves like a list of items while exposing summary stats
     (items_created/items_updated/items_deleted) for integration tests.
     """
+
     def __init__(self, items: list[Any], stats: dict[str, Any]) -> None:
         self._items = items
         self._stats = stats
@@ -124,7 +125,7 @@ def get_async_session(database_url: str | None = None) -> AsyncSession:
     db = DatabaseConnection(db_url)
     db.connect()
     if hasattr(db, "async_session"):
-        async_sess = getattr(db, "async_session")
+        async_sess = db.async_session
         if isinstance(async_sess, AsyncSession):
             return async_sess
     # Fallback: wrap sync engine
@@ -174,10 +175,13 @@ class TraceRTMClient:
                     close()
             if self._db is not None:
                 try:
-                    if hasattr(self._db, "disconnect"):
-                        self._db.disconnect()
-                    elif hasattr(self._db, "close"):
-                        self._db.close()
+                    disconnect = getattr(self._db, "disconnect", None)
+                    if callable(disconnect):
+                        disconnect()
+                    else:
+                        close = getattr(self._db, "close", None)
+                        if callable(close):
+                            close()
                 except Exception:
                     pass
         finally:
@@ -196,11 +200,13 @@ class TraceRTMClient:
         except Exception:
             agent = None
 
-        if agent is None and hasattr(session, "query"):
-            try:
-                agent = session.query(Agent).filter_by(id=self.agent_id).first()
-            except Exception:
-                agent = None
+        if agent is None:
+            query_fn = getattr(session, "query", None)
+            if callable(query_fn):
+                try:
+                    agent = query_fn(Agent).filter_by(id=self.agent_id).first()
+                except Exception:
+                    agent = None
 
         return agent
 
@@ -257,7 +263,7 @@ class TraceRTMClient:
                 if isinstance(result, Session):
                     return result
             if hasattr(session, "sync_session"):
-                sync_session = getattr(session, "sync_session")
+                sync_session = session.sync_session
                 if isinstance(sync_session, Session):
                     return sync_session
         raise ValueError("Synchronous session required for this operation")
@@ -270,8 +276,10 @@ class TraceRTMClient:
             return self._session.execute(stmt)
         except Exception:
             # Fallback for AsyncSession in non-async context
-            if self._is_async_session() and self._session is not None and hasattr(self._session, 'sync_session'):
-                return self._session.sync_session.execute(stmt)
+            if self._is_async_session() and self._session is not None:
+                sync_sess = getattr(self._session, "sync_session", None)
+                if sync_sess is not None and hasattr(sync_sess, "execute") and callable(sync_sess.execute):
+                    return sync_sess.execute(stmt)
             raise
 
     def _as_item_view(self, item: Item | ItemView | None) -> ItemView | None:
@@ -318,12 +326,11 @@ class TraceRTMClient:
         except Exception:
             # Rollback on error and silently fail logging to not break operations
             try:
-                if 'session' in locals():
+                if "session" in locals():
                     session.rollback()
             except Exception:
                 pass
             # In production, this could be logged to a separate error log
-            pass
 
     def register_agent(
         self,
@@ -354,7 +361,7 @@ class TraceRTMClient:
             existing.config = config or {}
             existing.agent_metadata = config or {}
             session.commit()
-            return existing.id
+            return str(existing.id)
 
         # Ensure we always have an ID even before flush (unit tests rely on it)
         from tracertm.models.agent import generate_agent_uuid
@@ -370,7 +377,7 @@ class TraceRTMClient:
             capabilities=capabilities,
             config=config,
             agent_metadata={**config, "assigned_projects": project_ids or []},
-            last_activity_at=datetime.utcnow().isoformat(),
+            last_activity_at=datetime.now(UTC).isoformat(),
         )
         session.add(agent)
         session.flush()
@@ -382,11 +389,11 @@ class TraceRTMClient:
         self._log_operation(
             "agent_registered",
             "agent",
-            agent.id,
+            str(agent.id),
             {"name": name, "type": agent_type, "projects": project_ids or ([project_id] if project_id else [])},
         )
 
-        return agent.id
+        return str(agent.id)
 
     def assign_agent_to_projects(self, agent_id: str, project_ids: list[str]) -> None:
         """
@@ -450,11 +457,7 @@ class TraceRTMClient:
         """
         session = self._ensure_sync_session()
 
-        agent = (
-            session.query(Agent)
-            .filter(Agent.id == agent_id)
-            .first()
-        )
+        agent = session.query(Agent).filter(Agent.id == agent_id).first()
 
         if not agent:
             return []
@@ -499,7 +502,7 @@ class TraceRTMClient:
         offset: int = 0,
         sort: str | None = None,
         order: str = "asc",
-        **filters: Any
+        **filters: Any,
     ) -> list[ItemView | Any]:
         """
         Query items in project (FR37, FR44).
@@ -562,14 +565,17 @@ class TraceRTMClient:
         if search:
             lowered = search.lower()
             items = [
-                item for item in items
+                item
+                for item in items
                 if (item.title and lowered in item.title.lower())
                 or (item.description and lowered in item.description.lower())
             ]
         if metadata_filter:
+
             def match_meta(it: Item) -> bool:
                 meta = it.item_metadata or {}
                 return all(meta.get(k) == v for k, v in metadata_filter.items())
+
             items = [item for item in items if match_meta(item)]
 
         # Log query operation
@@ -665,7 +671,7 @@ class TraceRTMClient:
         self._log_operation(
             "item_created",
             "item",
-            item.id,
+            str(item.id),
             {"title": title, "view": view, "type": item_type},
         )
 
@@ -828,15 +834,16 @@ class TraceRTMClient:
             raise ValueError(f"Item not found: {item_id}")
 
         # Soft delete
-        from datetime import datetime
-        item.deleted_at = datetime.utcnow()
+        from datetime import UTC, datetime
+
+        item.deleted_at = datetime.now(UTC)
         session.commit()
 
         # Log operation (FR41)
         self._log_operation(
             "item_deleted",
             "item",
-            item.id,
+            str(item.id),
             {"title": item.title},
         )
         return True
@@ -913,15 +920,15 @@ class TraceRTMClient:
     def get_link(self, link_id: str) -> Link | None:
         session = self._ensure_sync_session()
         project_id = self._get_project_id()
-        link = (
-            session.query(Link)
+        return (
+            session
+            .query(Link)
             .filter(
                 Link.id.like(f"{link_id}%"),
                 Link.project_id == project_id,
             )
             .first()
         )
-        return link
 
     async def get_link_async(self, link_id: str) -> Link | None:
         return self.get_link(link_id)
@@ -973,7 +980,9 @@ class TraceRTMClient:
     # =========================
     # Batch and utility helpers
     # =========================
-    def batch_create_items(self, items_data: list[dict[str, Any]], project_id: str | None = None) -> list[ItemView | Any] | BatchResult:
+    def batch_create_items(
+        self, items_data: list[dict[str, Any]], project_id: str | None = None
+    ) -> list[ItemView | Any] | BatchResult:
         project_id = project_id or self.config_manager.get("current_project_id")
         created: list[ItemView | Any] = []
         for data in items_data:
@@ -1039,10 +1048,7 @@ class TraceRTMClient:
         return self.batch_create_items(items_data, project_id=project_id)
 
     def batch_create_links(self, links_data: list[dict[str, Any]]) -> list[Link]:
-        created = []
-        for payload in links_data:
-            created.append(self.create_link(**payload))
-        return created
+        return [self.create_link(**payload) for payload in links_data]
 
     def compute_transitive_closure(self, start_id: str, link_types: list[str] | None = None) -> list[str]:
         session = self._ensure_sync_session()
@@ -1063,6 +1069,7 @@ class TraceRTMClient:
     def find_path(self, start_id: str, end_id: str) -> list[str]:
         session = self._ensure_sync_session()
         from collections import deque
+
         queue = deque([[start_id]])
         visited = {start_id}
         while queue:
@@ -1092,13 +1099,10 @@ class TraceRTMClient:
         project_id = self._get_project_id()
 
         from tracertm.models.project import Project
+
         project = session.query(Project).filter(Project.id == project_id).first()
 
-        items = (
-            session.query(Item)
-            .filter(Item.project_id == project_id, Item.deleted_at.is_(None))
-            .all()
-        )
+        items = session.query(Item).filter(Item.project_id == project_id, Item.deleted_at.is_(None)).all()
 
         links = session.query(Link).filter(Link.project_id == project_id).all()
 
@@ -1131,9 +1135,9 @@ class TraceRTMClient:
 
         if format == "yaml":
             import yaml
+
             return yaml.dump(data, default_flow_style=False)
-        else:
-            return json.dumps(data, indent=2, default=str)
+        return json.dumps(data, indent=2, default=str)
 
     # FR40: Import bulk data
     def import_data(self, data: dict[str, Any]) -> dict[str, int]:
@@ -1219,7 +1223,8 @@ class TraceRTMClient:
             return []
 
         events = (
-            session.query(Event)
+            session
+            .query(Event)
             .filter(
                 Event.project_id == project_id,
                 Event.agent_id == target_agent_id,
@@ -1296,7 +1301,8 @@ class TraceRTMClient:
             return []
 
         items = (
-            session.query(Item)
+            session
+            .query(Item)
             .filter(
                 Item.project_id == project_id,
                 Item.owner == target_agent_id,

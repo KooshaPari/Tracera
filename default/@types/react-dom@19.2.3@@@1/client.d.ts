@@ -6,7 +6,7 @@
 
 import React = require("react");
 
-export {};
+
 
 declare const REACT_FORM_STATE_SIGIL: unique symbol;
 export interface ReactFormState {

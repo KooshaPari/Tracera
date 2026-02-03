@@ -3,8 +3,7 @@ Gap coverage tests for TUI widgets.
 Targets: tui/widgets/*.py (all at 0% coverage)
 """
 
-import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 
 class TestGraphViewWidget:
@@ -13,21 +12,23 @@ class TestGraphViewWidget:
     def test_graph_view_widget_import(self):
         """Test GraphViewWidget can be imported."""
         from tracertm.tui.widgets.graph_view import GraphViewWidget
+
         assert GraphViewWidget is not None
 
     def test_graph_view_widget_textual_available_flag(self):
         """Test TEXTUAL_AVAILABLE flag exists."""
         from tracertm.tui.widgets import graph_view
-        assert hasattr(graph_view, 'TEXTUAL_AVAILABLE')
+
+        assert hasattr(graph_view, "TEXTUAL_AVAILABLE")
 
     def test_graph_view_widget_fallback_class(self):
         """Test fallback class when Textual not available."""
         # Import with mocked textual unavailable
-        with patch.dict('sys.modules', {'textual': None, 'textual.widgets': None}):
-            import importlib
+        with patch.dict("sys.modules", {"textual": None, "textual.widgets": None}):
             from tracertm.tui.widgets import graph_view
+
             # GraphViewWidget should be defined regardless
-            assert hasattr(graph_view, 'GraphViewWidget')
+            assert hasattr(graph_view, "GraphViewWidget")
 
 
 class TestItemListWidget:
@@ -36,12 +37,14 @@ class TestItemListWidget:
     def test_item_list_widget_import(self):
         """Test ItemListWidget can be imported."""
         from tracertm.tui.widgets.item_list import ItemListWidget
+
         assert ItemListWidget is not None
 
     def test_item_list_widget_textual_available_flag(self):
         """Test TEXTUAL_AVAILABLE flag exists."""
         from tracertm.tui.widgets import item_list
-        assert hasattr(item_list, 'TEXTUAL_AVAILABLE')
+
+        assert hasattr(item_list, "TEXTUAL_AVAILABLE")
 
 
 class TestStateDisplayWidget:
@@ -50,12 +53,14 @@ class TestStateDisplayWidget:
     def test_state_display_widget_import(self):
         """Test StateDisplayWidget can be imported."""
         from tracertm.tui.widgets.state_display import StateDisplayWidget
+
         assert StateDisplayWidget is not None
 
     def test_state_display_widget_textual_available_flag(self):
         """Test TEXTUAL_AVAILABLE flag exists."""
         from tracertm.tui.widgets import state_display
-        assert hasattr(state_display, 'TEXTUAL_AVAILABLE')
+
+        assert hasattr(state_display, "TEXTUAL_AVAILABLE")
 
 
 class TestViewSwitcherWidget:
@@ -64,12 +69,14 @@ class TestViewSwitcherWidget:
     def test_view_switcher_widget_import(self):
         """Test ViewSwitcherWidget can be imported."""
         from tracertm.tui.widgets.view_switcher import ViewSwitcherWidget
+
         assert ViewSwitcherWidget is not None
 
     def test_view_switcher_widget_textual_available_flag(self):
         """Test TEXTUAL_AVAILABLE flag exists."""
         from tracertm.tui.widgets import view_switcher
-        assert hasattr(view_switcher, 'TEXTUAL_AVAILABLE')
+
+        assert hasattr(view_switcher, "TEXTUAL_AVAILABLE")
 
 
 class TestConflictPanel:
@@ -77,12 +84,14 @@ class TestConflictPanel:
 
     def test_conflict_panel_import(self):
         """Test ConflictPanel can be imported."""
-        from tracertm.tui.widgets.conflict_panel import ConflictPanel
+        from tracertm.tui.widgets.conflict_panel import ConflictPanel  # type: ignore[possibly-missing-import]
+
         assert ConflictPanel is not None
 
     def test_conflict_panel_module_exists(self):
         """Test conflict_panel module exists."""
         from tracertm.tui.widgets import conflict_panel
+
         assert conflict_panel is not None
 
 
@@ -91,12 +100,14 @@ class TestSyncStatusWidget:
 
     def test_sync_status_import(self):
         """Test SyncStatusWidget can be imported."""
-        from tracertm.tui.widgets.sync_status import SyncStatusWidget
+        from tracertm.tui.widgets.sync_status import SyncStatusWidget  # type: ignore[possibly-missing-import]
+
         assert SyncStatusWidget is not None
 
     def test_sync_status_module_exists(self):
         """Test sync_status module exists."""
         from tracertm.tui.widgets import sync_status
+
         assert sync_status is not None
 
 
@@ -106,8 +117,9 @@ class TestWidgetsInit:
     def test_widgets_init_imports(self):
         """Test widgets module __init__ imports."""
         from tracertm.tui import widgets
+
         # Check exports are available
-        assert hasattr(widgets, 'GraphViewWidget')
-        assert hasattr(widgets, 'ItemListWidget')
-        assert hasattr(widgets, 'StateDisplayWidget')
-        assert hasattr(widgets, 'ViewSwitcherWidget')
+        assert hasattr(widgets, "GraphViewWidget")
+        assert hasattr(widgets, "ItemListWidget")
+        assert hasattr(widgets, "StateDisplayWidget")
+        assert hasattr(widgets, "ViewSwitcherWidget")

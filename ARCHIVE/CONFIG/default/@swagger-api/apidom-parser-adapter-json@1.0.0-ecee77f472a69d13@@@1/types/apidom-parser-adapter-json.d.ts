@@ -104,4 +104,4 @@ export declare const syntacticAnalysisIndirect: (cst: Tree, { sourceMap }?: {
  */
 export declare type Tree = Tree_2 | Tree_3;
 
-export { }
+

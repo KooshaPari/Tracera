@@ -80,7 +80,7 @@ define("vs/lua-BYAO5Img", ["exports"], (function(exports) {
       "..."
     ],
     // we include these common regular expressions
-    symbols: /[=><!~?:&|+\-*\/\^%]+/,
+    symbols: /[=><!~?:&|+\-*/^%]+/,
     escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
     // The main tokenizer for our languages
     tokenizer: {
@@ -101,7 +101,7 @@ define("vs/lua-BYAO5Img", ["exports"], (function(exports) {
         [/(,)(\s*)([a-zA-Z_]\w*)(\s*)(:)(?!:)/, ["delimiter", "", "key", "", "delimiter"]],
         [/({)(\s*)([a-zA-Z_]\w*)(\s*)(:)(?!:)/, ["@brackets", "", "key", "", "delimiter"]],
         // delimiters and operators
-        [/[{}()\[\]]/, "@brackets"],
+        [/[{}()[\]]/, "@brackets"],
         [
           /@symbols/,
           {
@@ -112,7 +112,7 @@ define("vs/lua-BYAO5Img", ["exports"], (function(exports) {
           }
         ],
         // numbers
-        [/\d*\.\d+([eE][\-+]?\d+)?/, "number.float"],
+        [/\d*\.\d+([eE][-+]?\d+)?/, "number.float"],
         [/0[xX][0-9a-fA-F_]*[0-9a-fA-F]/, "number.hex"],
         [/\d+?/, "number"],
         // delimiter: after number because of .\d floats

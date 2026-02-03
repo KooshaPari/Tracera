@@ -1,11 +1,12 @@
 """Unit tests for ItemService - based on actual implementation."""
 
-import pytest
-from uuid import uuid4
 from unittest.mock import AsyncMock
+from uuid import uuid4
 
-from tracertm.services.item_service import ItemService
+import pytest
+
 from tracertm.models.item import Item
+from tracertm.services.item_service import ItemService
 
 pytestmark = pytest.mark.unit
 
@@ -84,7 +85,7 @@ class TestItemServiceCreateItem:
             project_id=test_data["project_id"],
             title="Test Item",
             view="Feature",
-            item_type="requirement"
+            item_type="requirement",
         )
         item_service.items.create = AsyncMock(return_value=created_item)
         item_service.events.log = AsyncMock()
@@ -94,7 +95,7 @@ class TestItemServiceCreateItem:
             title="Test Item",
             view="Feature",
             item_type="requirement",
-            agent_id=test_data["agent_id"]
+            agent_id=test_data["agent_id"],
         )
 
         assert result is not None
@@ -114,7 +115,7 @@ class TestItemServiceCreateItem:
             item_type="code",
             status="in_progress",
             priority="high",
-            owner="user@example.com"
+            owner="user@example.com",
         )
         item_service.items.create = AsyncMock(return_value=created_item)
         item_service.events.log = AsyncMock()
@@ -128,7 +129,7 @@ class TestItemServiceCreateItem:
             status="in_progress",
             priority="high",
             owner="user@example.com",
-            agent_id=test_data["agent_id"]
+            agent_id=test_data["agent_id"],
         )
 
         assert result is not None
@@ -144,7 +145,7 @@ class TestItemServiceCreateItem:
             project_id=test_data["project_id"],
             title="Test Item",
             view="Feature",
-            item_type="requirement"
+            item_type="requirement",
         )
         item_service.items.create = AsyncMock(return_value=created_item)
         item_service.links.create = AsyncMock()
@@ -156,7 +157,7 @@ class TestItemServiceCreateItem:
             view="Feature",
             item_type="requirement",
             agent_id=test_data["agent_id"],
-            link_to=[target_id]
+            link_to=[target_id],
         )
 
         assert result is not None
@@ -174,14 +175,11 @@ class TestItemServiceGetItem:
             project_id=test_data["project_id"],
             title="Test Item",
             view="Feature",
-            item_type="requirement"
+            item_type="requirement",
         )
         item_service.items.get_by_id = AsyncMock(return_value=mock_item)
 
-        result = await item_service.get_item(
-            test_data["project_id"],
-            test_data["item_id"]
-        )
+        result = await item_service.get_item(test_data["project_id"], test_data["item_id"])
 
         assert result is not None
         assert result.id == test_data["item_id"]
@@ -192,10 +190,7 @@ class TestItemServiceGetItem:
         """get_item returns None when item not found."""
         item_service.items.get_by_id = AsyncMock(return_value=None)
 
-        result = await item_service.get_item(
-            test_data["project_id"],
-            test_data["item_id"]
-        )
+        result = await item_service.get_item(test_data["project_id"], test_data["item_id"])
 
         assert result is None
 
@@ -212,7 +207,7 @@ class TestItemServiceListItems:
                 project_id=test_data["project_id"],
                 title=f"Item {i}",
                 view="Feature",
-                item_type="requirement"
+                item_type="requirement",
             )
             for i in range(3)
         ]
@@ -233,15 +228,12 @@ class TestItemServiceListItems:
                 project_id=test_data["project_id"],
                 title="Component Item",
                 view="Component",
-                item_type="code"
+                item_type="code",
             )
         ]
         item_service.items.get_by_view = AsyncMock(return_value=mock_items)
 
-        result = await item_service.list_items(
-            test_data["project_id"],
-            view="Component"
-        )
+        result = await item_service.list_items(test_data["project_id"], view="Component")
 
         assert isinstance(result, list)
         item_service.items.get_by_view.assert_called_once()
@@ -258,24 +250,20 @@ class TestItemServiceUpdateItem:
             project_id=test_data["project_id"],
             title="Original",
             view="Feature",
-            item_type="requirement"
+            item_type="requirement",
         )
         updated_item = Item(
             id=test_data["item_id"],
             project_id=test_data["project_id"],
             title="Updated",
             view="Feature",
-            item_type="requirement"
+            item_type="requirement",
         )
         item_service.items.get_by_id = AsyncMock(return_value=mock_item)
         item_service.items.update = AsyncMock(return_value=updated_item)
         item_service.events.log = AsyncMock()
 
-        result = await item_service.update_item(
-            test_data["item_id"],
-            test_data["agent_id"],
-            title="Updated"
-        )
+        result = await item_service.update_item(test_data["item_id"], test_data["agent_id"], title="Updated")
 
         assert result is not None
         item_service.items.update.assert_called_once()
@@ -295,7 +283,7 @@ class TestItemServiceItemHierarchy:
                 title="Child",
                 view="Feature",
                 item_type="requirement",
-                parent_id=test_data["item_id"]
+                parent_id=test_data["item_id"],
             )
         ]
         item_service.items.get_children = AsyncMock(return_value=child_items)
@@ -315,7 +303,7 @@ class TestItemServiceItemHierarchy:
                 project_id=test_data["project_id"],
                 title="Ancestor",
                 view="Feature",
-                item_type="requirement"
+                item_type="requirement",
             )
         ]
         item_service.items.get_ancestors = AsyncMock(return_value=ancestor_items)
@@ -334,7 +322,7 @@ class TestItemServiceItemHierarchy:
                 project_id=test_data["project_id"],
                 title="Descendant",
                 view="Feature",
-                item_type="requirement"
+                item_type="requirement",
             )
         ]
         item_service.items.get_descendants = AsyncMock(return_value=descendant_items)
@@ -357,7 +345,7 @@ class TestItemServiceStatusTransitions:
             title="Test",
             view="Feature",
             item_type="requirement",
-            status="todo"
+            status="todo",
         )
         updated_item = Item(
             id=test_data["item_id"],
@@ -365,17 +353,14 @@ class TestItemServiceStatusTransitions:
             title="Test",
             view="Feature",
             item_type="requirement",
-            status="in_progress"
+            status="in_progress",
         )
         item_service.items.get_by_id = AsyncMock(return_value=mock_item)
         item_service.items.update = AsyncMock(return_value=updated_item)
         item_service.events.log = AsyncMock()
 
         result = await item_service.update_item_status(
-            test_data["item_id"],
-            "in_progress",
-            test_data["agent_id"],
-            test_data["project_id"]
+            test_data["item_id"], "in_progress", test_data["agent_id"], test_data["project_id"]
         )
 
         assert result is not None
@@ -384,11 +369,8 @@ class TestItemServiceStatusTransitions:
     @pytest.mark.asyncio
     async def test_invalid_status_raises_error(self, item_service, test_data):
         """update_item_status raises error for invalid status."""
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(ValueError, match="Invalid status") as exc_info:
             await item_service.update_item_status(
-                test_data["item_id"],
-                "invalid_status",
-                test_data["agent_id"],
-                test_data["project_id"]
+                test_data["item_id"], "invalid_status", test_data["agent_id"], test_data["project_id"]
             )
         assert "Invalid status" in str(exc_info.value)

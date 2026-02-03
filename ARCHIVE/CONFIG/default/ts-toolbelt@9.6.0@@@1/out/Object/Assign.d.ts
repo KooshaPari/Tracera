@@ -34,4 +34,4 @@ export declare type _Assign<O extends object, Os extends List<object>, depth ext
  * ```
  */
 export declare type Assign<O extends object, Os extends List<object>, depth extends Depth = 'flat', ignore extends object = BuiltIn, fill extends any = undefined> = O extends unknown ? Os extends unknown ? _Assign<O, Os, depth, ignore, fill> : never : never;
-export {};
+

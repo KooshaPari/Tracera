@@ -8,9 +8,10 @@ Revises: 032_add_canonical_projections
 Create Date: 2026-01-30
 """
 
-from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
+
+from alembic import op
 
 # revision identifiers, used by Alembic
 revision = "033_add_doc_entities"
@@ -21,7 +22,7 @@ depends_on = None
 
 def upgrade() -> None:
     """Create doc_entities table with hierarchical structure."""
-    
+
     op.create_table(
         "doc_entities",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
@@ -94,13 +95,17 @@ def upgrade() -> None:
         ),
         sa.Column("indexed_at", sa.DateTime(timezone=True), nullable=True),
     )
-    
+
     # Self-referential foreign key for parent
     op.create_foreign_key(
-        "fk_doc_entities_parent", "doc_entities", "doc_entities",
-        ["parent_id"], ["id"], ondelete="CASCADE",
+        "fk_doc_entities_parent",
+        "doc_entities",
+        "doc_entities",
+        ["parent_id"],
+        ["id"],
+        ondelete="CASCADE",
     )
-    
+
     # Create indexes
     op.create_index("ix_doc_entities_project_id", "doc_entities", ["project_id"])
     op.create_index("ix_doc_entities_parent_id", "doc_entities", ["parent_id"])
@@ -124,4 +129,3 @@ def downgrade() -> None:
     op.drop_index("ix_doc_entities_project_id", table_name="doc_entities")
     op.drop_constraint("fk_doc_entities_parent", "doc_entities", type_="foreignkey")
     op.drop_table("doc_entities")
-

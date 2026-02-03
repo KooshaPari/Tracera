@@ -6,9 +6,9 @@ API latency. WorkOS remains the source of truth, and this cache is
 synchronized on demand with a 5-minute TTL.
 """
 
-from datetime import datetime
 from sqlalchemy import Boolean, Column, DateTime, Index, String
 from sqlalchemy.sql import func
+
 from tracertm.models.base import Base
 
 
@@ -55,8 +55,8 @@ class User(Base):
     )
 
     __table_args__ = (
-        Index('ix_users_email', 'email'),
-        Index('ix_users_synced_at', 'synced_at'),
+        Index("ix_users_email", "email"),
+        Index("ix_users_synced_at", "synced_at"),
     )
 
     def to_dict(self) -> dict:

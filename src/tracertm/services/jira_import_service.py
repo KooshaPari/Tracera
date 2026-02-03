@@ -1,6 +1,7 @@
 """Service for importing projects from Jira."""
 
 import json
+import logging
 from typing import Any, ClassVar
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,6 +10,8 @@ from tracertm.repositories.event_repository import EventRepository
 from tracertm.repositories.item_repository import ItemRepository
 from tracertm.repositories.link_repository import LinkRepository
 from tracertm.repositories.project_repository import ProjectRepository
+
+logger = logging.getLogger(__name__)
 
 
 class JiraImportService:
@@ -102,7 +105,7 @@ class JiraImportService:
 
             for issue in data.get("issues", []):
                 try:
-                    item = await self._import_jira_issue(project.id, issue, agent_id)
+                    item = await self._import_jira_issue(str(project.id), issue, agent_id)
                     issue_map[issue["key"]] = item.id
                     items_imported += 1
                 except Exception as e:
@@ -112,14 +115,10 @@ class JiraImportService:
             links_imported = 0
             for issue in data.get("issues", []):
                 try:
-                    links = await self._import_jira_links(
-                        project.id, issue, issue_map, agent_id
-                    )
+                    links = await self._import_jira_links(str(project.id), issue, issue_map, agent_id)
                     links_imported += len(links)
                 except Exception as e:
-                    errors.append(
-                        f"Failed to import links for {issue['key']}: {e!s}"
-                    )
+                    errors.append(f"Failed to import links for {issue['key']}: {e!s}")
 
             return {
                 "success": True,
@@ -147,12 +146,8 @@ class JiraImportService:
         # Map fields
         title = fields.get("summary", "Untitled")
         description = fields.get("description", "")
-        status = self.STATUS_MAP.get(
-            fields.get("status", {}).get("name", "To Do"), "todo"
-        )
-        item_type = self.TYPE_MAP.get(
-            fields.get("issuetype", {}).get("name", "Task"), "task"
-        )
+        status = self.STATUS_MAP.get(fields.get("status", {}).get("name", "To Do"), "todo")
+        item_type = self.TYPE_MAP.get(fields.get("issuetype", {}).get("name", "Task"), "task")
 
         # Create item
         item = await self.items.create(
@@ -173,7 +168,7 @@ class JiraImportService:
             project_id=project_id,
             event_type="jira_issue_imported",
             entity_type="item",
-            entity_id=item.id,
+            entity_id=str(item.id),
             data={"jira_key": issue["key"]},
             agent_id=agent_id,
         )
@@ -193,9 +188,7 @@ class JiraImportService:
 
         for link in fields.get("issuelinks", []):
             try:
-                link_type = self.LINK_TYPE_MAP.get(
-                    link.get("type", {}).get("name", "relates to"), "relates_to"
-                )
+                link_type = self.LINK_TYPE_MAP.get(link.get("type", {}).get("name", "relates to"), "relates_to")
 
                 # Determine source and target
                 if "outwardIssue" in link:
@@ -220,7 +213,7 @@ class JiraImportService:
                         link_type=link_type,
                     )
                     links.append(link_obj)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug("Link creation skipped: %s", e)
 
         return links

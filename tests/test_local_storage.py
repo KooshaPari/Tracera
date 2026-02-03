@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from tracertm.storage import ItemStorage, LocalStorageManager, ProjectStorage
+from tracertm.storage import LocalStorageManager
 
 
 @pytest.fixture
@@ -60,9 +60,7 @@ class TestLocalStorageManager:
         session = storage_manager.get_session()
         try:
             # Check that tables exist by querying them
-            result = session.execute(
-                text("SELECT name FROM sqlite_master WHERE type='table'")
-            )
+            result = session.execute(text("SELECT name FROM sqlite_master WHERE type='table'"))
             tables = {row[0] for row in result.fetchall()}
 
             assert "projects" in tables
@@ -202,13 +200,7 @@ class TestItemStorage:
         assert "content_hash" in item.item_metadata
 
         # Check markdown file created
-        epic_path = (
-            temp_storage_dir
-            / "projects"
-            / "test-project"
-            / "epics"
-            / "EPIC-001.md"
-        )
+        epic_path = temp_storage_dir / "projects" / "test-project" / "epics" / "EPIC-001.md"
         assert epic_path.exists()
 
         # Parse markdown content
@@ -336,9 +328,7 @@ class TestItemStorage:
         assert link.link_metadata["note"] == "Epic contains this story"
 
         # Check links.yaml updated
-        links_path = (
-            temp_storage_dir / "projects" / "test-project" / ".meta" / "links.yaml"
-        )
+        links_path = temp_storage_dir / "projects" / "test-project" / ".meta" / "links.yaml"
         links_content = yaml.safe_load(links_path.read_text())
 
         assert len(links_content["links"]) == 1
@@ -489,13 +479,7 @@ class TestMarkdownGeneration:
         )
 
         # Re-generate markdown (happens automatically on link creation)
-        epic_path = (
-            temp_storage_dir
-            / "projects"
-            / "test-project"
-            / "epics"
-            / "EPIC-001.md"
-        )
+        epic_path = temp_storage_dir / "projects" / "test-project" / "epics" / "EPIC-001.md"
         content = epic_path.read_text()
 
         # Parse frontmatter

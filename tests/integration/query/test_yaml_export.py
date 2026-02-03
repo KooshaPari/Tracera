@@ -4,9 +4,11 @@ Integration tests for Epic 3: YAML export format (FR30).
 Tests the rtm export --format yaml command.
 """
 
-
 import pytest
+
 pytestmark = pytest.mark.integration
+import pathlib
+
 import yaml
 from typer.testing import CliRunner
 
@@ -97,14 +99,12 @@ def test_export_yaml_to_file(runner, temp_project, tmp_path):
 
     # Export to file
     output_file = tmp_path / "export.yaml"
-    result = runner.invoke(
-        app, ["export", "--format", "yaml", "--output", str(output_file)]
-    )
+    result = runner.invoke(app, ["export", "--format", "yaml", "--output", str(output_file)])
     assert result.exit_code == 0
     assert output_file.exists()
 
     # Verify file content
-    with open(output_file) as f:
+    with pathlib.Path(output_file).open() as f:
         yaml_data = yaml.safe_load(f)
         assert "items" in yaml_data
         assert len(yaml_data["items"]) > 0

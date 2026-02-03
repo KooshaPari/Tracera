@@ -16,9 +16,7 @@ Approach: Real database interactions, minimal mocking, comprehensive edge cases
 Coverage Strategy: Happy paths, edge cases, error scenarios, concurrent operations
 """
 
-import asyncio
-from datetime import datetime, timedelta
-from typing import Any
+from datetime import UTC, datetime, timedelta
 
 import pytest
 import pytest_asyncio
@@ -45,7 +43,6 @@ from tracertm.services.agent_coordination_service import (
     AgentCoordinationService,
 )
 from tracertm.services.agent_performance_service import AgentPerformanceService
-
 
 # ============================================================
 # FIXTURES
@@ -86,7 +83,7 @@ async def sample_items(db_session: AsyncSession, test_project: Project) -> list[
 
     for title, view, item_type, status, priority, description in items_data:
         item = await items_repo.create(
-            project_id=test_project.id,
+            project_id=str(test_project.id),
             title=title,
             view=view,
             item_type=item_type,
@@ -101,9 +98,7 @@ async def sample_items(db_session: AsyncSession, test_project: Project) -> list[
 
 
 @pytest_asyncio.fixture
-async def dependency_graph(
-    db_session: AsyncSession, test_project: Project, sample_items: list[Item]
-) -> list[Link]:
+async def dependency_graph(db_session: AsyncSession, test_project: Project, sample_items: list[Item]) -> list[Link]:
     """Create a complex dependency graph for traceability testing."""
     links_repo = LinkRepository(db_session)
     links = []
@@ -127,9 +122,9 @@ async def dependency_graph(
 
     for source_id, target_id, link_type in link_data:
         link = await links_repo.create(
-            project_id=test_project.id,
-            source_item_id=source_id,
-            target_item_id=target_id,
+            project_id=str(test_project.id),
+            source_item_id=str(source_id),
+            target_item_id=str(target_id),
             link_type=link_type,
         )
         links.append(link)
@@ -139,9 +134,7 @@ async def dependency_graph(
 
 
 @pytest_asyncio.fixture
-async def sample_events(
-    db_session: AsyncSession, test_project: Project, sample_items: list[Item]
-) -> list[Event]:
+async def sample_events(db_session: AsyncSession, test_project: Project, sample_items: list[Item]) -> list[Event]:
     """Create sample events for analytics testing."""
     events_repo = EventRepository(db_session)
     events = []
@@ -156,15 +149,15 @@ async def sample_events(
         "status_changed",
     ]
 
-    base_time = datetime.utcnow() - timedelta(days=15)
+    base_time = datetime.now(UTC) - timedelta(days=15)
 
     for i in range(50):
         event_time = base_time + timedelta(hours=i * 2)
         event = await events_repo.log(
-            project_id=test_project.id,
+            project_id=str(test_project.id),
             event_type=event_types[i % len(event_types)],
             entity_type="item",
-            entity_id=sample_items[i % len(sample_items)].id,
+            entity_id=str(sample_items[i % len(sample_items)].id),
             agent_id=agent_ids[i % len(agent_ids)],
             data={"index": i, "timestamp": event_time.isoformat()},
         )
@@ -177,9 +170,7 @@ async def sample_events(
 
 
 @pytest_asyncio.fixture
-async def sample_agents(
-    db_session: AsyncSession, test_project: Project
-) -> list[Agent]:
+async def sample_agents(db_session: AsyncSession, test_project: Project) -> list[Agent]:
     """Create sample agents for coordination testing."""
     agents_repo = AgentRepository(db_session)
     agents = []
@@ -194,16 +185,14 @@ async def sample_agents(
 
     for i, (name, agent_type, status, metadata) in enumerate(agent_data):
         agent = await agents_repo.create(
-            project_id=test_project.id,
+            project_id=str(test_project.id),
             name=name,
             agent_type=agent_type,
             metadata=metadata,
         )
         # Set status and last activity
         agent.status = status
-        agent.last_activity_at = (
-            datetime.utcnow() - timedelta(minutes=i * 10)
-        ).isoformat()
+        agent.last_activity_at = (datetime.now(UTC) - timedelta(minutes=i * 10)).isoformat()
         agents.append(agent)
 
     await db_session.commit()
@@ -229,9 +218,9 @@ class TestAdvancedAnalyticsServiceIntegration:
         """
         service = AdvancedAnalyticsService(db_session)
 
-        result = await service.project_metrics(test_project.id)
+        result = await service.project_metrics(str(test_project.id))
 
-        assert result["project_id"] == test_project.id
+        assert result["project_id"] == str(test_project.id)
         assert result["total_items"] == 10
         assert "by_status" in result
         assert "by_view" in result
@@ -242,9 +231,7 @@ class TestAdvancedAnalyticsServiceIntegration:
         assert result["by_status"]["in_progress"] == 2
 
     @pytest.mark.asyncio
-    async def test_project_metrics_empty_project(
-        self, db_session: AsyncSession, test_project: Project
-    ):
+    async def test_project_metrics_empty_project(self, db_session: AsyncSession, test_project: Project):
         """
         GIVEN: A project with no items
         WHEN: project_metrics is called
@@ -252,18 +239,16 @@ class TestAdvancedAnalyticsServiceIntegration:
         """
         service = AdvancedAnalyticsService(db_session)
 
-        result = await service.project_metrics(test_project.id)
+        result = await service.project_metrics(str(test_project.id))
 
-        assert result["project_id"] == test_project.id
+        assert result["project_id"] == str(test_project.id)
         assert result["total_items"] == 0
         assert result["by_status"] == {}
         assert result["by_view"] == {}
         assert result["completion_rate"] == 0.0
 
     @pytest.mark.asyncio
-    async def test_calculate_completion_rate_mixed_statuses(
-        self, db_session: AsyncSession
-    ):
+    async def test_calculate_completion_rate_mixed_statuses(self, db_session: AsyncSession):
         """
         GIVEN: Status counts with mixed done/complete and other statuses
         WHEN: _calculate_completion_rate is called
@@ -277,9 +262,7 @@ class TestAdvancedAnalyticsServiceIntegration:
         assert result == 50.0  # (4 done + 1 complete) / 10 total * 100
 
     @pytest.mark.asyncio
-    async def test_calculate_completion_rate_all_done(
-        self, db_session: AsyncSession
-    ):
+    async def test_calculate_completion_rate_all_done(self, db_session: AsyncSession):
         """
         GIVEN: All items are done
         WHEN: _calculate_completion_rate is called
@@ -293,9 +276,7 @@ class TestAdvancedAnalyticsServiceIntegration:
         assert result == 100.0
 
     @pytest.mark.asyncio
-    async def test_calculate_completion_rate_none_done(
-        self, db_session: AsyncSession
-    ):
+    async def test_calculate_completion_rate_none_done(self, db_session: AsyncSession):
         """
         GIVEN: No items are done
         WHEN: _calculate_completion_rate is called
@@ -322,18 +303,16 @@ class TestAdvancedAnalyticsServiceIntegration:
         """
         service = AdvancedAnalyticsService(db_session)
 
-        result = await service.team_analytics(test_project.id)
+        result = await service.team_analytics(str(test_project.id))
 
-        assert result["project_id"] == test_project.id
+        assert result["project_id"] == str(test_project.id)
         assert result["total_agents"] == 4  # alpha, beta, gamma, delta
         assert result["total_events"] == 50
         assert "agent_activity" in result
         assert len(result["agent_activity"]) == 4
 
     @pytest.mark.asyncio
-    async def test_team_analytics_no_events(
-        self, db_session: AsyncSession, test_project: Project
-    ):
+    async def test_team_analytics_no_events(self, db_session: AsyncSession, test_project: Project):
         """
         GIVEN: Project with no events
         WHEN: team_analytics is called
@@ -341,7 +320,7 @@ class TestAdvancedAnalyticsServiceIntegration:
         """
         service = AdvancedAnalyticsService(db_session)
 
-        result = await service.team_analytics(test_project.id)
+        result = await service.team_analytics(str(test_project.id))
 
         assert result["total_agents"] == 0
         assert result["total_events"] == 0
@@ -361,9 +340,9 @@ class TestAdvancedAnalyticsServiceIntegration:
         """
         service = AdvancedAnalyticsService(db_session)
 
-        result = await service.trend_analysis(test_project.id)
+        result = await service.trend_analysis(str(test_project.id))
 
-        assert result["project_id"] == test_project.id
+        assert result["project_id"] == str(test_project.id)
         assert result["days"] == 30
         assert result["total_events"] == 50
         assert "daily_events" in result
@@ -384,7 +363,7 @@ class TestAdvancedAnalyticsServiceIntegration:
         """
         service = AdvancedAnalyticsService(db_session)
 
-        result = await service.trend_analysis(test_project.id, days=7)
+        result = await service.trend_analysis(str(test_project.id), days=7)
 
         assert result["days"] == 7
         # Should have fewer events in 7-day window than full dataset
@@ -405,9 +384,9 @@ class TestAdvancedAnalyticsServiceIntegration:
         """
         service = AdvancedAnalyticsService(db_session)
 
-        result = await service.dependency_metrics(test_project.id)
+        result = await service.dependency_metrics(str(test_project.id))
 
-        assert result["project_id"] == test_project.id
+        assert result["project_id"] == str(test_project.id)
         assert result["total_items"] == 10
         assert result["total_links"] > 0
         assert "average_links_per_item" in result
@@ -427,7 +406,7 @@ class TestAdvancedAnalyticsServiceIntegration:
         """
         service = AdvancedAnalyticsService(db_session)
 
-        result = await service.dependency_metrics(test_project.id)
+        result = await service.dependency_metrics(str(test_project.id))
 
         assert result["total_links"] == 0
         assert result["average_links_per_item"] == 0.0
@@ -444,9 +423,9 @@ class TestAdvancedAnalyticsServiceIntegration:
         """
         service = AdvancedAnalyticsService(db_session)
 
-        result = await service.quality_metrics(test_project.id)
+        result = await service.quality_metrics(str(test_project.id))
 
-        assert result["project_id"] == test_project.id
+        assert result["project_id"] == str(test_project.id)
         assert result["total_items"] == 10
         assert "items_with_description" in result
         assert "description_coverage" in result
@@ -469,7 +448,7 @@ class TestAdvancedAnalyticsServiceIntegration:
         """
         service = AdvancedAnalyticsService(db_session)
 
-        result = await service.quality_metrics(test_project.id)
+        result = await service.quality_metrics(str(test_project.id))
 
         assert result["items_with_links"] > 0
         assert result["link_coverage"] > 0
@@ -490,9 +469,9 @@ class TestAdvancedAnalyticsServiceIntegration:
         """
         service = AdvancedAnalyticsService(db_session)
 
-        result = await service.generate_report(test_project.id)
+        result = await service.generate_report(str(test_project.id))
 
-        assert result["project_id"] == test_project.id
+        assert result["project_id"] == str(test_project.id)
         assert "generated_at" in result
         assert "project_metrics" in result
         assert "team_analytics" in result
@@ -528,11 +507,11 @@ class TestAdvancedTraceabilityServiceIntegration:
         """
         service = AdvancedTraceabilityService(db_session)
 
-        paths = await service.find_all_paths(sample_items[0].id, sample_items[3].id)
+        paths = await service.find_all_paths(str(sample_items[0].id), str(sample_items[3].id))
 
         assert len(paths) >= 1
-        assert paths[0].source_id == sample_items[0].id
-        assert paths[0].target_id == sample_items[3].id
+        assert paths[0].source_id == str(sample_items[0].id)
+        assert paths[0].target_id == str(sample_items[3].id)
         assert paths[0].distance == 1
 
     @pytest.mark.asyncio
@@ -551,7 +530,7 @@ class TestAdvancedTraceabilityServiceIntegration:
         service = AdvancedTraceabilityService(db_session)
 
         # Feature A -> Story 1 -> Code A (2 hops)
-        paths = await service.find_all_paths(sample_items[0].id, sample_items[5].id)
+        paths = await service.find_all_paths(str(sample_items[0].id), str(sample_items[5].id))
 
         assert len(paths) >= 1
         multi_hop_path = next((p for p in paths if p.distance > 1), None)
@@ -574,7 +553,7 @@ class TestAdvancedTraceabilityServiceIntegration:
         service = AdvancedTraceabilityService(db_session)
 
         # Items with no connecting path
-        paths = await service.find_all_paths(sample_items[7].id, sample_items[0].id)
+        paths = await service.find_all_paths(str(sample_items[7].id), str(sample_items[0].id))
 
         assert len(paths) == 0
 
@@ -593,9 +572,7 @@ class TestAdvancedTraceabilityServiceIntegration:
         """
         service = AdvancedTraceabilityService(db_session)
 
-        paths = await service.find_all_paths(
-            sample_items[0].id, sample_items[5].id, max_depth=1
-        )
+        paths = await service.find_all_paths(str(sample_items[0].id), str(sample_items[5].id), max_depth=1)
 
         # Should not find 2-hop path with max_depth=1
         assert all(p.distance <= 1 for p in paths)
@@ -615,16 +592,14 @@ class TestAdvancedTraceabilityServiceIntegration:
         """
         service = AdvancedTraceabilityService(db_session)
 
-        closure = await service.transitive_closure(test_project.id)
+        closure = await service.transitive_closure(str(test_project.id))
 
         assert len(closure) == 10  # All items
-        # Feature A should reach Story 1, Code A, Test 1 (transitively)
-        assert sample_items[3].id in closure[sample_items[0].id]
+        # Feature A should reach Story 1, Code A, Test 1 (transitively); closure keys are str
+        assert str(sample_items[3].id) in closure[str(sample_items[0].id)]
 
     @pytest.mark.asyncio
-    async def test_transitive_closure_isolated_nodes(
-        self, db_session: AsyncSession, test_project: Project
-    ):
+    async def test_transitive_closure_isolated_nodes(self, db_session: AsyncSession, test_project: Project):
         """
         GIVEN: Project with isolated items (no links)
         WHEN: transitive_closure is computed
@@ -635,7 +610,7 @@ class TestAdvancedTraceabilityServiceIntegration:
         items = []
         for i in range(3):
             item = await items_repo.create(
-                project_id=test_project.id,
+                project_id=str(test_project.id),
                 title=f"Isolated Item {i}",
                 view="FEATURE",
                 item_type="feature",
@@ -645,10 +620,10 @@ class TestAdvancedTraceabilityServiceIntegration:
         await db_session.commit()
 
         service = AdvancedTraceabilityService(db_session)
-        closure = await service.transitive_closure(test_project.id)
+        closure = await service.transitive_closure(str(test_project.id))
 
         for item in items:
-            assert len(closure[item.id]) == 0
+            assert len(closure[str(item.id)]) == 0
 
     @pytest.mark.asyncio
     async def test_bidirectional_impact_analysis(
@@ -666,19 +641,15 @@ class TestAdvancedTraceabilityServiceIntegration:
         service = AdvancedTraceabilityService(db_session)
 
         # Story 1 has incoming from Feature A and outgoing to Code A
-        result = await service.bidirectional_impact(sample_items[3].id)
+        result = await service.bidirectional_impact(str(sample_items[3].id))
 
-        assert result["entity_id"] == sample_items[3].id
+        assert result["entity_id"] == str(sample_items[3].id)
         assert len(result["forward_impact"]) > 0
         assert len(result["backward_impact"]) > 0
-        assert result["total_impact"] == len(result["forward_impact"]) + len(
-            result["backward_impact"]
-        )
+        assert result["total_impact"] == len(result["forward_impact"]) + len(result["backward_impact"])
 
     @pytest.mark.asyncio
-    async def test_bidirectional_impact_no_links(
-        self, db_session: AsyncSession, test_project: Project
-    ):
+    async def test_bidirectional_impact_no_links(self, db_session: AsyncSession, test_project: Project):
         """
         GIVEN: Item with no links
         WHEN: bidirectional_impact is called
@@ -686,7 +657,7 @@ class TestAdvancedTraceabilityServiceIntegration:
         """
         items_repo = ItemRepository(db_session)
         item = await items_repo.create(
-            project_id=test_project.id,
+            project_id=str(test_project.id),
             title="Isolated Item",
             view="FEATURE",
             item_type="feature",
@@ -695,7 +666,7 @@ class TestAdvancedTraceabilityServiceIntegration:
         await db_session.commit()
 
         service = AdvancedTraceabilityService(db_session)
-        result = await service.bidirectional_impact(item.id)
+        result = await service.bidirectional_impact(str(item.id))
 
         assert result["forward_impact"] == []
         assert result["backward_impact"] == []
@@ -716,15 +687,13 @@ class TestAdvancedTraceabilityServiceIntegration:
         """
         service = AdvancedTraceabilityService(db_session)
 
-        gaps = await service.coverage_gaps(test_project.id, "FEATURE", "STORY")
+        gaps = await service.coverage_gaps(str(test_project.id), "FEATURE", "STORY")
 
         assert isinstance(gaps, list)
         # Should have at least one gap since not all features link to stories
 
     @pytest.mark.asyncio
-    async def test_coverage_gaps_full_coverage(
-        self, db_session: AsyncSession, test_project: Project
-    ):
+    async def test_coverage_gaps_full_coverage(self, db_session: AsyncSession, test_project: Project):
         """
         GIVEN: All source items link to target view
         WHEN: coverage_gaps is called
@@ -735,29 +704,29 @@ class TestAdvancedTraceabilityServiceIntegration:
         links_repo = LinkRepository(db_session)
 
         feature = await items_repo.create(
-            project_id=test_project.id,
+            project_id=str(test_project.id),
             title="Complete Feature",
             view="FEATURE",
             item_type="feature",
             status="todo",
         )
         story = await items_repo.create(
-            project_id=test_project.id,
+            project_id=str(test_project.id),
             title="Story",
             view="STORY",
             item_type="story",
             status="todo",
         )
         await links_repo.create(
-            project_id=test_project.id,
-            source_item_id=feature.id,
-            target_item_id=story.id,
+            project_id=str(test_project.id),
+            source_item_id=str(feature.id),
+            target_item_id=str(story.id),
             link_type="implements",
         )
         await db_session.commit()
 
         service = AdvancedTraceabilityService(db_session)
-        gaps = await service.coverage_gaps(test_project.id, "FEATURE", "STORY")
+        gaps = await service.coverage_gaps(str(test_project.id), "FEATURE", "STORY")
 
         # The feature we created should not be in gaps
         assert feature.id not in gaps
@@ -777,15 +746,13 @@ class TestAdvancedTraceabilityServiceIntegration:
         """
         service = AdvancedTraceabilityService(db_session)
 
-        cycles = await service.circular_dependency_check(test_project.id)
+        cycles = await service.circular_dependency_check(str(test_project.id))
 
         # Original graph should be acyclic
         assert len(cycles) == 0
 
     @pytest.mark.asyncio
-    async def test_circular_dependency_check_with_cycle(
-        self, db_session: AsyncSession, test_project: Project
-    ):
+    async def test_circular_dependency_check_with_cycle(self, db_session: AsyncSession, test_project: Project):
         """
         GIVEN: Dependency graph with circular dependency
         WHEN: circular_dependency_check is called
@@ -796,21 +763,21 @@ class TestAdvancedTraceabilityServiceIntegration:
         links_repo = LinkRepository(db_session)
 
         item_a = await items_repo.create(
-            project_id=test_project.id,
+            project_id=str(test_project.id),
             title="Item A",
             view="FEATURE",
             item_type="feature",
             status="todo",
         )
         item_b = await items_repo.create(
-            project_id=test_project.id,
+            project_id=str(test_project.id),
             title="Item B",
             view="FEATURE",
             item_type="feature",
             status="todo",
         )
         item_c = await items_repo.create(
-            project_id=test_project.id,
+            project_id=str(test_project.id),
             title="Item C",
             view="FEATURE",
             item_type="feature",
@@ -818,27 +785,27 @@ class TestAdvancedTraceabilityServiceIntegration:
         )
 
         await links_repo.create(
-            project_id=test_project.id,
-            source_item_id=item_a.id,
-            target_item_id=item_b.id,
+            project_id=str(test_project.id),
+            source_item_id=str(item_a.id),
+            target_item_id=str(item_b.id),
             link_type="depends_on",
         )
         await links_repo.create(
-            project_id=test_project.id,
-            source_item_id=item_b.id,
-            target_item_id=item_c.id,
+            project_id=str(test_project.id),
+            source_item_id=str(item_b.id),
+            target_item_id=str(item_c.id),
             link_type="depends_on",
         )
         await links_repo.create(
-            project_id=test_project.id,
-            source_item_id=item_c.id,
-            target_item_id=item_a.id,
+            project_id=str(test_project.id),
+            source_item_id=str(item_c.id),
+            target_item_id=str(item_a.id),
             link_type="depends_on",
         )
         await db_session.commit()
 
         service = AdvancedTraceabilityService(db_session)
-        cycles = await service.circular_dependency_check(test_project.id)
+        cycles = await service.circular_dependency_check(str(test_project.id))
 
         assert len(cycles) > 0
         # Should detect A -> B -> C -> A cycle
@@ -868,17 +835,15 @@ class TestAdvancedTraceabilityEnhancementsServiceIntegration:
         """
         service = AdvancedTraceabilityEnhancementsService(db_session)
 
-        result = await service.detect_circular_dependencies(test_project.id)
+        result = await service.detect_circular_dependencies(str(test_project.id))
 
-        assert result["project_id"] == test_project.id
+        assert result["project_id"] == str(test_project.id)
         assert result["has_cycles"] is False
         assert result["cycle_count"] == 0
         assert result["items_in_cycles"] == []
 
     @pytest.mark.asyncio
-    async def test_detect_circular_dependencies_with_cycles(
-        self, db_session: AsyncSession, test_project: Project
-    ):
+    async def test_detect_circular_dependencies_with_cycles(self, db_session: AsyncSession, test_project: Project):
         """
         GIVEN: Project with circular dependencies
         WHEN: detect_circular_dependencies is called
@@ -889,14 +854,14 @@ class TestAdvancedTraceabilityEnhancementsServiceIntegration:
         links_repo = LinkRepository(db_session)
 
         item_x = await items_repo.create(
-            project_id=test_project.id,
+            project_id=str(test_project.id),
             title="Item X",
             view="CODE",
             item_type="class",
             status="todo",
         )
         item_y = await items_repo.create(
-            project_id=test_project.id,
+            project_id=str(test_project.id),
             title="Item Y",
             view="CODE",
             item_type="class",
@@ -904,29 +869,27 @@ class TestAdvancedTraceabilityEnhancementsServiceIntegration:
         )
 
         await links_repo.create(
-            project_id=test_project.id,
-            source_item_id=item_x.id,
-            target_item_id=item_y.id,
+            project_id=str(test_project.id),
+            source_item_id=str(item_x.id),
+            target_item_id=str(item_y.id),
             link_type="depends_on",
         )
         await links_repo.create(
-            project_id=test_project.id,
-            source_item_id=item_y.id,
-            target_item_id=item_x.id,
+            project_id=str(test_project.id),
+            source_item_id=str(item_y.id),
+            target_item_id=str(item_x.id),
             link_type="depends_on",
         )
         await db_session.commit()
 
         service = AdvancedTraceabilityEnhancementsService(db_session)
-        result = await service.detect_circular_dependencies(test_project.id)
+        result = await service.detect_circular_dependencies(str(test_project.id))
 
         assert result["has_cycles"] is True
         assert result["cycle_count"] > 0
 
     @pytest.mark.asyncio
-    async def test_coverage_gap_analysis_full_coverage(
-        self, db_session: AsyncSession, test_project: Project
-    ):
+    async def test_coverage_gap_analysis_full_coverage(self, db_session: AsyncSession, test_project: Project):
         """
         GIVEN: All source items linked to target view
         WHEN: coverage_gap_analysis is called
@@ -936,31 +899,29 @@ class TestAdvancedTraceabilityEnhancementsServiceIntegration:
         links_repo = LinkRepository(db_session)
 
         feature = await items_repo.create(
-            project_id=test_project.id,
+            project_id=str(test_project.id),
             title="Feature",
             view="FEATURE",
             item_type="feature",
             status="todo",
         )
         code = await items_repo.create(
-            project_id=test_project.id,
+            project_id=str(test_project.id),
             title="Code",
             view="CODE",
             item_type="class",
             status="todo",
         )
         await links_repo.create(
-            project_id=test_project.id,
-            source_item_id=feature.id,
-            target_item_id=code.id,
+            project_id=str(test_project.id),
+            source_item_id=str(feature.id),
+            target_item_id=str(code.id),
             link_type="implements",
         )
         await db_session.commit()
 
         service = AdvancedTraceabilityEnhancementsService(db_session)
-        result = await service.coverage_gap_analysis(
-            test_project.id, "FEATURE", "CODE"
-        )
+        result = await service.coverage_gap_analysis(str(test_project.id), "FEATURE", "CODE")
 
         assert result["source_view"] == "FEATURE"
         assert result["target_view"] == "CODE"
@@ -968,9 +929,7 @@ class TestAdvancedTraceabilityEnhancementsServiceIntegration:
         assert result["uncovered_items"] == 0
 
     @pytest.mark.asyncio
-    async def test_coverage_gap_analysis_partial_coverage(
-        self, db_session: AsyncSession, test_project: Project
-    ):
+    async def test_coverage_gap_analysis_partial_coverage(self, db_session: AsyncSession, test_project: Project):
         """
         GIVEN: Some source items without target view links
         WHEN: coverage_gap_analysis is called
@@ -980,21 +939,21 @@ class TestAdvancedTraceabilityEnhancementsServiceIntegration:
         links_repo = LinkRepository(db_session)
 
         feature1 = await items_repo.create(
-            project_id=test_project.id,
+            project_id=str(test_project.id),
             title="Feature 1",
             view="FEATURE",
             item_type="feature",
             status="todo",
         )
         feature2 = await items_repo.create(
-            project_id=test_project.id,
+            project_id=str(test_project.id),
             title="Feature 2",
             view="FEATURE",
             item_type="feature",
             status="todo",
         )
         code = await items_repo.create(
-            project_id=test_project.id,
+            project_id=str(test_project.id),
             title="Code",
             view="CODE",
             item_type="class",
@@ -1003,26 +962,22 @@ class TestAdvancedTraceabilityEnhancementsServiceIntegration:
 
         # Only link feature1 to code
         await links_repo.create(
-            project_id=test_project.id,
-            source_item_id=feature1.id,
-            target_item_id=code.id,
+            project_id=str(test_project.id),
+            source_item_id=str(feature1.id),
+            target_item_id=str(code.id),
             link_type="implements",
         )
         await db_session.commit()
 
         service = AdvancedTraceabilityEnhancementsService(db_session)
-        result = await service.coverage_gap_analysis(
-            test_project.id, "FEATURE", "CODE"
-        )
+        result = await service.coverage_gap_analysis(str(test_project.id), "FEATURE", "CODE")
 
         assert result["coverage_percent"] == 50.0  # 1 of 2 covered
         assert result["uncovered_items"] == 1
         assert feature2.id in result["uncovered_item_ids"]
 
     @pytest.mark.asyncio
-    async def test_coverage_gap_analysis_no_source_items(
-        self, db_session: AsyncSession, test_project: Project
-    ):
+    async def test_coverage_gap_analysis_no_source_items(self, db_session: AsyncSession, test_project: Project):
         """
         GIVEN: No items in source view
         WHEN: coverage_gap_analysis is called
@@ -1030,9 +985,7 @@ class TestAdvancedTraceabilityEnhancementsServiceIntegration:
         """
         service = AdvancedTraceabilityEnhancementsService(db_session)
 
-        result = await service.coverage_gap_analysis(
-            test_project.id, "NONEXISTENT", "CODE"
-        )
+        result = await service.coverage_gap_analysis(str(test_project.id), "NONEXISTENT", "CODE")
 
         assert result["total_source_items"] == 0
         assert result["coverage_percent"] == 0.0
@@ -1053,20 +1006,16 @@ class TestAdvancedTraceabilityEnhancementsServiceIntegration:
         service = AdvancedTraceabilityEnhancementsService(db_session)
 
         # Story 1 should have links in both directions
-        result = await service.bidirectional_link_analysis(
-            test_project.id, sample_items[3].id
-        )
+        result = await service.bidirectional_link_analysis(str(test_project.id), str(sample_items[3].id))
 
-        assert result["item_id"] == sample_items[3].id
+        assert result["item_id"] == str(sample_items[3].id)
         assert "incoming_links" in result
         assert "outgoing_links" in result
         assert "total_connections" in result
         assert result["total_connections"] > 0
 
     @pytest.mark.asyncio
-    async def test_bidirectional_link_analysis_item_not_found(
-        self, db_session: AsyncSession, test_project: Project
-    ):
+    async def test_bidirectional_link_analysis_item_not_found(self, db_session: AsyncSession, test_project: Project):
         """
         GIVEN: Non-existent item ID
         WHEN: bidirectional_link_analysis is called
@@ -1074,9 +1023,7 @@ class TestAdvancedTraceabilityEnhancementsServiceIntegration:
         """
         service = AdvancedTraceabilityEnhancementsService(db_session)
 
-        result = await service.bidirectional_link_analysis(
-            test_project.id, "nonexistent-id"
-        )
+        result = await service.bidirectional_link_analysis(str(test_project.id), "nonexistent-id")
 
         assert "error" in result
 
@@ -1095,9 +1042,7 @@ class TestAdvancedTraceabilityEnhancementsServiceIntegration:
         """
         service = AdvancedTraceabilityEnhancementsService(db_session)
 
-        result = await service.traceability_matrix_generation(
-            test_project.id, "FEATURE", "STORY"
-        )
+        result = await service.traceability_matrix_generation(str(test_project.id), "FEATURE", "STORY")
 
         assert result["source_view"] == "FEATURE"
         assert result["target_view"] == "STORY"
@@ -1108,9 +1053,7 @@ class TestAdvancedTraceabilityEnhancementsServiceIntegration:
         assert len(result["matrix"]) > 0
 
     @pytest.mark.asyncio
-    async def test_traceability_matrix_generation_no_links(
-        self, db_session: AsyncSession, test_project: Project
-    ):
+    async def test_traceability_matrix_generation_no_links(self, db_session: AsyncSession, test_project: Project):
         """
         GIVEN: Views with no links between them
         WHEN: traceability_matrix_generation is called
@@ -1119,14 +1062,14 @@ class TestAdvancedTraceabilityEnhancementsServiceIntegration:
         items_repo = ItemRepository(db_session)
 
         await items_repo.create(
-            project_id=test_project.id,
+            project_id=str(test_project.id),
             title="Isolated Feature",
             view="FEATURE",
             item_type="feature",
             status="todo",
         )
         await items_repo.create(
-            project_id=test_project.id,
+            project_id=str(test_project.id),
             title="Isolated Test",
             view="TEST",
             item_type="test",
@@ -1135,9 +1078,7 @@ class TestAdvancedTraceabilityEnhancementsServiceIntegration:
         await db_session.commit()
 
         service = AdvancedTraceabilityEnhancementsService(db_session)
-        result = await service.traceability_matrix_generation(
-            test_project.id, "FEATURE", "TEST"
-        )
+        result = await service.traceability_matrix_generation(str(test_project.id), "FEATURE", "TEST")
 
         # Matrix should have rows but empty targets
         for row in result["matrix"]:
@@ -1158,19 +1099,15 @@ class TestAdvancedTraceabilityEnhancementsServiceIntegration:
         """
         service = AdvancedTraceabilityEnhancementsService(db_session)
 
-        result = await service.impact_propagation_analysis(
-            test_project.id, sample_items[0].id, max_depth=2
-        )
+        result = await service.impact_propagation_analysis(str(test_project.id), str(sample_items[0].id), max_depth=2)
 
-        assert result["item_id"] == sample_items[0].id
+        assert result["item_id"] == str(sample_items[0].id)
         assert "total_impacted" in result
         assert "impact_levels" in result
         assert result["max_depth_reached"] <= 2
 
     @pytest.mark.asyncio
-    async def test_impact_propagation_analysis_item_not_found(
-        self, db_session: AsyncSession, test_project: Project
-    ):
+    async def test_impact_propagation_analysis_item_not_found(self, db_session: AsyncSession, test_project: Project):
         """
         GIVEN: Non-existent item ID
         WHEN: impact_propagation_analysis is called
@@ -1178,9 +1115,7 @@ class TestAdvancedTraceabilityEnhancementsServiceIntegration:
         """
         service = AdvancedTraceabilityEnhancementsService(db_session)
 
-        result = await service.impact_propagation_analysis(
-            test_project.id, "bad-id"
-        )
+        result = await service.impact_propagation_analysis(str(test_project.id), "bad-id")
 
         assert "error" in result
 
@@ -1194,9 +1129,7 @@ class TestAgentCoordinationServiceIntegration:
     """Integration tests for AgentCoordinationService."""
 
     @pytest.mark.asyncio
-    async def test_register_agent_success(
-        self, db_session: AsyncSession, test_project: Project
-    ):
+    async def test_register_agent_success(self, db_session: AsyncSession, test_project: Project):
         """
         GIVEN: Valid agent registration data
         WHEN: register_agent is called
@@ -1205,7 +1138,7 @@ class TestAgentCoordinationServiceIntegration:
         service = AgentCoordinationService(db_session)
 
         agent = await service.register_agent(
-            project_id=test_project.id,
+            project_id=str(test_project.id),
             name="Test Agent",
             agent_type="developer",
             metadata={"skill": "python"},
@@ -1214,17 +1147,15 @@ class TestAgentCoordinationServiceIntegration:
         assert agent.id is not None
         assert agent.name == "Test Agent"
         assert agent.agent_type == "developer"
-        assert agent.project_id == test_project.id
+        assert agent.project_id == str(test_project.id)
 
         # Verify event logged
         events_repo = EventRepository(db_session)
-        events = await events_repo.get_by_project(test_project.id)
+        events = await events_repo.get_by_project(str(test_project.id))
         assert any(e.event_type == "agent_registered" for e in events)
 
     @pytest.mark.asyncio
-    async def test_register_agent_with_metadata(
-        self, db_session: AsyncSession, test_project: Project
-    ):
+    async def test_register_agent_with_metadata(self, db_session: AsyncSession, test_project: Project):
         """
         GIVEN: Agent with custom metadata
         WHEN: register_agent is called
@@ -1234,7 +1165,7 @@ class TestAgentCoordinationServiceIntegration:
 
         metadata = {"skill_level": "senior", "languages": ["python", "go"]}
         agent = await service.register_agent(
-            project_id=test_project.id,
+            project_id=str(test_project.id),
             name="Senior Dev",
             agent_type="developer",
             metadata=metadata,
@@ -1256,15 +1187,13 @@ class TestAgentCoordinationServiceIntegration:
         """
         service = AgentCoordinationService(db_session)
 
-        conflicts = await service.detect_conflicts(test_project.id)
+        conflicts = await service.detect_conflicts(str(test_project.id))
 
         # With staggered activity times (10 min apart), no conflicts
         assert len(conflicts) == 0
 
     @pytest.mark.asyncio
-    async def test_detect_conflicts_concurrent_activity(
-        self, db_session: AsyncSession, test_project: Project
-    ):
+    async def test_detect_conflicts_concurrent_activity(self, db_session: AsyncSession, test_project: Project):
         """
         GIVEN: Multiple agents with concurrent activity
         WHEN: detect_conflicts is called
@@ -1273,9 +1202,9 @@ class TestAgentCoordinationServiceIntegration:
         agents_repo = AgentRepository(db_session)
 
         # Create agents with concurrent activity
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         agent1 = await agents_repo.create(
-            project_id=test_project.id,
+            project_id=str(test_project.id),
             name="Agent 1",
             agent_type="developer",
         )
@@ -1283,7 +1212,7 @@ class TestAgentCoordinationServiceIntegration:
         agent1.last_activity_at = now.isoformat()
 
         agent2 = await agents_repo.create(
-            project_id=test_project.id,
+            project_id=str(test_project.id),
             name="Agent 2",
             agent_type="tester",
         )
@@ -1293,16 +1222,14 @@ class TestAgentCoordinationServiceIntegration:
         await db_session.commit()
 
         service = AgentCoordinationService(db_session)
-        conflicts = await service.detect_conflicts(test_project.id)
+        conflicts = await service.detect_conflicts(str(test_project.id))
 
         # Should detect concurrent activity (within 1 minute)
         assert len(conflicts) > 0
         assert any(c.conflict_type == "concurrent_activity" for c in conflicts)
 
     @pytest.mark.asyncio
-    async def test_resolve_conflict_last_write_wins(
-        self, db_session: AsyncSession, test_project: Project
-    ):
+    async def test_resolve_conflict_last_write_wins(self, db_session: AsyncSession, test_project: Project):
         """
         GIVEN: Conflict between two agents
         WHEN: resolve_conflict is called with last_write_wins strategy
@@ -1310,16 +1237,16 @@ class TestAgentCoordinationServiceIntegration:
         """
         agents_repo = AgentRepository(db_session)
 
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         agent1 = await agents_repo.create(
-            project_id=test_project.id,
+            project_id=str(test_project.id),
             name="Agent 1",
             agent_type="developer",
         )
         agent1.last_activity_at = (now - timedelta(minutes=5)).isoformat()
 
         agent2 = await agents_repo.create(
-            project_id=test_project.id,
+            project_id=str(test_project.id),
             name="Agent 2",
             agent_type="developer",
         )
@@ -1328,17 +1255,15 @@ class TestAgentCoordinationServiceIntegration:
         await db_session.commit()
 
         conflict = AgentConflict(
-            agent1_id=agent1.id,
-            agent2_id=agent2.id,
+            agent1_id=str(agent1.id),
+            agent2_id=str(agent2.id),
             conflict_type="concurrent_edit",
             entity_id="test-item",
             description="Both edited same item",
         )
 
         service = AgentCoordinationService(db_session)
-        resolution = await service.resolve_conflict(
-            test_project.id, conflict, strategy="last_write_wins"
-        )
+        resolution = await service.resolve_conflict(str(test_project.id), conflict, strategy="last_write_wins")
 
         assert resolution.resolved is True
         assert resolution.winner_agent_id == agent2.id  # Most recent
@@ -1346,9 +1271,7 @@ class TestAgentCoordinationServiceIntegration:
         assert resolution.resolution_strategy == "last_write_wins"
 
     @pytest.mark.asyncio
-    async def test_resolve_conflict_priority_based(
-        self, db_session: AsyncSession, test_project: Project
-    ):
+    async def test_resolve_conflict_priority_based(self, db_session: AsyncSession, test_project: Project):
         """
         GIVEN: Conflict between two agents
         WHEN: resolve_conflict is called with priority_based strategy
@@ -1357,37 +1280,33 @@ class TestAgentCoordinationServiceIntegration:
         agents_repo = AgentRepository(db_session)
 
         agent1 = await agents_repo.create(
-            project_id=test_project.id,
+            project_id=str(test_project.id),
             name="Agent 1",
             agent_type="developer",
         )
         agent2 = await agents_repo.create(
-            project_id=test_project.id,
+            project_id=str(test_project.id),
             name="Agent 2",
             agent_type="reviewer",
         )
         await db_session.commit()
 
         conflict = AgentConflict(
-            agent1_id=agent1.id,
-            agent2_id=agent2.id,
+            agent1_id=str(agent1.id),
+            agent2_id=str(agent2.id),
             conflict_type="concurrent_edit",
             entity_id="test-item",
             description="Conflict",
         )
 
         service = AgentCoordinationService(db_session)
-        resolution = await service.resolve_conflict(
-            test_project.id, conflict, strategy="priority_based"
-        )
+        resolution = await service.resolve_conflict(str(test_project.id), conflict, strategy="priority_based")
 
         assert resolution.resolved is True
         assert resolution.resolution_strategy == "priority_based"
 
     @pytest.mark.asyncio
-    async def test_resolve_conflict_agent_not_found(
-        self, db_session: AsyncSession, test_project: Project
-    ):
+    async def test_resolve_conflict_agent_not_found(self, db_session: AsyncSession, test_project: Project):
         """
         GIVEN: Conflict with non-existent agent
         WHEN: resolve_conflict is called
@@ -1404,12 +1323,10 @@ class TestAgentCoordinationServiceIntegration:
         service = AgentCoordinationService(db_session)
 
         with pytest.raises(ValueError, match="not found"):
-            await service.resolve_conflict(test_project.id, conflict)
+            await service.resolve_conflict(str(test_project.id), conflict)
 
     @pytest.mark.asyncio
-    async def test_resolve_conflict_unknown_strategy(
-        self, db_session: AsyncSession, test_project: Project
-    ):
+    async def test_resolve_conflict_unknown_strategy(self, db_session: AsyncSession, test_project: Project):
         """
         GIVEN: Invalid resolution strategy
         WHEN: resolve_conflict is called
@@ -1417,17 +1334,13 @@ class TestAgentCoordinationServiceIntegration:
         """
         agents_repo = AgentRepository(db_session)
 
-        agent1 = await agents_repo.create(
-            project_id=test_project.id, name="A1", agent_type="dev"
-        )
-        agent2 = await agents_repo.create(
-            project_id=test_project.id, name="A2", agent_type="dev"
-        )
+        agent1 = await agents_repo.create(project_id=str(test_project.id), name="A1", agent_type="dev")
+        agent2 = await agents_repo.create(project_id=str(test_project.id), name="A2", agent_type="dev")
         await db_session.commit()
 
         conflict = AgentConflict(
-            agent1_id=agent1.id,
-            agent2_id=agent2.id,
+            agent1_id=str(agent1.id),
+            agent2_id=str(agent2.id),
             conflict_type="test",
             entity_id="test",
             description="Test",
@@ -1436,9 +1349,7 @@ class TestAgentCoordinationServiceIntegration:
         service = AgentCoordinationService(db_session)
 
         with pytest.raises(ValueError, match="Unknown resolution strategy"):
-            await service.resolve_conflict(
-                test_project.id, conflict, strategy="invalid_strategy"
-            )
+            await service.resolve_conflict(str(test_project.id), conflict, strategy="invalid_strategy")
 
     @pytest.mark.asyncio
     async def test_get_agent_activity_with_events(
@@ -1465,9 +1376,7 @@ class TestAgentCoordinationServiceIntegration:
         assert all("timestamp" in e for e in activity)
 
     @pytest.mark.asyncio
-    async def test_get_agent_activity_with_limit(
-        self, db_session: AsyncSession, sample_events: list[Event]
-    ):
+    async def test_get_agent_activity_with_limit(self, db_session: AsyncSession, sample_events: list[Event]):
         """
         GIVEN: Agent with many events
         WHEN: get_agent_activity is called with limit
@@ -1529,9 +1438,7 @@ class TestAgentPerformanceServiceIntegration:
         assert stats_48h["total_events"] >= stats_24h["total_events"]
 
     @pytest.mark.asyncio
-    async def test_get_agent_stats_agent_not_found(
-        self, db_session: AsyncSession
-    ):
+    async def test_get_agent_stats_agent_not_found(self, db_session: AsyncSession):
         """
         GIVEN: Non-existent agent ID
         WHEN: get_agent_stats is called
@@ -1558,18 +1465,16 @@ class TestAgentPerformanceServiceIntegration:
         """
         service = AgentPerformanceService(db_session)
 
-        result = await service.get_team_performance(test_project.id)
+        result = await service.get_team_performance(str(test_project.id))
 
-        assert result["project_id"] == test_project.id
+        assert result["project_id"] == str(test_project.id)
         assert result["total_agents"] > 0
         assert "agents" in result
         assert "total_events" in result
         assert len(result["agents"]) > 0
 
     @pytest.mark.asyncio
-    async def test_get_team_performance_no_agents(
-        self, db_session: AsyncSession, test_project: Project
-    ):
+    async def test_get_team_performance_no_agents(self, db_session: AsyncSession, test_project: Project):
         """
         GIVEN: Project with no agents
         WHEN: get_team_performance is called
@@ -1577,7 +1482,7 @@ class TestAgentPerformanceServiceIntegration:
         """
         service = AgentPerformanceService(db_session)
 
-        result = await service.get_team_performance(test_project.id)
+        result = await service.get_team_performance(str(test_project.id))
 
         assert result["total_agents"] == 0
         assert result["agents"] == []
@@ -1600,9 +1505,7 @@ class TestAgentPerformanceServiceIntegration:
         assert 0 <= result["efficiency_score"] <= 100
 
     @pytest.mark.asyncio
-    async def test_get_agent_efficiency_low_activity(
-        self, db_session: AsyncSession, test_project: Project
-    ):
+    async def test_get_agent_efficiency_low_activity(self, db_session: AsyncSession, test_project: Project):
         """
         GIVEN: Agent with minimal activity
         WHEN: get_agent_efficiency is called
@@ -1610,22 +1513,20 @@ class TestAgentPerformanceServiceIntegration:
         """
         agents_repo = AgentRepository(db_session)
         agent = await agents_repo.create(
-            project_id=test_project.id,
+            project_id=str(test_project.id),
             name="Inactive Agent",
             agent_type="developer",
         )
         await db_session.commit()
 
         service = AgentPerformanceService(db_session)
-        result = await service.get_agent_efficiency(agent.id)
+        result = await service.get_agent_efficiency(str(agent.id))
 
         assert result["efficiency_score"] < 50
         assert result["rating"] in ["Poor", "Fair"]
 
     @pytest.mark.asyncio
-    async def test_get_efficiency_rating_boundaries(
-        self, db_session: AsyncSession
-    ):
+    async def test_get_efficiency_rating_boundaries(self, db_session: AsyncSession):
         """
         GIVEN: Various efficiency scores
         WHEN: _get_efficiency_rating is called
@@ -1657,6 +1558,7 @@ class TestAgentPerformanceServiceIntegration:
                 event_type="test",
                 entity_type="item",
                 entity_id=f"item-{i}",
+                data={},
                 agent_id="agent-alpha",
             )
         await db_session.commit()
@@ -1667,9 +1569,7 @@ class TestAgentPerformanceServiceIntegration:
         assert result["events_per_hour"] > 0
 
     @pytest.mark.asyncio
-    async def test_get_agent_workload_idle(
-        self, db_session: AsyncSession, test_project: Project
-    ):
+    async def test_get_agent_workload_idle(self, db_session: AsyncSession, test_project: Project):
         """
         GIVEN: Agent with no recent activity
         WHEN: get_agent_workload is called
@@ -1677,14 +1577,14 @@ class TestAgentPerformanceServiceIntegration:
         """
         agents_repo = AgentRepository(db_session)
         agent = await agents_repo.create(
-            project_id=test_project.id,
+            project_id=str(test_project.id),
             name="Idle Agent",
             agent_type="developer",
         )
         await db_session.commit()
 
         service = AgentPerformanceService(db_session)
-        result = await service.get_agent_workload(agent.id)
+        result = await service.get_agent_workload(str(agent.id))
 
         assert result["workload"] == "Idle"
         assert result["events_per_hour"] == 0
@@ -1703,9 +1603,7 @@ class TestAgentPerformanceServiceIntegration:
         """
         service = AgentPerformanceService(db_session)
 
-        result = await service.recommend_agent_assignment(
-            test_project.id, task_complexity="medium"
-        )
+        result = await service.recommend_agent_assignment(str(test_project.id), task_complexity="medium")
 
         assert "recommended_agent_id" in result
         assert "agent_name" in result
@@ -1713,9 +1611,7 @@ class TestAgentPerformanceServiceIntegration:
         assert "reason" in result
 
     @pytest.mark.asyncio
-    async def test_recommend_agent_assignment_no_agents(
-        self, db_session: AsyncSession, test_project: Project
-    ):
+    async def test_recommend_agent_assignment_no_agents(self, db_session: AsyncSession, test_project: Project):
         """
         GIVEN: Project with no agents
         WHEN: recommend_agent_assignment is called
@@ -1723,7 +1619,7 @@ class TestAgentPerformanceServiceIntegration:
         """
         service = AgentPerformanceService(db_session)
 
-        result = await service.recommend_agent_assignment(test_project.id)
+        result = await service.recommend_agent_assignment(str(test_project.id))
 
         assert "error" in result
 
@@ -1741,8 +1637,6 @@ class TestAgentPerformanceServiceIntegration:
         """
         service = AgentPerformanceService(db_session)
 
-        result = await service.recommend_agent_assignment(
-            test_project.id, task_complexity="high"
-        )
+        result = await service.recommend_agent_assignment(str(test_project.id), task_complexity="high")
 
         assert result["task_complexity"] == "high"

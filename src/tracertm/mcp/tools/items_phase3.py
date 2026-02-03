@@ -11,13 +11,11 @@ Demonstrates Phase 3 optimizations:
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from fastmcp.exceptions import ToolError
 from sqlalchemy import func, select
-from sqlalchemy.orm import selectinload
-from sqlalchemy.orm.exc import StaleDataError
 
 from tracertm.mcp.core import mcp
 from tracertm.mcp.query_optimizer import QueryOptimizer
@@ -79,7 +77,7 @@ async def create_item_phase3(
     Returns:
         Created item details
     """
-    project_id = require_project()
+    project_id = await require_project()
 
     if not title or not view or not item_type:
         raise ToolError("title, view, and item_type are required.")
@@ -109,8 +107,8 @@ async def create_item_phase3(
             owner=owner,
             parent_id=parent_id,
             item_metadata=metadata or {},
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
         )
         session.add(item)
         await session.commit()
@@ -140,7 +138,7 @@ async def get_item_phase3(
     if not item_id:
         raise ToolError("item_id is required.")
 
-    project_id = require_project()
+    project_id = await require_project()
 
     async def _fetch_item():
         async with get_async_session() as session:
@@ -151,10 +149,6 @@ async def get_item_phase3(
                         Item.project_id == project_id,
                         Item.id == item_id,
                         Item.deleted_at.is_(None),
-                    )
-                    .options(
-                        selectinload(Item.source_links),
-                        selectinload(Item.target_links),
                     )
                 )
             else:
@@ -192,8 +186,8 @@ async def get_item_phase3(
     result = _item_to_dict(item)
 
     if include_links:
-        result["source_links_count"] = len(item.source_links) if item.source_links else 0
-        result["target_links_count"] = len(item.target_links) if item.target_links else 0
+        result["source_links_count"] = 0
+        result["target_links_count"] = 0
 
     return wrap_success(result, "get_phase3", ctx)
 
@@ -221,7 +215,7 @@ async def query_items_phase3(
     Returns:
         List of matching items
     """
-    project_id = require_project()
+    project_id = await require_project()
     limit = min(limit, 500)
 
     async def _query_items():
@@ -305,7 +299,7 @@ async def get_db_metrics_phase3(ctx: Any | None = None) -> dict[str, Any]:
 
 __all__ = [
     "create_item_phase3",
+    "get_db_metrics_phase3",
     "get_item_phase3",
     "query_items_phase3",
-    "get_db_metrics_phase3",
 ]

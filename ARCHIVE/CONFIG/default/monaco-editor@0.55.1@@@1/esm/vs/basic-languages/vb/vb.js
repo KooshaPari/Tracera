@@ -313,7 +313,7 @@ const language = {
     "SyncLock"
   ],
   // we include these common regular expressions
-  symbols: /[=><!~?;\.,:&|+\-*\/\^%]+/,
+  symbols: /[=><!~?;.,:&|+\-*/^%]+/,
   integersuffix: /U?[DI%L&S@]?/,
   floatsuffix: /[R#F!]?/,
   // The main tokenizer for our languages
@@ -343,22 +343,22 @@ const language = {
       // Preprocessor directive
       [/^\s*#\w+/, "keyword"],
       // numbers
-      [/\d*\d+e([\-+]?\d+)?(@floatsuffix)/, "number.float"],
-      [/\d*\.\d+(e[\-+]?\d+)?(@floatsuffix)/, "number.float"],
+      [/\d*\d+e([-+]?\d+)?(@floatsuffix)/, "number.float"],
+      [/\d*\.\d+(e[-+]?\d+)?(@floatsuffix)/, "number.float"],
       [/&H[0-9a-f]+(@integersuffix)/, "number.hex"],
       [/&0[0-7]+(@integersuffix)/, "number.octal"],
       [/\d+(@integersuffix)/, "number"],
       // date literal
       [/#.*#/, "number"],
       // delimiters and operators
-      [/[{}()\[\]]/, "@brackets"],
+      [/[{}()[\]]/, "@brackets"],
       [/@symbols/, "delimiter"],
       // strings
       [/["\u201c\u201d]/, { token: "string.quote", next: "@string" }]
     ],
     whitespace: [
       [/[ \t\r\n]+/, ""],
-      [/(\'|REM(?!\w)).*$/, "comment"]
+      [/('|REM(?!\w)).*$/, "comment"]
     ],
     string: [
       [/[^"\u201c\u201d]+/, "string"],

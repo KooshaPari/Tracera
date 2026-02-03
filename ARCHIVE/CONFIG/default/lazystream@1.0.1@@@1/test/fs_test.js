@@ -53,7 +53,7 @@ exports.fs = {
         var input = fs.readFileSync(readFile);
         var output = fs.readFileSync(writeFile);
 
-        test.ok(input >= output && input <= output, 'Should be equal');
+        test.ok(input == output, 'Should be equal');
 
         fs.unlinkSync(writeFile);
         fs.rmdirSync(tmpDir);

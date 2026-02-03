@@ -96,4 +96,4 @@ declare module '../vanilla' {
 type Write<T, U> = Omit<T, keyof U> & U;
 type WithPersist<S, A> = Write<S, StorePersist<S, A, unknown>>;
 export declare const persist: Persist;
-export {};
+

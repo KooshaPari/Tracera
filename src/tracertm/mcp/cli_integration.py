@@ -9,18 +9,15 @@ Enables CLI tokens to work seamlessly with MCP by:
 from __future__ import annotations
 
 import logging
-import os
-from pathlib import Path
-from typing import Optional
 
 from tracertm.mcp.token_manager import TokenInfo, TokenManager, get_token_manager
 
 try:
     from tracertm.cli.auth import AuthTokens, TokenStorage, get_token_storage
 except ImportError:
-    AuthTokens = None
-    TokenStorage = None
-    get_token_storage = None
+    AuthTokens = None  # type: ignore[assignment,misc]
+    TokenStorage = None  # type: ignore[assignment,misc]
+    get_token_storage = None  # type: ignore[assignment,misc]
 
 logger = logging.getLogger(__name__)
 
@@ -30,8 +27,8 @@ class CLITokenAdapter:
 
     def __init__(
         self,
-        cli_token_storage: Optional[TokenStorage] = None,
-        mcp_token_manager: Optional[TokenManager] = None,
+        cli_token_storage: TokenStorage | None = None,
+        mcp_token_manager: TokenManager | None = None,
     ):
         """Initialize adapter.
 
@@ -115,7 +112,7 @@ class CLITokenAdapter:
             logger.warning(f"Failed to sync MCP tokens to CLI: {e}")
             return False
 
-    def get_mcp_token(self, fallback_to_cli: bool = False) -> Optional[str]:
+    def get_mcp_token(self, fallback_to_cli: bool = False) -> str | None:
         """Get valid MCP token, optionally falling back to CLI tokens.
 
         Args:
@@ -133,10 +130,12 @@ class CLITokenAdapter:
         if fallback_to_cli and self.cli_storage:
             try:
                 cli_tokens = self.cli_storage.load_tokens()
-                if cli_tokens and not cli_tokens.is_expired() if hasattr(cli_tokens, 'is_expired') else True:
+                is_expired_fn = getattr(cli_tokens, "is_expired", None) if cli_tokens is not None else None
+                expired = is_expired_fn() if callable(is_expired_fn) else True
+                if cli_tokens and not expired:
                     # Sync CLI token to MCP for future use
                     self.sync_from_cli()
-                    return cli_tokens.access_token
+                    return getattr(cli_tokens, "access_token", None)
             except Exception as e:
                 logger.debug(f"Could not get CLI token: {e}")
 
@@ -160,7 +159,7 @@ class CLITokenAdapter:
         return False
 
 
-def create_cli_adapter() -> Optional[CLITokenAdapter]:
+def create_cli_adapter() -> CLITokenAdapter | None:
     """Create CLI token adapter if possible.
 
     Returns:
@@ -178,7 +177,7 @@ def create_cli_adapter() -> Optional[CLITokenAdapter]:
         return None
 
 
-def get_cli_adapter() -> Optional[CLITokenAdapter]:
+def get_cli_adapter() -> CLITokenAdapter | None:
     """Get the global CLI adapter instance."""
     global _CLI_ADAPTER
     if "_CLI_ADAPTER" not in globals():
@@ -187,7 +186,7 @@ def get_cli_adapter() -> Optional[CLITokenAdapter]:
 
 
 # Global adapter instance
-_CLI_ADAPTER: Optional[CLITokenAdapter] = None
+_CLI_ADAPTER: CLITokenAdapter | None = None
 
 
 def ensure_cli_mcp_sync() -> None:

@@ -50,7 +50,7 @@ function formatAttrs(attributes, opts) {
         '="' +
         (opts.decodeEntities
           ? entities.encodeXML(value)
-          : value.replace(/\"/g, '&quot;')) +
+          : value.replace(/"/g, '&quot;')) +
         '"';
     }
   }

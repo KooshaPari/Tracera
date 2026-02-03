@@ -5,12 +5,12 @@ Represents high-level problems that need investigation, root cause analysis,
 and resolution tracking. Follows ITIL problem management patterns.
 """
 
-from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Index, Integer, String, Text
 import uuid
 from datetime import datetime
-from enum import Enum
-from typing import Any
+from enum import StrEnum
+from typing import Any, ClassVar
 
+from sqlalchemy import Boolean, DateTime, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -23,8 +23,9 @@ def generate_problem_uuid() -> str:
     return str(uuid.uuid4())
 
 
-class ProblemStatus(str, Enum):
+class ProblemStatus(StrEnum):
     """Valid problem statuses following ITIL lifecycle."""
+
     OPEN = "open"
     IN_INVESTIGATION = "in_investigation"
     PENDING_WORKAROUND = "pending_workaround"
@@ -33,8 +34,9 @@ class ProblemStatus(str, Enum):
     CLOSED = "closed"
 
 
-class ResolutionType(str, Enum):
+class ResolutionType(StrEnum):
     """How the problem was resolved."""
+
     PERMANENT_FIX = "permanent_fix"
     WORKAROUND_ONLY = "workaround_only"
     CANNOT_REPRODUCE = "cannot_reproduce"
@@ -42,16 +44,18 @@ class ResolutionType(str, Enum):
     BY_DESIGN = "by_design"
 
 
-class ImpactLevel(str, Enum):
+class ImpactLevel(StrEnum):
     """Impact severity levels."""
+
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
 
 
-class RCAMethod(str, Enum):
+class RCAMethod(StrEnum):
     """Root Cause Analysis methodologies."""
+
     FIVE_WHYS = "five_whys"
     FISHBONE = "fishbone"
     KEPNER_TREGOE = "kepner_tregoe"
@@ -60,8 +64,9 @@ class RCAMethod(str, Enum):
     OTHER = "other"
 
 
-class RootCauseCategory(str, Enum):
+class RootCauseCategory(StrEnum):
     """Categories of root causes."""
+
     SYSTEMATIC = "systematic"
     HUMAN = "human"
     ENVIRONMENTAL = "environmental"
@@ -93,12 +98,8 @@ class Problem(Base, TimestampMixin):
     )
 
     # Core Identification
-    id: Mapped[str] = mapped_column(
-        String(255), primary_key=True, default=generate_problem_uuid
-    )
-    problem_number: Mapped[str] = mapped_column(
-        String(50), unique=True, nullable=False, index=True
-    )
+    id: Mapped[str] = mapped_column(String(255), primary_key=True, default=generate_problem_uuid)
+    problem_number: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
     project_id: Mapped[str] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("projects.id", ondelete="CASCADE"),
@@ -110,9 +111,7 @@ class Problem(Base, TimestampMixin):
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Lifecycle Status
-    status: Mapped[str] = mapped_column(
-        String(50), nullable=False, default=ProblemStatus.OPEN.value, index=True
-    )
+    status: Mapped[str] = mapped_column(String(50), nullable=False, default=ProblemStatus.OPEN.value, index=True)
     resolution_type: Mapped[str | None] = mapped_column(String(50), nullable=True)
 
     # Classification
@@ -121,15 +120,9 @@ class Problem(Base, TimestampMixin):
     tags: Mapped[list[str] | None] = mapped_column(JSONType, nullable=True)
 
     # Impact Assessment
-    impact_level: Mapped[str] = mapped_column(
-        String(20), nullable=False, default=ImpactLevel.MEDIUM.value, index=True
-    )
-    urgency: Mapped[str] = mapped_column(
-        String(20), nullable=False, default=ImpactLevel.MEDIUM.value
-    )
-    priority: Mapped[str] = mapped_column(
-        String(20), nullable=False, default=ImpactLevel.MEDIUM.value, index=True
-    )
+    impact_level: Mapped[str] = mapped_column(String(20), nullable=False, default=ImpactLevel.MEDIUM.value, index=True)
+    urgency: Mapped[str] = mapped_column(String(20), nullable=False, default=ImpactLevel.MEDIUM.value)
+    priority: Mapped[str] = mapped_column(String(20), nullable=False, default=ImpactLevel.MEDIUM.value, index=True)
     affected_systems: Mapped[list[str] | None] = mapped_column(JSONType, nullable=True)
     affected_users_estimated: Mapped[int | None] = mapped_column(Integer, nullable=True)
     business_impact_description: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -144,9 +137,7 @@ class Problem(Base, TimestampMixin):
     root_cause_description: Mapped[str | None] = mapped_column(Text, nullable=True)
     root_cause_category: Mapped[str | None] = mapped_column(String(50), nullable=True)
     root_cause_confidence: Mapped[str | None] = mapped_column(String(20), nullable=True)
-    rca_completed_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
+    rca_completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     rca_completed_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     # Solutions & Workarounds
@@ -156,9 +147,7 @@ class Problem(Base, TimestampMixin):
 
     permanent_fix_available: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     permanent_fix_description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    permanent_fix_implemented_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
+    permanent_fix_implemented_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     permanent_fix_change_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     # Known Error Integration
@@ -172,30 +161,22 @@ class Problem(Base, TimestampMixin):
 
     # Closure
     closed_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    closed_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
+    closed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     closure_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Target dates
-    target_resolution_date: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
+    target_resolution_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     # Flexible metadata
-    problem_metadata: Mapped[dict[str, object]] = mapped_column(
-        JSONType, nullable=False, default=dict
-    )
+    problem_metadata: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
 
     # Optimistic locking
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
 
     # Soft delete
-    deleted_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True, index=True
-    )
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
 
-    __mapper_args__: dict[str, Any] = {
+    __mapper_args__: ClassVar[dict[str, Any]] = {
         "version_id_col": version,
     }
 
@@ -233,9 +214,7 @@ class ProblemActivity(Base, TimestampMixin):
         {"extend_existing": True},
     )
 
-    id: Mapped[str] = mapped_column(
-        String(255), primary_key=True, default=generate_problem_uuid
-    )
+    id: Mapped[str] = mapped_column(String(255), primary_key=True, default=generate_problem_uuid)
     problem_id: Mapped[str] = mapped_column(
         String(255),
         ForeignKey("problems.id", ondelete="CASCADE"),
@@ -248,9 +227,7 @@ class ProblemActivity(Base, TimestampMixin):
     to_value: Mapped[str | None] = mapped_column(String(255), nullable=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     performed_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    activity_metadata: Mapped[dict[str, object]] = mapped_column(
-        JSONType, nullable=False, default=dict
-    )
+    activity_metadata: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
 
     def __repr__(self) -> str:
         return f"<ProblemActivity(id={self.id!r}, type={self.activity_type!r})>"

@@ -21,6 +21,7 @@ def _truthy(value: str | None) -> bool:
 @mcp.tool(description="Report MCP feature flags and runtime configuration")
 async def mcp_feature_status(ctx: Any | None = None) -> dict[str, Any]:
     """Return server feature flags and runtime config derived from env."""
+    await asyncio.sleep(0)
     tool_transforms = os.getenv("TRACERTM_MCP_TOOL_TRANSFORMS")
     return {
         "providers": {
@@ -28,7 +29,6 @@ async def mcp_feature_status(ctx: Any | None = None) -> dict[str, Any]:
             "filesystem_reload": _truthy(os.getenv("TRACERTM_MCP_FILESYSTEM_RELOAD")),
             "skills_roots": os.getenv("TRACERTM_MCP_SKILLS_ROOTS") or "default (.codex/skills)",
             "skills_provider": os.getenv("TRACERTM_MCP_SKILLS_PROVIDER") or "directory",
-            "skills_roots": os.getenv("TRACERTM_MCP_SKILLS_ROOTS"),
             "skills_reload": _truthy(os.getenv("TRACERTM_MCP_SKILLS_RELOAD")),
             "openapi_spec": os.getenv("TRACERTM_MCP_OPENAPI_SPEC"),
             "proxy_targets": os.getenv("TRACERTM_MCP_PROXY_TARGETS"),
@@ -65,7 +65,7 @@ def demo_versioned_tool(x: int, y: int) -> dict[str, Any]:
 
 
 @mcp.tool(version="2.0", description="Versioned demo tool v2 (supports z and mode)")
-def demo_versioned_tool(x: int, y: int, z: int = 0, mode: str = "sum") -> dict[str, Any]:
+def demo_versioned_tool_v2(x: int, y: int, z: int = 0, mode: str = "sum") -> dict[str, Any]:
     if mode == "sum":
         result = x + y + z
     elif mode == "product":
@@ -92,7 +92,7 @@ async def demo_long_task(
 
 
 __all__ = [
-    "mcp_feature_status",
-    "demo_versioned_tool",
     "demo_long_task",
+    "demo_versioned_tool",
+    "mcp_feature_status",
 ]

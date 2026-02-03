@@ -75,7 +75,7 @@ const language = {
   // we include these common regular expressions
   symbols: /[=!?:&|]+/,
   // https://facebook.github.io/graphql/draft/#sec-String-Value
-  escapes: /\\(?:["\\\/bfnrt]|u[0-9A-Fa-f]{4})/,
+  escapes: /\\(?:["\\/bfnrt]|u[0-9A-Fa-f]{4})/,
   // The main tokenizer for our languages
   tokenizer: {
     root: [
@@ -101,7 +101,7 @@ const language = {
       ],
       // to show class names nicely
       [
-        /[A-Z][\w\$]*/,
+        /[A-Z][\w$]*/,
         {
           cases: {
             "@typeKeywords": "keyword",
@@ -112,14 +112,14 @@ const language = {
       // whitespace
       { include: "@whitespace" },
       // delimiters and operators
-      [/[{}()\[\]]/, "@brackets"],
+      [/[{}()[\]]/, "@brackets"],
       [/@symbols/, { cases: { "@operators": "operator", "@default": "" } }],
       // @ annotations.
       // As an example, we emit a debugging log message on these tokens.
       // Note: message are supressed during the first load -- change some lines to see them.
-      [/@\s*[a-zA-Z_\$][\w\$]*/, { token: "annotation", log: "annotation token: $0" }],
+      [/@\s*[a-zA-Z_$][\w$]*/, { token: "annotation", log: "annotation token: $0" }],
       // numbers
-      [/\d*\.\d+([eE][\-+]?\d+)?/, "number.float"],
+      [/\d*\.\d+([eE][-+]?\d+)?/, "number.float"],
       [/0[xX][0-9a-fA-F]+/, "number.hex"],
       [/\d+/, "number"],
       // delimiter: after number because of .\d floats

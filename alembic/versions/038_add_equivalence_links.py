@@ -8,9 +8,10 @@ Revises: 037_add_blockchain_ml_tables
 Create Date: 2026-01-30
 """
 
-from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
+
+from alembic import op
 
 # revision identifiers, used by Alembic
 revision = "038_add_equivalence_links"
@@ -108,12 +109,8 @@ def upgrade() -> None:
     op.create_index("ix_equivalence_links_project_id", "equivalence_links", ["project_id"])
     op.create_index("ix_equivalence_links_item_id_1", "equivalence_links", ["item_id_1"])
     op.create_index("ix_equivalence_links_item_id_2", "equivalence_links", ["item_id_2"])
-    op.create_index(
-        "ix_equivalence_links_perspective_1", "equivalence_links", ["perspective_1"]
-    )
-    op.create_index(
-        "ix_equivalence_links_perspective_2", "equivalence_links", ["perspective_2"]
-    )
+    op.create_index("ix_equivalence_links_perspective_1", "equivalence_links", ["perspective_1"])
+    op.create_index("ix_equivalence_links_perspective_2", "equivalence_links", ["perspective_2"])
     op.create_index(
         "ix_equivalence_links_equivalence_type",
         "equivalence_links",
@@ -121,9 +118,7 @@ def upgrade() -> None:
     )
     op.create_index("ix_equivalence_links_provenance", "equivalence_links", ["provenance"])
     op.create_index("ix_equivalence_links_status", "equivalence_links", ["status"])
-    op.create_index(
-        "ix_equivalence_links_confidence", "equivalence_links", ["confidence"]
-    )
+    op.create_index("ix_equivalence_links_confidence", "equivalence_links", ["confidence"])
     # Composite index for finding all equivalences of an item
     op.create_index(
         "ix_equivalence_links_item_1_confidence",
@@ -139,24 +134,14 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     """Drop equivalence_links table."""
-    op.drop_index(
-        "ix_equivalence_links_item_2_confidence", table_name="equivalence_links"
-    )
-    op.drop_index(
-        "ix_equivalence_links_item_1_confidence", table_name="equivalence_links"
-    )
+    op.drop_index("ix_equivalence_links_item_2_confidence", table_name="equivalence_links")
+    op.drop_index("ix_equivalence_links_item_1_confidence", table_name="equivalence_links")
     op.drop_index("ix_equivalence_links_confidence", table_name="equivalence_links")
     op.drop_index("ix_equivalence_links_status", table_name="equivalence_links")
     op.drop_index("ix_equivalence_links_provenance", table_name="equivalence_links")
-    op.drop_index(
-        "ix_equivalence_links_equivalence_type", table_name="equivalence_links"
-    )
-    op.drop_index(
-        "ix_equivalence_links_perspective_2", table_name="equivalence_links"
-    )
-    op.drop_index(
-        "ix_equivalence_links_perspective_1", table_name="equivalence_links"
-    )
+    op.drop_index("ix_equivalence_links_equivalence_type", table_name="equivalence_links")
+    op.drop_index("ix_equivalence_links_perspective_2", table_name="equivalence_links")
+    op.drop_index("ix_equivalence_links_perspective_1", table_name="equivalence_links")
     op.drop_index("ix_equivalence_links_item_id_2", table_name="equivalence_links")
     op.drop_index("ix_equivalence_links_item_id_1", table_name="equivalence_links")
     op.drop_index("ix_equivalence_links_project_id", table_name="equivalence_links")

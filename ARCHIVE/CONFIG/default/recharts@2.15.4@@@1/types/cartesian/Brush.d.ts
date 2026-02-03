@@ -107,4 +107,4 @@ export declare class Brush extends PureComponent<Props, State> {
     renderText(): React.JSX.Element;
     render(): React.JSX.Element;
 }
-export {};
+

@@ -83,4 +83,4 @@ export type Spread<
 		: Simplify<SpreadObject<FirstType, SecondType>>
 	: Simplify<SpreadObject<FirstType, SecondType>>;
 
-export {};
+

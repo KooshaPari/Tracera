@@ -2,13 +2,11 @@
 Repository for Account model operations.
 """
 
-from typing import Optional
-
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.models.account import Account
-from tracertm.models.account_user import AccountUser, AccountRole
+from tracertm.models.account_user import AccountRole, AccountUser
 
 
 class AccountRepository:
@@ -22,7 +20,7 @@ class AccountRepository:
         name: str,
         slug: str,
         account_type: str = "personal",
-        metadata: Optional[dict] = None,
+        metadata: dict | None = None,
     ) -> Account:
         """Create a new account."""
         account = Account(
@@ -35,37 +33,30 @@ class AccountRepository:
         await self.db.flush()
         return account
 
-    async def get_by_id(self, account_id: str) -> Optional[Account]:
+    async def get_by_id(self, account_id: str) -> Account | None:
         """Get account by ID."""
-        result = await self.db.execute(
-            select(Account).where(Account.id == account_id)
-        )
+        result = await self.db.execute(select(Account).where(Account.id == account_id))
         return result.scalar_one_or_none()
 
-    async def get_by_slug(self, slug: str) -> Optional[Account]:
+    async def get_by_slug(self, slug: str) -> Account | None:
         """Get account by slug."""
-        result = await self.db.execute(
-            select(Account).where(Account.slug == slug)
-        )
+        result = await self.db.execute(select(Account).where(Account.slug == slug))
         return result.scalar_one_or_none()
 
     async def list_by_user(self, user_id: str) -> list[Account]:
         """List all accounts for a user."""
         result = await self.db.execute(
-            select(Account)
-            .join(AccountUser)
-            .where(AccountUser.user_id == user_id)
-            .order_by(Account.created_at.desc())
+            select(Account).join(AccountUser).where(AccountUser.user_id == user_id).order_by(Account.created_at.desc())
         )
         return list(result.scalars().all())
 
     async def update(
         self,
         account_id: str,
-        name: Optional[str] = None,
-        slug: Optional[str] = None,
-        metadata: Optional[dict] = None,
-    ) -> Optional[Account]:
+        name: str | None = None,
+        slug: str | None = None,
+        metadata: dict | None = None,
+    ) -> Account | None:
         """Update an account."""
         account = await self.get_by_id(account_id)
         if not account:
@@ -123,7 +114,7 @@ class AccountRepository:
         await self.db.flush()
         return True
 
-    async def get_user_role(self, account_id: str, user_id: str) -> Optional[str]:
+    async def get_user_role(self, account_id: str, user_id: str) -> str | None:
         """Get user's role in an account."""
         result = await self.db.execute(
             select(AccountUser.role).where(
@@ -133,9 +124,7 @@ class AccountRepository:
         )
         return result.scalar_one_or_none()
 
-    async def update_user_role(
-        self, account_id: str, user_id: str, role: str
-    ) -> bool:
+    async def update_user_role(self, account_id: str, user_id: str, role: str) -> bool:
         """Update user's role in an account."""
         result = await self.db.execute(
             select(AccountUser).where(

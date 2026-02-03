@@ -54,16 +54,12 @@ class ExternalIntegrationService:
         """Get integration by name."""
         return self.integrations.get(name)
 
-    def list_integrations(
-        self, integration_type: IntegrationType | None = None
-    ) -> list[Integration]:
+    def list_integrations(self, integration_type: IntegrationType | None = None) -> list[Integration]:
         """List all integrations, optionally filtered by type."""
         integrations = list(self.integrations.values())
 
         if integration_type:
-            integrations = [
-                i for i in integrations if i.integration_type == integration_type
-            ]
+            integrations = [i for i in integrations if i.integration_type == integration_type]
 
         return integrations
 
@@ -119,7 +115,7 @@ class ExternalIntegrationService:
         }
 
         self.sync_history.append(sync_record)
-        integration.last_sync = sync_record.get("timestamp", "now")
+        integration.last_sync = str(sync_record.get("timestamp", "now"))  # type: ignore[assignment]
 
         return sync_record
 

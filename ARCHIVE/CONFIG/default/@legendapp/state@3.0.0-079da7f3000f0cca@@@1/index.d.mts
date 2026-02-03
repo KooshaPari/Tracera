@@ -3,7 +3,7 @@ type ArrayOverrideFnNames = 'find' | 'findIndex' | 'every' | 'some' | 'filter' |
 type RemoveIndex<T> = {
     [K in keyof T as string extends K ? never : number extends K ? never : K]: T[K];
 };
-type BuiltIns = String | Boolean | Number | Date | Error | RegExp | Array<any> | Function | Promise<any>;
+type BuiltIns = string | boolean | number | Date | Error | RegExp | Array<any> | Function | Promise<any>;
 type IsUserDefinedObject<T> = T extends Function | BuiltIns | any[] ? false : T extends object ? true : false;
 type RemoveObservables<T> = T extends ImmutableObservableBase<infer t> ? t : T extends ImmutableObservableBase<infer t>[] ? t[] : IsUserDefinedObject<T> extends true ? {
     [K in keyof T]: RemoveObservables<T[K]>;

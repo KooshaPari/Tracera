@@ -6,12 +6,9 @@ Tests app initialization, widget composition, state management, and user interac
 """
 
 import pytest
-from unittest.mock import MagicMock, Mock, patch, AsyncMock
 
 try:
-    from textual.app import App
-    from tracertm.tui.apps.graph import *
-    TEXTUAL_AVAILABLE = True
+    from tracertm.tui.apps.graph import TEXTUAL_AVAILABLE
 except ImportError:
     TEXTUAL_AVAILABLE = False
 
@@ -30,9 +27,11 @@ class TestGraphApp:
         # Try to find the app class
         try:
             import importlib
-            module = importlib.import_module(f"tracertm.tui.apps.graph")
+
+            module = importlib.import_module("tracertm.tui.apps.graph")
             app_classes = [
-                obj for name, obj in vars(module).items()
+                obj
+                for name, obj in vars(module).items()
                 if isinstance(obj, type) and (name.endswith("App") or name == "Graph")
             ]
             if app_classes:
@@ -46,10 +45,11 @@ class TestGraphApp:
         """Test app defines widgets."""
         try:
             import importlib
-            module = importlib.import_module(f"tracertm.tui.apps.graph")
+
+            module = importlib.import_module("tracertm.tui.apps.graph")
             # Module loaded successfully
             assert module is not None
-        except:
+        except Exception:
             pytest.skip("Module not available")
 
 

@@ -11,23 +11,23 @@ import { ItemsTableView } from "../ItemsTableView";
 // Mock hooks
 vi.mock("../../hooks/useItems", () => ({
 	useCreateItem: vi.fn(() => ({
-		mutateAsync: vi.fn(),
 		isPending: false,
+		mutateAsync: vi.fn(),
 	})),
 	useDeleteItem: vi.fn(() => ({
-		mutateAsync: vi.fn(),
 		isPending: false,
+		mutateAsync: vi.fn(),
 	})),
 	useItems: vi.fn(() => ({
 		data: {
 			items: Array.from({ length: 1000 }, (_, i) => ({
+				createdAt: new Date(2024, 0, (i % 30) + 1).toISOString(),
 				id: `item-${i}`,
+				owner: `Owner ${i % 5}`,
+				priority: "medium" as const,
+				status: "todo" as const,
 				title: `Item ${i}`,
 				type: "feature",
-				status: "todo" as const,
-				priority: "medium" as const,
-				owner: `Owner ${i % 5}`,
-				createdAt: new Date(2024, 0, (i % 30) + 1).toISOString(),
 			})),
 		},
 		isLoading: false,

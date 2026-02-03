@@ -31,7 +31,7 @@ class MarkdownString {
     appendText(value, newlineStyle = 0 /* MarkdownStringTextNewlineStyle.Paragraph */) {
         this.value += escapeMarkdownSyntaxTokens(this.supportThemeIcons ? escapeIcons(value) : value) // CodeQL [SM02383] The Markdown is fully sanitized after being rendered.
             .replace(/([ \t]+)/g, (_match, g1) => '&nbsp;'.repeat(g1.length)) // CodeQL [SM02383] The Markdown is fully sanitized after being rendered.
-            .replace(/\>/gm, '\\>') // CodeQL [SM02383] The Markdown is fully sanitized after being rendered.
+            .replace(/>/gm, '\\>') // CodeQL [SM02383] The Markdown is fully sanitized after being rendered.
             .replace(/\n/g, newlineStyle === 1 /* MarkdownStringTextNewlineStyle.Break */ ? '\\\n' : '\n\n'); // CodeQL [SM02383] The Markdown is fully sanitized after being rendered.
         return this;
     }

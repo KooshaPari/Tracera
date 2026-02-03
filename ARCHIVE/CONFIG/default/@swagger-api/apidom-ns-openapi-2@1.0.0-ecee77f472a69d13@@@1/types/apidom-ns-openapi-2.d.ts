@@ -2489,4 +2489,4 @@ declare const XmlVisitor_base: Class<any[], FixedFieldsVisitor & FallbackVisitor
 export declare interface XmlVisitorOptions extends FixedFieldsVisitorOptions, VisitorOptions {
 }
 
-export { }
+

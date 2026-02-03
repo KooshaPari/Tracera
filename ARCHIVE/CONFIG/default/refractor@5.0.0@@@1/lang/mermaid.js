@@ -85,7 +85,7 @@ export default function mermaid(Prism) {
       alias: 'property'
     },
     text: {
-      pattern: /(?:[(\[{]+|\b>)(?:[^\r\n"()\[\]{}]|"[^"\r\n]*")+(?:[)\]}]+|>)/,
+      pattern: /(?:[([{]+|\b>)(?:[^\r\n"()[\]{}]|"[^"\r\n]*")+(?:[)\]}]+|>)/,
       alias: 'string'
     },
     string: {

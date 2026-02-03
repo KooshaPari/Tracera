@@ -311,4 +311,4 @@ export type IsLiteral<T> =
 		? IsNotFalse<IsLiteralUnion<T>>
 		: false;
 
-export {};
+

@@ -13,13 +13,15 @@ Tests cover:
 import pytest
 
 try:
-    from textual.widgets import DataTable
+    from textual.widgets import DataTable  # type: ignore[import-untyped]
+
     TEXTUAL_AVAILABLE = True
 except ImportError:
     TEXTUAL_AVAILABLE = False
     DataTable = None
 
-from tracertm.tui.widgets.state_display import StateDisplayWidget, TEXTUAL_AVAILABLE as WIDGET_TEXTUAL
+from tracertm.tui.widgets.state_display import TEXTUAL_AVAILABLE as WIDGET_TEXTUAL
+from tracertm.tui.widgets.state_display import StateDisplayWidget
 
 
 @pytest.mark.skipif(not TEXTUAL_AVAILABLE, reason="Textual not installed")
@@ -81,7 +83,7 @@ class TestStateDisplayWidgetColumns:
 
     def test_column_order(self):
         """Test columns are in correct order."""
-        widget = StateDisplayWidget()
+        StateDisplayWidget()
         # Columns should be: View, Items, Links
         expected_order = ["View", "Items", "Links"]
         assert expected_order is not None  # Basic assertion

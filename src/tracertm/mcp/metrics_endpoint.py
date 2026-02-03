@@ -7,7 +7,7 @@ Can be run standalone or integrated with the MCP server.
 from __future__ import annotations
 
 import logging
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from threading import Thread
 from typing import Any
 
@@ -42,7 +42,7 @@ class MetricsHandler(BaseHTTPRequestHandler):
             logger.error(f"Error exporting metrics: {e}")
             self.send_response(500)
             self.end_headers()
-            self.wfile.write(f"Error: {e}".encode("utf-8"))
+            self.wfile.write(f"Error: {e}".encode())
 
     def send_health(self) -> None:
         """Send health check response."""
@@ -59,7 +59,7 @@ class MetricsHandler(BaseHTTPRequestHandler):
 class MetricsServer:
     """HTTP server for exposing Prometheus metrics."""
 
-    def __init__(self, host: str = "0.0.0.0", port: int = 9090):
+    def __init__(self, host: str = "0.0.0.0", port: int = 9090):  # noqa: S104 listen all by default
         """Initialize metrics server.
 
         Args:
@@ -114,7 +114,7 @@ class MetricsServer:
 _metrics_server: MetricsServer | None = None
 
 
-def get_metrics_server(host: str = "0.0.0.0", port: int = 9090) -> MetricsServer:
+def get_metrics_server(host: str = "0.0.0.0", port: int = 9090) -> MetricsServer:  # noqa: S104
     """Get or create global metrics server instance.
 
     Args:
@@ -130,7 +130,7 @@ def get_metrics_server(host: str = "0.0.0.0", port: int = 9090) -> MetricsServer
     return _metrics_server
 
 
-def start_metrics_server(host: str = "0.0.0.0", port: int = 9090) -> MetricsServer:
+def start_metrics_server(host: str = "0.0.0.0", port: int = 9090) -> MetricsServer:  # noqa: S104
     """Start the global metrics server.
 
     Args:

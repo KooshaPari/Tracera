@@ -67,4 +67,4 @@ BaseType extends ReadonlyMap<infer KeyType, infer ValueType>
 				{-readonly [KeyType in keyof Pick<BaseType, Keys>]: Pick<BaseType, Keys>[KeyType]}
 			>;
 
-export {};
+

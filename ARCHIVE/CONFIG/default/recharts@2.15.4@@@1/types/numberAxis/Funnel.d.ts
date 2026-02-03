@@ -112,4 +112,4 @@ export declare class Funnel extends PureComponent<FunnelProps, State> {
     renderTrapezoids(): React.JSX.Element | React.JSX.Element[];
     render(): React.JSX.Element;
 }
-export {};
+

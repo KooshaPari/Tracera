@@ -8,15 +8,14 @@ pagination performance, and caching effectiveness.
 Target: +2-3% coverage (30-45 tests)
 """
 
-import pytest
 import time
-import sys
-from datetime import datetime, timedelta
 
-from tracertm.models.project import Project
+import pytest
+
+from tracertm.models.event import Event
 from tracertm.models.item import Item
 from tracertm.models.link import Link
-from tracertm.models.event import Event
+from tracertm.models.project import Project
 
 
 class TestBulkOperationsPerformance:
@@ -38,7 +37,7 @@ class TestBulkOperationsPerformance:
                 title=f"Item {i}",
                 view="FEATURE",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             for i in range(100)
         ]
@@ -50,9 +49,7 @@ class TestBulkOperationsPerformance:
         elapsed = time.time() - start_time
 
         # Verify
-        count = sync_db_session.query(Item).filter(
-            Item.id.startswith("BULK100-")
-        ).count()
+        count = sync_db_session.query(Item).filter(Item.id.startswith("BULK100-")).count()
         assert count == 100
 
         # Performance check (should be fast)
@@ -74,7 +71,7 @@ class TestBulkOperationsPerformance:
                 title=f"Item {i}",
                 view="FEATURE",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             for i in range(500)
         ]
@@ -85,9 +82,7 @@ class TestBulkOperationsPerformance:
 
         elapsed = time.time() - start_time
 
-        count = sync_db_session.query(Item).filter(
-            Item.id.startswith("BULK500-")
-        ).count()
+        count = sync_db_session.query(Item).filter(Item.id.startswith("BULK500-")).count()
         assert count == 500
         assert elapsed < 15.0
 
@@ -106,7 +101,7 @@ class TestBulkOperationsPerformance:
                 title=f"Original {i}",
                 view="FEATURE",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             for i in range(100)
         ]
@@ -118,9 +113,7 @@ class TestBulkOperationsPerformance:
         # Update
         start_time = time.time()
 
-        items_to_update = sync_db_session.query(Item).filter(
-            Item.id.startswith("UPDATE100-")
-        ).all()
+        items_to_update = sync_db_session.query(Item).filter(Item.id.startswith("UPDATE100-")).all()
 
         for item in items_to_update:
             item.status = "in_progress"
@@ -130,9 +123,7 @@ class TestBulkOperationsPerformance:
         elapsed = time.time() - start_time
 
         # Verify
-        updated_count = sync_db_session.query(Item).filter(
-            Item.status == "in_progress"
-        ).count()
+        updated_count = sync_db_session.query(Item).filter(Item.status == "in_progress").count()
         assert updated_count == 100
         assert elapsed < 5.0
 
@@ -151,7 +142,7 @@ class TestBulkOperationsPerformance:
                 title=f"Item {i}",
                 view="FEATURE",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             for i in range(100)
         ]
@@ -163,9 +154,7 @@ class TestBulkOperationsPerformance:
         # Delete
         start_time = time.time()
 
-        items_to_delete = sync_db_session.query(Item).filter(
-            Item.id.startswith("DELETE100-")
-        ).all()
+        items_to_delete = sync_db_session.query(Item).filter(Item.id.startswith("DELETE100-")).all()
 
         for item in items_to_delete:
             sync_db_session.delete(item)
@@ -175,9 +164,7 @@ class TestBulkOperationsPerformance:
         elapsed = time.time() - start_time
 
         # Verify
-        remaining = sync_db_session.query(Item).filter(
-            Item.id.startswith("DELETE100-")
-        ).count()
+        remaining = sync_db_session.query(Item).filter(Item.id.startswith("DELETE100-")).count()
         assert remaining == 0
         assert elapsed < 5.0
 
@@ -201,7 +188,7 @@ class TestLargeGraphTraversal:
                 title=f"Chain Item {i}",
                 view="FEATURE",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             items.append(item)
             sync_db_session.add(item)
@@ -213,8 +200,8 @@ class TestLargeGraphTraversal:
                 id=f"CHAIN-LINK-{i:03d}",
                 project_id="graph-test",
                 source_item_id=f"CHAIN-{i:03d}",
-                target_item_id=f"CHAIN-{i+1:03d}",
-                link_type="depends_on"
+                target_item_id=f"CHAIN-{i + 1:03d}",
+                link_type="depends_on",
             )
             sync_db_session.add(link)
         sync_db_session.commit()
@@ -224,9 +211,7 @@ class TestLargeGraphTraversal:
         assert start_item is not None
 
         # Find all downstream items
-        downstream_links = sync_db_session.query(Link).filter_by(
-            source_item_id="CHAIN-000"
-        ).all()
+        downstream_links = sync_db_session.query(Link).filter_by(source_item_id="CHAIN-000").all()
         assert len(downstream_links) >= 1
 
     @pytest.mark.integration
@@ -245,7 +230,7 @@ class TestLargeGraphTraversal:
                 title=f"Node {i}",
                 view="FEATURE",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             sync_db_session.add(item)
         sync_db_session.commit()
@@ -259,16 +244,14 @@ class TestLargeGraphTraversal:
                     project_id="complex-graph",
                     source_item_id=f"NODE-{i:02d}",
                     target_item_id=f"NODE-{j:02d}",
-                    link_type="depends_on"
+                    link_type="depends_on",
                 )
                 sync_db_session.add(link)
                 link_count += 1
         sync_db_session.commit()
 
         # Query graph
-        all_links = sync_db_session.query(Link).filter_by(
-            project_id="complex-graph"
-        ).all()
+        all_links = sync_db_session.query(Link).filter_by(project_id="complex-graph").all()
         assert len(all_links) == link_count
 
     @pytest.mark.integration
@@ -286,7 +269,7 @@ class TestLargeGraphTraversal:
                 title=f"Item {i}",
                 view="FEATURE",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             sync_db_session.add(item)
         sync_db_session.commit()
@@ -299,7 +282,7 @@ class TestLargeGraphTraversal:
                     project_id="graph-perf",
                     source_item_id=f"GPERF-{i:03d}",
                     target_item_id=f"GPERF-{j:03d}",
-                    link_type="depends_on"
+                    link_type="depends_on",
                 )
                 sync_db_session.add(link)
         sync_db_session.commit()
@@ -307,12 +290,8 @@ class TestLargeGraphTraversal:
         # Query performance
         start_time = time.time()
 
-        all_items = sync_db_session.query(Item).filter_by(
-            project_id="graph-perf"
-        ).all()
-        all_links = sync_db_session.query(Link).filter_by(
-            project_id="graph-perf"
-        ).all()
+        all_items = sync_db_session.query(Item).filter_by(project_id="graph-perf").all()
+        all_links = sync_db_session.query(Link).filter_by(project_id="graph-perf").all()
 
         elapsed = time.time() - start_time
 
@@ -339,7 +318,7 @@ class TestSyncPerformance:
                 title=f"Sync Item {i}",
                 view="FEATURE",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             sync_db_session.add(item)
         sync_db_session.commit()
@@ -347,9 +326,7 @@ class TestSyncPerformance:
         # Simulate sync: fetch and verify
         start_time = time.time()
 
-        items = sync_db_session.query(Item).filter_by(
-            project_id="sync-test"
-        ).all()
+        items = sync_db_session.query(Item).filter_by(project_id="sync-test").all()
 
         elapsed = time.time() - start_time
 
@@ -367,7 +344,7 @@ class TestSyncPerformance:
                 entity_type="item",
                 entity_id=f"item-{i % 4 + 1}",
                 agent_id="test-agent",
-                data={"iteration": i}
+                data={"iteration": i},
             )
             db_with_sample_data.add(event)
         db_with_sample_data.commit()
@@ -375,9 +352,7 @@ class TestSyncPerformance:
         # Sync events
         start_time = time.time()
 
-        events = db_with_sample_data.query(Event).filter_by(
-            project_id="test-project"
-        ).all()
+        events = db_with_sample_data.query(Event).filter_by(project_id="test-project").all()
 
         elapsed = time.time() - start_time
 
@@ -399,7 +374,7 @@ class TestSyncPerformance:
                 title=f"Item {i}",
                 view="FEATURE",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             sync_db_session.add(item)
         sync_db_session.commit()
@@ -407,9 +382,7 @@ class TestSyncPerformance:
         # Detect conflicts
         start_time = time.time()
 
-        items = sync_db_session.query(Item).filter_by(
-            project_id="conflict-sync"
-        ).all()
+        items = sync_db_session.query(Item).filter_by(project_id="conflict-sync").all()
 
         conflicts = [item for item in items if item.status != "todo"]
 
@@ -437,7 +410,7 @@ class TestQueryOptimization:
                 title=f"Item {i}",
                 view="FEATURE",
                 item_type="feature",
-                status="todo" if i % 2 == 0 else "done"
+                status="todo" if i % 2 == 0 else "done",
             )
             sync_db_session.add(item)
         sync_db_session.commit()
@@ -445,9 +418,7 @@ class TestQueryOptimization:
         # Query by indexed field
         start_time = time.time()
 
-        items = sync_db_session.query(Item).filter_by(
-            project_id="indexed-query"
-        ).all()
+        items = sync_db_session.query(Item).filter_by(project_id="indexed-query").all()
 
         elapsed = time.time() - start_time
 
@@ -469,7 +440,7 @@ class TestQueryOptimization:
                 title=f"Item {i}",
                 view="FEATURE",
                 item_type="feature",
-                status="in_progress" if i % 3 == 0 else ("done" if i % 3 == 1 else "todo")
+                status="in_progress" if i % 3 == 0 else ("done" if i % 3 == 1 else "todo"),
             )
             sync_db_session.add(item)
         sync_db_session.commit()
@@ -477,10 +448,7 @@ class TestQueryOptimization:
         # Filter performance
         start_time = time.time()
 
-        in_progress = sync_db_session.query(Item).filter_by(
-            project_id="filter-perf",
-            status="in_progress"
-        ).all()
+        in_progress = sync_db_session.query(Item).filter_by(project_id="filter-perf", status="in_progress").all()
 
         elapsed = time.time() - start_time
 
@@ -502,7 +470,7 @@ class TestQueryOptimization:
                 title=f"Item {i}",
                 view="FEATURE",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             sync_db_session.add(item)
         sync_db_session.commit()
@@ -510,9 +478,7 @@ class TestQueryOptimization:
         # Aggregation
         start_time = time.time()
 
-        count = sync_db_session.query(Item).filter_by(
-            project_id="agg-perf"
-        ).count()
+        count = sync_db_session.query(Item).filter_by(project_id="agg-perf").count()
 
         elapsed = time.time() - start_time
 
@@ -531,10 +497,7 @@ class TestMemoryEfficiency:
         sync_db_session.commit()
 
         # Create item with large metadata
-        large_meta = {
-            f"key_{i}": "x" * 100
-            for i in range(50)
-        }
+        large_meta = {f"key_{i}": "x" * 100 for i in range(50)}
 
         item = Item(
             id="LARGE-META-001",
@@ -543,14 +506,12 @@ class TestMemoryEfficiency:
             view="FEATURE",
             item_type="feature",
             status="todo",
-            item_metadata=large_meta
+            item_metadata=large_meta,
         )
         sync_db_session.add(item)
         sync_db_session.commit()
 
-        result = sync_db_session.query(Item).filter_by(
-            id="LARGE-META-001"
-        ).first()
+        result = sync_db_session.query(Item).filter_by(id="LARGE-META-001").first()
         assert result is not None
         assert len(result.item_metadata) == 50
 
@@ -569,7 +530,7 @@ class TestMemoryEfficiency:
                 title=f"Item {i}",
                 view="FEATURE",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             sync_db_session.add(item)
         sync_db_session.commit()
@@ -580,8 +541,8 @@ class TestMemoryEfficiency:
                 id=f"LAZY-LINK-{i:03d}",
                 project_id="lazy-load",
                 source_item_id=f"LAZY-{i:03d}",
-                target_item_id=f"LAZY-{i+1:03d}",
-                link_type="depends_on"
+                target_item_id=f"LAZY-{i + 1:03d}",
+                link_type="depends_on",
             )
             sync_db_session.add(link)
         sync_db_session.commit()
@@ -589,9 +550,7 @@ class TestMemoryEfficiency:
         # Load items (lazy load relationships)
         start_time = time.time()
 
-        items = sync_db_session.query(Item).filter_by(
-            project_id="lazy-load"
-        ).all()
+        items = sync_db_session.query(Item).filter_by(project_id="lazy-load").all()
 
         elapsed = time.time() - start_time
 
@@ -617,7 +576,7 @@ class TestConcurrentAccessPatterns:
                 title=f"Item {i}",
                 view="FEATURE",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             sync_db_session.add(item)
         sync_db_session.commit()
@@ -626,9 +585,7 @@ class TestConcurrentAccessPatterns:
         start_time = time.time()
 
         for i in range(50):
-            item = sync_db_session.query(Item).filter_by(
-                id=f"SEQ-{i:03d}"
-            ).first()
+            item = sync_db_session.query(Item).filter_by(id=f"SEQ-{i:03d}").first()
             assert item is not None
 
         elapsed = time.time() - start_time
@@ -649,7 +606,7 @@ class TestConcurrentAccessPatterns:
                 title=f"Item {i}",
                 view="FEATURE",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             sync_db_session.add(item)
         sync_db_session.commit()
@@ -657,9 +614,7 @@ class TestConcurrentAccessPatterns:
         # Bulk read
         start_time = time.time()
 
-        items = sync_db_session.query(Item).filter_by(
-            project_id="bulk-read"
-        ).all()
+        items = sync_db_session.query(Item).filter_by(project_id="bulk-read").all()
 
         elapsed = time.time() - start_time
 
@@ -681,7 +636,7 @@ class TestConcurrentAccessPatterns:
                 title=f"Item {i}",
                 view="FEATURE",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             sync_db_session.add(item)
         sync_db_session.commit()
@@ -689,9 +644,7 @@ class TestConcurrentAccessPatterns:
         # Mixed operations
         start_time = time.time()
 
-        items = sync_db_session.query(Item).filter_by(
-            project_id="mixed-rw"
-        ).all()
+        items = sync_db_session.query(Item).filter_by(project_id="mixed-rw").all()
 
         for i, item in enumerate(items[:10]):
             item.status = "in_progress"
@@ -722,7 +675,7 @@ class TestPaginationPerformance:
                 title=f"Item {i}",
                 view="FEATURE",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             sync_db_session.add(item)
         sync_db_session.commit()
@@ -731,9 +684,7 @@ class TestPaginationPerformance:
         start_time = time.time()
 
         page_size = 20
-        items = sync_db_session.query(Item).filter_by(
-            project_id="paginate-1"
-        ).limit(page_size).all()
+        items = sync_db_session.query(Item).filter_by(project_id="paginate-1").limit(page_size).all()
 
         elapsed = time.time() - start_time
 
@@ -755,7 +706,7 @@ class TestPaginationPerformance:
                 title=f"Item {i}",
                 view="FEATURE",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             sync_db_session.add(item)
         sync_db_session.commit()
@@ -765,9 +716,7 @@ class TestPaginationPerformance:
 
         page_size = 20
         offset = 50
-        items = sync_db_session.query(Item).filter_by(
-            project_id="paginate-mid"
-        ).offset(offset).limit(page_size).all()
+        items = sync_db_session.query(Item).filter_by(project_id="paginate-mid").offset(offset).limit(page_size).all()
 
         elapsed = time.time() - start_time
 
@@ -789,7 +738,7 @@ class TestPaginationPerformance:
                 title=f"Item {i}",
                 view="FEATURE",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             sync_db_session.add(item)
         sync_db_session.commit()
@@ -799,9 +748,7 @@ class TestPaginationPerformance:
 
         page_size = 20
         offset = 200
-        items = sync_db_session.query(Item).filter_by(
-            project_id="paginate-large"
-        ).offset(offset).limit(page_size).all()
+        items = sync_db_session.query(Item).filter_by(project_id="paginate-large").offset(offset).limit(page_size).all()
 
         elapsed = time.time() - start_time
 
@@ -827,23 +774,19 @@ class TestCachingEffectiveness:
                 title=f"Item {i}",
                 view="FEATURE",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             sync_db_session.add(item)
         sync_db_session.commit()
 
         # First query
         start_time = time.time()
-        items1 = sync_db_session.query(Item).filter_by(
-            project_id="cache-repeat"
-        ).all()
+        items1 = sync_db_session.query(Item).filter_by(project_id="cache-repeat").all()
         first_elapsed = time.time() - start_time
 
         # Second query (should use cache)
         start_time = time.time()
-        items2 = sync_db_session.query(Item).filter_by(
-            project_id="cache-repeat"
-        ).all()
+        items2 = sync_db_session.query(Item).filter_by(project_id="cache-repeat").all()
         second_elapsed = time.time() - start_time
 
         assert len(items1) == len(items2) == 50
@@ -863,18 +806,14 @@ class TestCachingEffectiveness:
             title="Identity Test",
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         sync_db_session.add(item)
         sync_db_session.commit()
 
         # Fetch same item twice
-        item1 = sync_db_session.query(Item).filter_by(
-            id="IDENTITY-001"
-        ).first()
-        item2 = sync_db_session.query(Item).filter_by(
-            id="IDENTITY-001"
-        ).first()
+        item1 = sync_db_session.query(Item).filter_by(id="IDENTITY-001").first()
+        item2 = sync_db_session.query(Item).filter_by(id="IDENTITY-001").first()
 
         # Should be same object in session
         assert item1 is item2

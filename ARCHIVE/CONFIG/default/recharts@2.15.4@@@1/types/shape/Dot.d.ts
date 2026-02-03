@@ -12,4 +12,4 @@ interface DotProps {
 }
 export type Props = PresentationAttributesWithProps<DotProps, SVGCircleElement> & DotProps;
 export declare const Dot: React.FC<Props>;
-export {};
+

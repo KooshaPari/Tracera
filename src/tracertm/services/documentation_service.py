@@ -1,6 +1,6 @@
 """Service for API documentation and reference."""
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 
@@ -29,7 +29,7 @@ class DocumentationService:
             "description": description,
             "parameters": parameters,
             "response_schema": response_schema,
-            "registered_at": datetime.utcnow().isoformat(),
+            "registered_at": datetime.now(UTC).isoformat(),
         }
 
         self.endpoints[endpoint_key] = endpoint
@@ -60,7 +60,7 @@ class DocumentationService:
             "name": name,
             "schema": schema,
             "description": description,
-            "registered_at": datetime.utcnow().isoformat(),
+            "registered_at": datetime.now(UTC).isoformat(),
         }
 
         self.schemas[name] = schema_def
@@ -106,7 +106,7 @@ class DocumentationService:
         """Generate OpenAPI specification."""
         paths = {}
 
-        for _endpoint_key, endpoint in self.endpoints.items():
+        for endpoint in self.endpoints.values():
             path = endpoint["path"]
             method = endpoint["method"].lower()
 
@@ -132,11 +132,7 @@ class DocumentationService:
                 "description": "Traceability Requirements Management API",
             },
             "paths": paths,
-            "components": {
-                "schemas": {
-                    name: schema["schema"] for name, schema in self.schemas.items()
-                }
-            },
+            "components": {"schemas": {name: schema["schema"] for name, schema in self.schemas.items()}},
         }
 
     def generate_markdown_docs(self) -> str:
@@ -144,7 +140,7 @@ class DocumentationService:
         md = "# TraceRTM API Documentation\n\n"
         md += "## Endpoints\n\n"
 
-        for _endpoint_key, endpoint in self.endpoints.items():
+        for endpoint in self.endpoints.values():
             md += f"### {endpoint['method']} {endpoint['path']}\n\n"
             md += f"{endpoint['description']}\n\n"
 

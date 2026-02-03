@@ -1,5 +1,5 @@
 const conf = {
-  wordPattern: /(-?\d*\.\d\w*)|([^\`\~\!\@\$\^\&\*\(\)\=\+\[\{\]\}\\\|\;\:\'\"\,\.\<\>\/\s]+)/g,
+  wordPattern: /(-?\d*\.\d\w*)|([^`~!@$^&*()=+[{\]}\\|;:'",.<>/\s]+)/g,
   comments: {
     blockComment: ["{#", "#}"]
   },
@@ -80,11 +80,11 @@ const language = {
       // HTML
       [/<!DOCTYPE/, "metatag.html", "@doctype"],
       [/<!--/, "comment.html", "@comment"],
-      [/(<)((?:[\w\-]+:)?[\w\-]+)(\s*)(\/>)/, ["delimiter.html", "tag.html", "", "delimiter.html"]],
+      [/(<)((?:[\w-]+:)?[\w-]+)(\s*)(\/>)/, ["delimiter.html", "tag.html", "", "delimiter.html"]],
       [/(<)(script)/, ["delimiter.html", { token: "tag.html", next: "@script" }]],
       [/(<)(style)/, ["delimiter.html", { token: "tag.html", next: "@style" }]],
-      [/(<)((?:[\w\-]+:)?[\w\-]+)/, ["delimiter.html", { token: "tag.html", next: "@otherTag" }]],
-      [/(<\/)((?:[\w\-]+:)?[\w\-]+)/, ["delimiter.html", { token: "tag.html", next: "@otherTag" }]],
+      [/(<)((?:[\w-]+:)?[\w-]+)/, ["delimiter.html", { token: "tag.html", next: "@otherTag" }]],
+      [/(<\/)((?:[\w-]+:)?[\w-]+)/, ["delimiter.html", { token: "tag.html", next: "@otherTag" }]],
       [/</, "delimiter.html"],
       [/[^<{]+/]
       // text
@@ -172,7 +172,7 @@ const language = {
       // punctuation
       [/\(|\)|\[|\]|{|}|,/, "delimiter.twig"],
       // strings
-      [/"([^#"\\]*(?:\\.[^#"\\]*)*)"|\'([^\'\\]*(?:\\.[^\'\\]*)*)\'/, "string.twig"],
+      [/"([^#"\\]*(?:\\.[^#"\\]*)*)"|'([^'\\]*(?:\\.[^'\\]*)*)'/, "string.twig"],
       // opening double quoted string
       [/"/, "string.twig", "@stringState"],
       // misc syntactic constructs
@@ -199,7 +199,7 @@ const language = {
       [/\/?>/, "delimiter.html", "@pop"],
       [/"([^"]*)"/, "attribute.value.html"],
       [/'([^']*)'/, "attribute.value.html"],
-      [/[\w\-]+/, "attribute.name.html"],
+      [/[\w-]+/, "attribute.name.html"],
       [/=/, "delimiter.html"],
       [/[ \t\r\n]+/]
       // whitespace
@@ -210,7 +210,7 @@ const language = {
       [/type/, "attribute.name.html", "@scriptAfterType"],
       [/"([^"]*)"/, "attribute.value.html"],
       [/'([^']*)'/, "attribute.value.html"],
-      [/[\w\-]+/, "attribute.name.html"],
+      [/[\w-]+/, "attribute.name.html"],
       [/=/, "delimiter.html"],
       [
         />/,
@@ -284,7 +284,7 @@ const language = {
       ],
       [/"([^"]*)"/, "attribute.value.html"],
       [/'([^']*)'/, "attribute.value.html"],
-      [/[\w\-]+/, "attribute.name.html"],
+      [/[\w-]+/, "attribute.name.html"],
       [/=/, "delimiter.html"],
       [/[ \t\r\n]+/],
       // whitespace
@@ -301,7 +301,7 @@ const language = {
       [/type/, "attribute.name.html", "@styleAfterType"],
       [/"([^"]*)"/, "attribute.value.html"],
       [/'([^']*)'/, "attribute.value.html"],
-      [/[\w\-]+/, "attribute.name.html"],
+      [/[\w-]+/, "attribute.name.html"],
       [/=/, "delimiter.html"],
       [
         />/,
@@ -375,7 +375,7 @@ const language = {
       ],
       [/"([^"]*)"/, "attribute.value.html"],
       [/'([^']*)'/, "attribute.value.html"],
-      [/[\w\-]+/, "attribute.name.html"],
+      [/[\w-]+/, "attribute.name.html"],
       [/=/, "delimiter.html"],
       [/[ \t\r\n]+/],
       // whitespace

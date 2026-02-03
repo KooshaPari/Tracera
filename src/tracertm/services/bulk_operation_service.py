@@ -6,15 +6,19 @@ Handles bulk operations with preview, validation, and atomic execution.
 
 import csv
 import json
-from datetime import datetime
+import logging
+import uuid
+from datetime import UTC, datetime
 from io import StringIO
-from typing import Any, cast
+from typing import Any
 
 from sqlalchemy.orm import Session
 
 from tracertm.models.event import Event
 from tracertm.models.item import Item
 from tracertm.schemas.item import ItemCreate
+
+logger = logging.getLogger(__name__)
 
 
 class BulkOperationService:
@@ -28,7 +32,7 @@ class BulkOperationService:
 
     def bulk_update_preview(
         self,
-        project_id: str,
+        project_id: str | uuid.UUID,
         filters: dict[str, Any],
         updates: dict[str, Any],
         limit: int = 5,
@@ -45,9 +49,10 @@ class BulkOperationService:
         Returns:
             Preview dictionary with count, samples, warnings, estimated duration
         """
+        pid = str(project_id) if isinstance(project_id, uuid.UUID) else project_id
         # Build query
         query = self.session.query(Item).filter(
-            Item.project_id == project_id,
+            Item.project_id == pid,
             Item.deleted_at.is_(None),
         )
 
@@ -111,7 +116,7 @@ class BulkOperationService:
 
     def bulk_update_items(
         self,
-        project_id: str,
+        project_id: str | uuid.UUID,
         filters: dict[str, Any],
         updates: dict[str, Any],
         agent_id: str | None = None,
@@ -128,9 +133,10 @@ class BulkOperationService:
         Returns:
             Dictionary with items_updated count
         """
+        pid = str(project_id) if isinstance(project_id, uuid.UUID) else project_id
         # Build query
         query = self.session.query(Item).filter(
-            Item.project_id == project_id,
+            Item.project_id == pid,
             Item.deleted_at.is_(None),
         )
 
@@ -167,7 +173,7 @@ class BulkOperationService:
 
                 # Log update event
                 event = Event(
-                    project_id=project_id,
+                    project_id=pid,
                     event_type="item_bulk_updated",
                     entity_type="item",
                     entity_id=item.id,
@@ -189,7 +195,7 @@ class BulkOperationService:
 
     def bulk_delete_items(
         self,
-        project_id: str,
+        project_id: str | uuid.UUID,
         filters: dict[str, Any],
         agent_id: str | None = None,
     ) -> dict[str, int]:
@@ -204,9 +210,10 @@ class BulkOperationService:
         Returns:
             Dictionary with items_deleted count
         """
+        pid = str(project_id) if isinstance(project_id, uuid.UUID) else project_id
         # Build query
         query = self.session.query(Item).filter(
-            Item.project_id == project_id,
+            Item.project_id == pid,
             Item.deleted_at.is_(None),
         )
 
@@ -224,12 +231,12 @@ class BulkOperationService:
         try:
             for item in items:
                 # Soft delete
-                item.deleted_at = datetime.utcnow()
+                item.deleted_at = datetime.now(UTC)
                 items_deleted += 1
 
                 # Log delete event
                 event = Event(
-                    project_id=project_id,
+                    project_id=pid,
                     event_type="item_bulk_deleted",
                     entity_type="item",
                     entity_id=item.id,
@@ -250,7 +257,7 @@ class BulkOperationService:
 
     def bulk_create_preview(
         self,
-        project_id: str,
+        project_id: str | uuid.UUID,
         csv_data: str,
         limit: int = 5,
     ) -> dict[str, Any]:
@@ -367,8 +374,7 @@ class BulkOperationService:
                 })
 
         # Add validation errors for invalid rows
-        for invalid in invalid_rows:
-            validation_errors.append(f"Row {invalid['row']}: {invalid['error']}")
+        validation_errors.extend(f"Row {invalid['row']}: {invalid['error']}" for invalid in invalid_rows)
 
         # Generate warnings
         warnings = []
@@ -425,7 +431,7 @@ class BulkOperationService:
 
     def bulk_create_items(
         self,
-        project_id: str,
+        project_id: str | uuid.UUID,
         csv_data: str,
         agent_id: str | None = None,
     ) -> dict[str, int]:
@@ -440,6 +446,7 @@ class BulkOperationService:
         Returns:
             Dictionary with items_created count
         """
+        pid = str(project_id) if isinstance(project_id, uuid.UUID) else project_id
         reader = csv.DictReader(StringIO(csv_data))
         rows = list(reader)
 
@@ -488,7 +495,7 @@ class BulkOperationService:
 
                     # Create item
                     new_item: Item = Item(
-                        project_id=project_id,
+                        project_id=pid,
                         title=item_data.title,
                         description=item_data.description,
                         view=item_data.view,
@@ -514,7 +521,7 @@ class BulkOperationService:
                         "item_type": new_item.item_type,
                     }
                     event = Event(
-                        project_id=project_id,
+                        project_id=pid,
                         event_type="item_bulk_created",
                         entity_type="item",
                         entity_id=new_item.id,
@@ -523,8 +530,8 @@ class BulkOperationService:
                     )
                     self.session.add(event)
 
-                except Exception:
-                    # Skip invalid rows and continue
+                except Exception as e:
+                    logger.debug("Skipping invalid row: %s", e)
                     continue
 
             # Commit all items (events are optional)

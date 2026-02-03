@@ -94,7 +94,7 @@ export default function log(Prism) {
     },
     'file-path': {
       pattern:
-        /\b[a-z]:[\\/][^\s|,;:(){}\[\]"']+|(^|[\s:\[\](>|])\.{0,2}\/\w[^\s|,;:(){}\[\]"']*/i,
+        /\b[a-z]:[\\/][^\s|,;:(){}[\]"']+|(^|[\s:[\](>|])\.{0,2}\/\w[^\s|,;:(){}[\]"']*/i,
       lookbehind: true,
       greedy: true,
       alias: 'string'
@@ -124,6 +124,6 @@ export default function log(Prism) {
       lookbehind: true
     },
     operator: /[;:?<=>~/@!$%&+\-|^(){}*#]/,
-    punctuation: /[\[\].,]/
+    punctuation: /[[\].,]/
   }
 }

@@ -14,7 +14,6 @@ from tracertm.services.event_sourcing_service import EventSourcingService
 from tracertm.services.traceability_service import TraceabilityService
 
 
-
 @pytest.mark.e2e
 @pytest.mark.asyncio
 async def test_complete_project_workflow(db_session: AsyncSession):
@@ -29,7 +28,7 @@ async def test_complete_project_workflow(db_session: AsyncSession):
     # 2. Create items
     item_repo = ItemRepository(db_session)
     feature = await item_repo.create(
-        project_id=project.id,
+        project_id=str(project.id),
         title="User Authentication",
         view="FEATURE",
         item_type="feature",
@@ -37,7 +36,7 @@ async def test_complete_project_workflow(db_session: AsyncSession):
     )
 
     code = await item_repo.create(
-        project_id=project.id,
+        project_id=str(project.id),
         title="auth.py",
         view="CODE",
         item_type="file",
@@ -45,7 +44,7 @@ async def test_complete_project_workflow(db_session: AsyncSession):
     )
 
     test = await item_repo.create(
-        project_id=project.id,
+        project_id=str(project.id),
         title="test_auth.py",
         view="TEST",
         item_type="test",
@@ -55,34 +54,34 @@ async def test_complete_project_workflow(db_session: AsyncSession):
     # 3. Create links
     link_repo = LinkRepository(db_session)
     await link_repo.create(
-        project_id=project.id,
-        source_item_id=feature.id,
-        target_item_id=code.id,
+        project_id=str(project.id),
+        source_item_id=str(feature.id),
+        target_item_id=str(code.id),
         link_type="implements",
     )
 
     await link_repo.create(
-        project_id=project.id,
-        source_item_id=code.id,
-        target_item_id=test.id,
+        project_id=str(project.id),
+        source_item_id=str(code.id),
+        target_item_id=str(test.id),
         link_type="tests",
     )
 
     # 4. Generate traceability matrix
     traceability = TraceabilityService(db_session)
-    matrix = await traceability.generate_matrix(project.id, "FEATURE", "CODE")
+    matrix = await traceability.generate_matrix(str(project.id), "FEATURE", "CODE")
 
     assert matrix.coverage_percentage == 100.0
     assert len(matrix.links) == 1
 
     # 5. Analyze impact
-    impact = await traceability.analyze_impact(feature.id)
+    impact = await traceability.analyze_impact(str(feature.id))
     assert len(impact.directly_affected) == 1
     assert len(impact.indirectly_affected) == 1
 
     # 6. Update items
     updated_feature = await item_repo.update(
-        item_id=feature.id,
+        item_id=str(feature.id),
         expected_version=feature.version,
         status="in_progress",
     )
@@ -102,7 +101,7 @@ async def test_bulk_operation_workflow(db_session: AsyncSession):
     item_repo = ItemRepository(db_session)
     for i in range(5):
         await item_repo.create(
-            project_id=project.id,
+            project_id=str(project.id),
             title=f"Item {i}",
             view="FEATURE",
             item_type="feature",
@@ -112,7 +111,7 @@ async def test_bulk_operation_workflow(db_session: AsyncSession):
     # 2. Preview bulk update
     bulk_service = BulkOperationService(db_session)
     preview = await bulk_service.preview_bulk_update(
-        project_id=project.id,
+        project_id=str(project.id),
         filters={"status": "todo"},
         updates={"status": "in_progress"},
     )
@@ -122,7 +121,7 @@ async def test_bulk_operation_workflow(db_session: AsyncSession):
 
     # 3. Execute bulk update
     updated = await bulk_service.execute_bulk_update(
-        project_id=project.id,
+        project_id=str(project.id),
         filters={"status": "todo"},
         updates={"status": "in_progress"},
         agent_id="test-agent",
@@ -144,13 +143,13 @@ async def test_agent_coordination_workflow(db_session: AsyncSession):
     # 2. Register agents
     agent_service = AgentCoordinationService(db_session)
     agent1 = await agent_service.register_agent(
-        project_id=project.id,
+        project_id=str(project.id),
         name="Agent-1",
         agent_type="cli",
     )
 
     agent2 = await agent_service.register_agent(
-        project_id=project.id,
+        project_id=str(project.id),
         name="Agent-2",
         agent_type="api",
     )
@@ -159,7 +158,7 @@ async def test_agent_coordination_workflow(db_session: AsyncSession):
     assert agent2.status == "active"
 
     # 3. Get agent activity
-    activity1 = await agent_service.get_agent_activity(agent1.id)
+    activity1 = await agent_service.get_agent_activity(str(agent1.id))
     assert len(activity1) > 0
 
 
@@ -175,7 +174,7 @@ async def test_event_sourcing_workflow(db_session: AsyncSession):
 
     # 2. Log events
     await event_repo.log(
-        project_id=project.id,
+        project_id=str(project.id),
         event_type="item_created",
         entity_type="item",
         entity_id="item-1",
@@ -183,7 +182,7 @@ async def test_event_sourcing_workflow(db_session: AsyncSession):
     )
 
     await event_repo.log(
-        project_id=project.id,
+        project_id=str(project.id),
         event_type="item_updated",
         entity_type="item",
         entity_id="item-1",
@@ -192,11 +191,11 @@ async def test_event_sourcing_workflow(db_session: AsyncSession):
 
     # 3. Get audit trail
     sourcing = EventSourcingService(db_session)
-    trail = await sourcing.get_audit_trail(project.id)
+    trail = await sourcing.get_audit_trail(str(project.id))
     assert len(trail) == 2
 
     # 4. Replay events
-    result = await sourcing.replay_events(project.id, "item-1")
+    result = await sourcing.replay_events(str(project.id), "item-1")
     assert result.replayed_events == 2
     assert result.final_state["status"] == "in_progress"
 
@@ -212,7 +211,7 @@ async def test_multi_agent_concurrent_workflow(db_session: AsyncSession):
     # 2. Create items
     item_repo = ItemRepository(db_session)
     item1 = await item_repo.create(
-        project_id=project.id,
+        project_id=str(project.id),
         title="Item 1",
         view="FEATURE",
         item_type="feature",
@@ -220,7 +219,7 @@ async def test_multi_agent_concurrent_workflow(db_session: AsyncSession):
     )
 
     item2 = await item_repo.create(
-        project_id=project.id,
+        project_id=str(project.id),
         title="Item 2",
         view="FEATURE",
         item_type="feature",
@@ -229,18 +228,18 @@ async def test_multi_agent_concurrent_workflow(db_session: AsyncSession):
 
     # 3. Register agents
     agent_repo = AgentRepository(db_session)
-    await agent_repo.create(project.id, "Agent-1", "cli")
-    await agent_repo.create(project.id, "Agent-2", "api")
+    await agent_repo.create(str(project.id), "Agent-1", "cli")
+    await agent_repo.create(str(project.id), "Agent-2", "api")
 
     # 4. Simulate concurrent updates
     updated1 = await item_repo.update(
-        item_id=item1.id,
+        item_id=str(item1.id),
         expected_version=item1.version,
         status="in_progress",
     )
 
     updated2 = await item_repo.update(
-        item_id=item2.id,
+        item_id=str(item2.id),
         expected_version=item2.version,
         status="in_progress",
     )

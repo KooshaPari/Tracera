@@ -15,14 +15,15 @@ Test Classes:
 Total: 50+ comprehensive failure scenario tests
 """
 
+from typing import cast
+
 import pytest
-from unittest.mock import patch, MagicMock
-from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError, OperationalError
-from tracertm.models.project import Project
+from sqlalchemy.orm import Session
+
 from tracertm.models.item import Item
 from tracertm.models.link import Link
-
+from tracertm.models.project import Project
 
 pytestmark = [pytest.mark.integration]
 
@@ -38,9 +39,7 @@ class TestDatabaseConnectionFailures:
 
         # Simulate timeout by attempting operation
         try:
-            result = db_session.query(Project).filter_by(
-                id="timeout-proj"
-            ).first()
+            result = db_session.query(Project).filter_by(id="timeout-proj").first()
             assert result is not None
         except OperationalError:
             # Expected on timeout
@@ -53,9 +52,7 @@ class TestDatabaseConnectionFailures:
         db_session.commit()
 
         # Verify fallback
-        retrieved = db_session.query(Project).filter_by(
-            id="refused-proj"
-        ).first()
+        retrieved = db_session.query(Project).filter_by(id="refused-proj").first()
         assert retrieved is not None
 
     def test_connection_pool_exhaustion(self, db_session: Session) -> None:
@@ -65,10 +62,8 @@ class TestDatabaseConnectionFailures:
         db_session.commit()
 
         # Multiple rapid connections
-        for i in range(100):
-            result = db_session.query(Project).filter_by(
-                id="pool-exhaust-proj"
-            ).first()
+        for _i in range(100):
+            result = db_session.query(Project).filter_by(id="pool-exhaust-proj").first()
             assert result is not None
 
     def test_database_unavailable(self, db_session: Session) -> None:
@@ -78,9 +73,7 @@ class TestDatabaseConnectionFailures:
         db_session.commit()
 
         # Verify data was persisted before unavailability
-        retrieved = db_session.query(Project).filter_by(
-            id="unavailable-proj"
-        ).first()
+        retrieved = db_session.query(Project).filter_by(id="unavailable-proj").first()
         assert retrieved is not None
 
     def test_connection_reset(self, db_session: Session) -> None:
@@ -90,9 +83,7 @@ class TestDatabaseConnectionFailures:
         db_session.commit()
 
         # Connection should recover
-        retrieved = db_session.query(Project).filter_by(
-            id="reset-proj"
-        ).first()
+        retrieved = db_session.query(Project).filter_by(id="reset-proj").first()
         assert retrieved is not None
 
     def test_network_partition_detection(self, db_session: Session) -> None:
@@ -103,9 +94,7 @@ class TestDatabaseConnectionFailures:
 
         # Attempt operation that might detect partition
         try:
-            result = db_session.query(Project).filter_by(
-                id="partition-proj"
-            ).first()
+            result = db_session.query(Project).filter_by(id="partition-proj").first()
             assert result is not None
         except Exception:
             # Expected on partition
@@ -118,9 +107,7 @@ class TestDatabaseConnectionFailures:
         db_session.commit()
 
         # Verify local connection works
-        retrieved = db_session.query(Project).filter_by(
-            id="ssl-proj"
-        ).first()
+        retrieved = db_session.query(Project).filter_by(id="ssl-proj").first()
         assert retrieved is not None
 
     def test_dns_resolution_failure(self, db_session: Session) -> None:
@@ -130,9 +117,7 @@ class TestDatabaseConnectionFailures:
         db_session.commit()
 
         # Local operation should work
-        retrieved = db_session.query(Project).filter_by(
-            id="dns-proj"
-        ).first()
+        retrieved = db_session.query(Project).filter_by(id="dns-proj").first()
         assert retrieved is not None
 
     def test_connection_leak_prevention(self, db_session: Session) -> None:
@@ -143,9 +128,7 @@ class TestDatabaseConnectionFailures:
 
         # Multiple operations to detect leaks
         for _ in range(100):
-            result = db_session.query(Project).filter_by(
-                id="leak-proj"
-            ).first()
+            result = db_session.query(Project).filter_by(id="leak-proj").first()
             assert result is not None
 
 
@@ -178,14 +161,12 @@ class TestTransactionFailures:
         try:
             project.name = "Modified"
             # Simulate error
-            raise IntegrityError("UNIQUE constraint failed", None, None)
+            raise IntegrityError("UNIQUE constraint failed", None, Exception("unique"))
         except IntegrityError:
             db_session.rollback()
 
         # Verify rollback
-        retrieved = db_session.query(Project).filter_by(
-            id="rollback-proj"
-        ).first()
+        retrieved = db_session.query(Project).filter_by(id="rollback-proj").first()
         # Name should be unchanged due to rollback
         assert retrieved is not None
 
@@ -201,10 +182,9 @@ class TestTransactionFailures:
         project.name = "Level 2"
         db_session.commit()
 
-        retrieved = db_session.query(Project).filter_by(
-            id="nested-proj"
-        ).first()
-        assert retrieved.name == "Level 2"
+        retrieved = db_session.query(Project).filter_by(id="nested-proj").first()
+        assert retrieved is not None
+        assert cast(Project, retrieved).name == "Level 2"
 
     def test_savepoint_rollback(self, db_session: Session) -> None:
         """Test savepoint and partial rollback"""
@@ -220,10 +200,9 @@ class TestTransactionFailures:
         project.name = "Update 2"
         db_session.commit()
 
-        retrieved = db_session.query(Project).filter_by(
-            id="savepoint-proj"
-        ).first()
-        assert retrieved.name == "Update 2"
+        retrieved = db_session.query(Project).filter_by(id="savepoint-proj").first()
+        assert retrieved is not None
+        assert cast(Project, retrieved).name == "Update 2"
 
     def test_deadlock_detection_and_retry(self, db_session: Session) -> None:
         """Test detecting deadlock and retry"""
@@ -248,9 +227,7 @@ class TestTransactionFailures:
         db_session.commit()
 
         # Read
-        project_read = db_session.query(Project).filter_by(
-            id="isolation-proj"
-        ).first()
+        project_read = db_session.query(Project).filter_by(id="isolation-proj").first()
 
         # Concurrent write (simulated)
         project.name = "Updated"
@@ -294,16 +271,14 @@ class TestPartialFailureScenarios:
                 title=f"Item {i}",
                 view="DEFAULT",
                 item_type="task",
-                status="todo"
+                status="todo",
             )
             items.append(item)
 
         db_session.add_all(items)
         db_session.commit()
 
-        count = db_session.query(Item).filter_by(
-            project_id="bulk-fail-proj"
-        ).count()
+        count = db_session.query(Item).filter_by(project_id="bulk-fail-proj").count()
         assert count == 20
 
     def test_bulk_update_partial_success(self, db_session: Session) -> None:
@@ -320,7 +295,7 @@ class TestPartialFailureScenarios:
                 title=f"Item {i}",
                 view="DEFAULT",
                 item_type="task",
-                status="todo"
+                status="todo",
             )
             items.append(item)
         db_session.add_all(items)
@@ -331,10 +306,7 @@ class TestPartialFailureScenarios:
             item.status = "in_progress"
         db_session.commit()
 
-        updated = db_session.query(Item).filter_by(
-            project_id="bulk-update-fail-proj",
-            status="in_progress"
-        ).count()
+        updated = db_session.query(Item).filter_by(project_id="bulk-update-fail-proj", status="in_progress").count()
         assert updated == 20
 
     def test_bulk_delete_partial_failure(self, db_session: Session) -> None:
@@ -351,7 +323,7 @@ class TestPartialFailureScenarios:
                 title=f"Item {i}",
                 view="DEFAULT",
                 item_type="task",
-                status="todo"
+                status="todo",
             )
             items.append(item)
         db_session.add_all(items)
@@ -363,9 +335,7 @@ class TestPartialFailureScenarios:
             db_session.delete(item)
         db_session.commit()
 
-        remaining = db_session.query(Item).filter_by(
-            project_id="bulk-delete-fail-proj"
-        ).count()
+        remaining = db_session.query(Item).filter_by(project_id="bulk-delete-fail-proj").count()
         assert remaining == 10
 
     def test_broken_links_detection(self, db_session: Session) -> None:
@@ -380,7 +350,7 @@ class TestPartialFailureScenarios:
             title="Source",
             view="DEFAULT",
             item_type="task",
-            status="todo"
+            status="todo",
         )
         item2 = Item(
             id="broken-tgt",
@@ -388,7 +358,7 @@ class TestPartialFailureScenarios:
             title="Target",
             view="DEFAULT",
             item_type="task",
-            status="todo"
+            status="todo",
         )
         db_session.add_all([item1, item2])
         db_session.flush()
@@ -398,7 +368,7 @@ class TestPartialFailureScenarios:
             project_id="broken-link-proj",
             source_item_id="broken-src",
             target_item_id="broken-tgt",
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(link)
         db_session.commit()
@@ -408,9 +378,7 @@ class TestPartialFailureScenarios:
         db_session.commit()
 
         # Verify link still exists (broken)
-        broken_link = db_session.query(Link).filter_by(
-            id="broken-link"
-        ).first()
+        broken_link = db_session.query(Link).filter_by(id="broken-link").first()
         assert broken_link is not None
 
     def test_orphaned_items_recovery(self, db_session: Session) -> None:
@@ -420,12 +388,7 @@ class TestPartialFailureScenarios:
         db_session.flush()
 
         item = Item(
-            id="orphan-item",
-            project_id="orphan-proj",
-            title="Orphan",
-            view="DEFAULT",
-            item_type="task",
-            status="todo"
+            id="orphan-item", project_id="orphan-proj", title="Orphan", view="DEFAULT", item_type="task", status="todo"
         )
         db_session.add(item)
         db_session.commit()
@@ -435,9 +398,7 @@ class TestPartialFailureScenarios:
         try:
             db_session.commit()
             # If cascade delete works
-            orphan_check = db_session.query(Item).filter_by(
-                id="orphan-item"
-            ).first()
+            orphan_check = db_session.query(Item).filter_by(id="orphan-item").first()
             # Orphan might still exist if no cascade
             assert True
         except Exception:
@@ -454,9 +415,7 @@ class TestNetworkTimeouts:
         db_session.commit()
 
         # Verify local operation works
-        retrieved = db_session.query(Project).filter_by(
-            id="http-timeout-proj"
-        ).first()
+        retrieved = db_session.query(Project).filter_by(id="http-timeout-proj").first()
         assert retrieved is not None
 
     def test_query_timeout(self, db_session: Session) -> None:
@@ -466,9 +425,7 @@ class TestNetworkTimeouts:
         db_session.commit()
 
         # Simulate complex query
-        result = db_session.query(Project).filter_by(
-            id="query-timeout-proj"
-        ).first()
+        result = db_session.query(Project).filter_by(id="query-timeout-proj").first()
         assert result is not None
 
     def test_slow_network_recovery(self, db_session: Session) -> None:
@@ -479,9 +436,7 @@ class TestNetworkTimeouts:
 
         # Multiple attempts on slow network
         for _ in range(5):
-            result = db_session.query(Project).filter_by(
-                id="slow-net-proj"
-            ).first()
+            result = db_session.query(Project).filter_by(id="slow-net-proj").first()
             assert result is not None
 
     def test_partial_response_handling(self, db_session: Session) -> None:
@@ -498,16 +453,14 @@ class TestNetworkTimeouts:
                 title=f"Item {i}",
                 view="DEFAULT",
                 item_type="task",
-                status="todo"
+                status="todo",
             )
             items.append(item)
         db_session.add_all(items)
         db_session.commit()
 
         # Retrieve items
-        results = db_session.query(Item).filter_by(
-            project_id="partial-resp-proj"
-        ).all()
+        results = db_session.query(Item).filter_by(project_id="partial-resp-proj").all()
         assert len(results) == 10
 
 
@@ -523,9 +476,7 @@ class TestRecoveryAndRetry:
         retry_count = 0
         for _ in range(3):
             try:
-                result = db_session.query(Project).filter_by(
-                    id="retry-proj"
-                ).first()
+                result = db_session.query(Project).filter_by(id="retry-proj").first()
                 if result:
                     break
                 retry_count += 1
@@ -542,10 +493,8 @@ class TestRecoveryAndRetry:
 
         # Simulate retry with exponential backoff
         backoff_times = [0.1, 0.2, 0.4, 0.8]
-        for backoff in backoff_times:
-            result = db_session.query(Project).filter_by(
-                id="backoff-proj"
-            ).first()
+        for _backoff in backoff_times:
+            result = db_session.query(Project).filter_by(id="backoff-proj").first()
             if result:
                 break
 
@@ -554,17 +503,14 @@ class TestRecoveryAndRetry:
     def test_circuit_breaker_pattern(self, db_session: Session) -> None:
         """Test circuit breaker pattern"""
         project = Project(
-            id="circuit-proj",
-            name="Circuit Breaker Test",
-            project_metadata={"circuit_breaker": "closed"}
+            id="circuit-proj", name="Circuit Breaker Test", project_metadata={"circuit_breaker": "closed"}
         )
         db_session.add(project)
         db_session.commit()
 
-        retrieved = db_session.query(Project).filter_by(
-            id="circuit-proj"
-        ).first()
-        assert retrieved.project_metadata["circuit_breaker"] == "closed"
+        retrieved = db_session.query(Project).filter_by(id="circuit-proj").first()
+        assert retrieved is not None
+        assert cast(Project, retrieved).project_metadata["circuit_breaker"] == "closed"
 
     def test_graceful_degradation(self, db_session: Session) -> None:
         """Test graceful degradation on failure"""
@@ -574,9 +520,7 @@ class TestRecoveryAndRetry:
 
         # Try full operation, fall back to degraded
         try:
-            result = db_session.query(Project).filter_by(
-                id="degrade-proj"
-            ).first()
+            result = db_session.query(Project).filter_by(id="degrade-proj").first()
             assert result is not None
         except Exception:
             # Degraded mode: use cache or partial data
@@ -591,13 +535,9 @@ class TestRecoveryAndRetry:
         db_session.commit()
 
         # Try primary, fall back to secondary
-        result = db_session.query(Project).filter_by(
-            id="primary-proj"
-        ).first()
+        result = db_session.query(Project).filter_by(id="primary-proj").first()
         if not result:
-            result = db_session.query(Project).filter_by(
-                id="secondary-proj"
-            ).first()
+            result = db_session.query(Project).filter_by(id="secondary-proj").first()
 
         assert result is not None
 
@@ -612,25 +552,21 @@ class TestRecoveryAndRetry:
             project.name = "Idempotent Update"
             db_session.commit()
 
-        retrieved = db_session.query(Project).filter_by(
-            id="idempotent-proj"
-        ).first()
-        assert retrieved.name == "Idempotent Update"
+        retrieved = db_session.query(Project).filter_by(id="idempotent-proj").first()
+        assert retrieved is not None
+        assert cast(Project, retrieved).name == "Idempotent Update"
 
     def test_heartbeat_monitoring(self, db_session: Session) -> None:
         """Test heartbeat monitoring for health checks"""
         project = Project(
-            id="heartbeat-proj",
-            name="Heartbeat Test",
-            project_metadata={"last_heartbeat": "2025-01-01T00:00:00"}
+            id="heartbeat-proj", name="Heartbeat Test", project_metadata={"last_heartbeat": "2025-01-01T00:00:00"}
         )
         db_session.add(project)
         db_session.commit()
 
-        retrieved = db_session.query(Project).filter_by(
-            id="heartbeat-proj"
-        ).first()
-        assert retrieved.project_metadata["last_heartbeat"] is not None
+        retrieved = db_session.query(Project).filter_by(id="heartbeat-proj").first()
+        assert retrieved is not None
+        assert cast(Project, retrieved).project_metadata["last_heartbeat"] is not None
 
 
 class TestDataConsistencyUnderFailure:
@@ -643,12 +579,7 @@ class TestDataConsistencyUnderFailure:
         db_session.flush()
 
         item = Item(
-            id="atomic-item",
-            project_id="atomic-proj",
-            title="Test",
-            view="DEFAULT",
-            item_type="task",
-            status="todo"
+            id="atomic-item", project_id="atomic-proj", title="Test", view="DEFAULT", item_type="task", status="todo"
         )
         db_session.add(item)
         db_session.commit()
@@ -658,12 +589,13 @@ class TestDataConsistencyUnderFailure:
         item.status = "in_progress"
         db_session.commit()
 
-        retrieved = db_session.query(Item).filter_by(
-            id="atomic-item"
-        ).first()
+        retrieved = db_session.query(Item).filter_by(id="atomic-item").first()
+        assert retrieved is not None
+        row = cast(Item, retrieved)
         # Both updates applied or none
-        assert (retrieved.title == "Updated" and retrieved.status == "in_progress") or \
-               (retrieved.title == "Test" and retrieved.status == "todo")
+        assert (row.title == "Updated" and row.status == "in_progress") or (
+            row.title == "Test" and row.status == "todo"
+        )
 
     def test_cascade_consistency(self, db_session: Session) -> None:
         """Test cascade operations maintain consistency"""
@@ -672,20 +604,10 @@ class TestDataConsistencyUnderFailure:
         db_session.flush()
 
         item1 = Item(
-            id="cascade-src",
-            project_id="cascade-proj",
-            title="Source",
-            view="DEFAULT",
-            item_type="task",
-            status="todo"
+            id="cascade-src", project_id="cascade-proj", title="Source", view="DEFAULT", item_type="task", status="todo"
         )
         item2 = Item(
-            id="cascade-tgt",
-            project_id="cascade-proj",
-            title="Target",
-            view="DEFAULT",
-            item_type="task",
-            status="todo"
+            id="cascade-tgt", project_id="cascade-proj", title="Target", view="DEFAULT", item_type="task", status="todo"
         )
         db_session.add_all([item1, item2])
         db_session.flush()
@@ -695,7 +617,7 @@ class TestDataConsistencyUnderFailure:
             project_id="cascade-proj",
             source_item_id="cascade-src",
             target_item_id="cascade-tgt",
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(link)
         db_session.commit()
@@ -705,9 +627,7 @@ class TestDataConsistencyUnderFailure:
         try:
             db_session.commit()
             # Check if link was cascaded
-            orphan_link = db_session.query(Link).filter_by(
-                id="cascade-link"
-            ).first()
+            orphan_link = db_session.query(Link).filter_by(id="cascade-link").first()
             # Either link is deleted (cascade) or still exists (weak FK)
             assert True
         except Exception:
@@ -725,19 +645,14 @@ class TestDataConsistencyUnderFailure:
             title="Test",
             view="DEFAULT",
             item_type="task",
-            status="todo"
+            status="todo",
         )
         db_session.add(item)
         db_session.commit()
 
         # Cannot create item referencing deleted project
         orphan_item = Item(
-            id="orphan-ref",
-            project_id="deleted-proj",
-            title="Orphan",
-            view="DEFAULT",
-            item_type="task",
-            status="todo"
+            id="orphan-ref", project_id="deleted-proj", title="Orphan", view="DEFAULT", item_type="task", status="todo"
         )
         db_session.add(orphan_item)
         try:
@@ -761,48 +676,36 @@ class TestDataConsistencyUnderFailure:
             view="DEFAULT",
             item_type="task",
             status="todo",
-            item_metadata={"version": 1}
+            item_metadata={"version": 1},
         )
         db_session.add(item)
         db_session.commit()
 
         # Detect version conflict
-        original_version = item.item_metadata["version"]
-        item.item_metadata["version"] += 1
+        original_version = int((item.item_metadata or {}).get("version", 0))
+        item.item_metadata["version"] = original_version + 1  # type: ignore[union-attr]
         db_session.commit()
 
-        retrieved = db_session.query(Item).filter_by(
-            id="version-item"
-        ).first()
-        assert retrieved.item_metadata["version"] > original_version
+        retrieved = db_session.query(Item).filter_by(id="version-item").first()
+        assert retrieved is not None
+        assert (getattr(retrieved, "item_metadata", None) or {}).get("version", 0) > original_version
 
     def test_checkpoint_recovery(self, db_session: Session) -> None:
         """Test recovery from checkpoints"""
-        project = Project(
-            id="checkpoint-proj",
-            name="Checkpoint Test",
-            project_metadata={"checkpoint_id": "cp-001"}
-        )
+        project = Project(id="checkpoint-proj", name="Checkpoint Test", project_metadata={"checkpoint_id": "cp-001"})
         db_session.add(project)
         db_session.commit()
 
-        retrieved = db_session.query(Project).filter_by(
-            id="checkpoint-proj"
-        ).first()
-        assert retrieved.project_metadata["checkpoint_id"] == "cp-001"
+        retrieved = db_session.query(Project).filter_by(id="checkpoint-proj").first()
+        assert retrieved is not None
+        assert cast(Project, retrieved).project_metadata["checkpoint_id"] == "cp-001"
 
     def test_wal_recovery(self, db_session: Session) -> None:
         """Test Write-Ahead Logging recovery"""
-        project = Project(
-            id="wal-proj",
-            name="WAL Test",
-            project_metadata={"wal_enabled": True}
-        )
+        project = Project(id="wal-proj", name="WAL Test", project_metadata={"wal_enabled": True})
         db_session.add(project)
         db_session.commit()
 
         # WAL ensures durability
-        retrieved = db_session.query(Project).filter_by(
-            id="wal-proj"
-        ).first()
+        retrieved = db_session.query(Project).filter_by(id="wal-proj").first()
         assert retrieved is not None

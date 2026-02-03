@@ -40,13 +40,9 @@ async def publish_with_retry(
             return
         except Exception as e:
             if attempt == max_retries - 1:
-                logger.error(
-                    f"Failed to publish {event_type} after {max_retries} attempts: {e}"
-                )
+                logger.error(f"Failed to publish {event_type} after {max_retries} attempts: {e}")
                 raise
-            logger.warning(
-                f"Failed to publish {event_type} (attempt {attempt + 1}/{max_retries}): {e}"
-            )
+            logger.warning(f"Failed to publish {event_type} (attempt {attempt + 1}/{max_retries}): {e}")
             await asyncio.sleep(0.1 * (attempt + 1))
 
 
@@ -107,10 +103,6 @@ async def safe_publish_with_retry(
         raise RuntimeError("EventBus is required but not initialized")
 
     try:
-        await publish_with_retry(
-            event_bus, event_type, project_id, entity_id, entity_type, data, max_retries
-        )
+        await publish_with_retry(event_bus, event_type, project_id, entity_id, entity_type, data, max_retries)
     except Exception as e:
-        logger.error(
-            f"Failed to publish {event_type} event after retries (non-blocking): {e}"
-        )
+        logger.error(f"Failed to publish {event_type} event after retries (non-blocking): {e}")

@@ -392,4 +392,4 @@ export type Scolder<
   : Options["positive"] extends true
     ? Expecter
     : Inverted<Expecter>;
-export {};
+

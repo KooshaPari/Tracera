@@ -40,5 +40,5 @@ Prism.languages.kusto = {
 	'number': /\b(?:0x[0-9A-Fa-f]+|\d+(?:\.\d+)?(?:[Ee][+-]?\d+)?)(?:(?:min|sec|[mnµ]s|[dhms]|microsecond|tick)\b)?|[+-]?\binf\b/,
 
 	'operator': /=>|[!=]~|[!=<>]=?|[-+*/%|]|\.\./,
-	'punctuation': /[()\[\]{},;.:]/
+	'punctuation': /[()[\]{},;.:]/
 };

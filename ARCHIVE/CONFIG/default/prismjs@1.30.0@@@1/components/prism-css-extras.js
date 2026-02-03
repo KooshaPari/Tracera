@@ -87,7 +87,7 @@
 
 	Prism.languages.insertBefore('css', 'function', {
 		'operator': {
-			pattern: /(\s)[+\-*\/](?=\s)/,
+			pattern: /(\s)[+\-*/](?=\s)/,
 			lookbehind: true
 		},
 		// CAREFUL!

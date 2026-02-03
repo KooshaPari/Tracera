@@ -46,4 +46,4 @@ type StringRepeatHelper<
 					? string
 					: StringRepeatHelper<Input, Count, [...Counter, never], `${Accumulator}${Input}`>;
 
-export {};
+

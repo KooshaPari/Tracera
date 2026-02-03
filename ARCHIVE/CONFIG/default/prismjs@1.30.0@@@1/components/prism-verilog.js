@@ -21,6 +21,6 @@ Prism.languages.verilog = {
 	'important': /\b(?:always|always_comb|always_ff|always_latch)\b(?: *@)?/,
 	// support for time ticks, vectors, and real numbers
 	'number': /\B##?\d+|(?:\b\d+)?'[odbh] ?[\da-fzx_?]+|\b(?:\d*[._])?\d+(?:e[-+]?\d+)?/i,
-	'operator': /[-+{}^~%*\/?=!<>&|]+/,
+	'operator': /[-+{}^~%*/?=!<>&|]+/,
 	'punctuation': /[[\];(),.:]/
 };

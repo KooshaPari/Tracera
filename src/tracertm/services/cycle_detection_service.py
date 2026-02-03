@@ -4,9 +4,10 @@ Cycle detection service for Epic 4 (FR22).
 Prevents circular dependencies in depends_on relationships.
 """
 
-
 import asyncio
+import uuid
 from types import SimpleNamespace
+from typing import cast
 
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -35,7 +36,11 @@ class CycleDetectionService:
             self.links = links
 
     def has_cycle(
-        self, project_id: str, source_id: str, target_id: str, link_type: str = "depends_on"
+        self,
+        project_id: str | uuid.UUID,
+        source_id: str | uuid.UUID,
+        target_id: str | uuid.UUID,
+        link_type: str = "depends_on",
     ) -> bool:
         """
         Check if adding a link would create a cycle (FR22).
@@ -53,13 +58,21 @@ class CycleDetectionService:
             # Only check cycles for depends_on relationships
             return False
 
+        pid = str(project_id) if isinstance(project_id, uuid.UUID) else project_id
+        sid = str(source_id) if isinstance(source_id, uuid.UUID) else source_id
+        tid = str(target_id) if isinstance(target_id, uuid.UUID) else target_id
         # Build dependency graph
-        graph = self._build_dependency_graph(project_id, link_type)
+        graph = self._build_dependency_graph(pid, link_type)
 
         # Check if target can reach source (would create cycle)
-        return self._can_reach(graph, target_id, source_id)
+        return self._can_reach(graph, tid, sid)
 
-    def detect_cycles(self, project_id: str, link_type: str = "depends_on", link_types: list[str] | None = None):
+    def detect_cycles(
+        self,
+        project_id: str | uuid.UUID,
+        link_type: str = "depends_on",
+        link_types: list[str] | None = None,
+    ):
         """
         Detect all cycles in the dependency graph (sync version).
 
@@ -71,6 +84,7 @@ class CycleDetectionService:
         Returns:
             Dictionary with cycle information
         """
+        project_id = str(project_id)
         types_to_check = link_types if link_types is not None else [link_type]
 
         if isinstance(self.session, AsyncSession):
@@ -80,9 +94,7 @@ class CycleDetectionService:
                 if loop.is_running():
                     graph = {}
                 else:
-                    graph = loop.run_until_complete(
-                        self._build_dependency_graph_async(project_id, types_to_check)
-                    )
+                    graph = loop.run_until_complete(self._build_dependency_graph_async(project_id, types_to_check))
             except RuntimeError:
                 graph = asyncio.get_event_loop().run_until_complete(
                     self._build_dependency_graph_async(project_id, types_to_check)
@@ -103,7 +115,12 @@ class CycleDetectionService:
             severity=severity,
         )
 
-    async def detect_cycles_async(self, project_id: str, link_type: str = "depends_on", link_types: list[str] | None = None) -> dict:
+    async def detect_cycles_async(
+        self,
+        project_id: str | uuid.UUID,
+        link_type: str = "depends_on",
+        link_types: list[str] | None = None,
+    ) -> dict:
         """
         Detect all cycles in the dependency graph (async version).
 
@@ -115,28 +132,29 @@ class CycleDetectionService:
         Returns:
             Dictionary with cycle information
         """
+        pid = str(project_id) if isinstance(project_id, uuid.UUID) else project_id
         # Use link_types if provided, otherwise use single link_type
         types_to_check = link_types if link_types is not None else [link_type]
 
         # Build graph using repositories if available (async)
         if isinstance(self.session, AsyncSession) and self.links is not None:
-            graph = await self._build_dependency_graph_async(project_id, types_to_check)
+            graph = await self._build_dependency_graph_async(pid, types_to_check)
         else:
             # Fallback to sync version
-            graph = self._build_dependency_graph(project_id, link_type)
+            graph = self._build_dependency_graph(pid, link_type)
 
         cycles = self._find_cycles(graph)
         affected = {node for cycle in cycles for node in cycle}
         severity = "high" if cycles else "none"
 
-        return SimpleNamespace(
-            has_cycles=len(cycles) > 0,
-            cycle_count=len(cycles),
-            total_cycles=len(cycles),
-            cycles=cycles,
-            affected_items=list(affected),
-            severity=severity,
-        )
+        return {
+            "has_cycles": len(cycles) > 0,
+            "cycle_count": len(cycles),
+            "total_cycles": len(cycles),
+            "cycles": cycles,
+            "affected_items": list(affected),
+            "severity": severity,
+        }
 
     def _build_dependency_graph(self, project_id: str, link_type: str) -> dict[str, set[str]]:
         """Build dependency graph from links (sync version)."""
@@ -145,10 +163,12 @@ class CycleDetectionService:
             return {}
 
         graph: dict[str, set[str]] = {}
+        session = cast(Session, self.session)
 
         try:
             links = (
-                self.session.query(Link)
+                session
+                .query(Link)
                 .filter(
                     Link.project_id == project_id,
                     Link.link_type == link_type,
@@ -160,13 +180,13 @@ class CycleDetectionService:
             return {}
 
         for link in links:
-            if link.source_item_id not in graph:
-                graph[link.source_item_id] = set()
-            graph[link.source_item_id].add(link.target_item_id)
-
-            # Ensure target is in graph (even if no outgoing edges)
-            if link.target_item_id not in graph:
-                graph[link.target_item_id] = set()
+            src = str(link.source_item_id)
+            tgt = str(link.target_item_id)
+            if src not in graph:
+                graph[src] = set()
+            graph[src].add(tgt)
+            if tgt not in graph:
+                graph[tgt] = set()
 
         return graph
 
@@ -177,14 +197,16 @@ class CycleDetectionService:
         graph: dict[str, set[str]] = {}
 
         # Fetch links from repository and build graph
-        links = await self.links.get_by_project(project_id)
+        links = await self.links.get_by_project(project_id)  # type: ignore[union-attr]
         for link in links:
             if link.link_type in link_types:
-                if link.source_item_id not in graph:
-                    graph[link.source_item_id] = set()
-                graph[link.source_item_id].add(link.target_item_id)
-                if link.target_item_id not in graph:
-                    graph[link.target_item_id] = set()
+                src = str(link.source_item_id)
+                tgt = str(link.target_item_id)
+                if src not in graph:
+                    graph[src] = set()
+                graph[src].add(tgt)
+                if tgt not in graph:
+                    graph[tgt] = set()
 
         return graph
 
@@ -207,9 +229,7 @@ class CycleDetectionService:
 
             # Add neighbors to stack
             if node in graph:
-                for neighbor in graph[node]:
-                    if neighbor not in visited:
-                        stack.append(neighbor)
+                stack.extend(neighbor for neighbor in graph[node] if neighbor not in visited)
 
         return False
 
@@ -250,7 +270,9 @@ class CycleDetectionService:
 
         return cycles
 
-    def detect_missing_dependencies(self, project_id: str, link_type: str = "depends_on") -> dict:
+    def detect_missing_dependencies(
+        self, project_id: str | uuid.UUID, link_type: str = "depends_on"
+    ) -> dict:
         """
         Detect missing dependencies (items that reference non-existent items) (Story 4.6, FR22).
 
@@ -261,11 +283,14 @@ class CycleDetectionService:
         Returns:
             Dictionary with missing dependency information
         """
+        pid = str(project_id) if isinstance(project_id, uuid.UUID) else project_id
+        session = cast(Session, self.session)
         # Get all links of the specified type
         links = (
-            self.session.query(Link)
+            session  # type: ignore[union-attr]
+            .query(Link)
             .filter(
-                Link.project_id == project_id,
+                Link.project_id == pid,
                 Link.link_type == link_type,
             )
             .all()
@@ -274,9 +299,10 @@ class CycleDetectionService:
         # Get all item IDs in the project
         item_ids = {
             item.id
-            for item in self.session.query(Item.id)
+            for item in session  # type: ignore[union-attr]
+            .query(Item.id)
             .filter(
-                Item.project_id == project_id,
+                Item.project_id == pid,
                 Item.deleted_at.is_(None),
             )
             .all()
@@ -308,7 +334,7 @@ class CycleDetectionService:
             "missing_dependencies": missing_deps,
         }
 
-    def detect_orphans(self, project_id: str, link_type: str | None = None) -> dict:
+    def detect_orphans(self, project_id: str | uuid.UUID, link_type: str | None = None) -> dict:
         """
         Detect orphaned items (items with no links) (Story 4.6, FR22).
 
@@ -319,18 +345,21 @@ class CycleDetectionService:
         Returns:
             Dictionary with orphan information
         """
+        pid = str(project_id) if isinstance(project_id, uuid.UUID) else project_id
+        session = cast(Session, self.session)
         # Get all items
         items = (
-            self.session.query(Item)
+            session  # type: ignore[union-attr]
+            .query(Item)
             .filter(
-                Item.project_id == project_id,
+                Item.project_id == pid,
                 Item.deleted_at.is_(None),
             )
             .all()
         )
 
         # Get all linked item IDs
-        query = self.session.query(Link).filter(Link.project_id == project_id)
+        query = session.query(Link).filter(Link.project_id == pid)  # type: ignore[union-attr]
         if link_type:
             query = query.filter(Link.link_type == link_type)
 
@@ -341,16 +370,17 @@ class CycleDetectionService:
             linked_item_ids.add(link.target_item_id)
 
         # Find orphans (items with no links)
-        orphans = []
-        for item in items:
-            if item.id not in linked_item_ids:
-                orphans.append({
-                    "item_id": item.id,
-                    "item_title": item.title,
-                    "view": item.view,
-                    "item_type": item.item_type,
-                    "status": item.status,
-                })
+        orphans = [
+            {
+                "item_id": item.id,
+                "item_title": item.title,
+                "view": item.view,
+                "item_type": item.item_type,
+                "status": item.status,
+            }
+            for item in items
+            if item.id not in linked_item_ids
+        ]
 
         return {
             "has_orphans": len(orphans) > 0,
@@ -360,8 +390,8 @@ class CycleDetectionService:
 
     def analyze_impact(
         self,
-        project_id: str,
-        item_id: str,
+        project_id: str | uuid.UUID,
+        item_id: str | uuid.UUID,
         max_depth: int = 10,
         link_type: str = "depends_on",
     ) -> dict:
@@ -379,8 +409,11 @@ class CycleDetectionService:
         Returns:
             Dictionary with impact analysis
         """
+        pid = str(project_id) if isinstance(project_id, uuid.UUID) else project_id
+        iid = str(item_id) if isinstance(item_id, uuid.UUID) else item_id
+        sess = cast(Session, self.session)
         # Build reverse dependency graph (what depends on each item)
-        graph = self._build_dependency_graph(project_id, link_type)
+        graph = self._build_dependency_graph(pid, link_type)
         reverse_graph: dict[str, set[str]] = {}
 
         # Build reverse graph (target -> sources)
@@ -393,7 +426,7 @@ class CycleDetectionService:
         # BFS from item_id to find all items that depend on it
         visited: set[str] = set()
         affected_items: list[dict] = []
-        queue: list[tuple[str, int, list[str]]] = [(item_id, 0, [item_id])]
+        queue: list[tuple[str, int, list[str]]] = [(iid, 0, [iid])]
 
         while queue:
             current_id, depth, path = queue.pop(0)
@@ -402,13 +435,8 @@ class CycleDetectionService:
                 continue
 
             visited.add(current_id)
-
             # Get item details
-            item = (
-                self.session.query(Item)
-                .filter(Item.id == current_id, Item.project_id == project_id)
-                .first()
-            )
+            item = sess.query(Item).filter(Item.id == current_id, Item.project_id == pid).first()  # type: ignore[union-attr]
 
             if item and depth > 0:  # Skip root item
                 affected_items.append({
@@ -423,16 +451,14 @@ class CycleDetectionService:
 
             # Add dependents to queue
             if current_id in reverse_graph:
-                for dependent_id in reverse_graph[current_id]:
-                    if dependent_id not in visited:
-                        queue.append((dependent_id, depth + 1, [*path, dependent_id]))
+                queue.extend(
+                    (dependent_id, depth + 1, [*path, dependent_id])
+                    for dependent_id in reverse_graph[current_id]
+                    if dependent_id not in visited
+                )
 
         # Get root item
-        root_item = (
-            self.session.query(Item)
-            .filter(Item.id == item_id, Item.project_id == project_id)
-            .first()
-        )
+        root_item = sess.query(Item).filter(Item.id == iid, Item.project_id == pid).first()  # type: ignore[union-attr]
 
         # Group by depth and view
         affected_by_depth: dict[int, int] = {}

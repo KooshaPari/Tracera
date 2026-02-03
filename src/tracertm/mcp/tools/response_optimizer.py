@@ -11,7 +11,9 @@ from __future__ import annotations
 
 import gzip
 import json
+from collections.abc import Callable
 from typing import Any
+
 
 class ResponseFormat:
     """Response format mode for controlling metadata inclusion."""
@@ -241,20 +243,19 @@ def optimize_link_response(link: Any) -> dict[str, Any]:
             "target": str(link.target_id)[:8],
             "type": link.link_type,
         }
-    else:
-        return {
-            "id": str(link.get("id", ""))[:8],
-            "source": str(link.get("source_id", ""))[:8],
-            "target": str(link.get("target_id", ""))[:8],
-            "type": link.get("link_type"),
-        }
+    return {
+        "id": str(link.get("id", ""))[:8],
+        "source": str(link.get("source_id", ""))[:8],
+        "target": str(link.get("target_id", ""))[:8],
+        "type": link.get("link_type"),
+    }
 
 
 def paginate_response(
     items: list[Any],
     page: int = 1,
     page_size: int = 50,
-    optimizer_func: callable | None = None,
+    optimizer_func: Callable[..., Any] | None = None,
 ) -> dict[str, Any]:
     """Create a paginated response with lean metadata.
 
@@ -286,8 +287,8 @@ def paginate_response(
 
 __all__ = [
     "ResponseFormat",
-    "format_response",
     "format_error",
+    "format_response",
     "optimize_item_response",
     "optimize_link_response",
     "paginate_response",

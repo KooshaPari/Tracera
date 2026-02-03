@@ -525,7 +525,7 @@ export class Generator {
     routeFileResult: Array<RouteNode>
     config?: Partial<Config>
   }) {
-    const config = { ...this.config, ...(opts.config || {}) }
+    const config = { ...this.config, ...opts.config }
 
     const { rootRouteNode, acc } = opts
 

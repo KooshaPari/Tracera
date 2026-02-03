@@ -20,57 +20,57 @@ Test areas:
 """
 
 import os
-import tempfile
 from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import patch
 
 import pytest
 import yaml
 from pydantic import ValidationError
-from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 
 from tracertm.config.manager import ConfigManager
 from tracertm.config.schema import Config as SchemaConfig
 from tracertm.config.settings import (
     DatabaseSettings,
     TraceSettings,
-    get_settings,
     reset_settings,
 )
 from tracertm.core.config import Config, DatabaseConfig, UIConfig, get_config, set_config
 from tracertm.core.database import (
-    drop_db,
     get_engine,
-    get_session,
-    get_session_factory,
-    init_db,
 )
 
 # Optional hypothesis import for property-based testing
 try:
-    from hypothesis import given, settings as hypothesis_settings
+    from hypothesis import given
+    from hypothesis import settings as hypothesis_settings
     from hypothesis import strategies as st
+
     HAS_HYPOTHESIS = True
 except ImportError:
     HAS_HYPOTHESIS = False
+
     # Create dummy decorators if hypothesis not available
     def given(*args, **kwargs):
         def decorator(func):
             return pytest.mark.skip(reason="hypothesis not installed")(func)
+
         return decorator
 
     def hypothesis_settings(*args, **kwargs):
         def decorator(func):
             return func
+
         return decorator
 
     class st:
         @staticmethod
         def text(*args, **kwargs):
             return None
+
         @staticmethod
         def integers(*args, **kwargs):
             return None
+
         @staticmethod
         def booleans(*args, **kwargs):
             return None
@@ -335,15 +335,21 @@ class TestConfigLoadSave:
 
         # Write config data manually to ensure valid YAML
         config_data = {
-            'database': {'host': 'localhost', 'port': 5432, 'database': 'tracertm',
-                        'username': 'tracertm', 'password': 'tracertm',
-                        'pool_size': 20, 'max_overflow': 10},
-            'ui': {'theme': 'developer-focus', 'force_bold': False, 'use_symbols': True},
-            'data_dir': str(tmp_path / ".tracertm"),
-            'current_project': 'test-project'
+            "database": {
+                "host": "localhost",
+                "port": 5432,
+                "database": "tracertm",
+                "username": "tracertm",
+                "password": "tracertm",
+                "pool_size": 20,
+                "max_overflow": 10,
+            },
+            "ui": {"theme": "developer-focus", "force_bold": False, "use_symbols": True},
+            "data_dir": str(tmp_path / ".tracertm"),
+            "current_project": "test-project",
         }
 
-        with open(config_path, 'w') as f:
+        with Path(config_path).open("w") as f:
             yaml.dump(config_data, f)
 
         # Verify file exists
@@ -371,15 +377,21 @@ class TestConfigLoadSave:
 
         # Write a valid config file manually
         config_data = {
-            'database': {'host': 'localhost', 'port': 5432, 'database': 'tracertm',
-                        'username': 'tracertm', 'password': 'tracertm',
-                        'pool_size': 20, 'max_overflow': 10},
-            'ui': {'theme': 'developer-focus', 'force_bold': False, 'use_symbols': True},
-            'data_dir': str(tmp_path / ".tracertm"),
-            'current_project': 'my-project'
+            "database": {
+                "host": "localhost",
+                "port": 5432,
+                "database": "tracertm",
+                "username": "tracertm",
+                "password": "tracertm",
+                "pool_size": 20,
+                "max_overflow": 10,
+            },
+            "ui": {"theme": "developer-focus", "force_bold": False, "use_symbols": True},
+            "data_dir": str(tmp_path / ".tracertm"),
+            "current_project": "my-project",
         }
 
-        with open(config_path, 'w') as f:
+        with Path(config_path).open("w") as f:
             yaml.dump(config_data, f)
 
         loaded = Config.load(config_path)
@@ -392,15 +404,21 @@ class TestConfigLoadSave:
 
         # Write config data manually to avoid Path serialization issues
         config_data = {
-            'database': {'host': 'test.db', 'port': 5433, 'database': 'testdb',
-                        'username': 'tracertm', 'password': 'tracertm',
-                        'pool_size': 20, 'max_overflow': 10},
-            'ui': {'theme': 'high-contrast', 'force_bold': True, 'use_symbols': True},
-            'data_dir': str(tmp_path / ".tracertm"),
-            'current_project': 'test-proj'
+            "database": {
+                "host": "test.db",
+                "port": 5433,
+                "database": "testdb",
+                "username": "tracertm",
+                "password": "tracertm",
+                "pool_size": 20,
+                "max_overflow": 10,
+            },
+            "ui": {"theme": "high-contrast", "force_bold": True, "use_symbols": True},
+            "data_dir": str(tmp_path / ".tracertm"),
+            "current_project": "test-proj",
         }
 
-        with open(config_path, 'w') as f:
+        with Path(config_path).open("w") as f:
             yaml.dump(config_data, f)
 
         loaded = Config.load(config_path)
@@ -424,15 +442,21 @@ class TestConfigLoadSave:
 
         # Write a valid config file
         config_data = {
-            'database': {'host': 'localhost', 'port': 5432, 'database': 'tracertm',
-                        'username': 'tracertm', 'password': 'tracertm',
-                        'pool_size': 20, 'max_overflow': 10},
-            'ui': {'theme': 'developer-focus', 'force_bold': False, 'use_symbols': True},
-            'data_dir': str(tmp_path / ".tracertm"),
-            'current_project': None
+            "database": {
+                "host": "localhost",
+                "port": 5432,
+                "database": "tracertm",
+                "username": "tracertm",
+                "password": "tracertm",
+                "pool_size": 20,
+                "max_overflow": 10,
+            },
+            "ui": {"theme": "developer-focus", "force_bold": False, "use_symbols": True},
+            "data_dir": str(tmp_path / ".tracertm"),
+            "current_project": None,
         }
 
-        with open(default_path, 'w') as f:
+        with Path(default_path).open("w") as f:
             yaml.dump(config_data, f)
 
         loaded = Config.load()
@@ -690,9 +714,7 @@ class TestTraceSettingsExtended:
     def test_settings_with_project_fields(self):
         """Test settings with project fields set."""
         reset_settings()
-        settings = TraceSettings(
-            current_project_id="proj-123", current_project_name="My Project"
-        )
+        settings = TraceSettings(current_project_id="proj-123", current_project_name="My Project")
         assert settings.current_project_id == "proj-123"
         assert settings.current_project_name == "My Project"
 
@@ -1008,7 +1030,7 @@ class TestEdgeCases:
     def test_config_load_invalid_yaml(self, tmp_path):
         """Test loading config with invalid YAML."""
         config_path = tmp_path / "config.yaml"
-        with open(config_path, "w") as f:
+        with Path(config_path).open("w") as f:
             f.write("invalid: yaml: content: {}")
 
         with pytest.raises(yaml.YAMLError):
@@ -1192,9 +1214,7 @@ class TestPropertyBasedConfig:
     def test_trace_settings_numeric_constraints(self, max_agents, cache_ttl, batch_size):
         """Test TraceSettings numeric constraints."""
         reset_settings()
-        settings = TraceSettings(
-            max_agents=max_agents, cache_ttl=cache_ttl, batch_size=batch_size
-        )
+        settings = TraceSettings(max_agents=max_agents, cache_ttl=cache_ttl, batch_size=batch_size)
         assert settings.max_agents == max_agents
         assert settings.cache_ttl == cache_ttl
         assert settings.batch_size == batch_size
@@ -1266,7 +1286,7 @@ class TestAdditionalCoverage:
         env_file.write_text("TRACERTM_LOG_LEVEL=DEBUG\n")
 
         # Change to temp directory
-        original_cwd = os.getcwd()
+        original_cwd = Path.cwd()
         try:
             os.chdir(tmp_path)
             settings = TraceSettings()
@@ -1289,7 +1309,7 @@ class TestAdditionalCoverage:
 
         assert config_path.exists()
 
-        with open(config_path) as f:
+        with Path(config_path).open() as f:
             data = yaml.safe_load(f)
         assert data["default_view"] == "CODE"
 
@@ -1362,15 +1382,11 @@ class TestAdditionalCoverage:
     def test_schema_config_api_url_validation(self):
         """Test SchemaConfig API URL validation."""
         # Valid HTTP
-        config = SchemaConfig(
-            database_url="postgresql://localhost/db", api_url="http://localhost:8000"
-        )
+        config = SchemaConfig(database_url="postgresql://localhost/db", api_url="http://localhost:8000")
         assert config.api_url == "http://localhost:8000"
 
         # Valid HTTPS
-        config2 = SchemaConfig(
-            database_url="postgresql://localhost/db", api_url="https://api.example.com"
-        )
+        config2 = SchemaConfig(database_url="postgresql://localhost/db", api_url="https://api.example.com")
         assert config2.api_url == "https://api.example.com"
 
         # Invalid (strips trailing slash)

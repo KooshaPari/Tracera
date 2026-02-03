@@ -125,7 +125,7 @@ function normalizeQuery(original) {
     // - wildcards: are used for fuzzy matching
     // - whitespace: are used to separate queries
     // - ellipsis: sometimes used to indicate any path segments
-    const normalized = pathNormalized.replace(/[\*\u2026\s"]/g, '');
+    const normalized = pathNormalized.replace(/[*\u2026\s"]/g, '');
     return {
         pathNormalized,
         normalized,

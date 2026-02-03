@@ -20,4 +20,4 @@ type UpdateService<Entity extends object> = {
 */
 export type HasReadonlyKeys<BaseType extends object> = ReadonlyKeysOf<BaseType> extends never ? false : true;
 
-export {};
+

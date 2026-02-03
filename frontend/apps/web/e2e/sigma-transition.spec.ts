@@ -349,8 +349,8 @@ test.describe("Hybrid Graph View Transitions", () => {
 			for (let i = 0; i < 11_000; i++) {
 				nodes.push({
 					data: {
-						label: `Node ${i}`,
 						description: `Description for node ${i}`,
+						label: `Node ${i}`,
 					},
 					id: `node-${i}`,
 					position: { x: Math.random() * 11_000, y: Math.random() * 11_000 },

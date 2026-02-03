@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import logging
 import time
-from typing import Any, Optional
+from typing import Any, cast
 
 from fastmcp.server.middleware import Middleware, MiddlewareContext
 
@@ -59,18 +59,27 @@ class AuthMiddleware(Middleware):
             # Check if context has auth info
             if not hasattr(ctx, "auth"):
                 logger.warning(f"No auth context for tool: {tool_name}")
-                await ctx.next()
+                next_fn = getattr(ctx, "next", None)
+                if next_fn is not None and callable(next_fn):
+                    await next_fn()
                 return
 
-            auth = ctx.auth
+            auth = getattr(ctx, "auth", None)
+            if not isinstance(auth, dict):
+                logger.warning(f"Auth context invalid for tool: {tool_name}")
+                next_fn = getattr(ctx, "next", None)
+                if next_fn is not None and callable(next_fn):
+                    await next_fn()
+                return
 
+            auth_dict: dict[str, Any] = cast(dict[str, Any], auth)
             # Validate token freshness
-            await self._validate_token(auth)
+            await self._validate_token(auth_dict)
 
             # Check scopes
             required_scopes = self._get_required_scopes(tool_name)
             if required_scopes:
-                self._validate_scopes(auth, required_scopes, tool_name)
+                self._validate_scopes(auth_dict, required_scopes, tool_name)
 
             logger.debug(f"Auth validated for tool: {tool_name}")
 
@@ -82,7 +91,9 @@ class AuthMiddleware(Middleware):
             raise
 
         # Continue to next middleware
-        await ctx.next()
+        next_fn = getattr(ctx, "next", None)
+        if next_fn is not None and callable(next_fn):
+            await next_fn()
 
     async def _validate_token(self, auth: dict[str, Any]) -> None:
         """Validate token freshness and potentially refresh.
@@ -108,6 +119,7 @@ class AuthMiddleware(Middleware):
             # Track auth failure in metrics if available
             try:
                 from tracertm.mcp.metrics import track_auth_failure
+
                 track_auth_failure("expired_token")
             except ImportError:
                 pass
@@ -134,9 +146,7 @@ class AuthMiddleware(Middleware):
         # Otherwise use global scopes
         return self.required_scopes
 
-    def _validate_scopes(
-        self, auth: dict[str, Any], required_scopes: list[str], tool_name: str
-    ) -> None:
+    def _validate_scopes(self, auth: dict[str, Any], required_scopes: list[str], tool_name: str) -> None:
         """Validate that token has required scopes.
 
         Args:
@@ -159,13 +169,13 @@ class AuthMiddleware(Middleware):
             # Track auth failure in metrics if available
             try:
                 from tracertm.mcp.metrics import track_auth_failure
+
                 track_auth_failure("missing_scopes")
             except ImportError:
                 pass
 
             raise PermissionError(
-                f"Tool '{tool_name}' requires scopes {missing_scopes}, "
-                f"but token has {set(token_scopes)}"
+                f"Tool '{tool_name}' requires scopes {missing_scopes}, but token has {set(token_scopes)}"
             )
 
 
@@ -202,7 +212,9 @@ class LoggingMiddleware(Middleware):
         logger.info(log_msg)
 
         try:
-            await ctx.next()
+            next_fn = getattr(ctx, "next", None)
+            if next_fn is not None and callable(next_fn):
+                await next_fn()
             elapsed = time.time() - start_time
             logger.debug(f"[MCP_TOOL] {tool_name} completed in {elapsed:.2f}s")
         except Exception as e:
@@ -244,9 +256,11 @@ class RateLimitMiddleware(Middleware):
         if not self.per_user:
             return "global"
 
-        if hasattr(ctx, "auth") and ctx.auth:
-            claims = ctx.auth.get("claims", {})
-            return claims.get("sub", "anonymous")
+        auth = getattr(ctx, "auth", None)
+        if isinstance(auth, dict):
+            auth_d = cast(dict[str, Any], auth)
+            claims = auth_d.get("claims", {})
+            return str(claims.get("sub", "anonymous"))
 
         return "anonymous"
 
@@ -287,29 +301,29 @@ class RateLimitMiddleware(Middleware):
             # Track rate limit hit in metrics if available
             try:
                 from tracertm.mcp.metrics import track_rate_limit_hit
+
                 track_rate_limit_hit(key, "per_minute")
             except ImportError:
                 pass
 
-            raise PermissionError(
-                f"Rate limit exceeded: {self.calls_per_minute} calls/minute for {key}"
-            )
+            raise PermissionError(f"Rate limit exceeded: {self.calls_per_minute} calls/minute for {key}")
 
         if len(call_times) >= self.calls_per_hour:
             # Track rate limit hit in metrics if available
             try:
                 from tracertm.mcp.metrics import track_rate_limit_hit
+
                 track_rate_limit_hit(key, "per_hour")
             except ImportError:
                 pass
 
-            raise PermissionError(
-                f"Rate limit exceeded: {self.calls_per_hour} calls/hour for {key}"
-            )
+            raise PermissionError(f"Rate limit exceeded: {self.calls_per_hour} calls/hour for {key}")
 
         # Record call
         call_times.append(now)
 
         logger.debug(f"Rate limit check passed for {key}: {len(recent_calls)} calls/min")
 
-        await ctx.next()
+        next_fn = getattr(ctx, "next", None)
+        if next_fn is not None and callable(next_fn):
+            await next_fn()

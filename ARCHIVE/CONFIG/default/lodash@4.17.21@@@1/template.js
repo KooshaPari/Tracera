@@ -28,7 +28,7 @@ var reEmptyStringLeading = /\b__p \+= '';/g,
  * - "/" (beginning of a comment)
  * - whitespace
  */
-var reForbiddenIdentifierChars = /[()=,{}\[\]\/\s]/;
+var reForbiddenIdentifierChars = /[()=,{}[\]/\s]/;
 
 /**
  * Used to match

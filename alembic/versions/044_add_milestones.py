@@ -8,9 +8,10 @@ Revises: 043_add_version_branches
 Create Date: 2026-01-30
 """
 
-from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
+
+from alembic import op
 
 # revision identifiers, used by Alembic
 revision = "044_add_milestones"
@@ -171,9 +172,7 @@ def upgrade() -> None:
         ),
         sa.Column("added_by", sa.String(255), nullable=True),
         # Constraints
-        sa.UniqueConstraint(
-            "milestone_id", "item_id", name="uq_milestone_items_milestone_item"
-        ),
+        sa.UniqueConstraint("milestone_id", "item_id", name="uq_milestone_items_milestone_item"),
     )
 
     op.create_index("ix_milestone_items_milestone_id", "milestone_items", ["milestone_id"])
@@ -321,9 +320,7 @@ def upgrade() -> None:
         ),
         sa.Column("added_by", sa.String(255), nullable=True),
         # Constraints
-        sa.UniqueConstraint(
-            "sprint_id", "item_id", name="uq_sprint_items_sprint_item"
-        ),
+        sa.UniqueConstraint("sprint_id", "item_id", name="uq_sprint_items_sprint_item"),
     )
 
     op.create_index("ix_sprint_items_sprint_id", "sprint_items", ["sprint_id"])
@@ -371,9 +368,7 @@ def upgrade() -> None:
             nullable=False,
         ),
         # One snapshot per project per day
-        sa.UniqueConstraint(
-            "project_id", "snapshot_date", name="uq_progress_snapshots_project_date"
-        ),
+        sa.UniqueConstraint("project_id", "snapshot_date", name="uq_progress_snapshots_project_date"),
     )
 
     op.create_index("ix_progress_snapshots_project_id", "progress_snapshots", ["project_id"])
@@ -485,9 +480,7 @@ def downgrade() -> None:
     op.drop_table("velocity_history")
 
     # Drop progress_snapshots
-    op.drop_index(
-        "ix_progress_snapshots_project_date", table_name="progress_snapshots"
-    )
+    op.drop_index("ix_progress_snapshots_project_date", table_name="progress_snapshots")
     op.drop_index("ix_progress_snapshots_snapshot_date", table_name="progress_snapshots")
     op.drop_index("ix_progress_snapshots_project_id", table_name="progress_snapshots")
     op.drop_table("progress_snapshots")

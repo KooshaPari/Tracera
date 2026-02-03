@@ -383,7 +383,7 @@ test.describe("Mobile Performance Optimization - Phase 13", () => {
 	test.use({
 		hasTouch: true,
 		isMobile: true,
-		viewport: { width: 375, height: 667 },
+		viewport: { height: 667, width: 375 },
 	});
 
 	test("lazy loads images on mobile", async ({ page }) => {

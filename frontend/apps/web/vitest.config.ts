@@ -10,14 +10,11 @@ export default defineConfig({
 		},
 	},
 	test: {
-		environment: "jsdom",
-		globals: true,
-		setupFiles: ["./src/test/setup.ts"],
 		coverage: {
+			exclude: ["src/**/*.{test,spec,stories}.{ts,tsx}", "src/test/**"],
+			include: ["src/**/*.{ts,tsx}"],
 			provider: "v8",
 			reporter: ["text", "json", "html", "lcov"],
-			include: ["src/**/*.{ts,tsx}"],
-			exclude: ["src/**/*.{test,spec,stories}.{ts,tsx}", "src/test/**"],
 			thresholds: {
 				lines: 70,
 				functions: 70,
@@ -25,8 +22,11 @@ export default defineConfig({
 				statements: 70,
 			},
 		},
+		environment: "jsdom",
+		globals: true,
 		include: ["src/**/*.{test,spec}.{ts,tsx}"],
 		reporters: ["verbose"],
+		setupFiles: ["./src/test/setup.ts"],
 		ui: true,
 	},
 });

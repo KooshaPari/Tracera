@@ -310,7 +310,7 @@ function ignoredPackagesRegExp(ignoredPackages) {
 
   const packages = ignoredPackages.map(mod => escapeStringRegexp(mod));
 
-  return new RegExp(`[\/\\\\]node_modules[\/\\\\](?:${packages.join('|')})[\/\\\\][^:]+:\\d+:\\d+`)
+  return new RegExp(`[/\\\\]node_modules[/\\\\](?:${packages.join('|')})[/\\\\][^:]+:\\d+:\\d+`)
 }
 
 const re = new RegExp(

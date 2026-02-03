@@ -6,11 +6,10 @@ Executes Playwright browser automation and captures screenshots/videos.
 from __future__ import annotations
 
 import asyncio
+import subprocess  # noqa: S404
 import tempfile
 from pathlib import Path
 from typing import Any
-
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.models.execution_config import ExecutionEnvironmentConfig
 from tracertm.services.execution import ExecutionService
@@ -18,8 +17,6 @@ from tracertm.services.execution import ExecutionService
 
 class PlaywrightExecutionError(Exception):
     """Raised when Playwright execution fails."""
-
-    pass
 
 
 class PlaywrightExecutionService:
@@ -65,9 +62,7 @@ class PlaywrightExecutionService:
         if not execution:
             raise PlaywrightExecutionError(f"Execution {execution_id} not found")
         if execution.status != "pending":
-            raise PlaywrightExecutionError(
-                f"Execution {execution_id} is {execution.status}, expected pending"
-            )
+            raise PlaywrightExecutionError(f"Execution {execution_id} is {execution.status}, expected pending")
 
         config = await self._exec_service.get_config(execution.project_id)
         if config and not config.playwright_enabled:
@@ -174,26 +169,24 @@ class PlaywrightExecutionService:
     ) -> dict[str, Any]:
         """Execute Playwright via subprocess."""
         script_path = workdir / "playwright_script.py"
-        self._write_playwright_script(
-            script_path, url, script, screenshot, video, trace, config
-        )
+        self._write_playwright_script(script_path, url, script, screenshot, video, trace, config)
 
         try:
             proc = await asyncio.create_subprocess_exec(
                 "python",
                 str(script_path),
                 cwd=str(workdir),
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
             )
-            stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=300)
+            _stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=300)
             if proc.returncode != 0:
                 return {
                     "success": False,
                     "error_message": f"Playwright failed: {stderr.decode()[:500]}",
                 }
             return {"success": True}
-        except asyncio.TimeoutError:
+        except TimeoutError:
             return {
                 "success": False,
                 "error_message": "Playwright execution timed out after 300s",
@@ -219,18 +212,16 @@ class PlaywrightExecutionService:
         """Execute Playwright inside Docker container."""
         docker = self._exec_service.docker()
         execution = await self._exec_service.get(execution_id)
-        if not execution or not execution.container_id:
+        if not execution or not execution.container_id or not docker:
             return await self._execute_subprocess(
                 execution_id, url, script, workdir, screenshot=screenshot, video=video, trace=trace, config=config
             )
 
         script_path = workdir / "playwright_script.py"
-        self._write_playwright_script(
-            script_path, url, script, screenshot, video, trace, config
-        )
+        self._write_playwright_script(script_path, url, script, screenshot, video, trace, config)
 
-        # Copy script into container
-        container_script = "/tmp/playwright_script.py"
+        # Copy script into container (path inside container; noqa: S108)
+        container_script = "/tmp/playwright_script.py"  # noqa: S108
         code, _, stderr = await docker._run(
             "cp", str(script_path), f"{execution.container_id}:{container_script}", timeout=30
         )
@@ -241,7 +232,7 @@ class PlaywrightExecutionService:
             }
 
         # Run playwright inside container
-        code, stdout, stderr = await docker.exec(
+        code, _stdout, stderr = await docker.exec(
             execution.container_id,
             ["python", container_script],
             timeout=300,
@@ -300,15 +291,15 @@ async def main():
         )
         if {str(trace).lower()}:
             await context.tracing.start(screenshots=True, snapshots=True)
-        
+
         page = await context.new_page()
-        
+
         try:
 {self._indent(user_script, 12)}
-            
+
             if {str(screenshot).lower()}:
                 await page.screenshot(path="/tmp/screenshot.png", full_page=True)
-            
+
             if {str(trace).lower()}:
                 await context.tracing.stop(path="/tmp/trace.zip")
         finally:

@@ -1,7 +1,7 @@
 """Repository for RequirementQuality CRUD operations."""
 
 from datetime import UTC, datetime
-from typing import Any, Optional
+from typing import Any
 from uuid import uuid4
 
 from sqlalchemy import Integer, func, select
@@ -20,16 +20,16 @@ class RequirementQualityRepository:
         self,
         item_id: str,
         project_id: str,
-        quality_scores: Optional[dict[str, float]] = None,
+        quality_scores: dict[str, float] | None = None,
         overall_quality_score: float = 0.5,
-        quality_issues: Optional[list[dict[str, Any]]] = None,
+        quality_issues: list[dict[str, Any]] | None = None,
         change_propagation_index: float = 0.0,
         downstream_impact_count: int = 0,
         upstream_dependency_count: int = 0,
-        impact_assessment: Optional[dict[str, Any]] = None,
+        impact_assessment: dict[str, Any] | None = None,
         volatility_index: float = 0.0,
-        wsjf_score: Optional[float] = None,
-        wsjf_components: Optional[dict[str, float]] = None,
+        wsjf_score: float | None = None,
+        wsjf_components: dict[str, float] | None = None,
         is_verified: bool = False,
         **kwargs: Any,
     ) -> RequirementQuality:
@@ -56,18 +56,14 @@ class RequirementQualityRepository:
         await self.session.refresh(spec)
         return spec
 
-    async def get_by_id(self, spec_id: str) -> Optional[RequirementQuality]:
+    async def get_by_id(self, spec_id: str) -> RequirementQuality | None:
         """Get requirement quality spec by ID."""
-        result = await self.session.execute(
-            select(RequirementQuality).where(RequirementQuality.id == spec_id)
-        )
+        result = await self.session.execute(select(RequirementQuality).where(RequirementQuality.id == spec_id))
         return result.scalar_one_or_none()
 
-    async def get_by_item_id(self, item_id: str) -> Optional[RequirementQuality]:
+    async def get_by_item_id(self, item_id: str) -> RequirementQuality | None:
         """Get requirement quality spec by item ID."""
-        result = await self.session.execute(
-            select(RequirementQuality).where(RequirementQuality.item_id == item_id)
-        )
+        result = await self.session.execute(select(RequirementQuality).where(RequirementQuality.item_id == item_id))
         return result.scalar_one_or_none()
 
     async def list_by_project(
@@ -79,21 +75,16 @@ class RequirementQualityRepository:
         descending: bool = True,
     ) -> list[RequirementQuality]:
         """List requirement quality specs for a project."""
-        query = select(RequirementQuality).where(
-            RequirementQuality.project_id == project_id
-        )
+        query = select(RequirementQuality).where(RequirementQuality.project_id == project_id)
 
         # Order by specified field
         order_field = getattr(RequirementQuality, order_by, RequirementQuality.created_at)
-        if descending:
-            query = query.order_by(order_field.desc())
-        else:
-            query = query.order_by(order_field.asc())
+        query = query.order_by(order_field.desc()) if descending else query.order_by(order_field.asc())
 
         query = query.limit(limit).offset(offset)
 
         result = await self.session.execute(query)
-        return result.scalars().all()
+        return list(result.scalars().all())
 
     async def list_by_quality_score(
         self,
@@ -113,7 +104,7 @@ class RequirementQualityRepository:
             .order_by(RequirementQuality.overall_quality_score.asc())
             .limit(limit)
         )
-        return result.scalars().all()
+        return list(result.scalars().all())
 
     async def list_high_volatility(
         self,
@@ -131,7 +122,7 @@ class RequirementQualityRepository:
             .order_by(RequirementQuality.volatility_index.desc())
             .limit(limit)
         )
-        return result.scalars().all()
+        return list(result.scalars().all())
 
     async def list_high_impact(
         self,
@@ -149,7 +140,7 @@ class RequirementQualityRepository:
             .order_by(RequirementQuality.change_propagation_index.desc())
             .limit(limit)
         )
-        return result.scalars().all()
+        return list(result.scalars().all())
 
     async def list_unverified(
         self,
@@ -166,7 +157,7 @@ class RequirementQualityRepository:
             .order_by(RequirementQuality.created_at.desc())
             .limit(limit)
         )
-        return result.scalars().all()
+        return list(result.scalars().all())
 
     async def list_by_wsjf_priority(
         self,
@@ -183,29 +174,29 @@ class RequirementQualityRepository:
             .order_by(RequirementQuality.wsjf_score.desc())
             .limit(limit)
         )
-        return result.scalars().all()
+        return list(result.scalars().all())
 
     async def update(
         self,
         spec_id: str,
-        quality_scores: Optional[dict[str, float]] = None,
-        overall_quality_score: Optional[float] = None,
-        quality_issues: Optional[list[dict[str, Any]]] = None,
-        change_propagation_index: Optional[float] = None,
-        downstream_impact_count: Optional[int] = None,
-        upstream_dependency_count: Optional[int] = None,
-        impact_assessment: Optional[dict[str, Any]] = None,
-        change_count: Optional[int] = None,
-        volatility_index: Optional[float] = None,
-        change_history: Optional[list[dict[str, Any]]] = None,
-        last_changed_at: Optional[datetime] = None,
-        wsjf_score: Optional[float] = None,
-        wsjf_components: Optional[dict[str, float]] = None,
-        is_verified: Optional[bool] = None,
-        verified_by: Optional[str] = None,
-        verified_at: Optional[datetime] = None,
-        verification_evidence: Optional[list[dict[str, Any]]] = None,
-        last_analyzed_at: Optional[datetime] = None,
+        quality_scores: dict[str, float] | None = None,
+        overall_quality_score: float | None = None,
+        quality_issues: list[dict[str, Any]] | None = None,
+        change_propagation_index: float | None = None,
+        downstream_impact_count: int | None = None,
+        upstream_dependency_count: int | None = None,
+        impact_assessment: dict[str, Any] | None = None,
+        change_count: int | None = None,
+        volatility_index: float | None = None,
+        change_history: list[dict[str, Any]] | None = None,
+        last_changed_at: datetime | None = None,
+        wsjf_score: float | None = None,
+        wsjf_components: dict[str, float] | None = None,
+        is_verified: bool | None = None,
+        verified_by: str | None = None,
+        verified_at: datetime | None = None,
+        verification_evidence: list[dict[str, Any]] | None = None,
+        last_analyzed_at: datetime | None = None,
         **kwargs: Any,
     ) -> RequirementQuality:
         """Update requirement quality spec."""
@@ -276,9 +267,7 @@ class RequirementQualityRepository:
     async def count_by_project(self, project_id: str) -> int:
         """Count specs in a project."""
         result = await self.session.execute(
-            select(func.count(RequirementQuality.id)).where(
-                RequirementQuality.project_id == project_id
-            )
+            select(func.count(RequirementQuality.id)).where(RequirementQuality.project_id == project_id)
         )
         return result.scalar() or 0
 
@@ -290,9 +279,7 @@ class RequirementQualityRepository:
                 func.avg(RequirementQuality.overall_quality_score).label("avg_quality"),
                 func.avg(RequirementQuality.volatility_index).label("avg_volatility"),
                 func.avg(RequirementQuality.change_propagation_index).label("avg_cpi"),
-                func.sum(
-                    func.cast(RequirementQuality.is_verified, Integer)
-                ).label("verified_count"),
+                func.sum(func.cast(RequirementQuality.is_verified, Integer)).label("verified_count"),
             ).where(RequirementQuality.project_id == project_id)
         )
 

@@ -23,7 +23,7 @@ export default function markup(Prism) {
       greedy: true,
       inside: {
         'internal-subset': {
-          pattern: /(^[^\[]*\[)[\s\S]+(?=\]>$)/,
+          pattern: /(^[^[]*\[)[\s\S]+(?=\]>$)/,
           lookbehind: true,
           greedy: true,
           inside: null // see below
@@ -43,14 +43,14 @@ export default function markup(Prism) {
     },
     tag: {
       pattern:
-        /<\/?(?!\d)[^\s>\/=$<%]+(?:\s(?:\s*[^\s>\/=]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s'">=]+(?=[\s>]))|(?=[\s/>])))+)?\s*\/?>/,
+        /<\/?(?!\d)[^\s>/=$<%]+(?:\s(?:\s*[^\s>/=]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s'">=]+(?=[\s>]))|(?=[\s/>])))+)?\s*\/?>/,
       greedy: true,
       inside: {
         tag: {
-          pattern: /^<\/?[^\s>\/]+/,
+          pattern: /^<\/?[^\s>/]+/,
           inside: {
             punctuation: /^<\/?/,
-            namespace: /^[^\s>\/:]+:/
+            namespace: /^[^\s>/:]+:/
           }
         },
         'special-attr': [],
@@ -71,9 +71,9 @@ export default function markup(Prism) {
         },
         punctuation: /\/?>/,
         'attr-name': {
-          pattern: /[^\s>\/]+/,
+          pattern: /[^\s>/]+/,
           inside: {
-            namespace: /^[^\s>\/:]+:/
+            namespace: /^[^\s>/:]+:/
           }
         }
       }

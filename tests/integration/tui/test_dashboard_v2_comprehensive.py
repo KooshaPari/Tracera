@@ -15,13 +15,16 @@ Tests cover:
 35+ tests with 85%+ coverage.
 """
 
-import asyncio
 import tempfile
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from typing import Any, cast
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+
+# Import once; type checker sees union with placeholder when Textual is optional
+from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp  # type: ignore[possibly-missing-import]
 
 # Mark all tests in this module as integration
 pytestmark = pytest.mark.integration
@@ -70,9 +73,7 @@ def mock_storage_adapter():
         )
         instance.list_items = MagicMock(return_value=[])
         instance.get_unresolved_conflicts = MagicMock(return_value=[])
-        instance.trigger_sync = AsyncMock(
-            return_value={"success": True, "entities_synced": 5}
-        )
+        instance.trigger_sync = AsyncMock(return_value={"success": True, "entities_synced": 5})
         instance.on_sync_status_change = MagicMock()
         instance.on_conflict_detected = MagicMock()
         instance.on_item_change = MagicMock()
@@ -92,32 +93,28 @@ class TestDashboardAppInitialization:
 
     def test_app_init_with_default_params(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
         """Test dashboard app initialization with default parameters."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
+        app: Any = cast(Any, EnhancedDashboardApp())
 
-        app = EnhancedDashboardApp()
+        assert getattr(app, "project_name", None) is None  # Not loaded yet
+        assert getattr(app, "current_view", None) == "epic"
+        assert getattr(app, "_is_syncing", None) is False
+        assert getattr(app, "_sync_timer", None) is None
 
-        assert app.project_name is None  # Not loaded yet
-        assert app.current_view == "epic"
-        assert app._is_syncing is False
-        assert app._sync_timer is None
-
-    def test_app_init_with_base_dir(self, temp_base_dir, mock_config_manager, mock_storage_adapter, mock_textual_available):
+    def test_app_init_with_base_dir(
+        self, temp_base_dir, mock_config_manager, mock_storage_adapter, mock_textual_available
+    ):
         """Test dashboard app initialization with custom base directory."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
+        app: Any = cast(Any, EnhancedDashboardApp(base_dir=temp_base_dir))
 
-        app = EnhancedDashboardApp(base_dir=temp_base_dir)
-
-        assert app.project_name is None
-        assert app.current_view == "epic"
+        assert getattr(app, "project_name", None) is None
+        assert getattr(app, "current_view", None) == "epic"
 
     def test_storage_adapter_initialized(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
         """Test that StorageAdapter is initialized."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
-
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
 
         mock_storage_adapter.assert_called_once()
-        assert app.storage_adapter is not None
+        assert getattr(app, "storage_adapter", None) is not None
 
 
 class TestDashboardComposition:
@@ -125,12 +122,10 @@ class TestDashboardComposition:
 
     def test_compose_returns_widgets(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
         """Test that compose method yields expected widgets."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
-
         # Use the app in a context where it can access active_app
-        with patch.object(EnhancedDashboardApp, 'compose') as mock_compose:
+        with patch.object(EnhancedDashboardApp, "compose") as mock_compose:
             mock_compose.return_value = iter([MagicMock(), MagicMock()])
-            app = EnhancedDashboardApp()
+            app: Any = cast(Any, EnhancedDashboardApp())
             widgets = list(mock_compose())
 
             # Check that we have some widgets
@@ -138,23 +133,21 @@ class TestDashboardComposition:
 
     def test_app_has_css(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
         """Test that app has CSS defined."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
-
-        assert EnhancedDashboardApp.CSS is not None
-        assert len(EnhancedDashboardApp.CSS) > 0
+        css = getattr(EnhancedDashboardApp, "CSS", None)
+        assert css is not None
+        assert len(css) > 0
 
     def test_app_has_bindings(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
         """Test that app has keyboard bindings defined."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
-
-        assert EnhancedDashboardApp.BINDINGS is not None
-        assert len(EnhancedDashboardApp.BINDINGS) > 0
+        bindings = getattr(EnhancedDashboardApp, "BINDINGS", None)
+        assert bindings is not None
+        assert len(bindings) > 0
 
     def test_bindings_have_expected_keys(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
         """Test that all expected keys are bound."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
-
-        binding_keys = [b.key for b in EnhancedDashboardApp.BINDINGS]
+        bindings = getattr(EnhancedDashboardApp, "BINDINGS", None)
+        assert bindings is not None
+        binding_keys = [b.key for b in bindings]
         expected_keys = ["q", "v", "r", "ctrl+s", "s", "c", "?"]
 
         for key in expected_keys:
@@ -166,19 +159,17 @@ class TestLoadProject:
 
     def test_load_project_success(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
         """Test successful project loading."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
-
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
         app.load_project()
 
-        assert app.project_name == "test-project"
+        assert getattr(app, "project_name", None) == "test-project"
 
-    def test_load_project_no_project_configured(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
+    def test_load_project_no_project_configured(
+        self, mock_config_manager, mock_storage_adapter, mock_textual_available
+    ):
         """Test project loading when no project is configured."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
-
         mock_config_manager.return_value.get.return_value = None
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
 
         with patch.object(app, "exit") as mock_exit:
             app.load_project()
@@ -190,9 +181,7 @@ class TestSetupViewTree:
 
     def test_setup_view_tree_creates_nodes(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
         """Test that view tree is set up with expected nodes."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
-
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
         app.current_view = "story"
 
         # Mock query_one
@@ -210,9 +199,7 @@ class TestSetupViewTree:
 
     def test_setup_view_tree_expands_current(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
         """Test that current view node is expanded."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
-
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
         app.current_view = "test"
 
         # Mock query_one
@@ -233,11 +220,11 @@ class TestSetupViewTree:
 class TestSetupStorageCallbacks:
     """Tests for storage callback setup."""
 
-    def test_setup_storage_callbacks_registers_handlers(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
+    def test_setup_storage_callbacks_registers_handlers(
+        self, mock_config_manager, mock_storage_adapter, mock_textual_available
+    ):
         """Test that storage callbacks are registered."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
-
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
         app.setup_storage_callbacks()
 
         # Check that callbacks are registered
@@ -251,16 +238,13 @@ class TestStatRefresh:
 
     def test_refresh_stats_updates_table(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
         """Test that refresh_stats updates the stats table."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
-
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
         mock_project = {"id": "test-project"}
 
         # Mock query_one
         mock_table = MagicMock()
         mock_summary = MagicMock()
-        app.query_one = MagicMock(side_effect=lambda selector, *args:
-            mock_table if "stats-table" in selector else mock_summary)
+        app.query_one = MagicMock(side_effect=lambda selector, *args: mock_table if "stats-table" in str(selector) else mock_summary)
 
         app.refresh_stats(mock_project)
 
@@ -270,16 +254,13 @@ class TestStatRefresh:
 
     def test_refresh_stats_adds_rows(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
         """Test that refresh_stats adds rows for each item type."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
-
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
         mock_project = {"id": "test-project"}
 
         # Mock query_one
         mock_table = MagicMock()
         mock_summary = MagicMock()
-        app.query_one = MagicMock(side_effect=lambda selector, *args:
-            mock_table if "stats-table" in selector else mock_summary)
+        app.query_one = MagicMock(side_effect=lambda selector, *args: mock_table if "stats-table" in str(selector) else mock_summary)
 
         app.refresh_stats(mock_project)
 
@@ -288,16 +269,13 @@ class TestStatRefresh:
 
     def test_refresh_stats_updates_summary(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
         """Test that refresh_stats updates the state summary."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
-
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
         mock_project = {"id": "test-project"}
 
         # Mock query_one
         mock_table = MagicMock()
         mock_summary = MagicMock()
-        app.query_one = MagicMock(side_effect=lambda selector, *args:
-            mock_table if "stats-table" in selector else mock_summary)
+        app.query_one = MagicMock(side_effect=lambda selector, *args: mock_table if "stats-table" in str(selector) else mock_summary)
 
         app.refresh_stats(mock_project)
 
@@ -308,11 +286,11 @@ class TestStatRefresh:
 class TestItemsRefresh:
     """Tests for items table refresh."""
 
-    def test_refresh_items_clears_and_populates(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
+    def test_refresh_items_clears_and_populates(
+        self, mock_config_manager, mock_storage_adapter, mock_textual_available
+    ):
         """Test that refresh_items clears and repopulates the items table."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
-
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
         mock_project = {"id": "test-project"}
 
         # Mock query_one
@@ -326,15 +304,9 @@ class TestItemsRefresh:
                 title="Test Item 1",
                 status="todo",
                 priority="high",
-                item_metadata={"content_hash": "abc123"}
+                item_metadata={"content_hash": "abc123"},
             ),
-            MagicMock(
-                id="item-2",
-                title="Test Item 2",
-                status="in_progress",
-                priority="medium",
-                item_metadata={}
-            ),
+            MagicMock(id="item-2", title="Test Item 2", status="in_progress", priority="medium", item_metadata={}),
         ]
         mock_storage_adapter.return_value.list_items.return_value = mock_items
 
@@ -347,9 +319,7 @@ class TestItemsRefresh:
 
     def test_refresh_items_shows_source_column(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
         """Test that refresh_items shows SQLite or SQLite+MD source."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
-
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
         mock_project = {"id": "test-project"}
 
         # Mock query_one
@@ -358,21 +328,11 @@ class TestItemsRefresh:
 
         # Item with markdown
         item_with_md = MagicMock(
-            id="item-1",
-            title="With MD",
-            status="todo",
-            priority="high",
-            item_metadata={"content_hash": "abc"}
+            id="item-1", title="With MD", status="todo", priority="high", item_metadata={"content_hash": "abc"}
         )
 
         # Item without markdown
-        item_without_md = MagicMock(
-            id="item-2",
-            title="Without MD",
-            status="todo",
-            priority="high",
-            item_metadata={}
-        )
+        item_without_md = MagicMock(id="item-2", title="Without MD", status="todo", priority="high", item_metadata={})
 
         mock_storage_adapter.return_value.list_items.return_value = [item_with_md, item_without_md]
 
@@ -390,16 +350,15 @@ class TestViewTreeSelection:
 
     def test_tree_node_selected_changes_view(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
         """Test that selecting tree node changes current view."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
-
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
         app.current_view = "epic"
         app.project_name = "test-project"
 
         # Mock query_one
         mock_title = MagicMock()
         app.query_one = MagicMock(return_value=mock_title)
-        app.refresh_items = MagicMock()
+        mock_refresh = MagicMock()
+        app.refresh_items = mock_refresh
 
         # Create event
         event = MagicMock()
@@ -407,14 +366,12 @@ class TestViewTreeSelection:
 
         app.on_tree_node_selected(event)
 
-        assert app.current_view == "story"
-        app.refresh_items.assert_called_once()
+        assert getattr(app, "current_view", None) == "story"
+        mock_refresh.assert_called_once()
 
     def test_tree_node_selected_updates_title(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
         """Test that tree selection updates the items title."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
-
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
         app.project_name = "test-project"
 
         # Mock query_one
@@ -436,9 +393,7 @@ class TestActionSwitchView:
 
     def test_switch_view_cycles_through_views(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
         """Test that switch_view action cycles through available views."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
-
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
         app.current_view = "epic"
 
         # Mock methods
@@ -447,13 +402,11 @@ class TestActionSwitchView:
 
         app.action_switch_view()
 
-        assert app.current_view == "story"
+        assert getattr(app, "current_view", None) == "story"
 
     def test_switch_view_wraps_around(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
         """Test that switch_view wraps around to first view."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
-
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
         app.current_view = "task"
 
         # Mock methods
@@ -462,7 +415,7 @@ class TestActionSwitchView:
 
         app.action_switch_view()
 
-        assert app.current_view == "epic"
+        assert getattr(app, "current_view", None) == "epic"
 
 
 class TestActionRefresh:
@@ -470,9 +423,7 @@ class TestActionRefresh:
 
     def test_action_refresh_calls_refresh_data(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
         """Test that refresh action calls refresh_data."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
-
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
         app.refresh_data = MagicMock()
         app.notify = MagicMock()
 
@@ -488,9 +439,7 @@ class TestActionSync:
     @pytest.mark.asyncio
     async def test_action_sync_triggers_sync(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
         """Test that sync action triggers storage sync."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
-
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
         app.notify = MagicMock()
         app.refresh_data = MagicMock()
 
@@ -500,11 +449,11 @@ class TestActionSync:
         app.notify.assert_called()
 
     @pytest.mark.asyncio
-    async def test_action_sync_prevents_concurrent_sync(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
+    async def test_action_sync_prevents_concurrent_sync(
+        self, mock_config_manager, mock_storage_adapter, mock_textual_available
+    ):
         """Test that sync prevents concurrent syncs."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
-
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
         app._is_syncing = True
         app.notify = MagicMock()
 
@@ -517,14 +466,9 @@ class TestActionSync:
     @pytest.mark.asyncio
     async def test_action_sync_handles_failure(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
         """Test that sync action handles failures."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
+        mock_storage_adapter.return_value.trigger_sync.return_value = {"success": False, "error": "Connection failed"}
 
-        mock_storage_adapter.return_value.trigger_sync.return_value = {
-            "success": False,
-            "error": "Connection failed"
-        }
-
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
         app.notify = MagicMock()
 
         await app.action_sync()
@@ -538,9 +482,7 @@ class TestActionSearch:
 
     def test_action_search_shows_notification(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
         """Test that search action shows not implemented notification."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
-
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
         app.notify = MagicMock()
 
         app.action_search()
@@ -553,11 +495,9 @@ class TestActionShowConflicts:
 
     def test_show_conflicts_with_no_conflicts(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
         """Test show_conflicts when there are no conflicts."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
-
         mock_storage_adapter.return_value.get_unresolved_conflicts.return_value = []
 
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
         app.notify = MagicMock()
 
         app.action_show_conflicts()
@@ -566,15 +506,13 @@ class TestActionShowConflicts:
 
     def test_show_conflicts_with_conflicts(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
         """Test show_conflicts with existing conflicts."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
-
         conflicts = [
             MagicMock(entity_type="item", entity_id="item-1"),
             MagicMock(entity_type="item", entity_id="item-2"),
         ]
         mock_storage_adapter.return_value.get_unresolved_conflicts.return_value = conflicts
 
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
         app.push_screen = MagicMock()
 
         app.action_show_conflicts()
@@ -587,9 +525,7 @@ class TestActionHelp:
 
     def test_action_help_shows_notification(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
         """Test that help action shows help text."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
-
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
         app.notify = MagicMock()
 
         app.action_help()
@@ -604,17 +540,12 @@ class TestSyncStatusCallbacks:
 
     def test_on_sync_status_change_success(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
         """Test sync status change callback for success."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
         from tracertm.storage.sync_engine import SyncStatus
-
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
         app.call_from_thread = MagicMock()
         app.notify = MagicMock()
 
-        state = MagicMock(
-            status=SyncStatus.SUCCESS,
-            synced_entities=5
-        )
+        state = MagicMock(status=SyncStatus.SUCCESS, synced_entities=5)
 
         app._on_sync_status_change(state)
 
@@ -622,17 +553,12 @@ class TestSyncStatusCallbacks:
 
     def test_on_sync_status_change_error(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
         """Test sync status change callback for error."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
         from tracertm.storage.sync_engine import SyncStatus
-
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
         app.call_from_thread = MagicMock()
         app.notify = MagicMock()
 
-        state = MagicMock(
-            status=SyncStatus.ERROR,
-            last_error="Network error"
-        )
+        state = MagicMock(status=SyncStatus.ERROR, last_error="Network error")
 
         app._on_sync_status_change(state)
 
@@ -640,17 +566,12 @@ class TestSyncStatusCallbacks:
 
     def test_on_sync_status_change_conflict(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
         """Test sync status change callback for conflict."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
         from tracertm.storage.sync_engine import SyncStatus
-
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
         app.call_from_thread = MagicMock()
         app.notify = MagicMock()
 
-        state = MagicMock(
-            status=SyncStatus.CONFLICT,
-            conflicts_count=2
-        )
+        state = MagicMock(status=SyncStatus.CONFLICT, conflicts_count=2)
 
         app._on_sync_status_change(state)
 
@@ -662,15 +583,10 @@ class TestConflictDetectionCallback:
 
     def test_on_conflict_detected(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
         """Test conflict detection callback."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
-
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
         app.call_from_thread = MagicMock()
 
-        conflict = MagicMock(
-            entity_type="item",
-            entity_id="item-123abc"
-        )
+        conflict = MagicMock(entity_type="item", entity_id="item-123abc")
 
         app._on_conflict_detected(conflict)
 
@@ -682,9 +598,7 @@ class TestItemChangeCallback:
 
     def test_on_item_change(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
         """Test item change callback."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
-
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
         app.call_from_thread = MagicMock()
         app.refresh_data = MagicMock()
 
@@ -698,19 +612,13 @@ class TestUpdateSyncStatus:
 
     def test_update_sync_status_online(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
         """Test sync status update when online."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
         from tracertm.storage.sync_engine import SyncStatus
-
         mock_status = MagicMock(
-            status=SyncStatus.SUCCESS,
-            pending_changes=0,
-            last_sync=datetime.now(),
-            conflicts_count=0,
-            last_error=None
+            status=SyncStatus.SUCCESS, pending_changes=0, last_sync=datetime.now(), conflicts_count=0, last_error=None
         )
         mock_storage_adapter.return_value.get_sync_status.return_value = mock_status
 
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
         mock_widget = MagicMock()
         app.query_one = MagicMock(return_value=mock_widget)
 
@@ -721,19 +629,13 @@ class TestUpdateSyncStatus:
 
     def test_update_sync_status_syncing(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
         """Test sync status update when syncing."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
         from tracertm.storage.sync_engine import SyncStatus
-
         mock_status = MagicMock(
-            status=SyncStatus.SYNCING,
-            pending_changes=3,
-            last_sync=datetime.now(),
-            conflicts_count=0,
-            last_error=None
+            status=SyncStatus.SYNCING, pending_changes=3, last_sync=datetime.now(), conflicts_count=0, last_error=None
         )
         mock_storage_adapter.return_value.get_sync_status.return_value = mock_status
 
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
         mock_widget = MagicMock()
         app.query_one = MagicMock(return_value=mock_widget)
 
@@ -743,19 +645,13 @@ class TestUpdateSyncStatus:
 
     def test_update_sync_status_with_conflicts(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
         """Test sync status update with conflicts."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
         from tracertm.storage.sync_engine import SyncStatus
-
         mock_status = MagicMock(
-            status=SyncStatus.CONFLICT,
-            pending_changes=0,
-            last_sync=datetime.now(),
-            conflicts_count=2,
-            last_error=None
+            status=SyncStatus.CONFLICT, pending_changes=0, last_sync=datetime.now(), conflicts_count=2, last_error=None
         )
         mock_storage_adapter.return_value.get_sync_status.return_value = mock_status
 
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
         mock_widget = MagicMock()
         app.query_one = MagicMock(return_value=mock_widget)
 
@@ -769,9 +665,7 @@ class TestRefreshDataFlow:
 
     def test_refresh_data_with_no_project(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
         """Test refresh_data when project_name is None."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
-
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
         app.project_name = None
         app.refresh_stats = MagicMock()
 
@@ -779,14 +673,14 @@ class TestRefreshDataFlow:
 
         app.refresh_stats.assert_not_called()
 
-    def test_refresh_data_creates_missing_project(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
+    def test_refresh_data_creates_missing_project(
+        self, mock_config_manager, mock_storage_adapter, mock_textual_available
+    ):
         """Test refresh_data creates project if missing."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
-
         mock_storage_adapter.return_value.get_project.return_value = None
         mock_storage_adapter.return_value.create_project.return_value = {"id": "test-project"}
 
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
         app.project_name = "test-project"
         app.refresh_stats = MagicMock()
         app.refresh_items = MagicMock()
@@ -795,11 +689,11 @@ class TestRefreshDataFlow:
 
         mock_storage_adapter.return_value.create_project.assert_called_once()
 
-    def test_refresh_data_calls_both_refresh_methods(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
+    def test_refresh_data_calls_both_refresh_methods(
+        self, mock_config_manager, mock_storage_adapter, mock_textual_available
+    ):
         """Test refresh_data calls both stats and items refresh."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
-
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
         app.project_name = "test-project"
         app.refresh_stats = MagicMock()
         app.refresh_items = MagicMock()
@@ -815,26 +709,19 @@ class TestPerformanceLargeDataset:
 
     def test_refresh_items_with_large_dataset(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
         """Test refresh_items performance with many items."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
-
         # Create 500 mock items
         large_items = [
-            MagicMock(
-                id=f"item-{i}",
-                title=f"Item {i}",
-                status="todo",
-                priority="high",
-                item_metadata={}
-            )
+            MagicMock(id=f"item-{i}", title=f"Item {i}", status="todo", priority="high", item_metadata={})
             for i in range(500)
         ]
         mock_storage_adapter.return_value.list_items.return_value = large_items
 
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
         mock_table = MagicMock()
         app.query_one = MagicMock(return_value=mock_table)
 
         import time
+
         start = time.time()
         app.refresh_items({"id": "test-project"})
         elapsed = time.time() - start
@@ -845,15 +732,15 @@ class TestPerformanceLargeDataset:
 
     def test_refresh_stats_performance(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
         """Test refresh_stats performance."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
-
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
         mock_table = MagicMock()
         mock_summary = MagicMock()
-        app.query_one = MagicMock(side_effect=lambda selector, *args:
-            mock_table if "stats-table" in selector else mock_summary)
+        app.query_one = MagicMock(
+            side_effect=lambda selector, *args: mock_table if "stats-table" in selector else mock_summary
+        )
 
         import time
+
         start = time.time()
         app.refresh_stats({"id": "test-project"})
         elapsed = time.time() - start
@@ -865,11 +752,11 @@ class TestPerformanceLargeDataset:
 class TestStartSyncStatusUpdates:
     """Tests for sync status update scheduling."""
 
-    def test_start_sync_status_updates_sets_interval(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
+    def test_start_sync_status_updates_sets_interval(
+        self, mock_config_manager, mock_storage_adapter, mock_textual_available
+    ):
         """Test that start_sync_status_updates sets up interval."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
-
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
         app.set_interval = MagicMock(return_value=MagicMock())
 
         app.start_sync_status_updates()
@@ -885,9 +772,7 @@ class TestOnUnmount:
 
     def test_on_unmount_stops_timer(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
         """Test that on_unmount stops the sync timer."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
-
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
         mock_timer = MagicMock()
         app._sync_timer = mock_timer
 
@@ -901,18 +786,10 @@ class TestEdgeCases:
 
     def test_refresh_items_with_none_metadata(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
         """Test refresh_items handles items with None metadata."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
-
-        item = MagicMock(
-            id="item-1",
-            title="Test",
-            status="todo",
-            priority="high",
-            item_metadata=None
-        )
+        item = MagicMock(id="item-1", title="Test", status="todo", priority="high", item_metadata=None)
         mock_storage_adapter.return_value.list_items.return_value = [item]
 
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
         mock_table = MagicMock()
         app.query_one = MagicMock(return_value=mock_table)
 
@@ -922,9 +799,7 @@ class TestEdgeCases:
 
     def test_callback_handles_app_not_running(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
         """Test callbacks handle app not running gracefully."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
-
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
 
         # Mock call_from_thread to raise exception
         app.call_from_thread = MagicMock(side_effect=RuntimeError("App not running"))
@@ -936,9 +811,7 @@ class TestEdgeCases:
 
     def test_tree_node_selected_with_none_data(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
         """Test tree selection with None data doesn't crash."""
-        from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp
-
-        app = EnhancedDashboardApp()
+        app: Any = cast(Any, EnhancedDashboardApp())
         event = MagicMock()
         event.node.data = None
 
@@ -949,9 +822,11 @@ class TestEdgeCases:
 class TestReactiveStateUpdates:
     """Tests for reactive state updates in sync status widget."""
 
-    def test_sync_status_widget_reactive_properties(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
+    def test_sync_status_widget_reactive_properties(
+        self, mock_config_manager, mock_storage_adapter, mock_textual_available
+    ):
         """Test SyncStatusWidget reactive properties."""
-        from tracertm.tui.widgets.sync_status import SyncStatusWidget
+        from tracertm.tui.widgets.sync_status import SyncStatusWidget  # type: ignore[possibly-missing-import]
 
         widget = SyncStatusWidget()
 
@@ -970,7 +845,7 @@ class TestReactiveStateUpdates:
 
     def test_sync_status_widget_methods(self, mock_config_manager, mock_storage_adapter, mock_textual_available):
         """Test SyncStatusWidget setter methods."""
-        from tracertm.tui.widgets.sync_status import SyncStatusWidget
+        from tracertm.tui.widgets.sync_status import SyncStatusWidget  # type: ignore[possibly-missing-import]
 
         widget = SyncStatusWidget()
 

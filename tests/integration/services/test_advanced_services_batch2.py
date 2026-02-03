@@ -12,15 +12,12 @@ Total: 60+ integration tests covering all execution paths, error scenarios,
 and edge cases to achieve 100% coverage.
 """
 
-import hashlib
-import json
-from datetime import datetime, timedelta
-from typing import Any
+from datetime import UTC, datetime, timedelta, timezone
 
 import pytest
 import pytest_asyncio
 
-from tracertm.services.api_webhooks_service import APIWebhooksService, WebhookEvent
+from tracertm.services.api_webhooks_service import APIWebhooksService
 from tracertm.services.commit_linking_service import CommitLinkingService
 from tracertm.services.documentation_service import DocumentationService
 from tracertm.services.event_sourcing_service import (
@@ -60,9 +57,7 @@ class TestAPIWebhooksServiceIntegration:
         WHEN: Creating an API key with name, permissions, and expiration
         THEN: API key is created with correct attributes
         """
-        result = webhooks_service.create_api_key(
-            name="test-key", permissions=["read", "write"], expires_in_days=30
-        )
+        result = webhooks_service.create_api_key(name="test-key", permissions=["read", "write"], expires_in_days=30)
 
         assert result["name"] == "test-key"
         assert result["permissions"] == ["read", "write"]
@@ -80,9 +75,7 @@ class TestAPIWebhooksServiceIntegration:
         WHEN: Creating an API key without expires_in_days
         THEN: API key is created with expires_at as None
         """
-        result = webhooks_service.create_api_key(
-            name="permanent-key", permissions=["read"]
-        )
+        result = webhooks_service.create_api_key(name="permanent-key", permissions=["read"])
 
         assert result["expires_at"] is None
         assert result["active"] is True
@@ -109,9 +102,7 @@ class TestAPIWebhooksServiceIntegration:
         WHEN: Validating the key
         THEN: Validation succeeds with key details
         """
-        api_key = webhooks_service.create_api_key(
-            name="valid-key", permissions=["read", "write"]
-        )
+        api_key = webhooks_service.create_api_key(name="valid-key", permissions=["read", "write"])
 
         result = webhooks_service.validate_api_key(api_key["key"])
 
@@ -140,9 +131,7 @@ class TestAPIWebhooksServiceIntegration:
         WHEN: Validating the inactive key
         THEN: Validation fails with inactive error
         """
-        api_key = webhooks_service.create_api_key(
-            name="inactive-key", permissions=["read"]
-        )
+        api_key = webhooks_service.create_api_key(name="inactive-key", permissions=["read"])
         webhooks_service.revoke_api_key(api_key["key"])
 
         result = webhooks_service.validate_api_key(api_key["key"])
@@ -159,9 +148,7 @@ class TestAPIWebhooksServiceIntegration:
         THEN: Validation fails with expiration error
         """
         # Create a key that expired yesterday
-        api_key = webhooks_service.create_api_key(
-            name="expired-key", permissions=["read"], expires_in_days=-1
-        )
+        api_key = webhooks_service.create_api_key(name="expired-key", permissions=["read"], expires_in_days=-1)
 
         result = webhooks_service.validate_api_key(api_key["key"])
 
@@ -176,9 +163,7 @@ class TestAPIWebhooksServiceIntegration:
         WHEN: Revoking the key
         THEN: Key is marked as inactive
         """
-        api_key = webhooks_service.create_api_key(
-            name="revoke-key", permissions=["read"]
-        )
+        api_key = webhooks_service.create_api_key(name="revoke-key", permissions=["read"])
 
         result = webhooks_service.revoke_api_key(api_key["key"])
 
@@ -231,9 +216,7 @@ class TestAPIWebhooksServiceIntegration:
         WHEN: Registering a webhook without secret
         THEN: Webhook is registered with None secret
         """
-        result = webhooks_service.register_webhook(
-            url="https://example.com/webhook", events=["item.deleted"]
-        )
+        result = webhooks_service.register_webhook(url="https://example.com/webhook", events=["item.deleted"])
 
         assert result["secret"] is None
         assert result["active"] is True
@@ -246,9 +229,7 @@ class TestAPIWebhooksServiceIntegration:
         WHEN: Unregistering the webhook
         THEN: Webhook is removed
         """
-        webhook = webhooks_service.register_webhook(
-            url="https://example.com/webhook", events=["item.created"]
-        )
+        webhook = webhooks_service.register_webhook(url="https://example.com/webhook", events=["item.created"])
 
         result = webhooks_service.unregister_webhook(webhook["id"])
 
@@ -277,15 +258,9 @@ class TestAPIWebhooksServiceIntegration:
         WHEN: Triggering the event
         THEN: All matching webhooks are triggered
         """
-        webhooks_service.register_webhook(
-            url="https://example.com/webhook1", events=["item.created", "item.updated"]
-        )
-        webhooks_service.register_webhook(
-            url="https://example.com/webhook2", events=["item.created"]
-        )
-        webhooks_service.register_webhook(
-            url="https://example.com/webhook3", events=["item.deleted"]
-        )
+        webhooks_service.register_webhook(url="https://example.com/webhook1", events=["item.created", "item.updated"])
+        webhooks_service.register_webhook(url="https://example.com/webhook2", events=["item.created"])
+        webhooks_service.register_webhook(url="https://example.com/webhook3", events=["item.deleted"])
 
         result = webhooks_service.trigger_webhook_event(
             event_type="item.created",
@@ -307,9 +282,7 @@ class TestAPIWebhooksServiceIntegration:
         WHEN: Triggering an event that doesn't match
         THEN: No webhooks are triggered
         """
-        webhooks_service.register_webhook(
-            url="https://example.com/webhook", events=["item.created"]
-        )
+        webhooks_service.register_webhook(url="https://example.com/webhook", events=["item.created"])
 
         result = webhooks_service.trigger_webhook_event(
             event_type="item.deleted",
@@ -329,9 +302,7 @@ class TestAPIWebhooksServiceIntegration:
         WHEN: Triggering a matching event
         THEN: Inactive webhook is not triggered
         """
-        webhook = webhooks_service.register_webhook(
-            url="https://example.com/webhook", events=["item.created"]
-        )
+        webhook = webhooks_service.register_webhook(url="https://example.com/webhook", events=["item.created"])
         webhooks_service.webhooks[webhook["id"]]["active"] = False
 
         result = webhooks_service.trigger_webhook_event(
@@ -352,9 +323,7 @@ class TestAPIWebhooksServiceIntegration:
         WHEN: Triggering matching events multiple times
         THEN: Delivery count and last_triggered are updated
         """
-        webhook = webhooks_service.register_webhook(
-            url="https://example.com/webhook", events=["item.created"]
-        )
+        webhook = webhooks_service.register_webhook(url="https://example.com/webhook", events=["item.created"])
 
         webhooks_service.trigger_webhook_event(
             event_type="item.created",
@@ -383,15 +352,9 @@ class TestAPIWebhooksServiceIntegration:
         WHEN: Getting events without filter
         THEN: All events are returned
         """
-        webhooks_service.trigger_webhook_event(
-            "item.created", "item-1", "item", "create", {}
-        )
-        webhooks_service.trigger_webhook_event(
-            "item.updated", "item-1", "item", "update", {}
-        )
-        webhooks_service.trigger_webhook_event(
-            "item.deleted", "item-1", "item", "delete", {}
-        )
+        webhooks_service.trigger_webhook_event("item.created", "item-1", "item", "create", {})
+        webhooks_service.trigger_webhook_event("item.updated", "item-1", "item", "update", {})
+        webhooks_service.trigger_webhook_event("item.deleted", "item-1", "item", "delete", {})
 
         events = webhooks_service.get_webhook_events()
 
@@ -408,15 +371,9 @@ class TestAPIWebhooksServiceIntegration:
         WHEN: Getting events filtered by type
         THEN: Only matching events are returned
         """
-        webhooks_service.trigger_webhook_event(
-            "item.created", "item-1", "item", "create", {}
-        )
-        webhooks_service.trigger_webhook_event(
-            "item.created", "item-2", "item", "create", {}
-        )
-        webhooks_service.trigger_webhook_event(
-            "item.updated", "item-1", "item", "update", {}
-        )
+        webhooks_service.trigger_webhook_event("item.created", "item-1", "item", "create", {})
+        webhooks_service.trigger_webhook_event("item.created", "item-2", "item", "create", {})
+        webhooks_service.trigger_webhook_event("item.updated", "item-1", "item", "update", {})
 
         events = webhooks_service.get_webhook_events(event_type="item.created")
 
@@ -432,9 +389,7 @@ class TestAPIWebhooksServiceIntegration:
         THEN: Only the most recent events within limit are returned
         """
         for i in range(10):
-            webhooks_service.trigger_webhook_event(
-                "item.created", f"item-{i}", "item", "create", {}
-            )
+            webhooks_service.trigger_webhook_event("item.created", f"item-{i}", "item", "create", {})
 
         events = webhooks_service.get_webhook_events(limit=3)
 
@@ -454,9 +409,7 @@ class TestAPIWebhooksServiceIntegration:
         WHEN: Setting a rate limit
         THEN: Rate limit is configured correctly
         """
-        result = webhooks_service.set_rate_limit(
-            api_key="test-key", requests_per_minute=100
-        )
+        result = webhooks_service.set_rate_limit(api_key="test-key", requests_per_minute=100)
 
         assert result["api_key"] == "test-key"
         assert result["requests_per_minute"] == 100
@@ -524,7 +477,7 @@ class TestAPIWebhooksServiceIntegration:
         webhooks_service.check_rate_limit("test-key")
 
         # Simulate time passing by setting reset_at in the past
-        past_time = (datetime.utcnow() - timedelta(minutes=2)).isoformat()
+        past_time = (datetime.now(UTC) - timedelta(minutes=2)).isoformat()
         webhooks_service.rate_limits["test-key"]["reset_at"] = past_time
 
         result = webhooks_service.check_rate_limit("test-key")
@@ -564,19 +517,13 @@ class TestAPIWebhooksServiceIntegration:
         webhooks_service.revoke_api_key(key1["key"])
 
         # Create webhooks
-        webhook1 = webhooks_service.register_webhook(
-            "https://example.com/1", ["item.created"]
-        )
+        webhook1 = webhooks_service.register_webhook("https://example.com/1", ["item.created"])
         webhooks_service.register_webhook("https://example.com/2", ["item.updated"])
         webhooks_service.webhooks[webhook1["id"]]["active"] = False
 
         # Trigger events
-        webhooks_service.trigger_webhook_event(
-            "item.created", "item-1", "item", "create", {}
-        )
-        webhooks_service.trigger_webhook_event(
-            "item.updated", "item-1", "item", "update", {}
-        )
+        webhooks_service.trigger_webhook_event("item.created", "item-1", "item", "create", {})
+        webhooks_service.trigger_webhook_event("item.updated", "item-1", "item", "update", {})
 
         stats = webhooks_service.get_api_stats()
 
@@ -608,16 +555,12 @@ class TestCommitLinkingServiceIntegration:
     @pytest_asyncio.fixture
     async def test_item(self, db_session, item_factory, test_project):
         """Create a test item."""
-        return await item_factory(
-            project_id=test_project.id, title="Test Feature", item_type="feature"
-        )
+        return await item_factory(project_id=test_project.id, title="Test Feature", item_type="feature")
 
     # Commit Message Parsing Tests (Lines 31-64)
 
     @pytest.mark.asyncio
-    async def test_parse_commit_message_hash_pattern(
-        self, commit_service, test_project, test_item
-    ):
+    async def test_parse_commit_message_hash_pattern(self, commit_service, test_project, test_item):
         """
         Test parsing commit message with hash pattern.
 
@@ -638,9 +581,7 @@ class TestCommitLinkingServiceIntegration:
         assert isinstance(result["errors"], list)
 
     @pytest.mark.asyncio
-    async def test_parse_commit_message_jira_pattern(
-        self, commit_service, test_project
-    ):
+    async def test_parse_commit_message_jira_pattern(self, commit_service, test_project):
         """
         Test parsing commit message with JIRA pattern.
 
@@ -663,9 +604,7 @@ class TestCommitLinkingServiceIntegration:
         assert "linked" in result
 
     @pytest.mark.asyncio
-    async def test_parse_commit_message_github_pattern(
-        self, commit_service, test_project
-    ):
+    async def test_parse_commit_message_github_pattern(self, commit_service, test_project):
         """
         Test parsing commit message with GitHub pattern.
 
@@ -686,9 +625,7 @@ class TestCommitLinkingServiceIntegration:
         assert "errors" in result
 
     @pytest.mark.asyncio
-    async def test_parse_commit_message_multiple_patterns(
-        self, commit_service, test_project
-    ):
+    async def test_parse_commit_message_multiple_patterns(self, commit_service, test_project):
         """
         Test parsing commit message with multiple patterns.
 
@@ -709,9 +646,7 @@ class TestCommitLinkingServiceIntegration:
         assert isinstance(result["errors"], list)
 
     @pytest.mark.asyncio
-    async def test_parse_commit_message_no_patterns(
-        self, commit_service, test_project
-    ):
+    async def test_parse_commit_message_no_patterns(self, commit_service, test_project):
         """
         Test parsing commit message with no patterns.
 
@@ -734,9 +669,7 @@ class TestCommitLinkingServiceIntegration:
     # Auto-Linking Tests (Lines 66-116)
 
     @pytest.mark.asyncio
-    async def test_auto_link_commit_success(
-        self, commit_service, test_project, test_item, db_session
-    ):
+    async def test_auto_link_commit_success(self, commit_service, test_project, test_item, db_session):
         """
         Test successfully auto-linking a commit to an item.
 
@@ -760,9 +693,7 @@ class TestCommitLinkingServiceIntegration:
         assert "errors" in result
 
     @pytest.mark.asyncio
-    async def test_auto_link_commit_no_references(
-        self, commit_service, test_project, db_session
-    ):
+    async def test_auto_link_commit_no_references(self, commit_service, test_project, db_session):
         """
         Test auto-linking with no item references.
 
@@ -783,9 +714,7 @@ class TestCommitLinkingServiceIntegration:
         assert len(result["linked"]) == 0
 
     @pytest.mark.asyncio
-    async def test_auto_link_commit_with_errors(
-        self, commit_service, test_project, db_session
-    ):
+    async def test_auto_link_commit_with_errors(self, commit_service, test_project, db_session):
         """
         Test auto-linking when errors occur.
 
@@ -807,9 +736,7 @@ class TestCommitLinkingServiceIntegration:
     # Item Lookup Tests (Lines 118-134)
 
     @pytest.mark.asyncio
-    async def test_find_item_by_reference_direct_id(
-        self, commit_service, test_project, test_item
-    ):
+    async def test_find_item_by_reference_direct_id(self, commit_service, test_project, test_item):
         """
         Test finding item by direct ID.
 
@@ -817,17 +744,13 @@ class TestCommitLinkingServiceIntegration:
         WHEN: Looking up by exact ID
         THEN: Item is found
         """
-        item = await commit_service._find_item_by_reference(
-            project_id=test_project.id, reference=test_item.id
-        )
+        item = await commit_service._find_item_by_reference(project_id=test_project.id, reference=test_item.id)
 
         assert item is not None
         assert item.id == test_item.id
 
     @pytest.mark.asyncio
-    async def test_find_item_by_reference_not_found(
-        self, commit_service, test_project
-    ):
+    async def test_find_item_by_reference_not_found(self, commit_service, test_project):
         """
         Test finding item that doesn't exist.
 
@@ -835,9 +758,7 @@ class TestCommitLinkingServiceIntegration:
         WHEN: Looking up by reference
         THEN: None is returned
         """
-        item = await commit_service._find_item_by_reference(
-            project_id=test_project.id, reference="nonexistent-id"
-        )
+        item = await commit_service._find_item_by_reference(project_id=test_project.id, reference="nonexistent-id")
 
         assert item is None
 
@@ -854,9 +775,7 @@ class TestCommitLinkingServiceIntegration:
         """
         other_project = await project_factory(name="Other Project")
 
-        item = await commit_service._find_item_by_reference(
-            project_id=other_project.id, reference=test_item.id
-        )
+        item = await commit_service._find_item_by_reference(project_id=other_project.id, reference=test_item.id)
 
         # Item exists but belongs to different project
         assert item is None
@@ -1002,15 +921,9 @@ class TestDocumentationServiceIntegration:
         WHEN: Listing without filter
         THEN: All endpoints are returned
         """
-        doc_service.register_endpoint(
-            "/api/items", "GET", "List items", [], {}
-        )
-        doc_service.register_endpoint(
-            "/api/items", "POST", "Create item", [], {}
-        )
-        doc_service.register_endpoint(
-            "/api/projects", "GET", "List projects", [], {}
-        )
+        doc_service.register_endpoint("/api/items", "GET", "List items", [], {})
+        doc_service.register_endpoint("/api/items", "POST", "Create item", [], {})
+        doc_service.register_endpoint("/api/projects", "GET", "List projects", [], {})
 
         result = doc_service.list_endpoints()
 
@@ -1024,15 +937,9 @@ class TestDocumentationServiceIntegration:
         WHEN: Listing with method filter
         THEN: Only matching endpoints are returned
         """
-        doc_service.register_endpoint(
-            "/api/items", "GET", "List items", [], {}
-        )
-        doc_service.register_endpoint(
-            "/api/items", "POST", "Create item", [], {}
-        )
-        doc_service.register_endpoint(
-            "/api/projects", "GET", "List projects", [], {}
-        )
+        doc_service.register_endpoint("/api/items", "GET", "List items", [], {})
+        doc_service.register_endpoint("/api/items", "POST", "Create item", [], {})
+        doc_service.register_endpoint("/api/projects", "GET", "List projects", [], {})
 
         result = doc_service.list_endpoints(method="GET")
 
@@ -1073,9 +980,7 @@ class TestDocumentationServiceIntegration:
         WHEN: Getting the schema
         THEN: Schema details are returned
         """
-        doc_service.register_schema(
-            name="Project", schema={"type": "object"}, description="Project schema"
-        )
+        doc_service.register_schema(name="Project", schema={"type": "object"}, description="Project schema")
 
         result = doc_service.get_schema("Project")
 
@@ -1140,12 +1045,8 @@ class TestDocumentationServiceIntegration:
         WHEN: Adding multiple examples
         THEN: All examples are stored
         """
-        doc_service.add_example(
-            "/api/items", "POST", "Example 1", {"data": "1"}, {"id": "1"}
-        )
-        doc_service.add_example(
-            "/api/items", "POST", "Example 2", {"data": "2"}, {"id": "2"}
-        )
+        doc_service.add_example("/api/items", "POST", "Example 1", {"data": "1"}, {"id": "1"})
+        doc_service.add_example("/api/items", "POST", "Example 2", {"data": "2"}, {"id": "2"})
 
         examples = doc_service.get_examples("/api/items", "POST")
 
@@ -1159,12 +1060,8 @@ class TestDocumentationServiceIntegration:
         WHEN: Getting examples for one endpoint
         THEN: Only that endpoint's examples are returned
         """
-        doc_service.add_example(
-            "/api/items", "POST", "Example 1", {}, {}
-        )
-        doc_service.add_example(
-            "/api/projects", "POST", "Example 2", {}, {}
-        )
+        doc_service.add_example("/api/items", "POST", "Example 1", {}, {})
+        doc_service.add_example("/api/projects", "POST", "Example 2", {}, {})
 
         examples = doc_service.get_examples("/api/items", "POST")
 
@@ -1274,9 +1171,7 @@ class TestDocumentationServiceIntegration:
             path="/api/items",
             method="GET",
             description="Get all items",
-            parameters=[
-                {"name": "status", "type": "string", "description": "Filter by status"}
-            ],
+            parameters=[{"name": "status", "type": "string", "description": "Filter by status"}],
             response_schema={"type": "array"},
         )
 
@@ -1373,9 +1268,7 @@ class TestEventSourcingServiceIntegration:
     @pytest_asyncio.fixture
     async def test_item(self, db_session, item_factory, test_project):
         """Create a test item."""
-        return await item_factory(
-            project_id=test_project.id, title="Event Test Item"
-        )
+        return await item_factory(project_id=test_project.id, title="Event Test Item")
 
     @pytest_asyncio.fixture
     async def create_test_events(self, db_session, test_project, test_item):
@@ -1402,9 +1295,7 @@ class TestEventSourcingServiceIntegration:
     # Audit Trail Tests (Lines 44-71)
 
     @pytest.mark.asyncio
-    async def test_get_audit_trail_by_project(
-        self, event_service, test_project, create_test_events
-    ):
+    async def test_get_audit_trail_by_project(self, event_service, test_project, create_test_events):
         """
         Test getting audit trail for entire project.
 
@@ -1419,9 +1310,7 @@ class TestEventSourcingServiceIntegration:
         assert all(entry.entity_type in ["item", "project"] for entry in trail)
 
     @pytest.mark.asyncio
-    async def test_get_audit_trail_by_entity(
-        self, event_service, test_project, test_item, create_test_events
-    ):
+    async def test_get_audit_trail_by_entity(self, event_service, test_project, test_item, create_test_events):
         """
         Test getting audit trail for specific entity.
 
@@ -1429,17 +1318,13 @@ class TestEventSourcingServiceIntegration:
         WHEN: Getting audit trail by entity_id
         THEN: Only entity events are returned
         """
-        trail = await event_service.get_audit_trail(
-            project_id=test_project.id, entity_id=test_item.id
-        )
+        trail = await event_service.get_audit_trail(project_id=test_project.id, entity_id=test_item.id)
 
         assert len(trail) >= 3
         assert all(entry.entity_id == test_item.id for entry in trail)
 
     @pytest.mark.asyncio
-    async def test_get_audit_trail_with_limit(
-        self, event_service, test_project, create_test_events
-    ):
+    async def test_get_audit_trail_with_limit(self, event_service, test_project, create_test_events):
         """
         Test getting audit trail with limit.
 
@@ -1447,16 +1332,12 @@ class TestEventSourcingServiceIntegration:
         WHEN: Getting audit trail with limit
         THEN: Limited number of events returned
         """
-        trail = await event_service.get_audit_trail(
-            project_id=test_project.id, limit=2
-        )
+        trail = await event_service.get_audit_trail(project_id=test_project.id, limit=2)
 
         assert len(trail) <= 2
 
     @pytest.mark.asyncio
-    async def test_audit_trail_entry_structure(
-        self, event_service, test_project, create_test_events
-    ):
+    async def test_audit_trail_entry_structure(self, event_service, test_project, create_test_events):
         """
         Test audit trail entry has correct structure.
 
@@ -1478,9 +1359,7 @@ class TestEventSourcingServiceIntegration:
     # Event Replay Tests (Lines 72-107)
 
     @pytest.mark.asyncio
-    async def test_replay_events_all(
-        self, event_service, test_project, test_item, create_test_events
-    ):
+    async def test_replay_events_all(self, event_service, test_project, test_item, create_test_events):
         """
         Test replaying all events for an entity.
 
@@ -1488,9 +1367,7 @@ class TestEventSourcingServiceIntegration:
         WHEN: Replaying all events
         THEN: Final state is reconstructed
         """
-        result = await event_service.replay_events(
-            project_id=test_project.id, entity_id=test_item.id
-        )
+        result = await event_service.replay_events(project_id=test_project.id, entity_id=test_item.id)
 
         assert isinstance(result, ReplayResult)
         assert result.total_events >= 0
@@ -1498,9 +1375,7 @@ class TestEventSourcingServiceIntegration:
         assert isinstance(result.final_state, dict)
 
     @pytest.mark.asyncio
-    async def test_replay_events_up_to_timestamp(
-        self, event_service, test_project, test_item, create_test_events
-    ):
+    async def test_replay_events_up_to_timestamp(self, event_service, test_project, test_item, create_test_events):
         """
         Test replaying events up to specific timestamp.
 
@@ -1509,7 +1384,7 @@ class TestEventSourcingServiceIntegration:
         THEN: Only events before cutoff are replayed
         """
         # Use future timestamp to get all events
-        future_time = (datetime.utcnow() + timedelta(hours=1)).isoformat()
+        future_time = (datetime.now(UTC) + timedelta(hours=1)).isoformat()
 
         result = await event_service.replay_events(
             project_id=test_project.id,
@@ -1538,7 +1413,7 @@ class TestEventSourcingServiceIntegration:
             entity_type="item",
             entity_id="item-1",
             data={"title": "New Item"},
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(UTC),
         )
 
         new_state = await event_service._apply_event(state, event)
@@ -1567,7 +1442,7 @@ class TestEventSourcingServiceIntegration:
             entity_type="item",
             entity_id="item-1",
             data={"title": "New Title", "status": "in_progress"},
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(UTC),
         )
 
         new_state = await event_service._apply_event(state, event)
@@ -1595,7 +1470,7 @@ class TestEventSourcingServiceIntegration:
             entity_type="item",
             entity_id="item-1",
             data={"deleted_at": "2025-01-01T00:00:00"},
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(UTC),
         )
 
         new_state = await event_service._apply_event(state, event)
@@ -1622,7 +1497,7 @@ class TestEventSourcingServiceIntegration:
             entity_type="link",
             entity_id="link-1",
             data={"target_item_id": "item-2", "link_type": "depends_on"},
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(UTC),
         )
 
         new_state = await event_service._apply_event(state, event)
@@ -1635,9 +1510,7 @@ class TestEventSourcingServiceIntegration:
     # Event History Tests (Lines 145-157)
 
     @pytest.mark.asyncio
-    async def test_get_event_history_all(
-        self, event_service, test_item, create_test_events
-    ):
+    async def test_get_event_history_all(self, event_service, test_item, create_test_events):
         """
         Test getting complete event history.
 
@@ -1651,9 +1524,7 @@ class TestEventSourcingServiceIntegration:
         assert all(e.entity_id == test_item.id for e in events)
 
     @pytest.mark.asyncio
-    async def test_get_event_history_filtered_by_type(
-        self, event_service, test_item, create_test_events
-    ):
+    async def test_get_event_history_filtered_by_type(self, event_service, test_item, create_test_events):
         """
         Test getting event history filtered by type.
 
@@ -1661,9 +1532,7 @@ class TestEventSourcingServiceIntegration:
         WHEN: Getting event history with type filter
         THEN: Only matching events are returned
         """
-        events = await event_service.get_event_history(
-            entity_id=test_item.id, event_type="item_updated"
-        )
+        events = await event_service.get_event_history(entity_id=test_item.id, event_type="item_updated")
 
         assert all(e.event_type == "item_updated" for e in events)
 
@@ -1683,9 +1552,7 @@ class TestEventSourcingServiceIntegration:
     # Changes Between Timestamps Tests (Lines 158-187)
 
     @pytest.mark.asyncio
-    async def test_get_changes_between_timestamps(
-        self, event_service, test_item, create_test_events, db_session
-    ):
+    async def test_get_changes_between_timestamps(self, event_service, test_item, create_test_events, db_session):
         """
         Test getting changes between two timestamps.
 
@@ -1694,8 +1561,8 @@ class TestEventSourcingServiceIntegration:
         THEN: Events in range are returned
         """
         # Use wide time range to capture test events
-        start = (datetime.utcnow() - timedelta(hours=1)).isoformat()
-        end = (datetime.utcnow() + timedelta(hours=1)).isoformat()
+        start = (datetime.now(UTC) - timedelta(hours=1)).isoformat()
+        end = (datetime.now(UTC) + timedelta(hours=1)).isoformat()
 
         changes = await event_service.get_changes_between(
             entity_id=test_item.id, start_timestamp=start, end_timestamp=end
@@ -1705,9 +1572,7 @@ class TestEventSourcingServiceIntegration:
         assert all(isinstance(c, AuditTrailEntry) for c in changes)
 
     @pytest.mark.asyncio
-    async def test_get_changes_between_narrow_window(
-        self, event_service, test_item, create_test_events
-    ):
+    async def test_get_changes_between_narrow_window(self, event_service, test_item, create_test_events):
         """
         Test getting changes in a narrow time window.
 
@@ -1716,8 +1581,8 @@ class TestEventSourcingServiceIntegration:
         THEN: Only events in window are returned
         """
         # Use past time range that won't capture events
-        start = (datetime.utcnow() - timedelta(days=2)).isoformat()
-        end = (datetime.utcnow() - timedelta(days=1)).isoformat()
+        start = (datetime.now(UTC) - timedelta(days=2)).isoformat()
+        end = (datetime.now(UTC) - timedelta(days=1)).isoformat()
 
         changes = await event_service.get_changes_between(
             entity_id=test_item.id, start_timestamp=start, end_timestamp=end
@@ -1785,12 +1650,8 @@ class TestExternalIntegrationServiceIntegration:
         WHEN: Registering multiple integrations
         THEN: All are stored independently
         """
-        integration_service.register_integration(
-            "github-1", IntegrationType.GITHUB, {"repo": "repo1"}
-        )
-        integration_service.register_integration(
-            "github-2", IntegrationType.GITHUB, {"repo": "repo2"}
-        )
+        integration_service.register_integration("github-1", IntegrationType.GITHUB, {"repo": "repo1"})
+        integration_service.register_integration("github-2", IntegrationType.GITHUB, {"repo": "repo2"})
 
         assert len(integration_service.integrations) == 2
         assert "github-1" in integration_service.integrations
@@ -1804,9 +1665,7 @@ class TestExternalIntegrationServiceIntegration:
         WHEN: Getting the integration by name
         THEN: Integration is returned
         """
-        integration_service.register_integration(
-            "test-integration", IntegrationType.VSCODE
-        )
+        integration_service.register_integration("test-integration", IntegrationType.VSCODE)
 
         result = integration_service.get_integration("test-integration")
 
@@ -1855,9 +1714,7 @@ class TestExternalIntegrationServiceIntegration:
         integration_service.register_integration("github-2", IntegrationType.GITHUB)
         integration_service.register_integration("slack", IntegrationType.SLACK)
 
-        result = integration_service.list_integrations(
-            integration_type=IntegrationType.GITHUB
-        )
+        result = integration_service.list_integrations(integration_type=IntegrationType.GITHUB)
 
         assert len(result) == 2
         assert all(i.integration_type == IntegrationType.GITHUB for i in result)
@@ -1945,9 +1802,7 @@ class TestExternalIntegrationServiceIntegration:
             "github", IntegrationType.GITHUB, {"token": "old-token", "repo": "repo"}
         )
 
-        result = integration_service.update_integration_config(
-            "github", {"token": "new-token", "branch": "main"}
-        )
+        result = integration_service.update_integration_config("github", {"token": "new-token", "branch": "main"})
 
         assert result is not None
         assert result.config["token"] == "new-token"
@@ -1962,9 +1817,7 @@ class TestExternalIntegrationServiceIntegration:
         WHEN: Updating config for non-existent integration
         THEN: None is returned
         """
-        result = integration_service.update_integration_config(
-            "nonexistent", {"key": "value"}
-        )
+        result = integration_service.update_integration_config("nonexistent", {"key": "value"})
 
         assert result is None
 
@@ -2159,9 +2012,7 @@ class TestExternalIntegrationServiceIntegration:
 
         assert errors == []
 
-    def test_validate_integration_config_slack_missing_webhook(
-        self, integration_service
-    ):
+    def test_validate_integration_config_slack_missing_webhook(self, integration_service):
         """
         Test validating Slack integration without webhook_url.
 
@@ -2169,17 +2020,13 @@ class TestExternalIntegrationServiceIntegration:
         WHEN: Validating the config
         THEN: Webhook error is returned
         """
-        integration = Integration(
-            name="slack", integration_type=IntegrationType.SLACK, config={}
-        )
+        integration = Integration(name="slack", integration_type=IntegrationType.SLACK, config={})
 
         errors = integration_service.validate_integration_config(integration)
 
         assert "Slack webhook URL is required" in errors
 
-    def test_validate_integration_config_vscode_missing_extension_id(
-        self, integration_service
-    ):
+    def test_validate_integration_config_vscode_missing_extension_id(self, integration_service):
         """
         Test validating VS Code integration without extension_id.
 
@@ -2187,9 +2034,7 @@ class TestExternalIntegrationServiceIntegration:
         WHEN: Validating the config
         THEN: Extension ID error is returned
         """
-        integration = Integration(
-            name="vscode", integration_type=IntegrationType.VSCODE, config={}
-        )
+        integration = Integration(name="vscode", integration_type=IntegrationType.VSCODE, config={})
 
         errors = integration_service.validate_integration_config(integration)
 
@@ -2203,9 +2048,7 @@ class TestExternalIntegrationServiceIntegration:
         WHEN: Validating the config
         THEN: Name error is returned
         """
-        integration = Integration(
-            name="", integration_type=IntegrationType.CUSTOM, config={}
-        )
+        integration = Integration(name="", integration_type=IntegrationType.CUSTOM, config={})
 
         errors = integration_service.validate_integration_config(integration)
 

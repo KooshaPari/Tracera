@@ -9,10 +9,10 @@ const localeMap = {
     "¥":"ja-JP",
     "₹":"en-IN",
 }
-const sign = "(?:-|\+)?";
-const digitsAndSeparator = "(?:\d+|\d{1,3}(?:,\d{3})+)";
-const decimalPart = "(?:\.\d{1,2})?";
-const symbol = "(?:\$|€|¥|₹)?";
+const sign = "(?:-|+)?";
+const digitsAndSeparator = "(?:d+|d{1,3}(?:,d{3})+)";
+const decimalPart = "(?:.d{1,2})?";
+const symbol = "(?:$|€|¥|₹)?";
 
 const currencyCheckRegex = /^\s*(?:-|\+)?(?:\d+|\d{1,3}(?:,\d{3})+)?(?:\.\d{1,2})?\s*(?:\$|€|¥|₹)?\s*$/u;
 

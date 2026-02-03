@@ -62,7 +62,7 @@ const nodeVersion = process.version
 let readdir = (path, options, cb) => fs.readdir(path, options, cb)
 let readdirSync = (path, options) => fs.readdirSync(path, options)
 /* istanbul ignore next */
-if (/^v4\./.test(nodeVersion))
+if (nodeVersion.startsWith('v4.'))
   readdir = (path, options, cb) => fs.readdir(path, cb)
 
 const chown = (cpath, uid, gid, cb) => {

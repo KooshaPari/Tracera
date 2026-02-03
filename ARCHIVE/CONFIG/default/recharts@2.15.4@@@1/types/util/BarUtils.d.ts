@@ -14,4 +14,4 @@ export type MinPointSize = number | ((value: number | undefined | null, index: n
  * @returns minPointSize
  */
 export declare const minPointSizeCallback: (minPointSize: MinPointSize, defaultValue?: number) => (value: unknown, index: number) => number;
-export {};
+

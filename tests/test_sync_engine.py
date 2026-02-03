@@ -8,11 +8,9 @@ Tests basic functionality of the sync engine including:
 - Basic sync operations
 """
 
-import asyncio
 import hashlib
-from datetime import datetime
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -22,7 +20,6 @@ from tracertm.storage import (
     OperationType,
     SyncEngine,
     SyncQueue,
-    SyncState,
     SyncStateManager,
     SyncStatus,
 )
@@ -39,7 +36,7 @@ class TestChangeDetector:
         hash1 = detector.compute_hash(content1)
 
         # Hash should be SHA-256 hex digest
-        expected_hash = hashlib.sha256(content1.encode('utf-8')).hexdigest()
+        expected_hash = hashlib.sha256(content1.encode("utf-8")).hexdigest()
         assert hash1 == expected_hash
 
         # Same content = same hash
@@ -128,7 +125,7 @@ class TestSyncQueue:
             entity_type=EntityType.ITEM,
             entity_id="item-123",
             operation=OperationType.CREATE,
-            payload={"title": "New Item"}
+            payload={"title": "New Item"},
         )
 
         assert queue_id == 1
@@ -185,11 +182,7 @@ class TestSyncEngine:
 
     def test_sync_engine_initialization(self, mock_db, mock_api, mock_storage):
         """Test sync engine initialization."""
-        engine = SyncEngine(
-            db_connection=mock_db,
-            api_client=mock_api,
-            storage_manager=mock_storage
-        )
+        engine = SyncEngine(db_connection=mock_db, api_client=mock_api, storage_manager=mock_storage)
 
         assert engine.db == mock_db
         assert engine.api == mock_api
@@ -207,28 +200,20 @@ class TestSyncEngine:
         mock_db.engine.connect.return_value.__enter__ = MagicMock(return_value=mock_conn)
         mock_db.engine.connect.return_value.__exit__ = MagicMock(return_value=False)
 
-        engine = SyncEngine(
-            db_connection=mock_db,
-            api_client=mock_api,
-            storage_manager=mock_storage
-        )
+        engine = SyncEngine(db_connection=mock_db, api_client=mock_api, storage_manager=mock_storage)
 
         queue_id = engine.queue_change(
             entity_type=EntityType.ITEM,
             entity_id="item-123",
             operation=OperationType.UPDATE,
-            payload={"status": "done"}
+            payload={"status": "done"},
         )
 
         assert queue_id == 1
 
     def test_is_syncing(self, mock_db, mock_api, mock_storage):
         """Test syncing status check."""
-        engine = SyncEngine(
-            db_connection=mock_db,
-            api_client=mock_api,
-            storage_manager=mock_storage
-        )
+        engine = SyncEngine(db_connection=mock_db, api_client=mock_api, storage_manager=mock_storage)
 
         assert not engine.is_syncing()
 

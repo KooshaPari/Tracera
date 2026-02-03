@@ -7,10 +7,9 @@ by only loading tool definitions when they're actually called.
 
 from __future__ import annotations
 
-from typing import Any, Callable, Dict
-from functools import lru_cache
 import importlib
 import logging
+from collections.abc import Callable
 
 logger = logging.getLogger(__name__)
 
@@ -19,9 +18,9 @@ class ToolRegistry:
     """Registry for lazy tool loading."""
 
     def __init__(self):
-        self._tool_loaders: Dict[str, Callable] = {}
+        self._tool_loaders: dict[str, Callable] = {}
         self._loaded_modules: set[str] = set()
-        self._tool_metadata: Dict[str, dict] = {}
+        self._tool_metadata: dict[str, dict] = {}
 
     def register_tool_loader(
         self,
@@ -37,6 +36,7 @@ class ToolRegistry:
             module_path: Python module path to load (e.g., 'tracertm.mcp.tools.params.project')
             metadata: Optional metadata about the tool (description, etc.)
         """
+
         def loader():
             if module_path not in self._loaded_modules:
                 logger.debug(f"Lazy loading module: {module_path}")
@@ -102,145 +102,137 @@ def register_all_tools() -> None:
     registry.register_tool_loader(
         "project_manage",
         "tracertm.mcp.tools.params.project",
-        {"description": "Unified project operations", "domain": "project"}
+        {"description": "Unified project operations", "domain": "project"},
     )
     # Trigger load immediately to register @mcp.tool decorator
     registry.load_tool("project_manage")
 
     # Item tools
     registry.register_tool_loader(
-        "item_manage",
-        "tracertm.mcp.tools.params.item",
-        {"description": "Unified item operations", "domain": "item"}
+        "item_manage", "tracertm.mcp.tools.params.item", {"description": "Unified item operations", "domain": "item"}
     )
 
     # Link tools
     registry.register_tool_loader(
-        "link_manage",
-        "tracertm.mcp.tools.params.link",
-        {"description": "Unified link operations", "domain": "link"}
+        "link_manage", "tracertm.mcp.tools.params.link", {"description": "Unified link operations", "domain": "link"}
     )
 
     # Traceability & Analysis tools
     registry.register_tool_loader(
         "trace_analyze",
         "tracertm.mcp.tools.params.trace",
-        {"description": "Unified traceability analysis", "domain": "trace"}
+        {"description": "Unified traceability analysis", "domain": "trace"},
     )
     registry.register_tool_loader(
         "quality_analyze",
         "tracertm.mcp.tools.params.trace",
-        {"description": "Unified quality analysis", "domain": "trace"}
+        {"description": "Unified quality analysis", "domain": "trace"},
     )
 
     # Graph tools
     registry.register_tool_loader(
-        "graph_analyze",
-        "tracertm.mcp.tools.params.graph",
-        {"description": "Unified graph analysis", "domain": "graph"}
+        "graph_analyze", "tracertm.mcp.tools.params.graph", {"description": "Unified graph analysis", "domain": "graph"}
     )
 
     # Specification tools
     registry.register_tool_loader(
         "specification_manage",
         "tracertm.mcp.tools.params.specification",
-        {"description": "Unified specification operations", "domain": "specification"}
+        {"description": "Unified specification operations", "domain": "specification"},
     )
 
     # Configuration tools
     registry.register_tool_loader(
         "config_manage",
         "tracertm.mcp.tools.params.config",
-        {"description": "Unified configuration operations", "domain": "config"}
+        {"description": "Unified configuration operations", "domain": "config"},
     )
 
     # Sync & Storage tools
     registry.register_tool_loader(
         "sync_manage",
         "tracertm.mcp.tools.params.storage",
-        {"description": "Unified sync operations", "domain": "storage"}
+        {"description": "Unified sync operations", "domain": "storage"},
     )
     registry.register_tool_loader(
         "backup_manage",
         "tracertm.mcp.tools.params.storage",
-        {"description": "Unified backup operations", "domain": "storage"}
+        {"description": "Unified backup operations", "domain": "storage"},
     )
     registry.register_tool_loader(
         "file_watch_manage",
         "tracertm.mcp.tools.params.storage",
-        {"description": "Unified file watch operations", "domain": "storage"}
+        {"description": "Unified file watch operations", "domain": "storage"},
     )
 
     # Import/Export tools
     registry.register_tool_loader(
         "export_manage",
         "tracertm.mcp.tools.params.io_operations",
-        {"description": "Unified export operations", "domain": "io"}
+        {"description": "Unified export operations", "domain": "io"},
     )
     registry.register_tool_loader(
         "import_manage",
         "tracertm.mcp.tools.params.io_operations",
-        {"description": "Unified import operations", "domain": "io"}
+        {"description": "Unified import operations", "domain": "io"},
     )
     registry.register_tool_loader(
         "ingestion_manage",
         "tracertm.mcp.tools.params.io_operations",
-        {"description": "Unified ingestion operations", "domain": "io"}
+        {"description": "Unified ingestion operations", "domain": "io"},
     )
 
     # Database tools
     registry.register_tool_loader(
         "database_manage",
         "tracertm.mcp.tools.params.database",
-        {"description": "Unified database operations", "domain": "database"}
+        {"description": "Unified database operations", "domain": "database"},
     )
 
     # Agent & Progress tools
     registry.register_tool_loader(
         "agent_manage",
         "tracertm.mcp.tools.params.agent",
-        {"description": "Unified agent operations", "domain": "agent"}
+        {"description": "Unified agent operations", "domain": "agent"},
     )
     registry.register_tool_loader(
         "progress_manage",
         "tracertm.mcp.tools.params.agent",
-        {"description": "Unified progress operations", "domain": "agent"}
+        {"description": "Unified progress operations", "domain": "agent"},
     )
 
     # Query & Test tools
     registry.register_tool_loader(
         "saved_query_manage",
         "tracertm.mcp.tools.params.query_test",
-        {"description": "Unified saved query operations", "domain": "query"}
+        {"description": "Unified saved query operations", "domain": "query"},
     )
     registry.register_tool_loader(
         "test_manage",
         "tracertm.mcp.tools.params.query_test",
-        {"description": "Unified test operations", "domain": "test"}
+        {"description": "Unified test operations", "domain": "test"},
     )
 
     # UI & Design tools
     registry.register_tool_loader(
-        "tui_manage",
-        "tracertm.mcp.tools.params.ui",
-        {"description": "Unified TUI operations", "domain": "ui"}
+        "tui_manage", "tracertm.mcp.tools.params.ui", {"description": "Unified TUI operations", "domain": "ui"}
     )
     registry.register_tool_loader(
         "design_manage",
         "tracertm.mcp.tools.params.ui",
-        {"description": "Unified design integration operations", "domain": "ui"}
+        {"description": "Unified design integration operations", "domain": "ui"},
     )
 
     # System tools
     registry.register_tool_loader(
         "benchmark_manage",
         "tracertm.mcp.tools.params.system",
-        {"description": "Unified benchmark operations", "domain": "system"}
+        {"description": "Unified benchmark operations", "domain": "system"},
     )
     registry.register_tool_loader(
         "chaos_manage",
         "tracertm.mcp.tools.params.system",
-        {"description": "Unified chaos operations", "domain": "system"}
+        {"description": "Unified chaos operations", "domain": "system"},
     )
 
     logger.info(f"Registered {len(registry.list_registered_tools())} tools for lazy loading")

@@ -1,5 +1,6 @@
 """Project repository for TraceRTM."""
 
+import uuid
 from uuid import uuid4
 
 from sqlalchemy import select
@@ -34,7 +35,7 @@ class ProjectRepository:
         await self.session.refresh(project)
         return project
 
-    async def get_by_id(self, project_id: str) -> Project | None:
+    async def get_by_id(self, project_id: str | uuid.UUID) -> Project | None:
         """Get project by ID."""
         query = select(Project).where(Project.id == project_id)
         result = await self.session.execute(query)
@@ -54,7 +55,7 @@ class ProjectRepository:
 
     async def update(
         self,
-        project_id: str,
+        project_id: str | uuid.UUID,
         name: str | None = None,
         description: str | None = None,
         metadata: dict | None = None,

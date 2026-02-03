@@ -9,30 +9,39 @@ from fastmcp.exceptions import ToolError
 try:
     from tracertm.mcp.core import mcp
 except Exception:  # pragma: no cover
+
     class _StubMCP:
         def tool(self, *args: Any, **kwargs: Any) -> Any:
             def decorator(fn: Any) -> Any:
                 return fn
+
             return decorator
+
     mcp = _StubMCP()  # type: ignore[assignment]
 
-from .common import _wrap, _maybe_select_project
+from .common import _call_tool, _maybe_select_project, _wrap
 
 # Import spec tools with fallback
 try:
     from tracertm.mcp.tools import specifications as spec_tools
 except Exception:
+
     class _SpecStub:
         async def create_adr(self, **kwargs: Any) -> None:
             raise ToolError("Specification tools unavailable")
+
         async def list_adrs(self, **kwargs: Any) -> None:
             raise ToolError("Specification tools unavailable")
+
         async def create_contract(self, **kwargs: Any) -> None:
             raise ToolError("Specification tools unavailable")
+
         async def create_feature(self, **kwargs: Any) -> None:
             raise ToolError("Specification tools unavailable")
+
         async def create_scenario(self, **kwargs: Any) -> None:
             raise ToolError("Specification tools unavailable")
+
     spec_tools = _SpecStub()  # type: ignore
 
 
@@ -61,7 +70,8 @@ async def specification_manage(
 
     if kind == "adr":
         if action == "create":
-            result = await spec_tools.create_adr(
+            result = await _call_tool(
+                spec_tools, "create_adr",
                 project_id=payload.get("project_id"),
                 title=payload.get("title"),
                 context=payload.get("context"),
@@ -73,14 +83,16 @@ async def specification_manage(
             )
             return _wrap(result, ctx, f"{kind}.{action}")
         if action == "list":
-            result = await spec_tools.list_adrs(
+            result = await _call_tool(
+                spec_tools, "list_adrs",
                 project_id=payload.get("project_id"),
                 status=payload.get("status"),
             )
             return _wrap(result, ctx, f"{kind}.{action}")
 
     if kind == "contract" and action == "create":
-        result = await spec_tools.create_contract(
+        result = await _call_tool(
+            spec_tools, "create_contract",
             project_id=payload.get("project_id"),
             item_id=payload.get("item_id"),
             title=payload.get("title"),
@@ -90,9 +102,10 @@ async def specification_manage(
         return _wrap(result, ctx, f"{kind}.{action}")
 
     if kind == "feature" and action == "create":
-        result = await spec_tools.create_feature(
+        result = await _call_tool(
+            spec_tools, "create_feature",
             project_id=payload.get("project_id"),
-            name=payload.get("name"),
+            name=(payload.get("name") or ""),
             description=payload.get("description"),
             as_a=payload.get("as_a"),
             i_want=payload.get("i_want"),
@@ -101,7 +114,8 @@ async def specification_manage(
         return _wrap(result, ctx, f"{kind}.{action}")
 
     if kind == "scenario" and action == "create":
-        result = await spec_tools.create_scenario(
+        result = await _call_tool(
+            spec_tools, "create_scenario",
             feature_id=payload.get("feature_id"),
             title=payload.get("title"),
             gherkin_text=payload.get("gherkin_text"),

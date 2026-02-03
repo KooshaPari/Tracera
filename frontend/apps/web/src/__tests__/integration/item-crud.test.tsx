@@ -67,8 +67,8 @@ describe("Item CRUD Integration", () => {
 			await act(async () => {
 				updateResult.current.mutate({
 					data: {
-						title: "Updated CRUD Item",
 						status: "in_progress" as const,
+						title: "Updated CRUD Item",
 					},
 					id: createdItemId,
 				});

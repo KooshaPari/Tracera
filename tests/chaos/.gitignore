@@ -1,0 +1,9 @@
+# Chaos test artifacts
+*.tmp
+*.pid
+chaos-reports/
+.toxiproxy/
+
+# Pytest cache
+__pycache__/
+.pytest_cache/

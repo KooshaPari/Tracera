@@ -1,9 +1,9 @@
 """Integration tests for Problem and Process models."""
 
-import pytest
-import pytest_asyncio
-from datetime import datetime
+from datetime import UTC, datetime, timezone
 from uuid import uuid4
+
+import pytest
 
 from tracertm.models.problem import Problem, ProblemActivity
 from tracertm.models.process import Process, ProcessExecution
@@ -104,8 +104,10 @@ async def test_process_model_crud(async_db_session):
     assert process.process_number == "PRC-001"
     assert process.status == "draft"
     assert process.version_number == 1
-    assert len(process.stages) == 2
-    assert len(process.swimlanes) == 1
+    stages = process.stages or []
+    swimlanes = process.swimlanes or []
+    assert len(stages) == 2
+    assert len(swimlanes) == 1
 
     # Update the process
     process.status = "active"
@@ -118,7 +120,7 @@ async def test_process_model_crud(async_db_session):
         process_id=process.id,
         execution_number="EXEC-001",
         status="in_progress",
-        started_at=datetime.utcnow(),
+        started_at=datetime.now(UTC),
         initiated_by="test_user",
     )
     async_db_session.add(execution)

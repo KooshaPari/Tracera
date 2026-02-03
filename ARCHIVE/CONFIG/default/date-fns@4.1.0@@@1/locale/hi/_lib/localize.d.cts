@@ -34,4 +34,4 @@ export interface hiLocaleNumberValuesType {
 export declare function localeToNumber(locale: string): number;
 export declare function numberToLocale(enNumber: number): string;
 export declare const localize: Localize;
-export {};
+

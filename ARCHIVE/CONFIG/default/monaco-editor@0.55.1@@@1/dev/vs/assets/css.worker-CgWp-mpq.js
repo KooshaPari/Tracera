@@ -101,7 +101,7 @@
   }
   function assertFn(condition) {
     if (!condition()) {
-      debugger;
+      
       condition();
       onUnexpectedError(new BugIndicatingError("Assertion Failed"));
     }
@@ -1445,7 +1445,7 @@
     }
   }
   function escapeRegExpCharacters(value) {
-    return value.replace(/[\\\{\}\*\+\?\|\^\$\.\[\]\(\)]/g, "\\$&");
+    return value.replace(/[\\{}*+?|^$.[\]()]/g, "\\$&");
   }
   function regExpLeadsToEndlessLoop(regexp) {
     if (regexp.source === "^" || regexp.source === "^$" || regexp.source === "$" || regexp.source === "^\\s*$") {
@@ -1599,7 +1599,7 @@
     }
     static getData() {
       if (!this._data) {
-        this._data = new Set([...Object.values(_InvisibleCharacters.getRawData())].flat());
+        this._data = new Set(Object.values(_InvisibleCharacters.getRawData()).flat());
       }
       return this._data;
     }
@@ -1817,7 +1817,7 @@
     return name[0] === "o" && name[1] === "n" && isUpperAsciiLetter(name.charCodeAt(2));
   }
   function propertyIsDynamicEvent(name) {
-    return /^onDynamic/.test(name) && isUpperAsciiLetter(name.charCodeAt(9));
+    return name.startsWith('onDynamic') && isUpperAsciiLetter(name.charCodeAt(9));
   }
   class WebWorkerServer {
     constructor(postMessage, requestHandlerFactory) {
@@ -14778,7 +14778,7 @@
       return this.identifier;
     }
     getName() {
-      return trim(this.getText(), /[_\+]+$/);
+      return trim(this.getText(), /[_+]+$/);
     }
     isCustomProperty() {
       return !!this.identifier && this.identifier.isCustomProperty;
@@ -18082,7 +18082,7 @@ Syntax: ${textToMarkedString(entry.syntax)}`;
   }
   class Parser {
     constructor(scnr = new Scanner()) {
-      this.keyframeRegex = /^@(\-(webkit|ms|moz|o)\-)?keyframes$/i;
+      this.keyframeRegex = /^@(-(webkit|ms|moz|o)-)?keyframes$/i;
       this.scanner = scnr;
       this.token = { type: TokenType.EOF, offset: -1, len: 0, text: "" };
       this.prevToken = void 0;
@@ -20883,7 +20883,7 @@ Syntax: ${textToMarkedString(entry.syntax)}`;
     getUnitProposals(entry, existingNode, result) {
       let currentWord = "0";
       if (this.currentWord.length > 0) {
-        const numMatch = this.currentWord.match(/^-?\d[\.\d+]*/);
+        const numMatch = this.currentWord.match(/^-?\d[.\d+]*/);
         if (numMatch) {
           currentWord = numMatch[0];
           result.isIncomplete = currentWord.length === this.currentWord.length;
@@ -22001,7 +22001,7 @@ Syntax: ${textToMarkedString(entry.syntax)}`;
       for (let i = 0; i < nodepath.length; i++) {
         const node = nodepath[i];
         if (node instanceof Media) {
-          const regex = /@media[^\{]+/g;
+          const regex = /@media[^{]+/g;
           const matches2 = node.getText().match(regex);
           flagOpts = {
             isMedia: true,
@@ -26109,7 +26109,7 @@ Syntax: ${textToMarkedString(entry.syntax)}`;
               result = option_value.concat();
             }
           } else if (typeof option_value === "string") {
-            result = option_value.split(/[^a-zA-Z0-9_\/\-]+/);
+            result = option_value.split(/[^a-zA-Z0-9_/-]+/);
           }
           return result;
         };
@@ -26316,7 +26316,7 @@ Syntax: ${textToMarkedString(entry.syntax)}`;
           return result;
         };
         InputScanner.prototype.get_literal_regexp = function(literal_string) {
-          return RegExp(literal_string.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&"));
+          return RegExp(literal_string.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&"));
         };
         InputScanner.prototype.peekUntilAfter = function(pattern) {
           var start2 = this.__position;
@@ -26542,7 +26542,7 @@ Syntax: ${textToMarkedString(entry.syntax)}`;
             } else if (this._ch === "$") {
               this.preserveSingleSpace(isAfterSpace);
               this.print_string(this._ch);
-              var variable = this._input.peekUntilAfter(/[: ,;{}()[\]\/='"]/g);
+              var variable = this._input.peekUntilAfter(/[: ,;{}()[\]/='"]/g);
               if (variable.match(/[ :]$/)) {
                 variable = this.eatString(": ").replace(/\s+$/, "");
                 this.print_string(variable);
@@ -26558,7 +26558,7 @@ Syntax: ${textToMarkedString(entry.syntax)}`;
                 this.print_string(this._ch + this.eatString("}"));
               } else {
                 this.print_string(this._ch);
-                var variableOrRule = this._input.peekUntilAfter(/[: ,;{}()[\]\/='"]/g);
+                var variableOrRule = this._input.peekUntilAfter(/[: ,;{}()[\]/='"]/g);
                 if (variableOrRule.match(/[ :]$/)) {
                   variableOrRule = this.eatString(": ").replace(/\s+$/, "");
                   this.print_string(variableOrRule);

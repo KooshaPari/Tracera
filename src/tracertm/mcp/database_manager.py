@@ -12,9 +12,10 @@ from __future__ import annotations
 
 import asyncio
 import time
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Any, AsyncGenerator
+from typing import Any
 
 from sqlalchemy import event, text
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
@@ -38,14 +39,12 @@ class QueryMetrics:
         self.total_duration += duration_ms
 
         if duration_ms > self.slow_threshold_ms:
-            self.slow_queries.append(
-                {
-                    "query": query,
-                    "duration_ms": duration_ms,
-                    "params": params,
-                    "timestamp": time.time(),
-                }
-            )
+            self.slow_queries.append({
+                "query": query,
+                "duration_ms": duration_ms,
+                "params": params,
+                "timestamp": time.time(),
+            })
             # Keep only last 100 slow queries
             if len(self.slow_queries) > 100:
                 self.slow_queries.pop(0)
@@ -131,9 +130,7 @@ class DatabaseManager:
             pool_pre_ping=True,  # Verify connections before use
             pool_recycle=3600,  # Recycle connections after 1 hour
             echo=False,
-            connect_args={
-                "server_settings": {"jit": "off"}
-            } if "postgresql" in self.database_url else {},
+            connect_args={"server_settings": {"jit": "off"}} if "postgresql" in self.database_url else {},
         )
 
         # Create session factory
@@ -194,11 +191,17 @@ class DatabaseManager:
             return {"status": "not_initialized"}
 
         pool = self._engine.pool
+        size_fn = getattr(pool, "size", lambda: 0)
+        checkedout_fn = getattr(pool, "checkedout", lambda: 0)
+        overflow_fn = getattr(pool, "overflow", lambda: 0)
+        size = size_fn() if callable(size_fn) else 0
+        checked_out = checkedout_fn() if callable(checkedout_fn) else 0
+        overflow = overflow_fn() if callable(overflow_fn) else 0
         return {
-            "size": pool.size(),
-            "checked_out": pool.checkedout(),
-            "overflow": pool.overflow(),
-            "checked_in": pool.size() - pool.checkedout(),
+            "size": size,
+            "checked_out": checked_out,
+            "overflow": overflow,
+            "checked_in": size - checked_out,
         }
 
     async def health_check(self) -> dict[str, Any]:
@@ -251,4 +254,4 @@ async def get_database_manager() -> DatabaseManager:
     return _manager
 
 
-__all__ = ["DatabaseManager", "get_database_manager", "QueryMetrics"]
+__all__ = ["DatabaseManager", "QueryMetrics", "get_database_manager"]

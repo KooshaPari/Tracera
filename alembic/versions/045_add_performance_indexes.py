@@ -12,9 +12,9 @@ Revises: 044_add_milestones
 Create Date: 2026-01-29
 """
 
-from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
+
+from alembic import op
 
 # revision identifiers, used by Alembic
 revision = "045_add_performance_indexes"
@@ -274,8 +274,11 @@ def downgrade() -> None:
 
 def does_table_exist(table_name: str) -> bool:
     """Check if table exists in current database."""
+    bind = op.get_context().bind
+    if bind is None:
+        return False
     try:
-        result = op.get_context().bind.execute(
+        result = bind.execute(
             sa.text(
                 """
                 SELECT EXISTS(

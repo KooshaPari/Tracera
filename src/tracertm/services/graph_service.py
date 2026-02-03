@@ -34,15 +34,11 @@ class GraphService:
 
         graph = None
         if graph_id:
-            result = await self.db_session.execute(
-                select(Graph).where(Graph.id == graph_id)
-            )
+            result = await self.db_session.execute(select(Graph).where(Graph.id == graph_id))
             graph = result.scalar_one_or_none()
         elif graph_type and project_id:
             result = await self.db_session.execute(
-                select(Graph)
-                .where(Graph.project_id == project_id, Graph.graph_type == graph_type)
-                .order_by(Graph.name)
+                select(Graph).where(Graph.project_id == project_id, Graph.graph_type == graph_type).order_by(Graph.name)
             )
             graph = result.scalars().first()
 
@@ -54,9 +50,7 @@ class GraphService:
 
         if include_nodes:
             result = await self.db_session.execute(
-                select(Item)
-                .join(GraphNode, GraphNode.item_id == Item.id)
-                .where(GraphNode.graph_id == graph.id)
+                select(Item).join(GraphNode, GraphNode.item_id == Item.id).where(GraphNode.graph_id == graph.id)
             )
             nodes = [
                 {
@@ -76,9 +70,7 @@ class GraphService:
             ]
 
         if include_links:
-            result = await self.db_session.execute(
-                select(Link).where(Link.graph_id == graph.id)
-            )
+            result = await self.db_session.execute(select(Link).where(Link.graph_id == graph.id))
             links = [
                 {
                     "id": link.id,

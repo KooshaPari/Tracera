@@ -14,20 +14,18 @@ Coverage Areas:
 7. Integration Scenarios - 30 tests
 """
 
+from datetime import datetime
+from unittest.mock import AsyncMock, Mock
+
 import pytest
-from unittest.mock import AsyncMock, Mock, patch, MagicMock
-from typing import Any
-from datetime import datetime, timezone
-import asyncio
 
-from tracertm.services.item_service import ItemService, STATUS_TRANSITIONS, VALID_STATUSES
 from tracertm.models.item import Item
-from tracertm.models.link import Link
-
+from tracertm.services.item_service import STATUS_TRANSITIONS, ItemService
 
 # ==============================================================================
 # FIXTURES
 # ==============================================================================
+
 
 @pytest.fixture
 def async_session():
@@ -78,6 +76,7 @@ def create_mock_item(
 # ==============================================================================
 # CRUD OPERATIONS TESTS (40 tests)
 # ==============================================================================
+
 
 class TestCreateItemComprehensive:
     """Comprehensive tests for create_item method."""
@@ -510,6 +509,7 @@ class TestListItemsComprehensive:
 # BATCH OPERATIONS TESTS (30 tests)
 # ==============================================================================
 
+
 class TestBulkUpdateComprehensive:
     """Comprehensive tests for bulk operations."""
 
@@ -650,7 +650,7 @@ class TestBulkDeleteComprehensive:
         def soft_delete_side_effect(item_id, *args, **kwargs):
             if item_id in ["item-0", "item-2"]:
                 raise Exception("Delete failed")
-            return None
+            return
 
         item_service.items.soft_delete = AsyncMock(side_effect=soft_delete_side_effect)
 
@@ -683,6 +683,7 @@ class TestBulkDeleteComprehensive:
 # ==============================================================================
 # RELATIONSHIPS & HIERARCHY TESTS (35 tests)
 # ==============================================================================
+
 
 class TestHierarchyComprehensive:
     """Comprehensive tests for hierarchy operations."""
@@ -795,6 +796,7 @@ class TestHierarchyComprehensive:
 # ==============================================================================
 # STATE TRANSITIONS & WORKFLOWS TESTS (20 tests)
 # ==============================================================================
+
 
 class TestStateTransitionsComprehensive:
     """Comprehensive tests for state transitions."""
@@ -937,6 +939,7 @@ class TestStateTransitionsComprehensive:
 # METADATA OPERATIONS TESTS (20 tests)
 # ==============================================================================
 
+
 class TestMetadataComprehensive:
     """Comprehensive tests for metadata operations."""
 
@@ -1045,6 +1048,7 @@ class TestMetadataComprehensive:
 # ==============================================================================
 # PROGRESS CALCULATION TESTS (15 tests)
 # ==============================================================================
+
 
 class TestProgressCalculationComprehensive:
     """Comprehensive tests for progress calculation."""
@@ -1164,6 +1168,7 @@ class TestProgressCalculationComprehensive:
 # QUERY & RELATIONSHIP TESTS (15 tests)
 # ==============================================================================
 
+
 class TestQueryByRelationshipComprehensive:
     """Comprehensive tests for relationship queries."""
 
@@ -1225,6 +1230,7 @@ class TestQueryByRelationshipComprehensive:
 # ==============================================================================
 # INTEGRATION SCENARIOS TESTS (30 tests)
 # ==============================================================================
+
 
 class TestIntegrationScenarios:
     """Test complete workflows and integration scenarios."""
@@ -1293,10 +1299,7 @@ class TestIntegrationScenarios:
     async def test_hierarchy_workflow(self, item_service):
         """Test parent-child hierarchy workflow."""
         parent = create_mock_item(item_id="parent-1")
-        children = [
-            create_mock_item(item_id=f"child-{i}", parent_id="parent-1")
-            for i in range(3)
-        ]
+        children = [create_mock_item(item_id=f"child-{i}", parent_id="parent-1") for i in range(3)]
 
         item_service.items.get_by_id = AsyncMock(return_value=parent)
         item_service.items.get_children = AsyncMock(return_value=children)
@@ -1315,9 +1318,7 @@ class TestIntegrationScenarios:
         """Test handling of concurrent update conflicts."""
         mock_item = create_mock_item(version=1)
         item_service.items.get_by_id = AsyncMock(return_value=mock_item)
-        item_service.items.update = AsyncMock(
-            side_effect=Exception("Version conflict")
-        )
+        item_service.items.update = AsyncMock(side_effect=Exception("Version conflict"))
 
         with pytest.raises(Exception):
             await item_service.update_item(
@@ -1390,6 +1391,7 @@ class TestIntegrationScenarios:
 # ==============================================================================
 # EDGE CASES & ADVANCED SCENARIOS (30+ tests)
 # ==============================================================================
+
 
 class TestEdgeCasesAndBoundaries:
     """Test edge cases and boundary conditions."""

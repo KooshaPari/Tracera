@@ -4,13 +4,12 @@ Comprehensive tests for Analysis API endpoints.
 Tests impact analysis, cycle detection, and shortest path finding.
 """
 
-import pytest
-from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 from fastapi.testclient import TestClient
 
 from tracertm.api.main import app
-
 
 client = TestClient(app)
 
@@ -313,9 +312,7 @@ class TestShortestPath:
             mock_service.find_shortest_path.return_value = mock_result
             mock_service_class.return_value = mock_service
 
-            response = client.get(
-                "/api/v1/analysis/shortest-path?project_id=proj1&source_id=item1&target_id=item3"
-            )
+            response = client.get("/api/v1/analysis/shortest-path?project_id=proj1&source_id=item1&target_id=item3")
             assert response.status_code == 200
             data = response.json()
             assert data["exists"] is True
@@ -346,9 +343,7 @@ class TestShortestPath:
             mock_service.find_shortest_path.return_value = mock_result
             mock_service_class.return_value = mock_service
 
-            response = client.get(
-                "/api/v1/analysis/shortest-path?project_id=proj1&source_id=item1&target_id=item10"
-            )
+            response = client.get("/api/v1/analysis/shortest-path?project_id=proj1&source_id=item1&target_id=item10")
             assert response.status_code == 200
             data = response.json()
             assert data["distance"] == 9
@@ -373,9 +368,7 @@ class TestShortestPath:
             mock_service.find_shortest_path.return_value = mock_result
             mock_service_class.return_value = mock_service
 
-            response = client.get(
-                "/api/v1/analysis/shortest-path?project_id=proj1&source_id=item1&target_id=item999"
-            )
+            response = client.get("/api/v1/analysis/shortest-path?project_id=proj1&source_id=item1&target_id=item999")
             assert response.status_code == 200
             data = response.json()
             assert data["exists"] is False
@@ -402,9 +395,7 @@ class TestShortestPath:
             mock_service.find_shortest_path.return_value = mock_result
             mock_service_class.return_value = mock_service
 
-            response = client.get(
-                "/api/v1/analysis/shortest-path?project_id=proj1&source_id=item1&target_id=item2"
-            )
+            response = client.get("/api/v1/analysis/shortest-path?project_id=proj1&source_id=item1&target_id=item2")
             assert response.status_code == 200
             data = response.json()
             assert data["exists"] is True
@@ -418,9 +409,7 @@ class TestShortestPath:
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_db.return_value = AsyncMock()
 
-        response = client.get(
-            "/api/v1/analysis/shortest-path?project_id=proj1&target_id=item2"
-        )
+        response = client.get("/api/v1/analysis/shortest-path?project_id=proj1&target_id=item2")
         # Missing source_id should cause an error
         assert response.status_code in [422, 500]
 
@@ -431,9 +420,7 @@ class TestShortestPath:
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_db.return_value = AsyncMock()
 
-        response = client.get(
-            "/api/v1/analysis/shortest-path?project_id=proj1&source_id=item1"
-        )
+        response = client.get("/api/v1/analysis/shortest-path?project_id=proj1&source_id=item1")
         # Missing target_id should cause an error
         assert response.status_code in [422, 500]
 
@@ -444,9 +431,7 @@ class TestShortestPath:
         mock_auth.return_value = {"role": "user", "sub": "user123"}
         mock_db.return_value = AsyncMock()
 
-        response = client.get(
-            "/api/v1/analysis/shortest-path?source_id=item1&target_id=item2"
-        )
+        response = client.get("/api/v1/analysis/shortest-path?source_id=item1&target_id=item2")
         # Missing project_id should cause an error
         assert response.status_code in [422, 500]
 
@@ -470,9 +455,7 @@ class TestShortestPath:
             mock_service.find_shortest_path.return_value = mock_result
             mock_service_class.return_value = mock_service
 
-            response = client.get(
-                "/api/v1/analysis/shortest-path?project_id=proj1&source_id=item1&target_id=item4"
-            )
+            response = client.get("/api/v1/analysis/shortest-path?project_id=proj1&source_id=item1&target_id=item4")
             assert response.status_code == 200
             data = response.json()
             assert data["link_types"] == ["depends_on", "related_to", "blocks"]
@@ -497,9 +480,7 @@ class TestShortestPath:
             mock_service.find_shortest_path.return_value = mock_result
             mock_service_class.return_value = mock_service
 
-            response = client.get(
-                "/api/v1/analysis/shortest-path?project_id=proj1&source_id=item1&target_id=item1"
-            )
+            response = client.get("/api/v1/analysis/shortest-path?project_id=proj1&source_id=item1&target_id=item1")
             assert response.status_code == 200
             data = response.json()
             assert data["distance"] == 0

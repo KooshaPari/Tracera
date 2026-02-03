@@ -5,9 +5,10 @@ Tests:
 - POST /api/v1/projects/{project_id}/search/advanced
 """
 
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import AsyncMock, MagicMock, patch
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -37,6 +38,7 @@ def mock_db_connection():
 def client(mock_config_manager, mock_db_connection):
     """Create test client with mocked dependencies."""
     from tracertm.api.main import app
+
     return TestClient(app)
 
 

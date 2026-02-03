@@ -11,4 +11,4 @@ declare type _Join<T extends List, D extends string> = T extends [] ? '' : T ext
  * @param D to delimit
  */
 export declare type Join<T extends List<Literal>, D extends string = ''> = _Join<T, D> extends infer X ? Cast<X, string> : never;
-export {};
+

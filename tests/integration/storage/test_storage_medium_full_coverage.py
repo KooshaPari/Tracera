@@ -16,30 +16,21 @@ Coverage targets:
 - Concurrent file operations
 """
 
-import asyncio
-import hashlib
-import json
 import tempfile
 import threading
 import time
 import uuid
-from datetime import datetime, timedelta
+from collections.abc import Generator
+from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
-from typing import Generator
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 import yaml
-from sqlalchemy import text
 
-from tracertm.models import Item, Link, Project
+from tracertm.models import Item, Link
 from tracertm.storage.conflict_resolver import (
-    Conflict,
-    ConflictStatus,
     ConflictStrategy,
-    EntityType,
-    EntityVersion,
-    VectorClock,
 )
 from tracertm.storage.markdown_parser import (
     ItemData,
@@ -57,16 +48,18 @@ from tracertm.storage.markdown_parser import (
 )
 from tracertm.storage.sync_engine import (
     ChangeDetector,
-    EntityType as SyncEntityType,
     OperationType,
     SyncEngine,
     SyncQueue,
     SyncResult,
     SyncState,
-    SyncStatus,
     SyncStateManager,
+    SyncStatus,
     create_sync_engine,
     exponential_backoff,
+)
+from tracertm.storage.sync_engine import (
+    EntityType as SyncEntityType,
 )
 
 # ============================================================================
@@ -84,7 +77,7 @@ def temp_base_dir() -> Generator[Path, None, None]:
 @pytest.fixture
 def db_connection(temp_base_dir):
     """Create a mock database connection for testing sync operations."""
-    from sqlalchemy import create_engine, text
+    from sqlalchemy import create_engine
 
     db_path = temp_base_dir / "test.db"
     # Use synchronous SQLite for testing
@@ -94,8 +87,7 @@ def db_connection(temp_base_dir):
         def __init__(self, engine):
             self.engine = engine
 
-    conn = MockDBConnection(engine)
-    return conn
+    return MockDBConnection(engine)
 
 
 @pytest.fixture
@@ -108,8 +100,7 @@ def sync_queue(db_connection):
 def sync_state_manager(db_connection):
     """Create a sync state manager."""
     # Initialize tables
-    manager = SyncStateManager(db_connection)
-    return manager
+    return SyncStateManager(db_connection)
 
 
 @pytest.fixture
@@ -200,9 +191,7 @@ class TestChangeDetector:
 
     def test_detect_changes_in_directory_no_directory(self):
         """Test change detection on non-existent directory."""
-        changes = ChangeDetector.detect_changes_in_directory(
-            Path("/nonexistent"), {}
-        )
+        changes = ChangeDetector.detect_changes_in_directory(Path("/nonexistent"), {})
         assert changes == []
 
     def test_detect_changes_in_directory_empty(self):
@@ -279,59 +268,29 @@ class TestSyncQueue:
 
     def test_enqueue_create_operation(self, sync_queue):
         """Test enqueueing a create operation."""
-        queue_id = sync_queue.enqueue(
-            SyncEntityType.ITEM,
-            "item-001",
-            OperationType.CREATE,
-            {"title": "New Item"}
-        )
+        queue_id = sync_queue.enqueue(SyncEntityType.ITEM, "item-001", OperationType.CREATE, {"title": "New Item"})
         assert queue_id > 0
 
     def test_enqueue_update_operation(self, sync_queue):
         """Test enqueueing an update operation."""
-        queue_id = sync_queue.enqueue(
-            SyncEntityType.ITEM,
-            "item-001",
-            OperationType.UPDATE,
-            {"title": "Updated Item"}
-        )
+        queue_id = sync_queue.enqueue(SyncEntityType.ITEM, "item-001", OperationType.UPDATE, {"title": "Updated Item"})
         assert queue_id > 0
 
     def test_enqueue_delete_operation(self, sync_queue):
         """Test enqueueing a delete operation."""
-        queue_id = sync_queue.enqueue(
-            SyncEntityType.ITEM,
-            "item-001",
-            OperationType.DELETE,
-            {}
-        )
+        queue_id = sync_queue.enqueue(SyncEntityType.ITEM, "item-001", OperationType.DELETE, {})
         assert queue_id > 0
 
     def test_enqueue_different_entity_types(self, sync_queue):
         """Test enqueueing different entity types."""
         for entity_type in [SyncEntityType.PROJECT, SyncEntityType.ITEM, SyncEntityType.LINK]:
-            queue_id = sync_queue.enqueue(
-                entity_type,
-                f"{entity_type.value}-001",
-                OperationType.CREATE,
-                {}
-            )
+            queue_id = sync_queue.enqueue(entity_type, f"{entity_type.value}-001", OperationType.CREATE, {})
             assert queue_id > 0
 
     def test_enqueue_replaces_duplicate(self, sync_queue):
         """Test that duplicate entries are replaced."""
-        id1 = sync_queue.enqueue(
-            SyncEntityType.ITEM,
-            "item-001",
-            OperationType.UPDATE,
-            {"title": "First"}
-        )
-        id2 = sync_queue.enqueue(
-            SyncEntityType.ITEM,
-            "item-001",
-            OperationType.UPDATE,
-            {"title": "Second"}
-        )
+        id1 = sync_queue.enqueue(SyncEntityType.ITEM, "item-001", OperationType.UPDATE, {"title": "First"})
+        id2 = sync_queue.enqueue(SyncEntityType.ITEM, "item-001", OperationType.UPDATE, {"title": "Second"})
         # Same entity/operation shouldn't create duplicate
         assert sync_queue.get_count() == 1
 
@@ -342,12 +301,7 @@ class TestSyncQueue:
 
     def test_get_pending_single(self, sync_queue):
         """Test getting single pending change."""
-        sync_queue.enqueue(
-            SyncEntityType.ITEM,
-            "item-001",
-            OperationType.CREATE,
-            {"title": "Item"}
-        )
+        sync_queue.enqueue(SyncEntityType.ITEM, "item-001", OperationType.CREATE, {"title": "Item"})
         pending = sync_queue.get_pending()
         assert len(pending) == 1
         assert pending[0].entity_id == "item-001"
@@ -355,35 +309,20 @@ class TestSyncQueue:
     def test_get_pending_multiple(self, sync_queue):
         """Test getting multiple pending changes."""
         for i in range(5):
-            sync_queue.enqueue(
-                SyncEntityType.ITEM,
-                f"item-{i:03d}",
-                OperationType.CREATE,
-                {"title": f"Item {i}"}
-            )
+            sync_queue.enqueue(SyncEntityType.ITEM, f"item-{i:03d}", OperationType.CREATE, {"title": f"Item {i}"})
         pending = sync_queue.get_pending()
         assert len(pending) == 5
 
     def test_get_pending_limit(self, sync_queue):
         """Test limit parameter in get_pending."""
         for i in range(10):
-            sync_queue.enqueue(
-                SyncEntityType.ITEM,
-                f"item-{i:03d}",
-                OperationType.CREATE,
-                {}
-            )
+            sync_queue.enqueue(SyncEntityType.ITEM, f"item-{i:03d}", OperationType.CREATE, {})
         pending = sync_queue.get_pending(limit=3)
         assert len(pending) == 3
 
     def test_remove_from_queue(self, sync_queue):
         """Test removing item from queue."""
-        queue_id = sync_queue.enqueue(
-            SyncEntityType.ITEM,
-            "item-001",
-            OperationType.CREATE,
-            {}
-        )
+        queue_id = sync_queue.enqueue(SyncEntityType.ITEM, "item-001", OperationType.CREATE, {})
         assert sync_queue.get_count() == 1
         sync_queue.remove(queue_id)
         assert sync_queue.get_count() == 0
@@ -394,12 +333,7 @@ class TestSyncQueue:
 
     def test_update_retry(self, sync_queue):
         """Test updating retry count and error."""
-        queue_id = sync_queue.enqueue(
-            SyncEntityType.ITEM,
-            "item-001",
-            OperationType.CREATE,
-            {}
-        )
+        queue_id = sync_queue.enqueue(SyncEntityType.ITEM, "item-001", OperationType.CREATE, {})
         sync_queue.update_retry(queue_id, "Network error")
         pending = sync_queue.get_pending()
         assert pending[0].retry_count == 1
@@ -408,12 +342,7 @@ class TestSyncQueue:
     def test_clear_queue(self, sync_queue):
         """Test clearing entire queue."""
         for i in range(5):
-            sync_queue.enqueue(
-                SyncEntityType.ITEM,
-                f"item-{i}",
-                OperationType.CREATE,
-                {}
-            )
+            sync_queue.enqueue(SyncEntityType.ITEM, f"item-{i}", OperationType.CREATE, {})
         assert sync_queue.get_count() == 5
         sync_queue.clear()
         assert sync_queue.get_count() == 0
@@ -437,11 +366,7 @@ class TestSyncStateManager:
 
     def test_sync_state_dataclass(self):
         """Test SyncState dataclass creation."""
-        state = SyncState(
-            status=SyncStatus.SYNCING,
-            pending_changes=5,
-            last_sync=datetime.utcnow()
-        )
+        state = SyncState(status=SyncStatus.SYNCING, pending_changes=5, last_sync=datetime.now(UTC))
         assert state.status == SyncStatus.SYNCING
         assert state.pending_changes == 5
         assert state.last_sync is not None
@@ -504,12 +429,7 @@ class TestSyncEngine:
     @pytest.mark.asyncio
     async def test_queue_change(self, sync_engine):
         """Test queuing a change."""
-        queue_id = sync_engine.queue_change(
-            SyncEntityType.ITEM,
-            "item-001",
-            OperationType.CREATE,
-            {"title": "Item"}
-        )
+        queue_id = sync_engine.queue_change(SyncEntityType.ITEM, "item-001", OperationType.CREATE, {"title": "Item"})
         assert queue_id > 0
         assert sync_engine.queue.get_count() == 1
 
@@ -523,9 +443,9 @@ class TestSyncEngine:
     @pytest.mark.asyncio
     async def test_sync_updates_last_sync_time(self, sync_engine):
         """Test that sync updates last sync timestamp."""
-        before = datetime.utcnow()
+        before = datetime.now(UTC)
         await sync_engine.sync()
-        after = datetime.utcnow()
+        after = datetime.now(UTC)
 
         state = sync_engine.get_status()
         assert state.last_sync is not None
@@ -542,12 +462,7 @@ class TestSyncEngine:
     @pytest.mark.asyncio
     async def test_sync_records_error(self, sync_engine):
         """Test that sync records errors."""
-        sync_engine.queue_change(
-            SyncEntityType.ITEM,
-            "item-001",
-            OperationType.CREATE,
-            {}
-        )
+        sync_engine.queue_change(SyncEntityType.ITEM, "item-001", OperationType.CREATE, {})
         # Mock upload to fail
         sync_engine._upload_change = AsyncMock(return_value=False)
 
@@ -564,12 +479,7 @@ class TestSyncEngine:
     @pytest.mark.asyncio
     async def test_process_queue_respects_max_retries(self, sync_engine):
         """Test that queue respects max retries."""
-        sync_engine.queue_change(
-            SyncEntityType.ITEM,
-            "item-001",
-            OperationType.CREATE,
-            {}
-        )
+        sync_engine.queue_change(SyncEntityType.ITEM, "item-001", OperationType.CREATE, {})
         # Set high retry count
         pending = sync_engine.queue.get_pending()
         for _ in range(sync_engine.max_retries + 1):
@@ -595,12 +505,7 @@ class TestSyncEngine:
     async def test_clear_queue(self, sync_engine):
         """Test clearing sync queue."""
         for i in range(3):
-            sync_engine.queue_change(
-                SyncEntityType.ITEM,
-                f"item-{i}",
-                OperationType.CREATE,
-                {}
-            )
+            sync_engine.queue_change(SyncEntityType.ITEM, f"item-{i}", OperationType.CREATE, {})
         assert sync_engine.queue.get_count() == 3
         await sync_engine.clear_queue()
         assert sync_engine.queue.get_count() == 0
@@ -791,7 +696,7 @@ external_id: "ITEM-001"
             source="EPIC-001",
             target="STORY-001",
             link_type="implements",
-            created=datetime.utcnow(),
+            created=datetime.now(UTC),
         )
         link_dict = link.to_dict()
 
@@ -806,7 +711,7 @@ external_id: "ITEM-001"
             "source": "EPIC-001",
             "target": "STORY-001",
             "type": "implements",
-            "created": datetime.utcnow().isoformat(),
+            "created": datetime.now(UTC).isoformat(),
         }
         link = LinkData.from_dict(data)
 
@@ -822,14 +727,14 @@ external_id: "ITEM-001"
                 source="EPIC-001",
                 target="STORY-001",
                 link_type="implements",
-                created=datetime.utcnow(),
+                created=datetime.now(UTC),
             ),
             LinkData(
                 id="link-2",
                 source="STORY-001",
                 target="TEST-001",
                 link_type="tested_by",
-                created=datetime.utcnow(),
+                created=datetime.now(UTC),
             ),
         ]
 
@@ -1065,18 +970,8 @@ class TestStorageIntegration:
     def test_full_sync_cycle(self, sync_engine, sync_queue):
         """Test complete sync cycle with queue."""
         # Queue some changes
-        sync_engine.queue_change(
-            SyncEntityType.ITEM,
-            "item-1",
-            OperationType.CREATE,
-            {"title": "Item 1"}
-        )
-        sync_engine.queue_change(
-            SyncEntityType.ITEM,
-            "item-2",
-            OperationType.UPDATE,
-            {"title": "Updated"}
-        )
+        sync_engine.queue_change(SyncEntityType.ITEM, "item-1", OperationType.CREATE, {"title": "Item 1"})
+        sync_engine.queue_change(SyncEntityType.ITEM, "item-2", OperationType.UPDATE, {"title": "Updated"})
 
         assert sync_engine.queue.get_count() == 2
 
@@ -1113,14 +1008,8 @@ class TestStorageIntegration:
     async def test_sync_with_conflict_resolution(self, sync_engine):
         """Test sync with conflict resolution."""
         # Create conflicting versions
-        local_version = {
-            "content": "local",
-            "updated_at": "2024-01-01T10:00:00"
-        }
-        remote_version = {
-            "content": "remote",
-            "updated_at": "2024-01-01T11:00:00"
-        }
+        local_version = {"content": "local", "updated_at": "2024-01-01T10:00:00"}
+        remote_version = {"content": "remote", "updated_at": "2024-01-01T11:00:00"}
 
         # Last write wins strategy
         resolved = sync_engine._resolve_conflict(local_version, remote_version)
@@ -1170,18 +1059,10 @@ class TestStorageIntegration:
 
         def enqueue_items(count, prefix):
             for i in range(count):
-                queue_id = sync_queue.enqueue(
-                    SyncEntityType.ITEM,
-                    f"{prefix}-item-{i}",
-                    OperationType.CREATE,
-                    {}
-                )
+                queue_id = sync_queue.enqueue(SyncEntityType.ITEM, f"{prefix}-item-{i}", OperationType.CREATE, {})
                 results.append(queue_id)
 
-        threads = [
-            threading.Thread(target=enqueue_items, args=(10, f"thread-{i}"))
-            for i in range(3)
-        ]
+        threads = [threading.Thread(target=enqueue_items, args=(10, f"thread-{i}")) for i in range(3)]
 
         for t in threads:
             t.start()
@@ -1272,12 +1153,7 @@ class TestStoragePerformance:
         """Test queue with many items."""
         # Enqueue 1000 items
         for i in range(1000):
-            sync_queue.enqueue(
-                SyncEntityType.ITEM,
-                f"item-{i:04d}",
-                OperationType.CREATE,
-                {}
-            )
+            sync_queue.enqueue(SyncEntityType.ITEM, f"item-{i:04d}", OperationType.CREATE, {})
 
         assert sync_queue.get_count() == 1000
 
@@ -1300,11 +1176,7 @@ class TestStoragePerformance:
 
     def test_sync_result_dataclass(self):
         """Test SyncResult dataclass."""
-        result = SyncResult(
-            success=True,
-            entities_synced=10,
-            duration_seconds=1.5
-        )
+        result = SyncResult(success=True, entities_synced=10, duration_seconds=1.5)
         assert result.success
         assert result.entities_synced == 10
         assert result.duration_seconds == 1.5
@@ -1352,6 +1224,7 @@ class TestLocalStorageFileOperations:
     def storage_manager(self, temp_base_dir):
         """Create LocalStorageManager for testing."""
         from tracertm.storage.local_storage import LocalStorageManager
+
         return LocalStorageManager(base_dir=temp_base_dir)
 
     def test_init_project_creates_directory_structure(self, storage_manager, temp_base_dir):
@@ -1359,9 +1232,7 @@ class TestLocalStorageFileOperations:
         project_path = temp_base_dir / "test_project"
         project_path.mkdir()
 
-        trace_dir, project_id = storage_manager.init_project(
-            project_path, "Test Project", "Test description"
-        )
+        trace_dir, project_id = storage_manager.init_project(project_path, "Test Project", "Test description")
 
         # Verify structure
         assert trace_dir.exists()
@@ -1394,7 +1265,6 @@ class TestLocalStorageFileOperations:
         trace_dir, project_id = storage_manager.init_project(project_path)
 
         # Verify it's a valid UUID string
-        import uuid
         try:
             uuid.UUID(project_id)
             assert True
@@ -1550,6 +1420,7 @@ class TestLocalStorageFileOperations:
         original_cwd = Path.cwd()
         try:
             import os
+
             os.chdir(project_path)
             result = storage_manager.get_current_project_path()
             assert result is not None
@@ -1570,6 +1441,7 @@ class TestLocalStorageFileOperations:
         original_cwd = Path.cwd()
         try:
             import os
+
             os.chdir(subdir)
             result = storage_manager.get_current_project_path()
             assert result is not None
@@ -1585,6 +1457,7 @@ class TestLocalStorageFileOperations:
         original_cwd = Path.cwd()
         try:
             import os
+
             os.chdir(non_trace_path)
             result = storage_manager.get_current_project_path()
             assert result is None
@@ -1652,6 +1525,7 @@ class TestProjectStorage:
     def storage_manager(self, temp_base_dir):
         """Create LocalStorageManager for testing."""
         from tracertm.storage.local_storage import LocalStorageManager
+
         return LocalStorageManager(base_dir=temp_base_dir)
 
     @pytest.fixture
@@ -1662,6 +1536,7 @@ class TestProjectStorage:
         storage_manager.init_project(project_path, "Test Project")
 
         from tracertm.storage.local_storage import ProjectStorage
+
         return ProjectStorage(storage_manager, "Test Project", trace_dir=project_path / ".trace")
 
     def test_project_storage_creates_subdirectories(self, project_storage):
@@ -1678,9 +1553,7 @@ class TestProjectStorage:
     def test_create_or_update_project(self, project_storage):
         """Test creating a project in ProjectStorage."""
         project = project_storage.create_or_update_project(
-            name="Test",
-            description="Test description",
-            metadata={"key": "value"}
+            name="Test", description="Test description", metadata={"key": "value"}
         )
 
         assert project is not None
@@ -1727,7 +1600,7 @@ class TestItemStorage:
     @pytest.fixture
     def item_storage_setup(self, temp_base_dir):
         """Set up ItemStorage with project."""
-        from tracertm.storage.local_storage import LocalStorageManager, ProjectStorage, ItemStorage
+        from tracertm.storage.local_storage import ItemStorage, LocalStorageManager, ProjectStorage
 
         storage_manager = LocalStorageManager(base_dir=temp_base_dir)
         project_path = temp_base_dir / "test_project"
@@ -1753,7 +1626,7 @@ class TestItemStorage:
             status="in_progress",
             priority="high",
             owner="Alice",
-            metadata={"custom": "data"}
+            metadata={"custom": "data"},
         )
 
         assert item.title == "Test Item"
@@ -1766,11 +1639,7 @@ class TestItemStorage:
         """Test markdown file is created for item."""
         item_storage, _, project_storage, _ = item_storage_setup
 
-        item = item_storage.create_item(
-            title="Test",
-            item_type="epic",
-            external_id="EPIC-001"
-        )
+        item = item_storage.create_item(title="Test", item_type="epic", external_id="EPIC-001")
 
         markdown_path = project_storage.epics_dir / "EPIC-001.md"
         assert markdown_path.exists()
@@ -1780,10 +1649,7 @@ class TestItemStorage:
         item_storage, _, project_storage, _ = item_storage_setup
 
         item = item_storage.create_item(
-            title="Test",
-            item_type="story",
-            external_id="STORY-001",
-            description="Test description"
+            title="Test", item_type="story", external_id="STORY-001", description="Test description"
         )
 
         markdown_path = project_storage.stories_dir / "STORY-001.md"
@@ -1797,18 +1663,9 @@ class TestItemStorage:
         """Test updating item changes fields."""
         item_storage, _, _, _ = item_storage_setup
 
-        item = item_storage.create_item(
-            title="Original",
-            item_type="epic",
-            external_id="EPIC-001",
-            status="todo"
-        )
+        item = item_storage.create_item(title="Original", item_type="epic", external_id="EPIC-001", status="todo")
 
-        updated = item_storage.update_item(
-            item.id,
-            title="Updated",
-            status="done"
-        )
+        updated = item_storage.update_item(item.id, title="Updated", status="done")
 
         assert updated.title == "Updated"
         assert updated.status == "done"
@@ -1817,11 +1674,7 @@ class TestItemStorage:
         """Test item deletion sets deleted_at timestamp."""
         item_storage, storage_manager, _, _ = item_storage_setup
 
-        item = item_storage.create_item(
-            title="To Delete",
-            item_type="epic",
-            external_id="EPIC-001"
-        )
+        item = item_storage.create_item(title="To Delete", item_type="epic", external_id="EPIC-001")
 
         item_storage.delete_item(item.id)
 
@@ -1836,11 +1689,7 @@ class TestItemStorage:
         """Test markdown file is deleted when item is deleted."""
         item_storage, _, project_storage, _ = item_storage_setup
 
-        item = item_storage.create_item(
-            title="To Delete",
-            item_type="epic",
-            external_id="EPIC-001"
-        )
+        item = item_storage.create_item(title="To Delete", item_type="epic", external_id="EPIC-001")
 
         markdown_path = project_storage.epics_dir / "EPIC-001.md"
         assert markdown_path.exists()
@@ -1986,7 +1835,7 @@ class TestStorageHelper:
             title="Test Item",
             item_type="epic",
             view="EPIC",
-            item_metadata={}  # Add required metadata
+            item_metadata={},  # Add required metadata
         )
 
         table = format_item_for_display(item)
@@ -1995,14 +1844,13 @@ class TestStorageHelper:
     def test_format_link_for_display_returns_table(self):
         """Test format_link_for_display returns Rich Table."""
         from tracertm.cli.storage_helper import format_link_for_display
-        from tracertm.models import Link
 
         link = Link(
             id="link-id",
             project_id="proj-id",
             source_item_id="source-id",
             target_item_id="target-id",
-            link_type="implements"
+            link_type="implements",
         )
 
         table = format_link_for_display(link)
@@ -2024,17 +1872,11 @@ class TestStorageHelper:
     def test_format_links_table_with_context(self):
         """Test format_links_table with full context."""
         from tracertm.cli.storage_helper import format_links_table
-        from tracertm.models import Link, Item
+        from tracertm.models import Item
 
         source = Item(id="s", project_id="p", title="Source", item_type="epic", view="EPIC")
         target = Item(id="t", project_id="p", title="Target", item_type="story", view="STORY")
-        link = Link(
-            id="l",
-            project_id="p",
-            source_item_id="s",
-            target_item_id="t",
-            link_type="implements"
-        )
+        link = Link(id="l", project_id="p", source_item_id="s", target_item_id="t", link_type="implements")
 
         links = [(link, source, target)]
         table = format_links_table(links)
@@ -2042,8 +1884,9 @@ class TestStorageHelper:
 
     def test_human_time_delta_just_now(self):
         """Test _human_time_delta for just now."""
+        from datetime import datetime
+
         from tracertm.cli.storage_helper import _human_time_delta
-        from datetime import datetime, timedelta
 
         dt = datetime.now() - timedelta(seconds=30)
         result = _human_time_delta(dt)
@@ -2052,8 +1895,9 @@ class TestStorageHelper:
 
     def test_human_time_delta_minutes_ago(self):
         """Test _human_time_delta for minutes."""
+        from datetime import datetime
+
         from tracertm.cli.storage_helper import _human_time_delta
-        from datetime import datetime, timedelta
 
         dt = datetime.now() - timedelta(minutes=5)
         result = _human_time_delta(dt)
@@ -2062,8 +1906,9 @@ class TestStorageHelper:
 
     def test_human_time_delta_hours_ago(self):
         """Test _human_time_delta for hours."""
+        from datetime import datetime
+
         from tracertm.cli.storage_helper import _human_time_delta
-        from datetime import datetime, timedelta
 
         dt = datetime.now() - timedelta(hours=2)
         result = _human_time_delta(dt)
@@ -2072,8 +1917,9 @@ class TestStorageHelper:
 
     def test_human_time_delta_days_ago(self):
         """Test _human_time_delta for days."""
+        from datetime import datetime
+
         from tracertm.cli.storage_helper import _human_time_delta
-        from datetime import datetime, timedelta
 
         dt = datetime.now() - timedelta(days=3)
         result = _human_time_delta(dt)
@@ -2082,7 +1928,7 @@ class TestStorageHelper:
 
     def test_show_sync_status_display(self, capsys):
         """Test show_sync_status displays status panel."""
-        from tracertm.cli.storage_helper import show_sync_status, reset_storage_manager
+        from tracertm.cli.storage_helper import reset_storage_manager, show_sync_status
 
         reset_storage_manager()
         try:

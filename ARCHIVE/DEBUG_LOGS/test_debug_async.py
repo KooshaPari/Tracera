@@ -2,7 +2,6 @@
 
 import pytest
 import pytest_asyncio
-from sqlalchemy.ext.asyncio import AsyncSession
 
 # Import the actual fixture from the services test file
 # to see if there's a scoping issue

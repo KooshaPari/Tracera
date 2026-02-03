@@ -3,5 +3,5 @@
 const path = require('path');
 
 module.exports = function(dir, filename) {
-    return /^\.\./.test(path.relative(dir, filename));
+    return path.relative(dir, filename).startsWith('..');
 };

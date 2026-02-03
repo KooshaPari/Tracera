@@ -27,7 +27,7 @@ Comprehensive load testing suite implemented for TraceRTM using k6, designed to 
 
 **k6** - Modern, scriptable load testing tool with excellent reporting
 
-**Installation Script**: `/scripts/install_k6.sh`
+**Installation Script**: `/scripts/shell/install_k6.sh`
 - Automatic installation for macOS and Linux
 - Version verification
 - Cross-platform support
@@ -94,7 +94,7 @@ Comprehensive load testing suite implemented for TraceRTM using k6, designed to 
 
 ### 4. Test Execution
 
-**Master Test Runner** (`/scripts/run_load_tests.sh`):
+**Master Test Runner** (`/scripts/shell/run_load_tests.sh`):
 ```bash
 # Runs complete test suite:
 # 1. Verifies backends are healthy
@@ -102,7 +102,7 @@ Comprehensive load testing suite implemented for TraceRTM using k6, designed to 
 # 3. Generates HTML report
 # 4. Saves JSON results
 
-./scripts/run_load_tests.sh
+./scripts/shell/run_load_tests.sh
 ```
 
 **Individual Test Execution**:
@@ -119,7 +119,7 @@ k6 run load-tests/stress-test.js
 
 ### 5. Reporting
 
-**HTML Report Generator** (`/scripts/generate_load_test_report.py`):
+**HTML Report Generator** (`/scripts/python/generate_load_test_report.py`):
 - Parses k6 JSON output
 - Aggregates metrics across all tests
 - Generates styled HTML report
@@ -135,7 +135,7 @@ k6 run load-tests/stress-test.js
 
 **Access Report**:
 ```bash
-open load-test-results/report.html
+open load-tests/results/report.html
 ```
 
 ### 6. Documentation
@@ -177,7 +177,7 @@ open load-test-results/report.html
 │   └── generate_load_test_report.py  # Generate HTML report
 ├── docs/testing/
 │   └── load_testing_guide.md    # Comprehensive documentation
-└── load-test-results/
+└── load-tests/results/
     ├── *.json                   # Test results (gitignored)
     └── report.html              # HTML report (gitignored)
 ```
@@ -204,10 +204,10 @@ docker-compose up -d
 sleep 30
 
 # Run complete suite
-./scripts/run_load_tests.sh
+./scripts/shell/run_load_tests.sh
 
 # View results
-open load-test-results/report.html
+open load-tests/results/report.html
 ```
 
 ### Find System Limits
@@ -217,7 +217,7 @@ open load-test-results/report.html
 k6 run load-tests/stress-test.js
 
 # Analyze failure modes
-cat load-test-results/stress-test-summary.json
+cat load-tests/results/stress-test-summary.json
 ```
 
 ### Custom Load Profile

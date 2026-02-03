@@ -55,7 +55,7 @@ function fileUriToPath (uri) {
     path = path.replace(/\//g, '\\');
   }
 
-  if (/^.+\:/.test(path)) {
+  if (/^.+:/.test(path)) {
     // has Windows drive at beginning of path
   } else {
     // unix path…

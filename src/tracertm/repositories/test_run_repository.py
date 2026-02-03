@@ -2,23 +2,23 @@
 Repository for Test Run operations.
 """
 
-from datetime import datetime
-from typing import Any, Optional
 import uuid
+from datetime import UTC, datetime
+from typing import Any
 
-from sqlalchemy import select, func, and_
+from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from tracertm.models.test_case import TestCase
 from tracertm.models.test_run import (
-    TestRun,
     TestResult,
+    TestResultStatus,
+    TestRun,
     TestRunActivity,
     TestRunStatus,
-    TestResultStatus,
     TestRunType,
 )
-from tracertm.models.test_case import TestCase
 
 
 class TestRunRepository:
@@ -31,20 +31,20 @@ class TestRunRepository:
         self,
         project_id: str,
         name: str,
-        description: Optional[str] = None,
-        suite_id: Optional[str] = None,
+        description: str | None = None,
+        suite_id: str | None = None,
         run_type: str = "manual",
-        environment: Optional[str] = None,
-        build_number: Optional[str] = None,
-        build_url: Optional[str] = None,
-        branch: Optional[str] = None,
-        commit_sha: Optional[str] = None,
-        scheduled_at: Optional[datetime] = None,
-        initiated_by: Optional[str] = None,
-        tags: Optional[list[str]] = None,
-        external_run_id: Optional[str] = None,
-        webhook_id: Optional[str] = None,
-        metadata: Optional[dict[str, Any]] = None,
+        environment: str | None = None,
+        build_number: str | None = None,
+        build_url: str | None = None,
+        branch: str | None = None,
+        commit_sha: str | None = None,
+        scheduled_at: datetime | None = None,
+        initiated_by: str | None = None,
+        tags: list[str] | None = None,
+        external_run_id: str | None = None,
+        webhook_id: str | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> TestRun:
         """Create a new test run."""
         run_number = f"TR-{str(uuid.uuid4())[:8].upper()}"
@@ -86,32 +86,28 @@ class TestRunRepository:
         await self.session.flush()
         return run
 
-    async def get_by_id(self, run_id: str) -> Optional[TestRun]:
+    async def get_by_id(self, run_id: str) -> TestRun | None:
         """Get a test run by ID."""
         result = await self.session.execute(
-            select(TestRun)
-            .options(selectinload(TestRun.results))
-            .where(TestRun.id == run_id)
+            select(TestRun).options(selectinload(TestRun.results)).where(TestRun.id == run_id)
         )
         return result.scalar_one_or_none()
 
-    async def get_by_number(self, run_number: str) -> Optional[TestRun]:
+    async def get_by_number(self, run_number: str) -> TestRun | None:
         """Get a test run by run number."""
-        result = await self.session.execute(
-            select(TestRun).where(TestRun.run_number == run_number)
-        )
+        result = await self.session.execute(select(TestRun).where(TestRun.run_number == run_number))
         return result.scalar_one_or_none()
 
     async def list_by_project(
         self,
         project_id: str,
-        status: Optional[str] = None,
-        run_type: Optional[str] = None,
-        suite_id: Optional[str] = None,
-        environment: Optional[str] = None,
-        initiated_by: Optional[str] = None,
-        from_date: Optional[datetime] = None,
-        to_date: Optional[datetime] = None,
+        status: str | None = None,
+        run_type: str | None = None,
+        suite_id: str | None = None,
+        environment: str | None = None,
+        initiated_by: str | None = None,
+        from_date: datetime | None = None,
+        to_date: datetime | None = None,
         skip: int = 0,
         limit: int = 50,
     ) -> tuple[list[TestRun], int]:
@@ -150,9 +146,9 @@ class TestRunRepository:
     async def update(
         self,
         run_id: str,
-        updated_by: Optional[str] = None,
+        updated_by: str | None = None,
         **updates: Any,
-    ) -> Optional[TestRun]:
+    ) -> TestRun | None:
         """Update a test run."""
         run = await self.get_by_id(run_id)
         if not run:
@@ -169,8 +165,8 @@ class TestRunRepository:
     async def start(
         self,
         run_id: str,
-        executed_by: Optional[str] = None,
-    ) -> Optional[TestRun]:
+        executed_by: str | None = None,
+    ) -> TestRun | None:
         """Start a test run."""
         run = await self.get_by_id(run_id)
         if not run:
@@ -181,7 +177,7 @@ class TestRunRepository:
 
         old_status = run.status
         run.status = TestRunStatus.RUNNING
-        run.started_at = datetime.utcnow()
+        run.started_at = datetime.now(UTC)
         run.executed_by = executed_by
         run.version += 1
 
@@ -202,11 +198,11 @@ class TestRunRepository:
     async def complete(
         self,
         run_id: str,
-        status: Optional[str] = None,
-        notes: Optional[str] = None,
-        failure_summary: Optional[str] = None,
-        completed_by: Optional[str] = None,
-    ) -> Optional[TestRun]:
+        status: str | None = None,
+        notes: str | None = None,
+        failure_summary: str | None = None,
+        completed_by: str | None = None,
+    ) -> TestRun | None:
         """Complete a test run."""
         run = await self.get_by_id(run_id)
         if not run:
@@ -216,11 +212,10 @@ class TestRunRepository:
             raise ValueError(f"Cannot complete run in status {run.status.value}")
 
         old_status = run.status
-        run.completed_at = datetime.utcnow()
+        completed_at = datetime.now(UTC)
+        run.completed_at = completed_at
         if run.started_at:
-            run.duration_seconds = int(
-                (run.completed_at - run.started_at).total_seconds()
-            )
+            run.duration_seconds = int((completed_at - run.started_at).total_seconds())
 
         # Determine final status based on results if not provided
         if status:
@@ -262,9 +257,9 @@ class TestRunRepository:
     async def cancel(
         self,
         run_id: str,
-        reason: Optional[str] = None,
-        cancelled_by: Optional[str] = None,
-    ) -> Optional[TestRun]:
+        reason: str | None = None,
+        cancelled_by: str | None = None,
+    ) -> TestRun | None:
         """Cancel a test run."""
         run = await self.get_by_id(run_id)
         if not run:
@@ -275,11 +270,10 @@ class TestRunRepository:
 
         old_status = run.status
         run.status = TestRunStatus.CANCELLED
-        run.completed_at = datetime.utcnow()
+        completed_at = datetime.now(UTC)
+        run.completed_at = completed_at
         if run.started_at:
-            run.duration_seconds = int(
-                (run.completed_at - run.started_at).total_seconds()
-            )
+            run.duration_seconds = int((completed_at - run.started_at).total_seconds())
         if reason:
             run.notes = reason
 
@@ -305,24 +299,24 @@ class TestRunRepository:
         run_id: str,
         test_case_id: str,
         status: str,
-        started_at: Optional[datetime] = None,
-        completed_at: Optional[datetime] = None,
-        duration_seconds: Optional[int] = None,
-        executed_by: Optional[str] = None,
-        actual_result: Optional[str] = None,
-        failure_reason: Optional[str] = None,
-        error_message: Optional[str] = None,
-        stack_trace: Optional[str] = None,
-        screenshots: Optional[list[str]] = None,
-        logs_url: Optional[str] = None,
-        attachments: Optional[list[dict[str, Any]]] = None,
-        step_results: Optional[list[dict[str, Any]]] = None,
-        linked_defect_ids: Optional[list[str]] = None,
-        created_defect_id: Optional[str] = None,
+        started_at: datetime | None = None,
+        completed_at: datetime | None = None,
+        duration_seconds: int | None = None,
+        executed_by: str | None = None,
+        actual_result: str | None = None,
+        failure_reason: str | None = None,
+        error_message: str | None = None,
+        stack_trace: str | None = None,
+        screenshots: list[str] | None = None,
+        logs_url: str | None = None,
+        attachments: list[dict[str, Any]] | None = None,
+        step_results: list[dict[str, Any]] | None = None,
+        linked_defect_ids: list[str] | None = None,
+        created_defect_id: str | None = None,
         retry_count: int = 0,
         is_flaky: bool = False,
-        notes: Optional[str] = None,
-        metadata: Optional[dict[str, Any]] = None,
+        notes: str | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> TestResult:
         """Add a test result to a run."""
         result = TestResult(
@@ -368,13 +362,11 @@ class TestRunRepository:
                 run.error_count += 1
 
             # Update test case execution stats
-            tc_result = await self.session.execute(
-                select(TestCase).where(TestCase.id == test_case_id)
-            )
+            tc_result = await self.session.execute(select(TestCase).where(TestCase.id == test_case_id))
             test_case = tc_result.scalar_one_or_none()
             if test_case:
                 test_case.total_executions += 1
-                test_case.last_executed_at = completed_at or datetime.utcnow()
+                test_case.last_executed_at = completed_at or datetime.now(UTC)
                 test_case.last_execution_result = status
                 if status_enum == TestResultStatus.PASSED:
                     test_case.pass_count += 1
@@ -421,7 +413,7 @@ class TestRunRepository:
     async def get_results(
         self,
         run_id: str,
-        status: Optional[str] = None,
+        status: str | None = None,
     ) -> list[TestResult]:
         """Get all results for a run."""
         query = select(TestResult).where(TestResult.run_id == run_id)
@@ -458,24 +450,18 @@ class TestRunRepository:
     async def get_stats(self, project_id: str) -> dict[str, Any]:
         """Get statistics for test runs in a project."""
         # Total count
-        total_result = await self.session.execute(
-            select(func.count()).where(TestRun.project_id == project_id)
-        )
+        total_result = await self.session.execute(select(func.count()).where(TestRun.project_id == project_id))
         total = total_result.scalar() or 0
 
         # By status
         status_result = await self.session.execute(
-            select(TestRun.status, func.count())
-            .where(TestRun.project_id == project_id)
-            .group_by(TestRun.status)
+            select(TestRun.status, func.count()).where(TestRun.project_id == project_id).group_by(TestRun.status)
         )
         by_status = {str(row[0].value): row[1] for row in status_result}
 
         # By type
         type_result = await self.session.execute(
-            select(TestRun.run_type, func.count())
-            .where(TestRun.project_id == project_id)
-            .group_by(TestRun.run_type)
+            select(TestRun.run_type, func.count()).where(TestRun.project_id == project_id).group_by(TestRun.run_type)
         )
         by_type = {str(row[0].value): row[1] for row in type_result}
 
@@ -516,10 +502,7 @@ class TestRunRepository:
 
         # Recent runs
         recent_result = await self.session.execute(
-            select(TestRun)
-            .where(TestRun.project_id == project_id)
-            .order_by(TestRun.created_at.desc())
-            .limit(5)
+            select(TestRun).where(TestRun.project_id == project_id).order_by(TestRun.created_at.desc()).limit(5)
         )
         recent_runs = list(recent_result.scalars().all())
 

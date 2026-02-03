@@ -11,21 +11,20 @@ Tests the FastMCP 3.0 HTTP/SSE transport implementation including:
 from __future__ import annotations
 
 import asyncio
-import json
-from typing import Any, AsyncGenerator
+from collections.abc import AsyncGenerator
+from typing import Any
 
 import pytest
 from fastapi import FastAPI
-from httpx import AsyncClient
+from httpx import ASGITransport, AsyncClient
 
 from tracertm.mcp.http_transport import (
-    create_standalone_http_app,
-    mount_mcp_to_fastapi,
-    create_progress_stream,
-    get_transport_type,
     DEFAULT_MCP_PATH,
+    create_progress_stream,
+    create_standalone_http_app,
+    get_transport_type,
+    mount_mcp_to_fastapi,
 )
-
 
 # =============================================================================
 # Fixtures
@@ -53,14 +52,18 @@ def fastapi_app():
 @pytest.fixture
 async def standalone_client(standalone_app):
     """Create an async HTTP client for standalone app."""
-    async with AsyncClient(app=standalone_app, base_url="http://test") as client:
+    async with AsyncClient(
+        transport=ASGITransport(app=standalone_app), base_url="http://test"
+    ) as client:
         yield client
 
 
 @pytest.fixture
 async def fastapi_client(fastapi_app):
     """Create an async HTTP client for FastAPI app."""
-    async with AsyncClient(app=fastapi_app, base_url="http://test") as client:
+    async with AsyncClient(
+        transport=ASGITransport(app=fastapi_app), base_url="http://test"
+    ) as client:
         yield client
 
 
@@ -171,7 +174,9 @@ class TestFastAPIIntegration:
         )
         mount_mcp_to_fastapi(test_app, path="/mcp")
 
-        async with AsyncClient(app=test_app, base_url="http://test") as client:
+        async with AsyncClient(
+            transport=ASGITransport(app=test_app), base_url="http://test"
+        ) as client:
             response = await client.options("/mcp")
             assert response.status_code in (200, 204, 405)  # CORS or not supported
 
@@ -192,9 +197,7 @@ class TestSSEProgressStreaming:
                 yield {"progress": i, "total": 5, "message": f"Step {i}"}
                 await asyncio.sleep(0.01)
 
-        events = []
-        async for event in create_progress_stream("task-123", mock_progress_generator()):
-            events.append(event)
+        events = [event async for event in create_progress_stream("task-123", mock_progress_generator())]
 
         # Verify stream structure
         assert len(events) == 7  # start + 5 progress + complete
@@ -221,7 +224,7 @@ class TestSSEProgressStreaming:
             async for event in create_progress_stream("task-456", slow_generator()):
                 events.append(event)
                 if len(events) >= 3:  # Cancel after a few events
-                    raise asyncio.CancelledError()
+                    raise asyncio.CancelledError
         except asyncio.CancelledError:
             pass
 
@@ -237,14 +240,12 @@ class TestSSEProgressStreaming:
             raise ValueError("Test error")
             yield {"progress": 2}  # Should never reach this
 
-        events = []
-        async for event in create_progress_stream("task-789", error_generator()):
-            events.append(event)
+        events = [event async for event in create_progress_stream("task-789", error_generator())]
 
         # Should have start, progress, and error
         assert events[0]["event"] == "stream_start"
         assert any(e["event"] == "stream_error" for e in events)
-        error_event = [e for e in events if e["event"] == "stream_error"][0]
+        error_event = next(e for e in events if e["event"] == "stream_error")
         assert "Test error" in error_event["data"]["error"]
 
 
@@ -413,7 +414,7 @@ class TestPerformance:
             times.append(elapsed)
 
         avg_time = sum(times) / len(times)
-        print(f"\nAverage response time: {avg_time*1000:.2f}ms")
+        print(f"\nAverage response time: {avg_time * 1000:.2f}ms")
 
         # Response time should be reasonable
         assert avg_time < 0.5  # Less than 500ms on average

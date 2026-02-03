@@ -38,34 +38,33 @@ import json
 import math
 import re
 import statistics
-from collections import Counter, defaultdict
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from enum import Enum
-from typing import Any, Callable, TypeVar
-from uuid import uuid4
+from collections import Counter
+from datetime import UTC, datetime
+from enum import StrEnum
+from typing import Any, ClassVar
 
 from pydantic import BaseModel, Field
-
 
 # =============================================================================
 # ENUMS - Comprehensive Classification Systems
 # =============================================================================
 
 
-class EARSPatternType(str, Enum):
+class EARSPatternType(StrEnum):
     """EARS (Easy Approach to Requirements Syntax) pattern types."""
-    UBIQUITOUS = "ubiquitous"       # "The system shall..."
-    EVENT_DRIVEN = "event_driven"   # "When <event>, the system shall..."
-    STATE_DRIVEN = "state_driven"   # "While <state>, the system shall..."
-    OPTIONAL = "optional"           # "Where <feature>, the system shall..."
-    COMPLEX = "complex"             # Combination of triggers
-    UNWANTED = "unwanted"           # "If <condition>, the system shall NOT..."
+
+    UBIQUITOUS = "ubiquitous"  # "The system shall..."
+    EVENT_DRIVEN = "event_driven"  # "When <event>, the system shall..."
+    STATE_DRIVEN = "state_driven"  # "While <state>, the system shall..."
+    OPTIONAL = "optional"  # "Where <feature>, the system shall..."
+    COMPLEX = "complex"  # Combination of triggers
+    UNWANTED = "unwanted"  # "If <condition>, the system shall NOT..."
     UNCLASSIFIED = "unclassified"
 
 
-class QualityDimension(str, Enum):
+class QualityDimension(StrEnum):
     """ISO 29148 quality dimensions for requirements."""
+
     UNAMBIGUITY = "unambiguity"
     COMPLETENESS = "completeness"
     VERIFIABILITY = "verifiability"
@@ -77,28 +76,31 @@ class QualityDimension(str, Enum):
     CORRECTNESS = "correctness"
 
 
-class VerificationMethod(str, Enum):
+class VerificationMethod(StrEnum):
     """ISO 29148 verification methods (IDAT)."""
+
     INSPECTION = "inspection"
     DEMONSTRATION = "demonstration"
     ANALYSIS = "analysis"
     TEST = "test"
 
 
-class ODCDefectType(str, Enum):
+class ODCDefectType(StrEnum):
     """IBM Orthogonal Defect Classification - Defect Types."""
-    FUNCTION = "function"           # Missing/incorrect function
-    INTERFACE = "interface"         # Module interface issues
-    CHECKING = "checking"           # Missing/incorrect validation
-    ASSIGNMENT = "assignment"       # Incorrect variable assignment
-    TIMING = "timing"               # Race conditions, deadlocks
-    BUILD = "build"                 # Build/package/merge issues
-    DOCUMENTATION = "documentation" # Doc errors affecting behavior
-    ALGORITHM = "algorithm"         # Algorithm/logic errors
+
+    FUNCTION = "function"  # Missing/incorrect function
+    INTERFACE = "interface"  # Module interface issues
+    CHECKING = "checking"  # Missing/incorrect validation
+    ASSIGNMENT = "assignment"  # Incorrect variable assignment
+    TIMING = "timing"  # Race conditions, deadlocks
+    BUILD = "build"  # Build/package/merge issues
+    DOCUMENTATION = "documentation"  # Doc errors affecting behavior
+    ALGORITHM = "algorithm"  # Algorithm/logic errors
 
 
-class ODCTrigger(str, Enum):
+class ODCTrigger(StrEnum):
     """IBM ODC - What triggered the defect discovery."""
+
     REVIEW = "review"
     WALKTHROUGH = "walkthrough"
     UNIT_TEST = "unit_test"
@@ -109,8 +111,9 @@ class ODCTrigger(str, Enum):
     STATIC_ANALYSIS = "static_analysis"
 
 
-class ODCImpact(str, Enum):
+class ODCImpact(StrEnum):
     """IBM ODC - Customer impact category."""
+
     INSTALLABILITY = "installability"
     SERVICEABILITY = "serviceability"
     STANDARDS = "standards"
@@ -125,17 +128,19 @@ class ODCImpact(str, Enum):
     MIGRATION = "migration"
 
 
-class FlakinessSeverity(str, Enum):
+class FlakinessSeverity(StrEnum):
     """Flakiness severity levels (Meta model)."""
-    STABLE = "stable"        # < 1% flakiness
-    LOW = "low"              # 1-5%
-    MEDIUM = "medium"        # 5-15%
-    HIGH = "high"            # 15-30%
-    CRITICAL = "critical"    # > 30%
+
+    STABLE = "stable"  # < 1% flakiness
+    LOW = "low"  # 1-5%
+    MEDIUM = "medium"  # 5-15%
+    HIGH = "high"  # 15-30%
+    CRITICAL = "critical"  # > 30%
 
 
-class FlakinessPattern(str, Enum):
+class FlakinessPattern(StrEnum):
     """Detected flakiness patterns."""
+
     ORDER_DEPENDENT = "order_dependent"
     TIME_DEPENDENT = "time_dependent"
     RESOURCE_DEPENDENT = "resource_dependent"
@@ -148,8 +153,9 @@ class FlakinessPattern(str, Enum):
     ASYNC_TIMING = "async_timing"
 
 
-class TestOracleType(str, Enum):
+class TestOracleType(StrEnum):
     """Test oracle pattern types."""
+
     EXPECTED_OUTPUT = "expected_output"
     METAMORPHIC = "metamorphic"
     PROPERTY_BASED = "property_based"
@@ -160,8 +166,9 @@ class TestOracleType(str, Enum):
     CONTRACT = "contract"
 
 
-class CoverageType(str, Enum):
+class CoverageType(StrEnum):
     """Coverage measurement types (DO-178C levels)."""
+
     STATEMENT = "statement"
     BRANCH = "branch"
     CONDITION = "condition"
@@ -170,8 +177,9 @@ class CoverageType(str, Enum):
     MUTATION = "mutation"
 
 
-class SuspectLinkReason(str, Enum):
+class SuspectLinkReason(StrEnum):
     """Reasons for marking a trace link as suspect."""
+
     UPSTREAM_MODIFIED = "upstream_modified"
     CONTENT_CHANGED = "content_changed"
     STATUS_CHANGED = "status_changed"
@@ -180,8 +188,9 @@ class SuspectLinkReason(str, Enum):
     COVERAGE_GAP = "coverage_gap"
 
 
-class SafetyLevel(str, Enum):
+class SafetyLevel(StrEnum):
     """Safety integrity levels (combined from multiple standards)."""
+
     # ISO 26262 Automotive
     ASIL_D = "asil_d"
     ASIL_C = "asil_c"
@@ -202,13 +211,14 @@ class SafetyLevel(str, Enum):
     NONE = "none"
 
 
-class PriorityFramework(str, Enum):
+class PriorityFramework(StrEnum):
     """Prioritization frameworks."""
-    WSJF = "wsjf"           # Weighted Shortest Job First (SAFe)
-    RICE = "rice"           # Reach, Impact, Confidence, Effort
-    MOSCOW = "moscow"       # Must, Should, Could, Won't
-    KANO = "kano"           # Basic, Performance, Excitement
-    ICE = "ice"             # Impact, Confidence, Ease
+
+    WSJF = "wsjf"  # Weighted Shortest Job First (SAFe)
+    RICE = "rice"  # Reach, Impact, Confidence, Effort
+    MOSCOW = "moscow"  # Must, Should, Could, Won't
+    KANO = "kano"  # Basic, Performance, Excitement
+    ICE = "ice"  # Impact, Confidence, Ease
     VALUE_VS_EFFORT = "value_vs_effort"
     COST_OF_DELAY = "cost_of_delay"
 
@@ -220,6 +230,7 @@ class PriorityFramework(str, Enum):
 
 class EARSComponents(BaseModel):
     """Extracted EARS components from a requirement."""
+
     trigger: str | None = None
     precondition: str | None = None
     postcondition: str | None = None
@@ -232,6 +243,7 @@ class EARSComponents(BaseModel):
 
 class EARSAnalysisResult(BaseModel):
     """Complete EARS pattern analysis result."""
+
     pattern_type: EARSPatternType
     confidence: float = Field(ge=0, le=1)
     components: EARSComponents
@@ -245,6 +257,7 @@ class EARSAnalysisResult(BaseModel):
 
 class QualityIssue(BaseModel):
     """A detected quality issue with full context."""
+
     dimension: QualityDimension
     severity: str = Field(pattern="^(error|warning|info)$")
     message: str
@@ -256,6 +269,7 @@ class QualityIssue(BaseModel):
 
 class QualityScore(BaseModel):
     """Comprehensive quality scoring result."""
+
     dimension_scores: dict[str, float]
     overall_score: float
     issues: list[QualityIssue]
@@ -266,6 +280,7 @@ class QualityScore(BaseModel):
 
 class VersionBlock(BaseModel):
     """Immutable version record with cryptographic linking (blockchain-style)."""
+
     block_id: str  # SHA-256 hash
     previous_block_id: str | None
     timestamp: datetime
@@ -280,6 +295,7 @@ class VersionBlock(BaseModel):
 
 class MerkleProof(BaseModel):
     """Merkle proof for verifying item inclusion in a baseline."""
+
     leaf_hash: str
     proof_path: list[tuple[str, str]]  # (hash, direction: 'left'|'right')
     root_hash: str
@@ -289,6 +305,7 @@ class MerkleProof(BaseModel):
 
 class ContentAddress(BaseModel):
     """IPFS-style content identifier."""
+
     cid: str  # Content Identifier
     algorithm: str = "sha256"
     size_bytes: int
@@ -298,6 +315,7 @@ class ContentAddress(BaseModel):
 
 class ODCClassification(BaseModel):
     """Complete IBM ODC classification for a defect."""
+
     defect_type: ODCDefectType
     trigger: ODCTrigger
     impact: ODCImpact
@@ -309,6 +327,7 @@ class ODCClassification(BaseModel):
 
 class CVSSScore(BaseModel):
     """CVSS v3.1 security vulnerability scoring."""
+
     base_score: float = Field(ge=0, le=10)
     temporal_score: float | None = Field(None, ge=0, le=10)
     environmental_score: float | None = Field(None, ge=0, le=10)
@@ -326,6 +345,7 @@ class CVSSScore(BaseModel):
 
 class FlakinessAnalysis(BaseModel):
     """Complete flakiness analysis result."""
+
     flakiness_score: float = Field(ge=0, le=1)
     severity: FlakinessSeverity
     detected_patterns: list[FlakinessPattern] = Field(default_factory=list)
@@ -345,6 +365,7 @@ class FlakinessAnalysis(BaseModel):
 
 class WSJFScore(BaseModel):
     """WSJF (Weighted Shortest Job First) scoring from SAFe."""
+
     business_value: int = Field(ge=1, le=10)
     time_criticality: int = Field(ge=1, le=10)
     risk_reduction: int = Field(ge=1, le=10)
@@ -358,6 +379,7 @@ class WSJFScore(BaseModel):
 
 class RICEScore(BaseModel):
     """RICE scoring model."""
+
     reach: int
     impact: float = Field(ge=0.25, le=3)
     confidence: float = Field(ge=0, le=1)
@@ -369,6 +391,7 @@ class RICEScore(BaseModel):
 
 class SemanticSimilarity(BaseModel):
     """Semantic similarity between items."""
+
     source_id: str
     target_id: str
     similarity_score: float = Field(ge=0, le=1)
@@ -380,6 +403,7 @@ class SemanticSimilarity(BaseModel):
 
 class ImpactAnalysisResult(BaseModel):
     """Graph-based impact analysis result."""
+
     source_item_id: str
     direct_impacts: list[str] = Field(default_factory=list)
     transitive_impacts: list[str] = Field(default_factory=list)
@@ -394,6 +418,7 @@ class ImpactAnalysisResult(BaseModel):
 
 class SuspectLink(BaseModel):
     """A suspect traceability link requiring review."""
+
     link_id: str
     source_id: str
     target_id: str
@@ -408,6 +433,7 @@ class SuspectLink(BaseModel):
 
 class CoverageGap(BaseModel):
     """Identified coverage gap in traceability."""
+
     gap_type: str  # no_tests, no_verification, orphaned_test, missing_link
     item_id: str
     item_type: str
@@ -421,6 +447,7 @@ class CoverageGap(BaseModel):
 
 class FormalConstraint(BaseModel):
     """A formal constraint for Z3-style verification."""
+
     constraint_id: str
     expression: str  # SMT-LIB or custom DSL
     constraint_type: str  # equality, inequality, range, implies, iff
@@ -432,6 +459,7 @@ class FormalConstraint(BaseModel):
 
 class MetamorphicRelation(BaseModel):
     """Metamorphic testing relation definition."""
+
     relation_id: str
     name: str
     description: str
@@ -455,50 +483,93 @@ class EARSPatternAnalyzer:
     """
 
     # Pattern regexes ordered by specificity
-    PATTERNS = {
+    PATTERNS: ClassVar[dict[EARSPatternType, re.Pattern[str]]] = {
         EARSPatternType.UNWANTED: re.compile(
-            r"^(?:if|when)\s+(.+?),?\s+(?:then\s+)?(?:the\s+)?(\w+)\s+shall\s+(?:not|never)\s+(.+)$",
-            re.IGNORECASE
+            r"^(?:if|when)\s+(.+?),?\s+(?:then\s+)?(?:the\s+)?(\w+)\s+shall\s+(?:not|never)\s+(.+)$", re.IGNORECASE
         ),
         EARSPatternType.COMPLEX: re.compile(
-            r"^(?:while\s+(.+?)\s+)?(?:when|if|upon)\s+(.+?),?\s+(?:the\s+)?(\w+)\s+shall\s+(.+)$",
-            re.IGNORECASE
+            r"^(?:while\s+(.+?)\s+)?(?:when|if|upon)\s+(.+?),?\s+(?:the\s+)?(\w+)\s+shall\s+(.+)$", re.IGNORECASE
         ),
         EARSPatternType.STATE_DRIVEN: re.compile(
-            r"^(?:while|during|as\s+long\s+as)\s+(.+?),?\s+(?:the\s+)?(\w+)\s+shall\s+(.+)$",
-            re.IGNORECASE
+            r"^(?:while|during|as\s+long\s+as)\s+(.+?),?\s+(?:the\s+)?(\w+)\s+shall\s+(.+)$", re.IGNORECASE
         ),
         EARSPatternType.EVENT_DRIVEN: re.compile(
-            r"^(?:when|upon|after|once|if)\s+(.+?),?\s+(?:the\s+)?(\w+)\s+shall\s+(.+)$",
-            re.IGNORECASE
+            r"^(?:when|upon|after|once|if)\s+(.+?),?\s+(?:the\s+)?(\w+)\s+shall\s+(.+)$", re.IGNORECASE
         ),
         EARSPatternType.OPTIONAL: re.compile(
             r"^(?:where|if|in\s+case)\s+(.+?)\s+(?:is\s+)?(?:enabled|configured|available|supported),?\s+(?:the\s+)?(\w+)\s+shall\s+(.+)$",
-            re.IGNORECASE
+            re.IGNORECASE,
         ),
-        EARSPatternType.UBIQUITOUS: re.compile(
-            r"^(?:the\s+)?(\w+)\s+shall\s+(.+)$",
-            re.IGNORECASE
-        ),
+        EARSPatternType.UBIQUITOUS: re.compile(r"^(?:the\s+)?(\w+)\s+shall\s+(.+)$", re.IGNORECASE),
     }
 
     # Ambiguous words from IEEE 830 and ISO 29148
     AMBIGUOUS_WORDS = frozenset({
-        "appropriate", "adequate", "reasonable", "sufficient", "timely",
-        "easy", "simple", "fast", "quick", "efficient", "effective",
-        "user-friendly", "flexible", "scalable", "robust", "secure",
-        "good", "bad", "better", "best", "optimal", "minimal", "maximum",
-        "some", "several", "many", "few", "various", "etc", "and/or",
-        "normally", "usually", "typically", "generally", "often",
-        "may", "might", "could", "possibly", "perhaps", "probably",
-        "as appropriate", "as needed", "if necessary", "when required",
-        "similar", "etc.", "and so on", "such as", "for example"
+        "appropriate",
+        "adequate",
+        "reasonable",
+        "sufficient",
+        "timely",
+        "easy",
+        "simple",
+        "fast",
+        "quick",
+        "efficient",
+        "effective",
+        "user-friendly",
+        "flexible",
+        "scalable",
+        "robust",
+        "secure",
+        "good",
+        "bad",
+        "better",
+        "best",
+        "optimal",
+        "minimal",
+        "maximum",
+        "some",
+        "several",
+        "many",
+        "few",
+        "various",
+        "etc",
+        "and/or",
+        "normally",
+        "usually",
+        "typically",
+        "generally",
+        "often",
+        "may",
+        "might",
+        "could",
+        "possibly",
+        "perhaps",
+        "probably",
+        "as appropriate",
+        "as needed",
+        "if necessary",
+        "when required",
+        "similar",
+        "etc.",
+        "and so on",
+        "such as",
+        "for example",
     })
 
     # Incomplete markers
     INCOMPLETE_MARKERS = frozenset({
-        "tbd", "tba", "todo", "fixme", "xxx", "???", "...",
-        "placeholder", "pending", "to be determined", "to be defined"
+        "tbd",
+        "tba",
+        "todo",
+        "fixme",
+        "xxx",
+        "???",
+        "...",
+        "placeholder",
+        "pending",
+        "to be determined",
+        "to be defined",
     })
 
     # Weak modals
@@ -508,7 +579,6 @@ class EARSPatternAnalyzer:
         """Perform complete EARS analysis on a requirement."""
         text = requirement_text.strip()
         text_lower = text.lower()
-        words = set(text_lower.split())
 
         issues = []
         suggestions = []
@@ -524,9 +594,7 @@ class EARSPatternAnalyzer:
             match = pattern.match(text)
             if match:
                 components = self._extract_components(pattern_type, match)
-                confidence = self._calculate_confidence(
-                    text, pattern_type, components, ambiguous, incomplete
-                )
+                confidence = self._calculate_confidence(text, pattern_type, components, ambiguous, incomplete)
 
                 # Validate
                 validation_issues = self._validate(text, components, ambiguous, incomplete)
@@ -547,7 +615,7 @@ class EARSPatternAnalyzer:
                     improvement_suggestions=suggestions,
                     formal_structure=formal_structure,
                     ambiguous_terms=ambiguous,
-                    incomplete_markers=incomplete
+                    incomplete_markers=incomplete,
                 )
 
         # No pattern matched
@@ -560,54 +628,52 @@ class EARSPatternAnalyzer:
             improvement_suggestions=[
                 "Restructure as: 'The <system> shall <action>'",
                 "For conditions: 'When <trigger>, the <system> shall <action>'",
-                "For states: 'While <state>, the <system> shall <action>'"
+                "For states: 'While <state>, the <system> shall <action>'",
             ],
             ambiguous_terms=ambiguous,
-            incomplete_markers=incomplete
+            incomplete_markers=incomplete,
         )
 
-    def _extract_components(
-        self, pattern_type: EARSPatternType, match: re.Match
-    ) -> EARSComponents:
+    def _extract_components(self, pattern_type: EARSPatternType, match: re.Match) -> EARSComponents:
         """Extract structured components from regex match."""
         groups = match.groups()
 
         if pattern_type == EARSPatternType.UBIQUITOUS:
             return EARSComponents(
                 system_name=groups[0] if len(groups) > 0 else None,
-                system_response=groups[1] if len(groups) > 1 else None
+                system_response=groups[1] if len(groups) > 1 else None,
             )
-        elif pattern_type == EARSPatternType.EVENT_DRIVEN:
+        if pattern_type == EARSPatternType.EVENT_DRIVEN:
             return EARSComponents(
                 trigger=groups[0] if len(groups) > 0 else None,
                 system_name=groups[1] if len(groups) > 1 else None,
-                system_response=groups[2] if len(groups) > 2 else None
+                system_response=groups[2] if len(groups) > 2 else None,
             )
-        elif pattern_type == EARSPatternType.STATE_DRIVEN:
+        if pattern_type == EARSPatternType.STATE_DRIVEN:
             return EARSComponents(
                 precondition=groups[0] if len(groups) > 0 else None,
                 system_name=groups[1] if len(groups) > 1 else None,
-                system_response=groups[2] if len(groups) > 2 else None
+                system_response=groups[2] if len(groups) > 2 else None,
             )
-        elif pattern_type == EARSPatternType.OPTIONAL:
+        if pattern_type == EARSPatternType.OPTIONAL:
             return EARSComponents(
                 constraint=groups[0] if len(groups) > 0 else None,
                 system_name=groups[1] if len(groups) > 1 else None,
-                system_response=groups[2] if len(groups) > 2 else None
+                system_response=groups[2] if len(groups) > 2 else None,
             )
-        elif pattern_type == EARSPatternType.UNWANTED:
+        if pattern_type == EARSPatternType.UNWANTED:
             return EARSComponents(
                 precondition=groups[0] if len(groups) > 0 else None,
                 system_name=groups[1] if len(groups) > 1 else None,
                 postcondition=groups[2] if len(groups) > 2 else None,
-                negation=True
+                negation=True,
             )
-        elif pattern_type == EARSPatternType.COMPLEX:
+        if pattern_type == EARSPatternType.COMPLEX:
             return EARSComponents(
                 precondition=groups[0] if len(groups) > 0 and groups[0] else None,
                 trigger=groups[1] if len(groups) > 1 else None,
                 system_name=groups[2] if len(groups) > 2 else None,
-                system_response=groups[3] if len(groups) > 3 else None
+                system_response=groups[3] if len(groups) > 3 else None,
             )
 
         return EARSComponents()
@@ -618,7 +684,7 @@ class EARSPatternAnalyzer:
         pattern_type: EARSPatternType,
         components: EARSComponents,
         ambiguous: list[str],
-        incomplete: list[str]
+        incomplete: list[str],
     ) -> float:
         """Calculate confidence score for pattern match."""
         confidence = 0.6  # Base for any match
@@ -647,11 +713,7 @@ class EARSPatternAnalyzer:
         return max(0.0, min(1.0, confidence))
 
     def _validate(
-        self,
-        text: str,
-        components: EARSComponents,
-        ambiguous: list[str],
-        incomplete: list[str]
+        self, text: str, components: EARSComponents, ambiguous: list[str], incomplete: list[str]
     ) -> list[str]:
         """Validate requirement for quality issues."""
         issues = []
@@ -668,9 +730,8 @@ class EARSPatternAnalyzer:
 
         # Check for performance without metrics
         perf_words = ["fast", "quick", "efficient", "responsive", "performance"]
-        if any(w in text.lower() for w in perf_words):
-            if not any(c.isdigit() for c in text):
-                issues.append("Performance requirement lacks quantifiable metric")
+        if any(w in text.lower() for w in perf_words) and not any(c.isdigit() for c in text):
+            issues.append("Performance requirement lacks quantifiable metric")
 
         # Check minimum length
         if len(text) < 25:
@@ -690,47 +751,39 @@ class EARSPatternAnalyzer:
         for issue in issues:
             issue_lower = issue.lower()
             if "ambiguous" in issue_lower:
-                suggestions.append(
-                    "Replace ambiguous terms with specific, measurable criteria"
-                )
+                suggestions.append("Replace ambiguous terms with specific, measurable criteria")
             elif "incomplete" in issue_lower:
                 suggestions.append("Complete all TBD/placeholder sections")
             elif "compound" in issue_lower:
-                suggestions.append(
-                    "Split into separate atomic requirements for better traceability"
-                )
+                suggestions.append("Split into separate atomic requirements for better traceability")
             elif "quantifiable" in issue_lower or "metric" in issue_lower:
-                suggestions.append(
-                    "Add measurable targets (e.g., 'within 200ms', '99.9% uptime')"
-                )
+                suggestions.append("Add measurable targets (e.g., 'within 200ms', '99.9% uptime')")
             elif "passive" in issue_lower:
-                suggestions.append(
-                    "Rewrite using active voice: 'The system shall...' not 'It shall be...'"
-                )
+                suggestions.append("Rewrite using active voice: 'The system shall...' not 'It shall be...'")
 
         return suggestions
 
-    def _to_formal_structure(
-        self, pattern_type: EARSPatternType, components: EARSComponents
-    ) -> str:
+    def _to_formal_structure(self, pattern_type: EARSPatternType, components: EARSComponents) -> str:
         """Generate normalized formal EARS structure."""
         if pattern_type == EARSPatternType.UBIQUITOUS:
             return f"The {components.system_name or '<system>'} shall {components.system_response or '<response>'}."
-        elif pattern_type == EARSPatternType.EVENT_DRIVEN:
+        if pattern_type == EARSPatternType.EVENT_DRIVEN:
             return f"WHEN {components.trigger or '<trigger>'}, the {components.system_name or '<system>'} shall {components.system_response or '<response>'}."
-        elif pattern_type == EARSPatternType.STATE_DRIVEN:
+        if pattern_type == EARSPatternType.STATE_DRIVEN:
             return f"WHILE {components.precondition or '<state>'}, the {components.system_name or '<system>'} shall {components.system_response or '<response>'}."
-        elif pattern_type == EARSPatternType.OPTIONAL:
+        if pattern_type == EARSPatternType.OPTIONAL:
             return f"WHERE {components.constraint or '<feature>'} is enabled, the {components.system_name or '<system>'} shall {components.system_response or '<response>'}."
-        elif pattern_type == EARSPatternType.UNWANTED:
+        if pattern_type == EARSPatternType.UNWANTED:
             return f"IF {components.precondition or '<condition>'}, THEN the {components.system_name or '<system>'} shall NOT {components.postcondition or '<action>'}."
-        elif pattern_type == EARSPatternType.COMPLEX:
+        if pattern_type == EARSPatternType.COMPLEX:
             parts = []
             if components.precondition:
                 parts.append(f"WHILE {components.precondition}")
             if components.trigger:
                 parts.append(f"WHEN {components.trigger}")
-            parts.append(f"the {components.system_name or '<system>'} shall {components.system_response or '<response>'}")
+            parts.append(
+                f"the {components.system_name or '<system>'} shall {components.system_response or '<response>'}"
+            )
             return ", ".join(parts) + "."
 
         return "<unclassified>"
@@ -745,7 +798,7 @@ class RequirementQualityAnalyzer:
     """
 
     # ISO 29148 dimension weights
-    DIMENSION_WEIGHTS = {
+    DIMENSION_WEIGHTS: ClassVar[dict[QualityDimension, float]] = {
         QualityDimension.UNAMBIGUITY: 0.18,
         QualityDimension.COMPLETENESS: 0.18,
         QualityDimension.VERIFIABILITY: 0.14,
@@ -762,39 +815,38 @@ class RequirementQualityAnalyzer:
         requirement_text: str,
         related_requirements: list[str] | None = None,
         linked_tests: list[str] | None = None,
-        linked_items: dict[str, list[str]] | None = None
+        linked_items: dict[str, list[str]] | None = None,
     ) -> QualityScore:
         """Analyze requirement quality across all ISO 29148 dimensions."""
         issues: list[QualityIssue] = []
         scores: dict[str, float] = {}
 
         # Analyze each dimension
-        scores[QualityDimension.UNAMBIGUITY.value], unambiguity_issues = \
-            self._analyze_unambiguity(requirement_text)
+        scores[QualityDimension.UNAMBIGUITY.value], unambiguity_issues = self._analyze_unambiguity(requirement_text)
         issues.extend(unambiguity_issues)
 
-        scores[QualityDimension.COMPLETENESS.value], completeness_issues = \
-            self._analyze_completeness(requirement_text)
+        scores[QualityDimension.COMPLETENESS.value], completeness_issues = self._analyze_completeness(requirement_text)
         issues.extend(completeness_issues)
 
-        scores[QualityDimension.VERIFIABILITY.value], verifiability_issues = \
-            self._analyze_verifiability(requirement_text)
+        scores[QualityDimension.VERIFIABILITY.value], verifiability_issues = self._analyze_verifiability(
+            requirement_text
+        )
         issues.extend(verifiability_issues)
 
-        scores[QualityDimension.SINGULARITY.value], singularity_issues = \
-            self._analyze_singularity(requirement_text)
+        scores[QualityDimension.SINGULARITY.value], singularity_issues = self._analyze_singularity(requirement_text)
         issues.extend(singularity_issues)
 
-        scores[QualityDimension.NECESSITY.value], necessity_issues = \
-            self._analyze_necessity(requirement_text)
+        scores[QualityDimension.NECESSITY.value], necessity_issues = self._analyze_necessity(requirement_text)
         issues.extend(necessity_issues)
 
-        scores[QualityDimension.TRACEABILITY.value], traceability_issues = \
-            self._analyze_traceability(linked_tests, linked_items)
+        scores[QualityDimension.TRACEABILITY.value], traceability_issues = self._analyze_traceability(
+            linked_tests, linked_items
+        )
         issues.extend(traceability_issues)
 
-        scores[QualityDimension.CONSISTENCY.value], consistency_issues = \
-            self._analyze_consistency(requirement_text, related_requirements)
+        scores[QualityDimension.CONSISTENCY.value], consistency_issues = self._analyze_consistency(
+            requirement_text, related_requirements
+        )
         issues.extend(consistency_issues)
 
         # Feasibility and correctness are harder to automate
@@ -802,17 +854,13 @@ class RequirementQualityAnalyzer:
         scores[QualityDimension.CORRECTNESS.value] = 0.8
 
         # Calculate weighted overall score
-        overall = sum(
-            scores.get(dim.value, 0.8) * weight
-            for dim, weight in self.DIMENSION_WEIGHTS.items()
-        )
+        overall = sum(scores.get(dim.value, 0.8) * weight for dim, weight in self.DIMENSION_WEIGHTS.items())
 
         grade = self._score_to_grade(overall)
 
         # Determine improvement priorities
         improvement_priority = sorted(
-            [d.value for d in QualityDimension if scores.get(d.value, 1.0) < 0.7],
-            key=lambda d: scores.get(d, 1.0)
+            [d.value for d in QualityDimension if scores.get(d.value, 1.0) < 0.7], key=lambda d: scores.get(d, 1.0)
         )
 
         return QualityScore(
@@ -820,7 +868,7 @@ class RequirementQualityAnalyzer:
             overall_score=overall * 100,
             issues=issues,
             grade=grade,
-            improvement_priority=improvement_priority
+            improvement_priority=improvement_priority,
         )
 
     def _analyze_unambiguity(self, text: str) -> tuple[float, list[QualityIssue]]:
@@ -852,27 +900,31 @@ class RequirementQualityAnalyzer:
             if term in text_lower:
                 pos = text_lower.find(term)
                 score -= 0.12
-                issues.append(QualityIssue(
-                    dimension=QualityDimension.UNAMBIGUITY,
-                    severity="warning",
-                    message=f"Ambiguous term '{term}' detected",
-                    suggestion=suggestion,
-                    position=pos,
-                    rule_id="ISO29148-AMB-001"
-                ))
+                issues.append(
+                    QualityIssue(
+                        dimension=QualityDimension.UNAMBIGUITY,
+                        severity="warning",
+                        message=f"Ambiguous term '{term}' detected",
+                        suggestion=suggestion,
+                        position=pos,
+                        rule_id="ISO29148-AMB-001",
+                    )
+                )
 
         # Weak modals
         weak_modals = {"may", "might", "could", "possibly", "perhaps", "probably"}
         for modal in weak_modals:
             if f" {modal} " in f" {text_lower} ":
                 score -= 0.08
-                issues.append(QualityIssue(
-                    dimension=QualityDimension.UNAMBIGUITY,
-                    severity="info",
-                    message=f"Weak modal '{modal}' suggests uncertainty",
-                    suggestion="Use 'shall' for mandatory, 'may' only for truly optional",
-                    rule_id="ISO29148-AMB-002"
-                ))
+                issues.append(
+                    QualityIssue(
+                        dimension=QualityDimension.UNAMBIGUITY,
+                        severity="info",
+                        message=f"Weak modal '{modal}' suggests uncertainty",
+                        suggestion="Use 'shall' for mandatory, 'may' only for truly optional",
+                        rule_id="ISO29148-AMB-002",
+                    )
+                )
 
         return max(0.0, score), issues
 
@@ -898,37 +950,43 @@ class RequirementQualityAnalyzer:
         for marker, desc in incomplete_markers.items():
             if marker in text_lower:
                 score -= 0.25
-                issues.append(QualityIssue(
-                    dimension=QualityDimension.COMPLETENESS,
-                    severity="error",
-                    message=f"Incomplete marker found: {desc}",
-                    suggestion="Complete all placeholder sections before baseline",
-                    rule_id="ISO29148-COMP-001"
-                ))
+                issues.append(
+                    QualityIssue(
+                        dimension=QualityDimension.COMPLETENESS,
+                        severity="error",
+                        message=f"Incomplete marker found: {desc}",
+                        suggestion="Complete all placeholder sections before baseline",
+                        rule_id="ISO29148-COMP-001",
+                    )
+                )
 
         # Minimum length check
         if len(text) < 30:
             score -= 0.15
-            issues.append(QualityIssue(
-                dimension=QualityDimension.COMPLETENESS,
-                severity="warning",
-                message="Requirement may be too brief to be complete",
-                suggestion="Ensure actor, action, and conditions are specified",
-                rule_id="ISO29148-COMP-002"
-            ))
+            issues.append(
+                QualityIssue(
+                    dimension=QualityDimension.COMPLETENESS,
+                    severity="warning",
+                    message="Requirement may be too brief to be complete",
+                    suggestion="Ensure actor, action, and conditions are specified",
+                    rule_id="ISO29148-COMP-002",
+                )
+            )
 
         # Check for missing actor
         if "shall" in text_lower and not any(
             actor in text_lower for actor in ["system", "user", "operator", "administrator"]
         ):
             score -= 0.10
-            issues.append(QualityIssue(
-                dimension=QualityDimension.COMPLETENESS,
-                severity="info",
-                message="No clear actor/system identified",
-                suggestion="Specify who/what performs the action",
-                rule_id="ISO29148-COMP-003"
-            ))
+            issues.append(
+                QualityIssue(
+                    dimension=QualityDimension.COMPLETENESS,
+                    severity="info",
+                    message="No clear actor/system identified",
+                    suggestion="Specify who/what performs the action",
+                    rule_id="ISO29148-COMP-003",
+                )
+            )
 
         return max(0.0, score), issues
 
@@ -939,44 +997,70 @@ class RequirementQualityAnalyzer:
         text_lower = text.lower()
 
         # Check for quantifiable metrics
-        has_numbers = bool(re.search(r'\d+', text))
+        has_numbers = bool(re.search(r"\d+", text))
         has_units = any(
-            unit in text_lower for unit in [
-                "ms", "seconds", "minutes", "hours", "days",
-                "bytes", "kb", "mb", "gb", "tb",
-                "%", "percent", "percentage",
-                "users", "requests", "transactions", "items",
-                "times", "attempts", "retries"
+            unit in text_lower
+            for unit in [
+                "ms",
+                "seconds",
+                "minutes",
+                "hours",
+                "days",
+                "bytes",
+                "kb",
+                "mb",
+                "gb",
+                "tb",
+                "%",
+                "percent",
+                "percentage",
+                "users",
+                "requests",
+                "transactions",
+                "items",
+                "times",
+                "attempts",
+                "retries",
             ]
         )
 
         # Performance/quality requirements need metrics
         perf_indicators = [
-            "performance", "speed", "response", "latency", "throughput",
-            "availability", "uptime", "reliability", "accuracy"
+            "performance",
+            "speed",
+            "response",
+            "latency",
+            "throughput",
+            "availability",
+            "uptime",
+            "reliability",
+            "accuracy",
         ]
 
-        if any(ind in text_lower for ind in perf_indicators):
-            if not has_numbers:
-                score -= 0.30
-                issues.append(QualityIssue(
+        if any(ind in text_lower for ind in perf_indicators) and not has_numbers:
+            score -= 0.30
+            issues.append(
+                QualityIssue(
                     dimension=QualityDimension.VERIFIABILITY,
                     severity="error",
                     message="Performance/quality requirement lacks metrics",
                     suggestion="Add specific targets (e.g., 'response time <200ms', 'uptime >99.9%')",
-                    rule_id="ISO29148-VER-001"
-                ))
+                    rule_id="ISO29148-VER-001",
+                )
+            )
 
         # Generic check
         if not has_numbers and not has_units:
             score -= 0.10
-            issues.append(QualityIssue(
-                dimension=QualityDimension.VERIFIABILITY,
-                severity="info",
-                message="No quantifiable metrics found",
-                suggestion="Consider adding measurable acceptance criteria",
-                rule_id="ISO29148-VER-002"
-            ))
+            issues.append(
+                QualityIssue(
+                    dimension=QualityDimension.VERIFIABILITY,
+                    severity="info",
+                    message="No quantifiable metrics found",
+                    suggestion="Consider adding measurable acceptance criteria",
+                    rule_id="ISO29148-VER-002",
+                )
+            )
 
         # Check for verification method hints
         verification_hints = ["test", "verify", "validate", "inspect", "demonstrate"]
@@ -997,35 +1081,41 @@ class RequirementQualityAnalyzer:
 
         if and_count > 2:
             score -= 0.15 * (and_count - 2)
-            issues.append(QualityIssue(
-                dimension=QualityDimension.SINGULARITY,
-                severity="warning",
-                message=f"Multiple 'and' conjunctions ({and_count}) - possible compound requirement",
-                suggestion="Split into separate atomic requirements for better traceability",
-                rule_id="ISO29148-SING-001"
-            ))
+            issues.append(
+                QualityIssue(
+                    dimension=QualityDimension.SINGULARITY,
+                    severity="warning",
+                    message=f"Multiple 'and' conjunctions ({and_count}) - possible compound requirement",
+                    suggestion="Split into separate atomic requirements for better traceability",
+                    rule_id="ISO29148-SING-001",
+                )
+            )
 
         if or_count > 0:
             score -= 0.20 * or_count
-            issues.append(QualityIssue(
-                dimension=QualityDimension.SINGULARITY,
-                severity="warning",
-                message=f"'Or' conjunction detected - ambiguous alternatives",
-                suggestion="Split into separate requirements or clarify as enumeration",
-                rule_id="ISO29148-SING-002"
-            ))
+            issues.append(
+                QualityIssue(
+                    dimension=QualityDimension.SINGULARITY,
+                    severity="warning",
+                    message="'Or' conjunction detected - ambiguous alternatives",
+                    suggestion="Split into separate requirements or clarify as enumeration",
+                    rule_id="ISO29148-SING-002",
+                )
+            )
 
         # Check for multiple "shall" statements
         shall_count = text.lower().count(" shall ")
         if shall_count > 1:
             score -= 0.15 * (shall_count - 1)
-            issues.append(QualityIssue(
-                dimension=QualityDimension.SINGULARITY,
-                severity="warning",
-                message=f"Multiple 'shall' statements ({shall_count}) in one requirement",
-                suggestion="Each requirement should contain exactly one 'shall'",
-                rule_id="ISO29148-SING-003"
-            ))
+            issues.append(
+                QualityIssue(
+                    dimension=QualityDimension.SINGULARITY,
+                    severity="warning",
+                    message=f"Multiple 'shall' statements ({shall_count}) in one requirement",
+                    suggestion="Each requirement should contain exactly one 'shall'",
+                    rule_id="ISO29148-SING-003",
+                )
+            )
 
         return max(0.0, score), issues
 
@@ -1039,47 +1129,53 @@ class RequirementQualityAnalyzer:
             score = 1.0
         elif "will" in text_lower:
             score = 0.85
-            issues.append(QualityIssue(
-                dimension=QualityDimension.NECESSITY,
-                severity="info",
-                message="'Will' is weaker than 'shall' for requirements",
-                suggestion="Use 'shall' for mandatory requirements",
-                rule_id="ISO29148-NEC-001"
-            ))
+            issues.append(
+                QualityIssue(
+                    dimension=QualityDimension.NECESSITY,
+                    severity="info",
+                    message="'Will' is weaker than 'shall' for requirements",
+                    suggestion="Use 'shall' for mandatory requirements",
+                    rule_id="ISO29148-NEC-001",
+                )
+            )
         elif "should" in text_lower:
             score = 0.65
-            issues.append(QualityIssue(
-                dimension=QualityDimension.NECESSITY,
-                severity="warning",
-                message="'Should' indicates recommendation, not requirement",
-                suggestion="Use 'shall' for mandatory, 'should' for recommendations only",
-                rule_id="ISO29148-NEC-002"
-            ))
+            issues.append(
+                QualityIssue(
+                    dimension=QualityDimension.NECESSITY,
+                    severity="warning",
+                    message="'Should' indicates recommendation, not requirement",
+                    suggestion="Use 'shall' for mandatory, 'should' for recommendations only",
+                    rule_id="ISO29148-NEC-002",
+                )
+            )
         elif "must" in text_lower:
             score = 0.90
-            issues.append(QualityIssue(
-                dimension=QualityDimension.NECESSITY,
-                severity="info",
-                message="'Must' is acceptable but 'shall' is preferred per IEEE 830",
-                suggestion="Consider using 'shall' for consistency",
-                rule_id="ISO29148-NEC-003"
-            ))
+            issues.append(
+                QualityIssue(
+                    dimension=QualityDimension.NECESSITY,
+                    severity="info",
+                    message="'Must' is acceptable but 'shall' is preferred per IEEE 830",
+                    suggestion="Consider using 'shall' for consistency",
+                    rule_id="ISO29148-NEC-003",
+                )
+            )
         else:
             score = 0.5
-            issues.append(QualityIssue(
-                dimension=QualityDimension.NECESSITY,
-                severity="warning",
-                message="No requirement keyword found",
-                suggestion="Use 'The system shall...' format",
-                rule_id="ISO29148-NEC-004"
-            ))
+            issues.append(
+                QualityIssue(
+                    dimension=QualityDimension.NECESSITY,
+                    severity="warning",
+                    message="No requirement keyword found",
+                    suggestion="Use 'The system shall...' format",
+                    rule_id="ISO29148-NEC-004",
+                )
+            )
 
         return score, issues
 
     def _analyze_traceability(
-        self,
-        linked_tests: list[str] | None,
-        linked_items: dict[str, list[str]] | None
+        self, linked_tests: list[str] | None, linked_items: dict[str, list[str]] | None
     ) -> tuple[float, list[QualityIssue]]:
         """Analyze traceability dimension."""
         issues = []
@@ -1088,32 +1184,33 @@ class RequirementQualityAnalyzer:
         # Check for linked tests
         if not linked_tests or len(linked_tests) == 0:
             score -= 0.30
-            issues.append(QualityIssue(
-                dimension=QualityDimension.TRACEABILITY,
-                severity="warning",
-                message="No linked test cases for verification",
-                suggestion="Link test cases to enable verification traceability",
-                rule_id="ISO29148-TRACE-001"
-            ))
+            issues.append(
+                QualityIssue(
+                    dimension=QualityDimension.TRACEABILITY,
+                    severity="warning",
+                    message="No linked test cases for verification",
+                    suggestion="Link test cases to enable verification traceability",
+                    rule_id="ISO29148-TRACE-001",
+                )
+            )
 
         # Check for upstream/downstream links
-        if linked_items:
-            if not linked_items.get("upstream"):
-                score -= 0.10
-                issues.append(QualityIssue(
+        if linked_items and not linked_items.get("upstream"):
+            score -= 0.10
+            issues.append(
+                QualityIssue(
                     dimension=QualityDimension.TRACEABILITY,
                     severity="info",
                     message="No upstream links (parent requirements/features)",
                     suggestion="Link to parent requirement or feature for derivation trace",
-                    rule_id="ISO29148-TRACE-002"
-                ))
+                    rule_id="ISO29148-TRACE-002",
+                )
+            )
 
         return max(0.0, score), issues
 
     def _analyze_consistency(
-        self,
-        text: str,
-        related_requirements: list[str] | None
+        self, text: str, related_requirements: list[str] | None
     ) -> tuple[float, list[QualityIssue]]:
         """Analyze consistency dimension."""
         issues = []
@@ -1128,13 +1225,15 @@ class RequirementQualityAnalyzer:
         text_lower = text.lower()
         if "must" in text_lower and "may" in text_lower:
             score -= 0.15
-            issues.append(QualityIssue(
-                dimension=QualityDimension.CONSISTENCY,
-                severity="warning",
-                message="Mixed mandatory ('must') and optional ('may') language",
-                suggestion="Clarify which parts are mandatory vs optional",
-                rule_id="ISO29148-CONS-001"
-            ))
+            issues.append(
+                QualityIssue(
+                    dimension=QualityDimension.CONSISTENCY,
+                    severity="warning",
+                    message="Mixed mandatory ('must') and optional ('may') language",
+                    suggestion="Clarify which parts are mandatory vs optional",
+                    rule_id="ISO29148-CONS-001",
+                )
+            )
 
         return score, issues
 
@@ -1142,14 +1241,13 @@ class RequirementQualityAnalyzer:
         """Convert score to letter grade."""
         if score >= 0.90:
             return "A"
-        elif score >= 0.80:
+        if score >= 0.80:
             return "B"
-        elif score >= 0.70:
+        if score >= 0.70:
             return "C"
-        elif score >= 0.60:
+        if score >= 0.60:
             return "D"
-        else:
-            return "F"
+        return "F"
 
 
 class VersionChain:
@@ -1165,13 +1263,11 @@ class VersionChain:
 
     @staticmethod
     def create_genesis_block(
-        content: dict[str, Any],
-        author_id: str,
-        change_summary: str = "Initial creation"
+        content: dict[str, Any], author_id: str, change_summary: str = "Initial creation"
     ) -> VersionBlock:
         """Create the first block in a version chain."""
         content_hash = VersionChain._hash_content(content)
-        timestamp = datetime.now(timezone.utc)
+        timestamp = datetime.now(UTC)
 
         block_data = {
             "previous_block_id": None,
@@ -1179,7 +1275,7 @@ class VersionChain:
             "author_id": author_id,
             "change_type": "created",
             "change_summary": change_summary,
-            "content_hash": content_hash
+            "content_hash": content_hash,
         }
 
         block_id = VersionChain._hash_block(block_data)
@@ -1191,20 +1287,16 @@ class VersionChain:
             author_id=author_id,
             change_type="created",
             change_summary=change_summary,
-            content_hash=content_hash
+            content_hash=content_hash,
         )
 
     @staticmethod
     def add_block(
-        previous_block: VersionBlock,
-        content: dict[str, Any],
-        author_id: str,
-        change_type: str,
-        change_summary: str
+        previous_block: VersionBlock, content: dict[str, Any], author_id: str, change_type: str, change_summary: str
     ) -> VersionBlock:
         """Add a new block linked to previous."""
         content_hash = VersionChain._hash_content(content)
-        timestamp = datetime.now(timezone.utc)
+        timestamp = datetime.now(UTC)
 
         block_data = {
             "previous_block_id": previous_block.block_id,
@@ -1212,7 +1304,7 @@ class VersionChain:
             "author_id": author_id,
             "change_type": change_type,
             "change_summary": change_summary,
-            "content_hash": content_hash
+            "content_hash": content_hash,
         }
 
         block_id = VersionChain._hash_block(block_data)
@@ -1224,7 +1316,7 @@ class VersionChain:
             author_id=author_id,
             change_type=change_type,
             change_summary=change_summary,
-            content_hash=content_hash
+            content_hash=content_hash,
         )
 
     @staticmethod
@@ -1245,10 +1337,7 @@ class VersionChain:
             previous = blocks[i - 1]
 
             if current.previous_block_id != previous.block_id:
-                issues.append(
-                    f"Block {i}: previous_block_id mismatch "
-                    f"(expected {previous.block_id[:16]}...)"
-                )
+                issues.append(f"Block {i}: previous_block_id mismatch (expected {previous.block_id[:16]}...)")
 
             if current.timestamp < previous.timestamp:
                 issues.append(f"Block {i}: timestamp before previous block")
@@ -1284,8 +1373,7 @@ class MerkleTree:
             items: List of (item_id, content_hash) tuples
         """
         self.items = items
-        self.leaves = [self._hash_leaf(item_id, content_hash)
-                       for item_id, content_hash in items]
+        self.leaves = [self._hash_leaf(item_id, content_hash) for item_id, content_hash in items]
         self.tree = self._build_tree(self.leaves.copy())
         self.root = self.tree[-1][0] if self.tree else ""
 
@@ -1303,7 +1391,6 @@ class MerkleTree:
 
         proof_path = []
         index = leaf_index
-        level_start = 0
         level_size = len(self.leaves)
 
         for level in range(len(self.tree) - 1):
@@ -1322,7 +1409,7 @@ class MerkleTree:
             proof_path=proof_path,
             root_hash=self.root,
             item_id=item_id,
-            baseline_id=""
+            baseline_id="",
         )
 
     @staticmethod
@@ -1388,11 +1475,7 @@ class FlakinessDetector:
     - Failure clustering
     """
 
-    def analyze(
-        self,
-        run_history: list[dict[str, Any]],
-        window_size: int = 30
-    ) -> FlakinessAnalysis:
+    def analyze(self, run_history: list[dict[str, Any]], window_size: int = 30) -> FlakinessAnalysis:
         """Analyze test flakiness from execution history."""
         if not run_history:
             return FlakinessAnalysis(
@@ -1403,7 +1486,7 @@ class FlakinessDetector:
                 consecutive_failures_max=0,
                 consecutive_passes_max=0,
                 quarantine_recommended=False,
-                confidence=0.0
+                confidence=0.0,
             )
 
         recent = run_history[-window_size:]
@@ -1444,9 +1527,7 @@ class FlakinessDetector:
         severity = self._score_to_severity(flakiness_score)
 
         # Failure clustering (temporal)
-        clustering_score = self._calculate_failure_clustering(
-            [(r.get("timestamp"), r.get("status")) for r in recent]
-        )
+        clustering_score = self._calculate_failure_clustering([(r.get("timestamp"), r.get("status")) for r in recent])
 
         # Quarantine recommendation
         quarantine_recommended = (
@@ -1475,7 +1556,7 @@ class FlakinessDetector:
             suggested_fix_category=suggested_fix,
             confidence=round(confidence, 2),
             run_time_variance=round(duration_variance, 4) if duration_variance else None,
-            failure_clustering_score=round(clustering_score, 4) if clustering_score else None
+            failure_clustering_score=round(clustering_score, 4) if clustering_score else None,
         )
 
     def _calculate_entropy(self, statuses: list[str]) -> float:
@@ -1503,11 +1584,7 @@ class FlakinessDetector:
         if len(statuses) < 2:
             return 0
 
-        transitions = sum(
-            1 for i in range(1, len(statuses))
-            if statuses[i] != statuses[i - 1]
-        )
-        return transitions
+        return sum(1 for i in range(1, len(statuses)) if statuses[i] != statuses[i - 1])
 
     def _max_consecutive(self, statuses: list[str], target: set[str]) -> int:
         """Find maximum consecutive occurrences of target statuses."""
@@ -1524,10 +1601,7 @@ class FlakinessDetector:
         return max_count
 
     def _detect_patterns(
-        self,
-        runs: list[dict[str, Any]],
-        durations: list[float],
-        timestamps: list[Any]
+        self, runs: list[dict[str, Any]], durations: list[float], timestamps: list[Any]
     ) -> list[FlakinessPattern]:
         """Detect specific flakiness patterns."""
         patterns = []
@@ -1553,12 +1627,7 @@ class FlakinessDetector:
         return patterns
 
     def _calculate_flakiness_score(
-        self,
-        failure_rate: float,
-        entropy: float,
-        max_failures: int,
-        max_passes: int,
-        duration_variance: float | None
+        self, failure_rate: float, entropy: float, max_failures: int, max_passes: int, duration_variance: float | None
     ) -> float:
         """
         Calculate composite flakiness score.
@@ -1591,20 +1660,16 @@ class FlakinessDetector:
         score = base_score * entropy_factor * consistency_factor * variance_factor
         return min(1.0, max(0.0, score))
 
-    def _calculate_failure_clustering(
-        self,
-        runs: list[tuple[Any, str]]
-    ) -> float | None:
+    def _calculate_failure_clustering(self, runs: list[tuple[Any, str]]) -> float | None:
         """Calculate temporal clustering of failures."""
         # Simplified - would use proper time series analysis
-        failures = [i for i, (_, status) in enumerate(runs)
-                    if status in ("failed", "error", "flaky")]
+        failures = [i for i, (_, status) in enumerate(runs) if status in ("failed", "error", "flaky")]
 
         if len(failures) < 2:
             return None
 
         # Calculate gaps between failures
-        gaps = [failures[i+1] - failures[i] for i in range(len(failures) - 1)]
+        gaps = [failures[i + 1] - failures[i] for i in range(len(failures) - 1)]
         if not gaps:
             return None
 
@@ -1620,14 +1685,13 @@ class FlakinessDetector:
         """Map score to severity level."""
         if score < 0.01:
             return FlakinessSeverity.STABLE
-        elif score < 0.05:
+        if score < 0.05:
             return FlakinessSeverity.LOW
-        elif score < 0.15:
+        if score < 0.15:
             return FlakinessSeverity.MEDIUM
-        elif score < 0.30:
+        if score < 0.30:
             return FlakinessSeverity.HIGH
-        else:
-            return FlakinessSeverity.CRITICAL
+        return FlakinessSeverity.CRITICAL
 
     def _suggest_fix(self, patterns: list[FlakinessPattern]) -> str | None:
         """Suggest fix based on detected patterns."""
@@ -1661,7 +1725,7 @@ class ODCClassifier:
     """
 
     # Keywords for automatic classification
-    TYPE_KEYWORDS = {
+    TYPE_KEYWORDS: ClassVar[dict[ODCDefectType, list[str]]] = {
         ODCDefectType.FUNCTION: ["missing", "function", "feature", "capability", "not implemented"],
         ODCDefectType.INTERFACE: ["interface", "api", "contract", "protocol", "integration"],
         ODCDefectType.CHECKING: ["validation", "check", "verify", "null", "empty", "bounds"],
@@ -1672,7 +1736,7 @@ class ODCClassifier:
         ODCDefectType.ALGORITHM: ["algorithm", "logic", "calculation", "formula", "incorrect"],
     }
 
-    IMPACT_KEYWORDS = {
+    IMPACT_KEYWORDS: ClassVar[dict[ODCImpact, list[str]]] = {
         ODCImpact.SECURITY: ["security", "vulnerability", "auth", "permission", "injection", "xss"],
         ODCImpact.PERFORMANCE: ["performance", "slow", "memory", "cpu", "latency", "throughput"],
         ODCImpact.RELIABILITY: ["crash", "hang", "freeze", "restart", "failure", "exception"],
@@ -1683,10 +1747,7 @@ class ODCClassifier:
     }
 
     def classify(
-        self,
-        defect_description: str,
-        trigger_context: str | None = None,
-        impact_description: str | None = None
+        self, defect_description: str, trigger_context: str | None = None, impact_description: str | None = None
     ) -> ODCClassification:
         """Classify a defect using ODC taxonomy."""
         desc_lower = defect_description.lower()
@@ -1708,7 +1769,7 @@ class ODCClassifier:
             trigger=trigger,
             impact=impact,
             qualifier=qualifier,
-            confidence=0.75  # Keyword-based has moderate confidence
+            confidence=0.75,  # Keyword-based has moderate confidence
         )
 
     def _classify_type(self, description: str) -> ODCDefectType:
@@ -1732,15 +1793,15 @@ class ODCClassifier:
 
         if "review" in context_lower or "code review" in context_lower:
             return ODCTrigger.REVIEW
-        elif "unit test" in context_lower:
+        if "unit test" in context_lower:
             return ODCTrigger.UNIT_TEST
-        elif "regression" in context_lower:
+        if "regression" in context_lower:
             return ODCTrigger.REGRESSION_TEST
-        elif "customer" in context_lower or "production" in context_lower:
+        if "customer" in context_lower or "production" in context_lower:
             return ODCTrigger.CUSTOMER_FOUND
-        elif "static" in context_lower or "lint" in context_lower:
+        if "static" in context_lower or "lint" in context_lower:
             return ODCTrigger.STATIC_ANALYSIS
-        elif "system test" in context_lower:
+        if "system test" in context_lower:
             return ODCTrigger.SYSTEM_TEST
 
         return ODCTrigger.FUNCTION_TEST
@@ -1763,10 +1824,9 @@ class ODCClassifier:
         """Determine if defect is missing, incorrect, or extraneous."""
         if any(kw in description for kw in ["missing", "not implemented", "need", "should have"]):
             return "missing"
-        elif any(kw in description for kw in ["extra", "unnecessary", "should not", "extraneous"]):
+        if any(kw in description for kw in ["extra", "unnecessary", "should not", "extraneous"]):
             return "extraneous"
-        else:
-            return "incorrect"
+        return "incorrect"
 
 
 class PrioritizationCalculator:
@@ -1782,11 +1842,7 @@ class PrioritizationCalculator:
 
     @staticmethod
     def calculate_wsjf(
-        business_value: int,
-        time_criticality: int,
-        risk_reduction: int,
-        job_size: int,
-        opportunity_enablement: int = 1
+        business_value: int, time_criticality: int, risk_reduction: int, job_size: int, opportunity_enablement: int = 1
     ) -> WSJFScore:
         """
         Calculate WSJF score per SAFe framework.
@@ -1802,12 +1858,7 @@ class PrioritizationCalculator:
         job_size = max(1, min(21, job_size))  # Fibonacci scale
 
         # Cost of Delay (sum of value factors)
-        cost_of_delay = (
-            business_value +
-            time_criticality +
-            risk_reduction +
-            opportunity_enablement
-        )
+        cost_of_delay = business_value + time_criticality + risk_reduction + opportunity_enablement
 
         # WSJF = CoD / Size
         wsjf_score = cost_of_delay / job_size
@@ -1819,20 +1870,15 @@ class PrioritizationCalculator:
             opportunity_enablement=opportunity_enablement,
             job_size=job_size,
             cost_of_delay=round(cost_of_delay, 2),
-            wsjf_score=round(wsjf_score, 2)
+            wsjf_score=round(wsjf_score, 2),
         )
 
     @staticmethod
-    def calculate_rice(
-        reach: int,
-        impact: float,
-        confidence: float,
-        effort: int
-    ) -> RICEScore:
+    def calculate_rice(reach: int, impact: float, confidence: float, effort: int) -> RICEScore:
         """
         Calculate RICE score.
 
-        RICE = (Reach × Impact × Confidence) / Effort
+        RICE = (Reach x Impact x Confidence) / Effort
 
         Impact scale: 0.25 (minimal), 0.5 (low), 1 (medium), 2 (high), 3 (massive)
         """
@@ -1844,11 +1890,7 @@ class PrioritizationCalculator:
         rice_score = (reach * impact * confidence) / effort
 
         return RICEScore(
-            reach=reach,
-            impact=impact,
-            confidence=confidence,
-            effort=effort,
-            rice_score=round(rice_score, 2)
+            reach=reach, impact=impact, confidence=confidence, effort=effort, rice_score=round(rice_score, 2)
         )
 
     @staticmethod
@@ -1880,7 +1922,7 @@ class PrioritizationCalculator:
         items: list[dict[str, Any]],
         must_threshold: float = 0.8,
         should_threshold: float = 0.5,
-        could_threshold: float = 0.2
+        could_threshold: float = 0.2,
     ) -> dict[str, list[str]]:
         """
         Categorize items into MoSCoW buckets based on priority score.
@@ -1924,7 +1966,7 @@ class ImpactAnalyzer:
         source_item_id: str,
         adjacency: dict[str, list[str]],
         item_metadata: dict[str, dict[str, Any]] | None = None,
-        max_depth: int = 5
+        max_depth: int = 5,
     ) -> ImpactAnalysisResult:
         """
         Analyze impact of changes to a source item.
@@ -1986,9 +2028,7 @@ class ImpactAnalyzer:
                     critical_path.append(item_id)
 
         # Calculate risk score (0-100)
-        risk_score = self._calculate_risk_score(
-            blast_radius, len(critical_path), depth, item_metadata
-        )
+        risk_score = self._calculate_risk_score(blast_radius, len(critical_path), depth, item_metadata)
 
         return ImpactAnalysisResult(
             source_item_id=source_item_id,
@@ -1999,15 +2039,11 @@ class ImpactAnalyzer:
             critical_path_items=critical_path,
             affected_tests=affected_tests,
             affected_documents=affected_docs,
-            risk_score=risk_score
+            risk_score=risk_score,
         )
 
     def _calculate_risk_score(
-        self,
-        blast_radius: int,
-        critical_count: int,
-        depth: int,
-        metadata: dict[str, dict[str, Any]] | None
+        self, blast_radius: int, critical_count: int, depth: int, metadata: dict[str, dict[str, Any]] | None
     ) -> float:
         """Calculate composite risk score."""
         # Base risk from blast radius
@@ -2036,10 +2072,7 @@ class SuspectLinkDetector:
     """
 
     def detect_suspect_links(
-        self,
-        links: list[dict[str, Any]],
-        item_versions: dict[str, int],
-        recent_changes: list[dict[str, Any]]
+        self, links: list[dict[str, Any]], item_versions: dict[str, int], recent_changes: list[dict[str, Any]]
     ) -> list[SuspectLink]:
         """
         Detect links that may be invalid after recent changes.
@@ -2066,33 +2099,37 @@ class SuspectLinkDetector:
 
                 # Version mismatch - source was updated
                 if current_version > link_source_version:
-                    suspect_links.append(SuspectLink(
-                        link_id=link_id,
-                        source_id=source_id,
-                        target_id=target_id,
-                        reason=SuspectLinkReason.UPSTREAM_MODIFIED,
-                        detected_at=datetime.now(timezone.utc),
-                        source_version_before=link_source_version,
-                        source_version_after=current_version,
-                        change_summary=change.get("summary", "Source item modified"),
-                        requires_verification=True,
-                        auto_resolvable=False
-                    ))
+                    suspect_links.append(
+                        SuspectLink(
+                            link_id=link_id,
+                            source_id=source_id,
+                            target_id=target_id,
+                            reason=SuspectLinkReason.UPSTREAM_MODIFIED,
+                            detected_at=datetime.now(UTC),
+                            source_version_before=link_source_version,
+                            source_version_after=current_version,
+                            change_summary=change.get("summary", "Source item modified"),
+                            requires_verification=True,
+                            auto_resolvable=False,
+                        )
+                    )
 
                 # Status changed
                 elif change.get("change_type") == "status_changed":
-                    suspect_links.append(SuspectLink(
-                        link_id=link_id,
-                        source_id=source_id,
-                        target_id=target_id,
-                        reason=SuspectLinkReason.STATUS_CHANGED,
-                        detected_at=datetime.now(timezone.utc),
-                        source_version_before=link_source_version,
-                        source_version_after=current_version,
-                        change_summary=f"Status changed: {change.get('old_status')} -> {change.get('new_status')}",
-                        requires_verification=True,
-                        auto_resolvable=change.get("new_status") == "approved"
-                    ))
+                    suspect_links.append(
+                        SuspectLink(
+                            link_id=link_id,
+                            source_id=source_id,
+                            target_id=target_id,
+                            reason=SuspectLinkReason.STATUS_CHANGED,
+                            detected_at=datetime.now(UTC),
+                            source_version_before=link_source_version,
+                            source_version_after=current_version,
+                            change_summary=f"Status changed: {change.get('old_status')} -> {change.get('new_status')}",
+                            requires_verification=True,
+                            auto_resolvable=change.get("new_status") == "approved",
+                        )
+                    )
 
         return suspect_links
 
@@ -2109,7 +2146,7 @@ class CoverageGapAnalyzer:
     """
 
     # Coverage requirements by safety level
-    SAFETY_COVERAGE_REQUIREMENTS = {
+    SAFETY_COVERAGE_REQUIREMENTS: ClassVar[dict[SafetyLevel, dict[CoverageType, int]]] = {
         SafetyLevel.DAL_A: {CoverageType.MCDC: 100, CoverageType.BRANCH: 100, CoverageType.STATEMENT: 100},
         SafetyLevel.DAL_B: {CoverageType.BRANCH: 100, CoverageType.STATEMENT: 100},
         SafetyLevel.DAL_C: {CoverageType.STATEMENT: 100},
@@ -2124,7 +2161,7 @@ class CoverageGapAnalyzer:
         requirements: list[dict[str, Any]],
         tests: list[dict[str, Any]],
         trace_links: list[dict[str, Any]],
-        safety_level: SafetyLevel | None = None
+        safety_level: SafetyLevel | None = None,
     ) -> list[CoverageGap]:
         """
         Analyze coverage gaps in traceability matrix.
@@ -2138,8 +2175,6 @@ class CoverageGapAnalyzer:
         gaps = []
 
         # Build lookup sets
-        req_ids = {r["id"] for r in requirements}
-        test_ids = {t["id"] for t in tests}
         covered_reqs = set()
         linked_tests = set()
 
@@ -2155,30 +2190,34 @@ class CoverageGapAnalyzer:
 
             if req_id not in covered_reqs:
                 severity = self._gap_severity(req_safety, req.get("criticality"))
-                gaps.append(CoverageGap(
-                    gap_type="no_tests",
-                    item_id=req_id,
-                    item_type="requirement",
-                    severity=severity,
-                    current_coverage=0.0,
-                    required_coverage=100.0,
-                    safety_level=req_safety,
-                    suggestion=f"Add test cases to verify requirement {req_id}"
-                ))
+                gaps.append(
+                    CoverageGap(
+                        gap_type="no_tests",
+                        item_id=req_id,
+                        item_type="requirement",
+                        severity=severity,
+                        current_coverage=0.0,
+                        required_coverage=100.0,
+                        safety_level=req_safety,
+                        suggestion=f"Add test cases to verify requirement {req_id}",
+                    )
+                )
 
         # Find orphaned tests (not linked to requirements)
         for test in tests:
             test_id = test["id"]
             if test_id not in linked_tests:
-                gaps.append(CoverageGap(
-                    gap_type="orphaned_test",
-                    item_id=test_id,
-                    item_type="test",
-                    severity="low",
-                    current_coverage=0.0,
-                    required_coverage=0.0,
-                    suggestion=f"Link test {test_id} to its corresponding requirement"
-                ))
+                gaps.append(
+                    CoverageGap(
+                        gap_type="orphaned_test",
+                        item_id=test_id,
+                        item_type="test",
+                        severity="low",
+                        current_coverage=0.0,
+                        required_coverage=0.0,
+                        suggestion=f"Link test {test_id} to its corresponding requirement",
+                    )
+                )
 
         # Check coverage levels for safety requirements
         if safety_level and safety_level in self.SAFETY_COVERAGE_REQUIREMENTS:
@@ -2189,33 +2228,29 @@ class CoverageGapAnalyzer:
                 for coverage_type, required in required_coverage.items():
                     actual = test_coverage.get(coverage_type.value, 0)
                     if actual < required:
-                        gaps.append(CoverageGap(
-                            gap_type="insufficient_coverage",
-                            item_id=test["id"],
-                            item_type="test",
-                            severity="critical" if coverage_type == CoverageType.MCDC else "high",
-                            expected_coverage_type=coverage_type,
-                            current_coverage=actual,
-                            required_coverage=required,
-                            safety_level=safety_level,
-                            suggestion=f"Increase {coverage_type.value} coverage from {actual}% to {required}%"
-                        ))
+                        gaps.append(
+                            CoverageGap(
+                                gap_type="insufficient_coverage",
+                                item_id=test["id"],
+                                item_type="test",
+                                severity="critical" if coverage_type == CoverageType.MCDC else "high",
+                                expected_coverage_type=coverage_type,
+                                current_coverage=actual,
+                                required_coverage=required,
+                                safety_level=safety_level,
+                                suggestion=f"Increase {coverage_type.value} coverage from {actual}% to {required}%",
+                            )
+                        )
 
         return gaps
 
-    def _gap_severity(
-        self,
-        safety_level: SafetyLevel | None,
-        criticality: str | None
-    ) -> str:
+    def _gap_severity(self, safety_level: SafetyLevel | None, criticality: str | None) -> str:
         """Determine gap severity based on safety and criticality."""
         if safety_level in (SafetyLevel.DAL_A, SafetyLevel.DAL_B, SafetyLevel.ASIL_D):
             return "critical"
-        elif safety_level in (SafetyLevel.ASIL_C, SafetyLevel.CLASS_C):
+        if safety_level in (SafetyLevel.ASIL_C, SafetyLevel.CLASS_C) or criticality == "high":
             return "high"
-        elif criticality == "high":
-            return "high"
-        elif criticality == "medium":
+        if criticality == "medium":
             return "medium"
         return "low"
 
@@ -2260,7 +2295,7 @@ class SpecAnalyticsServiceV2:
         requirement_text: str,
         related_requirements: list[str] | None = None,
         linked_tests: list[str] | None = None,
-        linked_items: dict[str, list[str]] | None = None
+        linked_items: dict[str, list[str]] | None = None,
     ) -> dict[str, Any]:
         """
         Comprehensive requirement analysis.
@@ -2269,10 +2304,7 @@ class SpecAnalyticsServiceV2:
         """
         ears_result = self.ears_analyzer.analyze(requirement_text)
         quality_result = self.quality_analyzer.analyze(
-            requirement_text,
-            related_requirements,
-            linked_tests,
-            linked_items
+            requirement_text, related_requirements, linked_tests, linked_items
         )
 
         return {
@@ -2284,38 +2316,23 @@ class SpecAnalyticsServiceV2:
                 "quality_grade": quality_result.grade,
                 "quality_score": quality_result.overall_score,
                 "total_issues": len(ears_result.validation_issues) + len(quality_result.issues),
-                "needs_attention": (
-                    not ears_result.is_valid or
-                    quality_result.grade in ("D", "F")
-                ),
-                "improvement_priorities": quality_result.improvement_priority
+                "needs_attention": (not ears_result.is_valid or quality_result.grade in ("D", "F")),
+                "improvement_priorities": quality_result.improvement_priority,
             },
             "formal_structure": ears_result.formal_structure,
             "ambiguous_terms": ears_result.ambiguous_terms,
         }
 
-    def batch_analyze_requirements(
-        self,
-        requirements: list[dict[str, str]]
-    ) -> list[dict[str, Any]]:
+    def batch_analyze_requirements(self, requirements: list[dict[str, str]]) -> list[dict[str, Any]]:
         """Analyze multiple requirements at once."""
-        return [
-            {
-                "id": req.get("id", ""),
-                **self.analyze_requirement(req.get("text", ""))
-            }
-            for req in requirements
-        ]
+        return [{"id": req.get("id", ""), **self.analyze_requirement(req.get("text", ""))} for req in requirements]
 
     # -------------------------------------------------------------------------
     # Version Chain Management
     # -------------------------------------------------------------------------
 
     def create_genesis_block(
-        self,
-        content: dict[str, Any],
-        author_id: str,
-        change_summary: str = "Initial creation"
+        self, content: dict[str, Any], author_id: str, change_summary: str = "Initial creation"
     ) -> VersionBlock:
         """Create first block in version chain."""
         return VersionChain.create_genesis_block(content, author_id, change_summary)
@@ -2326,17 +2343,12 @@ class SpecAnalyticsServiceV2:
         content: dict[str, Any],
         author_id: str,
         change_type: str,
-        change_summary: str
+        change_summary: str,
     ) -> VersionBlock:
         """Add new block to version chain."""
-        return VersionChain.add_block(
-            previous_block, content, author_id, change_type, change_summary
-        )
+        return VersionChain.add_block(previous_block, content, author_id, change_type, change_summary)
 
-    def verify_version_chain(
-        self,
-        blocks: list[VersionBlock]
-    ) -> tuple[bool, list[str]]:
+    def verify_version_chain(self, blocks: list[VersionBlock]) -> tuple[bool, list[str]]:
         """Verify integrity of version chain."""
         return VersionChain.verify_chain(blocks)
 
@@ -2344,18 +2356,11 @@ class SpecAnalyticsServiceV2:
     # Merkle Tree / Baseline Verification
     # -------------------------------------------------------------------------
 
-    def create_merkle_tree(
-        self,
-        items: list[tuple[str, str]]
-    ) -> MerkleTree:
+    def create_merkle_tree(self, items: list[tuple[str, str]]) -> MerkleTree:
         """Create Merkle tree from items for baseline verification."""
         return MerkleTree(items)
 
-    def get_merkle_proof(
-        self,
-        tree: MerkleTree,
-        item_id: str
-    ) -> MerkleProof | None:
+    def get_merkle_proof(self, tree: MerkleTree, item_id: str) -> MerkleProof | None:
         """Get inclusion proof for an item."""
         return tree.get_proof(item_id)
 
@@ -2367,28 +2372,16 @@ class SpecAnalyticsServiceV2:
     # Test Analytics
     # -------------------------------------------------------------------------
 
-    def analyze_test_flakiness(
-        self,
-        run_history: list[dict[str, Any]],
-        window_size: int = 30
-    ) -> FlakinessAnalysis:
+    def analyze_test_flakiness(self, run_history: list[dict[str, Any]], window_size: int = 30) -> FlakinessAnalysis:
         """Analyze test flakiness from execution history."""
         return self.flakiness_detector.analyze(run_history, window_size)
 
-    def batch_analyze_flakiness(
-        self,
-        tests: list[dict[str, Any]]
-    ) -> list[dict[str, Any]]:
+    def batch_analyze_flakiness(self, tests: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """Analyze flakiness for multiple tests."""
         results = []
         for test in tests:
-            analysis = self.flakiness_detector.analyze(
-                test.get("run_history", [])
-            )
-            results.append({
-                "test_id": test.get("id", ""),
-                "flakiness_analysis": analysis.model_dump()
-            })
+            analysis = self.flakiness_detector.analyze(test.get("run_history", []))
+            results.append({"test_id": test.get("id", ""), "flakiness_analysis": analysis.model_dump()})
         return results
 
     # -------------------------------------------------------------------------
@@ -2396,15 +2389,10 @@ class SpecAnalyticsServiceV2:
     # -------------------------------------------------------------------------
 
     def classify_defect(
-        self,
-        description: str,
-        trigger_context: str | None = None,
-        impact_description: str | None = None
+        self, description: str, trigger_context: str | None = None, impact_description: str | None = None
     ) -> ODCClassification:
         """Classify defect using IBM ODC taxonomy."""
-        return self.odc_classifier.classify(
-            description, trigger_context, impact_description
-        )
+        return self.odc_classifier.classify(description, trigger_context, impact_description)
 
     # -------------------------------------------------------------------------
     # Prioritization
@@ -2416,25 +2404,16 @@ class SpecAnalyticsServiceV2:
         time_criticality: int,
         risk_reduction: int,
         job_size: int,
-        opportunity_enablement: int = 1
+        opportunity_enablement: int = 1,
     ) -> WSJFScore:
         """Calculate WSJF prioritization score."""
         return PrioritizationCalculator.calculate_wsjf(
-            business_value, time_criticality, risk_reduction,
-            job_size, opportunity_enablement
+            business_value, time_criticality, risk_reduction, job_size, opportunity_enablement
         )
 
-    def calculate_rice(
-        self,
-        reach: int,
-        impact: float,
-        confidence: float,
-        effort: int
-    ) -> RICEScore:
+    def calculate_rice(self, reach: int, impact: float, confidence: float, effort: int) -> RICEScore:
         """Calculate RICE prioritization score."""
-        return PrioritizationCalculator.calculate_rice(
-            reach, impact, confidence, effort
-        )
+        return PrioritizationCalculator.calculate_rice(reach, impact, confidence, effort)
 
     def rank_items_wsjf(self, items: list[WSJFScore]) -> list[WSJFScore]:
         """Rank items by WSJF score."""
@@ -2453,27 +2432,20 @@ class SpecAnalyticsServiceV2:
         source_item_id: str,
         adjacency: dict[str, list[str]],
         item_metadata: dict[str, dict[str, Any]] | None = None,
-        max_depth: int = 5
+        max_depth: int = 5,
     ) -> ImpactAnalysisResult:
         """Analyze impact of changing an item."""
-        return self.impact_analyzer.analyze_impact(
-            source_item_id, adjacency, item_metadata, max_depth
-        )
+        return self.impact_analyzer.analyze_impact(source_item_id, adjacency, item_metadata, max_depth)
 
     # -------------------------------------------------------------------------
     # Suspect Links
     # -------------------------------------------------------------------------
 
     def detect_suspect_links(
-        self,
-        links: list[dict[str, Any]],
-        item_versions: dict[str, int],
-        recent_changes: list[dict[str, Any]]
+        self, links: list[dict[str, Any]], item_versions: dict[str, int], recent_changes: list[dict[str, Any]]
     ) -> list[SuspectLink]:
         """Detect suspect trace links after changes."""
-        return self.suspect_link_detector.detect_suspect_links(
-            links, item_versions, recent_changes
-        )
+        return self.suspect_link_detector.detect_suspect_links(links, item_versions, recent_changes)
 
     # -------------------------------------------------------------------------
     # Coverage Analysis
@@ -2484,22 +2456,17 @@ class SpecAnalyticsServiceV2:
         requirements: list[dict[str, Any]],
         tests: list[dict[str, Any]],
         trace_links: list[dict[str, Any]],
-        safety_level: SafetyLevel | None = None
+        safety_level: SafetyLevel | None = None,
     ) -> list[CoverageGap]:
         """Analyze traceability coverage gaps."""
-        return self.coverage_gap_analyzer.analyze_gaps(
-            requirements, tests, trace_links, safety_level
-        )
+        return self.coverage_gap_analyzer.analyze_gaps(requirements, tests, trace_links, safety_level)
 
     # -------------------------------------------------------------------------
     # Content Addressing
     # -------------------------------------------------------------------------
 
     @staticmethod
-    def generate_content_address(
-        content: dict[str, Any],
-        content_type: str = "application/json"
-    ) -> ContentAddress:
+    def generate_content_address(content: dict[str, Any], content_type: str = "application/json") -> ContentAddress:
         """Generate IPFS-style content address for specification."""
         content_str = json.dumps(content, sort_keys=True, default=str)
         content_bytes = content_str.encode()
@@ -2510,14 +2477,11 @@ class SpecAnalyticsServiceV2:
             algorithm="sha256",
             size_bytes=len(content_bytes),
             content_type=content_type,
-            created_at=datetime.now(timezone.utc)
+            created_at=datetime.now(UTC),
         )
 
     @staticmethod
-    def verify_content_address(
-        content: dict[str, Any],
-        expected_cid: str
-    ) -> bool:
+    def verify_content_address(content: dict[str, Any], expected_cid: str) -> bool:
         """Verify content matches its address."""
         content_str = json.dumps(content, sort_keys=True, default=str)
         actual_cid = f"tracertm:{hashlib.sha256(content_str.encode()).hexdigest()}"
@@ -2531,6 +2495,7 @@ class SpecAnalyticsServiceV2:
 
 # Create singleton instance for easy import
 spec_analytics = SpecAnalyticsServiceV2()
+spec_analytics_service = spec_analytics
 
 
 def analyze_requirement(text: str, **kwargs) -> dict[str, Any]:

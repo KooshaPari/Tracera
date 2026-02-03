@@ -35,4 +35,4 @@ export type OverrideProperties<
 	},
 > = Merge<TOriginal, TOverride>;
 
-export {};
+

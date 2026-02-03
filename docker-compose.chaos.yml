@@ -1,0 +1,31 @@
+version: '3.8'
+
+# Chaos Engineering Stack with Toxiproxy
+#
+# This compose file adds Toxiproxy for chaos testing.
+# Use: docker-compose -f docker-compose.yml -f docker-compose.chaos.yml up
+
+services:
+  # Toxiproxy - TCP proxy for chaos engineering
+  toxiproxy:
+    image: ghcr.io/shopify/toxiproxy:2.9.0
+    container_name: tracertm-toxiproxy
+    ports:
+      - "8474:8474"  # HTTP API
+      - "15432:15432"  # PostgreSQL proxy
+      - "16379:16379"  # Redis proxy
+      - "14222:14222"  # NATS proxy
+      - "18080:18080"  # Go backend proxy
+      - "18000:18000"  # Python backend proxy
+    networks:
+      - tracertm
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8474/version"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+networks:
+  tracertm:
+    external: true

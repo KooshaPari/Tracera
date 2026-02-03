@@ -8,21 +8,23 @@ from typing import Any
 from fastmcp.exceptions import ToolError
 from fastmcp.server.dependencies import Progress
 
+from tracertm.config.manager import ConfigManager
+from tracertm.storage.local_storage import LocalStorageManager
+
 logger = logging.getLogger(__name__)
 
 try:
     from tracertm.mcp.core import mcp
 except Exception:  # pragma: no cover - test fallback when FastMCP isn't available
+
     class _StubMCP:
         def tool(self, *args: Any, **kwargs: Any):
             def decorator(fn):
                 return fn
+
             return decorator
 
     mcp = _StubMCP()  # type: ignore[assignment]
-
-from tracertm.config.manager import ConfigManager
-from tracertm.storage.local_storage import LocalStorageManager
 
 
 def _get_project_id(project_id: str | None = None) -> str:
@@ -62,10 +64,15 @@ async def stream_impact_analysis(
         from tracertm.models.link import Link
 
         # Find the item
-        item = session.query(Item).filter(
-            Item.id.like(f"{item_id}%"),
-            Item.deleted_at.is_(None),
-        ).first()
+        item = (
+            session
+            .query(Item)
+            .filter(
+                Item.id.like(f"{item_id}%"),
+                Item.deleted_at.is_(None),
+            )
+            .first()
+        )
 
         if not item:
             raise ToolError(f"Item not found: {item_id}")
@@ -74,27 +81,30 @@ async def stream_impact_analysis(
 
         # Get all links for the project
         links = (
-            session.query(Link)
-            .filter(
-                Link.project_id == project_id,
-                Link.deleted_at.is_(None),
-            )
+            session
+            .query(Link)
+            .filter(Link.project_id == project_id)
             .all()
         )
 
         # Build adjacency list
         children: dict[str, list[str]] = {}
         for link in links:
-            source = str(link.source_id)
+            source = str(link.source_item_id)
             if source not in children:
                 children[source] = []
-            children[source].append(str(link.target_id))
+            children[source].append(str(link.target_item_id))
 
         # Get all items for lookup
-        all_items = session.query(Item).filter(
-            Item.project_id == project_id,
-            Item.deleted_at.is_(None),
-        ).all()
+        all_items = (
+            session
+            .query(Item)
+            .filter(
+                Item.project_id == project_id,
+                Item.deleted_at.is_(None),
+            )
+            .all()
+        )
         item_lookup = {str(i.id): i for i in all_items}
 
         # Traverse depth by depth
@@ -116,8 +126,7 @@ async def stream_impact_analysis(
                     await progress.increment(increment)
                     current_progress = depth
                 await progress.set_message(
-                    f"Analyzing depth {depth}: found {len(current_level)} items, "
-                    f"total visited: {len(visited)}"
+                    f"Analyzing depth {depth}: found {len(current_level)} items, total visited: {len(visited)}"
                 )
             except Exception as e:
                 # Progress reporting is optional, but log failures
@@ -162,7 +171,7 @@ async def stream_impact_analysis(
 
 
 @mcp.tool(description="Get traceability matrix page")
-async def get_matrix_page(
+def get_matrix_page(
     project_id: str | None = None,
     page: int = 1,
     page_size: int = 50,
@@ -208,11 +217,9 @@ async def get_matrix_page(
 
         # Get links
         links = (
-            session.query(Link)
-            .filter(
-                Link.project_id.like(f"{project_id}%"),
-                Link.deleted_at.is_(None),
-            )
+            session
+            .query(Link)
+            .filter(Link.project_id.like(f"{project_id}%"))
             .all()
         )
 
@@ -220,19 +227,16 @@ async def get_matrix_page(
         rows = []
         for item in items:
             item_id = str(item.id)
-            outgoing_links = [
-                link for link in links
-                if str(link.source_id) == item_id
-            ]
+            outgoing_links = [link for link in links if str(link.source_item_id) == item_id]
 
             for link in outgoing_links:
-                target = item_lookup.get(str(link.target_id))
+                target = item_lookup.get(str(link.target_item_id))
                 if target and (not target_view or target.view == target_view.upper()):
                     rows.append({
                         "source_id": item_id[:8],
                         "source_title": item.title,
                         "source_view": item.view,
-                        "target_id": str(link.target_id)[:8],
+                        "target_id": str(link.target_item_id)[:8],
                         "target_title": target.title,
                         "target_view": target.view,
                         "link_type": link.link_type,
@@ -240,7 +244,7 @@ async def get_matrix_page(
 
         total_rows = len(rows)
         total_pages = (total_rows + page_size - 1) // page_size
-        paginated_rows = rows[offset:offset + page_size]
+        paginated_rows = rows[offset : offset + page_size]
 
         return {
             "ok": True,
@@ -255,7 +259,7 @@ async def get_matrix_page(
 
 
 @mcp.tool(description="Get impact at specific depth level")
-async def get_impact_by_depth(
+def get_impact_by_depth(
     item_id: str,
     depth: int,
     ctx: Any | None = None,
@@ -279,10 +283,15 @@ async def get_impact_by_depth(
         from tracertm.models.link import Link
 
         # Find the item
-        item = session.query(Item).filter(
-            Item.id.like(f"{item_id}%"),
-            Item.deleted_at.is_(None),
-        ).first()
+        item = (
+            session
+            .query(Item)
+            .filter(
+                Item.id.like(f"{item_id}%"),
+                Item.deleted_at.is_(None),
+            )
+            .first()
+        )
 
         if not item:
             raise ToolError(f"Item not found: {item_id}")
@@ -291,27 +300,30 @@ async def get_impact_by_depth(
 
         # Get all links for the project
         links = (
-            session.query(Link)
-            .filter(
-                Link.project_id == project_id,
-                Link.deleted_at.is_(None),
-            )
+            session
+            .query(Link)
+            .filter(Link.project_id == project_id)
             .all()
         )
 
         # Build adjacency list
         children: dict[str, list[str]] = {}
         for link in links:
-            source = str(link.source_id)
+            source = str(link.source_item_id)
             if source not in children:
                 children[source] = []
-            children[source].append(str(link.target_id))
+            children[source].append(str(link.target_item_id))
 
         # Get all items for lookup
-        all_items = session.query(Item).filter(
-            Item.project_id == project_id,
-            Item.deleted_at.is_(None),
-        ).all()
+        all_items = (
+            session
+            .query(Item)
+            .filter(
+                Item.project_id == project_id,
+                Item.deleted_at.is_(None),
+            )
+            .all()
+        )
         item_lookup = {str(i.id): i for i in all_items}
 
         # Traverse to the specified depth
@@ -367,7 +379,7 @@ async def get_impact_by_depth(
 
 
 @mcp.tool(description="Get paginated items list")
-async def get_items_page(
+def get_items_page(
     project_id: str | None = None,
     page: int = 1,
     page_size: int = 50,
@@ -422,19 +434,15 @@ async def get_items_page(
         else:
             order_col = Item.created_at
 
-        if sort_order.lower() == "asc":
-            query = query.order_by(order_col.asc())
-        else:
-            query = query.order_by(order_col.desc())
+        query = query.order_by(order_col.asc()) if sort_order.lower() == "asc" else query.order_by(order_col.desc())
 
         total_count = query.count()
         total_pages = (total_count + page_size - 1) // page_size
 
         items = query.offset(offset).limit(page_size).all()
 
-        result_items = []
-        for item in items:
-            result_items.append({
+        result_items = [
+            {
                 "id": str(item.id)[:8],
                 "title": item.title,
                 "view": item.view,
@@ -444,7 +452,9 @@ async def get_items_page(
                 "owner": item.owner,
                 "created_at": item.created_at.isoformat() if item.created_at else None,
                 "updated_at": item.updated_at.isoformat() if item.updated_at else None,
-            })
+            }
+            for item in items
+        ]
 
         return {
             "ok": True,
@@ -459,7 +469,7 @@ async def get_items_page(
 
 
 @mcp.tool(description="Get paginated links list")
-async def get_links_page(
+def get_links_page(
     project_id: str | None = None,
     page: int = 1,
     page_size: int = 50,
@@ -491,17 +501,14 @@ async def get_links_page(
         from tracertm.models.item import Item
         from tracertm.models.link import Link
 
-        query = session.query(Link).filter(
-            Link.project_id.like(f"{project_id}%"),
-            Link.deleted_at.is_(None),
-        )
+        query = session.query(Link).filter(Link.project_id.like(f"{project_id}%"))
 
         if link_type:
             query = query.filter(Link.link_type == link_type)
         if source_id:
-            query = query.filter(Link.source_id.like(f"{source_id}%"))
+            query = query.filter(Link.source_item_id.like(f"{source_id}%"))
         if target_id:
-            query = query.filter(Link.target_id.like(f"{target_id}%"))
+            query = query.filter(Link.target_item_id.like(f"{target_id}%"))
 
         total_count = query.count()
         total_pages = (total_count + page_size - 1) // page_size
@@ -511,21 +518,21 @@ async def get_links_page(
         # Get item details
         item_ids = set()
         for link in links:
-            item_ids.add(str(link.source_id))
-            item_ids.add(str(link.target_id))
+            item_ids.add(str(link.source_item_id))
+            item_ids.add(str(link.target_item_id))
 
         items = session.query(Item).filter(Item.id.in_(item_ids)).all()
         item_lookup = {str(item.id): item for item in items}
 
         result_links = []
         for link in links:
-            source = item_lookup.get(str(link.source_id))
-            target = item_lookup.get(str(link.target_id))
+            source = item_lookup.get(str(link.source_item_id))
+            target = item_lookup.get(str(link.target_item_id))
             result_links.append({
                 "id": str(link.id)[:8],
-                "source_id": str(link.source_id)[:8],
+                "source_id": str(link.source_item_id)[:8],
                 "source_title": source.title if source else None,
-                "target_id": str(link.target_id)[:8],
+                "target_id": str(link.target_item_id)[:8],
                 "target_title": target.title if target else None,
                 "link_type": link.link_type,
                 "created_at": link.created_at.isoformat() if link.created_at else None,

@@ -4,4 +4,4 @@ interface SeeMoreProps {
     height: string;
 }
 export declare function SeeMore({ children, height }: SeeMoreProps): JSX.Element;
-export {};
+

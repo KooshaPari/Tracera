@@ -100,4 +100,4 @@ export declare class CartesianAxis extends Component<Props, IState> {
     renderTicks(ticks: CartesianTickItem[], fontSize: string, letterSpacing: string): React.JSX.Element;
     render(): React.JSX.Element;
 }
-export {};
+

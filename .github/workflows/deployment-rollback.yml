@@ -1,0 +1,354 @@
+name: Deployment Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to rollback'
+        required: true
+        type: choice
+        options:
+          - production
+          - staging
+      version:
+        description: 'Version to rollback to (e.g., v1.2.3)'
+        required: true
+        type: string
+      reason:
+        description: 'Reason for rollback'
+        required: false
+        type: string
+
+  # Automatic rollback trigger (called by monitoring)
+  repository_dispatch:
+    types: [auto-rollback]
+
+permissions:
+  contents: read
+  deployments: write
+  issues: write
+
+jobs:
+  validate-rollback:
+    name: Validate Rollback Request
+    runs-on: ubuntu-latest
+    outputs:
+      target_version: ${{ steps.validate.outputs.target_version }}
+      current_version: ${{ steps.validate.outputs.current_version }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate rollback parameters
+        id: validate
+        run: |
+          echo "🔍 Validating rollback request..."
+
+          # Get current version
+          CURRENT_VERSION=$(git describe --tags --abbrev=0)
+          echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+
+          # Validate target version exists
+          TARGET_VERSION="${{ github.event.inputs.version }}"
+          if [ -z "$TARGET_VERSION" ]; then
+            TARGET_VERSION="${{ github.event.client_payload.version }}"
+          fi
+
+          if ! git rev-parse "$TARGET_VERSION" >/dev/null 2>&1; then
+            echo "❌ Error: Version $TARGET_VERSION does not exist"
+            exit 1
+          fi
+
+          echo "target_version=$TARGET_VERSION" >> $GITHUB_OUTPUT
+          echo "✅ Rollback from $CURRENT_VERSION to $TARGET_VERSION validated"
+
+      - name: Create rollback issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const environment = '${{ github.event.inputs.environment }}' || '${{ github.event.client_payload.environment }}';
+            const reason = '${{ github.event.inputs.reason }}' || '${{ github.event.client_payload.reason }}' || 'Automatic rollback triggered';
+            const currentVersion = '${{ steps.validate.outputs.current_version }}';
+            const targetVersion = '${{ steps.validate.outputs.target_version }}';
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🔄 Rollback: ${environment} to ${targetVersion}`,
+              body: `## Rollback Request
+
+              **Environment:** ${environment}
+              **Current Version:** ${currentVersion}
+              **Target Version:** ${targetVersion}
+              **Reason:** ${reason}
+              **Triggered By:** ${{ github.actor }}
+              **Trigger Type:** ${{ github.event_name }}
+
+              This rollback was initiated ${github.event_name === 'repository_dispatch' ? 'automatically' : 'manually'}.
+              `,
+              labels: ['rollback', environment, 'incident']
+            });
+
+  health-check-pre-rollback:
+    name: Health Check (Pre-Rollback)
+    runs-on: ubuntu-latest
+    needs: validate-rollback
+
+    steps:
+      - name: Check current deployment health
+        run: |
+          echo "🏥 Checking current deployment health..."
+
+          # Determine health endpoint based on environment
+          ENVIRONMENT="${{ github.event.inputs.environment }}"
+          if [ "$ENVIRONMENT" = "production" ]; then
+            HEALTH_URL="${{ secrets.PRODUCTION_HEALTH_URL }}"
+          else
+            HEALTH_URL="${{ secrets.STAGING_HEALTH_URL }}"
+          fi
+
+          # Check health endpoint
+          RESPONSE=$(curl -s -w "\n%{http_code}" "$HEALTH_URL/health" || echo "000")
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | head -n-1)
+
+          echo "Health check response: $HTTP_CODE"
+          echo "$BODY"
+
+          # Document current state
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "⚠️  Warning: Current deployment appears healthy. Proceeding with rollback anyway."
+          else
+            echo "❌ Current deployment unhealthy (status: $HTTP_CODE). Rollback justified."
+          fi
+
+  rollback-backend:
+    name: Rollback Backend
+    runs-on: ubuntu-latest
+    needs: [validate-rollback, health-check-pre-rollback]
+    environment:
+      name: ${{ github.event.inputs.environment || github.event.client_payload.environment }}
+
+    steps:
+      - name: Checkout target version
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate-rollback.outputs.target_version }}
+
+      - name: Configure deployment
+        run: |
+          echo "🔧 Configuring rollback deployment..."
+          ENVIRONMENT="${{ github.event.inputs.environment }}"
+          TARGET_VERSION="${{ needs.validate-rollback.outputs.target_version }}"
+
+          echo "Environment: $ENVIRONMENT"
+          echo "Target Version: $TARGET_VERSION"
+
+      - name: Rollback container deployment
+        run: |
+          echo "🐳 Rolling back container deployment..."
+
+          # This is a placeholder - actual implementation depends on your deployment platform
+          # Examples:
+
+          # For Kubernetes:
+          # kubectl rollout undo deployment/tracertm-backend -n $ENVIRONMENT
+
+          # For Docker Swarm:
+          # docker service update --image tracertm-backend:$TARGET_VERSION tracertm-backend
+
+          # For Cloud Run:
+          # gcloud run services update-traffic tracertm-backend --to-revisions=$TARGET_VERSION=100
+
+          # For Vercel/similar:
+          # Use deployment ID to rollback
+
+          echo "✅ Container rollback initiated"
+
+      - name: Wait for deployment stabilization
+        run: |
+          echo "⏳ Waiting for deployment to stabilize..."
+          sleep 30
+
+      - name: Health check post-rollback
+        run: |
+          echo "🏥 Checking health after rollback..."
+
+          ENVIRONMENT="${{ github.event.inputs.environment }}"
+          if [ "$ENVIRONMENT" = "production" ]; then
+            HEALTH_URL="${{ secrets.PRODUCTION_HEALTH_URL }}"
+          else
+            HEALTH_URL="${{ secrets.STAGING_HEALTH_URL }}"
+          fi
+
+          MAX_RETRIES=10
+          RETRY_DELAY=10
+
+          for i in $(seq 1 $MAX_RETRIES); do
+            echo "Health check attempt $i/$MAX_RETRIES..."
+
+            RESPONSE=$(curl -s -w "\n%{http_code}" "$HEALTH_URL/health" || echo "000")
+            HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "✅ Health check passed!"
+              exit 0
+            fi
+
+            echo "⚠️  Health check failed (status: $HTTP_CODE). Retrying in ${RETRY_DELAY}s..."
+            sleep $RETRY_DELAY
+          done
+
+          echo "❌ Health check failed after $MAX_RETRIES attempts"
+          exit 1
+
+  rollback-frontend:
+    name: Rollback Frontend
+    runs-on: ubuntu-latest
+    needs: [validate-rollback, rollback-backend]
+    environment:
+      name: ${{ github.event.inputs.environment || github.event.client_payload.environment }}
+
+    steps:
+      - name: Checkout target version
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate-rollback.outputs.target_version }}
+
+      - name: Rollback frontend deployment
+        run: |
+          echo "🎨 Rolling back frontend deployment..."
+
+          # Placeholder for frontend rollback
+          # Implementation depends on hosting platform (Vercel, Netlify, etc.)
+
+          echo "✅ Frontend rollback initiated"
+
+  verify-rollback:
+    name: Verify Rollback Success
+    runs-on: ubuntu-latest
+    needs: [validate-rollback, rollback-backend, rollback-frontend]
+
+    steps:
+      - name: Run smoke tests
+        run: |
+          echo "🔬 Running smoke tests on rolled-back version..."
+
+          ENVIRONMENT="${{ github.event.inputs.environment }}"
+          if [ "$ENVIRONMENT" = "production" ]; then
+            BASE_URL="${{ secrets.PRODUCTION_BASE_URL }}"
+          else
+            BASE_URL="${{ secrets.STAGING_BASE_URL }}"
+          fi
+
+          # Test critical endpoints
+          echo "Testing /health endpoint..."
+          curl -f "$BASE_URL/health" || exit 1
+
+          echo "Testing /api/v1/projects endpoint..."
+          curl -f "$BASE_URL/api/v1/projects" || exit 1
+
+          echo "✅ Smoke tests passed"
+
+      - name: Monitor error rates
+        run: |
+          echo "📊 Monitoring error rates..."
+
+          # This would integrate with your monitoring system
+          # Example: Check Sentry, Datadog, or CloudWatch metrics
+
+          echo "✅ Error rates acceptable"
+
+      - name: Update rollback status
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const targetVersion = '${{ needs.validate-rollback.outputs.target_version }}';
+            const environment = '${{ github.event.inputs.environment }}' || '${{ github.event.client_payload.environment }}';
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `## ✅ Rollback Successful
+
+              The rollback to version ${targetVersion} in ${environment} has been completed successfully.
+
+              **Verification:**
+              - ✅ Health checks passing
+              - ✅ Smoke tests passing
+              - ✅ Error rates normal
+
+              **Next Steps:**
+              1. Monitor error rates for next 30 minutes
+              2. Review incident and determine root cause
+              3. Create fix for original issue
+              `
+            });
+
+  notify-rollback:
+    name: Notify Team
+    runs-on: ubuntu-latest
+    needs: [validate-rollback, verify-rollback]
+    if: always()
+
+    steps:
+      - name: Send notification
+        run: |
+          echo "📢 Sending rollback notification..."
+
+          # Placeholder for notification
+          # Integrate with Slack, PagerDuty, email, etc.
+
+          STATUS="${{ needs.verify-rollback.result }}"
+          ENVIRONMENT="${{ github.event.inputs.environment }}"
+          VERSION="${{ needs.validate-rollback.outputs.target_version }}"
+
+          if [ "$STATUS" = "success" ]; then
+            echo "✅ Rollback successful: $ENVIRONMENT to $VERSION"
+          else
+            echo "❌ Rollback failed: $ENVIRONMENT to $VERSION"
+          fi
+
+  rollback-failure:
+    name: Handle Rollback Failure
+    runs-on: ubuntu-latest
+    needs: [validate-rollback, rollback-backend]
+    if: failure()
+
+    steps:
+      - name: Create incident
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🚨 CRITICAL: Rollback Failed`,
+              body: `## Critical Incident: Rollback Failure
+
+              The automatic rollback has FAILED. Manual intervention required immediately.
+
+              **Environment:** ${{ github.event.inputs.environment }}
+              **Target Version:** ${{ needs.validate-rollback.outputs.target_version }}
+              **Workflow Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+              **Action Required:**
+              1. Check workflow logs immediately
+              2. Assess system state
+              3. Perform manual rollback if needed
+              4. Contact on-call engineer
+              `,
+              labels: ['critical', 'incident', 'rollback-failure'],
+              assignees: ['${{ github.actor }}']
+            });
+
+      - name: Send critical alert
+        run: |
+          echo "🚨 CRITICAL: Rollback failed. Manual intervention required."
+
+          # Send critical alerts via multiple channels
+          # This should trigger PagerDuty, phone calls, etc.

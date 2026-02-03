@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from typing import Any
 
 from fastmcp.exceptions import ToolError
@@ -9,15 +10,19 @@ from fastmcp.exceptions import ToolError
 try:
     from tracertm.mcp.core import mcp
 except Exception:  # pragma: no cover
+
     class _StubMCP:
         def tool(self, *args: Any, **kwargs: Any):
             def decorator(fn):
                 return fn
+
             return decorator
+
     mcp = _StubMCP()  # type: ignore[assignment]
 
 from tracertm.config.manager import ConfigManager
 from tracertm.database.connection import DatabaseConnection
+
 from .common import _wrap
 
 
@@ -37,6 +42,7 @@ async def database_manage(
     - reset: Drop and recreate tables (requires: confirm=true)
     - rollback: Drop tables (requires: confirm=true)
     """
+    await asyncio.sleep(0)
     payload = payload or {}
     action = action.lower()
     config = ConfigManager()

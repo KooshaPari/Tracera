@@ -149,7 +149,7 @@ define("vs/sparql-O5ONewYs", ["exports"], (function(exports) {
         // line comment
         [/#.*/, "comment"],
         // special chars with special meaning
-        [/[{}()\[\]]/, "@brackets"],
+        [/[{}()[\]]/, "@brackets"],
         [/[;,.]/, "delimiter"],
         // (prefixed) name
         [/[_\w\d]+:(\.(?=[\w_\-\\%])|[:\w_-]|\\[-\\_~.!$&'()*+,;=/?#@%]|%[a-f\d][a-f\d])*/, "tag"],
@@ -167,10 +167,10 @@ define("vs/sparql-O5ONewYs", ["exports"], (function(exports) {
         ],
         // operators
         [/\^\^/, "operator.sql"],
-        [/\^[*+\-<>=&|^\/!?]*/, "operator.sql"],
-        [/[*+\-<>=&|\/!?]/, "operator.sql"],
+        [/\^[*+\-<>=&|^/!?]*/, "operator.sql"],
+        [/[*+\-<>=&|/!?]/, "operator.sql"],
         // symbol
-        [/@[a-z\d\-]*/, "metatag.html"],
+        [/@[a-z\d-]*/, "metatag.html"],
         // whitespaces
         [/\s+/, "white"]
       ],

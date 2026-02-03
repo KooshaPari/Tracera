@@ -305,7 +305,7 @@ function redirectOrNotFoundResponse(error: any) {
     status: 200,
     headers: {
       'Content-Type': 'application/json',
-      ...(headers || {}),
+      ...headers,
     },
   })
 }

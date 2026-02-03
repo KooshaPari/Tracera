@@ -59,10 +59,10 @@ export default function stylus(Prism) {
       operator: [
         // We want non-word chars around "-" because it is
         // accepted in property names.
-        /~|[+!\/%<>?=]=?|[-:]=|\*[*=]?|\.{2,3}|&&|\|\||\B-\B|\b(?:and|in|is(?: a| defined| not|nt)?|not|or)\b/
+        /~|[+!/%<>?=]=?|[-:]=|\*[*=]?|\.{2,3}|&&|\|\||\B-\B|\b(?:and|in|is(?: a| defined| not|nt)?|not|or)\b/
       ],
       number: number,
-      punctuation: /[{}()\[\];:,]/
+      punctuation: /[{}()[\];:,]/
     }
     inside['interpolation'] = {
       pattern: /\{[^\r\n}:]+\}/,
@@ -144,7 +144,7 @@ export default function stylus(Prism) {
         greedy: true
       },
       interpolation: inside.interpolation,
-      punctuation: /[{}()\[\];:.]/
+      punctuation: /[{}()[\];:.]/
     }
   })(Prism)
 }

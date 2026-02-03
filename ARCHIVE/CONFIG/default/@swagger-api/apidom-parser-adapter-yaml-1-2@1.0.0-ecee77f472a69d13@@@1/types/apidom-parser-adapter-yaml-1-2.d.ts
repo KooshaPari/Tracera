@@ -68,4 +68,4 @@ export declare class YamlMediaTypes extends MediaTypes<string> {
     latest(): string;
 }
 
-export { }
+

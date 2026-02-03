@@ -9,15 +9,10 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import NullPool, StaticPool
 
-from tracertm.models.base import Base
 # Import ALL models to ensure they're registered with Base.metadata
 # This is critical - SQLAlchemy only creates tables for imported models
-from tracertm.models.agent import Agent
-from tracertm.models.agent_event import AgentEvent
-from tracertm.models.agent_lock import AgentLock
-from tracertm.models.event import Event
+from tracertm.models.base import Base
 from tracertm.models.item import Item
-from tracertm.models.link import Link
 from tracertm.models.project import Project
 
 TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL", "sqlite+aiosqlite:///:memory:")
@@ -84,7 +79,7 @@ async def sample_item(db_session: AsyncSession, sample_project: Project) -> Item
 
     repo = ItemRepository(db_session)
     item = await repo.create(
-        project_id=sample_project.id,
+        project_id=str(sample_project.id),
         title="Sample Item",
         view="FEATURE",
         item_type="feature",

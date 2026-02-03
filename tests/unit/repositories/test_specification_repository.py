@@ -4,22 +4,22 @@ Tests for Specification Repositories (ADR, Contract, Feature, Scenario).
 Comprehensive test coverage for specification CRUD and query operations.
 """
 
-import pytest
-import pytest_asyncio
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import uuid4
 
+import pytest
+import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from tracertm.core.concurrency import ConcurrencyError
+from tracertm.repositories.item_repository import ItemRepository
+from tracertm.repositories.project_repository import ProjectRepository
 from tracertm.repositories.specification_repository import (
     ADRRepository,
     ContractRepository,
     FeatureRepository,
     ScenarioRepository,
 )
-from tracertm.repositories.project_repository import ProjectRepository
-from tracertm.repositories.item_repository import ItemRepository
-from tracertm.core.concurrency import ConcurrencyError
 
 
 class TestADRRepositoryCreate:
@@ -29,10 +29,7 @@ class TestADRRepositoryCreate:
     async def project(self, db_session: AsyncSession):
         """Create a project for ADR tests."""
         project_repo = ProjectRepository(db_session)
-        return await project_repo.create(
-            name="ADR Test Project",
-            description="Project for testing ADRs"
-        )
+        return await project_repo.create(name="ADR Test Project", description="Project for testing ADRs")
 
     @pytest.mark.asyncio
     async def test_create_adr_success(self, db_session: AsyncSession, project):
@@ -209,10 +206,7 @@ class TestADRRepositoryGet:
     async def test_get_by_id_with_project_id(self, db_session: AsyncSession, adr_setup):
         """Test getting ADR by ID with project scope."""
         repo = ADRRepository(db_session)
-        adr = await repo.get_by_id(
-            adr_setup["adr"].id,
-            project_id=adr_setup["project"].id
-        )
+        adr = await repo.get_by_id(adr_setup["adr"].id, project_id=adr_setup["project"].id)
 
         assert adr is not None
         assert adr.id == adr_setup["adr"].id
@@ -238,10 +232,7 @@ class TestADRRepositoryGet:
     async def test_get_by_number_with_project_id(self, db_session: AsyncSession, adr_setup):
         """Test getting ADR by number with project scope."""
         repo = ADRRepository(db_session)
-        adr = await repo.get_by_number(
-            adr_setup["adr"].adr_number,
-            project_id=adr_setup["project"].id
-        )
+        adr = await repo.get_by_number(adr_setup["adr"].adr_number, project_id=adr_setup["project"].id)
 
         assert adr is not None
 
@@ -292,10 +283,7 @@ class TestADRRepositoryList:
     async def test_list_by_project_with_status_filter(self, db_session: AsyncSession, multiple_adrs):
         """Test listing ADRs filtered by status."""
         repo = ADRRepository(db_session)
-        adrs = await repo.list_by_project(
-            multiple_adrs["project"].id,
-            status="proposed"
-        )
+        adrs = await repo.list_by_project(multiple_adrs["project"].id, status="proposed")
 
         assert len(adrs) == 1
         assert adrs[0].status == "proposed"
@@ -304,11 +292,7 @@ class TestADRRepositoryList:
     async def test_list_by_project_with_pagination(self, db_session: AsyncSession, multiple_adrs):
         """Test listing ADRs with pagination."""
         repo = ADRRepository(db_session)
-        adrs = await repo.list_by_project(
-            multiple_adrs["project"].id,
-            limit=2,
-            offset=0
-        )
+        adrs = await repo.list_by_project(multiple_adrs["project"].id, limit=2, offset=0)
 
         assert len(adrs) == 2
 
@@ -316,10 +300,7 @@ class TestADRRepositoryList:
     async def test_find_by_status(self, db_session: AsyncSession, multiple_adrs):
         """Test finding ADRs by status."""
         repo = ADRRepository(db_session)
-        adrs = await repo.find_by_status(
-            multiple_adrs["project"].id,
-            status="accepted"
-        )
+        adrs = await repo.find_by_status(multiple_adrs["project"].id, status="accepted")
 
         assert len(adrs) == 1
         assert adrs[0].status == "accepted"
@@ -335,15 +316,13 @@ class TestADRRepositoryUpdate:
         project = await project_repo.create(name="Update Test Project")
 
         adr_repo = ADRRepository(db_session)
-        adr = await adr_repo.create(
+        return await adr_repo.create(
             project_id=project.id,
             title="Original Title",
             context="Original Context",
             decision="Original Decision",
             consequences="Original Consequences",
         )
-
-        return adr
 
     @pytest.mark.asyncio
     async def test_update_adr_success(self, db_session: AsyncSession, adr_for_update):
@@ -367,11 +346,7 @@ class TestADRRepositoryUpdate:
         repo = ADRRepository(db_session)
 
         with pytest.raises(ValueError, match="not found"):
-            await repo.update(
-                str(uuid4()),
-                expected_version=1,
-                title="New Title"
-            )
+            await repo.update(str(uuid4()), expected_version=1, title="New Title")
 
     @pytest.mark.asyncio
     async def test_update_adr_concurrency_error(self, db_session: AsyncSession, adr_for_update):
@@ -382,7 +357,7 @@ class TestADRRepositoryUpdate:
             await repo.update(
                 adr_for_update.id,
                 expected_version=999,  # Wrong version
-                title="New Title"
+                title="New Title",
             )
 
 
@@ -396,7 +371,7 @@ class TestADRRepositoryTransition:
         project = await project_repo.create(name="Transition Test Project")
 
         adr_repo = ADRRepository(db_session)
-        adr = await adr_repo.create(
+        return await adr_repo.create(
             project_id=project.id,
             title="Transition Test ADR",
             context="Context",
@@ -404,8 +379,6 @@ class TestADRRepositoryTransition:
             consequences="Consequences",
             status="proposed",
         )
-
-        return adr
 
     @pytest.mark.asyncio
     async def test_transition_proposed_to_accepted(self, db_session: AsyncSession, adr_for_transition):
@@ -466,10 +439,7 @@ class TestADRRepositoryVerify:
         """Test verifying compliance score."""
         repo = ADRRepository(db_session)
 
-        updated = await repo.verify_compliance(
-            adr_for_verify.id,
-            compliance_score=0.85
-        )
+        updated = await repo.verify_compliance(adr_for_verify.id, compliance_score=0.85)
 
         assert updated.compliance_score == 0.85
         assert updated.last_verified_at is not None
@@ -539,7 +509,9 @@ class TestADRRepositoryStats:
             await adr_repo.create(
                 project_id=project.id,
                 title="Proposed ADR",
-                context="C", decision="D", consequences="Q",
+                context="C",
+                decision="D",
+                consequences="Q",
                 status="proposed",
             )
 
@@ -547,7 +519,9 @@ class TestADRRepositoryStats:
             await adr_repo.create(
                 project_id=project.id,
                 title="Accepted ADR",
-                context="C", decision="D", consequences="Q",
+                context="C",
+                decision="D",
+                consequences="Q",
                 status="accepted",
             )
 
@@ -745,7 +719,7 @@ class TestContractRepositoryList:
         contract_repo = ContractRepository(db_session)
         contracts = []
         types = ["api", "state_machine", "api"]
-        for i, (item, ctype) in enumerate(zip(items, types)):
+        for i, (item, ctype) in enumerate(zip(items, types, strict=False)):
             contract = await contract_repo.create(
                 project_id=project.id,
                 item_id=item.id,
@@ -768,10 +742,7 @@ class TestContractRepositoryList:
     async def test_list_by_project_filter_by_type(self, db_session: AsyncSession, multiple_contracts):
         """Test listing contracts filtered by type."""
         repo = ContractRepository(db_session)
-        contracts = await repo.list_by_project(
-            multiple_contracts["project"].id,
-            contract_type="api"
-        )
+        contracts = await repo.list_by_project(multiple_contracts["project"].id, contract_type="api")
 
         assert len(contracts) == 2
 
@@ -1282,15 +1253,13 @@ class TestContractRepositoryTransition:
         )
 
         contract_repo = ContractRepository(db_session)
-        contract = await contract_repo.create(
+        return await contract_repo.create(
             project_id=project.id,
             item_id=item.id,
             title="Transition Contract",
             contract_type="api",
             status="draft",
         )
-
-        return contract
 
     @pytest.mark.asyncio
     async def test_transition_draft_to_review(self, db_session: AsyncSession, contract_for_transition):
@@ -1380,14 +1349,12 @@ class TestContractRepositoryDelete:
         )
 
         contract_repo = ContractRepository(db_session)
-        contract = await contract_repo.create(
+        return await contract_repo.create(
             project_id=project.id,
             item_id=item.id,
             title="Delete Contract",
             contract_type="api",
         )
-
-        return contract
 
     @pytest.mark.asyncio
     async def test_delete_contract(self, db_session: AsyncSession, contract_for_delete):
@@ -1434,7 +1401,7 @@ class TestContractRepositoryStats:
 
         # Create 3 API contracts and 2 state machine contracts
         types = ["api", "api", "api", "state_machine", "state_machine"]
-        for i, (item, ctype) in enumerate(zip(items, types)):
+        for i, (item, ctype) in enumerate(zip(items, types, strict=False)):
             await contract_repo.create(
                 project_id=project.id,
                 item_id=item.id,
@@ -1535,7 +1502,9 @@ class TestContractNumberFormat:
 
         # Pattern: CTR-YYYYMMDD-8HEXCHARS
         pattern = r"^CTR-\d{8}-[A-F0-9]{8}$"
-        assert re.match(pattern, contract.contract_number), f"Contract number '{contract.contract_number}' doesn't match expected format"
+        assert re.match(pattern, contract.contract_number), (
+            f"Contract number '{contract.contract_number}' doesn't match expected format"
+        )
 
 
 # ============================================================================
@@ -1553,12 +1522,10 @@ class TestFeatureRepositoryUpdate:
         project = await project_repo.create(name="Feature Update Test")
 
         feature_repo = FeatureRepository(db_session)
-        feature = await feature_repo.create(
+        return await feature_repo.create(
             project_id=project.id,
             name="Original Feature",
         )
-
-        return feature
 
     @pytest.mark.asyncio
     async def test_update_feature_success(self, db_session: AsyncSession, feature_for_update):
@@ -1611,13 +1578,11 @@ class TestFeatureRepositoryTransition:
         project = await project_repo.create(name="Feature Transition Test")
 
         feature_repo = FeatureRepository(db_session)
-        feature = await feature_repo.create(
+        return await feature_repo.create(
             project_id=project.id,
             name="Transition Feature",
             status="draft",
         )
-
-        return feature
 
     @pytest.mark.asyncio
     async def test_transition_draft_to_review(self, db_session: AsyncSession, feature_for_transition):
@@ -1790,7 +1755,9 @@ class TestFeatureNumberFormat:
 
         # Pattern: FEAT-YYYYMMDD-8HEXCHARS
         pattern = r"^FEAT-\d{8}-[A-F0-9]{8}$"
-        assert re.match(pattern, feature.feature_number), f"Feature number '{feature.feature_number}' doesn't match expected format"
+        assert re.match(pattern, feature.feature_number), (
+            f"Feature number '{feature.feature_number}' doesn't match expected format"
+        )
 
 
 # ============================================================================
@@ -1814,13 +1781,11 @@ class TestScenarioRepositoryUpdate:
         )
 
         scenario_repo = ScenarioRepository(db_session)
-        scenario = await scenario_repo.create(
+        return await scenario_repo.create(
             feature_id=feature.id,
             title="Original Scenario",
             gherkin_text="Given original",
         )
-
-        return scenario
 
     @pytest.mark.asyncio
     async def test_update_scenario_success(self, db_session: AsyncSession, scenario_for_update):
@@ -1879,14 +1844,12 @@ class TestScenarioRepositoryTransition:
         )
 
         scenario_repo = ScenarioRepository(db_session)
-        scenario = await scenario_repo.create(
+        return await scenario_repo.create(
             feature_id=feature.id,
             title="Transition Scenario",
             gherkin_text="Given transition test",
             status="draft",
         )
-
-        return scenario
 
     @pytest.mark.asyncio
     async def test_transition_draft_to_ready(self, db_session: AsyncSession, scenario_for_transition):
@@ -2026,7 +1989,7 @@ class TestScenarioRepositoryStats:
         statuses = ["draft", "draft", "ready", "passed", "failed"]
         pass_rates = [0.0, 0.0, 0.5, 1.0, 0.0]
 
-        for i, (status, pass_rate) in enumerate(zip(statuses, pass_rates)):
+        for i, (status, pass_rate) in enumerate(zip(statuses, pass_rates, strict=False)):
             await scenario_repo.create(
                 feature_id=feature.id,
                 title=f"Scenario {i}",
@@ -2209,7 +2172,9 @@ class TestScenarioNumberFormat:
 
         # Pattern: SC-YYYYMMDD-8HEXCHARS
         pattern = r"^SC-\d{8}-[A-F0-9]{8}$"
-        assert re.match(pattern, scenario.scenario_number), f"Scenario number '{scenario.scenario_number}' doesn't match expected format"
+        assert re.match(pattern, scenario.scenario_number), (
+            f"Scenario number '{scenario.scenario_number}' doesn't match expected format"
+        )
 
 
 # ============================================================================
@@ -2294,7 +2259,7 @@ class TestContractRepositoryListFilters:
         contract_repo = ContractRepository(db_session)
         contracts = []
         statuses = ["draft", "draft", "review", "approved", "archived"]
-        for i, (item, status) in enumerate(zip(items, statuses)):
+        for i, (item, status) in enumerate(zip(items, statuses, strict=False)):
             contract = await contract_repo.create(
                 project_id=project.id,
                 item_id=item.id,
@@ -2312,24 +2277,15 @@ class TestContractRepositoryListFilters:
         repo = ContractRepository(db_session)
 
         # Filter by draft status
-        draft_contracts = await repo.list_by_project(
-            contracts_with_statuses["project"].id,
-            status="draft"
-        )
+        draft_contracts = await repo.list_by_project(contracts_with_statuses["project"].id, status="draft")
         assert len(draft_contracts) == 2
 
         # Filter by review status
-        review_contracts = await repo.list_by_project(
-            contracts_with_statuses["project"].id,
-            status="review"
-        )
+        review_contracts = await repo.list_by_project(contracts_with_statuses["project"].id, status="review")
         assert len(review_contracts) == 1
 
         # Filter by approved status
-        approved_contracts = await repo.list_by_project(
-            contracts_with_statuses["project"].id,
-            status="approved"
-        )
+        approved_contracts = await repo.list_by_project(contracts_with_statuses["project"].id, status="approved")
         assert len(approved_contracts) == 1
 
     @pytest.mark.asyncio
@@ -2339,9 +2295,7 @@ class TestContractRepositoryListFilters:
 
         # Filter by both type and status
         filtered = await repo.list_by_project(
-            contracts_with_statuses["project"].id,
-            contract_type="api",
-            status="draft"
+            contracts_with_statuses["project"].id, contract_type="api", status="draft"
         )
         assert len(filtered) == 2
 
@@ -2423,10 +2377,7 @@ class TestContractRepositoryTransitionEdgeCases:
         """Test transitioning from draft directly to deprecated."""
         repo = ContractRepository(db_session)
 
-        updated = await repo.transition_status(
-            contracts_for_transition["draft"].id,
-            "deprecated"
-        )
+        updated = await repo.transition_status(contracts_for_transition["draft"].id, "deprecated")
 
         assert updated.status == "deprecated"
 
@@ -2505,17 +2456,13 @@ class TestFeatureRepositoryFilters:
         repo = FeatureRepository(db_session)
 
         # Get feature1 with correct project scope
-        feature = await repo.get_by_id(
-            features_setup["features"][0].id,
-            project_id=features_setup["project1"].id
-        )
+        feature = await repo.get_by_id(features_setup["features"][0].id, project_id=features_setup["project1"].id)
         assert feature is not None
         assert feature.name == "Feature 1"
 
         # Try to get feature1 with wrong project scope
         feature_wrong_project = await repo.get_by_id(
-            features_setup["features"][0].id,
-            project_id=features_setup["project2"].id
+            features_setup["features"][0].id, project_id=features_setup["project2"].id
         )
         assert feature_wrong_project is None
 
@@ -2527,17 +2474,11 @@ class TestFeatureRepositoryFilters:
         feature_number = features_setup["features"][0].feature_number
 
         # Get with correct project scope
-        feature = await repo.get_by_number(
-            feature_number,
-            project_id=features_setup["project1"].id
-        )
+        feature = await repo.get_by_number(feature_number, project_id=features_setup["project1"].id)
         assert feature is not None
 
         # Get with wrong project scope
-        feature_wrong_project = await repo.get_by_number(
-            feature_number,
-            project_id=features_setup["project2"].id
-        )
+        feature_wrong_project = await repo.get_by_number(feature_number, project_id=features_setup["project2"].id)
         assert feature_wrong_project is None
 
     @pytest.mark.asyncio
@@ -2546,17 +2487,11 @@ class TestFeatureRepositoryFilters:
         repo = FeatureRepository(db_session)
 
         # Filter by draft status
-        draft_features = await repo.list_by_project(
-            features_setup["project1"].id,
-            status="draft"
-        )
+        draft_features = await repo.list_by_project(features_setup["project1"].id, status="draft")
         assert len(draft_features) == 2
 
         # Filter by review status
-        review_features = await repo.list_by_project(
-            features_setup["project1"].id,
-            status="review"
-        )
+        review_features = await repo.list_by_project(features_setup["project1"].id, status="review")
         assert len(review_features) == 1
 
 
@@ -2628,24 +2563,15 @@ class TestScenarioRepositoryFilters:
         repo = ScenarioRepository(db_session)
 
         # Filter by draft status
-        draft_scenarios = await repo.list_by_feature(
-            scenarios_for_filters["feature"].id,
-            status="draft"
-        )
+        draft_scenarios = await repo.list_by_feature(scenarios_for_filters["feature"].id, status="draft")
         assert len(draft_scenarios) == 2
 
         # Filter by ready status
-        ready_scenarios = await repo.list_by_feature(
-            scenarios_for_filters["feature"].id,
-            status="ready"
-        )
+        ready_scenarios = await repo.list_by_feature(scenarios_for_filters["feature"].id, status="ready")
         assert len(ready_scenarios) == 1
 
         # Filter by executing status
-        executing_scenarios = await repo.list_by_feature(
-            scenarios_for_filters["feature"].id,
-            status="executing"
-        )
+        executing_scenarios = await repo.list_by_feature(scenarios_for_filters["feature"].id, status="executing")
         assert len(executing_scenarios) == 1
 
 
@@ -2920,16 +2846,14 @@ class TestContractRepositoryProjectScope:
 
         # Get contract1 with correct project scope
         contract = await repo.get_by_id(
-            contracts_multi_project["contract1"].id,
-            project_id=contracts_multi_project["project1"].id
+            contracts_multi_project["contract1"].id, project_id=contracts_multi_project["project1"].id
         )
         assert contract is not None
         assert contract.title == "Contract in Project 1"
 
         # Try to get contract1 with wrong project scope
         contract_wrong = await repo.get_by_id(
-            contracts_multi_project["contract1"].id,
-            project_id=contracts_multi_project["project2"].id
+            contracts_multi_project["contract1"].id, project_id=contracts_multi_project["project2"].id
         )
         assert contract_wrong is None
 
@@ -2941,18 +2865,12 @@ class TestContractRepositoryProjectScope:
         contract_number = contracts_multi_project["contract1"].contract_number
 
         # Get with correct project scope
-        contract = await repo.get_by_number(
-            contract_number,
-            project_id=contracts_multi_project["project1"].id
-        )
+        contract = await repo.get_by_number(contract_number, project_id=contracts_multi_project["project1"].id)
         assert contract is not None
         assert contract.title == "Contract in Project 1"
 
         # Get with wrong project scope
-        contract_wrong = await repo.get_by_number(
-            contract_number,
-            project_id=contracts_multi_project["project2"].id
-        )
+        contract_wrong = await repo.get_by_number(contract_number, project_id=contracts_multi_project["project2"].id)
         assert contract_wrong is None
 
 
@@ -2980,19 +2898,13 @@ class TestADRVerifyComplianceExplicitTime:
         )
 
     @pytest.mark.asyncio
-    async def test_verify_compliance_with_explicit_verified_at(
-        self, db_session: AsyncSession, adr_for_verify
-    ):
+    async def test_verify_compliance_with_explicit_verified_at(self, db_session: AsyncSession, adr_for_verify):
         """Test verify_compliance with explicit verified_at to cover lines 220-225."""
         repo = ADRRepository(db_session)
 
         # Use explicit verified_at timestamp
-        explicit_time = datetime(2024, 1, 15, 12, 0, 0, tzinfo=timezone.utc)
-        updated = await repo.verify_compliance(
-            adr_for_verify.id,
-            compliance_score=0.92,
-            verified_at=explicit_time
-        )
+        explicit_time = datetime(2024, 1, 15, 12, 0, 0, tzinfo=UTC)
+        updated = await repo.verify_compliance(adr_for_verify.id, compliance_score=0.92, verified_at=explicit_time)
 
         # Lines 220-225 should be covered
         assert updated.compliance_score == 0.92
@@ -3026,23 +2938,14 @@ class TestContractVerifyMethod:
         )
 
     @pytest.mark.asyncio
-    async def test_verify_contract_success(
-        self, db_session: AsyncSession, contract_for_verify
-    ):
+    async def test_verify_contract_success(self, db_session: AsyncSession, contract_for_verify):
         """Test contract verification to cover lines 398-401."""
         repo = ContractRepository(db_session)
 
-        verification_result = {
-            "verified": True,
-            "proofs": ["proof1", "proof2"],
-            "coverage": 95.5
-        }
+        verification_result = {"verified": True, "proofs": ["proof1", "proof2"], "coverage": 95.5}
 
         # This covers lines 398-401
-        updated = await repo.verify(
-            contract_for_verify.id,
-            verification_result=verification_result
-        )
+        updated = await repo.verify(contract_for_verify.id, verification_result=verification_result)
 
         assert updated.last_verified_at is not None
         assert updated.verification_result == verification_result
@@ -3054,8 +2957,5 @@ class TestContractVerifyMethod:
         repo = ContractRepository(db_session)
 
         # This covers lines 395-396
-        with pytest.raises(ValueError, match="Contract .* not found"):
-            await repo.verify(
-                str(uuid4()),
-                verification_result={"verified": False}
-            )
+        with pytest.raises(ValueError, match=r"Contract .* not found"):
+            await repo.verify(str(uuid4()), verification_result={"verified": False})

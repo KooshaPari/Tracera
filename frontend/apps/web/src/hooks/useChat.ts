@@ -120,9 +120,9 @@ export function useChat() {
 					body: JSON.stringify({
 						context: context
 							? {
+									current_view: context.currentView,
 									project_id: context.project?.id,
 									project_name: context.project?.name,
-									current_view: context.currentView,
 								}
 							: undefined,
 						max_tokens: selectedModel.maxOutput || 4096,

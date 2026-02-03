@@ -45,8 +45,8 @@ const language = {
   ],
   // regular expressions
   comment: /#.*$/,
-  identifier: /[a-zA-Z]+[a-zA-Z0-9_\-]*/,
-  plaContent: /[01\-~\|]+/,
+  identifier: /[a-zA-Z]+[a-zA-Z0-9_-]*/,
+  plaContent: /[01\-~|]+/,
   // The main tokenizer for our languages
   tokenizer: {
     root: [
@@ -55,7 +55,7 @@ const language = {
       [/@comment/, "comment"],
       // keyword
       [
-        /\.([a-zA-Z_\-]+)/,
+        /\.([a-zA-Z_-]+)/,
         {
           cases: {
             "@eos": { token: "keyword.$1" },
@@ -91,7 +91,7 @@ const language = {
       [/@comment/, "comment", "@pop"],
       // brackets
       [
-        /[<>()\[\]]/,
+        /[<>()[\]]/,
         {
           cases: {
             "@eos": { token: "@brackets", next: "@pop" },
@@ -101,7 +101,7 @@ const language = {
       ],
       // numbers
       [
-        /\-?\d+/,
+        /-?\d+/,
         {
           cases: {
             "@eos": { token: "number", next: "@pop" },

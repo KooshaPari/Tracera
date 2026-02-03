@@ -69,4 +69,4 @@ type _PascalCasedPropertiesDeep<Value, Options extends Required<CamelCaseOptions
 				}
 				: Value;
 
-export {};
+

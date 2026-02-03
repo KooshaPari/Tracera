@@ -1,26 +1,29 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import { X } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
+const MAX_DESCRIPTION_LENGTH = 2000;
+const MAX_NAME_LENGTH = 255;
+
 const projectSchema = z.object({
-	description: z.string().max(2000).optional(),
-	name: z.string().min(1, "Name is required").max(255, "Name too long"),
+	description: z.string().max(MAX_DESCRIPTION_LENGTH).optional(),
+	name: z.string().min(1, "Name is required").max(MAX_NAME_LENGTH, "Name too long"),
 });
 
 type ProjectFormData = z.infer<typeof projectSchema>;
 
 interface CreateProjectFormProps {
-	onSubmit: (data: ProjectFormData) => void;
-	onCancel: () => void;
 	isLoading?: boolean;
+	onCancel: () => void;
+	onSubmit: (data: ProjectFormData) => void;
 }
 
-export function CreateProjectForm({
+const createProjectFormProps = ({
 	onSubmit,
 	onCancel,
 	isLoading,
-}: CreateProjectFormProps) {
+}: CreateProjectFormProps) => {
 	const {
 		register,
 		handleSubmit,
@@ -29,67 +32,132 @@ export function CreateProjectForm({
 		resolver: zodResolver(projectSchema),
 	});
 
+	return {
+		errors,
+		handleSubmit,
+		isLoading,
+		onCancel,
+		register,
+	};
+};
+
+const CreateProjectHeader = ({ onCancel }: { onCancel: () => void }) => (
+	<div className="flex items-center justify-between">
+		<h2 className="text-lg font-semibold">Create Project</h2>
+		<button onClick={onCancel} className="rounded-lg p-1 hover:bg-accent">
+			<X className="h-5 w-5" />
+		</button>
+	</div>
+);
+
+const ProjectNameField = ({
+	errors,
+	register,
+}: {
+	errors: { name?: { message?: string } };
+	register: (name: string) => { name: string };
+}) => (
+	<div>
+		<label htmlFor="name" className="block text-sm font-medium">
+			Project Name <span className="text-red-500">*</span>
+		</label>
+		<input
+			id="name"
+			{...register("name")}
+			placeholder="My Awesome Project"
+			className="mt-1 w-full rounded-lg border bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+		/>
+		{errors.name && (
+			<p className="mt-1 text-sm text-red-500">{errors.name.message}</p>
+		)}
+	</div>
+);
+
+const DescriptionField = ({
+	errors,
+	register,
+}: {
+	errors: { description?: { message?: string } };
+	register: (name: string) => { name: string };
+}) => (
+	<div>
+		<label htmlFor="description" className="block text-sm font-medium">Description</label>
+		<textarea
+			id="description"
+			{...register("description")}
+			rows={4}
+			placeholder="What is this project about?"
+			className="mt-1 w-full rounded-lg border bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+		/>
+		{errors.description && (
+			<p className="mt-1 text-sm text-red-500">
+				{errors.description.message}
+			</p>
+		)}
+	</div>
+);
+
+const CreateProjectFormActions = ({
+	isLoading,
+	onCancel,
+}: {
+	isLoading?: boolean;
+	onCancel: () => void;
+}) => (
+	<div className="flex gap-3 pt-4">
+		<button
+			type="button"
+			onClick={onCancel}
+			className="flex-1 rounded-lg border px-4 py-2 hover:bg-accent"
+		>
+			Cancel
+		</button>
+		<button
+			type="submit"
+			disabled={isLoading}
+			className="flex-1 rounded-lg bg-primary px-4 py-2 text-primary-foreground disabled:opacity-50"
+		>
+			{isLoading ? "Creating..." : "Create Project"}
+		</button>
+	</div>
+);
+
+const CreateProjectContent = ({
+	errors,
+	handleSubmit,
+	isLoading,
+	onCancel,
+	onSubmit,
+	register,
+}: ReturnType<typeof createProjectFormProps>) => (
+	<form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">
+		<ProjectNameField errors={errors} register={register} />
+		<DescriptionField errors={errors} register={register} />
+		<CreateProjectFormActions isLoading={isLoading} onCancel={onCancel} />
+	</form>
+);
+
+export function CreateProjectForm({
+	onSubmit,
+	onCancel,
+	isLoading,
+}: CreateProjectFormProps) {
+	const props = createProjectFormProps({
+		isLoading,
+		onCancel,
+		onSubmit,
+	});
+
 	return (
 		<div className="fixed inset-0 z-50 flex items-center justify-center">
 			<div
 				className="fixed inset-0 bg-black/50 backdrop-blur-sm"
 				onClick={onCancel}
+				role="presentation"
 			/>
 			<div className="relative w-full max-w-md rounded-xl border bg-background p-6 shadow-2xl">
-				<div className="flex items-center justify-between">
-					<h2 className="text-lg font-semibold">Create Project</h2>
-					<button onClick={onCancel} className="rounded-lg p-1 hover:bg-accent">
-						<X className="h-5 w-5" />
-					</button>
-				</div>
-
-				<form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">
-					<div>
-						<label className="block text-sm font-medium">
-							Project Name <span className="text-red-500">*</span>
-						</label>
-						<input
-							{...register("name")}
-							placeholder="My Awesome Project"
-							className="mt-1 w-full rounded-lg border bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-						/>
-						{errors.name && (
-							<p className="mt-1 text-sm text-red-500">{errors.name.message}</p>
-						)}
-					</div>
-
-					<div>
-						<label className="block text-sm font-medium">Description</label>
-						<textarea
-							{...register("description")}
-							rows={4}
-							placeholder="What is this project about?"
-							className="mt-1 w-full rounded-lg border bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-						/>
-						{errors.description && (
-							<p className="mt-1 text-sm text-red-500">
-								{errors.description.message}
-							</p>
-						)}
-					</div>
-
-					<div className="flex gap-3 pt-4">
-						<button
-							type="button"
-							onClick={onCancel}
-							className="flex-1 rounded-lg border px-4 py-2 hover:bg-accent"
-						>
-							Cancel
-						</button>
-						<button
-							type="submit"
-							disabled={isLoading}
-							className="flex-1 rounded-lg bg-primary px-4 py-2 text-primary-foreground disabled:opacity-50"
-						>
-							{isLoading ? "Creating..." : "Create Project"}
-						</button>
-					</div>
-				</form>
+				<CreateProjectHeader onCancel={onCancel} />
+				<CreateProjectContent {...props} onSubmit={onSubmit} />
 			</div>
 		</div>
 	);

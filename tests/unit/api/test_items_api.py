@@ -4,13 +4,13 @@ Comprehensive tests for Items API endpoints.
 Tests all CRUD operations, validation, filtering, and edge cases for items.
 """
 
-import pytest
 from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 from fastapi.testclient import TestClient
 
 from tracertm.api.main import app
-
 
 client = TestClient(app)
 
@@ -318,7 +318,7 @@ class TestItemsEdgeCases:
         mock_session = AsyncMock()
         mock_db.return_value = mock_session
 
-        special_title = "Item with <special> & \"quotes\" chars"
+        special_title = 'Item with <special> & "quotes" chars'
         mock_item = MagicMock(
             id="item1",
             project_id="proj1",

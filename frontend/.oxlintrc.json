@@ -200,6 +200,23 @@
 				"eslint/max-statements": ["error", 25],
 				"typescript/no-explicit-any": "warn"
 			}
+		},
+		{
+			"files": ["**/components/forms/**/*.tsx", "**/components/forms/**/*.ts"],
+			"rules": {
+				"react/jsx-max-depth": ["error", { "max": 6 }],
+				"eslint/max-lines-per-function": ["error", { "max": 100, "skipBlankLines": true, "skipComments": true }],
+				"complexity": ["error", 20],
+				"eslint/max-statements": ["error", 30],
+				"eslint/no-magic-numbers": ["error", {
+					"ignore": [0, 1, -1, 100, 255, 500, 1000, 2000, 5000],
+					"ignoreArrayIndexes": true,
+					"ignoreDefaultValues": true,
+					"enforceConst": true,
+					"detectObjects": false
+				}],
+				"react-perf/jsx-no-new-function-as-prop": "warn"
+			}
 		}
 	]
 }

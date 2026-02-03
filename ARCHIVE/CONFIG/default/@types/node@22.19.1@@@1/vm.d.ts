@@ -145,7 +145,7 @@ declare module "vm" {
         /**
          * An array containing a collection of context extensions (objects wrapping the current scope) to be applied while compiling
          */
-        contextExtensions?: Object[] | undefined;
+        contextExtensions?: object[] | undefined;
         /**
          * Used to specify how the modules should be loaded during the evaluation of this script when `import()` is called. This option is
          * part of the experimental modules API. We do not recommend using it in a production environment. For detailed information, see
@@ -794,7 +794,7 @@ declare module "vm" {
          * Corresponds to the [GetModuleNamespace](https://tc39.es/ecma262/#sec-getmodulenamespace) abstract operation in the ECMAScript
          * specification.
          */
-        namespace: Object;
+        namespace: object;
         /**
          * The current status of the module. Will be one of:
          *

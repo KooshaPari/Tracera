@@ -8,7 +8,6 @@ from tracertm.repositories.item_repository import ItemRepository
 from tracertm.repositories.project_repository import ProjectRepository
 
 
-
 @pytest.mark.unit
 @pytest.mark.asyncio
 async def test_create_item(db_session: AsyncSession):

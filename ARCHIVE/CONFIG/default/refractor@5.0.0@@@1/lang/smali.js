@@ -38,7 +38,7 @@ export default function smali(Prism) {
     builtin: [
       {
         // Reference: https://github.com/JesusFreke/smali/wiki/TypesMethodsAndFields#types
-        pattern: /([();\[])[BCDFIJSVZ]+/,
+        pattern: /([();[])[BCDFIJSVZ]+/,
         lookbehind: true
       },
       {
@@ -89,7 +89,7 @@ export default function smali(Prism) {
       lookbehind: true,
       alias: 'property'
     },
-    operator: /->|\.\.|[\[=]/,
+    operator: /->|\.\.|[[=]/,
     punctuation: /[{}(),;:]/
   }
 }

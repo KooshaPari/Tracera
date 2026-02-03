@@ -370,11 +370,11 @@ const language = {
       [/}/, { token: "@brackets", bracket: "@close", next: "@pop" }]
     ],
     comment: [
-      [/[^\/*]+/, "comment"],
+      [/[^/*]+/, "comment"],
       [/\/\*/, "comment", "@push"],
       // nested comment
       ["\\*/", "comment", "@pop"],
-      [/[\/*]/, "comment"]
+      [/[/*]/, "comment"]
     ],
     string: [
       [/[^\\"]+/, "string"],

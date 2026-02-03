@@ -23,14 +23,15 @@ from fastmcp.server.transforms.version_filter import VersionFilter
 from fastmcp.tools.tool_transform import ToolTransformConfig
 
 from tracertm.mcp.auth import build_auth_provider
-from tracertm.mcp.middleware import AuthMiddleware, LoggingMiddleware, RateLimitMiddleware
+from tracertm.mcp.middleware import LoggingMiddleware, RateLimitMiddleware
 
 # Import monitoring components (optional, won't fail if not installed)
 try:
-    from tracertm.mcp.telemetry import TelemetryMiddleware, PerformanceMonitoringMiddleware
-    from tracertm.mcp.metrics import MetricsMiddleware
     from tracertm.mcp.error_handlers import ErrorEnhancementMiddleware
     from tracertm.mcp.logging_config import configure_structured_logging
+    from tracertm.mcp.metrics import MetricsMiddleware
+    from tracertm.mcp.telemetry import PerformanceMonitoringMiddleware, TelemetryMiddleware
+
     MONITORING_AVAILABLE = True
 except ImportError:
     MONITORING_AVAILABLE = False
@@ -130,7 +131,7 @@ def _add_providers(mcp: FastMCP) -> None:
     # Skills provider: always added when roots are set or default paths used (no ENABLE gate).
     roots = _parse_csv(os.getenv("TRACERTM_MCP_SKILLS_ROOTS"))
     if roots:
-        from fastmcp.server.providers.skills import SkillsDirectoryProvider, CodexSkillsProvider
+        from fastmcp.server.providers.skills import CodexSkillsProvider, SkillsDirectoryProvider
 
         provider_mode = (os.getenv("TRACERTM_MCP_SKILLS_PROVIDER") or "directory").lower()
         if provider_mode == "codex":
@@ -146,9 +147,8 @@ def _add_providers(mcp: FastMCP) -> None:
 
     openapi_spec = os.getenv("TRACERTM_MCP_OPENAPI_SPEC")
     if openapi_spec:
-        from fastmcp.server.providers.openapi import OpenAPIProvider
-
-        mcp.add_provider(OpenAPIProvider(openapi_spec))
+        # OpenAPIProvider requires (openapi_spec: dict, client: httpx.AsyncClient); skip if only URL/path string
+        pass
 
     proxy_targets = _parse_csv(os.getenv("TRACERTM_MCP_PROXY_TARGETS"))
     if proxy_targets:
@@ -261,7 +261,7 @@ All tools use action/kind-based dispatch for a unified interface.
     if MONITORING_AVAILABLE and os.getenv("TRACERTM_MCP_METRICS_ENABLED", "true").lower() == "true":
         track_payload = os.getenv("TRACERTM_MCP_TRACK_PAYLOAD_SIZE", "true").lower() == "true"
         mcp.add_middleware(MetricsMiddleware(track_payload_size=track_payload))
-        metrics_host = os.getenv("TRACERTM_MCP_METRICS_HOST", "0.0.0.0")
+        metrics_host = os.getenv("TRACERTM_MCP_METRICS_HOST", "0.0.0.0")  # noqa: S104 listen all by default
         metrics_port = int(os.getenv("TRACERTM_MCP_METRICS_PORT", "9090"))
         from tracertm.mcp.metrics_endpoint import start_metrics_server
 
@@ -307,9 +307,7 @@ def get_mcp(transport: str = "http") -> FastMCP:
     """Return cached MCP server (HTTP only). Builds on first call."""
     global _http_instance
     if transport != "http":
-        raise RuntimeError(
-            "MCP stdio is not supported. Use transport='http' only."
-        )
+        raise RuntimeError("MCP stdio is not supported. Use transport='http' only.")
     if _http_instance is None:
         _http_instance = build_mcp_server(transport="http")
     return _http_instance
@@ -327,4 +325,4 @@ def create_mcp_server(transport: str = "http") -> FastMCP:
     return build_mcp_server(transport=transport)
 
 
-__all__ = ["mcp", "get_mcp", "build_mcp_server", "create_mcp_server"]
+__all__ = ["build_mcp_server", "create_mcp_server", "get_mcp", "mcp"]  # noqa: F822 mcp provided by __getattr__

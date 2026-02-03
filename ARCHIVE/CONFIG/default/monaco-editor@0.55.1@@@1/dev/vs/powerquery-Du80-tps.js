@@ -821,11 +821,11 @@ define("vs/powerquery-Du80-tps", ["exports"], (function(exports) {
     tokenizer: {
       root: [
         // quoted identifier
-        [/#"[\w \.]+"/, "identifier.quote"],
+        [/#"[\w .]+"/, "identifier.quote"],
         // numbers
-        [/\d*\.\d+([eE][\-+]?\d+)?/, "number.float"],
+        [/\d*\.\d+([eE][-+]?\d+)?/, "number.float"],
         [/0[xX][0-9a-fA-F]+/, "number.hex"],
-        [/\d+([eE][\-+]?\d+)?/, "number"],
+        [/\d+([eE][-+]?\d+)?/, "number"],
         // keywords
         [
           /(#?[a-z]+)\b/,
@@ -862,12 +862,12 @@ define("vs/powerquery-Du80-tps", ["exports"], (function(exports) {
           }
         ],
         // other identifiers
-        [/\b([a-zA-Z_][\w\.]*)\b/, "identifier"],
+        [/\b([a-zA-Z_][\w.]*)\b/, "identifier"],
         { include: "@whitespace" },
         { include: "@comments" },
         { include: "@strings" },
-        [/[{}()\[\]]/, "@brackets"],
-        [/([=\+<>\-\*&@\?\/!])|([<>]=)|(<>)|(=>)|(\.\.\.)|(\.\.)/, "operators"],
+        [/[{}()[\]]/, "@brackets"],
+        [/([=+<>\-*&@?/!])|([<>]=)|(<>)|(=>)|(\.\.\.)|(\.\.)/, "operators"],
         [/[,;]/, "delimiter"]
       ],
       whitespace: [[/\s+/, "white"]],

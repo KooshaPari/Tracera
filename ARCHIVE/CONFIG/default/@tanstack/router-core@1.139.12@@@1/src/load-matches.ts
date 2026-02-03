@@ -574,8 +574,8 @@ const getLoaderContext = (
     if (!m) continue
     context = {
       ...context,
-      ...(m.__routeContext ?? {}),
-      ...(m.__beforeLoadContext ?? {}),
+      ...m.__routeContext,
+      ...m.__beforeLoadContext,
     }
   }
 

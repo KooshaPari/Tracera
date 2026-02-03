@@ -29,4 +29,4 @@ export type SingleKeyObject<ObjectType> =
 		? never
 		: If<IsEmptyObject<ObjectType>, never, ObjectType>;
 
-export {};
+

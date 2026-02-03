@@ -142,3 +142,9 @@ Agent 2 has completed **Epic 6: Multi-Project Management** (Stories 6.3-6.6) and
 - Performance targets met (<500ms switching, <1s search)
 
 **Status:** ✅ Epic 6 **COMPLETE**, Epic 7 **80% COMPLETE**
+
+
+## Opinionated Quality Enforcement
+- We want opinionated rules that enforce opinionated styling to a strict degree.
+- This is an exclusively agent/vibecoded project; programmatic enforcement must guard against bad quality and antipatterns.
+- Rather than disables or ignores, fix code properly.

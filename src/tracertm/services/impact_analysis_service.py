@@ -105,14 +105,12 @@ class ImpactAnalysisService:
                     continue
 
                 if link.target_item_id not in visited:
-                    queue.append(
-                        (
-                            link.target_item_id,
-                            depth + 1,
-                            [*path, link.target_item_id],
-                            link.link_type,
-                        )
-                    )
+                    queue.append((
+                        link.target_item_id,
+                        depth + 1,
+                        [*path, link.target_item_id],
+                        link.link_type,
+                    ))
 
         # Calculate statistics
         affected_by_depth: dict[int, int] = {}
@@ -122,9 +120,7 @@ class ImpactAnalysisService:
             # Count by depth
             affected_by_depth[node.depth] = affected_by_depth.get(node.depth, 0) + 1
             # Count by view
-            affected_by_view[node.item.view] = (
-                affected_by_view.get(node.item.view, 0) + 1
-            )
+            affected_by_view[node.item.view] = affected_by_view.get(node.item.view, 0) + 1
 
         # Find critical paths (paths to leaf nodes)
         critical_paths = self._find_critical_paths(impact_nodes)
@@ -164,16 +160,10 @@ class ImpactAnalysisService:
                 parent = node.path[-2]
                 if parent not in children:
                     children[parent] = set()
-                children[parent].add(node.item.id)
+                children[parent].add(str(node.item.id))
 
         # Find leaf nodes (nodes with no children)
-        critical_paths = []
-        for node in nodes:
-            if node.item.id not in children:
-                # This is a leaf node
-                critical_paths.append(node.path)
-
-        return critical_paths
+        return [node.path for node in nodes if node.item.id not in children]
 
     async def analyze_reverse_impact(
         self,
@@ -225,14 +215,12 @@ class ImpactAnalysisService:
             links = await self.links.get_by_target(current_id)
             for link in links:
                 if link.source_item_id not in visited:
-                    queue.append(
-                        (
-                            link.source_item_id,
-                            depth + 1,
-                            [*path, link.source_item_id],
-                            link.link_type,
-                        )
-                    )
+                    queue.append((
+                        link.source_item_id,
+                        depth + 1,
+                        [*path, link.source_item_id],
+                        link.link_type,
+                    ))
 
         # Calculate statistics
         affected_by_depth: dict[int, int] = {}
@@ -240,9 +228,7 @@ class ImpactAnalysisService:
 
         for node in impact_nodes:
             affected_by_depth[node.depth] = affected_by_depth.get(node.depth, 0) + 1
-            affected_by_view[node.item.view] = (
-                affected_by_view.get(node.item.view, 0) + 1
-            )
+            affected_by_view[node.item.view] = affected_by_view.get(node.item.view, 0) + 1
 
         critical_paths = self._find_critical_paths(impact_nodes)
 

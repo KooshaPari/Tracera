@@ -801,11 +801,11 @@ declare module "bun:test" {
     /**
      * Matches any received string that contains the exact expected string
      */
-    stringContaining(str: string | String): AsymmetricMatcher;
+    stringContaining(str: string | string): AsymmetricMatcher;
     /**
      * Matches any string that contains the exact provided string
      */
-    stringMatching(regex: string | String | RegExp): AsymmetricMatcher;
+    stringMatching(regex: string | string | RegExp): AsymmetricMatcher;
     /**
      * Useful when comparing floating point numbers in object properties or array item.
      * If you need to compare a number, use `.toBeCloseTo` instead.
@@ -864,14 +864,14 @@ declare module "bun:test" {
      * that does not contain the exact expected string. It is the inverse of
      * `expect.stringContaining`.
      */
-    stringContaining(str: string | String): AsymmetricMatcher;
+    stringContaining(str: string | string): AsymmetricMatcher;
 
     /**
      * `expect.not.stringMatching(string | regexp)` matches the received
      * string that does not match the expected regexp. It is the inverse of
      * `expect.stringMatching`.
      */
-    stringMatching(str: string | String | RegExp): AsymmetricMatcher;
+    stringMatching(str: string | string | RegExp): AsymmetricMatcher;
 
     /**
      * `expect.not.closeTo` matches a number not close to the provided value.

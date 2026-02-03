@@ -14,7 +14,7 @@ interface Foldable<T> {
 }
 
 interface Filterable<T> {
-  filter(fn: (t: T) => Boolean): Filterable<T>;
+  filter(fn: (t: T) => boolean): Filterable<T>;
 }
 
 interface Semigroup {
@@ -136,7 +136,7 @@ export function isNotUndefined(val: any): boolean;
 /**
  * Checks if input value is `Symbol`.
  */
-export function isSymbol(val: any): val is Symbol;
+export function isSymbol(val: any): val is symbol;
 
 /**
  * Checks if input value is `null`.
@@ -832,32 +832,32 @@ export function reduceIndexed<T, TResult, R extends T[]>(
  * `
  */
 export function filterIndexed<T>(
-  iterator: (elem: T, idx: number, list: T[]) => Boolean,
+  iterator: (elem: T, idx: number, list: T[]) => boolean,
   list: ReadonlyArray<T>
 ): T[];
 export function filterIndexed<T>(
-  iterator: (elem: T, idx: number, list: T[]) => Boolean
+  iterator: (elem: T, idx: number, list: T[]) => boolean
 ): (list: ReadonlyArray<T>) => T[];
 export function filterIndexed<T>(
-  iterator: (elem: T, idx: number, list: Dictionary<T>) => Boolean,
+  iterator: (elem: T, idx: number, list: Dictionary<T>) => boolean,
   list: Dictionary<T>
 ): Dictionary<T>;
 export function filterIndexed<T>(
-  iterator: (elem: T, idx: number, list: Dictionary<T>) => Boolean
+  iterator: (elem: T, idx: number, list: Dictionary<T>) => boolean
 ): (list: Dictionary<T>) => Dictionary<T>;
 export function filterIndexed<T>(
-  iterator: (elem: T, idx: number, list: Filterable<T>) => Boolean,
+  iterator: (elem: T, idx: number, list: Filterable<T>) => boolean,
   list: Filterable<T>
 ): Filterable<T>;
 export function filterIndexed<T>(
-  iterator: (elem: T, idx: number, list: Filterable<T>) => Boolean
-): (list: Filterable<T>) => Filterable<Boolean>;
+  iterator: (elem: T, idx: number, list: Filterable<T>) => boolean
+): (list: Filterable<T>) => Filterable<boolean>;
 export function filterIndexed(
-  iterator: (char: string, idx: number, str: string) => Boolean,
+  iterator: (char: string, idx: number, str: string) => boolean,
   str: string
 ): string[];
 export function filterIndexed(
-  iterator: (char: string, idx: number, str: string) => Boolean
+  iterator: (char: string, idx: number, str: string) => boolean
 ): (str: string) => string[];
 
 /**
@@ -1450,14 +1450,14 @@ export function neither(
 /**
  * Returns false if both arguments are truesy; true otherwise.
  */
-export function nand(a: any, b: any): Boolean;
-export function nand(a: any): (b: any) => Boolean;
+export function nand(a: any, b: any): boolean;
+export function nand(a: any): (b: any) => boolean;
 
 /**
  * Returns true if both arguments are falsy; false otherwise.
  */
-export function nor(a: any, b: any): Boolean;
-export function nor(a: any): (b: any) => Boolean;
+export function nor(a: any, b: any): boolean;
+export function nor(a: any): (b: any) => boolean;
 
 /**
  * Takes a list of predicates and returns a predicate that returns true for a given list of

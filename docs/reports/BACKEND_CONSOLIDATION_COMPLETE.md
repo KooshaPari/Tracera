@@ -372,19 +372,19 @@ cp .env.integration .env
 vi .env
 
 # Validate configuration
-./scripts/validate_integration_config.sh
+./scripts/shell/validate_integration_config.sh
 ```
 
 ### 2. Initialize Infrastructure
 ```bash
 # Initialize feature flags
-./scripts/feature_flags.sh init
+./scripts/shell/feature_flags.sh init
 
 # Start all services (Docker)
 docker-compose up -d
 
 # OR deploy to Kubernetes
-./scripts/deploy_k8s.sh
+./scripts/shell/deploy_k8s.sh
 ```
 
 ### 3. Verify Health
@@ -399,23 +399,23 @@ curl http://localhost:4000/health | jq
 curl http://localhost/health | jq
 
 # Kubernetes
-./scripts/health_check.sh tracertm
+./scripts/shell/health_check.sh tracertm
 ```
 
 ### 4. Run Tests
 ```bash
 # Integration tests
-./scripts/run_integration_tests.sh
+./scripts/shell/run_integration_tests.sh
 
 # Gateway tests
-./scripts/test_gateway.sh
+./scripts/shell/test_gateway.sh
 
 # Load tests (requires k6)
-./scripts/install_k6.sh
-./scripts/run_load_tests.sh
+./scripts/shell/install_k6.sh
+./scripts/shell/run_load_tests.sh
 
 # View report
-open load-test-results/report.html
+open load-tests/results/report.html
 ```
 
 ### 5. Monitor
@@ -450,13 +450,13 @@ curl http://localhost/health/python
 **Feature Flag Management:**
 ```bash
 # Enable feature
-./scripts/feature_flags.sh enable new_feature
+./scripts/shell/feature_flags.sh enable new_feature
 
 # Disable feature
-./scripts/feature_flags.sh disable old_feature
+./scripts/shell/feature_flags.sh disable old_feature
 
 # List all flags
-./scripts/feature_flags.sh list
+./scripts/shell/feature_flags.sh list
 ```
 
 **Monitoring:**
@@ -489,7 +489,7 @@ kubectl rollout status deployment/go-backend -n tracertm
 **Rollback:**
 ```bash
 # Via feature flags (preferred)
-./scripts/feature_flags.sh disable problematic_feature
+./scripts/shell/feature_flags.sh disable problematic_feature
 
 # Via Kubernetes rollback
 kubectl rollout undo deployment/go-backend -n tracertm

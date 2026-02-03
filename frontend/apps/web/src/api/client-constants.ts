@@ -18,4 +18,4 @@ const apiConstants = {
 	statusUnauthorized: 401,
 };
 
-export default apiConstants;
+export { apiConstants };

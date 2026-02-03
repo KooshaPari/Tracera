@@ -96,7 +96,7 @@ The values of MMMMMMMMMMMMM and EEEE map directly to the mantissa and exponent f
         alias: 'number',
         inside: {
           variable: /\\\S/,
-          keyword: /[+?*\[\]^$(){}.|]/,
+          keyword: /[+?*[\]^$(){}.|]/,
           operator: {
             pattern: /(\/)[idmsr]+(?:-[idmsr]+)?/,
             lookbehind: true
@@ -109,7 +109,7 @@ The values of MMMMMMMMMMMMM and EEEE map directly to the mantissa and exponent f
       },
       // SBUF" asd", URL" ://...", P" /etc/"
       'custom-string': {
-        pattern: /(^|\s)[A-Z0-9\-]+"\s(?:\\\S|[^"\\])*"/,
+        pattern: /(^|\s)[A-Z0-9-]+"\s(?:\\\S|[^"\\])*"/,
         lookbehind: true,
         greedy: true,
         alias: 'string',
@@ -261,7 +261,7 @@ see <https://docs.factorcode.org/content/article-conventions.html>
         alias: 'keyword'
       },
       'colon-syntax': {
-        pattern: /(^|\s)(?:[A-Z0-9\-]+#?)?:{1,2}\s+(?:;\S+|(?!;)\S+)(?=\s|$)/,
+        pattern: /(^|\s)(?:[A-Z0-9-]+#?)?:{1,2}\s+(?:;\S+|(?!;)\S+)(?=\s|$)/,
         lookbehind: true,
         greedy: true,
         alias: 'function'
@@ -327,7 +327,7 @@ this is fine for a regex-only implementation.
       }
     }
     var escape = function (str) {
-      return (str + '').replace(/([.?*+\^$\[\]\\(){}|\-])/g, '\\$1')
+      return (str + '').replace(/([.?*+^$[\]\\(){}|-])/g, '\\$1')
     }
     var arrToWordsRegExp = function (arr) {
       return new RegExp('(^|\\s)(?:' + arr.map(escape).join('|') + ')(?=\\s|$)')

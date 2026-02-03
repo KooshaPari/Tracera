@@ -94,3 +94,9 @@ All stories implemented, all tests passing, all deliverables met.
 
 **Date Completed:** 2025-01-XX  
 **Status:** Ready for Integration
+
+
+## Opinionated Quality Enforcement
+- We want opinionated rules that enforce opinionated styling to a strict degree.
+- This is an exclusively agent/vibecoded project; programmatic enforcement must guard against bad quality and antipatterns.
+- Rather than disables or ignores, fix code properly.

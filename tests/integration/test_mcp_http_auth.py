@@ -8,9 +8,10 @@ Tests that MCP endpoints properly integrate with FastAPI authentication:
 - RLS verification
 """
 
+from unittest.mock import MagicMock, patch
+
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import patch, MagicMock
 
 from tracertm.api.main import app
 from tracertm.core.context import current_user_id
@@ -55,10 +56,7 @@ class TestMCPHTTPAuth:
         """Tools list endpoint should accept valid Bearer token."""
         mock_verify.return_value = mock_valid_token
 
-        response = client.get(
-            "/api/v1/mcp/tools",
-            headers={"Authorization": "Bearer valid_token_here"}
-        )
+        response = client.get("/api/v1/mcp/tools", headers={"Authorization": "Bearer valid_token_here"})
 
         assert response.status_code == 200
         data = response.json()
@@ -85,10 +83,7 @@ class TestMCPHTTPAuth:
         """Tools list endpoint should reject invalid Bearer token."""
         mock_verify.side_effect = ValueError("Invalid token")
 
-        response = client.get(
-            "/api/v1/mcp/tools",
-            headers={"Authorization": "Bearer invalid_token"}
-        )
+        response = client.get("/api/v1/mcp/tools", headers={"Authorization": "Bearer invalid_token"})
 
         assert response.status_code == 401
         assert "Invalid token" in response.json()["detail"]
@@ -101,10 +96,7 @@ class TestMCPHTTPAuth:
         # Clear any existing context
         current_user_id.set(None)
 
-        response = client.get(
-            "/api/v1/mcp/tools",
-            headers={"Authorization": "Bearer valid_token"}
-        )
+        response = client.get("/api/v1/mcp/tools", headers={"Authorization": "Bearer valid_token"})
 
         assert response.status_code == 200
 
@@ -117,17 +109,10 @@ class TestMCPHTTPAuth:
         """Messages endpoint should accept valid Bearer token."""
         mock_verify.return_value = mock_valid_token
 
-        request_data = {
-            "jsonrpc": "2.0",
-            "method": "tools/list",
-            "params": {},
-            "id": 1
-        }
+        request_data = {"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}
 
         response = client.post(
-            "/api/v1/mcp/messages",
-            json=request_data,
-            headers={"Authorization": "Bearer valid_token"}
+            "/api/v1/mcp/messages", json=request_data, headers={"Authorization": "Bearer valid_token"}
         )
 
         assert response.status_code == 200
@@ -142,17 +127,9 @@ class TestMCPHTTPAuth:
         with patch("tracertm.api.deps.ConfigManager") as mock_config:
             mock_config.return_value.get.return_value = True
 
-            request_data = {
-                "jsonrpc": "2.0",
-                "method": "tools/list",
-                "params": {},
-                "id": 1
-            }
+            request_data = {"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}
 
-            response = client.post(
-                "/api/v1/mcp/messages",
-                json=request_data
-            )
+            response = client.post("/api/v1/mcp/messages", json=request_data)
 
             if response.status_code == 401:
                 assert response.json()["detail"] == "Authorization required"
@@ -162,17 +139,10 @@ class TestMCPHTTPAuth:
         """Messages endpoint should reject invalid token."""
         mock_verify.side_effect = ValueError("Token expired")
 
-        request_data = {
-            "jsonrpc": "2.0",
-            "method": "tools/list",
-            "params": {},
-            "id": 1
-        }
+        request_data = {"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}
 
         response = client.post(
-            "/api/v1/mcp/messages",
-            json=request_data,
-            headers={"Authorization": "Bearer expired_token"}
+            "/api/v1/mcp/messages", json=request_data, headers={"Authorization": "Bearer expired_token"}
         )
 
         assert response.status_code == 401
@@ -193,17 +163,10 @@ class TestMCPHTTPAuth:
         """Errors should be returned in JSON-RPC format."""
         mock_verify.return_value = mock_valid_token
 
-        request_data = {
-            "jsonrpc": "2.0",
-            "method": "invalid/method",
-            "params": {},
-            "id": 1
-        }
+        request_data = {"jsonrpc": "2.0", "method": "invalid/method", "params": {}, "id": 1}
 
         response = client.post(
-            "/api/v1/mcp/messages",
-            json=request_data,
-            headers={"Authorization": "Bearer valid_token"}
+            "/api/v1/mcp/messages", json=request_data, headers={"Authorization": "Bearer valid_token"}
         )
 
         assert response.status_code == 200  # JSON-RPC always returns 200
@@ -224,10 +187,7 @@ class TestMCPHTTPAuth:
         mock_session = MagicMock()
         mock_db.return_value = mock_session
 
-        response = client.get(
-            "/api/v1/mcp/tools",
-            headers={"Authorization": "Bearer valid_token"}
-        )
+        response = client.get("/api/v1/mcp/tools", headers={"Authorization": "Bearer valid_token"})
 
         assert response.status_code == 200
 
@@ -239,10 +199,7 @@ class TestMCPHTTPAuth:
         """SSE endpoint should accept valid Bearer token."""
         mock_verify.return_value = mock_valid_token
 
-        response = client.get(
-            "/api/v1/mcp/sse",
-            headers={"Authorization": "Bearer valid_token"}
-        )
+        response = client.get("/api/v1/mcp/sse", headers={"Authorization": "Bearer valid_token"})
 
         # SSE endpoint returns 200 and starts streaming
         assert response.status_code == 200
@@ -292,20 +249,12 @@ class TestMCPToolExecution:
         request_data = {
             "jsonrpc": "2.0",
             "method": "tools/call",
-            "params": {
-                "name": "project_manage",
-                "arguments": {
-                    "action": "list",
-                    "kind": "project"
-                }
-            },
-            "id": 1
+            "params": {"name": "project_manage", "arguments": {"action": "list", "kind": "project"}},
+            "id": 1,
         }
 
         response = client.post(
-            "/api/v1/mcp/messages",
-            json=request_data,
-            headers={"Authorization": "Bearer valid_token"}
+            "/api/v1/mcp/messages", json=request_data, headers={"Authorization": "Bearer valid_token"}
         )
 
         assert response.status_code == 200

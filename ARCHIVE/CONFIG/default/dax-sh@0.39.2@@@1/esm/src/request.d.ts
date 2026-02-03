@@ -227,4 +227,4 @@ export declare class RequestResponse {
     get readable(): dntShim.ReadableStream<Uint8Array>;
 }
 export declare function makeRequest(state: RequestBuilderState): Promise<RequestResponse>;
-export {};
+

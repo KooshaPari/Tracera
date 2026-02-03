@@ -46,6 +46,41 @@ type EventCallback = (event: RealtimeEvent) => void;
 type TokenGetter = () => string | undefined | Promise<string | undefined>;
 
 type ParsedMessage = Record<string, unknown>;
+type TimeoutHandle = ReturnType<typeof globalThis.setTimeout>;
+type IntervalHandle = ReturnType<typeof globalThis.setInterval>;
+
+const isRecordObject = (value: unknown): value is Record<string, unknown> =>
+	Object.prototype.toString.call(value) === "[object Object]";
+
+const isRealtimeEvent = (value: unknown): value is RealtimeEvent => {
+	if (!isRecordObject(value)) {
+		return false;
+	}
+
+	const eventType = value["type"];
+	const table = value["table"];
+	const schema = value["schema"];
+	const record = value["record"];
+	const timestamp = value["timestamp"];
+
+	if (
+		eventType !== "created" &&
+		eventType !== "updated" &&
+		eventType !== "deleted"
+	) {
+		return false;
+	}
+
+	if (table !== "projects" && table !== "items" && table !== "links") {
+		return false;
+	}
+
+	return (
+		typeof schema === "string" &&
+		isRecordObject(record) &&
+		typeof timestamp === "number"
+	);
+};
 
 class WebSocketManager {
 	private ws: WebSocket | undefined;
@@ -57,10 +92,10 @@ class WebSocketManager {
 	private isConnecting = false;
 	private isConnected = false;
 	private isAuthenticated = false;
-	private heartbeatInterval: number | undefined;
+	private heartbeatInterval: IntervalHandle | undefined;
 	private baseUrl: string;
 	private getToken: TokenGetter | undefined;
-	private authTimeout: number | undefined;
+	private authTimeout: TimeoutHandle | undefined;
 	private token: string | undefined;
 	private messageQueue: unknown[] = [];
 
@@ -75,16 +110,19 @@ class WebSocketManager {
 		this.getToken = getToken;
 	}
 
-	connect(): Promise<void> {
+	async connect(): Promise<void> {
 		if (this.isSocketOpen() || this.isConnecting) {
-			return Promise.resolve();
+			return;
 		}
 
 		this.beginConnect();
 
-		return this.resolveToken()
-			.then((token) => this.handleResolvedToken(token))
-			.catch((error) => this.handleConnectionFailure(error));
+		try {
+			const token = await this.resolveToken();
+			this.handleResolvedToken(token);
+		} catch (error) {
+			this.handleConnectionFailure(error);
+		}
 	}
 
 	disconnect(): void {
@@ -130,20 +168,27 @@ class WebSocketManager {
 
 	private resolveToken(): Promise<string | undefined> {
 		if (!this.getToken) {
-			return Promise.resolve();
+			return Promise.resolve(undefined);
 		}
 
 		try {
 			const tokenResult = this.getToken();
 			if (tokenResult instanceof Promise) {
-				return tokenResult.then((token) => token || undefined);
+				return tokenResult.then((token) => {
+					if (typeof token === "string" && token !== "") {
+						return token;
+					}
+					return undefined;
+				});
 			}
-			if (tokenResult) {
+			if (typeof tokenResult === "string" && tokenResult !== "") {
 				return Promise.resolve(tokenResult);
 			}
-			return Promise.resolve();
+			return Promise.resolve(undefined);
 		} catch (error) {
-			return Promise.reject(error);
+			const err =
+				error instanceof Error ? error : new Error("Failed to resolve token");
+			return Promise.reject(err);
 		}
 	}
 
@@ -228,8 +273,8 @@ class WebSocketManager {
 
 		try {
 			const parsed = JSON.parse(data);
-			if (parsed && typeof parsed === "object") {
-				return parsed as unknown as ParsedMessage;
+			if (isRecordObject(parsed)) {
+				return parsed;
 			}
 		} catch (parseError) {
 			logger.error("[WebSocket] Failed to parse message:", parseError);
@@ -288,9 +333,8 @@ class WebSocketManager {
 		}
 
 		for (const msg of msgList) {
-			if (this.isAuthenticated && msg && typeof msg === "object") {
-				const realtimeEvent = msg as unknown as RealtimeEvent;
-				this.handleEvent(realtimeEvent);
+			if (this.isAuthenticated && isRealtimeEvent(msg)) {
+				this.handleEvent(msg);
 			}
 		}
 		return true;
@@ -306,9 +350,8 @@ class WebSocketManager {
 			return;
 		}
 
-		if (message && typeof message === "object") {
-			const realtimeEvent = message as unknown as RealtimeEvent;
-			this.handleEvent(realtimeEvent);
+		if (isRealtimeEvent(message)) {
+			this.handleEvent(message);
 		}
 	}
 
@@ -343,7 +386,7 @@ class WebSocketManager {
 		if (event.code !== AUTH_CLOSE_CODE) {
 			return false;
 		}
-		if (!event.reason) {
+		if (event.reason === "") {
 			return false;
 		}
 		return event.reason.includes("Authentication");
@@ -395,17 +438,17 @@ class WebSocketManager {
 
 	private startAuthTimeout(): void {
 		this.clearAuthTimeout();
-		this.authTimeout = window.setTimeout((): void => {
+		this.authTimeout = globalThis.setTimeout((): void => {
 			logger.error("[WebSocket] Authentication timeout");
 			this.closeSocketWithAuthError("Authentication timeout");
-		}, AUTH_TIMEOUT_MS) as unknown as number;
+		}, AUTH_TIMEOUT_MS);
 	}
 
 	private clearAuthTimeout(): void {
 		if (this.authTimeout === undefined) {
 			return;
 		}
-		window.clearTimeout(this.authTimeout);
+		globalThis.clearTimeout(this.authTimeout);
 		this.authTimeout = undefined;
 	}
 
@@ -528,18 +571,18 @@ class WebSocketManager {
 			return;
 		}
 
-		this.heartbeatInterval = window.setInterval((): void => {
+		this.heartbeatInterval = globalThis.setInterval((): void => {
 			if (this.isSocketOpen()) {
 				this.send({ type: "ping" });
 			}
-		}, DEFAULT_HEARTBEAT_INTERVAL_MS) as unknown as number;
+		}, DEFAULT_HEARTBEAT_INTERVAL_MS);
 	}
 
 	private stopHeartbeat(): void {
 		if (this.heartbeatInterval === undefined) {
 			return;
 		}
-		window.clearInterval(this.heartbeatInterval);
+		globalThis.clearInterval(this.heartbeatInterval);
 		this.heartbeatInterval = undefined;
 	}
 
@@ -557,7 +600,7 @@ class WebSocketManager {
 		);
 
 		globalThis.setTimeout((): void => {
-			this.connect().catch((error) => {
+			this.connect().catch((error: unknown) => {
 				logger.error("[WebSocket] Reconnection failed:", error);
 			});
 		}, delay);
@@ -593,8 +636,9 @@ const getWebSocketManager = (getToken?: TokenGetter): WebSocketManager => {
 	return wsManager;
 };
 
-const connectWebSocket = (getToken?: TokenGetter): Promise<void> =>
-	getWebSocketManager(getToken).connect();
+const connectWebSocket = async (getToken?: TokenGetter): Promise<void> => {
+	await getWebSocketManager(getToken).connect();
+};
 
 const disconnectWebSocket = (): void => {
 	getWebSocketManager().disconnect();

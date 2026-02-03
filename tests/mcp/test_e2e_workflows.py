@@ -10,9 +10,8 @@ These tests validate complete workflows:
 from __future__ import annotations
 
 import os
-import pytest
-from unittest.mock import MagicMock, patch
 
+import pytest
 
 # ============================================================================
 # Fixtures
@@ -25,7 +24,7 @@ def setup_env():
     os.environ["TRACERTM_MCP_AUTH_MODE"] = "static"
     os.environ["TRACERTM_MCP_DEV_API_KEYS"] = "test-key-1"
     os.environ["TRACERTM_MCP_DEV_SCOPES"] = "read:*,write:*,analyze:*"
-    yield
+    return
     # Cleanup handled by pytest
 
 
@@ -185,9 +184,7 @@ class TestWorkflow_TraceabilityAnalysis:
 
     def test_gap_analysis_tool_exists(self, mcp_server):
         """Test that trace_gap_analysis tool exists."""
-        assert "trace_gap_analysis" in {
-            t.name for t in mcp_server._tools.values()
-        }
+        assert "trace_gap_analysis" in {t.name for t in mcp_server._tools.values()}
 
     def test_gap_analysis_has_project_id_parameter(self, mcp_server):
         """Test gap_analysis has project_id parameter."""
@@ -198,9 +195,7 @@ class TestWorkflow_TraceabilityAnalysis:
 
     def test_impact_analysis_tool_exists(self, mcp_server):
         """Test that trace_impact_analysis tool exists."""
-        assert "trace_impact_analysis" in {
-            t.name for t in mcp_server._tools.values()
-        }
+        assert "trace_impact_analysis" in {t.name for t in mcp_server._tools.values()}
 
     def test_impact_analysis_has_item_id_parameter(self, mcp_server):
         """Test impact_analysis has item_id parameter."""
@@ -219,9 +214,7 @@ class TestWorkflow_TraceabilityAnalysis:
 
     def test_health_assessment_tool_exists(self, mcp_server):
         """Test that trace_health_assessment tool exists."""
-        assert "trace_health_assessment" in {
-            t.name for t in mcp_server._tools.values()
-        }
+        assert "trace_health_assessment" in {t.name for t in mcp_server._tools.values()}
 
 
 # ============================================================================
@@ -245,9 +238,7 @@ class TestWorkflow_GraphAnalysis:
 
     def test_shortest_path_tool_exists(self, mcp_server):
         """Test that analyze_shortest_path tool exists."""
-        assert "analyze_shortest_path" in {
-            t.name for t in mcp_server._tools.values()
-        }
+        assert "analyze_shortest_path" in {t.name for t in mcp_server._tools.values()}
 
     def test_shortest_path_has_required_parameters(self, mcp_server):
         """Test shortest_path has required parameters."""
@@ -259,9 +250,7 @@ class TestWorkflow_GraphAnalysis:
 
     def test_dependencies_tool_exists(self, mcp_server):
         """Test that analyze_dependencies tool exists."""
-        assert "analyze_dependencies" in {
-            t.name for t in mcp_server._tools.values()
-        }
+        assert "analyze_dependencies" in {t.name for t in mcp_server._tools.values()}
 
 
 # ============================================================================
@@ -274,9 +263,7 @@ class TestWorkflow_SpecificationManagement:
 
     def test_create_spec_tool_exists(self, mcp_server):
         """Test that create_specification tool exists."""
-        assert "create_specification" in {
-            t.name for t in mcp_server._tools.values()
-        }
+        assert "create_specification" in {t.name for t in mcp_server._tools.values()}
 
     def test_create_spec_has_required_parameters(self, mcp_server):
         """Test create_specification has required parameters."""
@@ -288,15 +275,11 @@ class TestWorkflow_SpecificationManagement:
 
     def test_list_specs_tool_exists(self, mcp_server):
         """Test that list_specifications tool exists."""
-        assert "list_specifications" in {
-            t.name for t in mcp_server._tools.values()
-        }
+        assert "list_specifications" in {t.name for t in mcp_server._tools.values()}
 
     def test_update_spec_tool_exists(self, mcp_server):
         """Test that update_specification tool exists."""
-        assert "update_specification" in {
-            t.name for t in mcp_server._tools.values()
-        }
+        assert "update_specification" in {t.name for t in mcp_server._tools.values()}
 
 
 # ============================================================================
@@ -391,9 +374,7 @@ class TestCompleteWorkflows:
 
         for category, tools in categories.items():
             found = [t for t in tools if t in tool_names]
-            assert (
-                len(found) > 0
-            ), f"No tools found for category '{category}': {tools}"
+            assert len(found) > 0, f"No tools found for category '{category}': {tools}"
 
 
 # ============================================================================
@@ -422,19 +403,13 @@ class TestToolParameterValidation:
 
     def test_analysis_tools_have_project_or_item_parameter(self, mcp_server):
         """Test that analysis tools take project or item parameters."""
-        analysis_tools = [
-            t
-            for t in mcp_server._tools.values()
-            if "analyze" in t.name or "trace" in t.name
-        ]
+        analysis_tools = [t for t in mcp_server._tools.values() if "analyze" in t.name or "trace" in t.name]
 
         for tool in analysis_tools:
             param_names = {p.name for p in tool.parameters}
             # Should have project_id or item_id
             has_context = "project_id" in param_names or "item_id" in param_names
-            assert (
-                has_context
-            ), f"Tool {tool.name} missing project_id or item_id"
+            assert has_context, f"Tool {tool.name} missing project_id or item_id"
 
 
 # ============================================================================

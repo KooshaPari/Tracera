@@ -258,4 +258,4 @@ export type UnwrapOpaque<OpaqueType extends TagContainer<unknown>> =
 
 export {type default as tag} from 'tagged-tag';
 
-export {};
+

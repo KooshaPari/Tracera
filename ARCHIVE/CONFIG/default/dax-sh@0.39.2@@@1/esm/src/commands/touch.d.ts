@@ -4,4 +4,4 @@ interface TouchFlags {
     paths: string[];
 }
 export declare function parseArgs(args: string[]): TouchFlags;
-export {};
+

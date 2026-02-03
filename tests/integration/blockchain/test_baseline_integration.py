@@ -12,13 +12,12 @@ Tests full workflow including:
 import pytest
 import pytest_asyncio
 
-from tracertm.models.project import Project
-from tracertm.models.item import Item
 from tracertm.models.blockchain import (
-    Baseline,
     BaselineItem,
     MerkleProofCache,
 )
+from tracertm.models.item import Item
+from tracertm.models.project import Project
 from tracertm.repositories.blockchain_repository import BaselineRepository
 
 pytestmark = pytest.mark.integration
@@ -56,10 +55,7 @@ class TestBaselineCreation:
         repo = BaselineRepository()
 
         # Prepare items for baseline (item_id, item_type, content_hash)
-        baseline_items = [
-            (item.id, item.item_type, f"hash-{item.id}")
-            for item in items
-        ]
+        baseline_items = [(item.id, item.item_type, f"hash-{item.id}") for item in items]
 
         baseline = await repo.create_baseline(
             db=db_session,
@@ -83,10 +79,7 @@ class TestBaselineCreation:
         project, items = project_with_items
         repo = BaselineRepository()
 
-        baseline_items = [
-            (item.id, item.item_type, f"hash-{item.id}")
-            for item in items
-        ]
+        baseline_items = [(item.id, item.item_type, f"hash-{item.id}") for item in items]
 
         baseline = await repo.create_baseline(
             db=db_session,
@@ -101,9 +94,8 @@ class TestBaselineCreation:
 
         # Query baseline items directly
         from sqlalchemy import select
-        result = await db_session.execute(
-            select(BaselineItem).where(BaselineItem.baseline_id == baseline.id)
-        )
+
+        result = await db_session.execute(select(BaselineItem).where(BaselineItem.baseline_id == baseline.id))
         persisted_items = list(result.scalars().all())
 
         assert len(persisted_items) == 5
@@ -117,10 +109,7 @@ class TestBaselineCreation:
         project, items = project_with_items
         repo = BaselineRepository()
 
-        baseline_items = [
-            (item.id, item.item_type, f"hash-{item.id}")
-            for item in items
-        ]
+        baseline_items = [(item.id, item.item_type, f"hash-{item.id}") for item in items]
 
         baseline = await repo.create_baseline(
             db=db_session,
@@ -135,9 +124,8 @@ class TestBaselineCreation:
 
         # Query cached proofs
         from sqlalchemy import select
-        result = await db_session.execute(
-            select(MerkleProofCache).where(MerkleProofCache.baseline_id == baseline.id)
-        )
+
+        result = await db_session.execute(select(MerkleProofCache).where(MerkleProofCache.baseline_id == baseline.id))
         cached_proofs = list(result.scalars().all())
 
         # Should have one proof per item
@@ -162,10 +150,7 @@ class TestBaselineRetrieval:
         await db_session.flush()
 
         repo = BaselineRepository()
-        baseline_items = [
-            (f"ITEM-{i}", "requirement", f"content-hash-{i}")
-            for i in range(3)
-        ]
+        baseline_items = [(f"ITEM-{i}", "requirement", f"content-hash-{i}") for i in range(3)]
 
         baseline = await repo.create_baseline(
             db=db_session,
@@ -325,9 +310,11 @@ class TestBaselineMerkleIntegrity:
 
         # Rebuild tree from stored structure and verify root matches
         stored_tree = baseline.merkle_tree_json
+        assert stored_tree is not None
+        tree = stored_tree
         rebuilt_items = [
             (leaf["item_id"], items[i][2])  # Use original content hash
-            for i, leaf in enumerate(stored_tree["leaves"])
+            for i, leaf in enumerate(tree["leaves"])
         ]
         rebuilt_root, _ = repo.build_merkle_tree(rebuilt_items)
 
@@ -342,10 +329,7 @@ class TestBaselineMerkleIntegrity:
 
         repo = BaselineRepository()
 
-        items = [
-            (f"FEAT-{i}", "feature", f"feat-hash-{i}")
-            for i in range(10)
-        ]
+        items = [(f"FEAT-{i}", "feature", f"feat-hash-{i}") for i in range(10)]
 
         baseline = await repo.create_baseline(
             db=db_session,
@@ -438,10 +422,7 @@ class TestBaselineEdgeCases:
         repo = BaselineRepository()
 
         # Create 100 items
-        items = [
-            (f"LARGE-{i:04d}", "item", f"large-hash-{i}")
-            for i in range(100)
-        ]
+        items = [(f"LARGE-{i:04d}", "item", f"large-hash-{i}") for i in range(100)]
 
         baseline = await repo.create_baseline(
             db=db_session,
@@ -457,6 +438,7 @@ class TestBaselineEdgeCases:
 
         # Verify random samples
         import random
+
         samples = random.sample(items, 10)
         for item_id, _, content_hash in samples:
             is_valid, _ = await repo.verify_item_in_baseline(
@@ -491,8 +473,8 @@ class TestBaselineEdgeCases:
         ]
 
         # The unique constraint on (baseline_id, item_id) should prevent this
-        from sqlalchemy.exc import IntegrityError
         import pytest
+        from sqlalchemy.exc import IntegrityError
 
         with pytest.raises(IntegrityError):
             baseline = await repo.create_baseline(

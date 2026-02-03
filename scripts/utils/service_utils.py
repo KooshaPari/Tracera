@@ -9,18 +9,14 @@ services during development.
 import os
 import subprocess
 import time
-from typing import Optional, List, Dict, Any
+from pathlib import Path
+from typing import Any
 
 import redis
 from neo4j import GraphDatabase
 
 
-def wait_for_service(
-    check_func,
-    service_name: str,
-    max_wait: int = 30,
-    interval: float = 1.0
-) -> bool:
+def wait_for_service(check_func, service_name: str, max_wait: int = 30, interval: float = 1.0) -> bool:
     """
     Wait for a service to become available.
 
@@ -48,7 +44,7 @@ def wait_for_service(
     return False
 
 
-def clear_redis_cache(pattern: Optional[str] = None) -> int:
+def clear_redis_cache(pattern: str | None = None) -> int:
     """
     Clear Redis cache.
 
@@ -67,16 +63,15 @@ def clear_redis_cache(pattern: Optional[str] = None) -> int:
             if keys:
                 return r.delete(*keys)
             return 0
-        else:
-            r.flushdb()
-            return -1  # Indicates full flush
+        r.flushdb()
+        return -1  # Indicates full flush
 
     except Exception as e:
         print(f"Error clearing Redis cache: {e}")
         return 0
 
 
-def get_redis_stats() -> Dict[str, Any]:
+def get_redis_stats() -> dict[str, Any]:
     """Get Redis statistics."""
     try:
         redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
@@ -126,7 +121,7 @@ def clear_neo4j_graph(confirm: bool = False) -> bool:
         return False
 
 
-def get_neo4j_stats() -> Dict[str, Any]:
+def get_neo4j_stats() -> dict[str, Any]:
     """Get Neo4j statistics."""
     try:
         uri = os.getenv("NEO4J_URI", "neo4j://localhost:7687")
@@ -173,11 +168,7 @@ def restart_service(service_name: str) -> bool:
     try:
         # This assumes process-compose is running
         # In practice, you'd use process-compose API or CLI
-        result = subprocess.run(
-            ["pkill", "-HUP", "-f", service_name],
-            capture_output=True,
-            text=True
-        )
+        result = subprocess.run(["pkill", "-HUP", "-f", service_name], capture_output=True, text=True)
         return result.returncode == 0
 
     except Exception as e:
@@ -185,11 +176,7 @@ def restart_service(service_name: str) -> bool:
         return False
 
 
-def get_service_logs(
-    service_name: str,
-    lines: int = 50,
-    follow: bool = False
-) -> Optional[str]:
+def get_service_logs(service_name: str, lines: int = 50, follow: bool = False) -> str | None:
     """
     Get logs for a service.
 
@@ -201,8 +188,6 @@ def get_service_logs(
     Returns:
         Log content or None
     """
-    from pathlib import Path
-
     log_dir = Path(__file__).parent.parent.parent / "logs"
     log_file = log_dir / f"{service_name}.log"
 
@@ -213,10 +198,9 @@ def get_service_logs(
         if follow:
             subprocess.run(["tail", "-f", "-n", str(lines), str(log_file)])
             return None
-        else:
-            with open(log_file) as f:
-                all_lines = f.readlines()
-                return "".join(all_lines[-lines:])
+        with Path(log_file).open() as f:
+            all_lines = f.readlines()
+            return "".join(all_lines[-lines:])
 
     except Exception as e:
         print(f"Error reading logs: {e}")
@@ -238,7 +222,7 @@ def check_port_available(port: int, host: str = "127.0.0.1") -> bool:
         return False
 
 
-def find_available_port(start_port: int = 8000, end_port: int = 9000) -> Optional[int]:
+def find_available_port(start_port: int = 8000, end_port: int = 9000) -> int | None:
     """Find an available port in the given range."""
     for port in range(start_port, end_port):
         if check_port_available(port):
@@ -246,14 +230,10 @@ def find_available_port(start_port: int = 8000, end_port: int = 9000) -> Optiona
     return None
 
 
-def get_process_info(process_name: str) -> List[Dict[str, Any]]:
+def get_process_info(process_name: str) -> list[dict[str, Any]]:
     """Get information about running processes matching name."""
     try:
-        result = subprocess.run(
-            ["pgrep", "-fl", process_name],
-            capture_output=True,
-            text=True
-        )
+        result = subprocess.run(["pgrep", "-fl", process_name], capture_output=True, text=True)
 
         if result.returncode != 0:
             return []
@@ -279,11 +259,7 @@ def kill_process_on_port(port: int) -> bool:
     """Kill process using a specific port."""
     try:
         # Find process using the port
-        result = subprocess.run(
-            ["lsof", "-ti", f":{port}"],
-            capture_output=True,
-            text=True
-        )
+        result = subprocess.run(["lsof", "-ti", f":{port}"], capture_output=True, text=True)
 
         if result.returncode == 0 and result.stdout.strip():
             pid = result.stdout.strip()

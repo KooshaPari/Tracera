@@ -15,30 +15,19 @@ Coverage includes:
 - Error recovery scenarios
 """
 
-import asyncio
-import json
 import tempfile
-import time
-from datetime import datetime
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, Mock, PropertyMock, patch, call
-from types import SimpleNamespace
+from unittest.mock import Mock
 
 import pytest
 import yaml
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker
-from watchdog.events import FileSystemEvent
+from sqlalchemy import text
 
-from tracertm.models import Base, Item, Link, Project
+from tracertm.models import Item, Project
 from tracertm.storage.file_watcher import TraceFileWatcher, _TraceEventHandler
 from tracertm.storage.local_storage import (
-    ItemStorage,
     LocalStorageManager,
-    ProjectStorage,
 )
-from tracertm.storage.markdown_parser import ItemData
-
 
 # ============================================================================
 # LocalStorageManager Tests
@@ -146,9 +135,7 @@ class TestLocalStorageManager:
             manager = LocalStorageManager(base_dir=tmpdir / "storage")
 
             trace_dir, project_id = manager.init_project(
-                tmpdir,
-                project_name="Test Project",
-                description="Test description"
+                tmpdir, project_name="Test Project", description="Test description"
             )
 
             assert trace_dir.exists()
@@ -170,9 +157,7 @@ class TestLocalStorageManager:
             manager = LocalStorageManager(base_dir=tmpdir / "storage")
 
             trace_dir, project_id = manager.init_project(
-                tmpdir,
-                project_name="Test Project",
-                description="Test description"
+                tmpdir, project_name="Test Project", description="Test description"
             )
 
             project_yaml_path = trace_dir / "project.yaml"
@@ -295,7 +280,8 @@ class TestLocalStorageManager:
 
             # Change to project directory
             import os
-            original_cwd = os.getcwd()
+
+            original_cwd = Path.cwd()
             try:
                 os.chdir(tmpdir)
                 result = manager.get_current_project_path()
@@ -310,7 +296,8 @@ class TestLocalStorageManager:
             manager = LocalStorageManager(base_dir=tmpdir / "storage")
 
             import os
-            original_cwd = os.getcwd()
+
+            original_cwd = Path.cwd()
             try:
                 os.chdir(tmpdir)
                 result = manager.get_current_project_path()
@@ -338,7 +325,7 @@ class TestLocalStorageManager:
                     description="Implement user authentication",
                     view="FEATURE",
                     item_type="feature",
-                    status="todo"
+                    status="todo",
                 )
                 session.add(item)
                 session.commit()
@@ -346,13 +333,20 @@ class TestLocalStorageManager:
 
                 # Add to FTS index
                 session.execute(
-                    text("INSERT INTO items_fts (item_id, title, description, item_type) VALUES (:item_id, :title, :description, :item_type)"),
-                    {"item_id": item.id, "title": item.title, "description": item.description, "item_type": item.item_type}
+                    text(
+                        "INSERT INTO items_fts (item_id, title, description, item_type) VALUES (:item_id, :title, :description, :item_type)"
+                    ),
+                    {
+                        "item_id": item.id,
+                        "title": item.title,
+                        "description": item.description,
+                        "item_type": item.item_type,
+                    },
                 )
                 session.commit()
 
                 # Search
-                results = manager.search_items("authentication", project_id=project.id)
+                results = manager.search_items("authentication", project_id=str(project.id))
 
                 assert len(results) > 0
                 assert any("authentication" in r.title.lower() for r in results)
@@ -365,12 +359,7 @@ class TestLocalStorageManager:
             tmpdir = Path(tmpdir)
             manager = LocalStorageManager(base_dir=tmpdir / "storage")
 
-            manager.queue_sync(
-                "item",
-                "item-123",
-                "create",
-                {"title": "Test Item"}
-            )
+            manager.queue_sync("item", "item-123", "create", {"title": "Test Item"})
 
             # Verify queued
             queue = manager.get_sync_queue(limit=10)
@@ -385,12 +374,7 @@ class TestLocalStorageManager:
 
             # Queue multiple items
             for i in range(5):
-                manager.queue_sync(
-                    "item",
-                    f"item-{i}",
-                    "create",
-                    {"index": i}
-                )
+                manager.queue_sync("item", f"item-{i}", "create", {"index": i})
 
             queue = manager.get_sync_queue(limit=3)
 
@@ -455,10 +439,7 @@ class TestProjectStorage:
 
     def test_create_project(self, project_storage):
         """Test creating a project."""
-        project = project_storage.create_or_update_project(
-            name="Test Project",
-            description="Test description"
-        )
+        project = project_storage.create_or_update_project(name="Test Project", description="Test description")
 
         assert project.name == "Test Project"
         assert project.description == "Test description"
@@ -466,16 +447,10 @@ class TestProjectStorage:
     def test_update_project(self, project_storage):
         """Test updating existing project."""
         # Create
-        project1 = project_storage.create_or_update_project(
-            name="Test Project",
-            description="Original"
-        )
+        project1 = project_storage.create_or_update_project(name="Test Project", description="Original")
 
         # Update
-        project2 = project_storage.create_or_update_project(
-            name="Test Project",
-            description="Updated"
-        )
+        project2 = project_storage.create_or_update_project(name="Test Project", description="Updated")
 
         assert project1.id == project2.id
         assert project2.description == "Updated"
@@ -518,7 +493,7 @@ class TestItemStorage:
             external_id="EPIC-001",
             description="Test description",
             status="todo",
-            priority="high"
+            priority="high",
         )
 
         assert item.title == "Test Item"
@@ -529,10 +504,7 @@ class TestItemStorage:
     def test_create_item_generates_markdown(self, item_storage):
         """Test creating item generates markdown file."""
         item = item_storage.create_item(
-            title="Test Epic",
-            item_type="epic",
-            external_id="EPIC-001",
-            description="Test description"
+            title="Test Epic", item_type="epic", external_id="EPIC-001", description="Test description"
         )
 
         md_path = item_storage.project_storage.epics_dir / "EPIC-001.md"
@@ -542,17 +514,9 @@ class TestItemStorage:
 
     def test_update_item(self, item_storage):
         """Test updating an item."""
-        item = item_storage.create_item(
-            title="Original Title",
-            item_type="epic",
-            external_id="EPIC-001"
-        )
+        item = item_storage.create_item(title="Original Title", item_type="epic", external_id="EPIC-001")
 
-        updated = item_storage.update_item(
-            item_id=item.id,
-            title="Updated Title",
-            status="in_progress"
-        )
+        updated = item_storage.update_item(item_id=item.id, title="Updated Title", status="in_progress")
 
         assert updated.title == "Updated Title"
         assert updated.status == "in_progress"
@@ -560,18 +524,11 @@ class TestItemStorage:
     def test_update_item_nonexistent(self, item_storage):
         """Test updating nonexistent item raises error."""
         with pytest.raises(ValueError, match="not found"):
-            item_storage.update_item(
-                item_id="nonexistent-id",
-                title="New Title"
-            )
+            item_storage.update_item(item_id="nonexistent-id", title="New Title")
 
     def test_delete_item(self, item_storage):
         """Test deleting an item (soft delete)."""
-        item = item_storage.create_item(
-            title="Test Item",
-            item_type="epic",
-            external_id="EPIC-001"
-        )
+        item = item_storage.create_item(title="Test Item", item_type="epic", external_id="EPIC-001")
 
         item_storage.delete_item(item.id)
 
@@ -581,11 +538,7 @@ class TestItemStorage:
 
     def test_delete_item_removes_markdown(self, item_storage):
         """Test deleting item removes markdown file."""
-        item = item_storage.create_item(
-            title="Test Item",
-            item_type="epic",
-            external_id="EPIC-001"
-        )
+        item = item_storage.create_item(title="Test Item", item_type="epic", external_id="EPIC-001")
 
         md_path = item_storage.project_storage.epics_dir / "EPIC-001.md"
         assert md_path.exists()
@@ -596,11 +549,7 @@ class TestItemStorage:
 
     def test_get_item(self, item_storage):
         """Test getting item by ID."""
-        item = item_storage.create_item(
-            title="Test Item",
-            item_type="epic",
-            external_id="EPIC-001"
-        )
+        item = item_storage.create_item(title="Test Item", item_type="epic", external_id="EPIC-001")
 
         retrieved = item_storage.get_item(item.id)
 
@@ -616,11 +565,7 @@ class TestItemStorage:
     def test_list_items(self, item_storage):
         """Test listing items."""
         for i in range(3):
-            item_storage.create_item(
-                title=f"Item {i}",
-                item_type="epic",
-                external_id=f"EPIC-{i:03d}"
-            )
+            item_storage.create_item(title=f"Item {i}", item_type="epic", external_id=f"EPIC-{i:03d}")
 
         items = item_storage.list_items()
 
@@ -638,18 +583,8 @@ class TestItemStorage:
 
     def test_list_items_with_status_filter(self, item_storage):
         """Test listing items with status filter."""
-        item_storage.create_item(
-            title="Item 1",
-            item_type="epic",
-            external_id="EPIC-001",
-            status="todo"
-        )
-        item_storage.create_item(
-            title="Item 2",
-            item_type="epic",
-            external_id="EPIC-002",
-            status="done"
-        )
+        item_storage.create_item(title="Item 1", item_type="epic", external_id="EPIC-001", status="todo")
+        item_storage.create_item(title="Item 2", item_type="epic", external_id="EPIC-002", status="done")
 
         todo_items = item_storage.list_items(status="todo")
 
@@ -658,22 +593,10 @@ class TestItemStorage:
 
     def test_create_link(self, item_storage):
         """Test creating a traceability link."""
-        item1 = item_storage.create_item(
-            title="Source",
-            item_type="epic",
-            external_id="EPIC-001"
-        )
-        item2 = item_storage.create_item(
-            title="Target",
-            item_type="story",
-            external_id="STORY-001"
-        )
+        item1 = item_storage.create_item(title="Source", item_type="epic", external_id="EPIC-001")
+        item2 = item_storage.create_item(title="Target", item_type="story", external_id="STORY-001")
 
-        link = item_storage.create_link(
-            source_id=item1.id,
-            target_id=item2.id,
-            link_type="implements"
-        )
+        link = item_storage.create_link(source_id=item1.id, target_id=item2.id, link_type="implements")
 
         assert link.source_item_id == item1.id
         assert link.target_item_id == item2.id
@@ -681,16 +604,8 @@ class TestItemStorage:
 
     def test_delete_link(self, item_storage):
         """Test deleting a link."""
-        item1 = item_storage.create_item(
-            title="Source",
-            item_type="epic",
-            external_id="EPIC-001"
-        )
-        item2 = item_storage.create_item(
-            title="Target",
-            item_type="story",
-            external_id="STORY-001"
-        )
+        item1 = item_storage.create_item(title="Source", item_type="epic", external_id="EPIC-001")
+        item2 = item_storage.create_item(title="Target", item_type="story", external_id="STORY-001")
         link = item_storage.create_link(item1.id, item2.id, "implements")
 
         item_storage.delete_link(link.id)
@@ -701,21 +616,9 @@ class TestItemStorage:
 
     def test_list_links(self, item_storage):
         """Test listing links."""
-        item1 = item_storage.create_item(
-            title="Source",
-            item_type="epic",
-            external_id="EPIC-001"
-        )
-        item2 = item_storage.create_item(
-            title="Target 1",
-            item_type="story",
-            external_id="STORY-001"
-        )
-        item3 = item_storage.create_item(
-            title="Target 2",
-            item_type="story",
-            external_id="STORY-002"
-        )
+        item1 = item_storage.create_item(title="Source", item_type="epic", external_id="EPIC-001")
+        item2 = item_storage.create_item(title="Target 1", item_type="story", external_id="STORY-001")
+        item3 = item_storage.create_item(title="Target 2", item_type="story", external_id="STORY-002")
 
         item_storage.create_link(item1.id, item2.id, "implements")
         item_storage.create_link(item1.id, item3.id, "implements")
@@ -726,21 +629,9 @@ class TestItemStorage:
 
     def test_list_links_with_type_filter(self, item_storage):
         """Test listing links with type filter."""
-        item1 = item_storage.create_item(
-            title="Source",
-            item_type="epic",
-            external_id="EPIC-001"
-        )
-        item2 = item_storage.create_item(
-            title="Target 1",
-            item_type="story",
-            external_id="STORY-001"
-        )
-        item3 = item_storage.create_item(
-            title="Target 2",
-            item_type="test",
-            external_id="TEST-001"
-        )
+        item1 = item_storage.create_item(title="Source", item_type="epic", external_id="EPIC-001")
+        item2 = item_storage.create_item(title="Target 1", item_type="story", external_id="STORY-001")
+        item3 = item_storage.create_item(title="Target 2", item_type="test", external_id="TEST-001")
 
         item_storage.create_link(item1.id, item2.id, "implements")
         item_storage.create_link(item1.id, item3.id, "tested_by")
@@ -773,11 +664,7 @@ class TestFileWatcher:
 
             # Create project.yaml
             project_yaml = trace_dir / "project.yaml"
-            project_yaml.write_text(yaml.dump({
-                "id": "test-project-id",
-                "name": "Test Project",
-                "description": "Test"
-            }))
+            project_yaml.write_text(yaml.dump({"id": "test-project-id", "name": "Test Project", "description": "Test"}))
 
             storage = LocalStorageManager(base_dir=tmpdir / "storage")
 
@@ -787,12 +674,7 @@ class TestFileWatcher:
         """Test file watcher initializes correctly."""
         project_path, storage = watcher_setup
 
-        watcher = TraceFileWatcher(
-            project_path=project_path,
-            storage=storage,
-            debounce_ms=500,
-            auto_sync=False
-        )
+        watcher = TraceFileWatcher(project_path=project_path, storage=storage, debounce_ms=500, auto_sync=False)
 
         assert watcher.project_path == project_path.resolve()
         assert watcher.trace_path == project_path / ".trace"
@@ -892,6 +774,7 @@ status: todo
         session = storage.get_session()
         try:
             from tracertm.models import Item
+
             item = session.get(Item, "test-item-id")
             assert item is not None
             assert item.title == "Test Epic"
@@ -924,6 +807,7 @@ status: todo
         session = storage.get_session()
         try:
             from tracertm.models import Item
+
             item = session.get(Item, "test-item-id")
             assert item is not None
             assert item.deleted_at is not None
@@ -947,10 +831,7 @@ class TestTraceEventHandler:
 
             # Create project.yaml
             project_yaml = trace_dir / "project.yaml"
-            project_yaml.write_text(yaml.dump({
-                "id": "test-project-id",
-                "name": "Test Project"
-            }))
+            project_yaml.write_text(yaml.dump({"id": "test-project-id", "name": "Test Project"}))
 
             storage = LocalStorageManager(base_dir=tmpdir / "storage")
             watcher = TraceFileWatcher(tmpdir, storage)
@@ -1050,33 +931,26 @@ class TestStorageIntegration:
             manager = LocalStorageManager(base_dir=tmpdir / "storage")
 
             # Initialize project
-            trace_dir, project_id = manager.init_project(
-                tmpdir,
-                project_name="Integration Test Project"
-            )
+            trace_dir, project_id = manager.init_project(tmpdir, project_name="Integration Test Project")
 
             # Register and get storage
             project_storage = manager.get_project_storage_for_path(tmpdir)
+            assert project_storage is not None
             project = project_storage.get_project()
+            assert project is not None
             item_storage = project_storage.get_item_storage(project)
 
             # Create items
             epic = item_storage.create_item(
-                title="Test Epic",
-                item_type="epic",
-                external_id="EPIC-001",
-                description="Epic description"
+                title="Test Epic", item_type="epic", external_id="EPIC-001", description="Epic description"
             )
 
             story = item_storage.create_item(
-                title="Test Story",
-                item_type="story",
-                external_id="STORY-001",
-                parent_id=epic.id
+                title="Test Story", item_type="story", external_id="STORY-001", parent_id=str(epic.id)
             )
 
             # Create link
-            link = item_storage.create_link(epic.id, story.id, "implements")
+            link = item_storage.create_link(str(epic.id), str(story.id), "implements")
 
             # Verify everything exists
             assert epic.id is not None
@@ -1120,6 +994,7 @@ This is a test epic.
             session = manager.get_session()
             try:
                 from tracertm.models import Item
+
                 item = session.get(Item, "epic-001-id")
                 assert item is not None
                 assert item.title == "Test Epic"

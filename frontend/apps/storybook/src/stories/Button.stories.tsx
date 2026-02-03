@@ -5,6 +5,10 @@ import { Button } from "@tracertm/ui";
 
 const meta: Meta<typeof Button> = {
 	argTypes: {
+		size: {
+			control: "select",
+			options: ["default", "sm", "lg", "icon"],
+		},
 		variant: {
 			control: "select",
 			options: [
@@ -15,10 +19,6 @@ const meta: Meta<typeof Button> = {
 				"ghost",
 				"link",
 			],
-		},
-		size: {
-			control: "select",
-			options: ["default", "sm", "lg", "icon"],
 		},
 	},
 	component: Button,

@@ -1,5 +1,5 @@
 /* eslint-disable promise/prefer-await-to-then */
-import apiConstants from "./client-constants";
+import { apiConstants } from "./client-constants";
 import { extractCSRFTokenFromResponse, handleCSRFError } from "../lib/csrf";
 import { logger } from "@/lib/logger";
 import { useConnectionStatusStore } from "../stores/connection-status-store";
@@ -216,4 +216,4 @@ const responseHandlers = {
 	handleResponse,
 };
 
-export default responseHandlers;
+export { responseHandlers };

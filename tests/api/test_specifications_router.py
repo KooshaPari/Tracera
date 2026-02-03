@@ -4,16 +4,14 @@ This test module covers all endpoints in the unified specifications router
 including ADRs, Contracts, Features, and Scenarios.
 """
 
+from collections.abc import AsyncGenerator
+
 import pytest
-from datetime import datetime
-from typing import AsyncGenerator
-
 from fastapi.testclient import TestClient
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from tracertm.api.main import app
 from tracertm.api.deps import get_db
-
+from tracertm.api.main import app
 
 # =============================================================================
 # Fixtures
@@ -39,6 +37,7 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
 @pytest.fixture
 def client(db_session):
     """Create a test client with dependency override."""
+
     async def override_get_db():
         yield db_session
 
@@ -73,31 +72,27 @@ def adr_payload(project_id):
         "decision": "We will use PostgreSQL as the primary database for all persistent storage",
         "consequences": "Requires PostgreSQL expertise on the team, scaling considerations for multi-tenant setup",
         "status": "proposed",
-        "decision_drivers": [
-            "ACID compliance requirement",
-            "Team expertise with PostgreSQL",
-            "Cost-effectiveness"
-        ],
+        "decision_drivers": ["ACID compliance requirement", "Team expertise with PostgreSQL", "Cost-effectiveness"],
         "considered_options": [
             {
                 "id": "opt-1",
                 "title": "MongoDB",
                 "pros": ["Flexible schema", "High scalability"],
                 "cons": ["No ACID for multi-document transactions"],
-                "is_chosen": False
+                "is_chosen": False,
             },
             {
                 "id": "opt-2",
                 "title": "PostgreSQL",
                 "pros": ["ACID compliance", "Powerful querying", "Team expertise"],
                 "cons": ["Vertical scaling limits"],
-                "is_chosen": True
-            }
+                "is_chosen": True,
+            },
         ],
         "related_requirements": ["REQ-123", "REQ-456"],
         "related_adrs": [],
         "tags": ["database", "persistence"],
-        "stakeholders": ["tech-lead", "backend-team"]
+        "stakeholders": ["tech-lead", "backend-team"],
     }
 
 
@@ -116,7 +111,7 @@ def contract_payload(project_id):
                 "description": "User must be authenticated",
                 "condition_code": "user.is_authenticated == True",
                 "required": True,
-                "priority": "critical"
+                "priority": "critical",
             }
         ],
         "postconditions": [
@@ -124,16 +119,10 @@ def contract_payload(project_id):
                 "id": "post-1",
                 "description": "Item is created and stored in database",
                 "condition_code": "item.id is not None",
-                "required": True
+                "required": True,
             }
         ],
-        "invariants": [
-            {
-                "id": "inv-1",
-                "description": "Item status is always valid",
-                "required": True
-            }
-        ],
+        "invariants": [{"id": "inv-1", "description": "Item status is always valid", "required": True}],
         "states": ["draft", "active", "archived"],
         "transitions": [
             {
@@ -141,11 +130,11 @@ def contract_payload(project_id):
                 "from_state": "draft",
                 "to_state": "active",
                 "trigger": "publish()",
-                "condition": "validation.pass == true"
+                "condition": "validation.pass == true",
             }
         ],
         "tags": ["service", "api"],
-        "metadata": {}
+        "metadata": {},
     }
 
 
@@ -163,7 +152,7 @@ def feature_payload(project_id):
         "related_requirements": ["REQ-123"],
         "related_adrs": [],
         "tags": ["auth", "oauth"],
-        "metadata": {}
+        "metadata": {},
     }
 
 
@@ -180,30 +169,14 @@ def scenario_payload():
     Then user is redirected to GitHub authorization page
     And GitHub requests user authorization""",
         "status": "draft",
-        "given_steps": [
-            {
-                "step_number": 1,
-                "keyword": "Given",
-                "text": "user is on login page"
-            }
-        ],
-        "when_steps": [
-            {
-                "step_number": 2,
-                "keyword": "When",
-                "text": "user clicks GitHub button"
-            }
-        ],
+        "given_steps": [{"step_number": 1, "keyword": "Given", "text": "user is on login page"}],
+        "when_steps": [{"step_number": 2, "keyword": "When", "text": "user clicks GitHub button"}],
         "then_steps": [
-            {
-                "step_number": 3,
-                "keyword": "Then",
-                "text": "user is redirected to GitHub authorization page"
-            }
+            {"step_number": 3, "keyword": "Then", "text": "user is redirected to GitHub authorization page"}
         ],
         "is_outline": False,
         "tags": ["auth", "critical"],
-        "metadata": {}
+        "metadata": {},
     }
 
 
@@ -217,11 +190,7 @@ class TestADREndpoints:
 
     def test_create_adr_success(self, client, auth_headers, adr_payload):
         """Test successful ADR creation."""
-        response = client.post(
-            "/api/v1/specifications/adrs",
-            json=adr_payload,
-            headers=auth_headers
-        )
+        response = client.post("/api/v1/specifications/adrs", json=adr_payload, headers=auth_headers)
 
         assert response.status_code == 201
         data = response.json()
@@ -233,11 +202,7 @@ class TestADREndpoints:
     def test_create_adr_missing_context(self, client, auth_headers, adr_payload):
         """Test ADR creation fails with short context."""
         adr_payload["context"] = "short"
-        response = client.post(
-            "/api/v1/specifications/adrs",
-            json=adr_payload,
-            headers=auth_headers
-        )
+        response = client.post("/api/v1/specifications/adrs", json=adr_payload, headers=auth_headers)
 
         # Should succeed but validation might warn during verification
         assert response.status_code in [201, 400]
@@ -245,18 +210,11 @@ class TestADREndpoints:
     def test_get_adr_success(self, client, auth_headers, adr_payload):
         """Test retrieving an ADR."""
         # Create ADR first
-        create_response = client.post(
-            "/api/v1/specifications/adrs",
-            json=adr_payload,
-            headers=auth_headers
-        )
+        create_response = client.post("/api/v1/specifications/adrs", json=adr_payload, headers=auth_headers)
         adr_id = create_response.json()["id"]
 
         # Get ADR
-        response = client.get(
-            f"/api/v1/specifications/adrs/{adr_id}",
-            headers=auth_headers
-        )
+        response = client.get(f"/api/v1/specifications/adrs/{adr_id}", headers=auth_headers)
 
         assert response.status_code == 200
         data = response.json()
@@ -265,10 +223,7 @@ class TestADREndpoints:
 
     def test_get_adr_not_found(self, client, auth_headers):
         """Test getting non-existent ADR."""
-        response = client.get(
-            "/api/v1/specifications/adrs/nonexistent",
-            headers=auth_headers
-        )
+        response = client.get("/api/v1/specifications/adrs/nonexistent", headers=auth_headers)
 
         assert response.status_code == 404
         assert "not found" in response.json()["detail"].lower()
@@ -276,20 +231,12 @@ class TestADREndpoints:
     def test_update_adr_success(self, client, auth_headers, adr_payload):
         """Test updating an ADR."""
         # Create ADR first
-        create_response = client.post(
-            "/api/v1/specifications/adrs",
-            json=adr_payload,
-            headers=auth_headers
-        )
+        create_response = client.post("/api/v1/specifications/adrs", json=adr_payload, headers=auth_headers)
         adr_id = create_response.json()["id"]
 
         # Update ADR
         update_payload = {"status": "accepted"}
-        response = client.put(
-            f"/api/v1/specifications/adrs/{adr_id}",
-            json=update_payload,
-            headers=auth_headers
-        )
+        response = client.put(f"/api/v1/specifications/adrs/{adr_id}", json=update_payload, headers=auth_headers)
 
         assert response.status_code == 200
         data = response.json()
@@ -298,18 +245,11 @@ class TestADREndpoints:
     def test_delete_adr_success(self, client, auth_headers, adr_payload):
         """Test deleting an ADR."""
         # Create ADR first
-        create_response = client.post(
-            "/api/v1/specifications/adrs",
-            json=adr_payload,
-            headers=auth_headers
-        )
+        create_response = client.post("/api/v1/specifications/adrs", json=adr_payload, headers=auth_headers)
         adr_id = create_response.json()["id"]
 
         # Delete ADR
-        response = client.delete(
-            f"/api/v1/specifications/adrs/{adr_id}",
-            headers=auth_headers
-        )
+        response = client.delete(f"/api/v1/specifications/adrs/{adr_id}", headers=auth_headers)
 
         assert response.status_code == 204
 
@@ -318,17 +258,10 @@ class TestADREndpoints:
         project_id = adr_payload["project_id"]
 
         # Create multiple ADRs
-        client.post(
-            "/api/v1/specifications/adrs",
-            json=adr_payload,
-            headers=auth_headers
-        )
+        client.post("/api/v1/specifications/adrs", json=adr_payload, headers=auth_headers)
 
         # List ADRs
-        response = client.get(
-            f"/api/v1/specifications/projects/{project_id}/adrs",
-            headers=auth_headers
-        )
+        response = client.get(f"/api/v1/specifications/projects/{project_id}/adrs", headers=auth_headers)
 
         assert response.status_code == 200
         data = response.json()
@@ -339,18 +272,11 @@ class TestADREndpoints:
     def test_verify_adr_compliance(self, client, auth_headers, adr_payload):
         """Test ADR compliance verification."""
         # Create ADR first
-        create_response = client.post(
-            "/api/v1/specifications/adrs",
-            json=adr_payload,
-            headers=auth_headers
-        )
+        create_response = client.post("/api/v1/specifications/adrs", json=adr_payload, headers=auth_headers)
         adr_id = create_response.json()["id"]
 
         # Verify compliance
-        response = client.post(
-            f"/api/v1/specifications/adrs/{adr_id}/verify",
-            headers=auth_headers
-        )
+        response = client.post(f"/api/v1/specifications/adrs/{adr_id}/verify", headers=auth_headers)
 
         assert response.status_code == 200
         data = response.json()
@@ -371,11 +297,7 @@ class TestContractEndpoints:
 
     def test_create_contract_success(self, client, auth_headers, contract_payload):
         """Test successful contract creation."""
-        response = client.post(
-            "/api/v1/specifications/contracts",
-            json=contract_payload,
-            headers=auth_headers
-        )
+        response = client.post("/api/v1/specifications/contracts", json=contract_payload, headers=auth_headers)
 
         assert response.status_code == 201
         data = response.json()
@@ -386,18 +308,11 @@ class TestContractEndpoints:
     def test_get_contract_success(self, client, auth_headers, contract_payload):
         """Test retrieving a contract."""
         # Create contract first
-        create_response = client.post(
-            "/api/v1/specifications/contracts",
-            json=contract_payload,
-            headers=auth_headers
-        )
+        create_response = client.post("/api/v1/specifications/contracts", json=contract_payload, headers=auth_headers)
         contract_id = create_response.json()["id"]
 
         # Get contract
-        response = client.get(
-            f"/api/v1/specifications/contracts/{contract_id}",
-            headers=auth_headers
-        )
+        response = client.get(f"/api/v1/specifications/contracts/{contract_id}", headers=auth_headers)
 
         assert response.status_code == 200
         data = response.json()
@@ -406,36 +321,22 @@ class TestContractEndpoints:
     def test_delete_contract_success(self, client, auth_headers, contract_payload):
         """Test deleting a contract."""
         # Create contract first
-        create_response = client.post(
-            "/api/v1/specifications/contracts",
-            json=contract_payload,
-            headers=auth_headers
-        )
+        create_response = client.post("/api/v1/specifications/contracts", json=contract_payload, headers=auth_headers)
         contract_id = create_response.json()["id"]
 
         # Delete contract
-        response = client.delete(
-            f"/api/v1/specifications/contracts/{contract_id}",
-            headers=auth_headers
-        )
+        response = client.delete(f"/api/v1/specifications/contracts/{contract_id}", headers=auth_headers)
 
         assert response.status_code == 204
 
     def test_verify_contract_compliance(self, client, auth_headers, contract_payload):
         """Test contract compliance verification."""
         # Create contract first
-        create_response = client.post(
-            "/api/v1/specifications/contracts",
-            json=contract_payload,
-            headers=auth_headers
-        )
+        create_response = client.post("/api/v1/specifications/contracts", json=contract_payload, headers=auth_headers)
         contract_id = create_response.json()["id"]
 
         # Verify compliance
-        response = client.post(
-            f"/api/v1/specifications/contracts/{contract_id}/verify",
-            headers=auth_headers
-        )
+        response = client.post(f"/api/v1/specifications/contracts/{contract_id}/verify", headers=auth_headers)
 
         assert response.status_code == 200
         data = response.json()
@@ -453,11 +354,7 @@ class TestFeatureEndpoints:
 
     def test_create_feature_success(self, client, auth_headers, feature_payload):
         """Test successful feature creation."""
-        response = client.post(
-            "/api/v1/specifications/features",
-            json=feature_payload,
-            headers=auth_headers
-        )
+        response = client.post("/api/v1/specifications/features", json=feature_payload, headers=auth_headers)
 
         assert response.status_code == 201
         data = response.json()
@@ -468,18 +365,11 @@ class TestFeatureEndpoints:
     def test_get_feature_success(self, client, auth_headers, feature_payload):
         """Test retrieving a feature."""
         # Create feature first
-        create_response = client.post(
-            "/api/v1/specifications/features",
-            json=feature_payload,
-            headers=auth_headers
-        )
+        create_response = client.post("/api/v1/specifications/features", json=feature_payload, headers=auth_headers)
         feature_id = create_response.json()["id"]
 
         # Get feature
-        response = client.get(
-            f"/api/v1/specifications/features/{feature_id}",
-            headers=auth_headers
-        )
+        response = client.get(f"/api/v1/specifications/features/{feature_id}", headers=auth_headers)
 
         assert response.status_code == 200
         data = response.json()
@@ -488,18 +378,11 @@ class TestFeatureEndpoints:
     def test_delete_feature_success(self, client, auth_headers, feature_payload):
         """Test deleting a feature."""
         # Create feature first
-        create_response = client.post(
-            "/api/v1/specifications/features",
-            json=feature_payload,
-            headers=auth_headers
-        )
+        create_response = client.post("/api/v1/specifications/features", json=feature_payload, headers=auth_headers)
         feature_id = create_response.json()["id"]
 
         # Delete feature
-        response = client.delete(
-            f"/api/v1/specifications/features/{feature_id}",
-            headers=auth_headers
-        )
+        response = client.delete(f"/api/v1/specifications/features/{feature_id}", headers=auth_headers)
 
         assert response.status_code == 204
 
@@ -512,23 +395,15 @@ class TestFeatureEndpoints:
 class TestScenarioEndpoints:
     """Test suite for Scenario endpoints."""
 
-    def test_create_scenario_success(
-        self, client, auth_headers, feature_payload, scenario_payload
-    ):
+    def test_create_scenario_success(self, client, auth_headers, feature_payload, scenario_payload):
         """Test successful scenario creation."""
         # Create feature first
-        feature_response = client.post(
-            "/api/v1/specifications/features",
-            json=feature_payload,
-            headers=auth_headers
-        )
+        feature_response = client.post("/api/v1/specifications/features", json=feature_payload, headers=auth_headers)
         feature_id = feature_response.json()["id"]
 
         # Create scenario
         response = client.post(
-            f"/api/v1/specifications/features/{feature_id}/scenarios",
-            json=scenario_payload,
-            headers=auth_headers
+            f"/api/v1/specifications/features/{feature_id}/scenarios", json=scenario_payload, headers=auth_headers
         )
 
         assert response.status_code == 201
@@ -536,59 +411,37 @@ class TestScenarioEndpoints:
         assert data["title"] == scenario_payload["title"]
         assert data["feature_id"] == feature_id
 
-    def test_get_scenario_success(
-        self, client, auth_headers, feature_payload, scenario_payload
-    ):
+    def test_get_scenario_success(self, client, auth_headers, feature_payload, scenario_payload):
         """Test retrieving a scenario."""
         # Create feature and scenario first
-        feature_response = client.post(
-            "/api/v1/specifications/features",
-            json=feature_payload,
-            headers=auth_headers
-        )
+        feature_response = client.post("/api/v1/specifications/features", json=feature_payload, headers=auth_headers)
         feature_id = feature_response.json()["id"]
 
         scenario_response = client.post(
-            f"/api/v1/specifications/features/{feature_id}/scenarios",
-            json=scenario_payload,
-            headers=auth_headers
+            f"/api/v1/specifications/features/{feature_id}/scenarios", json=scenario_payload, headers=auth_headers
         )
         scenario_id = scenario_response.json()["id"]
 
         # Get scenario
-        response = client.get(
-            f"/api/v1/specifications/scenarios/{scenario_id}",
-            headers=auth_headers
-        )
+        response = client.get(f"/api/v1/specifications/scenarios/{scenario_id}", headers=auth_headers)
 
         assert response.status_code == 200
         data = response.json()
         assert data["id"] == scenario_id
 
-    def test_run_scenario_success(
-        self, client, auth_headers, feature_payload, scenario_payload
-    ):
+    def test_run_scenario_success(self, client, auth_headers, feature_payload, scenario_payload):
         """Test running a scenario."""
         # Create feature and scenario first
-        feature_response = client.post(
-            "/api/v1/specifications/features",
-            json=feature_payload,
-            headers=auth_headers
-        )
+        feature_response = client.post("/api/v1/specifications/features", json=feature_payload, headers=auth_headers)
         feature_id = feature_response.json()["id"]
 
         scenario_response = client.post(
-            f"/api/v1/specifications/features/{feature_id}/scenarios",
-            json=scenario_payload,
-            headers=auth_headers
+            f"/api/v1/specifications/features/{feature_id}/scenarios", json=scenario_payload, headers=auth_headers
         )
         scenario_id = scenario_response.json()["id"]
 
         # Run scenario
-        response = client.post(
-            f"/api/v1/specifications/scenarios/{scenario_id}/run",
-            headers=auth_headers
-        )
+        response = client.post(f"/api/v1/specifications/scenarios/{scenario_id}/run", headers=auth_headers)
 
         assert response.status_code == 200
         data = response.json()
@@ -606,22 +459,14 @@ class TestProjectLevelEndpoints:
     """Test suite for project-level specification endpoints."""
 
     def test_get_specifications_summary(
-        self, client, auth_headers, project_id, adr_payload, contract_payload,
-        feature_payload
+        self, client, auth_headers, project_id, adr_payload, contract_payload, feature_payload
     ):
         """Test getting specifications summary."""
         # Create some specifications
-        client.post(
-            "/api/v1/specifications/adrs",
-            json=adr_payload,
-            headers=auth_headers
-        )
+        client.post("/api/v1/specifications/adrs", json=adr_payload, headers=auth_headers)
 
         # Get summary
-        response = client.get(
-            f"/api/v1/specifications/projects/{project_id}/summary",
-            headers=auth_headers
-        )
+        response = client.get(f"/api/v1/specifications/projects/{project_id}/summary", headers=auth_headers)
 
         assert response.status_code == 200
         data = response.json()
@@ -644,22 +489,14 @@ class TestErrorHandling:
     def test_missing_required_field(self, client, auth_headers, adr_payload):
         """Test validation error for missing required field."""
         del adr_payload["title"]
-        response = client.post(
-            "/api/v1/specifications/adrs",
-            json=adr_payload,
-            headers=auth_headers
-        )
+        response = client.post("/api/v1/specifications/adrs", json=adr_payload, headers=auth_headers)
 
         assert response.status_code == 422  # Validation error
 
     def test_invalid_enum_value(self, client, auth_headers, adr_payload):
         """Test validation error for invalid enum."""
         adr_payload["status"] = "invalid_status"
-        response = client.post(
-            "/api/v1/specifications/adrs",
-            json=adr_payload,
-            headers=auth_headers
-        )
+        response = client.post("/api/v1/specifications/adrs", json=adr_payload, headers=auth_headers)
 
         assert response.status_code == 422
 
@@ -667,7 +504,7 @@ class TestErrorHandling:
         """Test that requests without auth are rejected."""
         response = client.post(
             "/api/v1/specifications/adrs",
-            json=adr_payload
+            json=adr_payload,
             # No auth headers
         )
 

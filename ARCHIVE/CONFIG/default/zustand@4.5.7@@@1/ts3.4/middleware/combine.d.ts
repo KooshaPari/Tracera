@@ -10,4 +10,4 @@ type Combine = <T extends object, U extends object, Mps extends [
 ][] = [
 ]>(initialState: T, additionalStateCreator: StateCreator<T, Mps, Mcs, U>) => StateCreator<Write<T, U>, Mps, Mcs>;
 export declare const combine: Combine;
-export {};
+

@@ -2,28 +2,33 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
-import yaml
 from pathlib import Path
 from typing import Any
 
+import yaml
 from fastmcp.exceptions import ToolError
 
 try:
     from tracertm.mcp.core import mcp
 except Exception:  # pragma: no cover
+
     class _StubMCP:
         def tool(self, *args: Any, **kwargs: Any):
             def decorator(fn):
                 return fn
+
             return decorator
+
     mcp = _StubMCP()  # type: ignore[assignment]
 
-from tracertm.config.manager import ConfigManager
-from tracertm.storage.local_storage import LocalStorageManager
-from tracertm.services.stateless_ingestion_service import StatelessIngestionService
 from tracertm.cli.commands import export as export_cmd
 from tracertm.cli.commands import import_cmd as import_cmd_module
+from tracertm.config.manager import ConfigManager
+from tracertm.services.stateless_ingestion_service import StatelessIngestionService
+from tracertm.storage.local_storage import LocalStorageManager
+
 from .common import _wrap
 
 
@@ -46,6 +51,7 @@ async def export_manage(
     Requires: project_id (from payload or config)
     Optional: output (file path to write to)
     """
+    await asyncio.sleep(0)
     payload = payload or {}
     action = action.lower()
     if action == "full":
@@ -105,6 +111,7 @@ async def import_manage(
 
     Optional: project_name (for json/yaml; omit for full to create new project)
     """
+    await asyncio.sleep(0)
     payload = payload or {}
     action = action.lower()
     project_name = payload.get("project_name")
@@ -143,13 +150,17 @@ async def import_manage(
         if not data.get("project") or not isinstance(data.get("items"), list):
             return _wrap({"errors": ["Canonical format requires project and items"], "valid": False}, ctx, action)
         import_cmd_module._import_data(data, None, "full")
-        return _wrap({
-            "imported": True,
-            "source": "full",
-            "project": data.get("project", {}).get("name"),
-            "items": len(data.get("items", [])),
-            "links": len(data.get("links", [])),
-        }, ctx, action)
+        return _wrap(
+            {
+                "imported": True,
+                "source": "full",
+                "project": data.get("project", {}).get("name"),
+                "items": len(data.get("items", [])),
+                "links": len(data.get("links", [])),
+            },
+            ctx,
+            action,
+        )
 
     if action == "json":
         errors, _ = import_cmd_module._validate_import_data(data)
@@ -183,7 +194,7 @@ async def import_manage(
 
 
 @mcp.tool(description="Unified ingestion operations")
-async def ingestion_manage(
+def ingestion_manage(
     action: str,
     payload: dict[str, Any] | None = None,
     ctx: Any | None = None,
@@ -226,11 +237,7 @@ async def ingestion_manage(
                 raise ToolError(f"Directory not found: {file_path}")
             recursive = bool(payload.get("recursive", True))
             patterns = {".md", ".mdx", ".yaml", ".yml"}
-            files = (
-                directory.rglob("*")
-                if recursive
-                else directory.iterdir()
-            )
+            files = directory.rglob("*") if recursive else directory.iterdir()
             results = []
             for path in files:
                 if path.is_file() and path.suffix.lower() in patterns:

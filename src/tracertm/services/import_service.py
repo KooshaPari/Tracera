@@ -37,7 +37,7 @@ class ImportService:
         item_map = {}
         for item_data in data.get("items", []):
             item = await self.items.create(
-                project_id=project.id,
+                project_id=str(project.id),
                 title=item_data.get("title"),
                 view=item_data.get("view"),
                 item_type=item_data.get("type"),
@@ -53,9 +53,9 @@ class ImportService:
 
             if source_id and target_id:
                 await self.links.create(
-                    project_id=project.id,
-                    source_item_id=source_id,
-                    target_item_id=target_id,
+                    project_id=str(project.id),
+                    source_item_id=str(source_id),
+                    target_item_id=str(target_id),
                     link_type=link_data.get("type", "relates_to"),
                 )
 

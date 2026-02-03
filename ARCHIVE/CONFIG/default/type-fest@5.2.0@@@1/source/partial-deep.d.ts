@@ -152,4 +152,4 @@ type PartialObjectDeep<ObjectType extends object, Options extends Required<Parti
 	[KeyType in keyof ObjectType]?: _PartialDeep<ObjectType[KeyType], Options>
 };
 
-export {};
+

@@ -2,7 +2,7 @@
 
 import time
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime, timezone
 from typing import Any, ClassVar
 
 from sqlalchemy import text
@@ -51,9 +51,7 @@ class BenchmarkService:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def benchmark_view_query(
-        self, view_name: str, limit: int = 100
-    ) -> BenchmarkResult:
+    async def benchmark_view_query(self, view_name: str, limit: int = 100) -> BenchmarkResult:
         """
         Benchmark a single materialized view query.
 
@@ -65,11 +63,18 @@ class BenchmarkService:
             BenchmarkResult with timing and metadata
         """
         try:
+            if view_name not in self.PERFORMANCE_TARGETS:
+                return BenchmarkResult(
+                    operation=f"query_{view_name}",
+                    duration_ms=0,
+                    row_count=0,
+                    success=False,
+                    error=f"Unknown view: {view_name}",
+                )
             start_time = time.perf_counter()
-
-            result = await self.session.execute(
-                text(f"SELECT * FROM {view_name} LIMIT {limit}")
-            )
+            # view_name whitelisted above; limit is bound to avoid injection
+            stmt = text(f"SELECT * FROM {view_name} LIMIT :limit").bindparams(limit=limit)  # noqa: S608
+            result = await self.session.execute(stmt)
             rows = result.fetchall()
 
             end_time = time.perf_counter()
@@ -84,8 +89,7 @@ class BenchmarkService:
                     "view_name": view_name,
                     "limit": limit,
                     "target_ms": self.PERFORMANCE_TARGETS.get(view_name, 100),
-                    "meets_target": duration_ms
-                    < self.PERFORMANCE_TARGETS.get(view_name, 100),
+                    "meets_target": duration_ms < self.PERFORMANCE_TARGETS.get(view_name, 100),
                 },
             )
         except Exception as e:
@@ -111,9 +115,7 @@ class BenchmarkService:
             benchmark = await self.benchmark_view_query(view_name)
 
             # Get view size
-            size_result = await self.session.execute(
-                text(f"SELECT pg_total_relation_size('{view_name}')")
-            )
+            size_result = await self.session.execute(text(f"SELECT pg_total_relation_size('{view_name}')"))
             size_bytes = size_result.scalar() or 0
 
             results.append(
@@ -139,9 +141,7 @@ class BenchmarkService:
         try:
             start_time = time.perf_counter()
 
-            await self.session.execute(
-                text("SELECT refresh_materialized_views_incremental()")
-            )
+            await self.session.execute(text("SELECT refresh_materialized_views_incremental()"))
             await self.session.commit()
 
             end_time = time.perf_counter()
@@ -218,20 +218,14 @@ class BenchmarkService:
         # Calculate summary statistics
         total_views = len(view_results)
         views_meeting_target = sum(1 for v in view_results if v.meets_target)
-        avg_query_time = (
-            sum(v.query_time_ms for v in view_results) / total_views
-            if total_views > 0
-            else 0
-        )
+        avg_query_time = sum(v.query_time_ms for v in view_results) / total_views if total_views > 0 else 0
 
         return {
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "summary": {
                 "total_views": total_views,
                 "views_meeting_target": views_meeting_target,
-                "target_compliance_rate": (
-                    views_meeting_target / total_views * 100 if total_views > 0 else 0
-                ),
+                "target_compliance_rate": (views_meeting_target / total_views * 100 if total_views > 0 else 0),
                 "avg_query_time_ms": avg_query_time,
             },
             "views": [
@@ -250,9 +244,7 @@ class BenchmarkService:
                     "duration_ms": incremental_result.duration_ms,
                     "target_ms": 1000,
                     "meets_target": (
-                        incremental_result.metadata.get("meets_target", False)
-                        if incremental_result.metadata
-                        else False
+                        incremental_result.metadata.get("meets_target", False) if incremental_result.metadata else False
                     ),
                     "success": incremental_result.success,
                 },
@@ -260,9 +252,7 @@ class BenchmarkService:
                     "duration_ms": full_result.duration_ms,
                     "target_ms": 5000,
                     "meets_target": (
-                        full_result.metadata.get("meets_target", False)
-                        if full_result.metadata
-                        else False
+                        full_result.metadata.get("meets_target", False) if full_result.metadata else False
                     ),
                     "success": full_result.success,
                 },

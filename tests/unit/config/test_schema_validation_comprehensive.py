@@ -11,10 +11,11 @@ This module provides 50+ tests for:
 """
 
 import pytest
-from hypothesis import given, strategies as st
+from hypothesis import given
+from hypothesis import strategies as st
 from pydantic import ValidationError
 
-from tracertm.config.schema import Config, ViewType, OutputFormat
+from tracertm.config.schema import Config
 
 
 class TestConfigTypeCoercion:
@@ -499,9 +500,7 @@ class TestConfigPropertyBasedHypothesis:
     @pytest.mark.property
     @given(
         aliases=st.dictionaries(
-            keys=st.text(min_size=1, max_size=50),
-            values=st.text(min_size=1, max_size=100),
-            max_size=50
+            keys=st.text(min_size=1, max_size=50), values=st.text(min_size=1, max_size=100), max_size=50
         )
     )
     def test_aliases_accepts_any_dict(self, aliases):
@@ -511,7 +510,9 @@ class TestConfigPropertyBasedHypothesis:
 
     @pytest.mark.unit
     @pytest.mark.property
-    @given(view_type=st.sampled_from(["FEATURE", "CODE", "WIREFRAME", "API", "TEST", "DATABASE", "ROADMAP", "PROGRESS"]))
+    @given(
+        view_type=st.sampled_from(["FEATURE", "CODE", "WIREFRAME", "API", "TEST", "DATABASE", "ROADMAP", "PROGRESS"])
+    )
     def test_default_view_accepts_valid_types(self, view_type):
         """Test default_view accepts all valid view types."""
         config = Config(default_view=view_type)

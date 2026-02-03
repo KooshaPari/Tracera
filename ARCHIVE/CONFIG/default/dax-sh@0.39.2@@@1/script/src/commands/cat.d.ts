@@ -5,4 +5,4 @@ interface CatFlags {
 }
 export declare function catCommand(context: CommandContext): Promise<ExecuteResult>;
 export declare function parseCatArgs(args: string[]): CatFlags;
-export {};
+

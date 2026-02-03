@@ -10,33 +10,13 @@ Tests all API client functionality including:
 Coverage target: 90%+ for entire API module
 """
 
-import asyncio
-import json
-from datetime import datetime, timedelta
-from unittest.mock import AsyncMock, MagicMock, Mock, call, patch
+from datetime import datetime
+from unittest.mock import MagicMock, patch
 
-import httpx
 import pytest
 from sqlalchemy.orm import Session
-from sqlalchemy.orm.exc import StaleDataError
 
 from tracertm.api.client import TraceRTMClient
-from tracertm.api.sync_client import (
-    ApiClient,
-    ApiConfig,
-    ApiError,
-    AuthenticationError,
-    Change,
-    Conflict,
-    ConflictError,
-    ConflictStrategy,
-    NetworkError,
-    RateLimitError,
-    SyncOperation,
-    SyncStatus,
-    UploadResult,
-)
-
 
 # ============================================================
 # TraceRTMClient Tests

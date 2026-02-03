@@ -44,8 +44,8 @@ class MockWebSocket {
 globalThis.window = {
 	clearInterval: vi.fn(),
 	location: {
-		protocol: "ws:",
 		host: "localhost:4000",
+		protocol: "ws:",
 	},
 	setInterval: vi.fn(
 		(_fn: TimerHandler, _delay?: number) => 1 as ReturnType<typeof setInterval>,

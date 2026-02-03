@@ -74,4 +74,4 @@ export type DelimiterCase<
 		>, string, {strict: false}>>
 	: Value;
 
-export {};
+

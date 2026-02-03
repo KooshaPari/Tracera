@@ -11,29 +11,29 @@ from pathlib import Path
 import pytest
 import pytest_asyncio
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.orm import Session, sessionmaker
 
-from tracertm.models.base import Base
 # Import ALL models to ensure they're registered with Base.metadata
 # This is critical - SQLAlchemy only creates tables for imported models
 from tracertm.models.agent import Agent
 from tracertm.models.agent_event import AgentEvent
 from tracertm.models.agent_lock import AgentLock
-from tracertm.models.event import Event
-from tracertm.models.item import Item
-from tracertm.models.link import Link
-from tracertm.models.project import Project
+from tracertm.models.base import Base
+
 # Import blockchain models for version tracking and baselines
 from tracertm.models.blockchain import (
-    VersionBlock,
-    VersionChainIndex,
     Baseline,
     BaselineItem,
     MerkleProofCache,
     SpecEmbedding,
+    VersionBlock,
+    VersionChainIndex,
 )
-
+from tracertm.models.event import Event
+from tracertm.models.item import Item
+from tracertm.models.link import Link
+from tracertm.models.project import Project
 
 # Mark every test in this directory as integration to keep layering explicit.
 pytestmark = pytest.mark.integration
@@ -71,8 +71,6 @@ def sync_db_session(test_db):
 @pytest.fixture(scope="function")
 def initialized_db(sync_db_session):
     """Database session with sample project data."""
-    from tracertm.models.project import Project
-    from tracertm.models.item import Item
 
     # Create test project
     project = Project(id="test-project", name="Test Project")
@@ -81,12 +79,7 @@ def initialized_db(sync_db_session):
 
     # Create test items
     item1 = Item(
-        id="STORY-123",
-        project_id="test-project",
-        title="Test Story",
-        view="STORY",
-        item_type="story",
-        status="todo"
+        id="STORY-123", project_id="test-project", title="Test Story", view="STORY", item_type="story", status="todo"
     )
     item2 = Item(
         id="FEATURE-456",
@@ -94,29 +87,21 @@ def initialized_db(sync_db_session):
         title="Test Feature",
         view="FEATURE",
         item_type="feature",
-        status="in_progress"
+        status="in_progress",
     )
     sync_db_session.add(item1)
     sync_db_session.add(item2)
     sync_db_session.commit()
 
-    yield sync_db_session
+    return sync_db_session
 
 
 @pytest.fixture(scope="function")
 def db_with_sample_data(sync_db_session):
     """Database with comprehensive sample projects, items, links, and events for testing."""
-    from tracertm.models.project import Project
-    from tracertm.models.item import Item
-    from tracertm.models.link import Link
-    from tracertm.models.event import Event
 
     # Create sample project
-    project = Project(
-        id="test-project",
-        name="Test Project",
-        description="Comprehensive test project with full data"
-    )
+    project = Project(id="test-project", name="Test Project", description="Comprehensive test project with full data")
     sync_db_session.add(project)
     sync_db_session.commit()
 
@@ -129,7 +114,7 @@ def db_with_sample_data(sync_db_session):
             view="FEATURE",
             item_type="feature",
             status="in_progress",
-            item_metadata={"priority": "high", "assignee": "alice"}
+            item_metadata={"priority": "high", "assignee": "alice"},
         ),
         Item(
             id="item-2",
@@ -138,7 +123,7 @@ def db_with_sample_data(sync_db_session):
             view="API",
             item_type="api",
             status="todo",
-            item_metadata={"method": "POST", "path": "/api/auth/login"}
+            item_metadata={"method": "POST", "path": "/api/auth/login"},
         ),
         Item(
             id="item-3",
@@ -147,7 +132,7 @@ def db_with_sample_data(sync_db_session):
             view="DATABASE",
             item_type="schema",
             status="done",
-            item_metadata={"tables": ["users", "sessions"]}
+            item_metadata={"tables": ["users", "sessions"]},
         ),
         Item(
             id="item-4",
@@ -156,7 +141,7 @@ def db_with_sample_data(sync_db_session):
             view="TEST",
             item_type="test",
             status="todo",
-            item_metadata={"test_type": "integration"}
+            item_metadata={"test_type": "integration"},
         ),
     ]
 
@@ -171,21 +156,17 @@ def db_with_sample_data(sync_db_session):
             project_id="test-project",
             source_item_id="item-1",
             target_item_id="item-2",
-            link_type="implements"
+            link_type="implements",
         ),
         Link(
             id="link-2",
             project_id="test-project",
             source_item_id="item-1",
             target_item_id="item-3",
-            link_type="depends_on"
+            link_type="depends_on",
         ),
         Link(
-            id="link-3",
-            project_id="test-project",
-            source_item_id="item-4",
-            target_item_id="item-2",
-            link_type="tests"
+            id="link-3", project_id="test-project", source_item_id="item-4", target_item_id="item-2", link_type="tests"
         ),
     ]
 
@@ -201,7 +182,7 @@ def db_with_sample_data(sync_db_session):
             entity_type="item",
             entity_id="item-1",
             agent_id="test-agent",
-            data={"title": "User Authentication Feature", "view": "FEATURE"}
+            data={"title": "User Authentication Feature", "view": "FEATURE"},
         ),
         Event(
             project_id="test-project",
@@ -209,7 +190,7 @@ def db_with_sample_data(sync_db_session):
             entity_type="item",
             entity_id="item-1",
             agent_id="test-agent",
-            data={"field": "status", "old_value": "todo", "new_value": "in_progress"}
+            data={"field": "status", "old_value": "todo", "new_value": "in_progress"},
         ),
         Event(
             project_id="test-project",
@@ -217,7 +198,7 @@ def db_with_sample_data(sync_db_session):
             entity_type="link",
             entity_id="link-1",
             agent_id="test-agent",
-            data={"source": "item-1", "target": "item-2", "link_type": "implements"}
+            data={"source": "item-1", "target": "item-2", "link_type": "implements"},
         ),
     ]
 
@@ -225,7 +206,7 @@ def db_with_sample_data(sync_db_session):
         sync_db_session.add(event)
     sync_db_session.commit()
 
-    yield sync_db_session
+    return sync_db_session
 
 
 # ============================================================
@@ -289,7 +270,7 @@ def isolated_cli_environment(tmp_path, monkeypatch):
     CLI commands don't find the repository's .trace/ directory.
     """
     # Change to temp directory to avoid finding repo's .trace/
-    original_cwd = os.getcwd()
+    original_cwd = Path.cwd()
     os.chdir(tmp_path)
 
     yield tmp_path

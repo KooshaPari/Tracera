@@ -34,6 +34,6 @@ export default function rego(Prism) {
     },
     number: /-?\b\d+(?:\.\d+)?(?:e[+-]?\d+)?\b/i,
     operator: /[-+*/%|&]|[<>:=]=?|!=|\b_\b/,
-    punctuation: /[,;.\[\]{}()]/
+    punctuation: /[,;.[\]{}()]/
   }
 }

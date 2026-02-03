@@ -15,14 +15,14 @@ declare class _HttpAgent extends http.Agent {
 }
 
 interface Constants {
-  CURRENT_ID: Symbol;
-  CREATE_ID: Symbol;
-  INIT_SOCKET: Symbol;
-  CREATE_HTTPS_CONNECTION: Symbol;
-  SOCKET_CREATED_TIME: Symbol;
-  SOCKET_NAME: Symbol;
-  SOCKET_REQUEST_COUNT: Symbol;
-  SOCKET_REQUEST_FINISHED_COUNT: Symbol;
+  CURRENT_ID: symbol;
+  CREATE_ID: symbol;
+  INIT_SOCKET: symbol;
+  CREATE_HTTPS_CONNECTION: symbol;
+  SOCKET_CREATED_TIME: symbol;
+  SOCKET_NAME: symbol;
+  SOCKET_REQUEST_COUNT: symbol;
+  SOCKET_REQUEST_FINISHED_COUNT: symbol;
 }
 
 /**

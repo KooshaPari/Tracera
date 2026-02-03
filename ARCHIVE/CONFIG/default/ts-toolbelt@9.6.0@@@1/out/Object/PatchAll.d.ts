@@ -34,4 +34,4 @@ export declare type _PatchAll<O extends object, Os extends List<object>, depth e
  * ```
  */
 export declare type PatchAll<O extends object, Os extends List<object>, depth extends Depth = 'flat', ignore extends object = BuiltIn, fill extends any = never> = O extends unknown ? Os extends unknown ? _PatchAll<O, Os, depth, ignore, fill> : never : never;
-export {};
+

@@ -20,9 +20,9 @@ export default function smalltalk(Prism) {
       pattern: /'(?:''|[^'])*'/,
       greedy: true
     },
-    symbol: /#[\da-z]+|#(?:-|([+\/\\*~<>=@%|&?!])\1?)|#(?=\()/i,
+    symbol: /#[\da-z]+|#(?:-|([+/\\*~<>=@%|&?!])\1?)|#(?=\()/i,
     'block-arguments': {
-      pattern: /(\[\s*):[^\[|]*\|/,
+      pattern: /(\[\s*):[^[|]*\|/,
       lookbehind: true,
       inside: {
         variable: /:[\da-z]+/i,
@@ -43,6 +43,6 @@ export default function smalltalk(Prism) {
       /\b\d+(?:\.\d+)?(?:e-?\d+)?/
     ],
     operator: /[<=]=?|:=|~[~=]|\/\/?|\\\\|>[>=]?|[!^+\-*&|,@]/,
-    punctuation: /[.;:?\[\](){}]/
+    punctuation: /[.;:?[\](){}]/
   }
 }

@@ -209,5 +209,5 @@ export interface StructuredPatchHunk {
     newLines: number;
     lines: string[];
 }
-export {};
+
 //# sourceMappingURL=types.d.ts.map

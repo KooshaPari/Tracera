@@ -37,4 +37,4 @@ export declare function extendSchemaImpl(
   documentAST: DocumentNode,
   options?: Options,
 ): GraphQLSchemaNormalizedConfig;
-export {};
+

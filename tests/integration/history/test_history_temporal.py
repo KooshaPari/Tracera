@@ -4,8 +4,8 @@ Integration tests for Epic 7: History and Temporal Queries (FR54-FR59).
 Tests history tracking, temporal queries, and rollback.
 """
 
-
 import pytest
+
 pytestmark = pytest.mark.integration
 from typer.testing import CliRunner
 
@@ -96,4 +96,4 @@ def test_rollback_item(temp_project, runner):
     # Then rollback
     # result = runner.invoke(app, ["history", "rollback", item_id, "--version", "2", "--confirm"])
     # assert result.exit_code == 0
-    pass  # Placeholder - would need full item setup
+    # Placeholder - would need full item setup

@@ -5,11 +5,9 @@ Tests that all major CLI command groups work correctly with lazy loading,
 shell completion, and alias system.
 """
 
-import json
 import subprocess
 import sys
 from pathlib import Path
-from typing import List, Tuple
 
 import pytest
 from typer.testing import CliRunner
@@ -25,12 +23,14 @@ def runner():
 def cli_app():
     """Import CLI app."""
     from tracertm.cli.app import app
+
     return app
 
 
 # ============================================================
 # Major Command Group Tests
 # ============================================================
+
 
 class TestCommandGroups:
     """Test all major command groups work with optimizations."""
@@ -81,6 +81,7 @@ class TestCommandGroups:
 # ============================================================
 # Lazy Loading Verification Tests
 # ============================================================
+
 
 class TestLazyLoading:
     """Test that lazy loading doesn't break functionality."""
@@ -144,6 +145,7 @@ class TestLazyLoading:
 
         # Verify lazy loader was used
         from tracertm.cli.performance import get_loader
+
         loader = get_loader()
         assert loader is not None
 
@@ -151,6 +153,7 @@ class TestLazyLoading:
 # ============================================================
 # Shell Completion Tests
 # ============================================================
+
 
 class TestShellCompletion:
     """Test shell completion generation."""
@@ -169,6 +172,7 @@ class TestShellCompletion:
         # This is just a smoke test to ensure completion code exists
         try:
             from tracertm.cli.app import app
+
             # If app exists and has Typer's auto-completion, this passes
             assert app is not None
             assert hasattr(app, "registered_commands") or hasattr(app, "registered_groups")
@@ -189,6 +193,7 @@ class TestShellCompletion:
 # ============================================================
 # Alias System Tests
 # ============================================================
+
 
 class TestAliasSystem:
     """Test CLI alias functionality."""
@@ -224,6 +229,7 @@ class TestAliasSystem:
 # Error Handling Tests
 # ============================================================
 
+
 class TestErrorHandling:
     """Test error handling with optimizations enabled."""
 
@@ -232,7 +238,7 @@ class TestErrorHandling:
         result = runner.invoke(cli_app, ["nonexistent-command"])
         assert result.exit_code != 0
         # Should show helpful error message
-        assert len(result.stdout) > 0 or len(result.stderr if hasattr(result, 'stderr') else '') > 0
+        assert len(result.stdout) > 0 or len(result.stderr if hasattr(result, "stderr") else "") > 0
 
     def test_missing_required_args_error(self, runner, cli_app):
         """Test error handling for missing required arguments."""
@@ -258,6 +264,7 @@ class TestErrorHandling:
 # ============================================================
 # Performance Under Load Tests
 # ============================================================
+
 
 class TestPerformanceUnderLoad:
     """Test CLI performance with multiple rapid invocations."""
@@ -289,6 +296,7 @@ class TestPerformanceUnderLoad:
         ]
 
         import time
+
         start = time.perf_counter()
 
         for cmd in commands:
@@ -304,6 +312,7 @@ class TestPerformanceUnderLoad:
 # ============================================================
 # Cache Behavior Tests
 # ============================================================
+
 
 class TestCacheBehavior:
     """Test command caching behavior."""
@@ -323,8 +332,9 @@ class TestCacheBehavior:
 
     def test_command_cache_expiration(self):
         """Test cache expiration."""
-        from tracertm.cli.performance import CommandCache
         import time
+
+        from tracertm.cli.performance import CommandCache
 
         cache = CommandCache(ttl=1)  # 1 second TTL
 
@@ -354,19 +364,17 @@ class TestCacheBehavior:
 # Regression Prevention Tests
 # ============================================================
 
+
 class TestRegressionPrevention:
     """Tests to prevent performance regressions."""
 
     def test_no_unnecessary_imports_at_startup(self):
         """Verify no heavy modules imported at startup."""
-        import sys
-        import importlib
 
         # Record initial modules
         initial_modules = set(sys.modules.keys())
 
         # Import CLI app
-        from tracertm.cli.app import app
 
         # Record modules after import
         final_modules = set(sys.modules.keys())
@@ -386,9 +394,7 @@ class TestRegressionPrevention:
         # Check if any heavy modules were imported
         imported_heavy = new_modules & heavy_modules
 
-        assert len(imported_heavy) == 0, (
-            f"Heavy modules imported at startup: {imported_heavy}"
-        )
+        assert len(imported_heavy) == 0, f"Heavy modules imported at startup: {imported_heavy}"
 
     def test_version_command_fast(self, runner, cli_app):
         """Test that --version is consistently fast."""
@@ -415,12 +421,12 @@ class TestRegressionPrevention:
 # Cross-Platform Tests
 # ============================================================
 
+
 class TestCrossPlatform:
     """Test CLI works across platforms."""
 
     def test_path_handling(self):
         """Test that path handling works on current platform."""
-        from pathlib import Path
         from tracertm.cli.performance import CommandCache
 
         # Test cache directory creation
@@ -429,7 +435,6 @@ class TestCrossPlatform:
 
     def test_subprocess_compatibility(self):
         """Test subprocess calls work on current platform."""
-        import subprocess
         import sys
 
         # Test basic subprocess call
@@ -447,6 +452,7 @@ class TestCrossPlatform:
 # ============================================================
 # Integration Smoke Tests
 # ============================================================
+
 
 @pytest.mark.integration
 class TestIntegrationSmoke:

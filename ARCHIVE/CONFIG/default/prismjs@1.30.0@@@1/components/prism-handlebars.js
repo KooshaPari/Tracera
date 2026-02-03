@@ -10,7 +10,7 @@
 		'number': /\b0x[\dA-Fa-f]+\b|(?:\b\d+(?:\.\d*)?|\B\.\d+)(?:[Ee][+-]?\d+)?/,
 		'boolean': /\b(?:false|true)\b/,
 		'block': {
-			pattern: /^(\s*(?:~\s*)?)[#\/]\S+?(?=\s*(?:~\s*)?$|\s)/,
+			pattern: /^(\s*(?:~\s*)?)[#/]\S+?(?=\s*(?:~\s*)?$|\s)/,
 			lookbehind: true,
 			alias: 'keyword'
 		},
@@ -21,8 +21,8 @@
 				variable: /[\s\S]+/
 			}
 		},
-		'punctuation': /[!"#%&':()*+,.\/;<=>@\[\\\]^`{|}~]/,
-		'variable': /[^!"#%&'()*+,\/;<=>@\[\\\]^`{|}~\s]+/
+		'punctuation': /[!"#%&':()*+,./;<=>@[\\\]^`{|}~]/,
+		'variable': /[^!"#%&'()*+,/;<=>@[\\\]^`{|}~\s]+/
 	};
 
 	Prism.hooks.add('before-tokenize', function (env) {

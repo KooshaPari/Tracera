@@ -321,4 +321,4 @@ export declare class FsFileWrapper extends dntShim.Deno.FsFile {
     /** Synchronously writes the provided bytes to the file. */
     writeBytesSync(bytes: Uint8Array): this;
 }
-export {};
+

@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta, timezone
 
 import pytest
 
@@ -31,7 +31,7 @@ def _event(session, project_id, entity_id, agent, minutes_ago=0):
         entity_type="item",
         entity_id=entity_id,
         agent_id=agent,
-        created_at=datetime.utcnow() - timedelta(minutes=minutes_ago),
+        created_at=datetime.now(UTC) - timedelta(minutes=minutes_ago),
     )
     session.add(event)
     session.commit()

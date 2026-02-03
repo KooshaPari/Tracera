@@ -8,9 +8,10 @@ Revises: 042_add_derived_journeys
 Create Date: 2026-01-30
 """
 
-from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
+
+from alembic import op
 
 # revision identifiers, used by Alembic
 revision = "043_add_version_branches"
@@ -175,9 +176,7 @@ def upgrade() -> None:
             nullable=False,
         ),
         # Constraints
-        sa.UniqueConstraint(
-            "branch_id", "version_number", name="uq_versions_branch_version_number"
-        ),
+        sa.UniqueConstraint("branch_id", "version_number", name="uq_versions_branch_version_number"),
     )
 
     # Add FK from version_branches.base_version_id to versions.id
@@ -531,9 +530,7 @@ def downgrade() -> None:
     # Drop item_alternatives
     op.drop_index("ix_item_alternatives_is_chosen", table_name="item_alternatives")
     op.drop_index("ix_item_alternatives_relationship", table_name="item_alternatives")
-    op.drop_index(
-        "ix_item_alternatives_alternative_item_id", table_name="item_alternatives"
-    )
+    op.drop_index("ix_item_alternatives_alternative_item_id", table_name="item_alternatives")
     op.drop_index("ix_item_alternatives_base_item_id", table_name="item_alternatives")
     op.drop_index("ix_item_alternatives_project_id", table_name="item_alternatives")
     op.drop_table("item_alternatives")
@@ -548,16 +545,12 @@ def downgrade() -> None:
     op.drop_table("item_versions")
 
     # Drop version_changesets
-    op.drop_index(
-        "ix_version_changesets_parent_version_id", table_name="version_changesets"
-    )
+    op.drop_index("ix_version_changesets_parent_version_id", table_name="version_changesets")
     op.drop_index("ix_version_changesets_version_id", table_name="version_changesets")
     op.drop_table("version_changesets")
 
     # Drop FK before dropping versions
-    op.drop_constraint(
-        "fk_version_branches_base_version", "version_branches", type_="foreignkey"
-    )
+    op.drop_constraint("fk_version_branches_base_version", "version_branches", type_="foreignkey")
 
     # Drop versions
     op.drop_index("ix_versions_branch_number", table_name="versions")

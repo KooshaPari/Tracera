@@ -320,7 +320,7 @@ export const RowPagination: TableFeature = {
       pageCount => {
         let pageOptions: number[] = []
         if (pageCount && pageCount > 0) {
-          pageOptions = [...new Array(pageCount)].fill(null).map((_, i) => i)
+          pageOptions = new Array(pageCount).fill().fill(null).map((_, i) => i)
         }
         return pageOptions
       },

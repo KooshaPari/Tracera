@@ -143,3 +143,9 @@ All services integrate seamlessly with:
 ✅ **Epic 7: History/Search/Progress** - 100% Complete
 
 **Status:** ✅ **ALL EPICS COMPLETE - READY FOR INTEGRATION**
+
+
+## Opinionated Quality Enforcement
+- We want opinionated rules that enforce opinionated styling to a strict degree.
+- This is an exclusively agent/vibecoded project; programmatic enforcement must guard against bad quality and antipatterns.
+- Rather than disables or ignores, fix code properly.

@@ -39,9 +39,7 @@ class DatabaseConnection:
             "sqlite+aiosqlite://",
         )
         if not database_url or not database_url.startswith(allowed_prefixes):
-            raise ValueError(
-                "Database URL must start with 'postgresql://' or 'sqlite://' (for testing)"
-            )
+            raise ValueError("Database URL must start with 'postgresql://' or 'sqlite://' (for testing)")
 
         self.database_url = database_url
         self._engine: Engine | None = None
@@ -140,10 +138,7 @@ class DatabaseConnection:
 
                     # Check tables (PostgreSQL)
                     result = conn.execute(
-                        text(
-                            "SELECT COUNT(*) FROM information_schema.tables "
-                            "WHERE table_schema = 'public'"
-                        )
+                        text("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public'")
                     )
                     table_count = result.scalar()
                 else:
@@ -152,17 +147,18 @@ class DatabaseConnection:
                     version = f"SQLite {result.scalar()}"
 
                     # Check tables (SQLite)
-                    result = conn.execute(
-                        text("SELECT COUNT(*) FROM sqlite_master WHERE type='table'")
-                    )
+                    result = conn.execute(text("SELECT COUNT(*) FROM sqlite_master WHERE type='table'"))
                     table_count = result.scalar()
 
+                pool = self._engine.pool
+                pool_size = getattr(pool, "size", lambda: 0)()
+                checked_out = getattr(pool, "checkedout", lambda: 0)()
                 return {
                     "status": "connected",
                     "version": version,
                     "tables": table_count,
-                    "pool_size": self._engine.pool.size(),
-                    "checked_out": self._engine.pool.checkedout(),
+                    "pool_size": pool_size,
+                    "checked_out": checked_out,
                 }
 
         except Exception as e:
@@ -214,7 +210,10 @@ def get_engine(database_url: str) -> Engine:
         _db_connection = DatabaseConnection(database_url)
         _db_connection.connect()
 
-    return _db_connection._engine
+    engine = _db_connection._engine
+    if engine is None:
+        raise RuntimeError("Database connection failed: engine is None")
+    return engine
 
 
 def get_session(database_url: str) -> Generator[Session, None, None]:

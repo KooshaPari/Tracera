@@ -1,4 +1,5 @@
 """Tests for item deletion and recovery."""
+
 import uuid
 from unittest.mock import AsyncMock
 
@@ -11,8 +12,7 @@ from tracertm.services.item_service import ItemService
 @pytest.fixture
 def mock_session():
     """Create a mock database session."""
-    session = AsyncMock()
-    return session
+    return AsyncMock()
 
 
 @pytest.fixture

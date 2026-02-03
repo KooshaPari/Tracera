@@ -15,18 +15,14 @@ class TestItemEndpoints:
 
     def test_create_item_success(self):
         """Test successful item creation."""
-        payload = {
-            "name": "New Item",
-            "description": "Test Item",
-            "status": "active"
-        }
+        payload = {"name": "New Item", "description": "Test Item", "status": "active"}
 
         response = {
             "id": 1,
             "name": payload["name"],
             "description": payload["description"],
             "status": payload["status"],
-            "created_at": "2025-11-22T10:00:00Z"
+            "created_at": "2025-11-22T10:00:00Z",
         }
 
         assert response["id"] == 1
@@ -52,11 +48,7 @@ class TestItemEndpoints:
 
     def test_get_item_success(self):
         """Test get item by ID."""
-        item = {
-            "id": 1,
-            "name": "Item 1",
-            "status": "active"
-        }
+        item = {"id": 1, "name": "Item 1", "status": "active"}
 
         assert item["id"] == 1
         assert "name" in item
@@ -76,11 +68,7 @@ class TestItemEndpoints:
 
     def test_list_items_with_results(self):
         """Test list items with results."""
-        items = [
-            {"id": 1, "name": "Item 1"},
-            {"id": 2, "name": "Item 2"},
-            {"id": 3, "name": "Item 3"}
-        ]
+        items = [{"id": 1, "name": "Item 1"}, {"id": 2, "name": "Item 2"}, {"id": 3, "name": "Item 3"}]
 
         assert len(items) == 3
         assert items[0]["id"] == 1
@@ -90,12 +78,7 @@ class TestItemEndpoints:
         items = [{"id": i, "name": f"Item {i}"} for i in range(1, 51)]
 
         def paginate(items, skip=0, limit=10):
-            return {
-                "items": items[skip:skip + limit],
-                "total": len(items),
-                "skip": skip,
-                "limit": limit
-            }
+            return {"items": items[skip : skip + limit], "total": len(items), "skip": skip, "limit": limit}
 
         result = paginate(items, skip=0, limit=10)
         assert len(result["items"]) == 10
@@ -106,7 +89,7 @@ class TestItemEndpoints:
         items = [
             {"id": 1, "name": "Item 1", "status": "active"},
             {"id": 2, "name": "Item 2", "status": "inactive"},
-            {"id": 3, "name": "Item 3", "status": "active"}
+            {"id": 3, "name": "Item 3", "status": "active"},
         ]
 
         filtered = [i for i in items if i["status"] == "active"]
@@ -162,11 +145,7 @@ class TestItemEndpoints:
 
     def test_bulk_update_items(self):
         """Test bulk update operation."""
-        items = [
-            {"id": 1, "status": "active"},
-            {"id": 2, "status": "active"},
-            {"id": 3, "status": "inactive"}
-        ]
+        items = [{"id": 1, "status": "active"}, {"id": 2, "status": "active"}, {"id": 3, "status": "inactive"}]
 
         updates = {1: {"status": "inactive"}, 2: {"status": "pending"}}
 
@@ -183,17 +162,13 @@ class TestLinkEndpoints:
 
     def test_create_link_success(self):
         """Test successful link creation."""
-        payload = {
-            "source_id": 1,
-            "target_id": 2,
-            "link_type": "depends_on"
-        }
+        payload = {"source_id": 1, "target_id": 2, "link_type": "depends_on"}
 
         response = {
             "id": 1,
             "source_id": payload["source_id"],
             "target_id": payload["target_id"],
-            "link_type": payload["link_type"]
+            "link_type": payload["link_type"],
         }
 
         assert response["source_id"] == 1
@@ -215,12 +190,7 @@ class TestLinkEndpoints:
 
     def test_get_link_success(self):
         """Test get link by ID."""
-        link = {
-            "id": 1,
-            "source_id": 1,
-            "target_id": 2,
-            "link_type": "depends_on"
-        }
+        link = {"id": 1, "source_id": 1, "target_id": 2, "link_type": "depends_on"}
 
         assert link["id"] == 1
         assert link["source_id"] == 1
@@ -230,7 +200,7 @@ class TestLinkEndpoints:
         links = [
             {"id": 1, "source_id": 1, "target_id": 2},
             {"id": 2, "source_id": 1, "target_id": 3},
-            {"id": 3, "source_id": 2, "target_id": 3}
+            {"id": 3, "source_id": 2, "target_id": 3},
         ]
 
         filtered = [link for link in links if link["source_id"] == 1]
@@ -241,7 +211,7 @@ class TestLinkEndpoints:
         links = [
             {"id": 1, "source_id": 1, "target_id": 3},
             {"id": 2, "source_id": 2, "target_id": 3},
-            {"id": 3, "source_id": 2, "target_id": 1}
+            {"id": 3, "source_id": 2, "target_id": 1},
         ]
 
         filtered = [link for link in links if link["target_id"] == 3]
@@ -252,7 +222,7 @@ class TestLinkEndpoints:
         links = [
             {"id": 1, "link_type": "depends_on"},
             {"id": 2, "link_type": "related_to"},
-            {"id": 3, "link_type": "depends_on"}
+            {"id": 3, "link_type": "depends_on"},
         ]
 
         filtered = [link for link in links if link["link_type"] == "depends_on"]
@@ -280,21 +250,14 @@ class TestProjectEndpoints:
         """Test project creation."""
         payload = {"name": "Test Project"}
 
-        response = {
-            "id": "proj-1",
-            "name": payload["name"],
-            "created_at": "2025-11-22T10:00:00Z"
-        }
+        response = {"id": "proj-1", "name": payload["name"], "created_at": "2025-11-22T10:00:00Z"}
 
         assert "id" in response
         assert response["name"] == payload["name"]
 
     def test_list_projects(self):
         """Test list projects."""
-        projects = [
-            {"id": "proj-1", "name": "Project 1"},
-            {"id": "proj-2", "name": "Project 2"}
-        ]
+        projects = [{"id": "proj-1", "name": "Project 1"}, {"id": "proj-2", "name": "Project 2"}]
 
         assert len(projects) == 2
 
@@ -332,7 +295,7 @@ class TestBackupEndpoints:
             "backup_id": "backup-001",
             "timestamp": "2025-11-22T10:00:00Z",
             "items_count": items_count,
-            "status": "completed"
+            "status": "completed",
         }
 
         assert response["items_count"] == 42
@@ -342,7 +305,7 @@ class TestBackupEndpoints:
         """Test list backups."""
         backups = [
             {"backup_id": "b1", "timestamp": "2025-11-22T10:00:00Z"},
-            {"backup_id": "b2", "timestamp": "2025-11-22T09:00:00Z"}
+            {"backup_id": "b2", "timestamp": "2025-11-22T09:00:00Z"},
         ]
 
         assert len(backups) == 2
@@ -351,11 +314,7 @@ class TestBackupEndpoints:
         """Test restore from backup."""
         backup_id = "backup-001"
 
-        response = {
-            "success": True,
-            "items_restored": 42,
-            "backup_id": backup_id
-        }
+        response: dict[str, bool | int | str] = {"success": True, "items_restored": 42, "backup_id": backup_id}
 
         assert response["success"]
         assert response["items_restored"] > 0
@@ -425,43 +384,28 @@ class TestErrorResponses:
 
     def test_400_bad_request(self):
         """Test 400 Bad Request response."""
-        response = {
-            "error": "Invalid request",
-            "code": 400,
-            "details": "Missing required field: name"
-        }
+        response = {"error": "Invalid request", "code": 400, "details": "Missing required field: name"}
 
         assert response["code"] == 400
 
     def test_404_not_found(self):
         """Test 404 Not Found response."""
-        response = {
-            "error": "Not Found",
-            "code": 404,
-            "details": "Item with ID 999 not found"
-        }
+        response = {"error": "Not Found", "code": 404, "details": "Item with ID 999 not found"}
 
         assert response["code"] == 404
 
     def test_409_conflict(self):
         """Test 409 Conflict response."""
-        response = {
-            "error": "Conflict",
-            "code": 409,
-            "details": "Item with name already exists"
-        }
+        response = {"error": "Conflict", "code": 409, "details": "Item with name already exists"}
 
         assert response["code"] == 409
 
     def test_422_validation_error(self):
         """Test 422 Validation Error response."""
-        response = {
+        response: dict[str, str | int | list[dict[str, str]]] = {
             "error": "Validation Error",
             "code": 422,
-            "details": [
-                {"field": "name", "message": "Required"},
-                {"field": "status", "message": "Invalid value"}
-            ]
+            "details": [{"field": "name", "message": "Required"}, {"field": "status", "message": "Invalid value"}],
         }
 
         assert response["code"] == 422
@@ -469,11 +413,7 @@ class TestErrorResponses:
 
     def test_500_server_error(self):
         """Test 500 Server Error response."""
-        response = {
-            "error": "Internal Server Error",
-            "code": 500,
-            "details": "Database connection failed"
-        }
+        response = {"error": "Internal Server Error", "code": 500, "details": "Database connection failed"}
 
         assert response["code"] == 500
 
@@ -483,35 +423,23 @@ class TestSearchAndFilter:
 
     def test_search_by_name(self):
         """Test search items by name."""
-        items = [
-            {"id": 1, "name": "Apple"},
-            {"id": 2, "name": "Application"},
-            {"id": 3, "name": "Banana"}
-        ]
+        items: list[dict[str, int | str]] = [{"id": 1, "name": "Apple"}, {"id": 2, "name": "Application"}, {"id": 3, "name": "Banana"}]
 
         query = "app"
-        results = [i for i in items if query.lower() in i["name"].lower()]
+        results = [i for i in items if query.lower() in str(i["name"]).lower()]
 
         assert len(results) == 2
 
     def test_filter_by_status(self):
         """Test filter items by status."""
-        items = [
-            {"id": 1, "status": "active"},
-            {"id": 2, "status": "inactive"},
-            {"id": 3, "status": "active"}
-        ]
+        items = [{"id": 1, "status": "active"}, {"id": 2, "status": "inactive"}, {"id": 3, "status": "active"}]
 
         filtered = [i for i in items if i["status"] == "active"]
         assert len(filtered) == 2
 
     def test_sort_by_field(self):
         """Test sort items by field."""
-        items = [
-            {"id": 3, "name": "C"},
-            {"id": 1, "name": "A"},
-            {"id": 2, "name": "B"}
-        ]
+        items = [{"id": 3, "name": "C"}, {"id": 1, "name": "A"}, {"id": 2, "name": "B"}]
 
         sorted_items = sorted(items, key=lambda x: x["id"])
         assert sorted_items[0]["id"] == 1
@@ -521,16 +449,13 @@ class TestSearchAndFilter:
         items = [
             {"id": 1, "name": "Apple", "status": "active"},
             {"id": 2, "name": "Application", "status": "inactive"},
-            {"id": 3, "name": "Banana", "status": "active"}
+            {"id": 3, "name": "Banana", "status": "active"},
         ]
 
         query = "app"
         status = "active"
 
-        results = [
-            i for i in items
-            if query.lower() in i["name"].lower() and i["status"] == status
-        ]
+        results = [i for i in items if query.lower() in str(i["name"]).lower() and i["status"] == status]
 
         assert len(results) == 1
         assert results[0]["id"] == 1

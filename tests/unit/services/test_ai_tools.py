@@ -3,18 +3,14 @@
 Tests filesystem tools, CLI execution, and TraceRTM-specific tools.
 """
 
-import asyncio
 import os
+import pathlib
 import tempfile
-from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
 from tracertm.services.ai_tools import (
-    BLOCKED_COMMANDS,
-    MAX_FILE_SIZE,
-    MAX_OUTPUT_SIZE,
     TOOLS,
     execute_tool,
     is_binary_file,
@@ -42,7 +38,7 @@ def temp_dir():
 def temp_file(temp_dir):
     """Create a temporary file with content."""
     file_path = os.path.join(temp_dir, "test_file.txt")
-    with open(file_path, "w") as f:
+    with pathlib.Path(file_path).open("w") as f:
         f.write("Line 1\nLine 2\nLine 3\nLine 4\nLine 5\n")
     return file_path
 
@@ -78,7 +74,7 @@ class TestToolDefinitions:
     def test_all_tools_have_required_fields(self):
         """Each tool has name, description, and input_schema."""
         for tool in TOOLS:
-            assert "name" in tool, f"Tool missing 'name'"
+            assert "name" in tool, "Tool missing 'name'"
             assert "description" in tool, f"Tool {tool.get('name')} missing 'description'"
             assert "input_schema" in tool, f"Tool {tool['name']} missing 'input_schema'"
 
@@ -264,7 +260,7 @@ class TestReadFileTool:
         """read_file handles relative paths with working directory."""
         # Create a file in the temp dir
         file_path = os.path.join(temp_dir, "relative_test.txt")
-        with open(file_path, "w") as f:
+        with pathlib.Path(file_path).open("w") as f:
             f.write("Test content\n")
 
         result = await execute_tool(
@@ -301,8 +297,8 @@ class TestWriteFileTool:
         assert result["result"]["bytes_written"] == len(content.encode("utf-8"))
 
         # Verify file was actually created
-        assert os.path.exists(file_path)
-        with open(file_path, "r") as f:
+        assert pathlib.Path(file_path).exists()
+        with pathlib.Path(file_path).open() as f:
             assert f.read() == content
 
     @pytest.mark.asyncio
@@ -318,7 +314,7 @@ class TestWriteFileTool:
         )
 
         assert result["success"] is True
-        assert os.path.exists(file_path)
+        assert pathlib.Path(file_path).exists()
 
     @pytest.mark.asyncio
     async def test_write_file_overwrites_existing(self, temp_file, temp_dir):
@@ -332,7 +328,7 @@ class TestWriteFileTool:
         )
 
         assert result["success"] is True
-        with open(temp_file, "r") as f:
+        with pathlib.Path(temp_file).open() as f:
             assert f.read() == new_content
 
     @pytest.mark.asyncio
@@ -374,7 +370,7 @@ class TestEditFileTool:
         assert result["success"] is True
         assert result["result"]["replacements"] == 1
 
-        with open(temp_file, "r") as f:
+        with pathlib.Path(temp_file).open() as f:
             content = f.read()
         assert "Replaced Line" in content
         assert "Line 2" not in content
@@ -399,7 +395,7 @@ class TestEditFileTool:
     async def test_edit_file_multiple_matches(self, temp_dir):
         """edit_file returns error when string matches multiple times."""
         file_path = os.path.join(temp_dir, "duplicate.txt")
-        with open(file_path, "w") as f:
+        with pathlib.Path(file_path).open("w") as f:
             f.write("duplicate\nsome text\nduplicate\n")
 
         result = await execute_tool(
@@ -444,10 +440,10 @@ class TestListDirectoryTool:
     async def test_list_directory_success(self, temp_dir):
         """list_directory returns directory contents."""
         # Create some files and dirs
-        os.makedirs(os.path.join(temp_dir, "subdir"))
-        with open(os.path.join(temp_dir, "file1.txt"), "w") as f:
+        pathlib.Path(os.path.join(temp_dir, "subdir")).mkdir(parents=True)
+        with pathlib.Path(os.path.join(temp_dir, "file1.txt")).open("w") as f:
             f.write("content")
-        with open(os.path.join(temp_dir, "file2.py"), "w") as f:
+        with pathlib.Path(os.path.join(temp_dir, "file2.py")).open("w") as f:
             f.write("content")
 
         result = await execute_tool(
@@ -466,9 +462,9 @@ class TestListDirectoryTool:
     @pytest.mark.asyncio
     async def test_list_directory_with_pattern(self, temp_dir):
         """list_directory filters by glob pattern."""
-        with open(os.path.join(temp_dir, "file1.txt"), "w") as f:
+        with pathlib.Path(os.path.join(temp_dir, "file1.txt")).open("w") as f:
             f.write("content")
-        with open(os.path.join(temp_dir, "file2.py"), "w") as f:
+        with pathlib.Path(os.path.join(temp_dir, "file2.py")).open("w") as f:
             f.write("content")
 
         result = await execute_tool(
@@ -486,10 +482,10 @@ class TestListDirectoryTool:
     async def test_list_directory_recursive(self, temp_dir):
         """list_directory searches recursively when enabled."""
         # Create nested structure
-        os.makedirs(os.path.join(temp_dir, "subdir"))
-        with open(os.path.join(temp_dir, "root.txt"), "w") as f:
+        pathlib.Path(os.path.join(temp_dir, "subdir")).mkdir(parents=True)
+        with pathlib.Path(os.path.join(temp_dir, "root.txt")).open("w") as f:
             f.write("content")
-        with open(os.path.join(temp_dir, "subdir", "nested.txt"), "w") as f:
+        with pathlib.Path(os.path.join(temp_dir, "subdir", "nested.txt")).open("w") as f:
             f.write("content")
 
         result = await execute_tool(
@@ -527,9 +523,9 @@ class TestSearchFilesTool:
     @pytest.mark.asyncio
     async def test_search_files_finds_matches(self, temp_dir):
         """search_files finds pattern matches in files."""
-        with open(os.path.join(temp_dir, "file1.py"), "w") as f:
+        with pathlib.Path(os.path.join(temp_dir, "file1.py")).open("w") as f:
             f.write("def hello_world():\n    pass\n")
-        with open(os.path.join(temp_dir, "file2.py"), "w") as f:
+        with pathlib.Path(os.path.join(temp_dir, "file2.py")).open("w") as f:
             f.write("def goodbye_world():\n    pass\n")
 
         result = await execute_tool(
@@ -546,9 +542,9 @@ class TestSearchFilesTool:
     @pytest.mark.asyncio
     async def test_search_files_with_file_pattern(self, temp_dir):
         """search_files filters by file pattern."""
-        with open(os.path.join(temp_dir, "code.py"), "w") as f:
+        with pathlib.Path(os.path.join(temp_dir, "code.py")).open("w") as f:
             f.write("pattern_match\n")
-        with open(os.path.join(temp_dir, "text.txt"), "w") as f:
+        with pathlib.Path(os.path.join(temp_dir, "text.txt")).open("w") as f:
             f.write("pattern_match\n")
 
         result = await execute_tool(
@@ -565,7 +561,7 @@ class TestSearchFilesTool:
     async def test_search_files_respects_max_results(self, temp_dir):
         """search_files limits results to max_results."""
         # Create file with many matches
-        with open(os.path.join(temp_dir, "many.txt"), "w") as f:
+        with pathlib.Path(os.path.join(temp_dir, "many.txt")).open("w") as f:
             for i in range(100):
                 f.write(f"match_line_{i}\n")
 
@@ -700,10 +696,10 @@ class TestTraceRTMTools:
         mock_session = AsyncMock()
 
         # Mock the ItemRepository at the import location
-        with patch("tracertm.repositories.item_repository.ItemRepository") as MockRepo:
+        with patch("tracertm.repositories.item_repository.ItemRepository") as mock_repo_cls:
             mock_repo = AsyncMock()
             mock_repo.get_by_project = AsyncMock(return_value=[])
-            MockRepo.return_value = mock_repo
+            mock_repo_cls.return_value = mock_repo
 
             result = await execute_tool(
                 "tracertm_list_items",
@@ -731,10 +727,10 @@ class TestTraceRTMTools:
         """tracertm_get_item returns error when item not found."""
         mock_session = AsyncMock()
 
-        with patch("tracertm.repositories.item_repository.ItemRepository") as MockRepo:
+        with patch("tracertm.repositories.item_repository.ItemRepository") as mock_repo_cls:
             mock_repo = AsyncMock()
             mock_repo.get_by_id = AsyncMock(return_value=None)
-            MockRepo.return_value = mock_repo
+            mock_repo_cls.return_value = mock_repo
 
             result = await execute_tool(
                 "tracertm_get_item",
@@ -880,11 +876,11 @@ class TestBinaryFileSkipping:
     async def test_search_skips_binary_files(self, temp_dir):
         """search_files skips binary file extensions."""
         # Create a text file with match
-        with open(os.path.join(temp_dir, "code.py"), "w") as f:
+        with pathlib.Path(os.path.join(temp_dir, "code.py")).open("w") as f:
             f.write("findme = True\n")
 
         # Create a "binary" file with match (simulated by extension)
-        with open(os.path.join(temp_dir, "data.pyc"), "w") as f:
+        with pathlib.Path(os.path.join(temp_dir, "data.pyc")).open("w") as f:
             f.write("findme = True\n")
 
         result = await execute_tool(
@@ -902,7 +898,6 @@ class TestBinaryFileSkipping:
     @pytest.mark.asyncio
     async def test_search_skips_image_files(self, temp_dir):
         """search_files skips image extensions."""
-        from tracertm.services.ai_tools import is_binary_file
 
         assert is_binary_file("image.png") is True
         assert is_binary_file("photo.jpg") is True
@@ -919,7 +914,7 @@ class TestEdgeCases:
         """read_file handles unicode content."""
         file_path = os.path.join(temp_dir, "unicode.txt")
         content = "Hello 世界 🌍\nמה נשמע?\n"
-        with open(file_path, "w", encoding="utf-8") as f:
+        with pathlib.Path(file_path).open("w", encoding="utf-8") as f:
             f.write(content)
 
         result = await execute_tool(
@@ -944,14 +939,14 @@ class TestEdgeCases:
         )
 
         assert result["success"] is True
-        with open(file_path, "r", encoding="utf-8") as f:
+        with pathlib.Path(file_path).open(encoding="utf-8") as f:
             assert f.read() == content
 
     @pytest.mark.asyncio
     async def test_empty_file_operations(self, temp_dir):
         """File operations handle empty files."""
         file_path = os.path.join(temp_dir, "empty.txt")
-        with open(file_path, "w") as f:
+        with pathlib.Path(file_path).open("w"):
             pass  # Create empty file
 
         result = await execute_tool(
@@ -979,7 +974,7 @@ class TestEdgeCases:
     async def test_list_directory_empty(self, temp_dir):
         """list_directory handles empty directories."""
         empty_dir = os.path.join(temp_dir, "empty_subdir")
-        os.makedirs(empty_dir)
+        pathlib.Path(empty_dir).mkdir(parents=True)
 
         result = await execute_tool(
             "list_directory",

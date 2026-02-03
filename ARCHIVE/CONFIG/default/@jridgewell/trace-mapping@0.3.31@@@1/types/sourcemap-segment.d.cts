@@ -13,5 +13,5 @@ export declare const SOURCE_COLUMN = 3;
 export declare const NAMES_INDEX = 4;
 export declare const REV_GENERATED_LINE = 1;
 export declare const REV_GENERATED_COLUMN = 2;
-export {};
+
 //# sourceMappingURL=sourcemap-segment.d.ts.map

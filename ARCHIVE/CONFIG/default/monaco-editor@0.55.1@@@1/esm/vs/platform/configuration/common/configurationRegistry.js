@@ -131,7 +131,7 @@ class ConfigurationRegistry extends Disposable {
                 (isUndefined(defaultValue[propertyKey]) || isObject(defaultValue[propertyKey]));
             // If the default value is an object, merge the objects and store the source of each keys
             if (isObjectSetting) {
-                defaultValue[propertyKey] = { ...(defaultValue[propertyKey] ?? {}), ...propertyDefaultValue };
+                defaultValue[propertyKey] = { ...defaultValue[propertyKey], ...propertyDefaultValue };
                 // Track the source of each value in the object
                 if (valueSource) {
                     for (const objectKey in propertyDefaultValue) {

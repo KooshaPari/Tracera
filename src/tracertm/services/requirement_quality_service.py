@@ -1,15 +1,13 @@
 """Requirement Quality Service for TraceRTM."""
 
 import re
-from typing import Any, List, Optional
-from datetime import datetime
+from datetime import UTC, datetime, timezone
 
-from sqlalchemy import select, delete
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from tracertm.models.requirement_quality import RequirementQuality
 from tracertm.models.item import Item
-from tracertm.core.concurrency import update_with_retry
+from tracertm.models.requirement_quality import RequirementQuality
 
 # Simple regex-based smell detection patterns
 SMELL_PATTERNS = {
@@ -24,6 +22,7 @@ SMELL_PATTERNS = {
     "incomplete_references": r"\b(tbd|tba|to be defined|to be determined|see documentation)\b",
 }
 
+
 class RequirementQualityService:
     """Service for Requirement Quality Analysis."""
 
@@ -35,16 +34,16 @@ class RequirementQualityService:
         # Get the item text
         result = await self.session.execute(select(Item).where(Item.id == item_id))
         item = result.scalar_one_or_none()
-        
+
         if not item:
             raise ValueError(f"Item {item_id} not found")
-            
+
         text = f"{item.title} {item.description or ''}".lower()
-        
+
         # Detect smells
         detected_smells = []
         suggestions = []
-        
+
         for smell_type, pattern in SMELL_PATTERNS.items():
             if re.search(pattern, text):
                 detected_smells.append(smell_type)
@@ -53,14 +52,14 @@ class RequirementQualityService:
         # Calculate scores (simple heuristic)
         # Ambiguity increases with more smells
         ambiguity_score = min(1.0, len(detected_smells) * 0.15)
-        
+
         # Completeness decreases with certain smells
         completeness_penalty = 0.0
         if "incomplete_references" in detected_smells:
             completeness_penalty += 0.3
         if "loopholes" in detected_smells:
             completeness_penalty += 0.2
-            
+
         completeness_score = max(0.0, 1.0 - completeness_penalty)
 
         # Check if analysis exists
@@ -72,7 +71,7 @@ class RequirementQualityService:
             quality_record.ambiguity_score = ambiguity_score
             quality_record.completeness_score = completeness_score
             quality_record.suggestions = suggestions
-            quality_record.last_analyzed_at = datetime.now()
+            quality_record.last_analyzed_at = datetime.now(UTC)
             quality_record.version += 1
         else:
             quality_record = RequirementQuality(
@@ -81,7 +80,7 @@ class RequirementQualityService:
                 ambiguity_score=ambiguity_score,
                 completeness_score=completeness_score,
                 suggestions=suggestions,
-                last_analyzed_at=datetime.now(),
+                last_analyzed_at=datetime.now(UTC),
             )
             self.session.add(quality_record)
 
@@ -89,7 +88,7 @@ class RequirementQualityService:
         await self.session.refresh(quality_record)
         return quality_record
 
-    async def get_quality(self, item_id: str) -> Optional[RequirementQuality]:
+    async def get_quality(self, item_id: str) -> RequirementQuality | None:
         """Get quality record for an item."""
         result = await self.session.execute(select(RequirementQuality).where(RequirementQuality.item_id == item_id))
         return result.scalar_one_or_none()

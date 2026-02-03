@@ -13,7 +13,7 @@ export default function sass(Prism) {
     Prism.languages.sass = Prism.languages.extend('css', {
       // Sass comments don't need to be closed, only indented
       comment: {
-        pattern: /^([ \t]*)\/[\/*].*(?:(?:\r?\n|\r)\1[ \t].+)*/m,
+        pattern: /^([ \t]*)\/[/*].*(?:(?:\r?\n|\r)\1[ \t].+)*/m,
         lookbehind: true,
         greedy: true
       }
@@ -32,7 +32,7 @@ export default function sass(Prism) {
     delete Prism.languages.sass.atrule
     var variable = /\$[-\w]+|#\{\$[-\w]+\}/
     var operator = [
-      /[+*\/%]|[=!]=|<=?|>=?|\b(?:and|not|or)\b/,
+      /[+*/%]|[=!]=|<=?|>=?|\b(?:and|not|or)\b/,
       {
         pattern: /(\s)-(?=\s)/,
         lookbehind: true

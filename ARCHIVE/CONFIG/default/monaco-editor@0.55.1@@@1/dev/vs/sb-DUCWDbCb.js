@@ -51,7 +51,7 @@ define("vs/sb-DUCWDbCb", ["exports"], (function(exports) {
     operators: [">", "<", "<>", "<=", ">=", "And", "Or", "+", "-", "*", "/", "="],
     // we include these common regular expressions
     identifier: /[a-zA-Z_][\w]*/,
-    symbols: /[=><:+\-*\/%\.,]+/,
+    symbols: /[=><:+\-*/%.,]+/,
     escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
     // The main tokenizer for our languages
     tokenizer: {
@@ -85,7 +85,7 @@ define("vs/sb-DUCWDbCb", ["exports"], (function(exports) {
         [/\d*\.\d+/, "number.float"],
         [/\d+/, "number"],
         // delimiters and operators
-        [/[()\[\]]/, "@brackets"],
+        [/[()[\]]/, "@brackets"],
         [
           /@symbols/,
           {
@@ -102,7 +102,7 @@ define("vs/sb-DUCWDbCb", ["exports"], (function(exports) {
       ],
       whitespace: [
         [/[ \t\r\n]+/, ""],
-        [/(\').*$/, "comment"]
+        [/(').*$/, "comment"]
       ],
       string: [
         [/[^\\"]+/, "string"],

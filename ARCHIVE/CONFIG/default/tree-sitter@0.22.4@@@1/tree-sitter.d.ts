@@ -517,7 +517,7 @@ declare module "tree-sitter" {
        * @param endPosition - Optional ending position to search to
        * @returns Array of descendant nodes matching the given types
        */
-      descendantsOfType(types: String | Array<String>, startPosition?: Point, endPosition?: Point): Array<SyntaxNode>;
+      descendantsOfType(types: string | Array<string>, startPosition?: Point, endPosition?: Point): Array<SyntaxNode>;
 
       /**
        * Find the closest ancestor of the current node that matches the given type(s).
@@ -536,7 +536,7 @@ declare module "tree-sitter" {
        * @returns The closest matching ancestor node, or null if none found
        * @throws If the argument is not a string or array of strings
        */
-      closest(types: String | Array<String>): SyntaxNode | null;
+      closest(types: string | Array<string>): SyntaxNode | null;
 
       /**
        * Create a new TreeCursor starting from this node.

@@ -58,4 +58,4 @@ const optD: Options2 = {
 */
 export type HasRequiredKeys<BaseType extends object> = RequiredKeysOf<BaseType> extends never ? false : true;
 
-export {};
+

@@ -2039,5 +2039,5 @@ export type WasmAnalysisOptions = {
     plugins: WasmPlugin[];
 };
 export type WasmPlugin = [wasmPackage: string, config: Record<string, any>];
-export {};
+
 //# sourceMappingURL=index.d.ts.map

@@ -3,8 +3,6 @@ CLI hooks integration tests
 """
 
 import pytest
-from router import TOOL_REGISTRY, ArchRouter, ToolRegistry
-
 from hooks import (
     AuggieContext,
     AuggieHook,
@@ -15,6 +13,7 @@ from hooks import (
     DroidContext,
     DroidHook,
 )
+from router import TOOL_REGISTRY, ArchRouter, ToolRegistry
 
 
 @pytest.mark.asyncio
@@ -34,6 +33,7 @@ class TestCliHooks:
         class MockSearchService:
             async def semantic_search(self, *args, **kwargs):
                 return []
+
         return MockSearchService()
 
     async def test_cursor_agent_hook_initialization(self, router, registry, search_service):

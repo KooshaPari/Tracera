@@ -7,9 +7,10 @@ Tests:
 - GET /api/v1/analysis/shortest-path
 """
 
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import AsyncMock, MagicMock, patch
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -39,6 +40,7 @@ def mock_db_connection():
 def client(mock_config_manager, mock_db_connection):
     """Create test client with mocked dependencies."""
     from tracertm.api.main import app
+
     return TestClient(app)
 
 
@@ -52,7 +54,18 @@ class TestImpactAnalysisEndpoint:
             root_item_id="item-1",
             total_affected=10,
             max_depth_reached=5,
-            affected_items=["item-2", "item-3", "item-4", "item-5", "item-6", "item-7", "item-8", "item-9", "item-10", "item-11"],
+            affected_items=[
+                "item-2",
+                "item-3",
+                "item-4",
+                "item-5",
+                "item-6",
+                "item-7",
+                "item-8",
+                "item-9",
+                "item-10",
+                "item-11",
+            ],
         )
 
         with patch("tracertm.services.impact_analysis_service.ImpactAnalysisService") as mock_service:
@@ -207,10 +220,7 @@ class TestShortestPathEndpoint:
             service_instance.find_shortest_path = AsyncMock(return_value=mock_result)
             mock_service.return_value = service_instance
 
-            response = client.get(
-                "/api/v1/analysis/shortest-path"
-                "?project_id=test&source_id=item-1&target_id=item-999"
-            )
+            response = client.get("/api/v1/analysis/shortest-path?project_id=test&source_id=item-1&target_id=item-999")
 
             assert response.status_code == 200
             data = response.json()
@@ -233,10 +243,7 @@ class TestShortestPathEndpoint:
             service_instance.find_shortest_path = AsyncMock(return_value=mock_result)
             mock_service.return_value = service_instance
 
-            response = client.get(
-                "/api/v1/analysis/shortest-path"
-                "?project_id=test&source_id=item-1&target_id=item-2"
-            )
+            response = client.get("/api/v1/analysis/shortest-path?project_id=test&source_id=item-1&target_id=item-2")
 
             assert response.status_code == 200
             data = response.json()
@@ -260,10 +267,7 @@ class TestShortestPathEndpoint:
             service_instance.find_shortest_path = AsyncMock(return_value=mock_result)
             mock_service.return_value = service_instance
 
-            response = client.get(
-                "/api/v1/analysis/shortest-path"
-                "?project_id=test&source_id=item-1&target_id=item-5"
-            )
+            response = client.get("/api/v1/analysis/shortest-path?project_id=test&source_id=item-1&target_id=item-5")
 
             assert response.status_code == 200
             data = response.json()
@@ -287,10 +291,7 @@ class TestShortestPathEndpoint:
             service_instance.find_shortest_path = AsyncMock(return_value=mock_result)
             mock_service.return_value = service_instance
 
-            response = client.get(
-                "/api/v1/analysis/shortest-path"
-                "?project_id=test&source_id=item-1&target_id=item-1"
-            )
+            response = client.get("/api/v1/analysis/shortest-path?project_id=test&source_id=item-1&target_id=item-1")
 
             assert response.status_code == 200
             data = response.json()

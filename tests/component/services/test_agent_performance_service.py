@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta, timezone
 
 import pytest
 
@@ -13,7 +13,7 @@ pytestmark = pytest.mark.integration
 async def _seed_agent(async_session, agent_id="agent-1", project_id="proj-1", last_activity=None):
     existing = await async_session.get(Project, project_id)
     if not existing:
-        project = Project(id=project_id, name=f"Proj-{project_id}-{datetime.utcnow().timestamp()}")
+        project = Project(id=project_id, name=f"Proj-{project_id}-{datetime.now(UTC).timestamp()}")
         async_session.add(project)
     agent = Agent(
         id=agent_id,
@@ -21,7 +21,7 @@ async def _seed_agent(async_session, agent_id="agent-1", project_id="proj-1", la
         name="Agent One",
         agent_type="ai_agent",
         status="active",
-        last_activity_at=last_activity or datetime.utcnow().isoformat(),
+        last_activity_at=last_activity or datetime.now(UTC).isoformat(),
     )
     async_session.add(agent)
     await async_session.commit()
@@ -47,7 +47,7 @@ async def _event(async_session, project_id, agent_id, event_type, created_at=Non
 @pytest.mark.asyncio
 async def test_get_agent_stats_filters_time_window(async_session):
     await _seed_agent(async_session)
-    now = datetime.utcnow()
+    now = datetime.now(UTC)
     await _event(async_session, "proj-1", "agent-1", "updated", created_at=now)
     await _event(async_session, "proj-1", "agent-1", "updated", created_at=now - timedelta(hours=30))
 
@@ -68,7 +68,7 @@ async def test_get_agent_stats_missing_agent(async_session):
 @pytest.mark.asyncio
 async def test_get_agent_workload_classifies_levels(async_session):
     await _seed_agent(async_session)
-    now = datetime.utcnow()
+    now = datetime.now(UTC)
     # 12 events in last 24h => events_per_hour = 0.5, still "Idle" threshold (<=1)
     for _ in range(2):
         await _event(async_session, "proj-1", "agent-1", "updated", created_at=now - timedelta(hours=2))
@@ -84,7 +84,7 @@ async def test_get_agent_workload_classifies_levels(async_session):
 async def test_recommend_agent_assignment_picks_lowest_workload(async_session):
     await _seed_agent(async_session, agent_id="agent-1", project_id="proj-2")
     await _seed_agent(async_session, agent_id="agent-2", project_id="proj-2")
-    now = datetime.utcnow()
+    now = datetime.now(UTC)
     # Give agent-1 more events to make agent-2 the recommended one
     await _event(async_session, "proj-2", "agent-1", "updated", created_at=now)
     await _event(async_session, "proj-2", "agent-1", "updated", created_at=now)

@@ -708,6 +708,6 @@ const TREESITTER_BASE_SCOPES = {
     'ini': 'source.ini',
     'regex': 'source.regex',
 };
-const BRACKETS = /[\{\}\[\]\<\>\(\)]/g;
+const BRACKETS = /[{}[\]<>()]/g;
 
 export { TREESITTER_BASE_SCOPES, TreeSitterTokenizationImpl };

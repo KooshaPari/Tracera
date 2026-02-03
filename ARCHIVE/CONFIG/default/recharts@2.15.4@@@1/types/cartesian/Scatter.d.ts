@@ -126,4 +126,4 @@ export declare class Scatter extends PureComponent<Props, State> {
     renderLine(): React.JSX.Element;
     render(): React.JSX.Element;
 }
-export {};
+

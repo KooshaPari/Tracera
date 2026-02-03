@@ -2,25 +2,25 @@
 Webhook Integration model for CI/CD integration.
 """
 
-from datetime import datetime
-from enum import Enum
-from typing import Optional
+import secrets
+import uuid as uuid_module
+from datetime import UTC, datetime
+from enum import StrEnum
 
 from sqlalchemy import (
     Boolean,
     DateTime,
-    Enum as SQLEnum,
     ForeignKey,
     Index,
     Integer,
     String,
     Text,
 )
+from sqlalchemy import (
+    Enum as SQLEnum,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
-
-import uuid as uuid_module
-import secrets
 
 from tracertm.models.base import Base, TimestampMixin
 from tracertm.models.types import JSONType
@@ -36,8 +36,9 @@ def generate_webhook_secret() -> str:
     return secrets.token_urlsafe(32)
 
 
-class WebhookProvider(str, Enum):
+class WebhookProvider(StrEnum):
     """Supported webhook providers."""
+
     GITHUB_ACTIONS = "github_actions"
     GITLAB_CI = "gitlab_ci"
     JENKINS = "jenkins"
@@ -47,15 +48,17 @@ class WebhookProvider(str, Enum):
     CUSTOM = "custom"
 
 
-class WebhookStatus(str, Enum):
+class WebhookStatus(StrEnum):
     """Status of a webhook integration."""
+
     ACTIVE = "active"
     PAUSED = "paused"
     DISABLED = "disabled"
 
 
-class WebhookEventType(str, Enum):
+class WebhookEventType(StrEnum):
     """Types of webhook events."""
+
     TEST_RUN_START = "test_run_start"
     TEST_RUN_COMPLETE = "test_run_complete"
     TEST_RESULT_SUBMIT = "test_result_submit"
@@ -77,56 +80,44 @@ class WebhookIntegration(Base, TimestampMixin):
 
     # Basic info
     name: Mapped[str] = mapped_column(String(255), nullable=False)
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Provider configuration
     provider: Mapped[WebhookProvider] = mapped_column(
         SQLEnum(WebhookProvider), nullable=False, default=WebhookProvider.CUSTOM
     )
-    status: Mapped[WebhookStatus] = mapped_column(
-        SQLEnum(WebhookStatus), nullable=False, default=WebhookStatus.ACTIVE
-    )
+    status: Mapped[WebhookStatus] = mapped_column(SQLEnum(WebhookStatus), nullable=False, default=WebhookStatus.ACTIVE)
 
     # Authentication
-    webhook_secret: Mapped[str] = mapped_column(
-        String(64), nullable=False, default=generate_webhook_secret
-    )
-    api_key: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
+    webhook_secret: Mapped[str] = mapped_column(String(64), nullable=False, default=generate_webhook_secret)
+    api_key: Mapped[str | None] = mapped_column(String(128), nullable=True)
 
     # Event configuration
-    enabled_events: Mapped[Optional[list]] = mapped_column(JSONType, nullable=True)
-    event_filters: Mapped[Optional[dict]] = mapped_column(JSONType, nullable=True)
+    enabled_events: Mapped[list | None] = mapped_column(JSONType, nullable=True)
+    event_filters: Mapped[dict | None] = mapped_column(JSONType, nullable=True)
 
     # Target configuration (for outbound webhooks)
-    callback_url: Mapped[Optional[str]] = mapped_column(String(1000), nullable=True)
-    callback_headers: Mapped[Optional[dict]] = mapped_column(JSONType, nullable=True)
+    callback_url: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    callback_headers: Mapped[dict | None] = mapped_column(JSONType, nullable=True)
 
     # Default mapping (which suite/run to associate results with)
-    default_suite_id: Mapped[Optional[str]] = mapped_column(
+    default_suite_id: Mapped[str | None] = mapped_column(
         String(36), ForeignKey("test_suites.id", ondelete="SET NULL"), nullable=True
     )
 
     # Rate limiting
     rate_limit_per_minute: Mapped[int] = mapped_column(Integer, nullable=False, default=60)
-    last_rate_limit_reset: Mapped[Optional[datetime]] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
+    last_rate_limit_reset: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     requests_in_window: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
     # Statistics
     total_requests: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     successful_requests: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     failed_requests: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    last_request_at: Mapped[Optional[datetime]] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
-    last_success_at: Mapped[Optional[datetime]] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
-    last_failure_at: Mapped[Optional[datetime]] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
-    last_error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    last_request_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_success_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_failure_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Settings
     auto_create_run: Mapped[bool] = mapped_column(Boolean, default=True)
@@ -134,7 +125,7 @@ class WebhookIntegration(Base, TimestampMixin):
     verify_signatures: Mapped[bool] = mapped_column(Boolean, default=True)
 
     # Extensible metadata
-    webhook_metadata: Mapped[Optional[dict]] = mapped_column(JSONType, nullable=True)
+    webhook_metadata: Mapped[dict | None] = mapped_column(JSONType, nullable=True)
 
     # Optimistic locking
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
@@ -158,30 +149,28 @@ class WebhookLog(Base):
 
     # Request details
     request_id: Mapped[str] = mapped_column(String(36), nullable=False, default=generate_uuid)
-    event_type: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    event_type: Mapped[str | None] = mapped_column(String(100), nullable=True)
     http_method: Mapped[str] = mapped_column(String(10), nullable=False, default="POST")
-    source_ip: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
-    user_agent: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    source_ip: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    user_agent: Mapped[str | None] = mapped_column(String(500), nullable=True)
 
     # Payload (truncated for large payloads)
-    request_headers: Mapped[Optional[dict]] = mapped_column(JSONType, nullable=True)
-    request_body_preview: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    payload_size_bytes: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    request_headers: Mapped[dict | None] = mapped_column(JSONType, nullable=True)
+    request_body_preview: Mapped[str | None] = mapped_column(Text, nullable=True)
+    payload_size_bytes: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     # Processing result
     success: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     status_code: Mapped[int] = mapped_column(Integer, nullable=False, default=200)
-    error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    processing_time_ms: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    processing_time_ms: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     # Associated entities created/updated
-    test_run_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
+    test_run_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
     results_submitted: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
     # Timestamp
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, default=datetime.utcnow
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC))
 
     __table_args__ = (
         Index("ix_webhook_logs_webhook_id", "webhook_id"),

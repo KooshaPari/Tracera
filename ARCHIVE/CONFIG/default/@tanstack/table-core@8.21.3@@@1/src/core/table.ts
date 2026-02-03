@@ -313,7 +313,7 @@ export function createTable<TData extends RowData>(
 
   let initialState = {
     ...coreInitialState,
-    ...(options.initialState ?? {}),
+    ...options.initialState,
   } as TableState
 
   table._features.forEach(feature => {

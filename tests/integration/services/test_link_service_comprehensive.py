@@ -14,23 +14,22 @@ Coverage target: 95%+
 Test count: 45+
 """
 
-import pytest
-import pytest_asyncio
 import time
 from datetime import datetime
-from unittest.mock import Mock, AsyncMock, patch, MagicMock
-from sqlalchemy import create_engine, func, select
-from sqlalchemy.orm import Session, sessionmaker
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+
+import pytest
+import pytest_asyncio
+from sqlalchemy import create_engine, func
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.orm import sessionmaker
 
 from tracertm.models.base import Base
 from tracertm.models.item import Item
 from tracertm.models.link import Link
 from tracertm.models.project import Project
 from tracertm.repositories.link_repository import LinkRepository
-from tracertm.services.link_service import LinkService
 from tracertm.services.cycle_detection_service import CycleDetectionService
-
+from tracertm.services.link_service import LinkService
 
 pytestmark = pytest.mark.integration
 
@@ -38,6 +37,7 @@ pytestmark = pytest.mark.integration
 # ============================================================
 # FIXTURES
 # ============================================================
+
 
 @pytest_asyncio.fixture(scope="function")
 def db_engine():
@@ -60,8 +60,7 @@ def db_session(db_engine):
 @pytest.fixture(scope="function")
 def async_db_engine():
     """Create an async in-memory SQLite engine for testing."""
-    engine = create_async_engine("sqlite+aiosqlite:///:memory:", echo=False)
-    yield engine
+    return create_async_engine("sqlite+aiosqlite:///:memory:", echo=False)
 
 
 @pytest_asyncio.fixture(scope="function")
@@ -96,7 +95,7 @@ def sample_items_5(db_session, sample_project):
             title=f"Item {i}",
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         db_session.add(item)
         items.append(item)
@@ -115,7 +114,7 @@ def sample_items_20(db_session, sample_project):
             title=f"Item {i}",
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         db_session.add(item)
         items.append(item)
@@ -139,6 +138,7 @@ def cycle_detection_service(db_session):
 # TEST CLASS 1: BASIC LINK CREATION
 # ============================================================
 
+
 class TestLinkCreation:
     """Test basic link creation functionality."""
 
@@ -148,7 +148,7 @@ class TestLinkCreation:
             project_id=sample_project.id,
             source_item_id=sample_items_5[0].id,
             target_item_id=sample_items_5[1].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(link)
         db_session.commit()
@@ -167,7 +167,7 @@ class TestLinkCreation:
             source_item_id=sample_items_5[0].id,
             target_item_id=sample_items_5[1].id,
             link_type="implements",
-            link_metadata=metadata
+            link_metadata=metadata,
         )
         db_session.add(link)
         db_session.commit()
@@ -181,7 +181,7 @@ class TestLinkCreation:
             project_id=sample_project.id,
             source_item_id=sample_items_5[0].id,
             target_item_id=sample_items_5[1].id,
-            link_type="tests"
+            link_type="tests",
         )
         db_session.add(link)
         db_session.commit()
@@ -196,7 +196,7 @@ class TestLinkCreation:
             project_id=sample_project.id,
             source_item_id=sample_items_5[0].id,
             target_item_id=sample_items_5[1].id,
-            link_type="blocks"
+            link_type="blocks",
         )
         db_session.add(link)
         db_session.commit()
@@ -212,24 +212,18 @@ class TestLinkCreation:
 # TEST CLASS 2: ALL LINK TYPES
 # ============================================================
 
+
 class TestAllLinkTypes:
     """Test support for all link types."""
 
-    @pytest.mark.parametrize("link_type", [
-        "depends_on",
-        "implements",
-        "tests",
-        "blocks",
-        "related_to",
-        "custom_type"
-    ])
+    @pytest.mark.parametrize("link_type", ["depends_on", "implements", "tests", "blocks", "related_to", "custom_type"])
     def test_all_standard_link_types(self, db_session, sample_project, sample_items_5, link_type):
         """Test creating links of all standard types."""
         link = Link(
             project_id=sample_project.id,
             source_item_id=sample_items_5[0].id,
             target_item_id=sample_items_5[1].id,
-            link_type=link_type
+            link_type=link_type,
         )
         db_session.add(link)
         db_session.commit()
@@ -245,8 +239,8 @@ class TestAllLinkTypes:
             link = Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_5[i].id,
-                target_item_id=sample_items_5[i+1].id,
-                link_type=link_type
+                target_item_id=sample_items_5[i + 1].id,
+                link_type=link_type,
             )
             db_session.add(link)
         db_session.commit()
@@ -260,6 +254,7 @@ class TestAllLinkTypes:
 # TEST CLASS 3: RELATIONSHIP VALIDATION
 # ============================================================
 
+
 class TestRelationshipValidation:
     """Test relationship validation logic."""
 
@@ -269,7 +264,7 @@ class TestRelationshipValidation:
             project_id=sample_project.id,
             source_item_id=sample_items_5[0].id,
             target_item_id=sample_items_5[0].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(link)
         db_session.commit()
@@ -284,7 +279,7 @@ class TestRelationshipValidation:
             project_id=sample_project.id,
             source_item_id=sample_items_5[0].id,
             target_item_id=sample_items_5[1].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(link1)
         db_session.commit()
@@ -294,17 +289,18 @@ class TestRelationshipValidation:
             project_id=sample_project.id,
             source_item_id=sample_items_5[0].id,
             target_item_id=sample_items_5[1].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(link2)
         db_session.commit()
 
         # Both should exist (no unique constraint)
-        links = db_session.query(Link).filter_by(
-            source_item_id=sample_items_5[0].id,
-            target_item_id=sample_items_5[1].id,
-            link_type="depends_on"
-        ).all()
+        links = (
+            db_session
+            .query(Link)
+            .filter_by(source_item_id=sample_items_5[0].id, target_item_id=sample_items_5[1].id, link_type="depends_on")
+            .all()
+        )
         assert len(links) == 2
 
     def test_bidirectional_links(self, db_session, sample_project, sample_items_5):
@@ -313,43 +309,41 @@ class TestRelationshipValidation:
             project_id=sample_project.id,
             source_item_id=sample_items_5[0].id,
             target_item_id=sample_items_5[1].id,
-            link_type="related_to"
+            link_type="related_to",
         )
         link2 = Link(
             project_id=sample_project.id,
             source_item_id=sample_items_5[1].id,
             target_item_id=sample_items_5[0].id,
-            link_type="related_to"
+            link_type="related_to",
         )
         db_session.add(link1)
         db_session.add(link2)
         db_session.commit()
 
-        outgoing = db_session.query(Link).filter_by(
-            source_item_id=sample_items_5[0].id
-        ).all()
-        incoming = db_session.query(Link).filter_by(
-            target_item_id=sample_items_5[0].id
-        ).all()
+        outgoing = db_session.query(Link).filter_by(source_item_id=sample_items_5[0].id).all()
+        incoming = db_session.query(Link).filter_by(target_item_id=sample_items_5[0].id).all()
 
         assert len(outgoing) == 1
         assert len(incoming) == 1
 
-    def test_circular_dependency_detection_simple(self, db_session, sample_project, sample_items_5, cycle_detection_service):
+    def test_circular_dependency_detection_simple(
+        self, db_session, sample_project, sample_items_5, cycle_detection_service
+    ):
         """Test detection of simple circular dependency (A -> B -> A)."""
         # A -> B
         link1 = Link(
             project_id=sample_project.id,
             source_item_id=sample_items_5[0].id,
             target_item_id=sample_items_5[1].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         # B -> A (would create cycle)
         link2 = Link(
             project_id=sample_project.id,
             source_item_id=sample_items_5[1].id,
             target_item_id=sample_items_5[0].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(link1)
         db_session.add(link2)
@@ -357,14 +351,13 @@ class TestRelationshipValidation:
 
         # Check if cycle exists
         has_cycle = cycle_detection_service.has_cycle(
-            sample_project.id,
-            sample_items_5[1].id,
-            sample_items_5[0].id,
-            "depends_on"
+            sample_project.id, sample_items_5[1].id, sample_items_5[0].id, "depends_on"
         )
         assert has_cycle is True
 
-    def test_circular_dependency_complex_chain(self, db_session, sample_project, sample_items_5, cycle_detection_service):
+    def test_circular_dependency_complex_chain(
+        self, db_session, sample_project, sample_items_5, cycle_detection_service
+    ):
         """Test detection of complex circular dependency (A -> B -> C -> A)."""
         links = [
             (sample_items_5[0].id, sample_items_5[1].id),
@@ -374,10 +367,7 @@ class TestRelationshipValidation:
 
         for source, target in links:
             link = Link(
-                project_id=sample_project.id,
-                source_item_id=source,
-                target_item_id=target,
-                link_type="depends_on"
+                project_id=sample_project.id, source_item_id=source, target_item_id=target, link_type="depends_on"
             )
             db_session.add(link)
         db_session.commit()
@@ -386,7 +376,9 @@ class TestRelationshipValidation:
         assert result.has_cycles is True
         assert result.cycle_count > 0
 
-    def test_no_circular_dependency_linear_chain(self, db_session, sample_project, sample_items_5, cycle_detection_service):
+    def test_no_circular_dependency_linear_chain(
+        self, db_session, sample_project, sample_items_5, cycle_detection_service
+    ):
         """Test that linear chains don't trigger cycle detection."""
         # A -> B -> C -> D (no cycle)
         links = [
@@ -397,10 +389,7 @@ class TestRelationshipValidation:
 
         for source, target in links:
             link = Link(
-                project_id=sample_project.id,
-                source_item_id=source,
-                target_item_id=target,
-                link_type="depends_on"
+                project_id=sample_project.id, source_item_id=source, target_item_id=target, link_type="depends_on"
             )
             db_session.add(link)
         db_session.commit()
@@ -414,6 +403,7 @@ class TestRelationshipValidation:
 # TEST CLASS 4: DELETION CASCADES
 # ============================================================
 
+
 class TestDeletionCascades:
     """Test cascading deletion behavior."""
 
@@ -423,7 +413,7 @@ class TestDeletionCascades:
             project_id=sample_project.id,
             source_item_id=sample_items_5[0].id,
             target_item_id=sample_items_5[1].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(link)
         db_session.commit()
@@ -444,23 +434,25 @@ class TestDeletionCascades:
             project_id=sample_project.id,
             source_item_id=sample_items_5[0].id,
             target_item_id=sample_items_5[1].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         link2 = Link(
             project_id=sample_project.id,
             source_item_id=sample_items_5[2].id,
             target_item_id=sample_items_5[0].id,
-            link_type="implements"
+            link_type="implements",
         )
         db_session.add(link1)
         db_session.add(link2)
         db_session.commit()
 
         # Verify links exist before deletion
-        links_before = db_session.query(Link).filter(
-            (Link.source_item_id == sample_items_5[0].id) |
-            (Link.target_item_id == sample_items_5[0].id)
-        ).all()
+        links_before = (
+            db_session
+            .query(Link)
+            .filter((Link.source_item_id == sample_items_5[0].id) | (Link.target_item_id == sample_items_5[0].id))
+            .all()
+        )
         assert len(links_before) == 2
 
         # Item deletion with CASCADE should delete related links
@@ -479,16 +471,14 @@ class TestDeletionCascades:
             link = Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_5[i].id,
-                target_item_id=sample_items_5[i+1].id,
-                link_type="depends_on"
+                target_item_id=sample_items_5[i + 1].id,
+                link_type="depends_on",
             )
             db_session.add(link)
         db_session.commit()
 
         # Verify links exist
-        links_before = db_session.query(Link).filter_by(
-            project_id=sample_project.id
-        ).all()
+        links_before = db_session.query(Link).filter_by(project_id=sample_project.id).all()
         assert len(links_before) == 4
 
         # Delete project - cascades delete to items which cascade to links
@@ -507,21 +497,17 @@ class TestDeletionCascades:
                 project_id=sample_project.id,
                 source_item_id=sample_items_5[0].id,
                 target_item_id=sample_items_5[i].id,
-                link_type="depends_on"
+                link_type="depends_on",
             )
             db_session.add(link)
         db_session.commit()
 
         # Delete all links from item 0
-        db_session.query(Link).filter_by(
-            source_item_id=sample_items_5[0].id
-        ).delete()
+        db_session.query(Link).filter_by(source_item_id=sample_items_5[0].id).delete()
         db_session.commit()
 
         # Verify they're gone
-        links = db_session.query(Link).filter_by(
-            source_item_id=sample_items_5[0].id
-        ).all()
+        links = db_session.query(Link).filter_by(source_item_id=sample_items_5[0].id).all()
         assert len(links) == 0
 
     def test_delete_links_by_target_item(self, db_session, sample_project, sample_items_5):
@@ -532,27 +518,24 @@ class TestDeletionCascades:
                 project_id=sample_project.id,
                 source_item_id=sample_items_5[i].id,
                 target_item_id=sample_items_5[4].id,
-                link_type="tests"
+                link_type="tests",
             )
             db_session.add(link)
         db_session.commit()
 
         # Delete all links to item 4
-        db_session.query(Link).filter_by(
-            target_item_id=sample_items_5[4].id
-        ).delete()
+        db_session.query(Link).filter_by(target_item_id=sample_items_5[4].id).delete()
         db_session.commit()
 
         # Verify they're gone
-        links = db_session.query(Link).filter_by(
-            target_item_id=sample_items_5[4].id
-        ).all()
+        links = db_session.query(Link).filter_by(target_item_id=sample_items_5[4].id).all()
         assert len(links) == 0
 
 
 # ============================================================
 # TEST CLASS 5: LINK RETRIEVAL & FILTERING
 # ============================================================
+
 
 class TestLinkRetrieval:
     """Test link retrieval and filtering functionality."""
@@ -564,15 +547,13 @@ class TestLinkRetrieval:
             link = Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_5[i].id,
-                target_item_id=sample_items_5[i+1].id,
-                link_type="depends_on"
+                target_item_id=sample_items_5[i + 1].id,
+                link_type="depends_on",
             )
             db_session.add(link)
         db_session.commit()
 
-        links = db_session.query(Link).filter_by(
-            project_id=sample_project.id
-        ).all()
+        links = db_session.query(Link).filter_by(project_id=sample_project.id).all()
         assert len(links) == 4
 
     def test_get_links_by_source_item(self, db_session, sample_project, sample_items_5):
@@ -583,14 +564,12 @@ class TestLinkRetrieval:
                 project_id=sample_project.id,
                 source_item_id=sample_items_5[0].id,
                 target_item_id=sample_items_5[i].id,
-                link_type="depends_on"
+                link_type="depends_on",
             )
             db_session.add(link)
         db_session.commit()
 
-        links = db_session.query(Link).filter_by(
-            source_item_id=sample_items_5[0].id
-        ).all()
+        links = db_session.query(Link).filter_by(source_item_id=sample_items_5[0].id).all()
         assert len(links) == 3
 
     def test_get_links_by_target_item(self, db_session, sample_project, sample_items_5):
@@ -601,14 +580,12 @@ class TestLinkRetrieval:
                 project_id=sample_project.id,
                 source_item_id=sample_items_5[i].id,
                 target_item_id=sample_items_5[4].id,
-                link_type="implements"
+                link_type="implements",
             )
             db_session.add(link)
         db_session.commit()
 
-        links = db_session.query(Link).filter_by(
-            target_item_id=sample_items_5[4].id
-        ).all()
+        links = db_session.query(Link).filter_by(target_item_id=sample_items_5[4].id).all()
         assert len(links) == 3
 
     def test_get_links_by_type(self, db_session, sample_project, sample_items_5):
@@ -618,8 +595,8 @@ class TestLinkRetrieval:
             link = Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_5[0].id,
-                target_item_id=sample_items_5[i+1].id,
-                link_type=link_type
+                target_item_id=sample_items_5[i + 1].id,
+                link_type=link_type,
             )
             db_session.add(link)
         db_session.commit()
@@ -635,28 +612,31 @@ class TestLinkRetrieval:
             project_id=sample_project.id,
             source_item_id=sample_items_5[2].id,
             target_item_id=sample_items_5[3].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         link2 = Link(
             project_id=sample_project.id,
             source_item_id=sample_items_5[1].id,
             target_item_id=sample_items_5[2].id,
-            link_type="implements"
+            link_type="implements",
         )
         db_session.add(link1)
         db_session.add(link2)
         db_session.commit()
 
-        links = db_session.query(Link).filter(
-            (Link.source_item_id == sample_items_5[2].id) |
-            (Link.target_item_id == sample_items_5[2].id)
-        ).all()
+        links = (
+            db_session
+            .query(Link)
+            .filter((Link.source_item_id == sample_items_5[2].id) | (Link.target_item_id == sample_items_5[2].id))
+            .all()
+        )
         assert len(links) == 2
 
 
 # ============================================================
 # TEST CLASS 6: LINK COUNTING & METRICS
 # ============================================================
+
 
 class TestLinkMetrics:
     """Test link counting and metrics."""
@@ -667,15 +647,13 @@ class TestLinkMetrics:
             link = Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_5[i].id,
-                target_item_id=sample_items_5[i+1].id,
-                link_type="depends_on"
+                target_item_id=sample_items_5[i + 1].id,
+                link_type="depends_on",
             )
             db_session.add(link)
         db_session.commit()
 
-        count = db_session.query(func.count(Link.id)).filter_by(
-            project_id=sample_project.id
-        ).scalar()
+        count = db_session.query(func.count(Link.id)).filter_by(project_id=sample_project.id).scalar()
         assert count == 4
 
     def test_count_links_by_type(self, db_session, sample_project, sample_items_5):
@@ -685,15 +663,13 @@ class TestLinkMetrics:
             link = Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_5[i].id,
-                target_item_id=sample_items_5[i+1].id,
-                link_type=link_type
+                target_item_id=sample_items_5[i + 1].id,
+                link_type=link_type,
             )
             db_session.add(link)
         db_session.commit()
 
-        count = db_session.query(func.count(Link.id)).filter_by(
-            link_type="depends_on"
-        ).scalar()
+        count = db_session.query(func.count(Link.id)).filter_by(link_type="depends_on").scalar()
         assert count == 1
 
     def test_count_outgoing_links_per_item(self, db_session, sample_project, sample_items_5):
@@ -703,14 +679,12 @@ class TestLinkMetrics:
                 project_id=sample_project.id,
                 source_item_id=sample_items_5[0].id,
                 target_item_id=sample_items_5[i].id,
-                link_type="depends_on"
+                link_type="depends_on",
             )
             db_session.add(link)
         db_session.commit()
 
-        count = db_session.query(func.count(Link.id)).filter_by(
-            source_item_id=sample_items_5[0].id
-        ).scalar()
+        count = db_session.query(func.count(Link.id)).filter_by(source_item_id=sample_items_5[0].id).scalar()
         assert count == 3
 
     def test_count_incoming_links_per_item(self, db_session, sample_project, sample_items_5):
@@ -720,20 +694,19 @@ class TestLinkMetrics:
                 project_id=sample_project.id,
                 source_item_id=sample_items_5[i].id,
                 target_item_id=sample_items_5[4].id,
-                link_type="tests"
+                link_type="tests",
             )
             db_session.add(link)
         db_session.commit()
 
-        count = db_session.query(func.count(Link.id)).filter_by(
-            target_item_id=sample_items_5[4].id
-        ).scalar()
+        count = db_session.query(func.count(Link.id)).filter_by(target_item_id=sample_items_5[4].id).scalar()
         assert count == 3
 
 
 # ============================================================
 # TEST CLASS 7: LINK RELATIONSHIPS & ORPHANS
 # ============================================================
+
 
 class TestLinkOrphans:
     """Test orphan detection (items with no links)."""
@@ -745,8 +718,8 @@ class TestLinkOrphans:
             link = Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_5[i].id,
-                target_item_id=sample_items_5[i+1].id,
-                link_type="depends_on"
+                target_item_id=sample_items_5[i + 1].id,
+                link_type="depends_on",
             )
             db_session.add(link)
         db_session.commit()
@@ -763,7 +736,7 @@ class TestLinkOrphans:
                 project_id=sample_project.id,
                 source_item_id=sample_items_5[0].id,
                 target_item_id=sample_items_5[i].id,
-                link_type="depends_on"
+                link_type="depends_on",
             )
             db_session.add(link)
         db_session.commit()
@@ -780,8 +753,8 @@ class TestLinkOrphans:
             link = Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_5[i].id,
-                target_item_id=sample_items_5[i+1].id,
-                link_type="depends_on"
+                target_item_id=sample_items_5[i + 1].id,
+                link_type="depends_on",
             )
             db_session.add(link)
         db_session.commit()
@@ -797,7 +770,7 @@ class TestLinkOrphans:
             project_id=sample_project.id,
             source_item_id=sample_items_5[0].id,
             target_item_id="nonexistent-item",
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(link)
         db_session.commit()
@@ -812,6 +785,7 @@ class TestLinkOrphans:
 # TEST CLASS 8: IMPACT ANALYSIS
 # ============================================================
 
+
 class TestImpactAnalysis:
     """Test impact analysis functionality."""
 
@@ -825,7 +799,7 @@ class TestImpactAnalysis:
                 project_id=sample_project.id,
                 source_item_id=sample_items_5[i].id,
                 target_item_id=sample_items_5[0].id,
-                link_type="depends_on"
+                link_type="depends_on",
             )
             db_session.add(link)
         db_session.commit()
@@ -844,7 +818,7 @@ class TestImpactAnalysis:
                 project_id=sample_project.id,
                 source_item_id=sample_items_20[source_idx].id,
                 target_item_id=sample_items_20[target_idx].id,
-                link_type="depends_on"
+                link_type="depends_on",
             )
             db_session.add(link)
         db_session.commit()
@@ -853,24 +827,22 @@ class TestImpactAnalysis:
         assert result["root_item_id"] == sample_items_20[0].id
         assert "affected_items" in result
 
-    def test_analyze_impact_respects_depth_limit(self, db_session, sample_project, sample_items_20, cycle_detection_service):
+    def test_analyze_impact_respects_depth_limit(
+        self, db_session, sample_project, sample_items_20, cycle_detection_service
+    ):
         """Test that impact analysis respects max_depth parameter."""
         # Create chain longer than max_depth
         for i in range(10):
             link = Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_20[i].id,
-                target_item_id=sample_items_20[i+1].id,
-                link_type="depends_on"
+                target_item_id=sample_items_20[i + 1].id,
+                link_type="depends_on",
             )
             db_session.add(link)
         db_session.commit()
 
-        result = cycle_detection_service.analyze_impact(
-            sample_project.id,
-            sample_items_20[0].id,
-            max_depth=3
-        )
+        result = cycle_detection_service.analyze_impact(sample_project.id, sample_items_20[0].id, max_depth=3)
         # Max depth should be <= 3
         max_reached = result.get("max_depth_reached", 0)
         assert max_reached <= 3
@@ -879,6 +851,7 @@ class TestImpactAnalysis:
 # ============================================================
 # TEST CLASS 9: BULK OPERATIONS AT SCALE
 # ============================================================
+
 
 class TestScaleAndPerformance:
     """Test performance at scale."""
@@ -895,7 +868,7 @@ class TestScaleAndPerformance:
                 project_id=sample_project.id,
                 source_item_id=sample_items_20[source_idx].id,
                 target_item_id=sample_items_20[target_idx].id,
-                link_type="depends_on"
+                link_type="depends_on",
             )
             db_session.add(link)
 
@@ -903,9 +876,7 @@ class TestScaleAndPerformance:
         elapsed = time.time() - start_time
 
         # Verify all created
-        count = db_session.query(func.count(Link.id)).filter_by(
-            project_id=sample_project.id
-        ).scalar()
+        count = db_session.query(func.count(Link.id)).filter_by(project_id=sample_project.id).scalar()
         assert count == 100
         assert elapsed < 10  # Should complete in < 10 seconds
 
@@ -919,16 +890,14 @@ class TestScaleAndPerformance:
                 project_id=sample_project.id,
                 source_item_id=sample_items_20[source_idx].id,
                 target_item_id=sample_items_20[target_idx].id,
-                link_type="depends_on"
+                link_type="depends_on",
             )
             db_session.add(link)
         db_session.commit()
 
         # Query by project
         start_time = time.time()
-        links = db_session.query(Link).filter_by(
-            project_id=sample_project.id
-        ).all()
+        links = db_session.query(Link).filter_by(project_id=sample_project.id).all()
         elapsed = time.time() - start_time
 
         assert len(links) == 100
@@ -942,23 +911,19 @@ class TestScaleAndPerformance:
                 project_id=sample_project.id,
                 source_item_id=sample_items_20[0].id,
                 target_item_id=sample_items_20[i].id,
-                link_type="depends_on"
+                link_type="depends_on",
             )
             db_session.add(link)
         db_session.commit()
 
         # Bulk delete
         start_time = time.time()
-        db_session.query(Link).filter_by(
-            source_item_id=sample_items_20[0].id
-        ).delete()
+        db_session.query(Link).filter_by(source_item_id=sample_items_20[0].id).delete()
         db_session.commit()
         elapsed = time.time() - start_time
 
         # Verify deletion
-        count = db_session.query(func.count(Link.id)).filter_by(
-            source_item_id=sample_items_20[0].id
-        ).scalar()
+        count = db_session.query(func.count(Link.id)).filter_by(source_item_id=sample_items_20[0].id).scalar()
         assert count == 0
         assert elapsed < 1
 
@@ -966,6 +931,7 @@ class TestScaleAndPerformance:
 # ============================================================
 # TEST CLASS 10: EDGE CASES & ERROR HANDLING
 # ============================================================
+
 
 class TestEdgeCases:
     """Test edge cases and error conditions."""
@@ -977,7 +943,7 @@ class TestEdgeCases:
             source_item_id=sample_items_5[0].id,
             target_item_id=sample_items_5[1].id,
             link_type="depends_on",
-            link_metadata={}
+            link_metadata={},
         )
         db_session.add(link)
         db_session.commit()
@@ -987,21 +953,13 @@ class TestEdgeCases:
 
     def test_link_with_complex_metadata(self, db_session, sample_project, sample_items_5):
         """Test creating link with complex nested metadata."""
-        metadata = {
-            "nested": {
-                "level2": {
-                    "level3": ["value1", "value2"]
-                }
-            },
-            "array": [1, 2, 3],
-            "string": "test"
-        }
+        metadata = {"nested": {"level2": {"level3": ["value1", "value2"]}}, "array": [1, 2, 3], "string": "test"}
         link = Link(
             project_id=sample_project.id,
             source_item_id=sample_items_5[0].id,
             target_item_id=sample_items_5[1].id,
             link_type="depends_on",
-            link_metadata=metadata
+            link_metadata=metadata,
         )
         db_session.add(link)
         db_session.commit()
@@ -1015,7 +973,7 @@ class TestEdgeCases:
             project_id=sample_project.id,
             source_item_id=sample_items_5[0].id,
             target_item_id=sample_items_5[1].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(link)
         db_session.commit()
@@ -1035,36 +993,26 @@ class TestEdgeCases:
 
         # Create items in both projects
         item1_p1 = Item(
-            id="item-1-p1", project_id=proj1.id,
-            title="Item 1", view="FEATURE", item_type="feature", status="todo"
+            id="item-1-p1", project_id=proj1.id, title="Item 1", view="FEATURE", item_type="feature", status="todo"
         )
         item2_p1 = Item(
-            id="item-2-p1", project_id=proj1.id,
-            title="Item 2", view="FEATURE", item_type="feature", status="todo"
+            id="item-2-p1", project_id=proj1.id, title="Item 2", view="FEATURE", item_type="feature", status="todo"
         )
         item1_p2 = Item(
-            id="item-1-p2", project_id=proj2.id,
-            title="Item 1", view="FEATURE", item_type="feature", status="todo"
+            id="item-1-p2", project_id=proj2.id, title="Item 1", view="FEATURE", item_type="feature", status="todo"
         )
         item2_p2 = Item(
-            id="item-2-p2", project_id=proj2.id,
-            title="Item 2", view="FEATURE", item_type="feature", status="todo"
+            id="item-2-p2", project_id=proj2.id, title="Item 2", view="FEATURE", item_type="feature", status="todo"
         )
         db_session.add_all([item1_p1, item2_p1, item1_p2, item2_p2])
         db_session.commit()
 
         # Create links in both projects
         link1 = Link(
-            project_id=proj1.id,
-            source_item_id=item1_p1.id,
-            target_item_id=item2_p1.id,
-            link_type="depends_on"
+            project_id=proj1.id, source_item_id=item1_p1.id, target_item_id=item2_p1.id, link_type="depends_on"
         )
         link2 = Link(
-            project_id=proj2.id,
-            source_item_id=item1_p2.id,
-            target_item_id=item2_p2.id,
-            link_type="depends_on"
+            project_id=proj2.id, source_item_id=item1_p2.id, target_item_id=item2_p2.id, link_type="depends_on"
         )
         db_session.add(link1)
         db_session.add(link2)
@@ -1085,7 +1033,7 @@ class TestEdgeCases:
             source_item_id=sample_items_5[0].id,
             target_item_id=sample_items_5[1].id,
             link_type="depends_on",
-            link_metadata={"version": "1.0"}
+            link_metadata={"version": "1.0"},
         )
         db_session.add(link)
         db_session.commit()
@@ -1102,6 +1050,7 @@ class TestEdgeCases:
 # ============================================================
 # TEST CLASS 11: ASYNC OPERATIONS (using separate async engine)
 # ============================================================
+
 
 class TestAsyncOperations:
     """Test async link repository operations."""
@@ -1123,12 +1072,20 @@ class TestAsyncOperations:
             await session.flush()
 
             item1 = Item(
-                id="async-item-1", project_id=project.id,
-                title="Item 1", view="FEATURE", item_type="feature", status="todo"
+                id="async-item-1",
+                project_id=project.id,
+                title="Item 1",
+                view="FEATURE",
+                item_type="feature",
+                status="todo",
             )
             item2 = Item(
-                id="async-item-2", project_id=project.id,
-                title="Item 2", view="FEATURE", item_type="feature", status="todo"
+                id="async-item-2",
+                project_id=project.id,
+                title="Item 2",
+                view="FEATURE",
+                item_type="feature",
+                status="todo",
             )
             session.add(item1)
             session.add(item2)
@@ -1137,10 +1094,7 @@ class TestAsyncOperations:
             # Create link using repository
             repo = LinkRepository(session)
             link = await repo.create(
-                project_id=project.id,
-                source_item_id=item1.id,
-                target_item_id=item2.id,
-                link_type="depends_on"
+                project_id=project.id, source_item_id=item1.id, target_item_id=item2.id, link_type="depends_on"
             )
 
             assert link.id is not None
@@ -1168,8 +1122,12 @@ class TestAsyncOperations:
             items = []
             for i in range(3):
                 item = Item(
-                    id=f"async-item-{i}", project_id=project.id,
-                    title=f"Item {i}", view="FEATURE", item_type="feature", status="todo"
+                    id=f"async-item-{i}",
+                    project_id=project.id,
+                    title=f"Item {i}",
+                    view="FEATURE",
+                    item_type="feature",
+                    status="todo",
                 )
                 session.add(item)
                 items.append(item)
@@ -1181,8 +1139,8 @@ class TestAsyncOperations:
                 await repo.create(
                     project_id=project.id,
                     source_item_id=items[i].id,
-                    target_item_id=items[i+1].id,
-                    link_type="depends_on"
+                    target_item_id=items[i + 1].id,
+                    link_type="depends_on",
                 )
 
             # Get by project
@@ -1208,12 +1166,20 @@ class TestAsyncOperations:
             await session.flush()
 
             item1 = Item(
-                id="async-item-del-1", project_id=project.id,
-                title="Item 1", view="FEATURE", item_type="feature", status="todo"
+                id="async-item-del-1",
+                project_id=project.id,
+                title="Item 1",
+                view="FEATURE",
+                item_type="feature",
+                status="todo",
             )
             item2 = Item(
-                id="async-item-del-2", project_id=project.id,
-                title="Item 2", view="FEATURE", item_type="feature", status="todo"
+                id="async-item-del-2",
+                project_id=project.id,
+                title="Item 2",
+                view="FEATURE",
+                item_type="feature",
+                status="todo",
             )
             session.add(item1)
             session.add(item2)
@@ -1222,10 +1188,7 @@ class TestAsyncOperations:
             # Create and delete
             repo = LinkRepository(session)
             link = await repo.create(
-                project_id=project.id,
-                source_item_id=item1.id,
-                target_item_id=item2.id,
-                link_type="depends_on"
+                project_id=project.id, source_item_id=item1.id, target_item_id=item2.id, link_type="depends_on"
             )
 
             result = await repo.delete(link.id)
@@ -1237,6 +1200,7 @@ class TestAsyncOperations:
 # ============================================================
 # TEST SUMMARY & COVERAGE REPORT
 # ============================================================
+
 
 class TestCoverageSummary:
     """Test coverage summary."""

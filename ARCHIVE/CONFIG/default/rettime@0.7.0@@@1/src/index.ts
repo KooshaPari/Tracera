@@ -176,7 +176,7 @@ export class Emitter<EventMap extends DefaultEventMap> {
     listener: Emitter.ListenerType<typeof this, EventType, EventMap>,
     options?: Omit<TypedListenerOptions, 'once'>,
   ): typeof this {
-    return this.on(type, listener, { ...(options || {}), once: true })
+    return this.on(type, listener, { ...options, once: true })
   }
 
   /**
@@ -200,7 +200,7 @@ export class Emitter<EventMap extends DefaultEventMap> {
     listener: Emitter.ListenerType<typeof this, EventType, EventMap>,
     options?: Omit<TypedListenerOptions, 'once'>,
   ): typeof this {
-    return this.earlyOn(type, listener, { ...(options || {}), once: true })
+    return this.earlyOn(type, listener, { ...options, once: true })
   }
 
   /**

@@ -28,4 +28,4 @@ export type SetReturnType<Function_ extends (...arguments_: any[]) => any, TypeT
 		(...arguments_: Parameters<Function_>) => TypeToReturn
 	);
 
-export {};
+

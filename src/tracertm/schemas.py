@@ -4,12 +4,11 @@ Pandera schemas for DataFrame validation.
 Provides type-safe DataFrame schemas for data validation at boundaries.
 """
 
+import pandera as pa  # type: ignore[possibly-unknown-member]
+from pandera.typing import DataFrame, Series  # type: ignore[possibly-missing-import]
 
-import pandera as pa
-from pandera.typing import DataFrame, Series
 
-
-class RequirementSchema(pa.DataFrameModel):
+class RequirementSchema(pa.DataFrameModel):  # type: ignore[misc]
     """Schema for requirement data."""
 
     id: Series[int] = pa.Field(gt=0, description="Unique requirement ID")
@@ -30,7 +29,7 @@ class RequirementSchema(pa.DataFrameModel):
         coerce = True
 
 
-class TraceabilityLinkSchema(pa.DataFrameModel):
+class TraceabilityLinkSchema(pa.DataFrameModel):  # type: ignore[misc]
     """Schema for traceability links."""
 
     id: Series[int] = pa.Field(gt=0, description="Unique link ID")
@@ -49,7 +48,7 @@ class TraceabilityLinkSchema(pa.DataFrameModel):
         coerce = True
 
 
-class ProjectMetricsSchema(pa.DataFrameModel):
+class ProjectMetricsSchema(pa.DataFrameModel):  # type: ignore[misc]
     """Schema for project metrics."""
 
     project_id: Series[int] = pa.Field(gt=0, description="Project ID")

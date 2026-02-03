@@ -4,11 +4,11 @@ Execution model for QA Integration system.
 Tracks test/recording execution runs with Docker containers.
 """
 
-from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Text
 import uuid
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
+from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -39,9 +39,7 @@ class Execution(Base, TimestampMixin):
         {"extend_existing": True},
     )
 
-    id: Mapped[str] = mapped_column(
-        String(36), primary_key=True, default=generate_execution_uuid
-    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_execution_uuid)
     project_id: Mapped[str] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("projects.id", ondelete="CASCADE"),
@@ -76,17 +74,11 @@ class Execution(Base, TimestampMixin):
 
     # Configuration and environment
     config: Mapped[dict[str, Any] | None] = mapped_column(JSONType, nullable=True)
-    environment: Mapped[str | None] = mapped_column(
-        Text, nullable=True
-    )  # Encrypted env vars
+    environment: Mapped[str | None] = mapped_column(Text, nullable=True)  # Encrypted env vars
 
     # Timing
-    started_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
-    completed_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     duration_ms: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     # Results
@@ -122,9 +114,7 @@ class ExecutionArtifact(Base):
         {"extend_existing": True},
     )
 
-    id: Mapped[str] = mapped_column(
-        String(36), primary_key=True, default=generate_execution_uuid
-    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_execution_uuid)
     execution_id: Mapped[str] = mapped_column(
         String(36),
         ForeignKey("executions.id", ondelete="CASCADE"),
@@ -151,19 +141,15 @@ class ExecutionArtifact(Base):
     )  # dimensions, duration, etc.
 
     # Timestamps
-    captured_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False
-    )
+    captured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        default=datetime.utcnow,
+        default=lambda: datetime.now(UTC),
         nullable=False,
     )
 
     # Relationships
-    execution: Mapped["Execution"] = relationship(
-        "Execution", back_populates="artifacts"
-    )
+    execution: Mapped["Execution"] = relationship("Execution", back_populates="artifacts")
 
     def __getattribute__(self, name: str) -> object:
         if name == "metadata":

@@ -13,13 +13,11 @@ from __future__ import annotations
 import asyncio
 import json
 import os
-from typing import Any
-from unittest.mock import patch
 
-import pytest
 import httpx
+import pytest
+from httpx import ASGITransport
 from starlette.testclient import TestClient
-
 
 # ============================================================================
 # Fixtures
@@ -43,8 +41,7 @@ def mcp_http_app(test_database_url):
     from tracertm.mcp.server import mcp
 
     # Create HTTP app
-    app = mcp.http_app()
-    return app
+    return mcp.http_app()
 
 
 @pytest.fixture
@@ -56,10 +53,7 @@ def http_client(mcp_http_app):
 @pytest.fixture
 def auth_headers():
     """Return valid auth headers for testing."""
-    return {
-        "Authorization": "Bearer test-integration-key",
-        "Content-Type": "application/json"
-    }
+    return {"Authorization": "Bearer test-integration-key", "Content-Type": "application/json"}
 
 
 @pytest.fixture
@@ -75,12 +69,12 @@ async def test_project_id(http_client, auth_headers):
                 "arguments": {
                     "action": "create",
                     "name": "Integration Test Project",
-                    "description": "Test project for integration tests"
-                }
+                    "description": "Test project for integration tests",
+                },
             },
-            "id": 1
+            "id": 1,
         },
-        headers=auth_headers
+        headers=auth_headers,
     )
 
     if response.status_code == 200:
@@ -113,15 +107,11 @@ class TestHTTPWorkflow:
                 "method": "tools/call",
                 "params": {
                     "name": "project_manage",
-                    "arguments": {
-                        "action": "create",
-                        "name": "Test Project HTTP",
-                        "description": "Test via HTTP"
-                    }
+                    "arguments": {"action": "create", "name": "Test Project HTTP", "description": "Test via HTTP"},
                 },
-                "id": 1
+                "id": 1,
             },
-            headers=auth_headers
+            headers=auth_headers,
         )
 
         assert create_response.status_code in [200, 201]
@@ -134,15 +124,10 @@ class TestHTTPWorkflow:
             json={
                 "jsonrpc": "2.0",
                 "method": "tools/call",
-                "params": {
-                    "name": "project_manage",
-                    "arguments": {
-                        "action": "list"
-                    }
-                },
-                "id": 2
+                "params": {"name": "project_manage", "arguments": {"action": "list"}},
+                "id": 2,
             },
-            headers=auth_headers
+            headers=auth_headers,
         )
 
         assert list_response.status_code == 200
@@ -157,16 +142,10 @@ class TestHTTPWorkflow:
             json={
                 "jsonrpc": "2.0",
                 "method": "tools/call",
-                "params": {
-                    "name": "project_manage",
-                    "arguments": {
-                        "action": "select",
-                        "project_id": test_project_id
-                    }
-                },
-                "id": 1
+                "params": {"name": "project_manage", "arguments": {"action": "select", "project_id": test_project_id}},
+                "id": 1,
             },
-            headers=auth_headers
+            headers=auth_headers,
         )
 
         # Create item
@@ -181,12 +160,12 @@ class TestHTTPWorkflow:
                         "action": "create",
                         "title": "Test Item HTTP",
                         "item_type": "feature",
-                        "description": "Created via HTTP"
-                    }
+                        "description": "Created via HTTP",
+                    },
                 },
-                "id": 2
+                "id": 2,
             },
-            headers=auth_headers
+            headers=auth_headers,
         )
 
         assert item_response.status_code in [200, 201]
@@ -201,18 +180,10 @@ class TestHTTPWorkflow:
             json={
                 "jsonrpc": "2.0",
                 "method": "tools/call",
-                "params": {
-                    "name": "item_manage",
-                    "arguments": {
-                        "action": "list",
-                        "filters": {
-                            "item_type": "feature"
-                        }
-                    }
-                },
-                "id": 1
+                "params": {"name": "item_manage", "arguments": {"action": "list", "filters": {"item_type": "feature"}}},
+                "id": 1,
             },
-            headers=auth_headers
+            headers=auth_headers,
         )
 
         assert query_response.status_code == 200
@@ -232,12 +203,12 @@ class TestHTTPWorkflow:
                         "action": "create",
                         "source_id": "item-001",
                         "target_id": "item-002",
-                        "link_type": "parent_of"
-                    }
+                        "link_type": "parent_of",
+                    },
                 },
-                "id": 1
+                "id": 1,
             },
-            headers=auth_headers
+            headers=auth_headers,
         )
 
         assert link_response.status_code in [200, 201]
@@ -260,34 +231,22 @@ class TestSSEStreaming:
     def test_sse_progress_events(self):
         """Test receiving progress events via SSE."""
         # Would test with actual SSE client
-        progress_event = {
-            "type": "progress",
-            "progress": 50,
-            "total": 100,
-            "message": "Processing..."
-        }
+        progress_event = {"type": "progress", "progress": 50, "total": 100, "message": "Processing..."}
 
         assert progress_event["type"] == "progress"
-        assert progress_event["progress"] <= progress_event["total"]
+        progress_val = int(progress_event["progress"])
+        total_val = int(progress_event["total"])
+        assert progress_val <= total_val
 
     def test_sse_completion_event(self):
         """Test receiving completion event via SSE."""
-        completion_event = {
-            "type": "complete",
-            "result": {"status": "success"}
-        }
+        completion_event = {"type": "complete", "result": {"status": "success"}}
 
         assert completion_event["type"] == "complete"
 
     def test_sse_error_event(self):
         """Test receiving error event via SSE."""
-        error_event = {
-            "type": "error",
-            "error": {
-                "code": -32603,
-                "message": "Internal error"
-            }
-        }
+        error_event = {"type": "error", "error": {"code": -32603, "message": "Internal error"}}
 
         assert error_event["type"] == "error"
         assert "error" in error_event
@@ -308,20 +267,10 @@ class TestAuthenticationFlow:
 
     def test_static_token_auth(self, http_client):
         """Test static token authentication."""
-        headers = {
-            "Authorization": "Bearer test-integration-key",
-            "Content-Type": "application/json"
-        }
+        headers = {"Authorization": "Bearer test-integration-key", "Content-Type": "application/json"}
 
         response = http_client.post(
-            "/messages",
-            json={
-                "jsonrpc": "2.0",
-                "method": "tools/list",
-                "params": {},
-                "id": 1
-            },
-            headers=headers
+            "/messages", json={"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}, headers=headers
         )
 
         # Should succeed with valid token
@@ -329,20 +278,10 @@ class TestAuthenticationFlow:
 
     def test_invalid_token_rejected(self, http_client):
         """Test that invalid tokens are rejected."""
-        headers = {
-            "Authorization": "Bearer invalid-token",
-            "Content-Type": "application/json"
-        }
+        headers = {"Authorization": "Bearer invalid-token", "Content-Type": "application/json"}
 
         response = http_client.post(
-            "/messages",
-            json={
-                "jsonrpc": "2.0",
-                "method": "tools/list",
-                "params": {},
-                "id": 1
-            },
-            headers=headers
+            "/messages", json={"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}, headers=headers
         )
 
         # Should fail with invalid token (if auth is enabled)
@@ -353,14 +292,7 @@ class TestAuthenticationFlow:
         headers = {"Content-Type": "application/json"}
 
         response = http_client.post(
-            "/messages",
-            json={
-                "jsonrpc": "2.0",
-                "method": "tools/list",
-                "params": {},
-                "id": 1
-            },
-            headers=headers
+            "/messages", json={"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}, headers=headers
         )
 
         # Should fail without token (if auth is enabled)
@@ -419,19 +351,16 @@ class TestMultiClientAccess:
     @pytest.mark.asyncio
     async def test_concurrent_requests(self, mcp_http_app, auth_headers):
         """Test handling concurrent HTTP requests."""
-        async with httpx.AsyncClient(app=mcp_http_app, base_url="http://test") as client:
+        async with httpx.AsyncClient(
+            transport=ASGITransport(app=mcp_http_app), base_url="http://test"
+        ) as client:
             # Create multiple concurrent requests
             tasks = []
             for i in range(5):
                 task = client.post(
                     "/messages",
-                    json={
-                        "jsonrpc": "2.0",
-                        "method": "tools/list",
-                        "params": {},
-                        "id": i
-                    },
-                    headers=auth_headers
+                    json={"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": i},
+                    headers=auth_headers,
                 )
                 tasks.append(task)
 
@@ -462,11 +391,7 @@ class TestErrorRecovery:
 
     def test_invalid_json_recovery(self, http_client, auth_headers):
         """Test recovery from invalid JSON."""
-        response = http_client.post(
-            "/messages",
-            data="{ invalid json }",
-            headers=auth_headers
-        )
+        response = http_client.post("/messages", data="{ invalid json }", headers=auth_headers)
 
         # Should return appropriate error
         assert response.status_code in [400, 422]
@@ -500,18 +425,15 @@ class TestHTTPPerformance:
         """Test average response time."""
         import time
 
-        async with httpx.AsyncClient(app=mcp_http_app, base_url="http://test") as client:
+        async with httpx.AsyncClient(
+            transport=ASGITransport(app=mcp_http_app), base_url="http://test"
+        ) as client:
             start = time.time()
 
             response = await client.post(
                 "/messages",
-                json={
-                    "jsonrpc": "2.0",
-                    "method": "tools/list",
-                    "params": {},
-                    "id": 1
-                },
-                headers=auth_headers
+                json={"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1},
+                headers=auth_headers,
             )
 
             end = time.time()

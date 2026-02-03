@@ -42,4 +42,4 @@ export type CamelCasedProperties<Value, Options extends CamelCaseOptions = {}> =
 			]: Value[K];
 		};
 
-export {};
+

@@ -4,8 +4,9 @@ Tests for the /auth/me endpoint implementation.
 Verifies that the endpoint correctly fetches user data from WorkOS API.
 """
 
+from unittest.mock import patch
+
 import pytest
-from unittest.mock import MagicMock, patch
 from fastapi.testclient import TestClient
 
 
@@ -49,9 +50,10 @@ class TestAuthMeEndpoint:
 
         # Mock auth_guard to return claims
         # Mock get_user to return WorkOS user data
-        with patch("tracertm.api.routers.auth.auth_guard") as mock_auth, \
-             patch("tracertm.api.routers.auth.get_user") as mock_get_user:
-
+        with (
+            patch("tracertm.api.routers.auth.auth_guard") as mock_auth,
+            patch("tracertm.api.routers.auth.get_user") as mock_get_user,
+        ):
             mock_auth.return_value = mock_jwt_claims
             mock_get_user.return_value = mock_workos_user
 
@@ -109,9 +111,10 @@ class TestAuthMeEndpoint:
 
         # Mock auth_guard to return claims
         # Mock get_user to raise a 404 error
-        with patch("tracertm.api.routers.auth.auth_guard") as mock_auth, \
-             patch("tracertm.api.routers.auth.get_user") as mock_get_user:
-
+        with (
+            patch("tracertm.api.routers.auth.auth_guard") as mock_auth,
+            patch("tracertm.api.routers.auth.get_user") as mock_get_user,
+        ):
             mock_auth.return_value = mock_jwt_claims
             mock_get_user.side_effect = Exception("404 User not found")
 
@@ -129,9 +132,10 @@ class TestAuthMeEndpoint:
 
         # Mock auth_guard to return claims
         # Mock get_user to raise a general API error
-        with patch("tracertm.api.routers.auth.auth_guard") as mock_auth, \
-             patch("tracertm.api.routers.auth.get_user") as mock_get_user:
-
+        with (
+            patch("tracertm.api.routers.auth.auth_guard") as mock_auth,
+            patch("tracertm.api.routers.auth.get_user") as mock_get_user,
+        ):
             mock_auth.return_value = mock_jwt_claims
             mock_get_user.side_effect = Exception("API connection failed")
 
@@ -149,9 +153,10 @@ class TestAuthMeEndpoint:
 
         # Mock auth_guard to return claims
         # Mock get_user to raise a ValueError (configuration error)
-        with patch("tracertm.api.routers.auth.auth_guard") as mock_auth, \
-             patch("tracertm.api.routers.auth.get_user") as mock_get_user:
-
+        with (
+            patch("tracertm.api.routers.auth.auth_guard") as mock_auth,
+            patch("tracertm.api.routers.auth.get_user") as mock_get_user,
+        ):
             mock_auth.return_value = mock_jwt_claims
             mock_get_user.side_effect = ValueError("WORKOS_API_KEY is required")
 
@@ -175,9 +180,10 @@ class TestAuthMeEndpoint:
             "exp": 1234571490,
         }
 
-        with patch("tracertm.api.routers.auth.auth_guard") as mock_auth, \
-             patch("tracertm.api.routers.auth.get_user") as mock_get_user:
-
+        with (
+            patch("tracertm.api.routers.auth.auth_guard") as mock_auth,
+            patch("tracertm.api.routers.auth.get_user") as mock_get_user,
+        ):
             mock_auth.return_value = claims_no_org
             mock_get_user.return_value = mock_workos_user
 

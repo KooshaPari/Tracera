@@ -4,15 +4,15 @@ Tests for AccountRepository.
 Comprehensive tests covering account CRUD and user management operations.
 """
 
-import pytest
-import pytest_asyncio
+import asyncio
 from uuid import uuid4
 
+import pytest
+import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from tracertm.repositories.account_repository import AccountRepository
 from tracertm.models.account_user import AccountRole
-
+from tracertm.repositories.account_repository import AccountRepository
 
 # ==================== Fixtures ====================
 
@@ -20,6 +20,7 @@ from tracertm.models.account_user import AccountRole
 @pytest_asyncio.fixture
 async def account_repo(db_session: AsyncSession):
     """Create an AccountRepository instance."""
+    await asyncio.sleep(0)
     return AccountRepository(db_session)
 
 
@@ -174,9 +175,7 @@ class TestAccountUpdate:
         repo = account_setup["repo"]
         account = account_setup["account"]
 
-        result = await repo.update(
-            account.id, metadata={"updated": True, "new_key": "value"}
-        )
+        result = await repo.update(account.id, metadata={"updated": True, "new_key": "value"})
 
         assert result is not None
         assert result.metadata == {"updated": True, "new_key": "value"}

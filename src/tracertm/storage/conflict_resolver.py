@@ -161,13 +161,9 @@ class Conflict:
             "remote_version": self.remote_version.to_dict(),
             "detected_at": self.detected_at.isoformat(),
             "status": self.status.value,
-            "resolution_strategy": (
-                self.resolution_strategy.value if self.resolution_strategy else None
-            ),
+            "resolution_strategy": (self.resolution_strategy.value if self.resolution_strategy else None),
             "resolved_at": self.resolved_at.isoformat() if self.resolved_at else None,
-            "resolved_version": (
-                self.resolved_version.to_dict() if self.resolved_version else None
-            ),
+            "resolved_version": (self.resolved_version.to_dict() if self.resolved_version else None),
             "backup_path": str(self.backup_path) if self.backup_path else None,
             "metadata": self.metadata,
         }
@@ -245,15 +241,13 @@ class ConflictResolver:
         for index_sql in indexes:
             try:
                 self.session.execute(text(index_sql))
-            except Exception:
+            except Exception as e:
                 # Index might already exist, ignore
-                pass
+                logger.debug("Index creation skipped (may already exist): %s", e)
 
         self.session.commit()
 
-    def detect_conflict(
-        self, local: EntityVersion, remote: EntityVersion
-    ) -> Conflict | None:
+    def detect_conflict(self, local: EntityVersion, remote: EntityVersion) -> Conflict | None:
         """
         Detect if there's a conflict between local and remote versions.
 
@@ -307,9 +301,7 @@ class ConflictResolver:
 
         return conflict
 
-    def resolve(
-        self, conflict: Conflict, strategy: ConflictStrategy | None = None
-    ) -> ResolvedEntity:
+    def resolve(self, conflict: Conflict, strategy: ConflictStrategy | None = None) -> ResolvedEntity:
         """
         Resolve a conflict using the specified strategy.
 
@@ -337,9 +329,7 @@ class ConflictResolver:
         elif strategy == ConflictStrategy.REMOTE_WINS:
             resolved_version = conflict.remote_version
         elif strategy == ConflictStrategy.MANUAL:
-            raise ValueError(
-                "MANUAL strategy requires calling resolve_manual() with merged content"
-            )
+            raise ValueError("MANUAL strategy requires calling resolve_manual() with merged content")
         else:
             raise ValueError(f"Unknown strategy: {strategy}")
 
@@ -371,17 +361,12 @@ class ConflictResolver:
 
         if local_ts > remote_ts:
             return conflict.local_version
-        elif remote_ts > local_ts:
+        if remote_ts > local_ts:
             return conflict.remote_version
-        else:
-            # Timestamps equal, use version number
-            if (
-                conflict.local_version.vector_clock.version
-                > conflict.remote_version.vector_clock.version
-            ):
-                return conflict.local_version
-            else:
-                return conflict.remote_version
+        # Timestamps equal, use version number
+        if conflict.local_version.vector_clock.version > conflict.remote_version.vector_clock.version:
+            return conflict.local_version
+        return conflict.remote_version
 
     def resolve_manual(
         self, conflict: Conflict, merged_data: dict[str, Any], merged_by: str = "user"
@@ -434,9 +419,7 @@ class ConflictResolver:
 
         self._update_conflict(conflict)
 
-        logger.info(
-            f"Manually resolved conflict {conflict.id} by {merged_by}, version={new_version}"
-        )
+        logger.info(f"Manually resolved conflict {conflict.id} by {merged_by}, version={new_version}")
 
         return ResolvedEntity(
             entity_id=conflict.entity_id,
@@ -458,26 +441,22 @@ class ConflictResolver:
         """
         # Create timestamped backup directory
         timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
-        backup_dir = (
-            self.backup_dir
-            / conflict.entity_type
-            / f"{conflict.entity_id}_{timestamp}"
-        )
+        backup_dir = self.backup_dir / conflict.entity_type / f"{conflict.entity_id}_{timestamp}"
         backup_dir.mkdir(parents=True, exist_ok=True)
 
         # Save local version
         local_path = backup_dir / "local.json"
-        with open(local_path, "w") as f:
+        with local_path.open("w") as f:
             json.dump(conflict.local_version.to_dict(), f, indent=2)
 
         # Save remote version
         remote_path = backup_dir / "remote.json"
-        with open(remote_path, "w") as f:
+        with remote_path.open("w") as f:
             json.dump(conflict.remote_version.to_dict(), f, indent=2)
 
         # Save conflict metadata
         meta_path = backup_dir / "conflict.json"
-        with open(meta_path, "w") as f:
+        with meta_path.open("w") as f:
             json.dump(
                 {
                     "conflict_id": conflict.id,
@@ -494,9 +473,7 @@ class ConflictResolver:
         logger.info(f"Created conflict backup at {backup_dir}")
         return backup_dir
 
-    def list_unresolved(
-        self, entity_type: EntityType | None = None
-    ) -> list[Conflict]:
+    def list_unresolved(self, entity_type: EntityType | None = None) -> list[Conflict]:
         """
         List all unresolved conflicts.
 
@@ -535,9 +512,7 @@ class ConflictResolver:
         Returns:
             Conflict object or None if not found
         """
-        result = self.session.execute(
-            text("SELECT * FROM conflicts WHERE id = :id"), {"id": conflict_id}
-        )
+        result = self.session.execute(text("SELECT * FROM conflicts WHERE id = :id"), {"id": conflict_id})
         row = result.fetchone()
 
         if not row:
@@ -569,22 +544,12 @@ class ConflictResolver:
                 "remote_version": json.dumps(conflict.remote_version.to_dict()),
                 "detected_at": conflict.detected_at.isoformat(),
                 "status": conflict.status.value,
-                "resolution_strategy": (
-                    conflict.resolution_strategy.value
-                    if conflict.resolution_strategy
-                    else None
-                ),
-                "resolved_at": (
-                    conflict.resolved_at.isoformat() if conflict.resolved_at else None
-                ),
+                "resolution_strategy": (conflict.resolution_strategy.value if conflict.resolution_strategy else None),
+                "resolved_at": (conflict.resolved_at.isoformat() if conflict.resolved_at else None),
                 "resolved_version": (
-                    json.dumps(conflict.resolved_version.to_dict())
-                    if conflict.resolved_version
-                    else None
+                    json.dumps(conflict.resolved_version.to_dict()) if conflict.resolved_version else None
                 ),
-                "backup_path": (
-                    str(conflict.backup_path) if conflict.backup_path else None
-                ),
+                "backup_path": (str(conflict.backup_path) if conflict.backup_path else None),
                 "metadata": json.dumps(conflict.metadata),
             },
         )
@@ -608,22 +573,12 @@ class ConflictResolver:
             {
                 "id": conflict.id,
                 "status": conflict.status.value,
-                "resolution_strategy": (
-                    conflict.resolution_strategy.value
-                    if conflict.resolution_strategy
-                    else None
-                ),
-                "resolved_at": (
-                    conflict.resolved_at.isoformat() if conflict.resolved_at else None
-                ),
+                "resolution_strategy": (conflict.resolution_strategy.value if conflict.resolution_strategy else None),
+                "resolved_at": (conflict.resolved_at.isoformat() if conflict.resolved_at else None),
                 "resolved_version": (
-                    json.dumps(conflict.resolved_version.to_dict())
-                    if conflict.resolved_version
-                    else None
+                    json.dumps(conflict.resolved_version.to_dict()) if conflict.resolved_version else None
                 ),
-                "backup_path": (
-                    str(conflict.backup_path) if conflict.backup_path else None
-                ),
+                "backup_path": (str(conflict.backup_path) if conflict.backup_path else None),
                 "metadata": json.dumps(conflict.metadata),
             },
         )
@@ -639,18 +594,10 @@ class ConflictResolver:
             remote_version=EntityVersion.from_dict(json.loads(row.remote_version)),
             detected_at=datetime.fromisoformat(row.detected_at),
             status=ConflictStatus(row.status),
-            resolution_strategy=(
-                ConflictStrategy(row.resolution_strategy)
-                if row.resolution_strategy
-                else None
-            ),
-            resolved_at=(
-                datetime.fromisoformat(row.resolved_at) if row.resolved_at else None
-            ),
+            resolution_strategy=(ConflictStrategy(row.resolution_strategy) if row.resolution_strategy else None),
+            resolved_at=(datetime.fromisoformat(row.resolved_at) if row.resolved_at else None),
             resolved_version=(
-                EntityVersion.from_dict(json.loads(row.resolved_version))
-                if row.resolved_version
-                else None
+                EntityVersion.from_dict(json.loads(row.resolved_version)) if row.resolved_version else None
             ),
             backup_path=Path(row.backup_path) if row.backup_path else None,
             metadata=json.loads(row.metadata) if row.metadata else {},
@@ -713,9 +660,7 @@ class ConflictBackup:
         self.backup_dir = backup_dir
         self.backup_dir.mkdir(parents=True, exist_ok=True)
 
-    def list_backups(
-        self, entity_type: EntityType | None = None
-    ) -> list[dict[str, Any]]:
+    def list_backups(self, entity_type: EntityType | None = None) -> list[dict[str, Any]]:
         """
         List all conflict backups.
 
@@ -727,11 +672,7 @@ class ConflictBackup:
         """
         backups = []
 
-        search_dirs = (
-            [self.backup_dir / entity_type]
-            if entity_type
-            else list(self.backup_dir.iterdir())
-        )
+        search_dirs = [self.backup_dir / entity_type] if entity_type else list(self.backup_dir.iterdir())
 
         for type_dir in search_dirs:
             if not type_dir.is_dir():
@@ -743,7 +684,7 @@ class ConflictBackup:
 
                 meta_path = backup_dir / "conflict.json"
                 if meta_path.exists():
-                    with open(meta_path) as f:
+                    with meta_path.open() as f:
                         metadata = json.load(f)
                         metadata["backup_path"] = str(backup_dir)
                         backups.append(metadata)
@@ -753,9 +694,7 @@ class ConflictBackup:
 
         return backups
 
-    def load_backup(
-        self, backup_path: Path
-    ) -> tuple[EntityVersion, EntityVersion] | None:
+    def load_backup(self, backup_path: Path) -> tuple[EntityVersion, EntityVersion] | None:
         """
         Load local and remote versions from backup.
 
@@ -771,10 +710,10 @@ class ConflictBackup:
         if not (local_path.exists() and remote_path.exists()):
             return None
 
-        with open(local_path) as f:
+        with local_path.open() as f:
             local_version = EntityVersion.from_dict(json.load(f))
 
-        with open(remote_path) as f:
+        with remote_path.open() as f:
             remote_version = EntityVersion.from_dict(json.load(f))
 
         return local_version, remote_version
@@ -815,9 +754,7 @@ def format_conflict_summary(conflict: Conflict) -> str:
     local_v = conflict.local_version.vector_clock.version
     remote_v = conflict.remote_version.vector_clock.version
     local_ts = conflict.local_version.vector_clock.timestamp.strftime("%Y-%m-%d %H:%M")
-    remote_ts = conflict.remote_version.vector_clock.timestamp.strftime(
-        "%Y-%m-%d %H:%M"
-    )
+    remote_ts = conflict.remote_version.vector_clock.timestamp.strftime("%Y-%m-%d %H:%M")
 
     return (
         f"Conflict: {conflict.entity_type} '{conflict.entity_id}'\n"
@@ -828,9 +765,7 @@ def format_conflict_summary(conflict: Conflict) -> str:
     )
 
 
-def compare_versions(
-    local: EntityVersion, remote: EntityVersion
-) -> dict[str, list[str]]:
+def compare_versions(local: EntityVersion, remote: EntityVersion) -> dict[str, list[str]]:
     """
     Compare two entity versions and identify differences.
 

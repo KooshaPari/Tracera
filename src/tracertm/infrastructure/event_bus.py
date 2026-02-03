@@ -1,7 +1,8 @@
 """Event bus abstraction for cross-backend communication."""
 
 import logging
-from typing import Any, Callable
+from collections.abc import Callable, Coroutine
+from typing import Any
 
 from tracertm.infrastructure.nats_client import NATSClient
 
@@ -73,7 +74,11 @@ class EventBus:
         )
         logger.debug(f"Published {event_type} for {entity_type} {entity_id}")
 
-    async def subscribe(self, event_type: str, handler: Callable[[dict[str, Any]], None]) -> None:
+    async def subscribe(
+        self,
+        event_type: str,
+        handler: Callable[[dict[str, Any]], Coroutine[Any, Any, None] | None],
+    ) -> None:
         """
         Subscribe to specific event type across all projects.
 

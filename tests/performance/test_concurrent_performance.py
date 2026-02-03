@@ -9,14 +9,11 @@ Tests measure performance under concurrent load:
 - Lock contention analysis
 """
 
-import time
-import threading
 import uuid
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import List, Dict, Any
+
 import pytest
-from sqlalchemy.orm import sessionmaker, Session
-from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 pytestmark = pytest.mark.performance
 
@@ -24,6 +21,7 @@ pytestmark = pytest.mark.performance
 # ============================================================
 # Concurrent Item Creation
 # ============================================================
+
 
 def test_concurrent_create_10_items_10_threads(benchmark, perf_sync_db_engine):
     """Benchmark concurrent creation: 10 items across 10 threads."""
@@ -52,10 +50,7 @@ def test_concurrent_create_10_items_10_threads(benchmark, perf_sync_db_engine):
 
     def run_concurrent():
         with ThreadPoolExecutor(max_workers=10) as executor:
-            futures = [
-                executor.submit(worker, i // 10, i % 10)
-                for i in range(10)
-            ]
+            futures = [executor.submit(worker, i // 10, i % 10) for i in range(10)]
             results = [f.result() for f in as_completed(futures)]
             return all(results)
 
@@ -91,10 +86,7 @@ def test_concurrent_create_100_items_10_threads(benchmark, perf_sync_db_engine):
 
     def run_concurrent():
         with ThreadPoolExecutor(max_workers=10) as executor:
-            futures = [
-                executor.submit(worker, i, i * 10)
-                for i in range(10)
-            ]
+            futures = [executor.submit(worker, i, i * 10) for i in range(10)]
             results = [f.result() for f in as_completed(futures)]
             return sum(results)
 
@@ -127,16 +119,13 @@ def test_concurrent_create_500_items_50_threads(benchmark, perf_sync_db_engine):
             return 10
         finally:
             session.close()
-    
+
     def run_concurrent():
         with ThreadPoolExecutor(max_workers=50) as executor:
-            futures = [
-                executor.submit(worker, i, i * 10)
-                for i in range(50)
-            ]
+            futures = [executor.submit(worker, i, i * 10) for i in range(50)]
             results = [f.result() for f in as_completed(futures)]
             return sum(results)
-    
+
     result = benchmark(run_concurrent)
     assert result == 500
 
@@ -144,6 +133,7 @@ def test_concurrent_create_500_items_50_threads(benchmark, perf_sync_db_engine):
 # ============================================================
 # Concurrent Item Updates
 # ============================================================
+
 
 def test_concurrent_update_100_items_10_threads(benchmark, perf_sync_db_engine):
     """Benchmark concurrent updates: 100 items across 10 threads."""
@@ -154,6 +144,7 @@ def test_concurrent_update_100_items_10_threads(benchmark, perf_sync_db_engine):
     session = SessionLocal()
     try:
         from tracertm.models.item import Item
+
         for i in range(100):
             item_id = f"update-concurrent-100-{i}"
             item = Item(
@@ -179,9 +170,7 @@ def test_concurrent_update_100_items_10_threads(benchmark, perf_sync_db_engine):
         try:
             for i in range(10):
                 if start_id + i < len(item_ids):
-                    item = session.query(Item).filter(
-                        Item.id == item_ids[start_id + i]
-                    ).first()
+                    item = session.query(Item).filter(Item.id == item_ids[start_id + i]).first()
                     if item:
                         item.status = ["todo", "in_progress", "done"][thread_id % 3]
                         session.commit()
@@ -191,10 +180,7 @@ def test_concurrent_update_100_items_10_threads(benchmark, perf_sync_db_engine):
 
     def run_concurrent():
         with ThreadPoolExecutor(max_workers=10) as executor:
-            futures = [
-                executor.submit(worker, i, i * 10)
-                for i in range(10)
-            ]
+            futures = [executor.submit(worker, i, i * 10) for i in range(10)]
             results = [f.result() for f in as_completed(futures)]
             return sum(results)
 
@@ -206,6 +192,7 @@ def test_concurrent_update_100_items_10_threads(benchmark, perf_sync_db_engine):
 # Concurrent Item Queries
 # ============================================================
 
+
 def test_concurrent_query_100_items_10_threads(benchmark, perf_sync_db_engine):
     """Benchmark concurrent queries: 100 items across 10 threads."""
     SessionLocal = sessionmaker(bind=perf_sync_db_engine)
@@ -214,6 +201,7 @@ def test_concurrent_query_100_items_10_threads(benchmark, perf_sync_db_engine):
     session = SessionLocal()
     try:
         from tracertm.models.item import Item
+
         for i in range(100):
             item = Item(
                 id=f"query-concurrent-100-{uuid.uuid4().hex[:8]}-{i}",
@@ -228,29 +216,24 @@ def test_concurrent_query_100_items_10_threads(benchmark, perf_sync_db_engine):
         session.commit()
     finally:
         session.close()
-    
+
     def worker(thread_id: int) -> int:
         """Worker thread to query items."""
         from tracertm.models.item import Item
-        
+
         session = SessionLocal()
         try:
-            items = session.query(Item).filter(
-                Item.project_id == "query-concurrent-proj"
-            ).all()
+            items = session.query(Item).filter(Item.project_id == "query-concurrent-proj").all()
             return len(items)
         finally:
             session.close()
-    
+
     def run_concurrent():
         with ThreadPoolExecutor(max_workers=10) as executor:
-            futures = [
-                executor.submit(worker, i)
-                for i in range(10)
-            ]
+            futures = [executor.submit(worker, i) for i in range(10)]
             results = [f.result() for f in as_completed(futures)]
             return sum(results)
-    
+
     result = benchmark(run_concurrent)
     assert result == 1000  # 10 threads × 100 items each
 
@@ -258,6 +241,7 @@ def test_concurrent_query_100_items_10_threads(benchmark, perf_sync_db_engine):
 # ============================================================
 # Concurrent Link Operations
 # ============================================================
+
 
 def test_concurrent_create_links_50_threads(benchmark, perf_sync_db_engine):
     """Benchmark concurrent link creation: 500 links across 50 threads."""
@@ -269,6 +253,7 @@ def test_concurrent_create_links_50_threads(benchmark, perf_sync_db_engine):
     session = SessionLocal()
     try:
         from tracertm.models.item import Item
+
         for i in range(100):
             source_id = f"link-source-{i}"
             item = Item(
@@ -318,16 +303,13 @@ def test_concurrent_create_links_50_threads(benchmark, perf_sync_db_engine):
             return 10
         finally:
             session.close()
-    
+
     def run_concurrent():
         with ThreadPoolExecutor(max_workers=50) as executor:
-            futures = [
-                executor.submit(worker, i, i * 10)
-                for i in range(50)
-            ]
+            futures = [executor.submit(worker, i, i * 10) for i in range(50)]
             results = [f.result() for f in as_completed(futures)]
             return sum(results)
-    
+
     result = benchmark(run_concurrent)
     assert result == 500
 
@@ -336,14 +318,16 @@ def test_concurrent_create_links_50_threads(benchmark, perf_sync_db_engine):
 # Lock Contention Analysis
 # ============================================================
 
+
 def test_high_contention_single_item_updates(benchmark, perf_sync_db_engine):
     """Test high contention: 50 threads updating same item."""
     SessionLocal = sessionmaker(bind=perf_sync_db_engine)
-    
+
     # Create single item
     session = SessionLocal()
     try:
         from tracertm.models.item import Item
+
         item = Item(
             id="contention-item",
             project_id="contention-proj",
@@ -357,31 +341,26 @@ def test_high_contention_single_item_updates(benchmark, perf_sync_db_engine):
         session.commit()
     finally:
         session.close()
-    
+
     def worker(thread_id: int) -> bool:
         """Worker thread updating same item."""
         from tracertm.models.item import Item
-        
+
         session = SessionLocal()
         try:
-            item = session.query(Item).filter(
-                Item.id == "contention-item"
-            ).first()
+            item = session.query(Item).filter(Item.id == "contention-item").first()
             if item:
                 item.priority = ["low", "medium", "high"][thread_id % 3]
                 session.commit()
             return True
         finally:
             session.close()
-    
+
     def run_concurrent():
         with ThreadPoolExecutor(max_workers=50) as executor:
-            futures = [
-                executor.submit(worker, i)
-                for i in range(50)
-            ]
+            futures = [executor.submit(worker, i) for i in range(50)]
             results = [f.result() for f in as_completed(futures)]
             return all(results)
-    
+
     result = benchmark(run_concurrent)
     assert result is True

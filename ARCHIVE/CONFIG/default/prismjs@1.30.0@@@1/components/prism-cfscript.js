@@ -6,7 +6,7 @@ Prism.languages.cfscript = Prism.languages.extend('clike', {
 			lookbehind: true,
 			inside: {
 				'annotation': {
-					pattern: /(?:^|[^.])@[\w\.]+/,
+					pattern: /(?:^|[^.])@[\w.]+/,
 					alias: 'punctuation'
 				}
 			}

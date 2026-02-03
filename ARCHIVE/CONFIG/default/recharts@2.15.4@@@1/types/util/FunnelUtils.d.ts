@@ -6,4 +6,4 @@ type FunnelTrapezoidProps = {
     option: FunnelProps['activeShape'];
 } & FunnelTrapezoidItem;
 export declare function FunnelTrapezoid(props: FunnelTrapezoidProps): React.JSX.Element;
-export {};
+

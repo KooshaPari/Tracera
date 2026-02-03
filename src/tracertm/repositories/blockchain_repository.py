@@ -22,18 +22,17 @@ from datetime import UTC, datetime
 from typing import Any
 from uuid import uuid4
 
-from sqlalchemy import and_, select, func
+from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.models.blockchain import (
-    VersionBlock,
-    VersionChainIndex,
     Baseline,
     BaselineItem,
     MerkleProofCache,
     SpecEmbedding,
+    VersionBlock,
+    VersionChainIndex,
 )
-
 
 # =============================================================================
 # Version Block Repository
@@ -59,12 +58,7 @@ class VersionBlockRepository:
         """
         # Normalize timestamp: convert to UTC naive datetime for consistent hashing
         # This ensures the hash is the same whether timezone is preserved or not
-        if timestamp.tzinfo is not None:
-            # Convert to UTC and remove tzinfo
-            ts_utc = timestamp.astimezone(UTC).replace(tzinfo=None)
-        else:
-            # Assume naive datetime is already UTC
-            ts_utc = timestamp
+        ts_utc = timestamp.astimezone(UTC).replace(tzinfo=None) if timestamp.tzinfo is not None else timestamp
 
         data = json.dumps(
             {
@@ -97,9 +91,7 @@ class VersionBlockRepository:
         """Create the first block in a version chain."""
         timestamp = datetime.now(UTC)
         content_hash = self.compute_content_hash(content)
-        block_id = self.compute_block_hash(
-            None, content_hash, timestamp, author_id, "create"
-        )
+        block_id = self.compute_block_hash(None, content_hash, timestamp, author_id, "create")
 
         block = VersionBlock(
             id=uuid4(),
@@ -157,9 +149,7 @@ class VersionBlockRepository:
 
         timestamp = datetime.now(UTC)
         content_hash = self.compute_content_hash(content)
-        block_id = self.compute_block_hash(
-            chain.chain_head_id, content_hash, timestamp, author_id, change_type
-        )
+        block_id = self.compute_block_hash(chain.chain_head_id, content_hash, timestamp, author_id, change_type)
 
         block = VersionBlock(
             id=uuid4(),
@@ -220,9 +210,7 @@ class VersionBlockRepository:
         current_id = chain.chain_head_id
 
         while current_id and len(blocks) < limit:
-            result = await db.execute(
-                select(VersionBlock).where(VersionBlock.block_id == current_id)
-            )
+            result = await db.execute(select(VersionBlock).where(VersionBlock.block_id == current_id))
             block = result.scalar_one_or_none()
             if not block:
                 break
@@ -241,7 +229,7 @@ class VersionBlockRepository:
         blocks = await self.get_version_chain(db, spec_id, spec_type, limit=10000)
         broken_links = []
 
-        for i, block in enumerate(blocks[:-1]):  # Skip genesis
+        for _i, block in enumerate(blocks[:-1]):  # Skip genesis
             expected_hash = self.compute_block_hash(
                 block.previous_block_id,
                 block.content_hash,
@@ -282,9 +270,7 @@ class BaselineRepository:
         combined = left + right if left <= right else right + left
         return hashlib.sha256(combined.encode()).hexdigest()
 
-    def build_merkle_tree(
-        self, items: list[tuple[str, str]]
-    ) -> tuple[str, dict[str, Any]]:
+    def build_merkle_tree(self, items: list[tuple[str, str]]) -> tuple[str, dict[str, Any]]:
         """Build Merkle tree from items, return root and tree structure."""
         if not items:
             return "", {}
@@ -326,7 +312,6 @@ class BaselineRepository:
         levels = tree_structure.get("levels", [])
 
         # Find leaf index
-        leaf_hash = self.compute_leaf_hash(item_id, content_hash)
         leaf_index = None
         for i, leaf in enumerate(leaves):
             if leaf["item_id"] == item_id:
@@ -354,9 +339,7 @@ class BaselineRepository:
 
         return proof
 
-    def verify_proof(
-        self, leaf_hash: str, proof: list[dict[str, str]], root_hash: str
-    ) -> bool:
+    def verify_proof(self, leaf_hash: str, proof: list[dict[str, str]], root_hash: str) -> bool:
         """Verify a Merkle proof."""
         current = leaf_hash
 
@@ -383,9 +366,7 @@ class BaselineRepository:
         spec_type: str | None = None,
     ) -> Baseline:
         """Create a new baseline with Merkle tree."""
-        baseline_id = hashlib.sha256(
-            f"{project_id}:{datetime.now(UTC).isoformat()}:{name}".encode()
-        ).hexdigest()[:16]
+        baseline_id = hashlib.sha256(f"{project_id}:{datetime.now(UTC).isoformat()}:{name}".encode()).hexdigest()[:16]
 
         # Build Merkle tree
         merkle_items = [(item_id, content_hash) for item_id, _, content_hash in items]
@@ -423,7 +404,7 @@ class BaselineRepository:
             db.add(item)
 
         # Pre-compute and cache proofs
-        for item_id, item_type, content_hash in items:
+        for item_id, _item_type, content_hash in items:
             proof = self.generate_proof(item_id, content_hash, tree_structure)
             if proof is not None:  # Empty list is valid (single item)
                 leaf_hash = self.compute_leaf_hash(item_id, content_hash)
@@ -440,27 +421,17 @@ class BaselineRepository:
         await db.flush()
         return baseline
 
-    async def get_baseline(
-        self, db: AsyncSession, baseline_id: str
-    ) -> Baseline | None:
+    async def get_baseline(self, db: AsyncSession, baseline_id: str) -> Baseline | None:
         """Get baseline by ID."""
-        result = await db.execute(
-            select(Baseline).where(Baseline.baseline_id == baseline_id)
-        )
+        result = await db.execute(select(Baseline).where(Baseline.baseline_id == baseline_id))
         return result.scalar_one_or_none()
 
-    async def get_baseline_by_root(
-        self, db: AsyncSession, merkle_root: str
-    ) -> Baseline | None:
+    async def get_baseline_by_root(self, db: AsyncSession, merkle_root: str) -> Baseline | None:
         """Get baseline by Merkle root."""
-        result = await db.execute(
-            select(Baseline).where(Baseline.merkle_root == merkle_root)
-        )
+        result = await db.execute(select(Baseline).where(Baseline.merkle_root == merkle_root))
         return result.scalar_one_or_none()
 
-    async def get_merkle_proof(
-        self, db: AsyncSession, baseline_id: str, item_id: str
-    ) -> MerkleProofCache | None:
+    async def get_merkle_proof(self, db: AsyncSession, baseline_id: str, item_id: str) -> MerkleProofCache | None:
         """Get cached Merkle proof for an item."""
         baseline = await self.get_baseline(db, baseline_id)
         if not baseline:

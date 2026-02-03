@@ -1,7 +1,7 @@
 """Concurrency control for TraceRTM (optimistic locking)."""
 
 import asyncio
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from typing import TypeVar
 
 T = TypeVar("T")
@@ -10,11 +10,9 @@ T = TypeVar("T")
 class ConcurrencyError(Exception):
     """Raised when optimistic lock fails (version mismatch)."""
 
-    pass
-
 
 async def update_with_retry[T](
-    update_fn: Callable[[], T],
+    update_fn: Callable[[], Awaitable[T]],
     max_retries: int = 3,
     base_delay: float = 0.1,
 ) -> T:
@@ -40,9 +38,7 @@ async def update_with_retry[T](
         except ConcurrencyError as e:
             if attempt == max_retries - 1:
                 # Last attempt failed, re-raise
-                raise ConcurrencyError(
-                    f"Failed after {max_retries} retries: {e!s}"
-                ) from e
+                raise ConcurrencyError(f"Failed after {max_retries} retries: {e!s}") from e
 
             # Calculate delay with exponential backoff and jitter
             delay = base_delay * (2**attempt)

@@ -10,17 +10,22 @@ Tests for:
 """
 
 import asyncio
-from datetime import datetime, timedelta
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
-from typing import Any
 
 import pytest
 
 from tracertm.storage.sync_engine import (
-    SyncEngine, SyncQueue, SyncStateManager, ChangeDetector,
-    EntityType, OperationType, SyncStatus, SyncResult, SyncState
+    ChangeDetector,
+    EntityType,
+    OperationType,
+    SyncEngine,
+    SyncQueue,
+    SyncResult,
+    SyncState,
+    SyncStateManager,
+    SyncStatus,
 )
-from tracertm.storage.conflict_resolver import ConflictStrategy
 
 
 class TestSyncEngineLocking:
@@ -38,25 +43,19 @@ class TestSyncEngineLocking:
         sync_started = []
         sync_completed = []
 
-        original_sync = engine.sync
-
         async def tracked_sync(force: bool = False) -> SyncResult:
-            sync_started.append(datetime.utcnow())
+            sync_started.append(datetime.now(UTC))
             await asyncio.sleep(0.05)
-            sync_completed.append(datetime.utcnow())
+            sync_completed.append(datetime.now(UTC))
             return SyncResult(success=True)
 
-        engine.sync = tracked_sync
+        engine.sync = tracked_sync  # type: ignore[assignment]
 
         # Try to run multiple syncs concurrently
-        results = await asyncio.gather(
-            engine.sync(),
-            engine.sync(),
-            return_exceptions=True
-        )
+        gathered = await asyncio.gather(engine.sync(), engine.sync(), return_exceptions=True)
 
         # All should complete
-        assert len(results) == 2
+        assert len(gathered) == 2
 
     @pytest.mark.asyncio
     async def test_sync_lock_timeout_behavior(self):
@@ -67,19 +66,17 @@ class TestSyncEngineLocking:
 
         engine = SyncEngine(db_mock, api_mock, storage_mock)
 
-        first_sync_done = False
+        sync_done = asyncio.Event()
 
         async def long_sync() -> SyncResult:
-            nonlocal first_sync_done
             engine._syncing = True
             await asyncio.sleep(0.1)
-            first_sync_done = True
             engine._syncing = False
+            sync_done.set()
             return SyncResult(success=True)
 
         async def short_sync() -> SyncResult:
-            while engine._syncing:
-                await asyncio.sleep(0.01)
+            await sync_done.wait()
             return SyncResult(success=False)
 
         # This tests the lock behavior
@@ -87,8 +84,8 @@ class TestSyncEngineLocking:
         await asyncio.sleep(0.01)
         task2 = asyncio.create_task(short_sync())
 
-        results = await asyncio.gather(task1, task2)
-        assert first_sync_done
+        await asyncio.gather(task1, task2)
+        assert sync_done.is_set()
 
     @pytest.mark.asyncio
     async def test_multiple_sync_attempts_serialized(self):
@@ -99,30 +96,32 @@ class TestSyncEngineLocking:
         api_mock = AsyncMock()
         storage_mock = MagicMock()
 
-        with patch.object(SyncStateManager, '__init__', return_value=None):
-            with patch.object(SyncQueue, '__init__', return_value=None):
-                engine = SyncEngine(db_mock, api_mock, storage_mock)
-                engine.queue = MagicMock()
-                engine.state_manager = MagicMock()
-                engine.queue.get_pending.return_value = []
-                engine.state_manager.get_state.return_value = SyncState()
+        with (
+            patch.object(SyncStateManager, "__init__", return_value=None),
+            patch.object(SyncQueue, "__init__", return_value=None),
+        ):
+            engine = SyncEngine(db_mock, api_mock, storage_mock)
+            engine.queue = MagicMock()
+            engine.state_manager = MagicMock()
+            engine.queue.get_pending.return_value = []
+            engine.state_manager.get_state.return_value = SyncState()
 
-                async def patched_sync(force=False):
-                    sync_order.append("start")
-                    await asyncio.sleep(0.02)
-                    sync_order.append("end")
-                    return SyncResult(success=True)
+            async def patched_sync(force=False):
+                sync_order.append("start")
+                await asyncio.sleep(0.02)
+                sync_order.append("end")
+                return SyncResult(success=True)
 
-                engine.sync = patched_sync
+            engine.sync = patched_sync  # type: ignore[assignment]
 
-                await asyncio.gather(
-                    engine.sync(),
-                    engine.sync(),
-                )
+            await asyncio.gather(
+                engine.sync(),
+                engine.sync(),
+            )
 
-                # Both syncs should complete
-                assert "start" in sync_order
-                assert "end" in sync_order
+            # Both syncs should complete
+            assert "start" in sync_order
+            assert "end" in sync_order
 
 
 class TestQueueProcessingAsync:
@@ -141,6 +140,7 @@ class TestQueueProcessingAsync:
 
         # Mock queue with multiple changes
         from tracertm.storage.sync_engine import QueuedChange
+
         changes = [
             QueuedChange(
                 id=1,
@@ -148,7 +148,7 @@ class TestQueueProcessingAsync:
                 entity_id="p1",
                 operation=OperationType.CREATE,
                 payload={"name": "Project 1"},
-                created_at=datetime.utcnow()
+                created_at=datetime.now(UTC),
             ),
             QueuedChange(
                 id=2,
@@ -156,7 +156,7 @@ class TestQueueProcessingAsync:
                 entity_id="i1",
                 operation=OperationType.UPDATE,
                 payload={"title": "Item 1"},
-                created_at=datetime.utcnow()
+                created_at=datetime.now(UTC),
             ),
         ]
 
@@ -166,10 +166,11 @@ class TestQueueProcessingAsync:
 
         async def mock_upload(change):
             nonlocal upload_count
+            await asyncio.sleep(0)
             upload_count += 1
             return True
 
-        engine._upload_change = mock_upload
+        engine._upload_change = mock_upload  # type: ignore[assignment]
 
         result = await engine.process_queue()
 
@@ -188,6 +189,7 @@ class TestQueueProcessingAsync:
         engine.state_manager = MagicMock()
 
         from tracertm.storage.sync_engine import QueuedChange
+
         changes = [
             QueuedChange(
                 id=i,
@@ -195,7 +197,7 @@ class TestQueueProcessingAsync:
                 entity_id=f"p{i}",
                 operation=OperationType.CREATE,
                 payload={"name": f"Project {i}"},
-                created_at=datetime.utcnow()
+                created_at=datetime.now(UTC),
             )
             for i in range(3)
         ]
@@ -206,7 +208,7 @@ class TestQueueProcessingAsync:
             await asyncio.sleep(0.5)
             return True
 
-        engine._upload_change = slow_upload
+        engine._upload_change = slow_upload  # type: ignore[assignment]
 
         # Process queue should handle slow uploads
         result = await engine.process_queue()
@@ -224,14 +226,15 @@ class TestQueueProcessingAsync:
         engine.state_manager = MagicMock()
 
         from tracertm.storage.sync_engine import QueuedChange
+
         change = QueuedChange(
             id=1,
             entity_type=EntityType.PROJECT,
             entity_id="p1",
             operation=OperationType.CREATE,
             payload={"name": "Project 1"},
-            created_at=datetime.utcnow(),
-            retry_count=1  # Already retried once
+            created_at=datetime.now(UTC),
+            retry_count=1,  # Already retried once
         )
 
         engine.queue.get_pending.return_value = [change]
@@ -239,12 +242,13 @@ class TestQueueProcessingAsync:
         upload_times = []
 
         async def failing_upload(ch):
-            upload_times.append(datetime.utcnow())
+            await asyncio.sleep(0)
+            upload_times.append(datetime.now(UTC))
             return False
 
-        engine._upload_change = failing_upload
+        engine._upload_change = failing_upload  # type: ignore[assignment]
 
-        result = await engine.process_queue()
+        await engine.process_queue()
 
         # Should attempt upload
         assert len(upload_times) > 0
@@ -289,10 +293,7 @@ class TestChangeDetectionAsync:
                 (tmppath / f"file_{i}.md").write_text(f"Content {i}")
 
             detector = ChangeDetector()
-            hashes = {
-                f"file_{i}.md": detector.compute_hash(f"Content {i}")
-                for i in range(5)
-            }
+            hashes = {f"file_{i}.md": detector.compute_hash(f"Content {i}") for i in range(5)}
 
             # Detect changes concurrently
             changes = detector.detect_changes_in_directory(tmppath, hashes)
@@ -330,13 +331,14 @@ class TestPullPushAsync:
         engine = SyncEngine(db_mock, api_mock, storage_mock)
 
         from tracertm.storage.sync_engine import QueuedChange
+
         change = QueuedChange(
             id=1,
             entity_type=EntityType.PROJECT,
             entity_id="p1",
             operation=OperationType.CREATE,
             payload={"name": "Project 1"},
-            created_at=datetime.utcnow()
+            created_at=datetime.now(UTC),
         )
 
         # Mock successful upload
@@ -352,12 +354,7 @@ class TestPullPushAsync:
 
         engine = SyncEngine(db_mock, api_mock, storage_mock)
 
-        change_data = {
-            "entity_type": "item",
-            "entity_id": "i1",
-            "operation": "update",
-            "payload": {"title": "Updated"}
-        }
+        change_data = {"entity_type": "item", "entity_id": "i1", "operation": "update", "payload": {"title": "Updated"}}
 
         # Should not raise
         await engine._apply_remote_change(change_data)
@@ -391,7 +388,7 @@ class TestSyncStateManagementAsync:
         state_manager = SyncStateManager(db_mock)
 
         # Mock database operations
-        with patch.object(state_manager, '_ensure_tables'):
+        with patch.object(state_manager, "_ensure_tables"):
             updates = []
 
             async def update_status(status: SyncStatus) -> None:
@@ -416,23 +413,25 @@ class TestSyncEngineIntegrationAsync:
         api_mock = AsyncMock()
         storage_mock = MagicMock()
 
-        with patch.object(SyncStateManager, '__init__', return_value=None):
-            with patch.object(SyncQueue, '__init__', return_value=None):
-                engine = SyncEngine(db_mock, api_mock, storage_mock)
-                engine.queue = MagicMock()
-                engine.state_manager = MagicMock()
-                engine.queue.get_pending.return_value = []
+        with (
+            patch.object(SyncStateManager, "__init__", return_value=None),
+            patch.object(SyncQueue, "__init__", return_value=None),
+        ):
+            engine = SyncEngine(db_mock, api_mock, storage_mock)
+            engine.queue = MagicMock()
+            engine.state_manager = MagicMock()
+            engine.queue.get_pending.return_value = []
 
-                engine.state_manager.get_state.return_value = SyncState()
+            engine.state_manager.get_state.return_value = SyncState()
 
-                # Mock the methods
-                engine.detect_and_queue_changes = AsyncMock(return_value=0)
-                engine.process_queue = AsyncMock(return_value=SyncResult(success=True))
-                engine.pull_changes = AsyncMock(return_value=SyncResult(success=True))
+            # Mock the methods
+            engine.detect_and_queue_changes = AsyncMock(return_value=0)  # type: ignore[assignment]
+            engine.process_queue = AsyncMock(return_value=SyncResult(success=True))  # type: ignore[assignment]
+            engine.pull_changes = AsyncMock(return_value=SyncResult(success=True))  # type: ignore[assignment]
 
-                result = await engine.sync()
+            result = await engine.sync()
 
-                assert result.success
+            assert result.success
 
     @pytest.mark.asyncio
     async def test_sync_with_concurrent_api_calls(self):
@@ -446,22 +445,24 @@ class TestSyncEngineIntegrationAsync:
 
         storage_mock = MagicMock()
 
-        with patch.object(SyncStateManager, '__init__', return_value=None):
-            with patch.object(SyncQueue, '__init__', return_value=None):
-                engine = SyncEngine(db_mock, api_mock, storage_mock)
-                engine.queue = MagicMock()
-                engine.state_manager = MagicMock()
-                engine.queue.get_pending.return_value = []
-                engine.state_manager.get_state.return_value = SyncState()
+        with (
+            patch.object(SyncStateManager, "__init__", return_value=None),
+            patch.object(SyncQueue, "__init__", return_value=None),
+        ):
+            engine = SyncEngine(db_mock, api_mock, storage_mock)
+            engine.queue = MagicMock()
+            engine.state_manager = MagicMock()
+            engine.queue.get_pending.return_value = []
+            engine.state_manager.get_state.return_value = SyncState()
 
-                # Test concurrent API calls
-                async def concurrent_pulls() -> SyncResult:
-                    projects = await api_mock.get_projects()
-                    items = await api_mock.get_items()
-                    return SyncResult(success=True)
+            # Test concurrent API calls
+            async def concurrent_pulls() -> SyncResult:
+                await api_mock.get_projects()
+                await api_mock.get_items()
+                return SyncResult(success=True)
 
-                result = await concurrent_pulls()
-                assert result.success
+            result = await concurrent_pulls()
+            assert result.success
 
     @pytest.mark.asyncio
     async def test_sync_cancellation_cleanup(self):
@@ -470,26 +471,28 @@ class TestSyncEngineIntegrationAsync:
         api_mock = AsyncMock()
         storage_mock = MagicMock()
 
-        with patch.object(SyncStateManager, '__init__', return_value=None):
-            with patch.object(SyncQueue, '__init__', return_value=None):
-                engine = SyncEngine(db_mock, api_mock, storage_mock)
-                engine.queue = MagicMock()
-                engine.state_manager = MagicMock()
-                engine.queue.get_pending.return_value = []
-                engine.state_manager.get_state.return_value = SyncState()
+        with (
+            patch.object(SyncStateManager, "__init__", return_value=None),
+            patch.object(SyncQueue, "__init__", return_value=None),
+        ):
+            engine = SyncEngine(db_mock, api_mock, storage_mock)
+            engine.queue = MagicMock()
+            engine.state_manager = MagicMock()
+            engine.queue.get_pending.return_value = []
+            engine.state_manager.get_state.return_value = SyncState()
 
-                async def slow_sync() -> SyncResult:
-                    await asyncio.sleep(10)
-                    return SyncResult(success=True)
+            async def slow_sync() -> SyncResult:
+                await asyncio.sleep(10)
+                return SyncResult(success=True)
 
-                engine.sync = slow_sync
+            engine.sync = slow_sync  # type: ignore[assignment]
 
-                task = asyncio.create_task(engine.sync())
-                await asyncio.sleep(0.01)
-                task.cancel()
+            task = asyncio.create_task(engine.sync())
+            await asyncio.sleep(0.01)
+            task.cancel()
 
-                with pytest.raises(asyncio.CancelledError):
-                    await task
+            with pytest.raises(asyncio.CancelledError):
+                await task
 
 
 class TestAsyncQueueOperations:
@@ -508,15 +511,10 @@ class TestAsyncQueueOperations:
         db_mock.engine.connect.return_value.__enter__.return_value.execute.return_value.lastrowid = 1
         db_mock.engine.connect.return_value.__exit__.return_value = None
 
-        with patch.object(SyncQueue, '_ensure_tables'):
+        with patch.object(SyncQueue, "_ensure_tables"):
             queue = SyncQueue(db_mock)
 
-            queue_id = queue.enqueue(
-                EntityType.PROJECT,
-                "p1",
-                OperationType.CREATE,
-                {"name": "Project 1"}
-            )
+            queue_id = queue.enqueue(EntityType.PROJECT, "p1", OperationType.CREATE, {"name": "Project 1"})
 
             assert queue_id is not None
 
@@ -524,7 +522,7 @@ class TestAsyncQueueOperations:
         """Test getting pending changes."""
         db_mock = MagicMock()
 
-        with patch.object(SyncQueue, '_ensure_tables'):
+        with patch.object(SyncQueue, "_ensure_tables"):
             queue = SyncQueue(db_mock)
             pending = queue.get_pending(limit=10)
 
@@ -534,7 +532,7 @@ class TestAsyncQueueOperations:
         """Test removing from queue."""
         db_mock = MagicMock()
 
-        with patch.object(SyncQueue, '_ensure_tables'):
+        with patch.object(SyncQueue, "_ensure_tables"):
             queue = SyncQueue(db_mock)
             queue.remove(1)  # Should not raise
 
@@ -542,6 +540,6 @@ class TestAsyncQueueOperations:
         """Test clearing queue."""
         db_mock = MagicMock()
 
-        with patch.object(SyncQueue, '_ensure_tables'):
+        with patch.object(SyncQueue, "_ensure_tables"):
             queue = SyncQueue(db_mock)
             queue.clear()  # Should not raise

@@ -55,6 +55,6 @@ class AssertionResult {
         };
     }
 }
-export { AssertionError as AssertionError };
-export { AssertionResult as AssertionResult };
+export { AssertionError };
+export { AssertionResult };
 

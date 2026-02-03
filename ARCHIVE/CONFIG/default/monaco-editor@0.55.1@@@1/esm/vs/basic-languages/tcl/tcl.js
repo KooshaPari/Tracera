@@ -143,14 +143,14 @@ const language = {
     "tk_popup",
     "tk_setPalette"
   ],
-  symbols: /[=><!~?:&|+\-*\/\^%]+/,
+  symbols: /[=><!~?:&|+\-*/^%]+/,
   brackets: [
     { open: "(", close: ")", token: "delimiter.parenthesis" },
     { open: "{", close: "}", token: "delimiter.curly" },
     { open: "[", close: "]", token: "delimiter.square" }
   ],
-  escapes: /\\(?:[abfnrtv\\"'\[\]\{\};\$]|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
-  variables: /(?:\$+(?:(?:\:\:?)?[a-zA-Z_]\w*)+)/,
+  escapes: /\\(?:[abfnrtv\\"'[\]{};$]|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
+  variables: /(?:\$+(?:(?:::?)?[a-zA-Z_]\w*)+)/,
   tokenizer: {
     root: [
       // identifiers and keywords
@@ -168,15 +168,15 @@ const language = {
           }
         }
       ],
-      [/\s+\-+(?!\d|\.)\w*|{\*}/, "metatag"],
+      [/\s+-+(?!\d|\.)\w*|{\*}/, "metatag"],
       // whitespace
       { include: "@whitespace" },
       // delimiters and operators
-      [/[{}()\[\]]/, "@brackets"],
+      [/[{}()[\]]/, "@brackets"],
       [/@symbols/, "operator"],
-      [/\$+(?:\:\:)?\{/, { token: "identifier", next: "@nestedVariable" }],
+      [/\$+(?:::)?\{/, { token: "identifier", next: "@nestedVariable" }],
       [/@variables/, "type.identifier"],
-      [/\.(?!\d|\.)[\w\-]*/, "operator.sql"],
+      [/\.(?!\d|\.)[\w-]*/, "operator.sql"],
       // numbers
       [/\d+(\.\d+)?/, "number"],
       [/\d+/, "number"],
@@ -188,17 +188,17 @@ const language = {
     ],
     dstring: [
       [/\[/, { token: "@brackets", next: "@nestedCall" }],
-      [/\$+(?:\:\:)?\{/, { token: "identifier", next: "@nestedVariable" }],
+      [/\$+(?:::)?\{/, { token: "identifier", next: "@nestedVariable" }],
       [/@variables/, "type.identifier"],
-      [/[^\\$\[\]"]+/, "string"],
+      [/[^\\$[\]"]+/, "string"],
       [/@escapes/, "string.escape"],
       [/"/, { token: "string.quote", bracket: "@close", next: "@pop" }]
     ],
     sstring: [
       [/\[/, { token: "@brackets", next: "@nestedCall" }],
-      [/\$+(?:\:\:)?\{/, { token: "identifier", next: "@nestedVariable" }],
+      [/\$+(?:::)?\{/, { token: "identifier", next: "@nestedVariable" }],
       [/@variables/, "type.identifier"],
-      [/[^\\$\[\]']+/, "string"],
+      [/[^\\$[\]']+/, "string"],
       [/@escapes/, "string.escape"],
       [/'/, { token: "string.quote", bracket: "@close", next: "@pop" }]
     ],
@@ -212,7 +212,7 @@ const language = {
       [/.*(?!\\)$/, { token: "comment", next: "@pop" }]
     ],
     nestedVariable: [
-      [/[^\{\}\$]+/, "type.identifier"],
+      [/[^{}$]+/, "type.identifier"],
       [/\}/, { token: "identifier", next: "@pop" }]
     ],
     nestedCall: [

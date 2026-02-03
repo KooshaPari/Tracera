@@ -31,25 +31,20 @@ End-to-end workflows combining multiple services and repositories:
 Total: 70-90 comprehensive cross-module workflow tests
 """
 
-import pytest
 import asyncio
-import json
-from datetime import datetime, timedelta
+from datetime import datetime
 from uuid import uuid4
-from typing import List, Dict, Any, Tuple
-from unittest.mock import Mock, AsyncMock, patch, MagicMock
 
+import pytest
 from sqlalchemy.orm import Session
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from tracertm.models.project import Project
+# Repositories are async but tests use sync Session; type ignores and asyncio.run() used for checker compatibility.
 from tracertm.models.item import Item
 from tracertm.models.link import Link
-from tracertm.models.event import Event
-from tracertm.repositories.project_repository import ProjectRepository
+from tracertm.models.project import Project
 from tracertm.repositories.item_repository import ItemRepository
 from tracertm.repositories.link_repository import LinkRepository
-from tracertm.repositories.event_repository import EventRepository
+from tracertm.repositories.project_repository import ProjectRepository
 
 pytestmark = pytest.mark.integration
 
@@ -72,17 +67,13 @@ class TestItemCreationLinkingSyncExport:
         - Sync to storage
         - Export data integrity
         """
-        # Setup repositories
-        project_repo = ProjectRepository(sync_db_session)
-        item_repo = ItemRepository(sync_db_session)
-        link_repo = LinkRepository(sync_db_session)
+        # Setup repositories (sync Session; repos typed for AsyncSession)
+        project_repo = ProjectRepository(sync_db_session)  # type: ignore[arg-type]
+        item_repo = ItemRepository(sync_db_session)  # type: ignore[arg-type]
+        link_repo = LinkRepository(sync_db_session)  # type: ignore[arg-type]
 
         # Create project
-        project = Project(
-            id=str(uuid4()),
-            name="Test Project",
-            description="Test item lifecycle"
-        )
+        project = Project(id=str(uuid4()), name="Test Project", description="Test item lifecycle")
         sync_db_session.add(project)
         sync_db_session.commit()
 
@@ -94,7 +85,7 @@ class TestItemCreationLinkingSyncExport:
             view="FEATURE",
             item_type="feature",
             status="todo",
-            item_metadata={"priority": "high", "assignee": "alice"}
+            item_metadata={"priority": "high", "assignee": "alice"},
         )
         item2 = Item(
             id="FEAT-002",
@@ -103,7 +94,7 @@ class TestItemCreationLinkingSyncExport:
             view="FEATURE",
             item_type="feature",
             status="todo",
-            item_metadata={"priority": "high", "assignee": "bob"}
+            item_metadata={"priority": "high", "assignee": "bob"},
         )
         sync_db_session.add_all([item1, item2])
         sync_db_session.commit()
@@ -114,16 +105,16 @@ class TestItemCreationLinkingSyncExport:
             source_item_id=item1.id,
             target_item_id=item2.id,
             link_type="depends_on",
-            project_id=project.id
+            project_id=project.id,
         )
         sync_db_session.add(link)
         sync_db_session.commit()
 
-        # Verify workflow state
-        retrieved_items = item_repo.get_by_project(project.id)
+        # Verify workflow state (repos are async; run coroutines)
+        retrieved_items = asyncio.run(item_repo.get_by_project(str(project.id)))
         assert len(retrieved_items) == 2
 
-        retrieved_links = link_repo.get_by_source(item1.id)
+        retrieved_links = asyncio.run(link_repo.get_by_source(str(item1.id)))
         assert len(retrieved_links) > 0
         assert retrieved_links[0].link_type == "depends_on"
 
@@ -140,9 +131,9 @@ class TestItemCreationLinkingSyncExport:
         - Cascading validations
         - Event generation for each transition
         """
-        project_repo = ProjectRepository(sync_db_session)
-        item_repo = ItemRepository(sync_db_session)
-        link_repo = LinkRepository(sync_db_session)
+        project_repo = ProjectRepository(sync_db_session)  # type: ignore[arg-type]
+        item_repo = ItemRepository(sync_db_session)  # type: ignore[arg-type]
+        link_repo = LinkRepository(sync_db_session)  # type: ignore[arg-type]
 
         # Create project
         project = Project(id=str(uuid4()), name="Status Workflow Test")
@@ -156,7 +147,7 @@ class TestItemCreationLinkingSyncExport:
             title="User Login Requirement",
             view="REQUIREMENT",
             item_type="requirement",
-            status="todo"
+            status="todo",
         )
         story = Item(
             id="STORY-001",
@@ -164,7 +155,7 @@ class TestItemCreationLinkingSyncExport:
             title="Implement Login UI",
             view="FEATURE",
             item_type="story",
-            status="todo"
+            status="todo",
         )
         task = Item(
             id="TASK-001",
@@ -172,7 +163,7 @@ class TestItemCreationLinkingSyncExport:
             title="Create login form component",
             view="CODE",
             item_type="task",
-            status="todo"
+            status="todo",
         )
         sync_db_session.add_all([requirement, story, task])
         sync_db_session.commit()
@@ -183,14 +174,14 @@ class TestItemCreationLinkingSyncExport:
             source_item_id=requirement.id,
             target_item_id=story.id,
             link_type="depends_on",
-            project_id=project.id
+            project_id=project.id,
         )
         story_to_task = Link(
             id=str(uuid4()),
             source_item_id=story.id,
             target_item_id=task.id,
             link_type="depends_on",
-            project_id=project.id
+            project_id=project.id,
         )
         sync_db_session.add_all([req_to_story, story_to_task])
         sync_db_session.commit()
@@ -204,7 +195,7 @@ class TestItemCreationLinkingSyncExport:
         assert task.status == "in_progress"
 
         # Verify links are intact
-        links = link_repo.get_by_source(requirement.id)
+        links = asyncio.run(link_repo.get_by_source(str(requirement.id)))
         assert len(links) == 1
         assert links[0].target_item_id == story.id
 
@@ -217,8 +208,8 @@ class TestItemCreationLinkingSyncExport:
         - Graph structure establishment
         - Link validation without cycles
         """
-        item_repo = ItemRepository(sync_db_session)
-        link_repo = LinkRepository(sync_db_session)
+        item_repo = ItemRepository(sync_db_session)  # type: ignore[arg-type]
+        link_repo = LinkRepository(sync_db_session)  # type: ignore[arg-type]
 
         project = Project(id=str(uuid4()), name="Bulk Link Test")
         sync_db_session.add(project)
@@ -233,7 +224,7 @@ class TestItemCreationLinkingSyncExport:
                 title=f"Item {i}",
                 view="TASK",
                 item_type="task",
-                status="todo"
+                status="todo",
             )
             items.append(item)
         sync_db_session.add_all(items)
@@ -246,16 +237,16 @@ class TestItemCreationLinkingSyncExport:
                 source_item_id=items[i].id,
                 target_item_id=items[i + 1].id,
                 link_type="depends_on",
-                project_id=project.id
+                project_id=project.id,
             )
             sync_db_session.add(link)
         sync_db_session.commit()
 
         # Verify chain structure
-        all_items = item_repo.get_by_project(project.id)
+        all_items = asyncio.run(item_repo.get_by_project(str(project.id)))
         assert len(all_items) == 5
 
-        all_links = link_repo.get_by_project(project.id)
+        all_links = asyncio.run(link_repo.get_by_project(str(project.id)))
         assert len(all_links) == 4  # 5 items = 4 links in chain
 
     def test_item_export_after_modifications(self, sync_db_session: Session):
@@ -267,7 +258,7 @@ class TestItemCreationLinkingSyncExport:
         - Links are included in export
         - Metadata is preserved
         """
-        item_repo = ItemRepository(sync_db_session)
+        item_repo = ItemRepository(sync_db_session)  # type: ignore[arg-type]
 
         project = Project(id=str(uuid4()), name="Export Test")
         sync_db_session.add(project)
@@ -281,7 +272,7 @@ class TestItemCreationLinkingSyncExport:
             view="FEATURE",
             item_type="feature",
             status="todo",
-            item_metadata={"version": "1.0", "stage": "planning"}
+            item_metadata={"version": "1.0", "stage": "planning"},
         )
         sync_db_session.add(item1)
         sync_db_session.commit()
@@ -316,14 +307,10 @@ class TestProjectSetupItemManagementWorkflow:
         - Initial item seeding
         - Project-item relationships
         """
-        project_repo = ProjectRepository(sync_db_session)
-        item_repo = ItemRepository(sync_db_session)
+        project_repo = ProjectRepository(sync_db_session)  # type: ignore[arg-type]
+        item_repo = ItemRepository(sync_db_session)  # type: ignore[arg-type]
 
-        project = Project(
-            id=str(uuid4()),
-            name="New Project",
-            description="With initial structure"
-        )
+        project = Project(id=str(uuid4()), name="New Project", description="With initial structure")
         sync_db_session.add(project)
         sync_db_session.commit()
 
@@ -336,14 +323,14 @@ class TestProjectSetupItemManagementWorkflow:
                 title=f"Initial {view} Item",
                 view=view,
                 item_type=view.lower(),
-                status="todo"
+                status="todo",
             )
             items.append(item)
         sync_db_session.add_all(items)
         sync_db_session.commit()
 
         # Verify project structure
-        project_items = item_repo.get_by_project(project.id)
+        project_items = asyncio.run(item_repo.get_by_project(str(project.id)))
         assert len(project_items) == 4
 
     def test_project_item_bulk_update_workflow(self, sync_db_session: Session):
@@ -355,7 +342,7 @@ class TestProjectSetupItemManagementWorkflow:
         - Atomic transaction handling
         - Consistency across items
         """
-        item_repo = ItemRepository(sync_db_session)
+        item_repo = ItemRepository(sync_db_session)  # type: ignore[arg-type]
 
         project = Project(id=str(uuid4()), name="Bulk Update Test")
         sync_db_session.add(project)
@@ -370,7 +357,7 @@ class TestProjectSetupItemManagementWorkflow:
                 title=f"Bulk Item {i}",
                 view="TASK",
                 item_type="task",
-                status="todo"
+                status="todo",
             )
             items.append(item)
         sync_db_session.add_all(items)
@@ -387,7 +374,7 @@ class TestProjectSetupItemManagementWorkflow:
         sync_db_session.commit()
 
         # Verify counts
-        all_items = item_repo.get_by_project(project.id)
+        all_items = asyncio.run(item_repo.get_by_project(str(project.id)))
         in_progress_count = sum(1 for i in all_items if i.status == "in_progress")
         done_count = sum(1 for i in all_items if i.status == "done")
 
@@ -415,7 +402,7 @@ class TestProjectSetupItemManagementWorkflow:
             title="Q1 2024 Milestone",
             view="EPIC",
             item_type="epic",
-            status="todo"
+            status="todo",
         )
         sync_db_session.add(epic)
         sync_db_session.commit()
@@ -430,7 +417,7 @@ class TestProjectSetupItemManagementWorkflow:
                 view="FEATURE",
                 item_type="feature",
                 status="todo",
-                item_metadata={"parent_epic": epic.id}
+                item_metadata={"parent_epic": epic.id},
             )
             features.append(feature)
         sync_db_session.add_all(features)
@@ -465,7 +452,7 @@ class TestSyncAndConflictWorkflows:
         - Data integrity after sync
         - Metadata preservation
         """
-        item_repo = ItemRepository(sync_db_session)
+        item_repo = ItemRepository(sync_db_session)  # type: ignore[arg-type]
 
         project = Project(id=str(uuid4()), name="Sync Test")
         sync_db_session.add(project)
@@ -479,11 +466,7 @@ class TestSyncAndConflictWorkflows:
             view="FEATURE",
             item_type="feature",
             status="in_progress",
-            item_metadata={
-                "sync_version": 1,
-                "last_sync": datetime.now().isoformat(),
-                "custom_field": "custom_value"
-            }
+            item_metadata={"sync_version": 1, "last_sync": datetime.now().isoformat(), "custom_field": "custom_value"},
         )
         sync_db_session.add(item)
         sync_db_session.commit()
@@ -503,7 +486,7 @@ class TestSyncAndConflictWorkflows:
         - Version tracking
         - Lock management
         """
-        item_repo = ItemRepository(sync_db_session)
+        item_repo = ItemRepository(sync_db_session)  # type: ignore[arg-type]
 
         project = Project(id=str(uuid4()), name="Conflict Detection")
         sync_db_session.add(project)
@@ -517,7 +500,7 @@ class TestSyncAndConflictWorkflows:
             view="TASK",
             item_type="task",
             status="todo",
-            item_metadata={"version": 1, "last_modified": datetime.now().isoformat()}
+            item_metadata={"version": 1, "last_modified": datetime.now().isoformat()},
         )
         sync_db_session.add(item)
         sync_db_session.commit()
@@ -546,7 +529,7 @@ class TestSyncAndConflictWorkflows:
         - Data consistency after rollback
         - Error handling
         """
-        item_repo = ItemRepository(sync_db_session)
+        item_repo = ItemRepository(sync_db_session)  # type: ignore[arg-type]
 
         project = Project(id=str(uuid4()), name="Rollback Test")
         sync_db_session.add(project)
@@ -558,7 +541,7 @@ class TestSyncAndConflictWorkflows:
             title="Original Title",
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         sync_db_session.add(item)
         sync_db_session.commit()
@@ -588,7 +571,7 @@ class TestSyncAndConflictWorkflows:
         - Resolution strategy selection
         - Final state consistency
         """
-        item_repo = ItemRepository(sync_db_session)
+        item_repo = ItemRepository(sync_db_session)  # type: ignore[arg-type]
 
         project = Project(id=str(uuid4()), name="Merge Test")
         sync_db_session.add(project)
@@ -602,7 +585,7 @@ class TestSyncAndConflictWorkflows:
             view="FEATURE",
             item_type="feature",
             status="todo",
-            item_metadata={"version": 1, "resolver": "none"}
+            item_metadata={"version": 1, "resolver": "none"},
         )
         sync_db_session.add(item)
         sync_db_session.commit()
@@ -639,8 +622,8 @@ class TestBulkOperationsWithRollback:
         - Link creation at scale
         - Transaction atomicity
         """
-        item_repo = ItemRepository(sync_db_session)
-        link_repo = LinkRepository(sync_db_session)
+        item_repo = ItemRepository(sync_db_session)  # type: ignore[arg-type]
+        link_repo = LinkRepository(sync_db_session)  # type: ignore[arg-type]
 
         project = Project(id=str(uuid4()), name="Bulk Create Test")
         sync_db_session.add(project)
@@ -655,7 +638,7 @@ class TestBulkOperationsWithRollback:
                 title=f"Bulk Created Item {i}",
                 view="TASK",
                 item_type="task",
-                status="todo"
+                status="todo",
             )
             items.append(item)
         sync_db_session.add_all(items)
@@ -668,14 +651,14 @@ class TestBulkOperationsWithRollback:
                 source_item_id=items[i].id,
                 target_item_id=items[i + 1].id,
                 link_type="depends_on",
-                project_id=project.id
+                project_id=project.id,
             )
             sync_db_session.add(link)
         sync_db_session.commit()
 
         # Verify
-        all_items = item_repo.get_by_project(project.id)
-        all_links = link_repo.get_by_project(project.id)
+        all_items = asyncio.run(item_repo.get_by_project(str(project.id)))
+        all_links = asyncio.run(link_repo.get_by_project(str(project.id)))
         assert len(all_items) == 20
         assert len(all_links) == 19
 
@@ -688,7 +671,7 @@ class TestBulkOperationsWithRollback:
         - Transaction rollback
         - Atomicity enforcement
         """
-        item_repo = ItemRepository(sync_db_session)
+        item_repo = ItemRepository(sync_db_session)  # type: ignore[arg-type]
 
         project = Project(id=str(uuid4()), name="Bulk Update Rollback")
         sync_db_session.add(project)
@@ -703,7 +686,7 @@ class TestBulkOperationsWithRollback:
                 title=f"Item {i}",
                 view="TASK",
                 item_type="task",
-                status="todo"
+                status="todo",
             )
             items.append(item)
         sync_db_session.add_all(items)
@@ -721,7 +704,7 @@ class TestBulkOperationsWithRollback:
             sync_db_session.rollback()
 
         # Verify rollback - all should be todo
-        all_items = item_repo.get_by_project(project.id)
+        all_items = asyncio.run(item_repo.get_by_project(str(project.id)))
         todo_count = sum(1 for i in all_items if i.status == "todo")
         assert todo_count == 15  # All still todo
 
@@ -734,8 +717,8 @@ class TestBulkOperationsWithRollback:
         - Relationship cleanup
         - Orphan handling
         """
-        item_repo = ItemRepository(sync_db_session)
-        link_repo = LinkRepository(sync_db_session)
+        item_repo = ItemRepository(sync_db_session)  # type: ignore[arg-type]
+        link_repo = LinkRepository(sync_db_session)  # type: ignore[arg-type]
 
         project = Project(id=str(uuid4()), name="Cascade Delete Test")
         sync_db_session.add(project)
@@ -750,7 +733,7 @@ class TestBulkOperationsWithRollback:
                 title=f"Deletable Item {i}",
                 view="TASK",
                 item_type="task",
-                status="todo"
+                status="todo",
             )
             items.append(item)
         sync_db_session.add_all(items)
@@ -763,7 +746,7 @@ class TestBulkOperationsWithRollback:
                 source_item_id=items[i].id,
                 target_item_id=items[i + 1].id,
                 link_type="relates_to",
-                project_id=project.id
+                project_id=project.id,
             )
             sync_db_session.add(link)
         sync_db_session.commit()
@@ -774,8 +757,8 @@ class TestBulkOperationsWithRollback:
         sync_db_session.commit()
 
         # Verify cleanup
-        remaining_items = item_repo.get_by_project(project.id)
-        remaining_links = link_repo.get_by_project(project.id)
+        remaining_items = asyncio.run(item_repo.get_by_project(str(project.id)))
+        remaining_links = asyncio.run(link_repo.get_by_project(str(project.id)))
         assert len(remaining_items) == 0
         assert len(remaining_links) == 0
 
@@ -788,7 +771,7 @@ class TestBulkOperationsWithRollback:
         - Bulk transitions
         - Invalid transition handling
         """
-        item_repo = ItemRepository(sync_db_session)
+        item_repo = ItemRepository(sync_db_session)  # type: ignore[arg-type]
 
         project = Project(id=str(uuid4()), name="State Transition Test")
         sync_db_session.add(project)
@@ -805,7 +788,7 @@ class TestBulkOperationsWithRollback:
                 title=f"Item {i}",
                 view="TASK",
                 item_type="task",
-                status="todo"
+                status="todo",
             )
             items.append(item)
         sync_db_session.add_all(items)
@@ -818,7 +801,7 @@ class TestBulkOperationsWithRollback:
         sync_db_session.commit()
 
         # Verify final state
-        final_items = item_repo.get_by_project(project.id)
+        final_items = asyncio.run(item_repo.get_by_project(str(project.id)))
         for item in final_items:
             assert item.status == "done"
 
@@ -840,8 +823,8 @@ class TestAdvancedIntegrationPatterns:
         - Impact analysis accuracy
         - Link lifecycle management
         """
-        item_repo = ItemRepository(sync_db_session)
-        link_repo = LinkRepository(sync_db_session)
+        item_repo = ItemRepository(sync_db_session)  # type: ignore[arg-type]
+        link_repo = LinkRepository(sync_db_session)  # type: ignore[arg-type]
 
         project = Project(id=str(uuid4()), name="Graph Analysis Test")
         sync_db_session.add(project)
@@ -856,7 +839,7 @@ class TestAdvancedIntegrationPatterns:
                 title=f"Graph Node {i}",
                 view="FEATURE",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             items.append(item)
         sync_db_session.add_all(items)
@@ -868,20 +851,20 @@ class TestAdvancedIntegrationPatterns:
             source_item_id=items[0].id,
             target_item_id=items[1].id,
             link_type="depends_on",
-            project_id=project.id
+            project_id=project.id,
         )
         link2 = Link(
             id=str(uuid4()),
             source_item_id=items[1].id,
             target_item_id=items[2].id,
             link_type="depends_on",
-            project_id=project.id
+            project_id=project.id,
         )
         sync_db_session.add_all([link1, link2])
         sync_db_session.commit()
 
         # Verify graph structure
-        links = link_repo.get_by_project(project.id)
+        links = asyncio.run(link_repo.get_by_project(str(project.id)))
         assert len(links) == 2
 
         # Remove a link
@@ -889,7 +872,7 @@ class TestAdvancedIntegrationPatterns:
         sync_db_session.commit()
 
         # Verify updated structure
-        remaining_links = link_repo.get_by_project(project.id)
+        remaining_links = asyncio.run(link_repo.get_by_project(str(project.id)))
         assert len(remaining_links) == 1
 
     def test_impact_analysis_during_item_modification(self, sync_db_session: Session):
@@ -901,8 +884,8 @@ class TestAdvancedIntegrationPatterns:
         - Impact scope calculation
         - Affected item identification
         """
-        item_repo = ItemRepository(sync_db_session)
-        link_repo = LinkRepository(sync_db_session)
+        item_repo = ItemRepository(sync_db_session)  # type: ignore[arg-type]
+        link_repo = LinkRepository(sync_db_session)  # type: ignore[arg-type]
 
         project = Project(id=str(uuid4()), name="Impact Analysis Test")
         sync_db_session.add(project)
@@ -915,15 +898,10 @@ class TestAdvancedIntegrationPatterns:
             title="Root Requirement",
             view="REQUIREMENT",
             item_type="requirement",
-            status="todo"
+            status="todo",
         )
         child1 = Item(
-            id="CHILD-001",
-            project_id=project.id,
-            title="Child Story",
-            view="FEATURE",
-            item_type="story",
-            status="todo"
+            id="CHILD-001", project_id=project.id, title="Child Story", view="FEATURE", item_type="story", status="todo"
         )
         child2 = Item(
             id="CHILD-002",
@@ -931,7 +909,7 @@ class TestAdvancedIntegrationPatterns:
             title="Another Child",
             view="FEATURE",
             item_type="story",
-            status="todo"
+            status="todo",
         )
         sync_db_session.add_all([root, child1, child2])
         sync_db_session.commit()
@@ -942,14 +920,14 @@ class TestAdvancedIntegrationPatterns:
             source_item_id=root.id,
             target_item_id=child1.id,
             link_type="depends_on",
-            project_id=project.id
+            project_id=project.id,
         )
         link2 = Link(
             id=str(uuid4()),
             source_item_id=root.id,
             target_item_id=child2.id,
             link_type="depends_on",
-            project_id=project.id
+            project_id=project.id,
         )
         sync_db_session.add_all([link1, link2])
         sync_db_session.commit()
@@ -959,11 +937,11 @@ class TestAdvancedIntegrationPatterns:
         sync_db_session.commit()
 
         # Verify impact
-        incoming_links = link_repo.get_by_target(child1.id)
+        incoming_links = asyncio.run(link_repo.get_by_target(str(child1.id)))
         assert len(incoming_links) > 0  # Root depends on child1
 
         # Get all dependents
-        all_links = link_repo.get_by_project(project.id)
+        all_links = asyncio.run(link_repo.get_by_project(str(project.id)))
         assert len(all_links) == 2
 
     def test_cross_view_item_reference_workflow(self, sync_db_session: Session):
@@ -975,8 +953,8 @@ class TestAdvancedIntegrationPatterns:
         - Multi-view queries
         - View-agnostic link handling
         """
-        item_repo = ItemRepository(sync_db_session)
-        link_repo = LinkRepository(sync_db_session)
+        item_repo = ItemRepository(sync_db_session)  # type: ignore[arg-type]
+        link_repo = LinkRepository(sync_db_session)  # type: ignore[arg-type]
 
         project = Project(id=str(uuid4()), name="Cross-View Test")
         sync_db_session.add(project)
@@ -993,7 +971,7 @@ class TestAdvancedIntegrationPatterns:
                 title=f"{view} Reference Item",
                 view=view,
                 item_type=view.lower(),
-                status="todo"
+                status="todo",
             )
             items.append(item)
         sync_db_session.add_all(items)
@@ -1006,13 +984,13 @@ class TestAdvancedIntegrationPatterns:
                 source_item_id=items[i].id,
                 target_item_id=items[i + 1].id,
                 link_type="implements",
-                project_id=project.id
+                project_id=project.id,
             )
             sync_db_session.add(link)
         sync_db_session.commit()
 
         # Verify cross-view links
-        all_links = link_repo.get_by_project(project.id)
+        all_links = asyncio.run(link_repo.get_by_project(str(project.id)))
         assert len(all_links) == 3
 
     def test_multi_project_cross_reference_workflow(self, sync_db_session: Session):
@@ -1024,7 +1002,7 @@ class TestAdvancedIntegrationPatterns:
         - Cross-project linking (if supported)
         - Project isolation
         """
-        item_repo = ItemRepository(sync_db_session)
+        item_repo = ItemRepository(sync_db_session)  # type: ignore[arg-type]
 
         # Create two projects
         project1 = Project(id=str(uuid4()), name="Project A")
@@ -1039,7 +1017,7 @@ class TestAdvancedIntegrationPatterns:
             title="Project A Item",
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         item_p2 = Item(
             id="P2-ITEM-001",
@@ -1047,14 +1025,14 @@ class TestAdvancedIntegrationPatterns:
             title="Project B Item",
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         sync_db_session.add_all([item_p1, item_p2])
         sync_db_session.commit()
 
         # Verify project isolation
-        p1_items = item_repo.get_by_project(project1.id)
-        p2_items = item_repo.get_by_project(project2.id)
+        p1_items = asyncio.run(item_repo.get_by_project(str(project1.id)))
+        p2_items = asyncio.run(item_repo.get_by_project(str(project2.id)))
 
         assert len(p1_items) == 1
         assert len(p2_items) == 1
@@ -1079,7 +1057,7 @@ class TestStateConsistencyAndRecovery:
         - Data integrity
         - Orphan detection
         """
-        item_repo = ItemRepository(sync_db_session)
+        item_repo = ItemRepository(sync_db_session)  # type: ignore[arg-type]
 
         project = Project(id=str(uuid4()), name="Consistency Test")
         sync_db_session.add(project)
@@ -1093,7 +1071,7 @@ class TestStateConsistencyAndRecovery:
             view="FEATURE",
             item_type="feature",
             status="todo",
-            item_metadata={"related_to": "CONS-002"}
+            item_metadata={"related_to": "CONS-002"},
         )
         item2 = Item(
             id="CONS-002",
@@ -1102,7 +1080,7 @@ class TestStateConsistencyAndRecovery:
             view="FEATURE",
             item_type="feature",
             status="todo",
-            item_metadata={"related_to": "CONS-001"}
+            item_metadata={"related_to": "CONS-001"},
         )
         sync_db_session.add_all([item1, item2])
         sync_db_session.commit()
@@ -1128,8 +1106,8 @@ class TestStateConsistencyAndRecovery:
         - Cascade behavior
         - Recovery procedures
         """
-        item_repo = ItemRepository(sync_db_session)
-        link_repo = LinkRepository(sync_db_session)
+        item_repo = ItemRepository(sync_db_session)  # type: ignore[arg-type]
+        link_repo = LinkRepository(sync_db_session)  # type: ignore[arg-type]
 
         project = Project(id=str(uuid4()), name="Orphan Recovery Test")
         sync_db_session.add(project)
@@ -1137,20 +1115,10 @@ class TestStateConsistencyAndRecovery:
 
         # Create items with link
         source = Item(
-            id="ORPHAN-SOURCE",
-            project_id=project.id,
-            title="Source Item",
-            view="TASK",
-            item_type="task",
-            status="todo"
+            id="ORPHAN-SOURCE", project_id=project.id, title="Source Item", view="TASK", item_type="task", status="todo"
         )
         target = Item(
-            id="ORPHAN-TARGET",
-            project_id=project.id,
-            title="Target Item",
-            view="TASK",
-            item_type="task",
-            status="todo"
+            id="ORPHAN-TARGET", project_id=project.id, title="Target Item", view="TASK", item_type="task", status="todo"
         )
         sync_db_session.add_all([source, target])
         sync_db_session.commit()
@@ -1161,7 +1129,7 @@ class TestStateConsistencyAndRecovery:
             source_item_id=source.id,
             target_item_id=target.id,
             link_type="depends_on",
-            project_id=project.id
+            project_id=project.id,
         )
         sync_db_session.add(link)
         sync_db_session.commit()
@@ -1171,7 +1139,7 @@ class TestStateConsistencyAndRecovery:
         sync_db_session.commit()
 
         # Verify cleanup
-        remaining_items = item_repo.get_by_project(project.id)
+        remaining_items = asyncio.run(item_repo.get_by_project(str(project.id)))
         assert len(remaining_items) == 1
         assert remaining_items[0].id == target.id
 

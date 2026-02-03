@@ -7,7 +7,7 @@
 	 * @returns {RegExp}
 	 */
 	function simple_form(name) {
-		return RegExp(/(\()/.source + '(?:' + name + ')' + /(?=[\s\)])/.source);
+		return RegExp(/(\()/.source + '(?:' + name + ')' + /(?=[\s)])/.source);
 	}
 	/**
 	 * booleans and numbers
@@ -137,7 +137,7 @@
 		},
 		punctuation: [
 			// open paren, brackets, and close paren
-			/(?:['`,]?\(|[)\[\]])/,
+			/(?:['`,]?\(|[)[\]])/,
 			// cons
 			{
 				pattern: /(\s)\.(?=\s)/,

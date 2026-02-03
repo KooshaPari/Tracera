@@ -4,6 +4,7 @@ Unit tests for models with database persistence.
 Tests: Model creation, persistence, retrieval
 """
 
+import logging
 
 import pytest
 from sqlalchemy.orm import Session
@@ -25,8 +26,8 @@ def test_db(tmp_path):
     db.connect()
     try:
         db.create_tables()
-    except Exception:
-        pass
+    except Exception as e:
+        logging.getLogger(__name__).debug("create_tables skipped: %s", e)
 
     return db
 
@@ -43,12 +44,7 @@ class TestItemPersistence:
             project_id = project.id
 
         with Session(test_db.engine) as session:
-            item = Item(
-                project_id=project_id,
-                title="Test Item",
-                view="FEATURE",
-                item_type="feature"
-            )
+            item = Item(project_id=project_id, title="Test Item", view="FEATURE", item_type="feature")
             session.add(item)
             session.commit()
             item_id = item.id
@@ -98,7 +94,7 @@ class TestItemPersistence:
                 title="Test",
                 view="FEATURE",
                 item_type="feature",
-                item_metadata={"priority": "high", "tags": ["urgent"]}
+                item_metadata={"priority": "high", "tags": ["urgent"]},
             )
             session.add(item)
             session.commit()
@@ -122,12 +118,7 @@ class TestLinkPersistence:
             project_id = project.id
 
         with Session(test_db.engine) as session:
-            link = Link(
-                project_id=project_id,
-                source_item_id="item-1",
-                target_item_id="item-2",
-                link_type="depends_on"
-            )
+            link = Link(project_id=project_id, source_item_id="item-1", target_item_id="item-2", link_type="depends_on")
             session.add(link)
             session.commit()
             link_id = link.id
@@ -150,11 +141,7 @@ class TestAgentPersistence:
             project_id = project.id
 
         with Session(test_db.engine) as session:
-            agent = Agent(
-                project_id=project_id,
-                name="agent-1",
-                agent_type="analyzer"
-            )
+            agent = Agent(project_id=project_id, name="agent-1", agent_type="analyzer")
             session.add(agent)
             session.commit()
             agent_id = agent.id
@@ -178,12 +165,10 @@ class TestModelQueries:
 
         with Session(test_db.engine) as session:
             items = [
-                Item(project_id=project_id, title=f"Feature {i}", view="FEATURE", item_type="feature")
-                for i in range(3)
+                Item(project_id=project_id, title=f"Feature {i}", view="FEATURE", item_type="feature") for i in range(3)
             ]
             items.extend([
-                Item(project_id=project_id, title=f"Code {i}", view="CODE", item_type="class")
-                for i in range(2)
+                Item(project_id=project_id, title=f"Code {i}", view="CODE", item_type="class") for i in range(2)
             ])
             session.add_all(items)
             session.commit()

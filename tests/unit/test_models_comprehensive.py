@@ -29,7 +29,7 @@ class TestItemModelComprehensive:
             item_type="feature",
             status="in_progress",
             parent_id="parent-1",
-            item_metadata={"key": "value"}
+            item_metadata={"key": "value"},
         )
         assert item.description == "Desc"
         assert item.status == "in_progress"
@@ -37,23 +37,12 @@ class TestItemModelComprehensive:
 
     def test_item_with_status(self):
         """Test item with explicit status."""
-        item = Item(
-            project_id="p1",
-            title="Test",
-            view="FEATURE",
-            item_type="feature",
-            status="in_progress"
-        )
+        item = Item(project_id="p1", title="Test", view="FEATURE", item_type="feature", status="in_progress")
         assert item.status == "in_progress"
 
     def test_item_with_version(self):
         """Test item with explicit version."""
-        item = Item(
-            project_id="p1",
-            title="Test",
-            view="FEATURE",
-            item_type="feature"
-        )
+        item = Item(project_id="p1", title="Test", view="FEATURE", item_type="feature")
         item.version = 2
         assert item.version == 2
 
@@ -64,7 +53,7 @@ class TestItemModelComprehensive:
             title="Test",
             view="FEATURE",
             item_type="feature",
-            item_metadata={"priority": "high", "tags": ["urgent"]}
+            item_metadata={"priority": "high", "tags": ["urgent"]},
         )
         assert item.item_metadata["priority"] == "high"
 
@@ -95,12 +84,7 @@ class TestLinkModelComprehensive:
 
     def test_link_creation(self):
         """Test creating link."""
-        link = Link(
-            project_id="p1",
-            source_item_id="i1",
-            target_item_id="i2",
-            link_type="depends_on"
-        )
+        link = Link(project_id="p1", source_item_id="i1", target_item_id="i2", link_type="depends_on")
         assert link.source_item_id == "i1"
         assert link.target_item_id == "i2"
 
@@ -118,7 +102,7 @@ class TestLinkModelComprehensive:
             source_item_id="i1",
             target_item_id="i2",
             link_type="depends_on",
-            link_metadata={"priority": "high"}
+            link_metadata={"priority": "high"},
         )
         assert link.link_metadata["priority"] == "high"
 
@@ -141,12 +125,7 @@ class TestAgentModelComprehensive:
 
     def test_agent_metadata(self):
         """Test agent metadata."""
-        agent = Agent(
-            project_id="p1",
-            name="agent-1",
-            agent_type="analyzer",
-            agent_metadata={"version": "1.0"}
-        )
+        agent = Agent(project_id="p1", name="agent-1", agent_type="analyzer", agent_metadata={"version": "1.0"})
         assert agent.agent_metadata["version"] == "1.0"
 
 

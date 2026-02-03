@@ -14,9 +14,9 @@ Complete reference for TraceRTM load testing suite.
 ### Scripts
 | File | Purpose | Usage |
 |------|---------|-------|
-| `scripts/install_k6.sh` | Install k6 tool | `./scripts/install_k6.sh` |
-| `scripts/run_load_tests.sh` | Run complete suite | `./scripts/run_load_tests.sh` |
-| `scripts/generate_load_test_report.py` | Generate HTML report | Auto-run by test runner |
+| `scripts/shell/install_k6.sh` | Install k6 tool | `./scripts/shell/install_k6.sh` |
+| `scripts/shell/run_load_tests.sh` | Run complete suite | `./scripts/shell/run_load_tests.sh` |
+| `scripts/python/generate_load_test_report.py` | Generate HTML report | Auto-run by test runner |
 
 ### Test Files
 | File | Component | Duration | Load | Target |
@@ -43,7 +43,7 @@ Complete reference for TraceRTM load testing suite.
 ### Quick Validation
 ```bash
 # Install k6 (one-time)
-./scripts/install_k6.sh
+./scripts/shell/install_k6.sh
 
 # Quick smoke test (1 minute)
 k6 run load-tests/smoke-test.js
@@ -55,10 +55,10 @@ k6 run load-tests/smoke-test.js
 docker-compose up -d
 
 # Run complete suite
-./scripts/run_load_tests.sh
+./scripts/shell/run_load_tests.sh
 
 # View report
-open load-test-results/report.html
+open load-tests/results/report.html
 ```
 
 ### Using Makefile (from backend/)
@@ -200,13 +200,13 @@ docker-compose logs python-backend
 ```yaml
 # .github/workflows/load-tests.yml
 - name: Run load tests
-  run: ./scripts/run_load_tests.sh
+  run: ./scripts/shell/run_load_tests.sh
 
 - name: Upload results
   uses: actions/upload-artifact@v3
   with:
-    name: load-test-results
-    path: load-test-results/
+    name: load-tests/results
+    path: load-tests/results/
 ```
 
 ### Monitoring
@@ -325,10 +325,10 @@ scenarios: {
 
 ## Next Steps
 
-1. **Install k6**: `./scripts/install_k6.sh`
+1. **Install k6**: `./scripts/shell/install_k6.sh`
 2. **Run smoke test**: `k6 run load-tests/smoke-test.js`
-3. **Run full suite**: `./scripts/run_load_tests.sh`
-4. **View report**: `open load-test-results/report.html`
+3. **Run full suite**: `./scripts/shell/run_load_tests.sh`
+4. **View report**: `open load-tests/results/report.html`
 5. **Set up CI/CD**: Add to GitHub Actions
 6. **Schedule regular runs**: Daily/weekly testing
 7. **Monitor trends**: Track performance over time

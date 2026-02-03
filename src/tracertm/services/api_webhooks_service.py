@@ -2,7 +2,7 @@
 
 import hashlib
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 
@@ -34,17 +34,15 @@ class APIWebhooksService:
         expires_in_days: int | None = None,
     ) -> dict[str, Any]:
         """Create an API key."""
-        key = hashlib.sha256(f"{name}{datetime.utcnow()}".encode()).hexdigest()
+        key = hashlib.sha256(f"{name}{datetime.now(UTC)}".encode()).hexdigest()
 
         api_key = {
             "key": key,
             "name": name,
             "permissions": permissions,
-            "created_at": datetime.utcnow().isoformat(),
+            "created_at": datetime.now(UTC).isoformat(),
             "expires_at": (
-                (datetime.utcnow() + timedelta(days=expires_in_days)).isoformat()
-                if expires_in_days
-                else None
+                (datetime.now(UTC) + timedelta(days=expires_in_days)).isoformat() if expires_in_days else None
             ),
             "active": True,
         }
@@ -64,7 +62,7 @@ class APIWebhooksService:
 
         if api_key["expires_at"]:
             expires_at = datetime.fromisoformat(api_key["expires_at"])
-            if datetime.utcnow() > expires_at:
+            if datetime.now(UTC) > expires_at:
                 return {"valid": False, "error": "API key has expired"}
 
         return {
@@ -88,9 +86,7 @@ class APIWebhooksService:
         secret: str | None = None,
     ) -> dict[str, Any]:
         """Register a webhook."""
-        webhook_id = hashlib.sha256(f"{url}{datetime.utcnow()}".encode()).hexdigest()[
-            :16
-        ]
+        webhook_id = hashlib.sha256(f"{url}{datetime.now(UTC)}".encode()).hexdigest()[:16]
 
         webhook = {
             "id": webhook_id,
@@ -98,7 +94,7 @@ class APIWebhooksService:
             "events": events,
             "secret": secret,
             "active": True,
-            "created_at": datetime.utcnow().isoformat(),
+            "created_at": datetime.now(UTC).isoformat(),
             "last_triggered": None,
             "delivery_count": 0,
         }
@@ -128,7 +124,7 @@ class APIWebhooksService:
             resource_id=resource_id,
             resource_type=resource_type,
             action=action,
-            timestamp=datetime.utcnow().isoformat(),
+            timestamp=datetime.now(UTC).isoformat(),
             data=data,
         )
 
@@ -138,7 +134,7 @@ class APIWebhooksService:
         triggered_count = 0
         for webhook in self.webhooks.values():
             if webhook["active"] and event_type in webhook["events"]:
-                webhook["last_triggered"] = datetime.utcnow().isoformat()
+                webhook["last_triggered"] = datetime.now(UTC).isoformat()
                 webhook["delivery_count"] += 1
                 triggered_count += 1
 
@@ -179,7 +175,7 @@ class APIWebhooksService:
         self.rate_limits[api_key] = {
             "requests_per_minute": requests_per_minute,
             "requests_made": 0,
-            "reset_at": (datetime.utcnow() + timedelta(minutes=1)).isoformat(),
+            "reset_at": (datetime.now(UTC) + timedelta(minutes=1)).isoformat(),
         }
 
         return {
@@ -194,9 +190,9 @@ class APIWebhooksService:
 
         limit = self.rate_limits[api_key]
 
-        if datetime.utcnow().isoformat() > limit["reset_at"]:
+        if datetime.now(UTC).isoformat() > limit["reset_at"]:
             limit["requests_made"] = 0
-            limit["reset_at"] = (datetime.utcnow() + timedelta(minutes=1)).isoformat()
+            limit["reset_at"] = (datetime.now(UTC) + timedelta(minutes=1)).isoformat()
 
         if limit["requests_made"] >= limit["requests_per_minute"]:
             return {"allowed": False, "reason": "Rate limit exceeded"}

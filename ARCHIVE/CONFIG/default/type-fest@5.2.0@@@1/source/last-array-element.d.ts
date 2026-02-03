@@ -37,4 +37,4 @@ export type LastArrayElement<Elements extends readonly unknown[], ElementBeforeT
 					? U | ElementBeforeTailingSpreadElement
 					: never;
 
-export {};
+

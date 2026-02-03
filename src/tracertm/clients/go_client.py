@@ -3,21 +3,19 @@
 import hashlib
 import json
 import os
-from typing import Any, Optional
+from typing import Any
 
 import httpx
 from tenacity import (
     retry,
+    retry_if_exception_type,
     stop_after_attempt,
     wait_exponential,
-    retry_if_exception_type,
 )
 
 
 class GoBackendError(Exception):
     """Base exception for Go backend client errors."""
-
-    pass
 
 
 class GoBackendClient:
@@ -30,7 +28,7 @@ class GoBackendClient:
     - Service token authentication
     """
 
-    def __init__(self, base_url: str, service_token: Optional[str] = None):
+    def __init__(self, base_url: str, service_token: str | None = None):
         """Initialize the Go backend client.
 
         Args:
@@ -63,8 +61,8 @@ class GoBackendClient:
         self,
         method: str,
         path: str,
-        json_data: Optional[dict] = None,
-        params: Optional[dict] = None,
+        json_data: dict | None = None,
+        params: dict | None = None,
     ) -> dict:
         """Make an HTTP request with retry logic.
 
@@ -103,14 +101,12 @@ class GoBackendClient:
             return response.json()
 
         except httpx.HTTPStatusError as e:
-            raise GoBackendError(
-                f"Request failed with status {e.response.status_code}: {e.response.text}"
-            ) from e
-        except (httpx.NetworkError, httpx.TimeoutException) as e:
+            raise GoBackendError(f"Request failed with status {e.response.status_code}: {e.response.text}") from e
+        except (httpx.NetworkError, httpx.TimeoutException):
             # These will be retried by tenacity
             raise
         except Exception as e:
-            raise GoBackendError(f"Unexpected error during request: {str(e)}") from e
+            raise GoBackendError(f"Unexpected error during request: {e!s}") from e
 
     async def get_item(self, item_id: str) -> dict:
         """Get an item by ID from Go backend.
@@ -123,9 +119,7 @@ class GoBackendClient:
         """
         return await self._request("GET", f"/api/v1/items/{item_id}")
 
-    async def create_link(
-        self, source_id: str, target_id: str, link_type: str, metadata: Optional[dict] = None
-    ) -> dict:
+    async def create_link(self, source_id: str, target_id: str, link_type: str, metadata: dict | None = None) -> dict:
         """Create a link between two items.
 
         Args:
@@ -145,7 +139,7 @@ class GoBackendClient:
         }
         return await self._request("POST", "/api/v1/links", json_data=payload)
 
-    async def search_items(self, query: str, filters: Optional[dict] = None) -> dict:
+    async def search_items(self, query: str, filters: dict | None = None) -> dict:
         """Search items in Go backend.
 
         Args:
@@ -161,7 +155,7 @@ class GoBackendClient:
 
         return await self._request("GET", "/api/v1/search/items", params=params)
 
-    async def get_project_items(self, project_id: str, item_type: Optional[str] = None) -> dict:
+    async def get_project_items(self, project_id: str, item_type: str | None = None) -> dict:
         """Get all items for a project.
 
         Args:
@@ -200,9 +194,7 @@ class GoBackendClient:
         """
         return await self._request("DELETE", f"/api/v1/items/{item_id}")
 
-    async def get_graph_data(
-        self, project_id: str, root_item_id: Optional[str] = None, depth: int = 3
-    ) -> dict:
+    async def get_graph_data(self, project_id: str, root_item_id: str | None = None, depth: int = 3) -> dict:
         """Get graph data for visualization.
 
         Args:

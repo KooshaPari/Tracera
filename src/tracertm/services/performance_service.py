@@ -46,9 +46,7 @@ class PerformanceService:
             "item_count": item_count,
             "link_count": link_count,
             "density": density,
-            "complexity": (
-                "high" if density > 0.5 else "medium" if density > 0.1 else "low"
-            ),
+            "complexity": ("high" if density > 0.5 else "medium" if density > 0.1 else "low"),
         }
 
     async def get_slow_queries(self) -> list[dict[str, Any]]:
@@ -78,9 +76,7 @@ class PerformanceService:
             recommendations.append("Consider archiving old items")
 
         if analysis["density"] > 0.5:
-            recommendations.append(
-                "High link density detected - consider refactoring structure"
-            )
+            recommendations.append("High link density detected - consider refactoring structure")
 
         if analysis["link_count"] > 50000:
             recommendations.append("Consider implementing link caching")
@@ -100,7 +96,7 @@ class PerformanceService:
             .where(Item.project_id == project_id, Item.deleted_at.is_(None))
             .group_by(Item.view)
         )
-        views = dict(views_result.all())
+        views = {row[0]: row[1] for row in views_result.all()}
 
         # Get status distribution
         status_result = await self.session.execute(
@@ -108,7 +104,7 @@ class PerformanceService:
             .where(Item.project_id == project_id, Item.deleted_at.is_(None))
             .group_by(Item.status)
         )
-        statuses = dict(status_result.all())
+        statuses = {row[0]: row[1] for row in status_result.all()}
 
         return {
             "item_count": analysis["item_count"],

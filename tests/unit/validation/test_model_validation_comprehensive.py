@@ -14,9 +14,8 @@ from pydantic import ValidationError
 from tracertm.models.item import Item
 from tracertm.models.link import Link
 from tracertm.models.project import Project
-from tracertm.schemas.item import ItemCreate, ItemResponse, ItemUpdate
+from tracertm.schemas.item import ItemCreate, ItemUpdate
 from tracertm.schemas.link import LinkCreate, LinkResponse
-
 
 # ============================================================================
 # ITEM MODEL VALIDATION TESTS
@@ -33,6 +32,7 @@ class TestItemFieldValidation:
         assert hasattr(item, "id")
         # Test that the default callable works
         from tracertm.models.item import generate_item_uuid
+
         generated_id = generate_item_uuid()
         assert isinstance(generated_id, str)
         assert len(generated_id) == 36  # UUID string length
@@ -84,7 +84,7 @@ class TestItemFieldValidation:
         """Test that description can be long text."""
         long_text = "x" * 5000
         item = Item(project_id="p1", title="Test", view="FEATURE", item_type="req", description=long_text)
-        assert len(item.description) == 5000
+        assert item.description is not None and len(item.description) == 5000
 
     def test_item_view_required(self):
         """Test that view is required."""
@@ -164,7 +164,7 @@ class TestItemFieldValidation:
             "bool": True,
             "null": None,
             "list": [1, 2, 3],
-            "dict": {"nested": "value"}
+            "dict": {"nested": "value"},
         }
         item = Item(project_id="p1", title="Test", view="FEATURE", item_type="req", item_metadata=metadata)
         assert item.item_metadata == metadata
@@ -219,6 +219,7 @@ class TestLinkFieldValidation:
         assert hasattr(link, "id")
         # Test that the default callable works
         from tracertm.models.link import generate_link_uuid
+
         generated_id = generate_link_uuid()
         assert isinstance(generated_id, str)
         assert len(generated_id) == 36
@@ -270,7 +271,9 @@ class TestLinkFieldValidation:
     def test_link_metadata_dict(self):
         """Test that metadata can be set."""
         metadata = {"strength": 0.9, "tags": ["important"]}
-        link = Link(project_id="p1", source_item_id="i1", target_item_id="i2", link_type="implements", link_metadata=metadata)
+        link = Link(
+            project_id="p1", source_item_id="i1", target_item_id="i2", link_type="implements", link_metadata=metadata
+        )
         assert link.link_metadata == metadata
 
 
@@ -288,6 +291,7 @@ class TestProjectFieldValidation:
         assert hasattr(project, "id")
         # Test that the default callable works
         from tracertm.models.project import generate_uuid
+
         generated_id = generate_uuid()
         assert isinstance(generated_id, str)
 
@@ -317,7 +321,7 @@ class TestProjectFieldValidation:
         """Test that description can be long text."""
         desc = "x" * 5000
         project = Project(name="Project", description=desc)
-        assert len(project.description) == 5000
+        assert project.description is not None and len(project.description) == 5000
 
     def test_project_metadata_default_empty(self):
         """Test that metadata is initialized (None until DB insertion)."""
@@ -457,7 +461,7 @@ class TestItemCreateSchemaValidation:
         metadata = {
             "tags": ["tag1", "tag2"],
             "config": {"enabled": True, "value": 42},
-            "custom": {"nested": {"deep": "value"}}
+            "custom": {"nested": {"deep": "value"}},
         }
         item = ItemCreate(title="Test", view="FEATURE", item_type="req", metadata=metadata)
         assert item.metadata == metadata
@@ -522,13 +526,13 @@ class TestLinkCreateSchemaValidation:
     def test_link_create_source_item_id_required(self):
         """Test that source_item_id is required."""
         with pytest.raises(ValidationError) as exc:
-            LinkCreate(target_item_id="i2", link_type="implements")
+            LinkCreate(target_item_id="i2", link_type="implements")  # type: ignore[call-arg]
         assert "source_item_id" in str(exc.value).lower()
 
     def test_link_create_target_item_id_required(self):
         """Test that target_item_id is required."""
         with pytest.raises(ValidationError) as exc:
-            LinkCreate(source_item_id="i1", link_type="implements")
+            LinkCreate(source_item_id="i1", link_type="implements")  # type: ignore[call-arg]
         assert "target_item_id" in str(exc.value).lower()
 
     def test_link_create_link_type_required(self):
@@ -579,7 +583,7 @@ class TestLinkResponseSchemaValidation:
             target_item_id="i2",
             link_type="implements",
             metadata={},
-            created_at=now
+            created_at=now,
         )
         assert link.id == "link-123"
         assert link.project_id == "p1"
@@ -671,13 +675,14 @@ class TestTypeCoercion:
     def test_item_metadata_json_serializable(self):
         """Test that metadata is JSON serializable."""
         import json
+
         metadata = {
             "string": "value",
             "number": 42,
             "float": 3.14,
             "bool": True,
             "list": [1, 2, 3],
-            "dict": {"nested": "value"}
+            "dict": {"nested": "value"},
         }
         item = Item(project_id="p1", title="Test", view="FEATURE", item_type="req", item_metadata=metadata)
         # Should be JSON serializable
@@ -687,6 +692,7 @@ class TestTypeCoercion:
     def test_project_metadata_json_serializable(self):
         """Test that project metadata is JSON serializable."""
         import json
+
         metadata = {"owner": "team@example.com", "active": True}
         project = Project(name="Test", project_metadata=metadata)
         json_str = json.dumps(project.project_metadata)
@@ -759,7 +765,7 @@ class TestEdgeCases:
         """Test item with very long description."""
         long_desc = "This is a very long description " * 500
         item = Item(project_id="p1", title="Test", view="FEATURE", item_type="req", description=long_desc)
-        assert len(item.description) > 5000
+        assert item.description is not None and len(item.description) > 5000
 
     def test_item_with_unicode_characters(self):
         """Test item with unicode characters."""
@@ -773,9 +779,10 @@ class TestEdgeCases:
             source_item_id="i1",
             target_item_id="i2",
             link_type="implements",
-            link_metadata={"comment": "Unicode: 你好 مرحبا"}
+            link_metadata={"comment": "Unicode: 你好 مرحبا"},
         )
-        assert "你好" in link.link_metadata["comment"]
+        comment = link.link_metadata.get("comment") if isinstance(link.link_metadata, dict) else None
+        assert comment is not None and "你好" in str(comment)
 
     def test_project_with_special_characters_in_name(self):
         """Test project with special characters in name."""

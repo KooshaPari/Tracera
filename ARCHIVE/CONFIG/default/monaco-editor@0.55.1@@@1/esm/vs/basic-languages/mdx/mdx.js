@@ -127,7 +127,7 @@ const conf = {
 const language = {
   defaultToken: "",
   tokenPostfix: ".mdx",
-  control: /[!#()*+.[\\\]_`{}\-]/,
+  control: /[!#()*+.[\\\]_`{}-]/,
   escapes: /\\@control/,
   tokenizer: {
     root: [

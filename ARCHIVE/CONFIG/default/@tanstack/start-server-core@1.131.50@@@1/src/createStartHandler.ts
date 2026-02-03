@@ -472,7 +472,7 @@ function executeMiddleware(middlewares: TODO, ctx: TODO) {
           ...nextCtx,
           context: {
             ...ctx.context,
-            ...(nextCtx?.context || {}),
+            ...nextCtx?.context,
           },
         })
 

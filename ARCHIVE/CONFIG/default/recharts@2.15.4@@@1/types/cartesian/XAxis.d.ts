@@ -53,4 +53,4 @@ export declare class XAxis extends React.Component<Props> {
     };
     render(): React.JSX.Element;
 }
-export {};
+

@@ -40,7 +40,7 @@ export default function hcl(Prism) {
       },
       /[\w-]+(?=\s+\{)/
     ],
-    property: [/[-\w\.]+(?=\s*=(?!=))/, /"(?:\\[\s\S]|[^\\"])+"(?=\s*[:=])/],
+    property: [/[-\w.]+(?=\s*=(?!=))/, /"(?:\\[\s\S]|[^\\"])+"(?=\s*[:=])/],
     string: {
       pattern:
         /"(?:[^\\$"]|\\[\s\S]|\$(?:(?=")|\$+(?!\$)|[^"${])|\$\{(?:[^{}"]|"(?:[^\\"]|\\[\s\S])*")*\})*"/,
@@ -52,7 +52,7 @@ export default function hcl(Prism) {
           inside: {
             type: {
               pattern:
-                /(\b(?:count|data|local|module|path|self|terraform|var)\b\.)[\w\*]+/i,
+                /(\b(?:count|data|local|module|path|self|terraform|var)\b\.)[\w*]+/i,
               lookbehind: true,
               alias: 'variable'
             },
@@ -63,13 +63,13 @@ export default function hcl(Prism) {
               greedy: true
             },
             number: /\b0x[\da-f]+\b|\b\d+(?:\.\d*)?(?:e[+-]?\d+)?/i,
-            punctuation: /[!\$#%&'()*+,.\/;<=>@\[\\\]^`{|}~?:]/
+            punctuation: /[!$#%&'()*+,./;<=>@[\\\]^`{|}~?:]/
           }
         }
       }
     },
     number: /\b0x[\da-f]+\b|\b\d+(?:\.\d*)?(?:e[+-]?\d+)?/i,
     boolean: /\b(?:false|true)\b/i,
-    punctuation: /[=\[\]{}]/
+    punctuation: /[=[\]{}]/
   }
 }

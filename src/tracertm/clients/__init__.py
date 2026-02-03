@@ -1,29 +1,29 @@
 """API clients for external integrations."""
 
 from tracertm.clients.github_client import (
+    GitHubAuthError,
     GitHubClient,
     GitHubClientError,
-    GitHubRateLimitError,
-    GitHubAuthError,
     GitHubNotFoundError,
+    GitHubRateLimitError,
 )
 from tracertm.clients.linear_client import (
+    LinearAuthError,
     LinearClient,
     LinearClientError,
-    LinearRateLimitError,
-    LinearAuthError,
     LinearNotFoundError,
+    LinearRateLimitError,
 )
 
 __all__ = [
+    "GitHubAuthError",
     "GitHubClient",
     "GitHubClientError",
-    "GitHubRateLimitError",
-    "GitHubAuthError",
     "GitHubNotFoundError",
+    "GitHubRateLimitError",
+    "LinearAuthError",
     "LinearClient",
     "LinearClientError",
-    "LinearRateLimitError",
-    "LinearAuthError",
     "LinearNotFoundError",
+    "LinearRateLimitError",
 ]

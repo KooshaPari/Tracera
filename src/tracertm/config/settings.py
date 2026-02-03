@@ -14,9 +14,7 @@ from typing import Literal
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-ViewType = Literal[
-    "FEATURE", "CODE", "WIREFRAME", "API", "TEST", "DATABASE", "ROADMAP", "PROGRESS"
-]
+ViewType = Literal["FEATURE", "CODE", "WIREFRAME", "API", "TEST", "DATABASE", "ROADMAP", "PROGRESS"]
 OutputFormat = Literal["table", "json", "yaml", "csv"]
 LogLevel = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 
@@ -30,40 +28,31 @@ class DatabaseSettings(BaseSettings):
     )
     echo: bool = Field(default=False, description="Enable SQLAlchemy echo mode")
     pool_size: int = Field(default=10, ge=1, le=100, description="Connection pool size")
-    max_overflow: int = Field(
-        default=20, ge=0, le=200, description="Max overflow connections"
-    )
+    max_overflow: int = Field(default=20, ge=0, le=200, description="Max overflow connections")
 
     @field_validator("url")
     @classmethod
     def validate_url(cls, v: str) -> str:
         """Validate database URL format."""
-        if not (v.startswith("postgresql://") or v.startswith("sqlite:///")):
-            raise ValueError(
-                "Database URL must start with 'postgresql://' or 'sqlite:///'"
-            )
+        if not v.startswith(("postgresql://", "sqlite:///")):
+            raise ValueError("Database URL must start with 'postgresql://' or 'sqlite:///'")
         return v
 
 
 class TraceSettings(BaseSettings):
     """Main TraceRTM settings with pydantic-settings integration."""
 
-    model_config = SettingsConfigDict(
+    model_config = SettingsConfigDict(  # type: ignore[typeddict-unknown-key]
         env_file=".env",
         env_file_encoding="utf-8",
         env_prefix="TRACERTM_",
         case_sensitive=False,
-        nested_delimiter="__",
         extra="ignore",
     )
 
     # Project settings
-    current_project_id: str | None = Field(
-        None, description="Currently active project ID"
-    )
-    current_project_name: str | None = Field(
-        None, description="Currently active project name"
-    )
+    current_project_id: str | None = Field(None, description="Currently active project ID")
+    current_project_name: str | None = Field(None, description="Currently active project name")
 
     # Display preferences
     default_view: ViewType = Field("FEATURE", description="Default view type")

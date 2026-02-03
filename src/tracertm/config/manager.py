@@ -116,13 +116,12 @@ class ConfigManager:
 
         # Load global config
         if self.config_path.exists():
-            with open(self.config_path) as f:
+            with self.config_path.open() as f:
                 global_config = yaml.safe_load(f) or {}
                 config_data.update(global_config)
         else:
             raise FileNotFoundError(
-                f"Configuration not found. Run 'rtm config init' first.\n"
-                f"Expected location: {self.config_path}"
+                f"Configuration not found. Run 'rtm config init' first.\nExpected location: {self.config_path}"
             )
 
         # Load repo-level project config (if present)
@@ -134,7 +133,7 @@ class ConfigManager:
         if project_id:
             project_config_path = self.projects_dir / project_id / "config.yaml"
             if project_config_path.exists():
-                with open(project_config_path) as f:
+                with project_config_path.open() as f:
                     project_config = yaml.safe_load(f) or {}
                     config_data.update(project_config)
 
@@ -166,7 +165,7 @@ class ConfigManager:
 
         # Load existing config
         if config_path.exists():
-            with open(config_path) as f:
+            with config_path.open() as f:
                 config_data = yaml.safe_load(f) or {}
         else:
             config_data = {}
@@ -178,7 +177,7 @@ class ConfigManager:
         # Get field names from Config model
         config_fields = set(Config.model_fields.keys())
         known_fields = {k: v for k, v in config_data.items() if k in config_fields}
-        
+
         # Only validate known fields
         if known_fields:
             Config(**known_fields)
@@ -187,7 +186,7 @@ class ConfigManager:
         config_data = self._convert_paths_to_strings(config_data)
 
         # Save (including extra fields)
-        with open(config_path, "w") as f:
+        with config_path.open("w") as f:
             yaml.safe_dump(config_data, f, default_flow_style=False)
 
     def get(self, key: str, project_id: str | None = None) -> Any | None:
@@ -207,12 +206,12 @@ class ConfigManager:
             db_url = os.getenv("TRACERTM_DATABASE_URL") or os.getenv("DATABASE_URL")
             if db_url:
                 return db_url
-        
+
         # User project config (highest file-based precedence)
         if project_id:
             project_config_path = self.projects_dir / project_id / "config.yaml"
             if project_config_path.exists():
-                with open(project_config_path) as f:
+                with project_config_path.open() as f:
                     config_data = yaml.safe_load(f) or {}
                 if key in config_data:
                     return config_data.get(key)
@@ -226,7 +225,7 @@ class ConfigManager:
         if not self.config_path.exists():
             return None
 
-        with open(self.config_path) as f:
+        with self.config_path.open() as f:
             config_data = yaml.safe_load(f) or {}
 
         return config_data.get(key)
@@ -262,9 +261,9 @@ class ConfigManager:
         config_dict = config.model_dump()
         # Convert Path objects to strings for YAML serialization
         config_dict = self._convert_paths_to_strings(config_dict)
-        with open(path, "w") as f:
+        with path.open("w") as f:
             yaml.safe_dump(config_dict, f, default_flow_style=False)
-    
+
     def _convert_paths_to_strings(self, data: dict[str, Any]) -> dict[str, Any]:
         """Recursively convert Path objects to strings in a dictionary."""
         result = {}
@@ -274,10 +273,7 @@ class ConfigManager:
             elif isinstance(value, dict):
                 result[key] = self._convert_paths_to_strings(value)
             elif isinstance(value, list):
-                result[key] = [
-                    str(item) if isinstance(item, Path) else item
-                    for item in value
-                ]
+                result[key] = [str(item) if isinstance(item, Path) else item for item in value]
             else:
                 result[key] = value
         return result
@@ -329,7 +325,7 @@ class ConfigManager:
         if not path:
             return {}
         try:
-            with open(path) as f:
+            with path.open() as f:
                 data = yaml.safe_load(f) or {}
             return data if isinstance(data, dict) else {}
         except Exception:
@@ -347,7 +343,7 @@ class ConfigManager:
             base.parent.mkdir(parents=True, exist_ok=True)
 
         if base.exists():
-            with open(base) as f:
+            with base.open() as f:
                 data = yaml.safe_load(f) or {}
         else:
             data = {}
@@ -359,7 +355,7 @@ class ConfigManager:
 
         data = self._convert_paths_to_strings(data)
 
-        with open(base, "w") as f:
+        with base.open("w") as f:
             yaml.safe_dump(data, f, default_flow_style=False)
 
         return base

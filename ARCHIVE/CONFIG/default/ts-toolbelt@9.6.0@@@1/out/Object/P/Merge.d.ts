@@ -22,4 +22,4 @@ declare type MergeAt<O, Path extends List<Key>, O1, depth extends Depth> = O ext
  * ```
  */
 export declare type Merge<O extends object, Path extends List<Key>, O1 extends object, depth extends Depth = 'flat'> = Path extends unknown ? MergeAt<O, Path, O1, depth> : never;
-export {};
+

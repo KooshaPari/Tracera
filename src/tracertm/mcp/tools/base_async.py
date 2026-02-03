@@ -10,14 +10,14 @@ Provides:
 
 from __future__ import annotations
 
+import asyncio
 from typing import Any
 
 from fastmcp.exceptions import ToolError
 
 from tracertm.config.manager import ConfigManager
 from tracertm.mcp.cache import get_query_cache
-from tracertm.mcp.database_adapter import get_mcp_session, get_async_engine
-
+from tracertm.mcp.database_adapter import get_async_engine, get_mcp_session
 
 # Module-level config manager (lazy initialized)
 _config_manager: ConfigManager | None = None
@@ -58,6 +58,7 @@ async def get_current_project_id() -> str | None:
     Returns:
         Project ID if set, None otherwise
     """
+    await asyncio.sleep(0)
     config = get_config_manager()
     return config.get("current_project_id")
 
@@ -87,6 +88,7 @@ async def set_current_project(project_id: str) -> None:
     Args:
         project_id: Project ID to set as current
     """
+    await asyncio.sleep(0)
     config = get_config_manager()
     config.set("current_project_id", project_id)
 
@@ -240,17 +242,17 @@ def invalidate_cache(prefix: str | None = None):
 
 
 __all__ = [
-    "get_config_manager",
-    "get_async_session",
-    "get_mcp_session",  # Direct export from database_adapter
-    "get_async_engine",  # Direct export from database_adapter
-    "get_current_project_id",
-    "require_project",
-    "set_current_project",
-    "wrap_success",
-    "wrap_error",
-    "extract_actor",
-    "resolve_project_from_token",
     "cached_query",
+    "extract_actor",
+    "get_async_engine",  # Direct export from database_adapter
+    "get_async_session",
+    "get_config_manager",
+    "get_current_project_id",
+    "get_mcp_session",  # Direct export from database_adapter
     "invalidate_cache",
+    "require_project",
+    "resolve_project_from_token",
+    "set_current_project",
+    "wrap_error",
+    "wrap_success",
 ]

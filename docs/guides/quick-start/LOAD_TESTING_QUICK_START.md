@@ -4,7 +4,7 @@
 
 ```bash
 # Install k6
-./scripts/install_k6.sh
+./scripts/shell/install_k6.sh
 
 # Start backends
 docker-compose up -d
@@ -16,8 +16,8 @@ k6 run load-tests/smoke-test.js
 ## Run Full Suite
 
 ```bash
-./scripts/run_load_tests.sh
-open load-test-results/report.html
+./scripts/shell/run_load_tests.sh
+open load-tests/results/report.html
 ```
 
 ## Individual Tests
@@ -59,7 +59,7 @@ checks.........................: 100.00%  ✓ 150000  ✗ 0
 
 ### HTML Report
 ```bash
-open load-test-results/report.html
+open load-tests/results/report.html
 ```
 
 Look for:
@@ -111,13 +111,13 @@ Add to `.github/workflows/load-tests.yml`:
 
 ```yaml
 - name: Run load tests
-  run: ./scripts/run_load_tests.sh
+  run: ./scripts/shell/run_load_tests.sh
 
 - name: Upload results
   uses: actions/upload-artifact@v3
   with:
-    name: load-test-results
-    path: load-test-results/
+    name: load-tests/results
+    path: load-tests/results/
 ```
 
 ## Next Steps

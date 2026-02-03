@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 from uuid import uuid4
 
@@ -68,7 +68,7 @@ class WorkflowRunRepository:
     ) -> None:
         update_data: dict[str, Any] = {
             "status": status,
-            "updated_at": datetime.utcnow(),
+            "updated_at": datetime.now(UTC),
         }
         if result is not None:
             update_data["result"] = result
@@ -80,7 +80,5 @@ class WorkflowRunRepository:
             update_data["completed_at"] = completed_at
 
         await self.session.execute(
-            update(WorkflowRun)
-            .where(WorkflowRun.external_run_id == external_run_id)
-            .values(**update_data)
+            update(WorkflowRun).where(WorkflowRun.external_run_id == external_run_id).values(**update_data)
         )

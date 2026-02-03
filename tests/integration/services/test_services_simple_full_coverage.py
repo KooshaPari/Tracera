@@ -14,20 +14,15 @@ This test file uses batch testing pattern to cover multiple small service files
 in a single test module, organized by functional category.
 """
 
-import json
 import pytest
-import pytest_asyncio
-from datetime import datetime, timedelta
-from unittest.mock import Mock, AsyncMock, patch, MagicMock
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import sessionmaker
 
 from tracertm.models.base import Base
 from tracertm.models.event import Event
 from tracertm.models.item import Item
 from tracertm.models.link import Link
 from tracertm.models.project import Project
-
 
 pytestmark = pytest.mark.integration
 
@@ -57,12 +52,7 @@ def sample_items(db_session, sample_project):
     """Create sample items."""
     items = [
         Item(
-            id="item-1",
-            project_id=sample_project.id,
-            title="Story 1",
-            view="STORY",
-            item_type="story",
-            status="todo"
+            id="item-1", project_id=sample_project.id, title="Story 1", view="STORY", item_type="story", status="todo"
         ),
         Item(
             id="item-2",
@@ -70,15 +60,10 @@ def sample_items(db_session, sample_project):
             title="Feature 1",
             view="FEATURE",
             item_type="feature",
-            status="in_progress"
+            status="in_progress",
         ),
         Item(
-            id="item-3",
-            project_id=sample_project.id,
-            title="Test Case 1",
-            view="TEST",
-            item_type="test",
-            status="done"
+            id="item-3", project_id=sample_project.id, title="Test Case 1", view="TEST", item_type="test", status="done"
         ),
         Item(
             id="item-4",
@@ -86,7 +71,7 @@ def sample_items(db_session, sample_project):
             title="API Endpoint 1",
             view="API",
             item_type="api",
-            status="blocked"
+            status="blocked",
         ),
     ]
     for item in items:
@@ -103,19 +88,19 @@ def sample_links(db_session, sample_project, sample_items):
             project_id=sample_project.id,
             source_item_id=sample_items[0].id,
             target_item_id=sample_items[1].id,
-            link_type="implements"
+            link_type="implements",
         ),
         Link(
             project_id=sample_project.id,
             source_item_id=sample_items[1].id,
             target_item_id=sample_items[2].id,
-            link_type="tests"
+            link_type="tests",
         ),
         Link(
             project_id=sample_project.id,
             source_item_id=sample_items[1].id,
             target_item_id=sample_items[3].id,
-            link_type="depends_on"
+            link_type="depends_on",
         ),
     ]
     for link in links:
@@ -127,6 +112,7 @@ def sample_links(db_session, sample_project, sample_items):
 # ============================================================
 # CATEGORY 1: STATUS WORKFLOW SERVICE
 # ============================================================
+
 
 class TestStatusWorkflowService:
     """Tests for status_workflow_service.py (161 lines)."""
@@ -159,11 +145,7 @@ class TestStatusWorkflowService:
         from tracertm.services.status_workflow_service import StatusWorkflowService
 
         service = StatusWorkflowService(db_session)
-        result = service.update_item_status(
-            sample_items[0].id,
-            "in_progress",
-            agent_id="test-agent"
-        )
+        result = service.update_item_status(sample_items[0].id, "in_progress", agent_id="test-agent")
 
         assert result["item_id"] == sample_items[0].id
         assert result["old_status"] == "todo"
@@ -209,6 +191,7 @@ class TestStatusWorkflowService:
 # CATEGORY 2: AUTO-LINKING SERVICE
 # ============================================================
 
+
 class TestAutoLinkService:
     """Tests for auto_link_service.py (157 lines)."""
 
@@ -219,10 +202,7 @@ class TestAutoLinkService:
         service = AutoLinkService(db_session)
 
         # Test #STORY-123 pattern
-        result = service.parse_commit_message(
-            sample_project.id,
-            f"Fix bug in #{sample_items[0].id}"
-        )
+        result = service.parse_commit_message(sample_project.id, f"Fix bug in #{sample_items[0].id}")
         assert (sample_items[0].id, "implements") in result
 
     def test_parse_commit_message_uuid_pattern(self, db_session, sample_project, sample_items):
@@ -232,10 +212,7 @@ class TestAutoLinkService:
         service = AutoLinkService(db_session)
 
         # Test UUID pattern
-        result = service.parse_commit_message(
-            sample_project.id,
-            f"Implement feature {sample_items[0].id}"
-        )
+        result = service.parse_commit_message(sample_project.id, f"Implement feature {sample_items[0].id}")
         # Should find item by ID or UUID match
         assert isinstance(result, list)
 
@@ -245,10 +222,7 @@ class TestAutoLinkService:
 
         service = AutoLinkService(db_session)
 
-        result = service.parse_commit_message(
-            sample_project.id,
-            f"Fix [#{sample_items[0].id}] in authentication"
-        )
+        result = service.parse_commit_message(sample_project.id, f"Fix [#{sample_items[0].id}] in authentication")
         assert isinstance(result, list)
 
     def test_create_auto_links_no_duplicates(self, db_session, sample_project, sample_items):
@@ -258,18 +232,10 @@ class TestAutoLinkService:
         service = AutoLinkService(db_session)
 
         # Create first auto-link
-        links1 = service.create_auto_links(
-            sample_project.id,
-            f"Implement #{sample_items[0].id}",
-            sample_items[1].id
-        )
+        links1 = service.create_auto_links(sample_project.id, f"Implement #{sample_items[0].id}", sample_items[1].id)
 
         # Try to create same link again
-        links2 = service.create_auto_links(
-            sample_project.id,
-            f"Implement #{sample_items[0].id}",
-            sample_items[1].id
-        )
+        links2 = service.create_auto_links(sample_project.id, f"Implement #{sample_items[0].id}", sample_items[1].id)
 
         # Second attempt should create no new links
         assert len(links2) == 0
@@ -306,6 +272,7 @@ class TestAutoLinkService:
 # CATEGORY 3: EVENT SERVICE
 # ============================================================
 
+
 class TestEventService:
     """Tests for event_service.py (47 lines)."""
 
@@ -332,20 +299,21 @@ class TestEventService:
         service = EventService(db_session)
 
         # Service should have get_by_entity method
-        assert hasattr(service.events, 'get_by_entity')
+        assert hasattr(service.events, "get_by_entity")
 
     def test_event_service_attributes(self, db_session):
         """Test event service has required attributes."""
         from tracertm.services.event_service import EventService
 
         service = EventService(db_session)
-        assert hasattr(service, 'session')
-        assert hasattr(service, 'events')
+        assert hasattr(service, "session")
+        assert hasattr(service, "events")
 
 
 # ============================================================
 # CATEGORY 4: CACHE SERVICE
 # ============================================================
+
 
 class TestCacheService:
     """Tests for cache_service.py (198 lines)."""
@@ -441,6 +409,7 @@ class TestCacheService:
 # CATEGORY 5: HELPER & UTILITY SERVICES
 # ============================================================
 
+
 class TestHelperServices:
     """Tests for small utility and helper services."""
 
@@ -474,6 +443,7 @@ class TestHelperServices:
 # CATEGORY 6: CONFLICT RESOLUTION SERVICE
 # ============================================================
 
+
 class TestConflictResolutionService:
     """Tests for conflict_resolution_service.py (149 lines)."""
 
@@ -502,6 +472,7 @@ class TestConflictResolutionService:
 # CATEGORY 7: SECURITY & COMPLIANCE
 # ============================================================
 
+
 class TestSecurityComplianceService:
     """Tests for security_compliance_service.py (157 lines)."""
 
@@ -521,12 +492,7 @@ class TestSecurityComplianceService:
 
         service = SecurityComplianceService(db_session)
 
-        result = service.log_audit_event(
-            event_type="read",
-            user_id="user-1",
-            resource="item-1",
-            action="view"
-        )
+        result = service.log_audit_event(event_type="read", user_id="user-1", resource="item-1", action="view")
         assert isinstance(result, dict)
         assert result["logged"] is True
 
@@ -545,6 +511,7 @@ class TestSecurityComplianceService:
 # CATEGORY 8: DOCUMENTATION SERVICE
 # ============================================================
 
+
 class TestDocumentationService:
     """Tests for documentation_service.py (172 lines)."""
 
@@ -555,11 +522,7 @@ class TestDocumentationService:
         service = DocumentationService()
 
         endpoint = service.register_endpoint(
-            path="/api/items",
-            method="GET",
-            description="Get items",
-            parameters=[],
-            response_schema={"type": "array"}
+            path="/api/items", method="GET", description="Get items", parameters=[], response_schema={"type": "array"}
         )
         assert isinstance(endpoint, dict)
         assert endpoint["path"] == "/api/items"
@@ -570,11 +533,7 @@ class TestDocumentationService:
 
         service = DocumentationService()
 
-        schema = service.register_schema(
-            name="Item",
-            schema={"type": "object"},
-            description="Item schema"
-        )
+        schema = service.register_schema(name="Item", schema={"type": "object"}, description="Item schema")
         assert isinstance(schema, dict)
         assert schema["name"] == "Item"
 
@@ -585,11 +544,7 @@ class TestDocumentationService:
         service = DocumentationService()
 
         example = service.add_example(
-            endpoint_path="/api/items",
-            method="GET",
-            example_name="list-items",
-            request={},
-            response={"items": []}
+            endpoint_path="/api/items", method="GET", example_name="list-items", request={}, response={"items": []}
         )
         assert isinstance(example, dict)
         assert example["name"] == "list-items"
@@ -602,11 +557,7 @@ class TestDocumentationService:
 
         # Register an endpoint first
         service.register_endpoint(
-            path="/api/test",
-            method="GET",
-            description="Test endpoint",
-            parameters=[],
-            response_schema={}
+            path="/api/test", method="GET", description="Test endpoint", parameters=[], response_schema={}
         )
 
         spec = service.generate_openapi_spec()
@@ -624,7 +575,7 @@ class TestDocumentationService:
             method="POST",
             description="Test endpoint",
             parameters=[{"name": "id", "type": "string"}],
-            response_schema={}
+            response_schema={},
         )
 
         docs = service.generate_markdown_docs()
@@ -635,6 +586,7 @@ class TestDocumentationService:
 # ============================================================
 # CATEGORY 9: PERFORMANCE SERVICES
 # ============================================================
+
 
 class TestPerformanceServices:
     """Tests for performance-related services."""
@@ -663,6 +615,7 @@ class TestPerformanceServices:
 # ============================================================
 # CATEGORY 10: PLUGIN SERVICE
 # ============================================================
+
 
 class TestPluginService:
     """Tests for plugin_service.py (172 lines)."""
@@ -701,6 +654,7 @@ class TestPluginService:
 # CATEGORY 11: ADVANCED ANALYTICS
 # ============================================================
 
+
 class TestAdvancedAnalyticsService:
     """Tests for advanced_analytics_service.py (172 lines)."""
 
@@ -715,6 +669,7 @@ class TestAdvancedAnalyticsService:
 # ============================================================
 # CATEGORY 12: AGENT SERVICES
 # ============================================================
+
 
 class TestAgentServices:
     """Tests for agent-related services."""
@@ -752,6 +707,7 @@ class TestAgentServices:
 # CATEGORY 13: CRITICAL PATH & DEPENDENCY ANALYSIS
 # ============================================================
 
+
 class TestCriticalPathServices:
     """Tests for critical path and dependency analysis services."""
 
@@ -773,6 +729,7 @@ class TestCriticalPathServices:
 # ============================================================
 # CATEGORY 14: EXPORT/IMPORT SERVICES
 # ============================================================
+
 
 class TestExportImportServices:
     """Tests for export and import services."""
@@ -803,6 +760,7 @@ class TestExportImportServices:
 # CATEGORY 15: TUI & VISUALIZATION SERVICES
 # ============================================================
 
+
 class TestUIServices:
     """Tests for TUI and visualization services."""
 
@@ -832,6 +790,7 @@ class TestUIServices:
 # CATEGORY 16: EVENT SOURCING & HISTORY
 # ============================================================
 
+
 class TestEventSourcingServices:
     """Tests for event sourcing and history services."""
 
@@ -848,6 +807,7 @@ class TestEventSourcingServices:
 # ============================================================
 # CATEGORY 17: TRACEABILITY SERVICES
 # ============================================================
+
 
 class TestTraceabilityServices:
     """Tests for traceability-related services."""
@@ -878,6 +838,7 @@ class TestTraceabilityServices:
 # CATEGORY 18: CONCURRENT OPERATIONS
 # ============================================================
 
+
 class TestConcurrentOperationsService:
     """Tests for concurrent_operations_service.py (169 lines)."""
 
@@ -893,6 +854,7 @@ class TestConcurrentOperationsService:
 # CATEGORY 19: QUERY & SEARCH OPTIMIZATION
 # ============================================================
 
+
 class TestQueryOptimizationServices:
     """Tests for query optimization services."""
 
@@ -907,6 +869,7 @@ class TestQueryOptimizationServices:
 # ============================================================
 # CATEGORY 20: BULK OPERATIONS & BATCH PROCESSING
 # ============================================================
+
 
 class TestBulkOperationsServices:
     """Tests for bulk operations services."""
@@ -930,6 +893,7 @@ class TestBulkOperationsServices:
 # CATEGORY 21: MATERIALIZED VIEWS & CACHING
 # ============================================================
 
+
 class TestMaterializedViewServices:
     """Tests for materialized_view_service.py (188 lines)."""
 
@@ -944,6 +908,7 @@ class TestMaterializedViewServices:
 # ============================================================
 # CATEGORY 22: INTEGRATION SERVICES
 # ============================================================
+
 
 class TestIntegrationServices:
     """Tests for external integration services."""
@@ -988,6 +953,7 @@ class TestIntegrationServices:
 # CATEGORY 23: MONITORING & METRICS
 # ============================================================
 
+
 class TestMonitoringServices:
     """Tests for monitoring and metrics services."""
 
@@ -1009,6 +975,7 @@ class TestMonitoringServices:
 # ============================================================
 # CATEGORY 24: REPAIR & MAINTENANCE
 # ============================================================
+
 
 class TestRepairServices:
     """Tests for repair and maintenance services."""
@@ -1032,6 +999,7 @@ class TestRepairServices:
 # INTEGRATION TESTS: CROSS-SERVICE INTERACTIONS
 # ============================================================
 
+
 class TestCrossServiceInteractions:
     """Test interactions between multiple services."""
 
@@ -1045,10 +1013,12 @@ class TestCrossServiceInteractions:
         result = service.update_item_status(sample_items[0].id, "in_progress")
 
         # Verify event was created
-        events = db_session.query(Event).filter(
-            Event.entity_id == sample_items[0].id,
-            Event.event_type == "status_changed"
-        ).all()
+        events = (
+            db_session
+            .query(Event)
+            .filter(Event.entity_id == sample_items[0].id, Event.event_type == "status_changed")
+            .all()
+        )
 
         assert len(events) > 0
 
@@ -1059,22 +1029,23 @@ class TestCrossServiceInteractions:
         service = AutoLinkService(db_session)
 
         # Try to create auto-link for existing link
-        links = service.create_auto_links(
-            sample_project.id,
-            f"#IMPLEMENTS {sample_items[0].id}",
-            sample_items[1].id
-        )
+        links = service.create_auto_links(sample_project.id, f"#IMPLEMENTS {sample_items[0].id}", sample_items[1].id)
 
         # Should not create new links due to deduplication
         assert isinstance(links, list)
 
     def test_cache_with_query_optimization(self):
         """Test cache service with query optimization."""
+        from typing import cast
+        from unittest.mock import MagicMock
+
+        from sqlalchemy.ext.asyncio import AsyncSession
+
         from tracertm.services.cache_service import CacheService
         from tracertm.services.query_optimization_service import QueryOptimizationService
 
         cache = CacheService()
-        optimizer = QueryOptimizationService(None)
+        optimizer = QueryOptimizationService(cast(AsyncSession, MagicMock()))
 
         # Cache optimized queries
         assert cache is not None
@@ -1084,6 +1055,7 @@ class TestCrossServiceInteractions:
 # ============================================================
 # EDGE CASES & ERROR HANDLING
 # ============================================================
+
 
 class TestEdgeCasesAndErrorHandling:
     """Test edge cases and error handling across services."""
@@ -1109,7 +1081,7 @@ class TestEdgeCasesAndErrorHandling:
             project_id=sample_project.id,
             source_item_id=sample_items[2].id,
             target_item_id=sample_items[0].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(circular_link)
         db_session.commit()
@@ -1133,14 +1105,14 @@ class TestEdgeCasesAndErrorHandling:
             project_id=sample_project.id,
             title="Minimal",
             view="TEST",
-            item_type="test"
+            item_type="test",
             # status is None
         )
         db_session.add(item)
         db_session.commit()
 
-        # Should handle None status
-        result = service.validate_transition(None, "in_progress")
+        # Should handle None status (edge case: method expects str)
+        result = service.validate_transition(None, "in_progress")  # type: ignore[arg-type]
         assert isinstance(result, bool)
 
     def test_concurrent_status_updates(self, db_session, sample_items):
@@ -1162,6 +1134,7 @@ class TestEdgeCasesAndErrorHandling:
 # PERFORMANCE TESTS
 # ============================================================
 
+
 class TestPerformance:
     """Test performance characteristics of services."""
 
@@ -1172,6 +1145,7 @@ class TestPerformance:
         service = StatusWorkflowService(db_session)
 
         import time
+
         start = time.time()
 
         try:

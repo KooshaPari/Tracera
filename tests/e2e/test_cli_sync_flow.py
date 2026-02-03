@@ -1,6 +1,6 @@
 """E2E-style sync flows using a fake sync engine (no network/db)."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 from typer.testing import CliRunner
@@ -42,8 +42,9 @@ def test_sync_dry_run_shows_conflicts():
 @pytest.mark.e2e
 def test_sync_status_online():
     fake_engine = _FakeSyncEngine()
-    with patch("tracertm.cli.commands.sync._get_sync_engine", return_value=fake_engine), patch(
-        "tracertm.cli.commands.sync._check_online_status", return_value=(True, "[green]Online[/green]")
+    with (
+        patch("tracertm.cli.commands.sync._get_sync_engine", return_value=fake_engine),
+        patch("tracertm.cli.commands.sync._check_online_status", return_value=(True, "[green]Online[/green]")),
     ):
         result = runner.invoke(app, ["sync", "status"], catch_exceptions=False)
 
@@ -77,8 +78,11 @@ def test_sync_failure_path():
 @pytest.mark.e2e
 def test_sync_status_offline_shows_message():
     fake_engine = _FakeSyncEngine()
-    with patch("tracertm.cli.commands.sync._get_sync_engine", return_value=fake_engine), patch(
-        "tracertm.cli.commands.sync._check_online_status", return_value=(False, "[red]Offline[/red] (timeout...)")
+    with (
+        patch("tracertm.cli.commands.sync._get_sync_engine", return_value=fake_engine),
+        patch(
+            "tracertm.cli.commands.sync._check_online_status", return_value=(False, "[red]Offline[/red] (timeout...)")
+        ),
     ):
         result = runner.invoke(app, ["sync", "status"], catch_exceptions=False)
 

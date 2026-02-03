@@ -15,17 +15,11 @@ Test coverage targets 95%+ line coverage of BulkOperationService.
 import csv
 import io
 import json
-import pytest
-import threading
-from datetime import datetime
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from unittest.mock import Mock, patch, MagicMock
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
 
-from tracertm.models.base import Base
-from tracertm.models.item import Item
+import pytest
+
 from tracertm.models.event import Event
+from tracertm.models.item import Item
 from tracertm.models.project import Project
 from tracertm.services.bulk_operation_service import BulkOperationService
 
@@ -59,7 +53,9 @@ def _create_test_csv(items_list, omit_empty_metadata=True):
     return output.getvalue()
 
 
-def _seed_items(session, project_id="proj-1", count=5, status="todo", view="FEATURE", item_type="feature", prefix="item"):
+def _seed_items(
+    session, project_id="proj-1", count=5, status="todo", view="FEATURE", item_type="feature", prefix="item"
+):
     """Create seed items for testing."""
     items = []
     for i in range(count):
@@ -124,8 +120,17 @@ class TestBulkCreateBasic:
         svc = BulkOperationService(sync_session)
 
         items = [
-            {"Title": f"Item {i}", "View": "FEATURE", "Type": "feature", "Description": f"Desc {i}",
-             "Status": "todo", "Priority": "medium", "Owner": None, "Parent Id": "", "Metadata": ""}
+            {
+                "Title": f"Item {i}",
+                "View": "FEATURE",
+                "Type": "feature",
+                "Description": f"Desc {i}",
+                "Status": "todo",
+                "Priority": "medium",
+                "Owner": None,
+                "Parent Id": "",
+                "Metadata": "",
+            }
             for i in range(10)
         ]
         csv_data = _create_test_csv(items)
@@ -139,19 +144,22 @@ class TestBulkCreateBasic:
         _seed_project(sync_session)
         svc = BulkOperationService(sync_session)
 
-        csv_data = _create_test_csv([
-            {
-                "Title": "Item with Metadata",
-                "View": "STORY",
-                "Type": "story",
-                "Description": "",
-                "Status": "todo",
-                "Priority": "medium",
-                "Owner": "",
-                "Parent Id": "",
-                "Metadata": json.dumps({"key": "value", "nested": {"field": "data"}}),
-            }
-        ], omit_empty_metadata=False)
+        csv_data = _create_test_csv(
+            [
+                {
+                    "Title": "Item with Metadata",
+                    "View": "STORY",
+                    "Type": "story",
+                    "Description": "",
+                    "Status": "todo",
+                    "Priority": "medium",
+                    "Owner": "",
+                    "Parent Id": "",
+                    "Metadata": json.dumps({"key": "value", "nested": {"field": "data"}}),
+                }
+            ],
+            omit_empty_metadata=False,
+        )
 
         result = svc.bulk_create_items("proj-1", csv_data)
         assert result["items_created"] == 1
@@ -162,12 +170,7 @@ class TestBulkCreateBasic:
         """Test creating items with parent relationships."""
         _seed_project(sync_session)
         parent = Item(
-            id="parent-1",
-            project_id="proj-1",
-            title="Parent",
-            view="STORY",
-            item_type="story",
-            status="todo"
+            id="parent-1", project_id="proj-1", title="Parent", view="STORY", item_type="story", status="todo"
         )
         sync_session.add(parent)
         sync_session.commit()
@@ -197,8 +200,17 @@ class TestBulkCreateBasic:
         svc = BulkOperationService(sync_session)
 
         csv_data = _create_test_csv([
-            {"Title": "Item 1", "View": "FEATURE", "Type": "feature", "Description": "",
-             "Status": "todo", "Priority": "medium", "Owner": "", "Parent Id": "", "Metadata": ""}
+            {
+                "Title": "Item 1",
+                "View": "FEATURE",
+                "Type": "feature",
+                "Description": "",
+                "Status": "todo",
+                "Priority": "medium",
+                "Owner": "",
+                "Parent Id": "",
+                "Metadata": "",
+            }
         ])
 
         result = svc.bulk_create_items("proj-1", csv_data, agent_id="agent-1")
@@ -223,9 +235,17 @@ class TestBulkCreateLargeScale:
         svc = BulkOperationService(sync_session)
 
         items = [
-            {"Title": f"Item {i:03d}", "View": "FEATURE", "Type": "feature",
-             "Description": f"Description for item {i}", "Status": "todo", "Priority": "medium",
-             "Owner": "", "Parent Id": "", "Metadata": ""}
+            {
+                "Title": f"Item {i:03d}",
+                "View": "FEATURE",
+                "Type": "feature",
+                "Description": f"Description for item {i}",
+                "Status": "todo",
+                "Priority": "medium",
+                "Owner": "",
+                "Parent Id": "",
+                "Metadata": "",
+            }
             for i in range(100)
         ]
         csv_data = _create_test_csv(items)
@@ -240,9 +260,17 @@ class TestBulkCreateLargeScale:
         svc = BulkOperationService(sync_session)
 
         items = [
-            {"Title": f"Item {i:04d}", "View": "FEATURE", "Type": "feature",
-             "Description": f"Desc {i}", "Status": "todo", "Priority": "medium",
-             "Owner": "", "Parent Id": "", "Metadata": ""}
+            {
+                "Title": f"Item {i:04d}",
+                "View": "FEATURE",
+                "Type": "feature",
+                "Description": f"Desc {i}",
+                "Status": "todo",
+                "Priority": "medium",
+                "Owner": "",
+                "Parent Id": "",
+                "Metadata": "",
+            }
             for i in range(500)
         ]
         csv_data = _create_test_csv(items)
@@ -257,9 +285,17 @@ class TestBulkCreateLargeScale:
         svc = BulkOperationService(sync_session)
 
         items = [
-            {"Title": f"Item {i:04d}", "View": "FEATURE", "Type": "feature",
-             "Description": f"Desc {i}", "Status": "todo", "Priority": "medium",
-             "Owner": "", "Parent Id": "", "Metadata": ""}
+            {
+                "Title": f"Item {i:04d}",
+                "View": "FEATURE",
+                "Type": "feature",
+                "Description": f"Desc {i}",
+                "Status": "todo",
+                "Priority": "medium",
+                "Owner": "",
+                "Parent Id": "",
+                "Metadata": "",
+            }
             for i in range(1000)
         ]
         csv_data = _create_test_csv(items)
@@ -275,9 +311,17 @@ class TestBulkCreateLargeScale:
 
         statuses = ["todo", "in_progress", "blocked", "done"]
         items = [
-            {"Title": f"Item {i:03d}", "View": "FEATURE", "Type": "feature",
-             "Description": "", "Status": statuses[i % 4], "Priority": "medium",
-             "Owner": "", "Parent Id": "", "Metadata": ""}
+            {
+                "Title": f"Item {i:03d}",
+                "View": "FEATURE",
+                "Type": "feature",
+                "Description": "",
+                "Status": statuses[i % 4],
+                "Priority": "medium",
+                "Owner": "",
+                "Parent Id": "",
+                "Metadata": "",
+            }
             for i in range(200)
         ]
         csv_data = _create_test_csv(items)
@@ -296,9 +340,17 @@ class TestBulkCreateLargeScale:
         svc = BulkOperationService(sync_session)
 
         items = [
-            {"Title": f"Item {i:03d}", "View": "FEATURE", "Type": "feature",
-             "Description": "", "Status": "todo", "Priority": ["low", "medium", "high"][i % 3],
-             "Owner": "", "Parent Id": "", "Metadata": ""}
+            {
+                "Title": f"Item {i:03d}",
+                "View": "FEATURE",
+                "Type": "feature",
+                "Description": "",
+                "Status": "todo",
+                "Priority": ["low", "medium", "high"][i % 3],
+                "Owner": "",
+                "Parent Id": "",
+                "Metadata": "",
+            }
             for i in range(300)
         ]
         csv_data = _create_test_csv(items)
@@ -321,9 +373,17 @@ class TestBulkCreatePreview:
         svc = BulkOperationService(sync_session)
 
         items = [
-            {"Title": f"Item {i}", "View": "FEATURE", "Type": "feature",
-             "Description": "", "Status": "todo", "Priority": "medium",
-             "Owner": "", "Parent Id": "", "Metadata": ""}
+            {
+                "Title": f"Item {i}",
+                "View": "FEATURE",
+                "Type": "feature",
+                "Description": "",
+                "Status": "todo",
+                "Priority": "medium",
+                "Owner": "",
+                "Parent Id": "",
+                "Metadata": "",
+            }
             for i in range(10)
         ]
         csv_data = _create_test_csv(items)
@@ -357,11 +417,22 @@ class TestBulkCreatePreview:
         _seed_project(sync_session)
         svc = BulkOperationService(sync_session)
 
-        csv_data = _create_test_csv([
-            {"Title": "Item 1", "View": "FEATURE", "Type": "feature", "Description": "",
-             "Status": "todo", "Priority": "medium", "Owner": "", "Parent Id": "",
-             "Metadata": "{invalid json}"}
-        ], omit_empty_metadata=False)
+        csv_data = _create_test_csv(
+            [
+                {
+                    "Title": "Item 1",
+                    "View": "FEATURE",
+                    "Type": "feature",
+                    "Description": "",
+                    "Status": "todo",
+                    "Priority": "medium",
+                    "Owner": "",
+                    "Parent Id": "",
+                    "Metadata": "{invalid json}",
+                }
+            ],
+            omit_empty_metadata=False,
+        )
 
         preview = svc.bulk_create_preview("proj-1", csv_data)
         assert preview["invalid_rows_count"] > 0
@@ -372,9 +443,17 @@ class TestBulkCreatePreview:
         svc = BulkOperationService(sync_session)
 
         items = [
-            {"Title": f"Item {i:04d}", "View": "FEATURE", "Type": "feature",
-             "Description": "", "Status": "todo", "Priority": "medium",
-             "Owner": "", "Parent Id": "", "Metadata": ""}
+            {
+                "Title": f"Item {i:04d}",
+                "View": "FEATURE",
+                "Type": "feature",
+                "Description": "",
+                "Status": "todo",
+                "Priority": "medium",
+                "Owner": "",
+                "Parent Id": "",
+                "Metadata": "",
+            }
             for i in range(150)
         ]
         csv_data = _create_test_csv(items)
@@ -398,11 +477,7 @@ class TestBulkUpdate:
         items = _seed_items(sync_session, count=5, status="todo")
         svc = BulkOperationService(sync_session)
 
-        result = svc.bulk_update_items(
-            "proj-1",
-            {"status": "todo"},
-            {"status": "in_progress"}
-        )
+        result = svc.bulk_update_items("proj-1", {"status": "todo"}, {"status": "in_progress"})
         assert result["items_updated"] == 5
         assert all(item.status == "in_progress" for item in sync_session.query(Item).all())
 
@@ -413,9 +488,7 @@ class TestBulkUpdate:
         svc = BulkOperationService(sync_session)
 
         result = svc.bulk_update_items(
-            "proj-1",
-            {"status": "todo"},
-            {"status": "done", "priority": "high", "owner": "alice"}
+            "proj-1", {"status": "todo"}, {"status": "done", "priority": "high", "owner": "alice"}
         )
         assert result["items_updated"] == 3
         for item in sync_session.query(Item).all():
@@ -430,11 +503,7 @@ class TestBulkUpdate:
         _seed_items(sync_session, count=2, status="todo", view="STORY", prefix="story")
         svc = BulkOperationService(sync_session)
 
-        result = svc.bulk_update_items(
-            "proj-1",
-            {"view": "FEATURE", "status": "todo"},
-            {"status": "in_progress"}
-        )
+        result = svc.bulk_update_items("proj-1", {"view": "FEATURE", "status": "todo"}, {"status": "in_progress"})
         assert result["items_updated"] == 3
 
     def test_bulk_update_preview(self, sync_session):
@@ -443,12 +512,7 @@ class TestBulkUpdate:
         items = _seed_items(sync_session, count=10, status="todo")
         svc = BulkOperationService(sync_session)
 
-        preview = svc.bulk_update_preview(
-            "proj-1",
-            {"status": "todo"},
-            {"status": "done"},
-            limit=3
-        )
+        preview = svc.bulk_update_preview("proj-1", {"status": "todo"}, {"status": "done"}, limit=3)
         assert preview["total_count"] == 10
         assert len(preview["sample_items"]) == 3
         assert preview["estimated_duration_ms"] == 100  # 10 items * 10ms
@@ -459,12 +523,7 @@ class TestBulkUpdate:
         items = _seed_items(sync_session, count=2)
         svc = BulkOperationService(sync_session)
 
-        svc.bulk_update_items(
-            "proj-1",
-            {"status": "todo"},
-            {"status": "done"},
-            agent_id="agent-1"
-        )
+        svc.bulk_update_items("proj-1", {"status": "todo"}, {"status": "done"}, agent_id="agent-1")
         events = sync_session.query(Event).all()
         assert len(events) == 2
         assert all(e.event_type == "item_bulk_updated" for e in events)
@@ -537,8 +596,17 @@ class TestErrorHandlingAndRollback:
         svc = BulkOperationService(sync_session)
 
         csv_data = _create_test_csv([
-            {"Title": "Item 1", "View": "FEATURE", "Type": "feature", "Description": "",
-             "Status": "todo", "Priority": "medium", "Owner": "", "Parent Id": "", "Metadata": ""}
+            {
+                "Title": "Item 1",
+                "View": "FEATURE",
+                "Type": "feature",
+                "Description": "",
+                "Status": "todo",
+                "Priority": "medium",
+                "Owner": "",
+                "Parent Id": "",
+                "Metadata": "",
+            }
         ])
 
         rolled_back = {"value": False}
@@ -599,10 +667,26 @@ class TestErrorHandlingAndRollback:
 
         # Mix of valid and invalid rows - use omit_empty_metadata to avoid the bug
         csv_data = _create_test_csv([
-            {"Title": "Valid Item 1", "View": "FEATURE", "Type": "feature", "Description": "",
-             "Status": "todo", "Priority": "medium", "Owner": "", "Parent Id": ""},
-            {"Title": "Valid Item 2", "View": "STORY", "Type": "story", "Description": "",
-             "Status": "todo", "Priority": "low", "Owner": "", "Parent Id": ""},
+            {
+                "Title": "Valid Item 1",
+                "View": "FEATURE",
+                "Type": "feature",
+                "Description": "",
+                "Status": "todo",
+                "Priority": "medium",
+                "Owner": "",
+                "Parent Id": "",
+            },
+            {
+                "Title": "Valid Item 2",
+                "View": "STORY",
+                "Type": "story",
+                "Description": "",
+                "Status": "todo",
+                "Priority": "low",
+                "Owner": "",
+                "Parent Id": "",
+            },
         ])
 
         result = svc.bulk_create_items("proj-1", csv_data)
@@ -615,8 +699,16 @@ class TestErrorHandlingAndRollback:
         svc = BulkOperationService(sync_session)
 
         csv_data = _create_test_csv([
-            {"Title": "Item 1", "View": "FEATURE", "Type": "feature", "Description": "",
-             "Status": "todo", "Priority": "medium", "Owner": "", "Parent Id": ""}
+            {
+                "Title": "Item 1",
+                "View": "FEATURE",
+                "Type": "feature",
+                "Description": "",
+                "Status": "todo",
+                "Priority": "medium",
+                "Owner": "",
+                "Parent Id": "",
+            }
         ])
 
         rolled_back = {"value": False}
@@ -647,9 +739,16 @@ class TestTransactionIsolation:
         svc = BulkOperationService(sync_session)
 
         items = [
-            {"Title": f"Item {i:03d}", "View": "FEATURE", "Type": "feature",
-             "Description": "", "Status": "todo", "Priority": "medium",
-             "Owner": "", "Parent Id": ""}
+            {
+                "Title": f"Item {i:03d}",
+                "View": "FEATURE",
+                "Type": "feature",
+                "Description": "",
+                "Status": "todo",
+                "Priority": "medium",
+                "Owner": "",
+                "Parent Id": "",
+            }
             for i in range(50)
         ]
         csv_data = _create_test_csv(items)
@@ -667,11 +766,7 @@ class TestTransactionIsolation:
         items = _seed_items(sync_session, count=50)
         svc = BulkOperationService(sync_session)
 
-        result = svc.bulk_update_items(
-            "proj-1",
-            {"status": "todo"},
-            {"status": "done"}
-        )
+        result = svc.bulk_update_items("proj-1", {"status": "todo"}, {"status": "done"})
         assert result["items_updated"] == 50
 
         # Verify all updates are committed
@@ -696,9 +791,16 @@ class TestTransactionIsolation:
 
         # Create batch 1
         items1 = [
-            {"Title": f"Batch1-Item{i}", "View": "FEATURE", "Type": "feature",
-             "Description": "", "Status": "todo", "Priority": "medium",
-             "Owner": "", "Parent Id": ""}
+            {
+                "Title": f"Batch1-Item{i}",
+                "View": "FEATURE",
+                "Type": "feature",
+                "Description": "",
+                "Status": "todo",
+                "Priority": "medium",
+                "Owner": "",
+                "Parent Id": "",
+            }
             for i in range(10)
         ]
         csv_data1 = _create_test_csv(items1)
@@ -707,9 +809,16 @@ class TestTransactionIsolation:
 
         # Create batch 2
         items2 = [
-            {"Title": f"Batch2-Item{i}", "View": "STORY", "Type": "story",
-             "Description": "", "Status": "in_progress", "Priority": "high",
-             "Owner": "", "Parent Id": ""}
+            {
+                "Title": f"Batch2-Item{i}",
+                "View": "STORY",
+                "Type": "story",
+                "Description": "",
+                "Status": "in_progress",
+                "Priority": "high",
+                "Owner": "",
+                "Parent Id": "",
+            }
             for i in range(15)
         ]
         csv_data2 = _create_test_csv(items2)
@@ -735,11 +844,7 @@ class TestFilteringAndQueries:
         _seed_items(sync_session, count=3, view="STORY", status="todo", prefix="story")
         svc = BulkOperationService(sync_session)
 
-        result = svc.bulk_update_items(
-            "proj-1",
-            {"view": "FEATURE"},
-            {"status": "done"}
-        )
+        result = svc.bulk_update_items("proj-1", {"view": "FEATURE"}, {"status": "done"})
         assert result["items_updated"] == 5
 
     def test_bulk_update_by_item_type_filter(self, sync_session):
@@ -749,11 +854,7 @@ class TestFilteringAndQueries:
         _seed_items(sync_session, count=3, item_type="story", status="todo", prefix="story")
         svc = BulkOperationService(sync_session)
 
-        result = svc.bulk_update_items(
-            "proj-1",
-            {"item_type": "feature"},
-            {"status": "done"}
-        )
+        result = svc.bulk_update_items("proj-1", {"item_type": "feature"}, {"status": "done"})
         assert result["items_updated"] == 5
 
     def test_bulk_update_by_priority_filter(self, sync_session):
@@ -784,11 +885,7 @@ class TestFilteringAndQueries:
         sync_session.commit()
 
         svc = BulkOperationService(sync_session)
-        result = svc.bulk_update_items(
-            "proj-1",
-            {"priority": "high"},
-            {"status": "in_progress"}
-        )
+        result = svc.bulk_update_items("proj-1", {"priority": "high"}, {"status": "in_progress"})
         assert result["items_updated"] == 5
 
     def test_bulk_delete_by_owner_filter(self, sync_session):
@@ -840,11 +937,7 @@ class TestFilteringAndQueries:
         sync_session.commit()
 
         svc = BulkOperationService(sync_session)
-        result = svc.bulk_update_items(
-            "proj-1",
-            {"view": "FEATURE", "status": "todo"},
-            {"status": "in_progress"}
-        )
+        result = svc.bulk_update_items("proj-1", {"view": "FEATURE", "status": "todo"}, {"status": "in_progress"})
         assert result["items_updated"] == 2
 
 
@@ -870,11 +963,7 @@ class TestEdgeCasesAndSpecialScenarios:
         _seed_items(sync_session, count=5, status="todo")
         svc = BulkOperationService(sync_session)
 
-        result = svc.bulk_update_items(
-            "proj-1",
-            {"status": "nonexistent"},
-            {"status": "done"}
-        )
+        result = svc.bulk_update_items("proj-1", {"status": "nonexistent"}, {"status": "done"})
         assert result["items_updated"] == 0
 
     def test_bulk_delete_no_matching_items(self, sync_session):
@@ -892,12 +981,26 @@ class TestEdgeCasesAndSpecialScenarios:
         svc = BulkOperationService(sync_session)
 
         csv_data = _create_test_csv([
-            {"Title": "Item with & special < chars >", "View": "FEATURE", "Type": "feature",
-             "Description": "Contains \"quotes\" and 'apostrophes'", "Status": "todo",
-             "Priority": "medium", "Owner": "", "Parent Id": ""},
-            {"Title": "Item with emoji", "View": "STORY", "Type": "story",
-             "Description": "", "Status": "todo", "Priority": "medium",
-             "Owner": "", "Parent Id": ""},
+            {
+                "Title": "Item with & special < chars >",
+                "View": "FEATURE",
+                "Type": "feature",
+                "Description": "Contains \"quotes\" and 'apostrophes'",
+                "Status": "todo",
+                "Priority": "medium",
+                "Owner": "",
+                "Parent Id": "",
+            },
+            {
+                "Title": "Item with emoji",
+                "View": "STORY",
+                "Type": "story",
+                "Description": "",
+                "Status": "todo",
+                "Priority": "medium",
+                "Owner": "",
+                "Parent Id": "",
+            },
         ])
 
         result = svc.bulk_create_items("proj-1", csv_data)
@@ -910,9 +1013,16 @@ class TestEdgeCasesAndSpecialScenarios:
 
         long_desc = "A" * 5000
         csv_data = _create_test_csv([
-            {"Title": "Item with long desc", "View": "FEATURE", "Type": "feature",
-             "Description": long_desc, "Status": "todo", "Priority": "medium",
-             "Owner": "", "Parent Id": ""}
+            {
+                "Title": "Item with long desc",
+                "View": "FEATURE",
+                "Type": "feature",
+                "Description": long_desc,
+                "Status": "todo",
+                "Priority": "medium",
+                "Owner": "",
+                "Parent Id": "",
+            }
         ])
 
         result = svc.bulk_create_items("proj-1", csv_data)
@@ -940,7 +1050,7 @@ class TestEdgeCasesAndSpecialScenarios:
         svc.bulk_update_items(
             "proj-1",
             {"status": "todo"},
-            {"status": "done"}  # Only update status
+            {"status": "done"},  # Only update status
         )
 
         updated_item = sync_session.query(Item).first()
@@ -990,9 +1100,16 @@ class TestCSVParsingAndValidation:
         svc = BulkOperationService(sync_session)
 
         csv_data = _create_test_csv([
-            {"Title": " Item With Spaces ", "View": " FEATURE ", "Type": " feature ",
-             "Description": " description ", "Status": " todo ", "Priority": " medium ",
-             "Owner": " owner ", "Parent Id": ""}
+            {
+                "Title": " Item With Spaces ",
+                "View": " FEATURE ",
+                "Type": " feature ",
+                "Description": " description ",
+                "Status": " todo ",
+                "Priority": " medium ",
+                "Owner": " owner ",
+                "Parent Id": "",
+            }
         ])
 
         result = svc.bulk_create_items("proj-1", csv_data)
@@ -1007,12 +1124,26 @@ class TestCSVParsingAndValidation:
         svc = BulkOperationService(sync_session)
 
         csv_data = _create_test_csv([
-            {"Title": "Duplicate Item", "View": "FEATURE", "Type": "feature",
-             "Description": "", "Status": "todo", "Priority": "medium",
-             "Owner": "", "Parent Id": ""},
-            {"Title": "Duplicate Item", "View": "FEATURE", "Type": "feature",
-             "Description": "", "Status": "todo", "Priority": "medium",
-             "Owner": "", "Parent Id": ""},
+            {
+                "Title": "Duplicate Item",
+                "View": "FEATURE",
+                "Type": "feature",
+                "Description": "",
+                "Status": "todo",
+                "Priority": "medium",
+                "Owner": "",
+                "Parent Id": "",
+            },
+            {
+                "Title": "Duplicate Item",
+                "View": "FEATURE",
+                "Type": "feature",
+                "Description": "",
+                "Status": "todo",
+                "Priority": "medium",
+                "Owner": "",
+                "Parent Id": "",
+            },
         ])
 
         preview = svc.bulk_create_preview("proj-1", csv_data)

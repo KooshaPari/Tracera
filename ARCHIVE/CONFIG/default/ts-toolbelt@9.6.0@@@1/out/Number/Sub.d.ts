@@ -54,4 +54,4 @@ export declare type _Sub<N1 extends Iteration, N2 extends Iteration> = {
  * ```
  */
 export declare type Sub<N1 extends number, N2 extends number> = N1 extends unknown ? N2 extends unknown ? _Sub<IterationOf<N1>, IterationOf<N2>>[0] : never : never;
-export {};
+

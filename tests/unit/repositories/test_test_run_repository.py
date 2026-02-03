@@ -18,16 +18,16 @@ Tests for:
 - get_stats() - project statistics
 """
 
-from datetime import UTC, datetime, timezone
+from datetime import UTC, datetime
 from uuid import uuid4
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from tracertm.repositories.project_repository import ProjectRepository
-from tracertm.repositories import test_run_repository
 from tracertm.models import test_case as tc_models
 from tracertm.models import test_suite as ts_models
+from tracertm.repositories import test_run_repository
+from tracertm.repositories.project_repository import ProjectRepository
 
 # Use module-qualified names to avoid pytest collection issues
 RunRepository = test_run_repository.TestRunRepository
@@ -55,7 +55,7 @@ async def test_create_basic(db_session: AsyncSession):
 
     repo = RunRepository(db_session)
     run = await repo.create(
-        project_id=project.id,
+        project_id=str(project.id),
         name="Test Run 1",
     )
 
@@ -77,7 +77,7 @@ async def test_create_with_description(db_session: AsyncSession):
 
     repo = RunRepository(db_session)
     run = await repo.create(
-        project_id=project.id,
+        project_id=str(project.id),
         name="Test Run",
         description="This is a test run description",
     )
@@ -95,7 +95,7 @@ async def test_create_with_environment(db_session: AsyncSession):
 
     repo = RunRepository(db_session)
     run = await repo.create(
-        project_id=project.id,
+        project_id=str(project.id),
         name="CI Test Run",
         environment="staging",
         build_number="123",
@@ -121,7 +121,7 @@ async def test_create_with_run_type(db_session: AsyncSession):
 
     repo = RunRepository(db_session)
     run = await repo.create(
-        project_id=project.id,
+        project_id=str(project.id),
         name="Automated Test Run",
         run_type="automated",
     )
@@ -140,7 +140,7 @@ async def test_create_with_suite(db_session: AsyncSession):
     # Create a test suite
     suite = _TestSuiteModel(
         id=str(uuid4()),
-        project_id=project.id,
+        project_id=str(project.id),
         name="Integration Suite",
         suite_number=f"TS-{uuid4().hex[:8].upper()}",
     )
@@ -149,7 +149,7 @@ async def test_create_with_suite(db_session: AsyncSession):
 
     repo = RunRepository(db_session)
     run = await repo.create(
-        project_id=project.id,
+        project_id=str(project.id),
         name="Suite Test Run",
         suite_id=suite.id,
     )
@@ -167,7 +167,7 @@ async def test_create_with_tags(db_session: AsyncSession):
 
     repo = RunRepository(db_session)
     run = await repo.create(
-        project_id=project.id,
+        project_id=str(project.id),
         name="Tagged Test Run",
         tags=["smoke", "regression", "p1"],
     )
@@ -186,7 +186,7 @@ async def test_create_with_metadata(db_session: AsyncSession):
     repo = RunRepository(db_session)
     metadata = {"trigger": "webhook", "pipeline_id": "abc123"}
     run = await repo.create(
-        project_id=project.id,
+        project_id=str(project.id),
         name="Test Run with Metadata",
         metadata=metadata,
     )
@@ -205,7 +205,7 @@ async def test_create_with_external_id(db_session: AsyncSession):
     repo = RunRepository(db_session)
     external_id = f"ext-{uuid4().hex[:8]}"
     run = await repo.create(
-        project_id=project.id,
+        project_id=str(project.id),
         name="External Test Run",
         external_run_id=external_id,
     )
@@ -227,7 +227,7 @@ async def test_get_by_id_existing(db_session: AsyncSession):
     await db_session.commit()
 
     repo = RunRepository(db_session)
-    created = await repo.create(project_id=project.id, name="Test Run")
+    created = await repo.create(project_id=str(project.id), name="Test Run")
     await db_session.commit()
 
     retrieved = await repo.get_by_id(created.id)
@@ -255,7 +255,7 @@ async def test_get_by_number_existing(db_session: AsyncSession):
     await db_session.commit()
 
     repo = RunRepository(db_session)
-    created = await repo.create(project_id=project.id, name="Test Run")
+    created = await repo.create(project_id=str(project.id), name="Test Run")
     await db_session.commit()
 
     retrieved = await repo.get_by_number(created.run_number)
@@ -287,12 +287,12 @@ async def test_list_by_project_basic(db_session: AsyncSession):
     await db_session.commit()
 
     repo = RunRepository(db_session)
-    await repo.create(project_id=project.id, name="Run 1")
-    await repo.create(project_id=project.id, name="Run 2")
-    await repo.create(project_id=project.id, name="Run 3")
+    await repo.create(project_id=str(project.id), name="Run 1")
+    await repo.create(project_id=str(project.id), name="Run 2")
+    await repo.create(project_id=str(project.id), name="Run 3")
     await db_session.commit()
 
-    runs, total = await repo.list_by_project(project.id)
+    runs, total = await repo.list_by_project(str(project.id))
 
     assert len(runs) == 3
     assert total == 3
@@ -329,8 +329,8 @@ async def test_list_by_project_filter_by_run_type(db_session: AsyncSession):
     await db_session.commit()
 
     repo = RunRepository(db_session)
-    await repo.create(project_id=project.id, name="Manual Run", run_type="manual")
-    await repo.create(project_id=project.id, name="Auto Run", run_type="automated")
+    await repo.create(project_id=str(project.id), name="Manual Run", run_type="manual")
+    await repo.create(project_id=str(project.id), name="Auto Run", run_type="automated")
     await db_session.commit()
 
     manual_runs, _ = await repo.list_by_project(project.id, run_type="manual")
@@ -349,8 +349,8 @@ async def test_list_by_project_filter_by_environment(db_session: AsyncSession):
     await db_session.commit()
 
     repo = RunRepository(db_session)
-    await repo.create(project_id=project.id, name="Staging Run", environment="staging")
-    await repo.create(project_id=project.id, name="Prod Run", environment="production")
+    await repo.create(project_id=str(project.id), name="Staging Run", environment="staging")
+    await repo.create(project_id=str(project.id), name="Prod Run", environment="production")
     await db_session.commit()
 
     staging_runs, _ = await repo.list_by_project(project.id, environment="staging")
@@ -369,8 +369,8 @@ async def test_list_by_project_filter_by_initiated_by(db_session: AsyncSession):
     await db_session.commit()
 
     repo = RunRepository(db_session)
-    await repo.create(project_id=project.id, name="Run 1", initiated_by="user1")
-    await repo.create(project_id=project.id, name="Run 2", initiated_by="user2")
+    await repo.create(project_id=str(project.id), name="Run 1", initiated_by="user1")
+    await repo.create(project_id=str(project.id), name="Run 2", initiated_by="user2")
     await db_session.commit()
 
     user1_runs, _ = await repo.list_by_project(project.id, initiated_by="user1")
@@ -388,7 +388,7 @@ async def test_list_by_project_pagination(db_session: AsyncSession):
 
     repo = RunRepository(db_session)
     for i in range(10):
-        await repo.create(project_id=project.id, name=f"Run {i}")
+        await repo.create(project_id=str(project.id), name=f"Run {i}")
     await db_session.commit()
 
     runs_page1, total = await repo.list_by_project(project.id, limit=5, skip=0)
@@ -413,7 +413,7 @@ async def test_update_basic(db_session: AsyncSession):
     await db_session.commit()
 
     repo = RunRepository(db_session)
-    run = await repo.create(project_id=project.id, name="Original Name")
+    run = await repo.create(project_id=str(project.id), name="Original Name")
     await db_session.commit()
 
     updated = await repo.update(run.id, name="Updated Name")
@@ -446,7 +446,7 @@ async def test_start_run(db_session: AsyncSession):
     await db_session.commit()
 
     repo = RunRepository(db_session)
-    run = await repo.create(project_id=project.id, name="Test Run")
+    run = await repo.create(project_id=str(project.id), name="Test Run")
     await db_session.commit()
 
     started = await repo.start(run.id, executed_by="test_user")
@@ -466,7 +466,7 @@ async def test_start_run_already_running(db_session: AsyncSession):
     await db_session.commit()
 
     repo = RunRepository(db_session)
-    run = await repo.create(project_id=project.id, name="Test Run")
+    run = await repo.create(project_id=str(project.id), name="Test Run")
     await repo.start(run.id)
     await db_session.commit()
 
@@ -497,7 +497,7 @@ async def test_complete_run(db_session: AsyncSession):
     await db_session.commit()
 
     repo = RunRepository(db_session)
-    run = await repo.create(project_id=project.id, name="Test Run")
+    run = await repo.create(project_id=str(project.id), name="Test Run")
     await repo.start(run.id)
     await db_session.commit()
 
@@ -523,7 +523,7 @@ async def test_complete_run_auto_status(db_session: AsyncSession):
     await db_session.commit()
 
     repo = RunRepository(db_session)
-    run = await repo.create(project_id=project.id, name="Test Run")
+    run = await repo.create(project_id=str(project.id), name="Test Run")
     await repo.start(run.id)
 
     # Set some failure counts to trigger FAILED status
@@ -547,7 +547,7 @@ async def test_complete_run_not_running(db_session: AsyncSession):
     await db_session.commit()
 
     repo = RunRepository(db_session)
-    run = await repo.create(project_id=project.id, name="Test Run")
+    run = await repo.create(project_id=str(project.id), name="Test Run")
     await db_session.commit()
 
     with pytest.raises(ValueError, match="Cannot complete run"):
@@ -577,7 +577,7 @@ async def test_cancel_pending_run(db_session: AsyncSession):
     await db_session.commit()
 
     repo = RunRepository(db_session)
-    run = await repo.create(project_id=project.id, name="Test Run")
+    run = await repo.create(project_id=str(project.id), name="Test Run")
     await db_session.commit()
 
     cancelled = await repo.cancel(
@@ -600,7 +600,7 @@ async def test_cancel_running_run(db_session: AsyncSession):
     await db_session.commit()
 
     repo = RunRepository(db_session)
-    run = await repo.create(project_id=project.id, name="Test Run")
+    run = await repo.create(project_id=str(project.id), name="Test Run")
     await repo.start(run.id)
     await db_session.commit()
 
@@ -620,7 +620,7 @@ async def test_cancel_completed_run_raises_error(db_session: AsyncSession):
     await db_session.commit()
 
     repo = RunRepository(db_session)
-    run = await repo.create(project_id=project.id, name="Test Run")
+    run = await repo.create(project_id=str(project.id), name="Test Run")
     await repo.start(run.id)
     await repo.complete(run.id, status="passed")
     await db_session.commit()
@@ -655,7 +655,7 @@ async def test_add_result(db_session: AsyncSession):
     tc_id = str(uuid4())
     test_case = _TestCaseModel(
         id=tc_id,
-        project_id=project.id,
+        project_id=str(project.id),
         title="Test Case 1",
         test_case_number=f"TC-{uuid4().hex[:8].upper()}",
     )
@@ -663,7 +663,7 @@ async def test_add_result(db_session: AsyncSession):
     await db_session.flush()
 
     repo = RunRepository(db_session)
-    run = await repo.create(project_id=project.id, name="Test Run")
+    run = await repo.create(project_id=str(project.id), name="Test Run")
     await repo.start(run.id)
     await db_session.commit()
 
@@ -695,7 +695,7 @@ async def test_add_result_failed(db_session: AsyncSession):
 
     test_case = _TestCaseModel(
         id=str(uuid4()),
-        project_id=project.id,
+        project_id=str(project.id),
         title="Test Case 1",
         test_case_number=f"TC-{uuid4().hex[:8].upper()}",
     )
@@ -703,7 +703,7 @@ async def test_add_result_failed(db_session: AsyncSession):
     await db_session.flush()
 
     repo = RunRepository(db_session)
-    run = await repo.create(project_id=project.id, name="Test Run")
+    run = await repo.create(project_id=str(project.id), name="Test Run")
     await repo.start(run.id)
     await db_session.commit()
 
@@ -734,7 +734,7 @@ async def test_add_result_with_details(db_session: AsyncSession):
 
     test_case = _TestCaseModel(
         id=str(uuid4()),
-        project_id=project.id,
+        project_id=str(project.id),
         title="Test Case 1",
         test_case_number=f"TC-{uuid4().hex[:8].upper()}",
     )
@@ -742,7 +742,7 @@ async def test_add_result_with_details(db_session: AsyncSession):
     await db_session.flush()
 
     repo = RunRepository(db_session)
-    run = await repo.create(project_id=project.id, name="Test Run")
+    run = await repo.create(project_id=str(project.id), name="Test Run")
     await repo.start(run.id)
     await db_session.commit()
 
@@ -778,7 +778,7 @@ async def test_add_bulk_results(db_session: AsyncSession):
     for i in range(3):
         tc = _TestCaseModel(
             id=str(uuid4()),
-            project_id=project.id,
+            project_id=str(project.id),
             title=f"Test Case {i}",
             test_case_number=f"TC-{uuid4().hex[:8].upper()}",
         )
@@ -787,7 +787,7 @@ async def test_add_bulk_results(db_session: AsyncSession):
     await db_session.flush()
 
     repo = RunRepository(db_session)
-    run = await repo.create(project_id=project.id, name="Test Run")
+    run = await repo.create(project_id=str(project.id), name="Test Run")
     await repo.start(run.id)
     await db_session.commit()
 
@@ -819,7 +819,7 @@ async def test_get_results(db_session: AsyncSession):
 
     test_case = _TestCaseModel(
         id=str(uuid4()),
-        project_id=project.id,
+        project_id=str(project.id),
         title="Test Case 1",
         test_case_number=f"TC-{uuid4().hex[:8].upper()}",
     )
@@ -827,7 +827,7 @@ async def test_get_results(db_session: AsyncSession):
     await db_session.flush()
 
     repo = RunRepository(db_session)
-    run = await repo.create(project_id=project.id, name="Test Run")
+    run = await repo.create(project_id=str(project.id), name="Test Run")
     await repo.start(run.id)
     await repo.add_result(run.id, test_case.id, "passed")
     await db_session.commit()
@@ -850,7 +850,7 @@ async def test_get_results_filtered_by_status(db_session: AsyncSession):
     for i in range(2):
         tc = _TestCaseModel(
             id=str(uuid4()),
-            project_id=project.id,
+            project_id=str(project.id),
             title=f"TC {i}",
             test_case_number=f"TC-{uuid4().hex[:8].upper()}",
         )
@@ -859,7 +859,7 @@ async def test_get_results_filtered_by_status(db_session: AsyncSession):
     await db_session.flush()
 
     repo = RunRepository(db_session)
-    run = await repo.create(project_id=project.id, name="Test Run")
+    run = await repo.create(project_id=str(project.id), name="Test Run")
     await repo.start(run.id)
     await repo.add_result(run.id, test_cases[0].id, "passed")
     await repo.add_result(run.id, test_cases[1].id, "failed")
@@ -886,7 +886,7 @@ async def test_get_activities(db_session: AsyncSession):
     await db_session.commit()
 
     repo = RunRepository(db_session)
-    run = await repo.create(project_id=project.id, name="Test Run")
+    run = await repo.create(project_id=str(project.id), name="Test Run")
     await repo.start(run.id)
     await db_session.commit()
 
@@ -913,7 +913,7 @@ async def test_delete_run(db_session: AsyncSession):
     await db_session.commit()
 
     repo = RunRepository(db_session)
-    run = await repo.create(project_id=project.id, name="Test Run")
+    run = await repo.create(project_id=str(project.id), name="Test Run")
     await db_session.commit()
 
     result = await repo.delete(run.id)
@@ -950,20 +950,20 @@ async def test_get_stats(db_session: AsyncSession):
 
     # Create runs with different types and environments
     _ = await repo.create(
-        project_id=project.id,
+        project_id=str(project.id),
         name="Run 1",
         run_type="manual",
         environment="staging",
     )
     _ = await repo.create(
-        project_id=project.id,
+        project_id=str(project.id),
         name="Run 2",
         run_type="automated",
         environment="production",
     )
     await db_session.commit()
 
-    stats = await repo.get_stats(project.id)
+    stats = await repo.get_stats(str(project.id))
 
     assert stats["total_runs"] == 2
     assert "by_status" in stats
@@ -981,7 +981,7 @@ async def test_get_stats_empty_project(db_session: AsyncSession):
     await db_session.commit()
 
     repo = RunRepository(db_session)
-    stats = await repo.get_stats(project.id)
+    stats = await repo.get_stats(str(project.id))
 
     assert stats["total_runs"] == 0
     assert stats["recent_runs"] == []
@@ -1001,17 +1001,13 @@ async def test_list_by_project_filter_by_status(db_session: AsyncSession):
     await db_session.commit()
 
     repo = RunRepository(db_session)
-    run1 = await repo.create(project_id=project.id, name="Run 1")
-    _ = await repo.create(project_id=project.id, name="Run 2")
+    run1 = await repo.create(project_id=str(project.id), name="Run 1")
+    _ = await repo.create(project_id=str(project.id), name="Run 2")
     await repo.start(run1.id)
     await db_session.commit()
 
-    pending_runs, pending_total = await repo.list_by_project(
-        project.id, status="pending"
-    )
-    running_runs, running_total = await repo.list_by_project(
-        project.id, status="running"
-    )
+    pending_runs, pending_total = await repo.list_by_project(project.id, status="pending")
+    running_runs, running_total = await repo.list_by_project(project.id, status="running")
 
     assert pending_total == 1
     assert len(pending_runs) == 1
@@ -1033,13 +1029,13 @@ async def test_list_by_project_filter_by_suite_id(db_session: AsyncSession):
     # Create test suites
     suite1 = _TestSuiteModel(
         id=str(uuid4()),
-        project_id=project.id,
+        project_id=str(project.id),
         name="Suite 1",
         suite_number=f"TS-{uuid4().hex[:8].upper()}",
     )
     suite2 = _TestSuiteModel(
         id=str(uuid4()),
-        project_id=project.id,
+        project_id=str(project.id),
         name="Suite 2",
         suite_number=f"TS-{uuid4().hex[:8].upper()}",
     )
@@ -1048,17 +1044,13 @@ async def test_list_by_project_filter_by_suite_id(db_session: AsyncSession):
     await db_session.flush()
 
     repo = RunRepository(db_session)
-    await repo.create(project_id=project.id, name="Run for Suite 1", suite_id=suite1.id)
-    await repo.create(project_id=project.id, name="Run for Suite 2", suite_id=suite2.id)
-    await repo.create(project_id=project.id, name="Run without suite")
+    await repo.create(project_id=str(project.id), name="Run for Suite 1", suite_id=suite1.id)
+    await repo.create(project_id=str(project.id), name="Run for Suite 2", suite_id=suite2.id)
+    await repo.create(project_id=str(project.id), name="Run without suite")
     await db_session.commit()
 
-    suite1_runs, suite1_total = await repo.list_by_project(
-        project.id, suite_id=suite1.id
-    )
-    suite2_runs, suite2_total = await repo.list_by_project(
-        project.id, suite_id=suite2.id
-    )
+    suite1_runs, suite1_total = await repo.list_by_project(project.id, suite_id=suite1.id)
+    suite2_runs, suite2_total = await repo.list_by_project(project.id, suite_id=suite2.id)
 
     assert suite1_total == 1
     assert suite1_runs[0].name == "Run for Suite 1"
@@ -1075,31 +1067,23 @@ async def test_list_by_project_filter_by_date_range(db_session: AsyncSession):
     await db_session.commit()
 
     repo = RunRepository(db_session)
-    await repo.create(project_id=project.id, name="Run 1")
-    await repo.create(project_id=project.id, name="Run 2")
+    await repo.create(project_id=str(project.id), name="Run 1")
+    await repo.create(project_id=str(project.id), name="Run 2")
     await db_session.commit()
 
     # Test from_date filter (all runs should be created "now")
-    past_date = datetime(2020, 1, 1, tzinfo=timezone.utc)
-    future_date = datetime(2099, 1, 1, tzinfo=timezone.utc)
+    past_date = datetime(2020, 1, 1, tzinfo=UTC)
+    future_date = datetime(2099, 1, 1, tzinfo=UTC)
 
-    _, total_from_past = await repo.list_by_project(
-        project.id, from_date=past_date
-    )
-    _, total_from_future = await repo.list_by_project(
-        project.id, from_date=future_date
-    )
+    _, total_from_past = await repo.list_by_project(project.id, from_date=past_date)
+    _, total_from_future = await repo.list_by_project(project.id, from_date=future_date)
 
     assert total_from_past == 2  # All runs are after past date
     assert total_from_future == 0  # No runs are after future date
 
     # Test to_date filter
-    _, total_to_future = await repo.list_by_project(
-        project.id, to_date=future_date
-    )
-    _, total_to_past = await repo.list_by_project(
-        project.id, to_date=past_date
-    )
+    _, total_to_future = await repo.list_by_project(project.id, to_date=future_date)
+    _, total_to_past = await repo.list_by_project(project.id, to_date=past_date)
 
     assert total_to_future == 2  # All runs are before future date
     assert total_to_past == 0  # No runs are before past date
@@ -1115,7 +1099,7 @@ async def test_list_by_project_combined_filters(db_session: AsyncSession):
 
     suite = _TestSuiteModel(
         id=str(uuid4()),
-        project_id=project.id,
+        project_id=str(project.id),
         name="Regression Suite",
         suite_number=f"TS-{uuid4().hex[:8].upper()}",
     )
@@ -1125,20 +1109,20 @@ async def test_list_by_project_combined_filters(db_session: AsyncSession):
     repo = RunRepository(db_session)
     # Create various runs
     await repo.create(
-        project_id=project.id,
+        project_id=str(project.id),
         name="Auto Staging Run",
         run_type="automated",
         environment="staging",
         suite_id=suite.id,
     )
     await repo.create(
-        project_id=project.id,
+        project_id=str(project.id),
         name="Auto Prod Run",
         run_type="automated",
         environment="production",
     )
     await repo.create(
-        project_id=project.id,
+        project_id=str(project.id),
         name="Manual Staging Run",
         run_type="manual",
         environment="staging",
@@ -1146,23 +1130,17 @@ async def test_list_by_project_combined_filters(db_session: AsyncSession):
     await db_session.commit()
 
     # Test run_type + environment combination
-    auto_staging_runs, count = await repo.list_by_project(
-        project.id, run_type="automated", environment="staging"
-    )
+    auto_staging_runs, count = await repo.list_by_project(project.id, run_type="automated", environment="staging")
     assert count == 1
     assert auto_staging_runs[0].name == "Auto Staging Run"
 
     # Test run_type + suite_id combination
-    auto_suite_runs, count2 = await repo.list_by_project(
-        project.id, run_type="automated", suite_id=suite.id
-    )
+    auto_suite_runs, count2 = await repo.list_by_project(project.id, run_type="automated", suite_id=suite.id)
     assert count2 == 1
     assert auto_suite_runs[0].name == "Auto Staging Run"
 
     # Test environment + suite_id (should find the one with both)
-    staging_suite_runs, count3 = await repo.list_by_project(
-        project.id, environment="staging", suite_id=suite.id
-    )
+    _staging_suite_runs, count3 = await repo.list_by_project(project.id, environment="staging", suite_id=suite.id)
     assert count3 == 1
 
 
@@ -1180,7 +1158,7 @@ async def test_complete_run_auto_status_blocked(db_session: AsyncSession):
     await db_session.commit()
 
     repo = RunRepository(db_session)
-    run = await repo.create(project_id=project.id, name="Test Run")
+    run = await repo.create(project_id=str(project.id), name="Test Run")
     await repo.start(run.id)
 
     # Set blocked count (no failures, no errors)
@@ -1205,7 +1183,7 @@ async def test_complete_run_auto_status_error(db_session: AsyncSession):
     await db_session.commit()
 
     repo = RunRepository(db_session)
-    run = await repo.create(project_id=project.id, name="Test Run")
+    run = await repo.create(project_id=str(project.id), name="Test Run")
     await repo.start(run.id)
 
     # Set error count (triggers FAILED status path)
@@ -1231,7 +1209,7 @@ async def test_complete_run_auto_status_passed_all_green(db_session: AsyncSessio
     await db_session.commit()
 
     repo = RunRepository(db_session)
-    run = await repo.create(project_id=project.id, name="Test Run")
+    run = await repo.create(project_id=str(project.id), name="Test Run")
     await repo.start(run.id)
 
     # Set only passed tests (no failures, errors, or blocked)
@@ -1256,7 +1234,7 @@ async def test_complete_run_auto_status_with_skipped_only(db_session: AsyncSessi
     await db_session.commit()
 
     repo = RunRepository(db_session)
-    run = await repo.create(project_id=project.id, name="Test Run")
+    run = await repo.create(project_id=str(project.id), name="Test Run")
     await repo.start(run.id)
 
     # Set only skipped tests
@@ -1282,7 +1260,7 @@ async def test_complete_run_calculates_pass_rate(db_session: AsyncSession):
     await db_session.commit()
 
     repo = RunRepository(db_session)
-    run = await repo.create(project_id=project.id, name="Test Run")
+    run = await repo.create(project_id=str(project.id), name="Test Run")
     await repo.start(run.id)
 
     # Set test counts manually for pass rate calculation
@@ -1308,7 +1286,7 @@ async def test_complete_run_zero_tests_no_pass_rate(db_session: AsyncSession):
     await db_session.commit()
 
     repo = RunRepository(db_session)
-    run = await repo.create(project_id=project.id, name="Test Run")
+    run = await repo.create(project_id=str(project.id), name="Test Run")
     await repo.start(run.id)
     await db_session.commit()
 
@@ -1330,7 +1308,7 @@ async def test_complete_run_with_failure_summary(db_session: AsyncSession):
     await db_session.commit()
 
     repo = RunRepository(db_session)
-    run = await repo.create(project_id=project.id, name="Test Run")
+    run = await repo.create(project_id=str(project.id), name="Test Run")
     await repo.start(run.id)
     run_obj = await repo.get_by_id(run.id)
     assert run_obj is not None
@@ -1361,7 +1339,7 @@ async def test_add_result_blocked(db_session: AsyncSession):
 
     test_case = _TestCaseModel(
         id=str(uuid4()),
-        project_id=project.id,
+        project_id=str(project.id),
         title="Test Case 1",
         test_case_number=f"TC-{uuid4().hex[:8].upper()}",
     )
@@ -1369,7 +1347,7 @@ async def test_add_result_blocked(db_session: AsyncSession):
     await db_session.flush()
 
     repo = RunRepository(db_session)
-    run = await repo.create(project_id=project.id, name="Test Run")
+    run = await repo.create(project_id=str(project.id), name="Test Run")
     await repo.start(run.id)
     await db_session.commit()
 
@@ -1400,7 +1378,7 @@ async def test_add_result_error(db_session: AsyncSession):
 
     test_case = _TestCaseModel(
         id=str(uuid4()),
-        project_id=project.id,
+        project_id=str(project.id),
         title="Test Case 1",
         test_case_number=f"TC-{uuid4().hex[:8].upper()}",
     )
@@ -1408,7 +1386,7 @@ async def test_add_result_error(db_session: AsyncSession):
     await db_session.flush()
 
     repo = RunRepository(db_session)
-    run = await repo.create(project_id=project.id, name="Test Run")
+    run = await repo.create(project_id=str(project.id), name="Test Run")
     await repo.start(run.id)
     await db_session.commit()
 
@@ -1442,7 +1420,7 @@ async def test_add_bulk_results_with_blocked_and_error(db_session: AsyncSession)
     for i in range(5):
         tc = _TestCaseModel(
             id=str(uuid4()),
-            project_id=project.id,
+            project_id=str(project.id),
             title=f"Test Case {i}",
             test_case_number=f"TC-{uuid4().hex[:8].upper()}",
         )
@@ -1451,7 +1429,7 @@ async def test_add_bulk_results_with_blocked_and_error(db_session: AsyncSession)
     await db_session.flush()
 
     repo = RunRepository(db_session)
-    run = await repo.create(project_id=project.id, name="Test Run")
+    run = await repo.create(project_id=str(project.id), name="Test Run")
     await repo.start(run.id)
     await db_session.commit()
 
@@ -1487,7 +1465,7 @@ async def test_add_result_skipped(db_session: AsyncSession):
 
     test_case = _TestCaseModel(
         id=str(uuid4()),
-        project_id=project.id,
+        project_id=str(project.id),
         title="Test Case 1",
         test_case_number=f"TC-{uuid4().hex[:8].upper()}",
     )
@@ -1495,7 +1473,7 @@ async def test_add_result_skipped(db_session: AsyncSession):
     await db_session.flush()
 
     repo = RunRepository(db_session)
-    run = await repo.create(project_id=project.id, name="Test Run")
+    run = await repo.create(project_id=str(project.id), name="Test Run")
     await repo.start(run.id)
     await db_session.commit()
 
@@ -1523,7 +1501,7 @@ async def test_add_result_without_test_case(db_session: AsyncSession):
     await db_session.commit()
 
     repo = RunRepository(db_session)
-    run = await repo.create(project_id=project.id, name="Test Run")
+    run = await repo.create(project_id=str(project.id), name="Test Run")
     await repo.start(run.id)
     await db_session.commit()
 
@@ -1561,7 +1539,7 @@ async def test_list_by_project_all_filters_combined(db_session: AsyncSession):
 
     suite = _TestSuiteModel(
         id=str(uuid4()),
-        project_id=project.id,
+        project_id=str(project.id),
         name="Full Suite",
         suite_number=f"TS-{uuid4().hex[:8].upper()}",
     )
@@ -1570,7 +1548,7 @@ async def test_list_by_project_all_filters_combined(db_session: AsyncSession):
 
     repo = RunRepository(db_session)
     run = await repo.create(
-        project_id=project.id,
+        project_id=str(project.id),
         name="Full Filter Run",
         run_type="automated",
         environment="production",
@@ -1603,7 +1581,7 @@ async def test_complete_run_calculates_duration(db_session: AsyncSession):
     await db_session.commit()
 
     repo = RunRepository(db_session)
-    run = await repo.create(project_id=project.id, name="Test Run")
+    run = await repo.create(project_id=str(project.id), name="Test Run")
     await repo.start(run.id)
     await db_session.commit()
 
@@ -1629,7 +1607,7 @@ async def test_update_with_none_value_skipped(db_session: AsyncSession):
     await db_session.commit()
 
     repo = RunRepository(db_session)
-    run = await repo.create(project_id=project.id, name="Original Name")
+    run = await repo.create(project_id=str(project.id), name="Original Name")
     await db_session.commit()
 
     # Update with None value - should be skipped
@@ -1649,7 +1627,7 @@ async def test_complete_run_without_started_at(db_session: AsyncSession):
     await db_session.commit()
 
     repo = RunRepository(db_session)
-    run = await repo.create(project_id=project.id, name="Test Run")
+    run = await repo.create(project_id=str(project.id), name="Test Run")
     await repo.start(run.id)
     await db_session.commit()
 
@@ -1676,7 +1654,7 @@ async def test_add_result_updates_test_case_stats_for_failed(db_session: AsyncSe
 
     test_case = _TestCaseModel(
         id=str(uuid4()),
-        project_id=project.id,
+        project_id=str(project.id),
         title="Test Case",
         test_case_number=f"TC-{uuid4().hex[:8].upper()}",
     )
@@ -1684,7 +1662,7 @@ async def test_add_result_updates_test_case_stats_for_failed(db_session: AsyncSe
     await db_session.flush()
 
     repo = RunRepository(db_session)
-    run = await repo.create(project_id=project.id, name="Test Run")
+    run = await repo.create(project_id=str(project.id), name="Test Run")
     await repo.start(run.id)
     await db_session.commit()
 
@@ -1713,7 +1691,7 @@ async def test_add_result_when_run_does_not_exist(db_session: AsyncSession):
 
     test_case = _TestCaseModel(
         id=str(uuid4()),
-        project_id=project.id,
+        project_id=str(project.id),
         title="Test Case",
         test_case_number=f"TC-{uuid4().hex[:8].upper()}",
     )

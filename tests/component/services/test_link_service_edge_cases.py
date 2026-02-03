@@ -13,8 +13,10 @@ Target: 90%+ coverage for link_service.py
 """
 
 import asyncio
+from unittest.mock import AsyncMock
+
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
+
 from tracertm.services.link_service import LinkService
 
 
@@ -40,20 +42,13 @@ class TestLinkServiceErrors:
         """Test detection of circular dependencies."""
         # In a real implementation, would create A→B→C→A
         # Stub implementation returns empty list
-        result = await service.list_links(
-            source="item_a",
-            target="item_c",
-            check_circular=True
-        )
+        result = await service.list_links(source="item_a", target="item_c", check_circular=True)
         assert isinstance(result, list)
 
     async def test_concurrent_link_creation(self, service):
         """Test concurrent link creation to same item."""
         # Create 20 concurrent links
-        tasks = [
-            service.list_links(source=f"item_{i}", target="target_item")
-            for i in range(20)
-        ]
+        tasks = [service.list_links(source=f"item_{i}", target="target_item") for i in range(20)]
         results = await asyncio.gather(*tasks)
 
         # Verify all complete successfully
@@ -68,10 +63,7 @@ class TestLinkServiceErrors:
 
     async def test_link_validation_with_missing_targets(self, service):
         """Test link validation with missing target items."""
-        result = await service.list_links(
-            target="nonexistent_item",
-            validate=True
-        )
+        result = await service.list_links(target="nonexistent_item", validate=True)
         assert isinstance(result, list)
 
     async def test_bidirectional_link_consistency(self, service):
@@ -97,10 +89,7 @@ class TestLinkServiceConcurrency:
 
     async def test_concurrent_link_queries(self, service):
         """Test concurrent link queries."""
-        tasks = [
-            service.list_links(source=f"item_{i}")
-            for i in range(50)
-        ]
+        tasks = [service.list_links(source=f"item_{i}") for i in range(50)]
         results = await asyncio.gather(*tasks)
 
         assert len(results) == 50
@@ -133,12 +122,9 @@ class TestLinkServiceConcurrency:
     async def test_link_operation_timeout(self, service):
         """Test link operations with timeout."""
         try:
-            result = await asyncio.wait_for(
-                service.list_links(),
-                timeout=1.0
-            )
+            result = await asyncio.wait_for(service.list_links(), timeout=1.0)
             assert isinstance(result, list)
-        except asyncio.TimeoutError:
+        except TimeoutError:
             pytest.fail("Link operation timed out unexpectedly")
 
 
@@ -297,11 +283,7 @@ class TestLinkServiceComplexScenarios:
         link_types = ["depends_on", "related_to", "implements"]
 
         for link_type in link_types:
-            result = await service.list_links(
-                source="item_a",
-                target="item_b",
-                link_type=link_type
-            )
+            result = await service.list_links(source="item_a", target="item_b", link_type=link_type)
             assert isinstance(result, list)
 
     async def test_link_filtering_combinations(self, service):

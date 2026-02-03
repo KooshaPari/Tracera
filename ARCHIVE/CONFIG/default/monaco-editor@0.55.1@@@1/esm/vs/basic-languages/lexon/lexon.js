@@ -68,7 +68,7 @@ const language = {
     "certified"
   ],
   // we include these common regular expressions
-  symbols: /[=><!~?:&|+\-*\/\^%]+/,
+  symbols: /[=><!~?:&|+\-*/^%]+/,
   // The main tokenizer for our languages
   tokenizer: {
     root: [
@@ -115,12 +115,12 @@ const language = {
       // whitespace
       { include: "@whitespace" },
       // delimiters and operators
-      [/[{}()\[\]]/, "@brackets"],
+      [/[{}()[\]]/, "@brackets"],
       [/[<>](?!@symbols)/, "@brackets"],
       [/@symbols/, "delimiter"],
       // numbers
       [/\d*\.\d*\.\d*/, "number.semver"],
-      [/\d*\.\d+([eE][\-+]?\d+)?/, "number.float"],
+      [/\d*\.\d+([eE][-+]?\d+)?/, "number.float"],
       [/0[xX][0-9a-fA-F]+/, "number.hex"],
       [/\d+/, "number"],
       // delimiter: after number because of .\d floats

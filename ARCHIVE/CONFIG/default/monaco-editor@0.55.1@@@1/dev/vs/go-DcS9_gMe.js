@@ -129,7 +129,7 @@ define("vs/go-DcS9_gMe", ["exports"], (function(exports) {
       ":"
     ],
     // we include these common regular expressions
-    symbols: /[=><!~?:&|+\-*\/\^%]+/,
+    symbols: /[=><!~?:&|+\-*/^%]+/,
     escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
     // The main tokenizer for our languages
     tokenizer: {
@@ -151,7 +151,7 @@ define("vs/go-DcS9_gMe", ["exports"], (function(exports) {
         // Preprocessor directive
         [/^\s*#\w+/, "keyword"],
         // delimiters and operators
-        [/[{}()\[\]]/, "@brackets"],
+        [/[{}()[\]]/, "@brackets"],
         [/[<>](?!@symbols)/, "@brackets"],
         [
           /@symbols/,
@@ -163,8 +163,8 @@ define("vs/go-DcS9_gMe", ["exports"], (function(exports) {
           }
         ],
         // numbers
-        [/\d*\d+[eE]([\-+]?\d+)?/, "number.float"],
-        [/\d*\.\d+([eE][\-+]?\d+)?/, "number.float"],
+        [/\d*\d+[eE]([-+]?\d+)?/, "number.float"],
+        [/\d*\.\d+([eE][-+]?\d+)?/, "number.float"],
         [/0[xX][0-9a-fA-F']*[0-9a-fA-F]/, "number.hex"],
         [/0[0-7']*[0-7]/, "number.octal"],
         [/0[bB][0-1']*[0-1]/, "number.binary"],
@@ -189,19 +189,19 @@ define("vs/go-DcS9_gMe", ["exports"], (function(exports) {
         [/\/\/.*$/, "comment"]
       ],
       comment: [
-        [/[^\/*]+/, "comment"],
+        [/[^/*]+/, "comment"],
         // [/\/\*/, 'comment', '@push' ],    // nested comment not allowed :-(
         // [/\/\*/,    'comment.invalid' ],    // this breaks block comments in the shape of /* //*/
         [/\*\//, "comment", "@pop"],
-        [/[\/*]/, "comment"]
+        [/[/*]/, "comment"]
       ],
       //Identical copy of comment above, except for the addition of .doc
       doccomment: [
-        [/[^\/*]+/, "comment.doc"],
+        [/[^/*]+/, "comment.doc"],
         // [/\/\*/, 'comment.doc', '@push' ],    // nested comment not allowed :-(
         [/\/\*/, "comment.doc.invalid"],
         [/\*\//, "comment.doc", "@pop"],
-        [/[\/*]/, "comment.doc"]
+        [/[/*]/, "comment.doc"]
       ],
       string: [
         [/[^\\"]+/, "string"],
@@ -210,7 +210,7 @@ define("vs/go-DcS9_gMe", ["exports"], (function(exports) {
         [/"/, "string", "@pop"]
       ],
       rawstring: [
-        [/[^\`]/, "string"],
+        [/[^`]/, "string"],
         [/`/, "string", "@pop"]
       ]
     }

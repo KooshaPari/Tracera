@@ -48,8 +48,8 @@ const createTestQueryClient = () =>
 				retry: false,
 			},
 			queries: {
-				retry: false,
 				gcTime: 0,
+				retry: false,
 				staleTime: 0,
 			},
 		},

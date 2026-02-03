@@ -1,6 +1,5 @@
 """Smoke-level E2E checks for the CLI happy path."""
 
-import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -31,7 +30,9 @@ class TestCliSmoke:
         mock_project_db.return_value = mock_db
 
         result1 = runner.invoke(app, ["config", "init", "--database-url", "sqlite:///smoke.db"], catch_exceptions=False)
-        result2 = runner.invoke(app, ["project", "init", "Smoke Project", "--description", "Smoke"], catch_exceptions=False)
+        result2 = runner.invoke(
+            app, ["project", "init", "Smoke Project", "--description", "Smoke"], catch_exceptions=False
+        )
         result3 = runner.invoke(app, ["db", "status"], catch_exceptions=False)
 
         assert result1.exit_code == 0

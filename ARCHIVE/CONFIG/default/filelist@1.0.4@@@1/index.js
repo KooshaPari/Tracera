@@ -216,9 +216,9 @@ var ARRAY_METHODS = Object.getOwnPropertyNames(Array.prototype)
     }
 // Default file-patterns we want to ignore
   , DEFAULT_IGNORE_PATTERNS = [
-      /(^|[\/\\])CVS([\/\\]|$)/
-    , /(^|[\/\\])\.svn([\/\\]|$)/
-    , /(^|[\/\\])\.git([\/\\]|$)/
+      /(^|[/\\])CVS([/\\]|$)/
+    , /(^|[/\\])\.svn([/\\]|$)/
+    , /(^|[/\\])\.git([/\\]|$)/
     , /\.bak$/
     , /~$/
     ]
@@ -232,7 +232,7 @@ var ARRAY_METHODS = Object.getOwnPropertyNames(Array.prototype)
           isDir = stats.isDirectory();
         }
         catch(e) {}
-        return (/(^|[\/\\])core$/).test(name) && !isDir;
+        return (/(^|[/\\])core$/).test(name) && !isDir;
       }
     ];
 
@@ -286,7 +286,7 @@ var FileList = function () {
 };
 
 FileList.prototype = new (function () {
-  var globPattern = /[*?\[\{]/;
+  var globPattern = /[*?[{]/;
 
   var _addMatching = function (item) {
         var matches = globSync(item.path, item.options);

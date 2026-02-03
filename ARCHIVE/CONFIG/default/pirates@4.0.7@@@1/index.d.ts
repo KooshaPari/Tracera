@@ -79,4 +79,4 @@ interface Options {
  * @returns The `revert` function. Reverts the hook when called.
  */
 export declare function addHook(hook: Hook, opts?: Options): RevertFunction;
-export {};
+

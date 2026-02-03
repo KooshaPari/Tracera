@@ -25,4 +25,4 @@ declare type _Path<O, P extends List<Key>, I extends Iteration = IterationOf<0>>
  * ```
  */
 export declare type Path<O extends any, P extends List<Key>> = _Path<O & {}, P> extends infer X ? Cast<X, any> : never;
-export {};
+

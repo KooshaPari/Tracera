@@ -247,7 +247,7 @@ define("vs/julia-DrYN6c6i", ["exports"], (function(exports) {
       "KeyError"
     ],
     keywordops: ["<:", ">:", ":", "=>", "...", ".", "->", "?"],
-    allops: /[^\w\d\s()\[\]{}"'#]+/,
+    allops: /[^\w\d\s()[\]{}"'#]+/,
     constants: [
       "true",
       "false",
@@ -326,7 +326,7 @@ define("vs/julia-DrYN6c6i", ["exports"], (function(exports) {
     ident: /π|ℯ|\b(?!\d)\w+\b/,
     // escape sequences
     escape: /(?:[abefnrstv\\"'\n\r]|[0-7]{1,3}|x[0-9A-Fa-f]{1,2}|u[0-9A-Fa-f]{4})/,
-    escapes: /\\(?:C\-(@escape|.)|c(@escape|.)|@escape)/,
+    escapes: /\\(?:C-(@escape|.)|c(@escape|.)|@escape)/,
     // The main tokenizer for our languages
     tokenizer: {
       root: [
@@ -385,7 +385,7 @@ define("vs/julia-DrYN6c6i", ["exports"], (function(exports) {
         // characters
         [/'(?:@escapes|.)'/, "string.character"],
         // delimiters and operators
-        [/[()\[\]{}]/, "@brackets"],
+        [/[()[\]{}]/, "@brackets"],
         [
           /@allops/,
           {
@@ -400,7 +400,7 @@ define("vs/julia-DrYN6c6i", ["exports"], (function(exports) {
         [/0[xX][0-9a-fA-F](_?[0-9a-fA-F])*/, "number.hex"],
         [/0[_oO][0-7](_?[0-7])*/, "number.octal"],
         [/0[bB][01](_?[01])*/, "number.binary"],
-        [/[+\-]?\d+(\.\d+)?(im?|[eE][+\-]?\d+(\.\d+)?)?/, "number"]
+        [/[+-]?\d+(\.\d+)?(im?|[eE][+-]?\d+(\.\d+)?)?/, "number"]
       ],
       // type
       typeanno: [
@@ -443,14 +443,14 @@ define("vs/julia-DrYN6c6i", ["exports"], (function(exports) {
       // r"egex string"
       sregexp: [
         [/^.*/, "invalid"],
-        [/[^\\"()\[\]{}]/, "regexp"],
-        [/[()\[\]{}]/, "@brackets"],
+        [/[^\\"()[\]{}]/, "regexp"],
+        [/[()[\]{}]/, "@brackets"],
         [/\\./, "operator.scss"],
         [/"[imsx]*/, "regexp.delim", "@pop"]
       ],
       tregexp: [
-        [/[^\\"()\[\]{}]/, "regexp"],
-        [/[()\[\]{}]/, "@brackets"],
+        [/[^\\"()[\]{}]/, "regexp"],
+        [/[()[\]{}]/, "@brackets"],
         [/\\./, "operator.scss"],
         [/"(?!"")/, "string"],
         [/"""[imsx]*/, "regexp.delim", "@pop"]
@@ -471,14 +471,14 @@ define("vs/julia-DrYN6c6i", ["exports"], (function(exports) {
       // "string".
       dsstring: [
         [/^.*/, "invalid"],
-        [/[^\\"\$]/, "string"],
+        [/[^\\"$]/, "string"],
         [/\$/, "", "@interpolated"],
         [/@escapes/, "string.escape"],
         [/\\./, "string.escape.invalid"],
         [/"/, "string.delim", "@pop"]
       ],
       dtstring: [
-        [/[^\\"\$]/, "string"],
+        [/[^\\"$]/, "string"],
         [/\$/, "", "@interpolated"],
         [/@escapes/, "string.escape"],
         [/\\./, "string.escape.invalid"],

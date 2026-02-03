@@ -2,10 +2,8 @@ import json
 from datetime import datetime
 from pathlib import Path
 
-import pytest
-
 from tracertm.storage.local_storage import LocalStorageManager
-from tracertm.storage.sync_engine import SyncQueue, EntityType, OperationType
+from tracertm.storage.sync_engine import EntityType, OperationType, SyncQueue
 
 
 def _queue(tmp_path: Path, monkeypatch) -> SyncQueue:

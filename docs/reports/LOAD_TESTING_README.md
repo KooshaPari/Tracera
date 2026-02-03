@@ -6,13 +6,13 @@ Comprehensive performance testing with k6 to validate system performance targets
 
 ```bash
 # 1. Install k6
-./scripts/install_k6.sh
+./scripts/shell/install_k6.sh
 
 # 2. Start backends
 docker-compose up -d
 
 # 3. Run tests
-./scripts/run_load_tests.sh
+./scripts/shell/run_load_tests.sh
 ```
 
 ## 📊 Performance Targets
@@ -72,7 +72,7 @@ make load-test-all        # Smoke + Full + Report
 
 ```bash
 # HTML Report
-open load-test-results/report.html
+open load-tests/results/report.html
 
 # Console Output
 k6 run load-tests/smoke-test.js
@@ -82,7 +82,7 @@ k6 run load-tests/smoke-test.js
 
 ```bash
 # Verify setup
-./scripts/validate_load_tests.sh
+./scripts/shell/validate_load_tests.sh
 
 # Check services
 curl http://localhost/health

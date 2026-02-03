@@ -105,11 +105,6 @@ export default defineConfig({
 		},
 		rollupOptions: {
 			// Optimize tree-shaking
-			treeshake: {
-				moduleSideEffects: "no-external",
-				propertyReadSideEffects: false,
-				tryCatchDeoptimization: false,
-			},
 			onwarn(warning, warn) {
 				if (warning.code === "SOURCEMAP_ERROR") return;
 				warn(warning);
@@ -127,14 +122,19 @@ export default defineConfig({
 					return getManualChunkName(id);
 				},
 			},
+			treeshake: {
+				moduleSideEffects: "no-external",
+				propertyReadSideEffects: false,
+				tryCatchDeoptimization: false,
+			},
 		},
 	},
 	css: {
 		// Lightning CSS for transform (nesting, autoprefix) and minify; replaces PostCSS (Vite Performance Guide)
-		transformer: "lightningcss",
 		lightningcss: {
 			// Targets derived from build.target "esnext" by default; override here if needed
 		},
+		transformer: "lightningcss",
 	},
 	optimizeDeps: {
 		// Exclude files that shouldn't be pre-bundled
@@ -196,19 +196,19 @@ export default defineConfig({
 		tailwindcss(),
 		// Run oxlint (type-aware) in worker thread; show errors in overlay and terminal
 		checker({
+			overlay: true,
 			oxlint: {
-				lintCommand: "oxlint --type-aware",
 				cwd: ".",
 				dev: { logLevel: ["error", "warning"] },
+				lintCommand: "oxlint --type-aware",
 			},
-			overlay: true,
 			terminal: true,
 		}),
 		// eslint-disable-next-line @typescript-eslint/no-deprecated -- Router plugin API; migrate when TanStack provides replacement
 		TanStackRouterVite({
-			routesDirectory: "./src/routes",
 			generatedRouteTree: "./src/routeTree.gen.ts",
 			quoteStyle: "single",
+			routesDirectory: "./src/routes",
 		}),
 		// React with optional Babel - enables React Compiler for automatic memoization when available
 		// React Compiler provides 30-60% fewer re-renders by auto-memoizing components
@@ -229,20 +229,20 @@ export default defineConfig({
 		// Image optimization - 50-80% smaller images in production builds
 		ViteImageOptimizer({
 			// Exclude SVG files due to css-what module compatibility issue with svgo
-			exclude: /\.svg$/,
-			png: {
-				quality: 80,
+			avif: {
+				lossless: true,
 			},
+			exclude: /\.svg$/,
 			jpeg: {
 				quality: 80,
 			},
 			jpg: {
 				quality: 80,
 			},
-			webp: {
-				lossless: true,
+			png: {
+				quality: 80,
 			},
-			avif: {
+			webp: {
 				lossless: true,
 			},
 		}),
@@ -261,8 +261,8 @@ export default defineConfig({
 						telemetry: false,
 						// Automatically inject release information
 						release: {
-							name: process.env.VITE_APP_VERSION ?? "unknown",
 							dist: process.env.VITE_BUILD_ID ?? "local",
+							name: process.env.VITE_APP_VERSION ?? "unknown",
 						},
 					}),
 				]
@@ -270,7 +270,6 @@ export default defineConfig({
 	],
 	resolve: {
 		// Fewer extensions = fewer filesystem checks (Vite Performance Guide)
-		extensions: [".mjs", ".js", ".mts", ".ts", ".jsx", ".tsx", ".json"],
 		alias: [
 			{ find: "@", replacement: path.resolve(__dirname, "./src") },
 			{
@@ -344,6 +343,7 @@ export default defineConfig({
 			"react/jsx-dev-runtime",
 			"use-sync-external-store",
 		],
+		extensions: [".mjs", ".js", ".mts", ".ts", ".jsx", ".tsx", ".json"],
 	},
 	server: {
 		port: 5173,
@@ -352,8 +352,8 @@ export default defineConfig({
 		// open: true or use vite --open to warm up entry and improve first load (Vite Performance Guide)
 		// Optimize HMR for faster updates; client connects via gateway so HMR works when using http://localhost:4000
 		hmr: {
-			overlay: true,
 			clientPort: 4000,
+			overlay: true,
 		},
 		// Optimize watch settings
 		watch: {
@@ -376,8 +376,8 @@ export default defineConfig({
 		},
 		proxy: {
 			"/api": {
-				target: "http://localhost:8080",
 				changeOrigin: true,
+				target: "http://localhost:8080",
 			},
 		},
 		// Warm up frequently used files

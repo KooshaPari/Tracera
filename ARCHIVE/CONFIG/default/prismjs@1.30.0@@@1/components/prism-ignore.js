@@ -8,7 +8,7 @@
 			inside: {
 				'operator': /^!|\*\*?|\?/,
 				'regex': {
-					pattern: /(^|[^\\])\[[^\[\]]*\]/,
+					pattern: /(^|[^\\])\[[^[\]]*\]/,
 					lookbehind: true
 				},
 				'punctuation': /\//

@@ -1,8 +1,8 @@
 """Neo4j-backed session graph for tracking session relationships and lineage."""
 
 import logging
-from datetime import datetime
-from typing import Any, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 from tracertm.agent.events import AgentEventPublisher, SessionStatus
 from tracertm.agent.session_store import SessionSandboxStoreDB
@@ -36,7 +36,7 @@ class GraphSessionStore(SessionSandboxStoreDB):
     async def get_or_create(
         self,
         session_id: str,
-        config: Optional[SandboxConfig] = None,
+        config: SandboxConfig | None = None,
         db_session: Any = None,
     ) -> tuple[str, bool]:
         """Create session in PostgreSQL and Neo4j graph."""
@@ -56,7 +56,7 @@ class GraphSessionStore(SessionSandboxStoreDB):
         self,
         session_id: str,
         sandbox_root: str,
-        config: Optional[SandboxConfig] = None,
+        config: SandboxConfig | None = None,
     ):
         """Create Session node in Neo4j with relationships."""
         if self._neo4j is None:
@@ -95,7 +95,7 @@ class GraphSessionStore(SessionSandboxStoreDB):
             "provider": provider,
             "model": model or "unknown",
             "project_id": str(project_id) if project_id else None,
-            "created_at": datetime.utcnow().isoformat(),
+            "created_at": datetime.now(UTC).isoformat(),
         }
 
         try:
@@ -112,7 +112,7 @@ class GraphSessionStore(SessionSandboxStoreDB):
         self,
         new_session_id: str,
         parent_session_id: str,
-        config: Optional[SandboxConfig] = None,
+        config: SandboxConfig | None = None,
         db_session: Any = None,
     ) -> tuple[str, bool]:
         """Create a new session forked from an existing session.
@@ -146,7 +146,7 @@ class GraphSessionStore(SessionSandboxStoreDB):
         params = {
             "parent_id": parent_session_id,
             "child_id": new_session_id,
-            "created_at": datetime.utcnow().isoformat(),
+            "created_at": datetime.now(UTC).isoformat(),
         }
 
         async with self._neo4j.driver.session() as session:
@@ -161,7 +161,7 @@ class GraphSessionStore(SessionSandboxStoreDB):
         input_data: dict,
         output_data: Any = None,
         success: bool = True,
-        project_id: Optional[str] = None,
+        project_id: str | None = None,
     ):
         """Track tool execution in Neo4j graph and publish event."""
         # Publish tool use event
@@ -203,7 +203,7 @@ class GraphSessionStore(SessionSandboxStoreDB):
             "session_id": session_id,
             "tool_name": tool_name,
             "success": success,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "input_summary": input_summary,
             "output_summary": output_summary,
         }
@@ -248,16 +248,13 @@ class GraphSessionStore(SessionSandboxStoreDB):
     async def get_related_sessions(
         self,
         session_id: str,
-        relationship_type: Optional[str] = None,
+        relationship_type: str | None = None,
     ) -> list[dict]:
         """Get sessions related via any relationship (or specific type)."""
         if self._neo4j is None:
             return []
 
-        if relationship_type:
-            rel_pattern = f"[r:{relationship_type}]"
-        else:
-            rel_pattern = "[r]"
+        rel_pattern = f"[r:{relationship_type}]" if relationship_type else "[r]"
 
         query = f"""
         MATCH (s:Session {{session_id: $session_id}})-{rel_pattern}-(related:Session)
@@ -286,8 +283,8 @@ class GraphSessionStore(SessionSandboxStoreDB):
         self,
         session_id: str,
         status: str,
-        old_status: Optional[str] = None,
-        project_id: Optional[str] = None,
+        old_status: str | None = None,
+        project_id: str | None = None,
     ):
         """Update session status in Neo4j and publish event."""
         # Publish status change event
@@ -316,7 +313,7 @@ class GraphSessionStore(SessionSandboxStoreDB):
         params = {
             "session_id": session_id,
             "status": status,
-            "updated_at": datetime.utcnow().isoformat(),
+            "updated_at": datetime.now(UTC).isoformat(),
         }
 
         try:
@@ -330,8 +327,8 @@ class GraphSessionStore(SessionSandboxStoreDB):
         self,
         session_id: str,
         db_session: Any = None,
-        project_id: Optional[str] = None,
-        reason: Optional[str] = None,
+        project_id: str | None = None,
+        reason: str | None = None,
     ):
         """Delete session from PostgreSQL and Neo4j, publish event."""
         # Publish destruction event
@@ -348,11 +345,10 @@ class GraphSessionStore(SessionSandboxStoreDB):
         # Delete from PostgreSQL
         if db_session is not None:
             from sqlalchemy import delete
+
             from tracertm.models.agent_session import AgentSession
 
-            await db_session.execute(
-                delete(AgentSession).where(AgentSession.session_id == session_id)
-            )
+            await db_session.execute(delete(AgentSession).where(AgentSession.session_id == session_id))
             await db_session.flush()
 
         # Delete from in-memory store
@@ -367,6 +363,9 @@ class GraphSessionStore(SessionSandboxStoreDB):
 
     async def _delete_session_node(self, session_id: str):
         """Delete Session node and all its relationships."""
+        if self._neo4j is None:
+            return
+        neo4j = self._neo4j
         query = """
         MATCH (s:Session {session_id: $session_id})
         DETACH DELETE s
@@ -374,7 +373,7 @@ class GraphSessionStore(SessionSandboxStoreDB):
 
         params = {"session_id": session_id}
 
-        async with self._neo4j.driver.session() as session:
+        async with neo4j.driver.session() as session:
             result = await session.run(query, params)
             await result.consume()
             logger.info("Deleted Neo4j session node: %s", session_id)

@@ -20,26 +20,20 @@ Coverage areas:
 - Error handling and edge cases
 """
 
+import time
+
 import pytest
 import pytest_asyncio
-import time
-from datetime import datetime, timedelta
-from unittest.mock import Mock, AsyncMock, patch, MagicMock
-from sqlalchemy import create_engine, func, select, delete
-from sqlalchemy.orm import Session, sessionmaker
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-from typing import Dict, List, Set, Tuple
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 from tracertm.models.base import Base
 from tracertm.models.item import Item
 from tracertm.models.link import Link
 from tracertm.models.project import Project
 from tracertm.repositories.link_repository import LinkRepository
-from tracertm.repositories.item_repository import ItemRepository
-from tracertm.repositories.project_repository import ProjectRepository
-from tracertm.services.link_service import LinkService
 from tracertm.services.cycle_detection_service import CycleDetectionService
-
+from tracertm.services.link_service import LinkService
 
 pytestmark = pytest.mark.integration
 
@@ -47,6 +41,7 @@ pytestmark = pytest.mark.integration
 # ============================================================
 # FIXTURES
 # ============================================================
+
 
 @pytest_asyncio.fixture(scope="function")
 def db_engine():
@@ -86,7 +81,7 @@ def sample_items_10(db_session, sample_project):
             title=f"Expanded Item {i}",
             view="FEATURE" if i % 2 == 0 else "CODE",
             item_type="feature" if i % 2 == 0 else "file",
-            status="todo" if i < 6 else "in_progress"
+            status="todo" if i < 6 else "in_progress",
         )
         db_session.add(item)
         items.append(item)
@@ -105,7 +100,7 @@ def sample_items_50(db_session, sample_project):
             title=f"Stress Item {i}",
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         db_session.add(item)
         items.append(item)
@@ -135,6 +130,7 @@ def cycle_detection_service(db_session):
 # TEST CLASS 1: EXTENDED LINK CREATION & VALIDATION
 # ============================================================
 
+
 class TestExtendedLinkCreation:
     """Extended tests for link creation and validation."""
 
@@ -145,11 +141,11 @@ class TestExtendedLinkCreation:
             source_item_id=sample_items_10[0].id,
             target_item_id=sample_items_10[1].id,
             link_type="depends_on",
-            link_metadata=None
+            link_metadata=None,
         )
         db_session.add(link)
         db_session.commit()
-        
+
         retrieved = db_session.query(Link).filter_by(id=link.id).first()
         assert retrieved.link_metadata is not None or retrieved.link_metadata == {}
 
@@ -158,13 +154,7 @@ class TestExtendedLinkCreation:
         deep_metadata = {
             "level1": {
                 "level2": {
-                    "level3": {
-                        "level4": {
-                            "value": "deep_value",
-                            "array": [1, 2, 3],
-                            "nested_array": [{"key": "val"}]
-                        }
-                    }
+                    "level3": {"level4": {"value": "deep_value", "array": [1, 2, 3], "nested_array": [{"key": "val"}]}}
                 }
             }
         }
@@ -173,11 +163,11 @@ class TestExtendedLinkCreation:
             source_item_id=sample_items_10[0].id,
             target_item_id=sample_items_10[1].id,
             link_type="depends_on",
-            link_metadata=deep_metadata
+            link_metadata=deep_metadata,
         )
         db_session.add(link)
         db_session.commit()
-        
+
         retrieved = db_session.query(Link).filter_by(id=link.id).first()
         assert retrieved.link_metadata["level1"]["level2"]["level3"]["level4"]["value"] == "deep_value"
 
@@ -186,18 +176,18 @@ class TestExtendedLinkCreation:
         metadata = {
             "description": "Test with special chars: !@#$%^&*()",
             "unicode": "Unicode: 你好世界 🌍",
-            "quotes": 'Mixed "quotes" and \'single\'',
+            "quotes": "Mixed \"quotes\" and 'single'",
         }
         link = Link(
             project_id=sample_project.id,
             source_item_id=sample_items_10[0].id,
             target_item_id=sample_items_10[1].id,
             link_type="depends_on",
-            link_metadata=metadata
+            link_metadata=metadata,
         )
         db_session.add(link)
         db_session.commit()
-        
+
         retrieved = db_session.query(Link).filter_by(id=link.id).first()
         assert retrieved.link_metadata["description"] == "Test with special chars: !@#$%^&*()"
         assert "你好世界" in retrieved.link_metadata["unicode"]
@@ -206,45 +196,44 @@ class TestExtendedLinkCreation:
         """Test multiple links between same items but different types."""
         link_types = ["depends_on", "related_to", "blocks", "implements", "tests"]
         links = []
-        
+
         for link_type in link_types:
             link = Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_10[0].id,
                 target_item_id=sample_items_10[1].id,
-                link_type=link_type
+                link_type=link_type,
             )
             db_session.add(link)
             links.append(link)
-        
+
         db_session.commit()
-        
+
         # Verify all links exist
-        retrieved = db_session.query(Link).filter(
-            Link.source_item_id == sample_items_10[0].id,
-            Link.target_item_id == sample_items_10[1].id
-        ).all()
-        
+        retrieved = (
+            db_session
+            .query(Link)
+            .filter(Link.source_item_id == sample_items_10[0].id, Link.target_item_id == sample_items_10[1].id)
+            .all()
+        )
+
         assert len(retrieved) == 5
         types = {link.link_type for link in retrieved}
         assert types == set(link_types)
 
     def test_create_link_with_large_metadata_payload(self, db_session, sample_project, sample_items_10):
         """Test creating link with large metadata payload."""
-        large_metadata = {
-            f"key_{i}": f"value_{i}" * 100
-            for i in range(100)
-        }
+        large_metadata = {f"key_{i}": f"value_{i}" * 100 for i in range(100)}
         link = Link(
             project_id=sample_project.id,
             source_item_id=sample_items_10[0].id,
             target_item_id=sample_items_10[1].id,
             link_type="depends_on",
-            link_metadata=large_metadata
+            link_metadata=large_metadata,
         )
         db_session.add(link)
         db_session.commit()
-        
+
         retrieved = db_session.query(Link).filter_by(id=link.id).first()
         assert len(retrieved.link_metadata) == 100
         assert retrieved.link_metadata["key_50"].startswith("value_50")
@@ -255,28 +244,29 @@ class TestExtendedLinkCreation:
             project_id=sample_project.id,
             source_item_id=sample_items_10[0].id,
             target_item_id=sample_items_10[1].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(link1)
         db_session.commit()
-        
+
         time.sleep(0.01)  # Small delay to ensure different timestamps
-        
+
         link2 = Link(
             project_id=sample_project.id,
             source_item_id=sample_items_10[1].id,
             target_item_id=sample_items_10[2].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(link2)
         db_session.commit()
-        
+
         assert link1.created_at <= link2.created_at
 
 
 # ============================================================
 # TEST CLASS 2: LINK RETRIEVAL & QUERYING
 # ============================================================
+
 
 class TestExtendedLinkRetrieval:
     """Extended tests for link retrieval and querying."""
@@ -288,33 +278,27 @@ class TestExtendedLinkRetrieval:
             link = Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_10[i].id,
-                target_item_id=sample_items_10[i+1].id,
-                link_type="depends_on"
+                target_item_id=sample_items_10[i + 1].id,
+                link_type="depends_on",
             )
             db_session.add(link)
-        
+
         for i in range(3, 5):
             link = Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_10[i].id,
-                target_item_id=sample_items_10[i+1].id,
-                link_type="implements"
+                target_item_id=sample_items_10[i + 1].id,
+                link_type="implements",
             )
             db_session.add(link)
-        
+
         db_session.commit()
-        
+
         # Query by type
-        depends_links = db_session.query(Link).filter_by(
-            project_id=sample_project.id,
-            link_type="depends_on"
-        ).all()
-        
-        impl_links = db_session.query(Link).filter_by(
-            project_id=sample_project.id,
-            link_type="implements"
-        ).all()
-        
+        depends_links = db_session.query(Link).filter_by(project_id=sample_project.id, link_type="depends_on").all()
+
+        impl_links = db_session.query(Link).filter_by(project_id=sample_project.id, link_type="implements").all()
+
         assert len(depends_links) == 3
         assert len(impl_links) == 2
 
@@ -325,63 +309,63 @@ class TestExtendedLinkRetrieval:
             link = Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_10[i % 10].id,
-                target_item_id=sample_items_10[(i+1) % 10].id,
-                link_type="depends_on"
+                target_item_id=sample_items_10[(i + 1) % 10].id,
+                link_type="depends_on",
             )
             db_session.add(link)
         db_session.commit()
-        
+
         # Test pagination
         page_size = 3
         total_links = db_session.query(Link).filter_by(project_id=sample_project.id).count()
-        
-        links_page1 = db_session.query(Link).filter_by(
-            project_id=sample_project.id
-        ).limit(page_size).offset(0).all()
-        
-        links_page2 = db_session.query(Link).filter_by(
-            project_id=sample_project.id
-        ).limit(page_size).offset(page_size).all()
-        
+
+        links_page1 = db_session.query(Link).filter_by(project_id=sample_project.id).limit(page_size).offset(0).all()
+
+        links_page2 = (
+            db_session.query(Link).filter_by(project_id=sample_project.id).limit(page_size).offset(page_size).all()
+        )
+
         assert len(links_page1) == 3
         assert len(links_page2) == 3
-        assert len(set(l.id for l in links_page1) & set(l.id for l in links_page2)) == 0
+        assert len({l.id for l in links_page1} & {l.id for l in links_page2}) == 0
 
     def test_get_links_for_item_both_directions(self, db_session, sample_project, sample_items_10):
         """Test getting all links for an item in both directions."""
         center_item = sample_items_10[5]
-        
+
         # Create incoming links
         for i in range(3):
             link = Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_10[i].id,
                 target_item_id=center_item.id,
-                link_type="depends_on"
+                link_type="depends_on",
             )
             db_session.add(link)
-        
+
         # Create outgoing links
         for i in range(6, 9):
             link = Link(
                 project_id=sample_project.id,
                 source_item_id=center_item.id,
                 target_item_id=sample_items_10[i].id,
-                link_type="depends_on"
+                link_type="depends_on",
             )
             db_session.add(link)
-        
+
         db_session.commit()
-        
+
         # Get all links for center item
-        all_links = db_session.query(Link).filter(
-            (Link.source_item_id == center_item.id) |
-            (Link.target_item_id == center_item.id)
-        ).all()
-        
+        all_links = (
+            db_session
+            .query(Link)
+            .filter((Link.source_item_id == center_item.id) | (Link.target_item_id == center_item.id))
+            .all()
+        )
+
         incoming = [l for l in all_links if l.target_item_id == center_item.id]
         outgoing = [l for l in all_links if l.source_item_id == center_item.id]
-        
+
         assert len(incoming) == 3
         assert len(outgoing) == 3
         assert len(all_links) == 6
@@ -393,28 +377,30 @@ class TestExtendedLinkRetrieval:
             link = Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_10[0].id,
-                target_item_id=sample_items_10[i+1].id,
-                link_type="depends_on"
+                target_item_id=sample_items_10[i + 1].id,
+                link_type="depends_on",
             )
             db_session.add(link)
-        
+
         for i in range(3):
             link = Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_10[5].id,
-                target_item_id=sample_items_10[i+6].id,
-                link_type="implements"
+                target_item_id=sample_items_10[i + 6].id,
+                link_type="implements",
             )
             db_session.add(link)
-        
+
         db_session.commit()
-        
+
         # Complex filter: links from item 0 or type "implements"
-        complex_links = db_session.query(Link).filter(
-            (Link.source_item_id == sample_items_10[0].id) |
-            (Link.link_type == "implements")
-        ).all()
-        
+        complex_links = (
+            db_session
+            .query(Link)
+            .filter((Link.source_item_id == sample_items_10[0].id) | (Link.link_type == "implements"))
+            .all()
+        )
+
         assert len(complex_links) == 8
 
     def test_get_link_metadata_filtering(self, db_session, sample_project, sample_items_10):
@@ -425,33 +411,33 @@ class TestExtendedLinkRetrieval:
             source_item_id=sample_items_10[0].id,
             target_item_id=sample_items_10[1].id,
             link_type="depends_on",
-            link_metadata={"priority": "high", "status": "active"}
+            link_metadata={"priority": "high", "status": "active"},
         )
-        
+
         link2 = Link(
             project_id=sample_project.id,
             source_item_id=sample_items_10[1].id,
             target_item_id=sample_items_10[2].id,
             link_type="depends_on",
-            link_metadata={"priority": "low", "status": "active"}
+            link_metadata={"priority": "low", "status": "active"},
         )
-        
+
         link3 = Link(
             project_id=sample_project.id,
             source_item_id=sample_items_10[2].id,
             target_item_id=sample_items_10[3].id,
             link_type="depends_on",
-            link_metadata={"priority": "high", "status": "inactive"}
+            link_metadata={"priority": "high", "status": "inactive"},
         )
-        
+
         db_session.add_all([link1, link2, link3])
         db_session.commit()
-        
+
         # In a real scenario, metadata filtering would be done in Python
         all_links = db_session.query(Link).filter_by(project_id=sample_project.id).all()
         high_priority = [l for l in all_links if l.link_metadata.get("priority") == "high"]
         active = [l for l in all_links if l.link_metadata.get("status") == "active"]
-        
+
         assert len(high_priority) == 2
         assert len(active) == 2
 
@@ -460,6 +446,7 @@ class TestExtendedLinkRetrieval:
 # TEST CLASS 3: BATCH OPERATIONS
 # ============================================================
 
+
 class TestBatchLinkOperations:
     """Test batch operations on links."""
 
@@ -467,24 +454,19 @@ class TestBatchLinkOperations:
         """Test creating multiple links from same source."""
         source = sample_items_10[0]
         targets = sample_items_10[1:6]
-        
+
         created_links = []
         for target in targets:
             link = Link(
-                project_id=sample_project.id,
-                source_item_id=source.id,
-                target_item_id=target.id,
-                link_type="depends_on"
+                project_id=sample_project.id, source_item_id=source.id, target_item_id=target.id, link_type="depends_on"
             )
             db_session.add(link)
             created_links.append(link)
-        
+
         db_session.commit()
-        
-        retrieved = db_session.query(Link).filter_by(
-            source_item_id=source.id
-        ).all()
-        
+
+        retrieved = db_session.query(Link).filter_by(source_item_id=source.id).all()
+
         assert len(retrieved) == 5
         assert all(l.source_item_id == source.id for l in retrieved)
 
@@ -497,47 +479,42 @@ class TestBatchLinkOperations:
             (sample_items_10[3], sample_items_10[4], "blocks"),
             (sample_items_10[4], sample_items_10[5], "related_to"),
         ]
-        
+
         for source, target, link_type in link_configs:
             link = Link(
-                project_id=sample_project.id,
-                source_item_id=source.id,
-                target_item_id=target.id,
-                link_type=link_type
+                project_id=sample_project.id, source_item_id=source.id, target_item_id=target.id, link_type=link_type
             )
             db_session.add(link)
-        
+
         db_session.commit()
-        
+
         retrieved = db_session.query(Link).filter_by(project_id=sample_project.id).all()
         assert len(retrieved) == 5
-        
+
         types = {l.link_type for l in retrieved}
         assert types == {"depends_on", "implements", "tests", "blocks", "related_to"}
 
     def test_bulk_delete_links_by_source(self, db_session, sample_project, sample_items_10):
         """Test deleting multiple links from same source."""
         source = sample_items_10[0]
-        
+
         # Create 5 links from source
         for i in range(1, 6):
             link = Link(
                 project_id=sample_project.id,
                 source_item_id=source.id,
                 target_item_id=sample_items_10[i].id,
-                link_type="depends_on"
+                link_type="depends_on",
             )
             db_session.add(link)
         db_session.commit()
-        
+
         # Delete all links from source
-        deleted_count = db_session.query(Link).filter_by(
-            source_item_id=source.id
-        ).delete()
+        deleted_count = db_session.query(Link).filter_by(source_item_id=source.id).delete()
         db_session.commit()
-        
+
         assert deleted_count == 5
-        
+
         remaining = db_session.query(Link).filter_by(source_item_id=source.id).all()
         assert len(remaining) == 0
 
@@ -548,31 +525,28 @@ class TestBatchLinkOperations:
             link = Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_10[i].id,
-                target_item_id=sample_items_10[i+1].id,
-                link_type="depends_on"
+                target_item_id=sample_items_10[i + 1].id,
+                link_type="depends_on",
             )
             db_session.add(link)
-        
+
         for i in range(5, 8):
             link = Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_10[i].id,
-                target_item_id=sample_items_10[i+1].id,
-                link_type="implements"
+                target_item_id=sample_items_10[i + 1].id,
+                link_type="implements",
             )
             db_session.add(link)
-        
+
         db_session.commit()
-        
+
         # Delete all depends_on links
-        deleted = db_session.query(Link).filter_by(
-            project_id=sample_project.id,
-            link_type="depends_on"
-        ).delete()
+        deleted = db_session.query(Link).filter_by(project_id=sample_project.id, link_type="depends_on").delete()
         db_session.commit()
-        
+
         assert deleted == 5
-        
+
         remaining = db_session.query(Link).filter_by(project_id=sample_project.id).all()
         assert len(remaining) == 3
         assert all(l.link_type == "implements" for l in remaining)
@@ -585,21 +559,21 @@ class TestBatchLinkOperations:
             link = Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_10[i].id,
-                target_item_id=sample_items_10[i+1].id,
+                target_item_id=sample_items_10[i + 1].id,
                 link_type="depends_on",
-                link_metadata={"version": "1.0"}
+                link_metadata={"version": "1.0"},
             )
             db_session.add(link)
             created_ids.append(link.id)
         db_session.commit()
-        
+
         # Update all metadata
         links = db_session.query(Link).filter(Link.id.in_(created_ids)).all()
         for link in links:
             link.link_metadata["version"] = "2.0"
             link.link_metadata["updated_at"] = "2024-01-01"
         db_session.commit()
-        
+
         # Verify updates
         updated_links = db_session.query(Link).filter(Link.id.in_(created_ids)).all()
         for link in updated_links:
@@ -610,19 +584,16 @@ class TestBatchLinkOperations:
         """Test creating star topology (one hub, many spokes)."""
         hub = sample_items_10[0]
         spokes = sample_items_10[1:6]
-        
+
         # All spokes connect to hub
         for spoke in spokes:
             link = Link(
-                project_id=sample_project.id,
-                source_item_id=hub.id,
-                target_item_id=spoke.id,
-                link_type="depends_on"
+                project_id=sample_project.id, source_item_id=hub.id, target_item_id=spoke.id, link_type="depends_on"
             )
             db_session.add(link)
-        
+
         db_session.commit()
-        
+
         # Verify topology
         hub_outgoing = db_session.query(Link).filter_by(source_item_id=hub.id).all()
         assert len(hub_outgoing) == 5
@@ -631,19 +602,19 @@ class TestBatchLinkOperations:
     def test_bulk_create_chain_topology(self, db_session, sample_project, sample_items_10):
         """Test creating linear chain topology."""
         items = sample_items_10[:6]
-        
+
         # Create chain: 1 -> 2 -> 3 -> 4 -> 5 -> 6
         for i in range(len(items) - 1):
             link = Link(
                 project_id=sample_project.id,
                 source_item_id=items[i].id,
-                target_item_id=items[i+1].id,
-                link_type="depends_on"
+                target_item_id=items[i + 1].id,
+                link_type="depends_on",
             )
             db_session.add(link)
-        
+
         db_session.commit()
-        
+
         # Verify chain
         assert db_session.query(Link).filter_by(project_id=sample_project.id).count() == 5
 
@@ -652,17 +623,18 @@ class TestBatchLinkOperations:
 # TEST CLASS 4: GRAPH OPERATIONS
 # ============================================================
 
+
 class TestGraphOperations:
     """Test graph analysis and traversal operations."""
 
-    def _build_graph(self, links: List[Link]) -> Dict[str, Set[str]]:
+    def _build_graph(self, links: list[Link]) -> dict[str, set[str]]:
         """Build adjacency list from links."""
         graph = {}
         for link in links:
             if link.source_item_id not in graph:
                 graph[link.source_item_id] = set()
             graph[link.source_item_id].add(link.target_item_id)
-            
+
             if link.target_item_id not in graph:
                 graph[link.target_item_id] = set()
         return graph
@@ -674,15 +646,15 @@ class TestGraphOperations:
             link = Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_10[i].id,
-                target_item_id=sample_items_10[i+1].id,
-                link_type="depends_on"
+                target_item_id=sample_items_10[i + 1].id,
+                link_type="depends_on",
             )
             db_session.add(link)
         db_session.commit()
-        
+
         links = db_session.query(Link).filter_by(project_id=sample_project.id).all()
         graph = self._build_graph(links)
-        
+
         # From item 0, reachable items: {1, 2, 3, 4}
         def get_reachable(start_id, graph):
             visited = set()
@@ -694,7 +666,7 @@ class TestGraphOperations:
                     if node in graph:
                         queue.extend(graph[node] - visited)
             return visited - {start_id}
-        
+
         reachable = get_reachable(sample_items_10[0].id, graph)
         expected = {sample_items_10[i].id for i in range(1, 5)}
         assert reachable == expected
@@ -708,20 +680,20 @@ class TestGraphOperations:
             (0, 2),  # 1 -> 3
             (2, 4),  # 3 -> 5
         ]
-        
+
         for source_idx, target_idx in links_config:
             link = Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_10[source_idx].id,
                 target_item_id=sample_items_10[target_idx].id,
-                link_type="depends_on"
+                link_type="depends_on",
             )
             db_session.add(link)
         db_session.commit()
-        
+
         links = db_session.query(Link).filter_by(project_id=sample_project.id).all()
         graph = self._build_graph(links)
-        
+
         def get_reachable(start_id, graph):
             visited = set()
             queue = [start_id]
@@ -732,7 +704,7 @@ class TestGraphOperations:
                     if node in graph:
                         queue.extend(graph[node] - visited)
             return visited - {start_id}
-        
+
         reachable = get_reachable(sample_items_10[0].id, graph)
         expected = {sample_items_10[i].id for i in [1, 2, 3, 4]}
         assert reachable == expected
@@ -744,38 +716,35 @@ class TestGraphOperations:
             link = Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_10[i].id,
-                target_item_id=sample_items_10[i+1].id,
-                link_type="depends_on"
+                target_item_id=sample_items_10[i + 1].id,
+                link_type="depends_on",
             )
             db_session.add(link)
         db_session.commit()
-        
+
         links = db_session.query(Link).filter_by(project_id=sample_project.id).all()
         graph = self._build_graph(links)
-        
+
         def find_shortest_path(start, end, graph):
             from collections import deque
+
             queue = deque([(start, [start])])
             visited = {start}
-            
+
             while queue:
                 node, path = queue.popleft()
                 if node == end:
                     return path
-                
+
                 if node in graph:
                     for neighbor in graph[node]:
                         if neighbor not in visited:
                             visited.add(neighbor)
-                            queue.append((neighbor, path + [neighbor]))
-            
+                            queue.append((neighbor, [*path, neighbor]))
+
             return None
-        
-        path = find_shortest_path(
-            sample_items_10[0].id,
-            sample_items_10[3].id,
-            graph
-        )
+
+        path = find_shortest_path(sample_items_10[0].id, sample_items_10[3].id, graph)
         assert path is not None
         assert len(path) == 4
         assert path[0] == sample_items_10[0].id
@@ -788,43 +757,40 @@ class TestGraphOperations:
             project_id=sample_project.id,
             source_item_id=sample_items_10[0].id,
             target_item_id=sample_items_10[1].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         link2 = Link(
             project_id=sample_project.id,
             source_item_id=sample_items_10[4].id,
             target_item_id=sample_items_10[5].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add_all([link1, link2])
         db_session.commit()
-        
+
         links = db_session.query(Link).filter_by(project_id=sample_project.id).all()
         graph = self._build_graph(links)
-        
+
         def find_shortest_path(start, end, graph):
             from collections import deque
+
             queue = deque([(start, [start])])
             visited = {start}
-            
+
             while queue:
                 node, path = queue.popleft()
                 if node == end:
                     return path
-                
+
                 if node in graph:
                     for neighbor in graph[node]:
                         if neighbor not in visited:
                             visited.add(neighbor)
-                            queue.append((neighbor, path + [neighbor]))
-            
+                            queue.append((neighbor, [*path, neighbor]))
+
             return None
-        
-        path = find_shortest_path(
-            sample_items_10[0].id,
-            sample_items_10[5].id,
-            graph
-        )
+
+        path = find_shortest_path(sample_items_10[0].id, sample_items_10[5].id, graph)
         assert path is None
 
     def test_detect_all_cycles(self, db_session, sample_project, sample_items_10):
@@ -835,46 +801,46 @@ class TestGraphOperations:
             (1, 2),  # 2 -> 3
             (2, 0),  # 3 -> 1 (creates cycle)
         ]
-        
+
         for source_idx, target_idx in links_config:
             link = Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_10[source_idx].id,
                 target_item_id=sample_items_10[target_idx].id,
-                link_type="depends_on"
+                link_type="depends_on",
             )
             db_session.add(link)
         db_session.commit()
-        
+
         links = db_session.query(Link).filter_by(project_id=sample_project.id).all()
         graph = self._build_graph(links)
-        
+
         def find_cycles(graph):
             cycles = []
             visited = set()
             rec_stack = set()
-            
+
             def dfs(node, path):
                 visited.add(node)
                 rec_stack.add(node)
                 path.append(node)
-                
+
                 if node in graph:
                     for neighbor in graph[node]:
                         if neighbor not in visited:
                             dfs(neighbor, path[:])
                         elif neighbor in rec_stack:
                             cycle_start = path.index(neighbor)
-                            cycles.append(path[cycle_start:] + [neighbor])
-                
+                            cycles.append([*path[cycle_start:], neighbor])
+
                 rec_stack.remove(node)
-            
+
             for node in graph:
                 if node not in visited:
                     dfs(node, [])
-            
+
             return cycles
-        
+
         cycles = find_cycles(graph)
         # Should find at least one cycle
         assert len(cycles) >= 1
@@ -884,6 +850,7 @@ class TestGraphOperations:
 # TEST CLASS 5: CIRCULAR DEPENDENCY VALIDATION
 # ============================================================
 
+
 class TestCircularDependencyValidation:
     """Extended tests for circular dependency detection."""
 
@@ -891,16 +858,13 @@ class TestCircularDependencyValidation:
         """Test detecting self-referential cycle."""
         item = sample_items_10[0]
         link = Link(
-            project_id=sample_project.id,
-            source_item_id=item.id,
-            target_item_id=item.id,
-            link_type="depends_on"
+            project_id=sample_project.id, source_item_id=item.id, target_item_id=item.id, link_type="depends_on"
         )
         db_session.add(link)
         db_session.commit()
-        
+
         links = db_session.query(Link).filter_by(project_id=sample_project.id).all()
-        
+
         # Self-cycle detected
         assert any(l.source_item_id == l.target_item_id for l in links)
 
@@ -911,33 +875,33 @@ class TestCircularDependencyValidation:
             project_id=sample_project.id,
             source_item_id=sample_items_10[0].id,
             target_item_id=sample_items_10[1].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         link2 = Link(
             project_id=sample_project.id,
             source_item_id=sample_items_10[1].id,
             target_item_id=sample_items_10[0].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add_all([link1, link2])
         db_session.commit()
-        
+
         links = db_session.query(Link).filter_by(project_id=sample_project.id).all()
-        
+
         # Build reverse map
         reverse_deps = {}
         for link in links:
             if link.target_item_id not in reverse_deps:
                 reverse_deps[link.target_item_id] = []
             reverse_deps[link.target_item_id].append(link.source_item_id)
-        
+
         # Check for cycles
         has_cycle = False
         for link in links:
             if link.source_item_id in reverse_deps:
                 if link.target_item_id in reverse_deps[link.source_item_id]:
                     has_cycle = True
-        
+
         assert has_cycle
 
     def test_complex_cycle_detection(self, db_session, sample_project, sample_items_10):
@@ -949,20 +913,20 @@ class TestCircularDependencyValidation:
             (2, 3),
             (3, 0),  # Creates cycle
         ]
-        
+
         for source_idx, target_idx in links_config:
             link = Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_10[source_idx].id,
                 target_item_id=sample_items_10[target_idx].id,
-                link_type="depends_on"
+                link_type="depends_on",
             )
             db_session.add(link)
         db_session.commit()
-        
+
         cycle_service = CycleDetectionService(db_session)
         result = cycle_service.detect_cycles(sample_project.id, "depends_on")
-        
+
         assert result.has_cycles
 
     def test_no_cycle_in_dag(self, db_session, sample_project, sample_items_10):
@@ -974,26 +938,27 @@ class TestCircularDependencyValidation:
             (1, 3),
             (2, 3),
         ]
-        
+
         for source_idx, target_idx in links_config:
             link = Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_10[source_idx].id,
                 target_item_id=sample_items_10[target_idx].id,
-                link_type="depends_on"
+                link_type="depends_on",
             )
             db_session.add(link)
         db_session.commit()
-        
+
         cycle_service = CycleDetectionService(db_session)
         result = cycle_service.detect_cycles(sample_project.id, "depends_on")
-        
+
         assert not result.has_cycles
 
 
 # ============================================================
 # TEST CLASS 6: DELETION CASCADE SCENARIOS
 # ============================================================
+
 
 class TestDeletionCascades:
     """Extended tests for deletion cascading behavior."""
@@ -1009,14 +974,14 @@ class TestDeletionCascades:
                 project_id=sample_project.id,
                 source_item_id=item_id_to_delete,
                 target_item_id=sample_items_10[i].id,
-                link_type="depends_on"
+                link_type="depends_on",
             )
             # As target
             link2 = Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_10[i].id,
                 target_item_id=item_id_to_delete,
-                link_type="depends_on"
+                link_type="depends_on",
             )
             db_session.add_all([link1, link2])
 
@@ -1027,17 +992,14 @@ class TestDeletionCascades:
 
         # Manually clean up links due to SQLite limitations with FK cascades
         db_session.query(Link).filter(
-            (Link.source_item_id == item_id_to_delete) |
-            (Link.target_item_id == item_id_to_delete)
+            (Link.source_item_id == item_id_to_delete) | (Link.target_item_id == item_id_to_delete)
         ).delete()
         db_session.commit()
 
         # Check links are gone
         remaining = db_session.query(Link).filter_by(project_id=sample_project.id).all()
         assert not any(
-            l.source_item_id == item_id_to_delete or
-            l.target_item_id == item_id_to_delete
-            for l in remaining
+            l.source_item_id == item_id_to_delete or l.target_item_id == item_id_to_delete for l in remaining
         )
 
     def test_delete_project_cascade_all_links(self, db_session):
@@ -1056,7 +1018,7 @@ class TestDeletionCascades:
                 title=f"Item {i}",
                 view="FEATURE",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             db_session.add(item)
             items.append(item)
@@ -1068,8 +1030,8 @@ class TestDeletionCascades:
             link = Link(
                 project_id=project.id,
                 source_item_id=items[i].id,
-                target_item_id=items[i+1].id,
-                link_type="depends_on"
+                target_item_id=items[i + 1].id,
+                link_type="depends_on",
             )
             db_session.add(link)
 
@@ -1099,10 +1061,7 @@ class TestDeletionCascades:
         created_links = []
         for spoke in spokes:
             link = Link(
-                project_id=sample_project.id,
-                source_item_id=hub.id,
-                target_item_id=spoke.id,
-                link_type="depends_on"
+                project_id=sample_project.id, source_item_id=hub.id, target_item_id=spoke.id, link_type="depends_on"
             )
             db_session.add(link)
             created_links.append(link)
@@ -1123,7 +1082,7 @@ class TestDeletionCascades:
         project2 = Project(id="proj-other", name="Other Project")
         db_session.add(project2)
         db_session.commit()
-        
+
         # Create items in both projects
         items2 = []
         for i in range(3):
@@ -1133,35 +1092,32 @@ class TestDeletionCascades:
                 title=f"Item {i}",
                 view="FEATURE",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             db_session.add(item)
             items2.append(item)
-        
+
         db_session.commit()
-        
+
         # Create links in both projects
         link1 = Link(
             project_id=sample_project.id,
             source_item_id=sample_items_10[0].id,
             target_item_id=sample_items_10[1].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
-        
+
         link2 = Link(
-            project_id=project2.id,
-            source_item_id=items2[0].id,
-            target_item_id=items2[1].id,
-            link_type="depends_on"
+            project_id=project2.id, source_item_id=items2[0].id, target_item_id=items2[1].id, link_type="depends_on"
         )
-        
+
         db_session.add_all([link1, link2])
         db_session.commit()
-        
+
         # Delete item from project 1
         db_session.delete(sample_items_10[0])
         db_session.commit()
-        
+
         # Links in project2 should be unaffected
         proj2_links = db_session.query(Link).filter_by(project_id=project2.id).all()
         assert len(proj2_links) == 1
@@ -1170,6 +1126,7 @@ class TestDeletionCascades:
 # ============================================================
 # TEST CLASS 7: DATA INTEGRITY & CONSTRAINTS
 # ============================================================
+
 
 class TestLinkIntegrity:
     """Test data integrity and constraint validation."""
@@ -1181,7 +1138,7 @@ class TestLinkIntegrity:
                 project_id=sample_project.id,
                 source_item_id=None,
                 target_item_id=sample_items_10[0].id,
-                link_type="depends_on"
+                link_type="depends_on",
             )
             db_session.add(link)
             db_session.commit()
@@ -1189,7 +1146,6 @@ class TestLinkIntegrity:
             assert False, "Should not allow null source_item_id"
         except:
             db_session.rollback()
-            pass
 
     def test_link_type_not_empty(self, db_session, sample_project, sample_items_10):
         """Test that link_type is required."""
@@ -1198,7 +1154,7 @@ class TestLinkIntegrity:
                 project_id=sample_project.id,
                 source_item_id=sample_items_10[0].id,
                 target_item_id=sample_items_10[1].id,
-                link_type=""
+                link_type="",
             )
             db_session.add(link)
             db_session.commit()
@@ -1213,7 +1169,7 @@ class TestLinkIntegrity:
                 project_id=None,
                 source_item_id=sample_items_10[0].id,
                 target_item_id=sample_items_10[1].id,
-                link_type="depends_on"
+                link_type="depends_on",
             )
             db_session.add(link)
             db_session.commit()
@@ -1228,7 +1184,7 @@ class TestLinkIntegrity:
                 project_id=sample_project.id,
                 source_item_id="nonexistent-1",
                 target_item_id="nonexistent-2",
-                link_type="depends_on"
+                link_type="depends_on",
             )
             db_session.add(link)
             db_session.commit()
@@ -1242,11 +1198,11 @@ class TestLinkIntegrity:
             project_id=sample_project.id,
             source_item_id=sample_items_10[0].id,
             target_item_id=sample_items_10[1].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(link)
         db_session.commit()
-        
+
         retrieved = db_session.query(Link).filter_by(id=link.id).first()
         assert isinstance(retrieved.link_metadata, dict)
 
@@ -1255,27 +1211,28 @@ class TestLinkIntegrity:
 # TEST CLASS 8: PERFORMANCE & SCALE TESTS
 # ============================================================
 
+
 class TestLinkPerformance:
     """Test performance with large datasets."""
 
     def test_create_large_link_set_performance(self, db_session, sample_project, sample_items_50):
         """Test creating many links efficiently."""
         start_time = time.time()
-        
+
         # Create 100+ links
         for i in range(49):
             link = Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_50[i].id,
-                target_item_id=sample_items_50[i+1].id,
-                link_type="depends_on"
+                target_item_id=sample_items_50[i + 1].id,
+                link_type="depends_on",
             )
             db_session.add(link)
-        
+
         db_session.commit()
-        
+
         elapsed = time.time() - start_time
-        
+
         # Should complete in reasonable time
         count = db_session.query(Link).filter_by(project_id=sample_project.id).count()
         assert count == 49
@@ -1288,20 +1245,20 @@ class TestLinkPerformance:
             link = Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_50[i].id,
-                target_item_id=sample_items_50[i+1].id,
-                link_type="depends_on"
+                target_item_id=sample_items_50[i + 1].id,
+                link_type="depends_on",
             )
             db_session.add(link)
-        
+
         db_session.commit()
-        
+
         start_time = time.time()
-        
+
         # Query all links
         links = db_session.query(Link).filter_by(project_id=sample_project.id).all()
-        
+
         elapsed = time.time() - start_time
-        
+
         assert len(links) == 49
         assert elapsed < 1.0  # Should be fast
 
@@ -1312,21 +1269,21 @@ class TestLinkPerformance:
             link = Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_50[i].id,
-                target_item_id=sample_items_50[i+1].id,
-                link_type="depends_on"
+                target_item_id=sample_items_50[i + 1].id,
+                link_type="depends_on",
             )
             db_session.add(link)
-        
+
         db_session.commit()
-        
+
         start_time = time.time()
-        
+
         # Delete all links for project
         db_session.query(Link).filter_by(project_id=sample_project.id).delete()
         db_session.commit()
-        
+
         elapsed = time.time() - start_time
-        
+
         remaining = db_session.query(Link).filter_by(project_id=sample_project.id).count()
         assert remaining == 0
         assert elapsed < 1.0
@@ -1336,6 +1293,7 @@ class TestLinkPerformance:
 # TEST CLASS 9: EDGE CASES & ERROR HANDLING
 # ============================================================
 
+
 class TestLinkEdgeCases:
     """Test edge cases and unusual scenarios."""
 
@@ -1343,14 +1301,14 @@ class TestLinkEdgeCases:
         """Test creating link with very long IDs."""
         long_id_1 = "item-" + "x" * 200
         long_id_2 = "item-" + "y" * 200
-        
+
         item1 = Item(
             id=long_id_1[:255],
             project_id=sample_project.id,
             title="Item 1",
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         item2 = Item(
             id=long_id_2[:255],
@@ -1358,21 +1316,18 @@ class TestLinkEdgeCases:
             title="Item 2",
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
-        
+
         db_session.add_all([item1, item2])
         db_session.commit()
-        
+
         link = Link(
-            project_id=sample_project.id,
-            source_item_id=item1.id,
-            target_item_id=item2.id,
-            link_type="depends_on"
+            project_id=sample_project.id, source_item_id=item1.id, target_item_id=item2.id, link_type="depends_on"
         )
         db_session.add(link)
         db_session.commit()
-        
+
         retrieved = db_session.query(Link).filter_by(id=link.id).first()
         assert retrieved is not None
 
@@ -1386,18 +1341,18 @@ class TestLinkEdgeCases:
             "depends@on",
             "depends:on",
         ]
-        
+
         for link_type in special_types:
             link = Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_10[0].id,
                 target_item_id=sample_items_10[1].id,
-                link_type=link_type
+                link_type=link_type,
             )
             db_session.add(link)
-        
+
         db_session.commit()
-        
+
         created = db_session.query(Link).filter_by(project_id=sample_project.id).all()
         assert len(created) == len(special_types)
 
@@ -1408,18 +1363,18 @@ class TestLinkEdgeCases:
             link = Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_10[i].id,
-                target_item_id=sample_items_10[i+1].id,
-                link_type="depends_on"
+                target_item_id=sample_items_10[i + 1].id,
+                link_type="depends_on",
             )
             db_session.add(link)
             links.append(link)
-        
+
         db_session.commit()
-        
+
         # Verify all created with unique IDs
         created_ids = {l.id for l in links}
         assert len(created_ids) == 9
-        
+
         # Verify timestamps are reasonable
         timestamps = [l.created_at for l in links]
         assert all(ts is not None for ts in timestamps)
@@ -1430,22 +1385,19 @@ class TestLinkEdgeCases:
             "is_active": True,
             "is_deprecated": False,
             "value": None,
-            "nested": {
-                "flag": True,
-                "nullable": None
-            }
+            "nested": {"flag": True, "nullable": None},
         }
-        
+
         link = Link(
             project_id=sample_project.id,
             source_item_id=sample_items_10[0].id,
             target_item_id=sample_items_10[1].id,
             link_type="depends_on",
-            link_metadata=metadata
+            link_metadata=metadata,
         )
         db_session.add(link)
         db_session.commit()
-        
+
         retrieved = db_session.query(Link).filter_by(id=link.id).first()
         assert retrieved.link_metadata["is_active"] is True
         assert retrieved.link_metadata["is_deprecated"] is False
@@ -1456,31 +1408,34 @@ class TestLinkEdgeCases:
 # TEST CLASS 10: INTEGRATION WITH ITEMS
 # ============================================================
 
+
 class TestLinkItemIntegration:
     """Test links in context of item operations."""
 
     def test_item_with_multiple_link_types(self, db_session, sample_project, sample_items_10):
         """Test item connected via multiple different link types."""
         central_item = sample_items_10[5]
-        
+
         link_types = ["depends_on", "implements", "tests", "blocks", "related_to"]
         for i, link_type in enumerate(link_types):
             link = Link(
                 project_id=sample_project.id,
                 source_item_id=central_item.id,
                 target_item_id=sample_items_10[i].id,
-                link_type=link_type
+                link_type=link_type,
             )
             db_session.add(link)
-        
+
         db_session.commit()
-        
+
         # Get all links for item
-        all_links = db_session.query(Link).filter(
-            (Link.source_item_id == central_item.id) |
-            (Link.target_item_id == central_item.id)
-        ).all()
-        
+        all_links = (
+            db_session
+            .query(Link)
+            .filter((Link.source_item_id == central_item.id) | (Link.target_item_id == central_item.id))
+            .all()
+        )
+
         assert len(all_links) == 5
         types = {l.link_type for l in all_links}
         assert types == set(link_types)
@@ -1492,8 +1447,8 @@ class TestLinkItemIntegration:
             link = Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_10[i].id,
-                target_item_id=sample_items_10[i+1].id,
-                link_type="depends_on"
+                target_item_id=sample_items_10[i + 1].id,
+                link_type="depends_on",
             )
             db_session.add(link)
 
@@ -1505,8 +1460,7 @@ class TestLinkItemIntegration:
         # Delete links connected to middle item (index 1)
         middle_item = sample_items_10[1]
         db_session.query(Link).filter(
-            (Link.source_item_id == middle_item.id) |
-            (Link.target_item_id == middle_item.id)
+            (Link.source_item_id == middle_item.id) | (Link.target_item_id == middle_item.id)
         ).delete()
         db_session.commit()
 
@@ -1519,30 +1473,22 @@ class TestLinkItemIntegration:
         req = sample_items_10[0]
         impl = sample_items_10[1]
         test = sample_items_10[2]
-        
+
         # Create: requirement -> implementation -> test
         link1 = Link(
-            project_id=sample_project.id,
-            source_item_id=req.id,
-            target_item_id=impl.id,
-            link_type="implements"
+            project_id=sample_project.id, source_item_id=req.id, target_item_id=impl.id, link_type="implements"
         )
-        
-        link2 = Link(
-            project_id=sample_project.id,
-            source_item_id=impl.id,
-            target_item_id=test.id,
-            link_type="tests"
-        )
-        
+
+        link2 = Link(project_id=sample_project.id, source_item_id=impl.id, target_item_id=test.id, link_type="tests")
+
         db_session.add_all([link1, link2])
         db_session.commit()
-        
+
         # Verify relationship chain
         req_outgoing = db_session.query(Link).filter_by(source_item_id=req.id).all()
         assert len(req_outgoing) == 1
         assert req_outgoing[0].link_type == "implements"
-        
+
         impl_outgoing = db_session.query(Link).filter_by(source_item_id=impl.id).all()
         assert len(impl_outgoing) == 1
         assert impl_outgoing[0].link_type == "tests"
@@ -1551,6 +1497,7 @@ class TestLinkItemIntegration:
 # ============================================================
 # TEST CLASS 11: INDEX EFFICIENCY
 # ============================================================
+
 
 class TestLinkIndexing:
     """Test that indexes work correctly."""
@@ -1561,18 +1508,16 @@ class TestLinkIndexing:
             link = Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_10[0].id,
-                target_item_id=sample_items_10[i+1].id,
-                link_type="depends_on"
+                target_item_id=sample_items_10[i + 1].id,
+                link_type="depends_on",
             )
             db_session.add(link)
-        
+
         db_session.commit()
-        
+
         # Query by source
-        links = db_session.query(Link).filter_by(
-            source_item_id=sample_items_10[0].id
-        ).all()
-        
+        links = db_session.query(Link).filter_by(source_item_id=sample_items_10[0].id).all()
+
         assert len(links) == 5
 
     def test_query_by_type_uses_index(self, db_session, sample_project, sample_items_10):
@@ -1582,28 +1527,25 @@ class TestLinkIndexing:
             link = Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_10[i].id,
-                target_item_id=sample_items_10[i+1].id,
-                link_type="depends_on"
+                target_item_id=sample_items_10[i + 1].id,
+                link_type="depends_on",
             )
             db_session.add(link)
-        
+
         for i in range(3, 5):
             link = Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_10[i].id,
-                target_item_id=sample_items_10[i+1].id,
-                link_type="implements"
+                target_item_id=sample_items_10[i + 1].id,
+                link_type="implements",
             )
             db_session.add(link)
-        
+
         db_session.commit()
-        
+
         # Query by type
-        links = db_session.query(Link).filter_by(
-            project_id=sample_project.id,
-            link_type="depends_on"
-        ).all()
-        
+        links = db_session.query(Link).filter_by(project_id=sample_project.id, link_type="depends_on").all()
+
         assert len(links) == 3
 
     def test_query_by_source_target_combination(self, db_session, sample_project, sample_items_10):
@@ -1612,17 +1554,19 @@ class TestLinkIndexing:
             project_id=sample_project.id,
             source_item_id=sample_items_10[0].id,
             target_item_id=sample_items_10[1].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(link)
         db_session.commit()
-        
+
         # Query with both source and target
-        found = db_session.query(Link).filter(
-            Link.source_item_id == sample_items_10[0].id,
-            Link.target_item_id == sample_items_10[1].id
-        ).first()
-        
+        found = (
+            db_session
+            .query(Link)
+            .filter(Link.source_item_id == sample_items_10[0].id, Link.target_item_id == sample_items_10[1].id)
+            .first()
+        )
+
         assert found is not None
         assert found.id == link.id
 
@@ -1630,6 +1574,7 @@ class TestLinkIndexing:
 # ============================================================
 # TEST SUMMARY
 # ============================================================
+
 
 class TestExpandedCoverageSummary:
     """Summary of expanded test coverage."""
@@ -1669,6 +1614,6 @@ class TestExpandedCoverageSummary:
             "target_coverage_increase": "4-6%",
             "estimated_new_tests": 95,
         }
-        
+
         assert coverage_report["new_test_count"] == 95
         assert len(coverage_report["areas_covered"]) >= 25

@@ -31,10 +31,10 @@ Successfully implemented comprehensive load testing suite for TraceRTM using k6,
 
 ### Scripts (4 files)
 ```
-/scripts/install_k6.sh                    # k6 installation (cross-platform)
-/scripts/run_load_tests.sh                # Master test runner
-/scripts/generate_load_test_report.py     # HTML report generator
-/scripts/validate_load_tests.sh           # Setup validation
+/scripts/shell/install_k6.sh                    # k6 installation (cross-platform)
+/scripts/shell/run_load_tests.sh                # Master test runner
+/scripts/python/generate_load_test_report.py     # HTML report generator
+/scripts/shell/validate_load_tests.sh           # Setup validation
 ```
 
 ### Test Files (8 files)
@@ -211,7 +211,7 @@ Provides:
 ## Validation & Quality Assurance
 
 ### Validation Script
-Created: `/scripts/validate_load_tests.sh`
+Created: `/scripts/shell/validate_load_tests.sh`
 
 Checks:
 - k6 installation
@@ -223,7 +223,7 @@ Checks:
 
 **Usage**:
 ```bash
-./scripts/validate_load_tests.sh
+./scripts/shell/validate_load_tests.sh
 ```
 
 ### Code Quality
@@ -238,7 +238,7 @@ Checks:
 ### Quick Start
 ```bash
 # 1-Minute Setup
-./scripts/install_k6.sh
+./scripts/shell/install_k6.sh
 docker-compose up -d
 k6 run load-tests/smoke-test.js
 ```
@@ -246,8 +246,8 @@ k6 run load-tests/smoke-test.js
 ### Full Validation
 ```bash
 # Complete Test Suite
-./scripts/run_load_tests.sh
-open load-test-results/report.html
+./scripts/shell/run_load_tests.sh
+open load-tests/results/report.html
 ```
 
 ### Using Makefile
@@ -376,12 +376,12 @@ Comprehensive tuning documentation provided for:
 ### Immediate Actions
 1. **Validate Setup**:
    ```bash
-   ./scripts/validate_load_tests.sh
+   ./scripts/shell/validate_load_tests.sh
    ```
 
 2. **Install k6**:
    ```bash
-   ./scripts/install_k6.sh
+   ./scripts/shell/install_k6.sh
    ```
 
 3. **Run Smoke Test**:
@@ -417,9 +417,9 @@ Comprehensive tuning documentation provided for:
 
 ### Scripts
 - Validation: `scripts/validate_load_tests.sh`
-- Installation: `scripts/install_k6.sh`
-- Test Runner: `scripts/run_load_tests.sh`
-- Report Generator: `scripts/generate_load_test_report.py`
+- Installation: `scripts/shell/install_k6.sh`
+- Test Runner: `scripts/shell/run_load_tests.sh`
+- Report Generator: `scripts/python/generate_load_test_report.py`
 
 ### External Resources
 - k6 Documentation: https://k6.io/docs/

@@ -7,11 +7,14 @@ from typing import Any
 try:
     from tracertm.mcp.core import mcp
 except Exception:  # pragma: no cover
+
     class _StubMCP:
         def tool(self, *args: Any, **kwargs: Any):
             def decorator(fn):
                 return fn
+
             return decorator
+
     mcp = _StubMCP()  # type: ignore[assignment]
 
 
@@ -23,6 +26,7 @@ async def tui_manage(
 ) -> dict[str, Any]:
     """TUI management - imports implementation only when called."""
     from tracertm.mcp.tools.param import tui_manage as impl
+
     return await impl(action, payload, ctx)
 
 
@@ -34,7 +38,8 @@ async def design_manage(
 ) -> dict[str, Any]:
     """Design management - imports implementation only when called."""
     from tracertm.mcp.tools.param import design_manage as impl
+
     return await impl(action, payload, ctx)
 
 
-__all__ = ["tui_manage", "design_manage"]
+__all__ = ["design_manage", "tui_manage"]

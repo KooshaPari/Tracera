@@ -32,7 +32,7 @@ export default function powershell(Prism) {
       ],
       // Matches name spaces as well as casts, attribute decorators. Force starting with letter to avoid matching array indices
       // Supports two levels of nested brackets (e.g. `[OutputType([System.Collections.Generic.List[int]])]`)
-      namespace: /\[[a-z](?:\[(?:\[[^\]]*\]|[^\[\]])*\]|[^\[\]])*\]/i,
+      namespace: /\[[a-z](?:\[(?:\[[^\]]*\]|[^[\]])*\]|[^[\]])*\]/i,
       boolean: /\$(?:false|true)\b/i,
       variable: /\$\w+\b/,
       // Cmdlets and aliases. Aliases should come last, otherwise "write" gets preferred over "write-host" for example
@@ -47,7 +47,7 @@ export default function powershell(Prism) {
         /\b(?:Begin|Break|Catch|Class|Continue|Data|Define|Do|DynamicParam|Else|ElseIf|End|Exit|Filter|Finally|For|ForEach|From|Function|If|InlineScript|Parallel|Param|Process|Return|Sequence|Switch|Throw|Trap|Try|Until|Using|Var|While|Workflow)\b/i,
       operator: {
         pattern:
-          /(^|\W)(?:!|-(?:b?(?:and|x?or)|as|(?:Not)?(?:Contains|In|Like|Match)|eq|ge|gt|is(?:Not)?|Join|le|lt|ne|not|Replace|sh[lr])\b|-[-=]?|\+[+=]?|[*\/%]=?)/i,
+          /(^|\W)(?:!|-(?:b?(?:and|x?or)|as|(?:Not)?(?:Contains|In|Like|Match)|eq|ge|gt|is(?:Not)?|Join|le|lt|ne|not|Replace|sh[lr])\b|-[-=]?|\+[+=]?|[*/%]=?)/i,
         lookbehind: true
       },
       punctuation: /[|{}[\];(),.]/

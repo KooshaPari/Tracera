@@ -3036,7 +3036,7 @@ var TreeSitter = function() {
             C._ts_query_delete(this[0]);
             this[0] = 0;
           }
-          matches(node, {startPosition: startPosition = ZERO_POINT, endPosition: endPosition = ZERO_POINT, startIndex: startIndex = 0, endIndex: endIndex = 0, matchLimit: matchLimit = 4294967295, maxStartDepth: maxStartDepth = 4294967295, timeoutMicros: timeoutMicros = 0} = {}) {
+          matches(node, {startPosition = ZERO_POINT, endPosition = ZERO_POINT, startIndex = 0, endIndex = 0, matchLimit = 4294967295, maxStartDepth = 4294967295, timeoutMicros = 0} = {}) {
             if (typeof matchLimit !== "number") {
               throw new Error("Arguments must be numbers");
             }
@@ -3074,7 +3074,7 @@ var TreeSitter = function() {
             C._free(startAddress);
             return result;
           }
-          captures(node, {startPosition: startPosition = ZERO_POINT, endPosition: endPosition = ZERO_POINT, startIndex: startIndex = 0, endIndex: endIndex = 0, matchLimit: matchLimit = 4294967295, maxStartDepth: maxStartDepth = 4294967295, timeoutMicros: timeoutMicros = 0} = {}) {
+          captures(node, {startPosition = ZERO_POINT, endPosition = ZERO_POINT, startIndex = 0, endIndex = 0, matchLimit = 4294967295, maxStartDepth = 4294967295, timeoutMicros = 0} = {}) {
             if (typeof matchLimit !== "number") {
               throw new Error("Arguments must be numbers");
             }

@@ -353,11 +353,11 @@ export function performCrossPerspectiveSearch(
 	}
 
 	// Convert to array and sort perspectives alphabetically
-	const grouped: GroupedSearchResults[] = [...[...groupedByPerspective.entries()].map(([perspective, results]) => ({
+	const grouped: GroupedSearchResults[] = [...groupedByPerspective.entries()].map(([perspective, results]) => ({
 	count: results.length,
 	perspective,
 	results
-}))]
+}))
 		.toSorted((a, b) => a.perspective.localeCompare(b.perspective));
 
 	return grouped;

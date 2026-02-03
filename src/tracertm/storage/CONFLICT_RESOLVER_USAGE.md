@@ -56,7 +56,7 @@ local_version = EntityVersion(
     vector_clock=VectorClock(
         client_id="cli-laptop-001",
         version=3,
-        timestamp=datetime(2024, 1, 15, 14, 30, tzinfo=timezone.utc),
+        timestamp=datetime(2024, 1, 15, 14, 30, tzinfo=UTC),
         parent_version=2,
     ),
     content_hash="abc123def456",
@@ -74,7 +74,7 @@ remote_version = EntityVersion(
     vector_clock=VectorClock(
         client_id="web-session-789",
         version=3,
-        timestamp=datetime(2024, 1, 15, 14, 35, tzinfo=timezone.utc),
+        timestamp=datetime(2024, 1, 15, 14, 35, tzinfo=UTC),
         parent_version=2,
     ),
     content_hash="xyz789abc012",

@@ -31,5 +31,5 @@ export declare function diffWordsWithSpace(oldStr: string, newStr: string, optio
 export declare function diffWordsWithSpace(oldStr: string, newStr: string, options: DiffWordsOptionsNonabortable & CallbackOptionNonabortable<string>): undefined;
 export declare function diffWordsWithSpace(oldStr: string, newStr: string, options: DiffWordsOptionsAbortable): ChangeObject<string>[] | undefined;
 export declare function diffWordsWithSpace(oldStr: string, newStr: string, options?: DiffWordsOptionsNonabortable): ChangeObject<string>[];
-export {};
+
 //# sourceMappingURL=word.d.ts.map

@@ -35,7 +35,7 @@ export default function erlang(Prism) {
       lookbehind: true
     },
     operator: [
-      /[=\/<>:]=|=[:\/]=|\+\+?|--?|[=*\/!]|\b(?:and|andalso|band|bnot|bor|bsl|bsr|bxor|div|not|or|orelse|rem|xor)\b/,
+      /[=/<>:]=|=[:/]=|\+\+?|--?|[=*/!]|\b(?:and|andalso|band|bnot|bor|bsl|bsr|bxor|div|not|or|orelse|rem|xor)\b/,
       {
         // We don't want to match <<
         pattern: /(^|[^<])<(?!<)/,

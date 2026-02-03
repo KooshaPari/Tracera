@@ -1,6 +1,6 @@
 'use strict';
 module.exports = path => {
-	const isExtendedLengthPath = /^\\\\\?\\/.test(path);
+	const isExtendedLengthPath = path.startsWith('\\\\?\\');
 	const hasNonAscii = /[^\u0000-\u0080]+/.test(path); // eslint-disable-line no-control-regex
 
 	if (isExtendedLengthPath || hasNonAscii) {

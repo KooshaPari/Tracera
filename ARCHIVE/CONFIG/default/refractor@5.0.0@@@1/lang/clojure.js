@@ -19,7 +19,7 @@ export default function clojure(Prism) {
     },
     char: /\\\w+/,
     symbol: {
-      pattern: /(^|[\s()\[\]{},])::?[\w*+!?'<>=/.-]+/,
+      pattern: /(^|[\s()[\]{},])::?[\w*+!?'<>=/.-]+/,
       lookbehind: true
     },
     keyword: {
@@ -38,6 +38,6 @@ export default function clojure(Prism) {
       lookbehind: true
     },
     operator: /[#@^`~]/,
-    punctuation: /[{}\[\](),]/
+    punctuation: /[{}[\](),]/
   }
 }

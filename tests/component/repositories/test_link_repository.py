@@ -1,6 +1,5 @@
 import pytest
 
-from tracertm.models.link import Link
 from tracertm.models.project import Project
 from tracertm.repositories.link_repository import LinkRepository
 
@@ -15,7 +14,7 @@ async def test_link_create_and_fetch(async_session):
     repo = LinkRepository(async_session)
     link = await repo.create("proj-1", "a", "b", "implements")
 
-    by_id = await repo.get_by_id(link.id)
+    by_id = await repo.get_by_id(str(link.id))
     assert by_id is not None
     assert by_id.source_item_id == "a"
 

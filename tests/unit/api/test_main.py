@@ -5,9 +5,10 @@ Tests FastAPI application setup, endpoints, middleware, and error handling.
 Coverage target: 80%+ of 59 statements
 """
 
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import AsyncMock, MagicMock, patch
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -37,6 +38,7 @@ def mock_db_connection():
 def client(mock_config_manager, mock_db_connection):
     """Create test client with mocked dependencies."""
     from tracertm.api.main import app
+
     return TestClient(app)
 
 
@@ -134,8 +136,9 @@ class TestDatabaseDependency:
     @pytest.mark.asyncio
     async def test_get_db_no_database_configured(self):
         """Test get_db raises HTTPException when database not configured."""
-        from tracertm.api.main import get_db
         from fastapi import HTTPException
+
+        from tracertm.api.main import get_db
 
         with patch("tracertm.api.main.ConfigManager") as mock_config:
             # Setup config to return None
@@ -159,18 +162,8 @@ class TestItemsEndpoints:
     async def test_list_items_success(self, client):
         """Test listing items returns correct data."""
         mock_items = [
-            MagicMock(
-                id="item-1",
-                title="Test Item 1",
-                view="FEATURE",
-                status="todo"
-            ),
-            MagicMock(
-                id="item-2",
-                title="Test Item 2",
-                view="FEATURE",
-                status="in_progress"
-            )
+            MagicMock(id="item-1", title="Test Item 1", view="FEATURE", status="todo"),
+            MagicMock(id="item-2", title="Test Item 2", view="FEATURE", status="in_progress"),
         ]
 
         with patch("tracertm.repositories.item_repository.ItemRepository") as mock_repo:
@@ -190,9 +183,7 @@ class TestItemsEndpoints:
     @pytest.mark.asyncio
     async def test_list_items_pagination(self, client):
         """Test items list respects skip and limit parameters."""
-        mock_items = [MagicMock(id=f"item-{i}", title=f"Item {i}",
-                                 view="FEATURE", status="todo")
-                      for i in range(10)]
+        mock_items = [MagicMock(id=f"item-{i}", title=f"Item {i}", view="FEATURE", status="todo") for i in range(10)]
 
         with patch("tracertm.repositories.item_repository.ItemRepository") as mock_repo:
             repo_instance = MagicMock()
@@ -219,7 +210,7 @@ class TestItemsEndpoints:
             view="FEATURE",
             status="todo",
             created_at=datetime(2024, 1, 1, 12, 0),
-            updated_at=datetime(2024, 1, 2, 12, 0)
+            updated_at=datetime(2024, 1, 2, 12, 0),
         )
 
         with patch("tracertm.repositories.item_repository.ItemRepository") as mock_repo:
@@ -258,18 +249,8 @@ class TestLinksEndpoints:
     async def test_list_links_success(self, client):
         """Test listing links returns correct data."""
         mock_links = [
-            MagicMock(
-                id="link-1",
-                source_item_id="item-1",
-                target_item_id="item-2",
-                link_type="implements"
-            ),
-            MagicMock(
-                id="link-2",
-                source_item_id="item-2",
-                target_item_id="item-3",
-                link_type="tests"
-            )
+            MagicMock(id="link-1", source_item_id="item-1", target_item_id="item-2", link_type="implements"),
+            MagicMock(id="link-2", source_item_id="item-2", target_item_id="item-3", link_type="tests"),
         ]
 
         with patch("tracertm.repositories.link_repository.LinkRepository") as mock_repo:
@@ -293,10 +274,7 @@ class TestAnalysisEndpoints:
     async def test_impact_analysis_success(self, client):
         """Test impact analysis endpoint."""
         mock_result = MagicMock(
-            root_item_id="item-1",
-            total_affected=5,
-            max_depth_reached=3,
-            affected_items=["item-2", "item-3", "item-4"]
+            root_item_id="item-1", total_affected=5, max_depth_reached=3, affected_items=["item-2", "item-3", "item-4"]
         )
 
         with patch("tracertm.services.impact_analysis_service.ImpactAnalysisService") as mock_service:
@@ -316,10 +294,7 @@ class TestAnalysisEndpoints:
     async def test_cycle_detection_success(self, client):
         """Test cycle detection endpoint."""
         mock_result = MagicMock(
-            has_cycles=True,
-            total_cycles=2,
-            severity="high",
-            affected_items={"item-1", "item-2", "item-3"}
+            has_cycles=True, total_cycles=2, severity="high", affected_items={"item-1", "item-2", "item-3"}
         )
 
         with patch("tracertm.services.cycle_detection_service.CycleDetectionService") as mock_service:
@@ -342,7 +317,7 @@ class TestAnalysisEndpoints:
             exists=True,
             distance=3,
             path=["item-1", "item-2", "item-3", "item-4"],
-            link_types=["implements", "tests", "depends_on"]
+            link_types=["implements", "tests", "depends_on"],
         )
 
         with patch("tracertm.services.shortest_path_service.ShortestPathService") as mock_service:
@@ -350,10 +325,7 @@ class TestAnalysisEndpoints:
             service_instance.find_shortest_path = AsyncMock(return_value=mock_result)
             mock_service.return_value = service_instance
 
-            response = client.get(
-                "/api/v1/analysis/shortest-path"
-                "?project_id=test&source_id=item-1&target_id=item-4"
-            )
+            response = client.get("/api/v1/analysis/shortest-path?project_id=test&source_id=item-1&target_id=item-4")
 
             assert response.status_code == 200
             data = response.json()
@@ -375,9 +347,7 @@ class TestErrorHandling:
         """Test database errors are handled gracefully."""
         with patch("tracertm.repositories.item_repository.ItemRepository") as mock_repo:
             repo_instance = MagicMock()
-            repo_instance.get_by_project = AsyncMock(
-                side_effect=Exception("Database connection failed")
-            )
+            repo_instance.get_by_project = AsyncMock(side_effect=Exception("Database connection failed"))
             mock_repo.return_value = repo_instance
 
             response = client.get("/api/v1/items?project_id=test")

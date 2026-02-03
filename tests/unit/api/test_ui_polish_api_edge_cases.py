@@ -14,15 +14,11 @@ Coverage areas:
 Target: 30-40 edge case tests for API polish
 """
 
-import pytest
-from unittest.mock import AsyncMock, MagicMock, Mock
-import json
-from datetime import datetime, timedelta
-
 
 # =============================================================================
 # Request/Response Edge Cases
 # =============================================================================
+
 
 class TestApiRequestResponseEdgeCases:
     """Test API request/response handling with edge cases."""
@@ -30,7 +26,7 @@ class TestApiRequestResponseEdgeCases:
     def test_request_with_empty_json_body(self):
         """Test sending request with empty JSON object."""
         # Simple test that API client can be instantiated
-        from tracertm.api.sync_client import ApiConfig, ApiClient
+        from tracertm.api.sync_client import ApiClient, ApiConfig
 
         config = ApiConfig(base_url="http://localhost:8000")
         client = ApiClient(config)
@@ -38,7 +34,7 @@ class TestApiRequestResponseEdgeCases:
 
     def test_request_with_null_json_values(self):
         """Test sending request with null values in JSON."""
-        from tracertm.api.sync_client import ApiConfig, ApiClient
+        from tracertm.api.sync_client import ApiClient, ApiConfig
 
         config = ApiConfig(base_url="http://localhost:8000")
         client = ApiClient(config)
@@ -46,7 +42,7 @@ class TestApiRequestResponseEdgeCases:
 
     def test_response_with_extra_unknown_fields(self):
         """Test response containing unknown/unexpected fields."""
-        from tracertm.api.sync_client import ApiConfig, ApiClient
+        from tracertm.api.sync_client import ApiClient, ApiConfig
 
         config = ApiConfig(base_url="http://localhost:8000")
         client = ApiClient(config)
@@ -54,7 +50,7 @@ class TestApiRequestResponseEdgeCases:
 
     def test_response_with_deeply_nested_json(self):
         """Test response with deeply nested JSON structure."""
-        from tracertm.api.sync_client import ApiConfig, ApiClient
+        from tracertm.api.sync_client import ApiClient, ApiConfig
 
         config = ApiConfig(base_url="http://localhost:8000")
         client = ApiClient(config)
@@ -62,7 +58,7 @@ class TestApiRequestResponseEdgeCases:
 
     def test_response_with_very_large_json(self):
         """Test response with very large JSON payload (1MB+)."""
-        from tracertm.api.sync_client import ApiConfig, ApiClient
+        from tracertm.api.sync_client import ApiClient, ApiConfig
 
         config = ApiConfig(base_url="http://localhost:8000")
         client = ApiClient(config)
@@ -70,7 +66,7 @@ class TestApiRequestResponseEdgeCases:
 
     def test_response_with_unicode_characters(self):
         """Test response containing unicode characters."""
-        from tracertm.api.sync_client import ApiConfig, ApiClient
+        from tracertm.api.sync_client import ApiClient, ApiConfig
 
         config = ApiConfig(base_url="http://localhost:8000")
         client = ApiClient(config)
@@ -78,7 +74,7 @@ class TestApiRequestResponseEdgeCases:
 
     def test_response_with_special_characters(self):
         """Test response with special characters in strings."""
-        from tracertm.api.sync_client import ApiConfig, ApiClient
+        from tracertm.api.sync_client import ApiClient, ApiConfig
 
         config = ApiConfig(base_url="http://localhost:8000")
         client = ApiClient(config)
@@ -88,6 +84,7 @@ class TestApiRequestResponseEdgeCases:
 # =============================================================================
 # Error Response Formatting Edge Cases
 # =============================================================================
+
 
 class TestApiErrorResponseEdgeCases:
     """Test API error response formatting."""
@@ -143,12 +140,13 @@ class TestApiErrorResponseEdgeCases:
 # Header Validation Edge Cases
 # =============================================================================
 
+
 class TestApiHeaderValidationEdgeCases:
     """Test API header validation edge cases."""
 
     def test_request_with_missing_token(self):
         """Test request without authentication token."""
-        from tracertm.api.sync_client import ApiConfig, ApiClient
+        from tracertm.api.sync_client import ApiClient, ApiConfig
 
         config = ApiConfig(base_url="http://localhost:8000", token=None)
         client = ApiClient(config)
@@ -156,7 +154,7 @@ class TestApiHeaderValidationEdgeCases:
 
     def test_request_with_very_long_header_value(self):
         """Test request with extremely long header value."""
-        from tracertm.api.sync_client import ApiConfig, ApiClient
+        from tracertm.api.sync_client import ApiClient, ApiConfig
 
         config = ApiConfig(base_url="http://localhost:8000", token="x" * 10000)
         client = ApiClient(config)
@@ -164,7 +162,7 @@ class TestApiHeaderValidationEdgeCases:
 
     def test_request_with_unicode_token(self):
         """Test request with unicode in token."""
-        from tracertm.api.sync_client import ApiConfig, ApiClient
+        from tracertm.api.sync_client import ApiClient, ApiConfig
 
         config = ApiConfig(base_url="http://localhost:8000", token="中文-test-token")
         client = ApiClient(config)
@@ -172,7 +170,7 @@ class TestApiHeaderValidationEdgeCases:
 
     def test_request_with_special_characters_in_token(self):
         """Test request with special characters in token."""
-        from tracertm.api.sync_client import ApiConfig, ApiClient
+        from tracertm.api.sync_client import ApiClient, ApiConfig
 
         config = ApiConfig(base_url="http://localhost:8000", token='token-with-"quotes"-and-special')
         client = ApiClient(config)
@@ -182,6 +180,7 @@ class TestApiHeaderValidationEdgeCases:
 # =============================================================================
 # Configuration Edge Cases
 # =============================================================================
+
 
 class TestApiConfigurationEdgeCases:
     """Test API configuration edge cases."""
@@ -243,6 +242,7 @@ class TestApiConfigurationEdgeCases:
 # Retry Configuration Edge Cases
 # =============================================================================
 
+
 class TestApiRetryConfigurationEdgeCases:
     """Test API retry configuration edge cases."""
 
@@ -271,11 +271,7 @@ class TestApiRetryConfigurationEdgeCases:
         """Test API config with custom backoff settings."""
         from tracertm.api.sync_client import ApiConfig
 
-        config = ApiConfig(
-            base_url="http://localhost:8000",
-            retry_backoff_base=3.0,
-            retry_backoff_max=120.0
-        )
+        config = ApiConfig(base_url="http://localhost:8000", retry_backoff_base=3.0, retry_backoff_max=120.0)
         assert config.retry_backoff_base == 3.0
         assert config.retry_backoff_max == 120.0
 
@@ -283,6 +279,7 @@ class TestApiRetryConfigurationEdgeCases:
 # =============================================================================
 # SSL/TLS Configuration Edge Cases
 # =============================================================================
+
 
 class TestApiSslConfigurationEdgeCases:
     """Test API SSL/TLS configuration edge cases."""
@@ -306,12 +303,13 @@ class TestApiSslConfigurationEdgeCases:
 # Input Validation Boundary Conditions
 # =============================================================================
 
+
 class TestApiInputValidationBoundaryConditions:
     """Test API input validation boundary conditions."""
 
     def test_api_client_instantiation(self):
         """Test basic API client instantiation."""
-        from tracertm.api.sync_client import ApiConfig, ApiClient
+        from tracertm.api.sync_client import ApiClient, ApiConfig
 
         config = ApiConfig(base_url="http://localhost:8000")
         client = ApiClient(config)
@@ -319,7 +317,7 @@ class TestApiInputValidationBoundaryConditions:
 
     def test_api_client_with_none_config(self):
         """Test API client handling."""
-        from tracertm.api.sync_client import ApiConfig, ApiClient
+        from tracertm.api.sync_client import ApiConfig
 
         config = ApiConfig(base_url="http://localhost:8000")
         assert config is not None
@@ -345,32 +343,24 @@ class TestApiInputValidationBoundaryConditions:
 # Response Processing Edge Cases
 # =============================================================================
 
+
 class TestApiResponseProcessingEdgeCases:
     """Test API response processing edge cases."""
 
     def test_api_client_configuration(self):
         """Test API client configuration."""
-        from tracertm.api.sync_client import ApiConfig, ApiClient
+        from tracertm.api.sync_client import ApiClient, ApiConfig
 
-        config = ApiConfig(
-            base_url="http://localhost:8000",
-            token="test-token",
-            timeout=30.0,
-            max_retries=3
-        )
+        config = ApiConfig(base_url="http://localhost:8000", token="test-token", timeout=30.0, max_retries=3)
         client = ApiClient(config)
         assert client is not None
 
     def test_api_client_with_custom_settings(self):
         """Test API client with custom configuration settings."""
-        from tracertm.api.sync_client import ApiConfig, ApiClient
+        from tracertm.api.sync_client import ApiClient, ApiConfig
 
         config = ApiConfig(
-            base_url="http://localhost:8000",
-            timeout=60.0,
-            max_retries=5,
-            retry_backoff_base=2.0,
-            verify_ssl=True
+            base_url="http://localhost:8000", timeout=60.0, max_retries=5, retry_backoff_base=2.0, verify_ssl=True
         )
         client = ApiClient(config)
         assert client is not None
@@ -379,6 +369,7 @@ class TestApiResponseProcessingEdgeCases:
 # =============================================================================
 # Authentication Error Handling Edge Cases
 # =============================================================================
+
 
 class TestApiAuthenticationErrorEdgeCases:
     """Test API authentication error handling."""
@@ -409,6 +400,7 @@ class TestApiAuthenticationErrorEdgeCases:
 # ConflictError Edge Cases
 # =============================================================================
 
+
 class TestApiConflictErrorEdgeCases:
     """Test API conflict error handling."""
 
@@ -433,6 +425,7 @@ class TestApiConflictErrorEdgeCases:
 # =============================================================================
 # Network Error Handling Edge Cases
 # =============================================================================
+
 
 class TestApiNetworkErrorEdgeCases:
     """Test API network error handling."""

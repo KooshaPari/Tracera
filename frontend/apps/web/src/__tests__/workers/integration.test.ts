@@ -296,23 +296,23 @@ describe("Search Index Worker Integration", () => {
 		const documents = [
 			{
 				fields: {
-					title: "Introduction to React",
 					content: "React is a JavaScript library for building user interfaces",
+					title: "Introduction to React",
 				},
 				id: "1",
 			},
 			{
 				fields: {
-					title: "Vue.js Basics",
 					content:
 						"Vue is a progressive framework for building user interfaces",
+					title: "Vue.js Basics",
 				},
 				id: "2",
 			},
 			{
 				fields: {
-					title: "Angular Guide",
 					content: "Angular is a platform for building web applications",
+					title: "Angular Guide",
 				},
 				id: "3",
 			},
@@ -370,7 +370,7 @@ describe("Search Index Worker Integration", () => {
 		index = await api.updateIndex(index, [
 			{
 				action: "add",
-				document: { id: "3", fields: { text: "Document 3" } },
+				document: { fields: { text: "Document 3" }, id: "3" },
 				id: "3",
 			},
 		]);
@@ -388,8 +388,8 @@ describe("Search Index Worker Integration", () => {
 	it("should handle large index efficiently", async () => {
 		const documents = Array.from({ length: 5000 }, (_, i) => ({
 			fields: {
-				title: `Document ${i}`,
 				content: `This is the content of document number ${i} with some random text`,
+				title: `Document ${i}`,
 			},
 			id: `doc-${i}`,
 		}));

@@ -95,4 +95,4 @@ export declare class Radar extends PureComponent<Props, State> {
     renderPolygon(): React.JSX.Element;
     render(): React.JSX.Element;
 }
-export {};
+

@@ -59,4 +59,4 @@ const b: Alphanumeric = '#'; // Invalid
 */
 export type Alphanumeric = LowercaseLetter | UppercaseLetter | DigitCharacter;
 
-export {};
+

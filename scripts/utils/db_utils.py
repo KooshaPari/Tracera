@@ -9,13 +9,13 @@ and data management during development.
 import os
 import subprocess
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import Any
 
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
 
-def get_db_config() -> Dict[str, Any]:
+def get_db_config() -> dict[str, Any]:
     """Get database configuration from environment."""
     db_url = os.getenv("DATABASE_URL", "postgresql://tracertm:password@localhost:5432/tracertm")
 
@@ -61,7 +61,7 @@ def get_connection(autocommit: bool = False):
 def execute_sql_file(filepath: Path) -> bool:
     """Execute SQL file."""
     try:
-        with open(filepath, "r") as f:
+        with Path(filepath).open() as f:
             sql = f.read()
 
         conn = get_connection(autocommit=True)
@@ -80,10 +80,7 @@ def table_exists(table_name: str) -> bool:
     try:
         conn = get_connection()
         cursor = conn.cursor()
-        cursor.execute(
-            "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = %s)",
-            (table_name,)
-        )
+        cursor.execute("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = %s)", (table_name,))
         exists = cursor.fetchone()[0]
         cursor.close()
         conn.close()
@@ -92,7 +89,7 @@ def table_exists(table_name: str) -> bool:
         return False
 
 
-def get_table_count(table_name: str) -> Optional[int]:
+def get_table_count(table_name: str) -> int | None:
     """Get row count for a table."""
     try:
         conn = get_connection()
@@ -129,55 +126,38 @@ def run_migrations(direction: str = "up") -> bool:
         backend_dir = Path(__file__).parent.parent.parent / "backend"
 
         if direction == "up":
-            result = subprocess.run(
-                ["alembic", "upgrade", "head"],
-                cwd=backend_dir,
-                capture_output=True,
-                text=True
-            )
+            result = subprocess.run(["alembic", "upgrade", "head"], cwd=backend_dir, capture_output=True, text=True)
         elif direction == "down":
-            result = subprocess.run(
-                ["alembic", "downgrade", "-1"],
-                cwd=backend_dir,
-                capture_output=True,
-                text=True
-            )
+            result = subprocess.run(["alembic", "downgrade", "-1"], cwd=backend_dir, capture_output=True, text=True)
         else:
             print(f"Invalid direction: {direction}")
             return False
 
         if result.returncode == 0:
             return True
-        else:
-            print(f"Migration failed: {result.stderr}")
-            return False
+        print(f"Migration failed: {result.stderr}")
+        return False
 
     except Exception as e:
         print(f"Error running migrations: {e}")
         return False
 
 
-def get_migration_status() -> Optional[str]:
+def get_migration_status() -> str | None:
     """Get current migration status."""
     try:
         backend_dir = Path(__file__).parent.parent.parent / "backend"
-        result = subprocess.run(
-            ["alembic", "current"],
-            cwd=backend_dir,
-            capture_output=True,
-            text=True
-        )
+        result = subprocess.run(["alembic", "current"], cwd=backend_dir, capture_output=True, text=True)
 
         if result.returncode == 0:
             return result.stdout.strip()
-        else:
-            return None
+        return None
 
     except Exception:
         return None
 
 
-def backup_database(backup_dir: Optional[Path] = None) -> Optional[Path]:
+def backup_database(backup_dir: Path | None = None) -> Path | None:
     """Create database backup using pg_dump."""
     try:
         if backup_dir is None:
@@ -196,22 +176,26 @@ def backup_database(backup_dir: Optional[Path] = None) -> Optional[Path]:
         result = subprocess.run(
             [
                 "pg_dump",
-                "-h", config["host"],
-                "-p", str(config["port"]),
-                "-U", config["user"],
-                "-d", config["dbname"],
-                "-f", str(backup_file),
+                "-h",
+                config["host"],
+                "-p",
+                str(config["port"]),
+                "-U",
+                config["user"],
+                "-d",
+                config["dbname"],
+                "-f",
+                str(backup_file),
             ],
             env=env,
             capture_output=True,
-            text=True
+            text=True,
         )
 
         if result.returncode == 0:
             return backup_file
-        else:
-            print(f"Backup failed: {result.stderr}")
-            return None
+        print(f"Backup failed: {result.stderr}")
+        return None
 
     except Exception as e:
         print(f"Error creating backup: {e}")
@@ -230,22 +214,26 @@ def restore_database(backup_file: Path) -> bool:
         result = subprocess.run(
             [
                 "psql",
-                "-h", config["host"],
-                "-p", str(config["port"]),
-                "-U", config["user"],
-                "-d", config["dbname"],
-                "-f", str(backup_file),
+                "-h",
+                config["host"],
+                "-p",
+                str(config["port"]),
+                "-U",
+                config["user"],
+                "-d",
+                config["dbname"],
+                "-f",
+                str(backup_file),
             ],
             env=env,
             capture_output=True,
-            text=True
+            text=True,
         )
 
         if result.returncode == 0:
             return True
-        else:
-            print(f"Restore failed: {result.stderr}")
-            return False
+        print(f"Restore failed: {result.stderr}")
+        return False
 
     except Exception as e:
         print(f"Error restoring database: {e}")

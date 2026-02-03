@@ -20,8 +20,6 @@ except ImportError:
 class RedisUnavailableError(RuntimeError):
     """Raised when Redis is required but unavailable. Fail clearly; do not degrade silently."""
 
-    pass
-
 
 @dataclass
 class CacheStats:
@@ -133,14 +131,15 @@ class CacheService:
         key_parts = [f"{k}={v}" for k, v in sorted(kwargs.items()) if v is not None]
         key_str = f"{prefix}:" + ":".join(key_parts) if key_parts else prefix
 
-        # Hash for consistent key length
-        key_hash = hashlib.md5(key_str.encode()).hexdigest()
+        # Hash for consistent key length (non-cryptographic use)
+        key_hash = hashlib.sha256(str(key_str).encode()).hexdigest()[:32]
         return f"tracertm:{prefix}:{key_hash}"
 
     def _get_ttl(self, cache_type: str) -> int:
         """Get TTL for cache type."""
         config = CACHE_CONFIG.get(cache_type, {"ttl": 300})
-        return config["ttl"]
+        ttl = config.get("ttl", 300)
+        return int(ttl) if ttl is not None else 300
 
     async def get(self, key: str) -> Any | None:
         """
@@ -231,9 +230,7 @@ class CacheService:
         """
         try:
             pattern = f"tracertm:{prefix}:*"
-            keys = []
-            async for key in self.redis_client.scan_iter(pattern):
-                keys.append(key)
+            keys = [k async for k in self.redis_client.scan_iter(pattern)]
 
             if keys:
                 deleted: int = await self.redis_client.delete(*keys)
@@ -332,7 +329,7 @@ async def cached_get(
     return result
 
 
-@lru_cache()
+@lru_cache
 def get_cache_service() -> CacheService:
     """Get singleton CacheService for dependency injection."""
     return CacheService.get_instance()

@@ -34,7 +34,7 @@ export function parsePatch(uniDiff) {
             if ((/^(Index:\s|diff\s|---\s|\+\+\+\s|===================================================================)/).test(line)) {
                 break;
             }
-            else if ((/^@@/).test(line)) {
+            else if (line.startsWith('@@')) {
                 index.hunks.push(parseHunk());
             }
             else if (line) {

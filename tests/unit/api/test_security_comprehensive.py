@@ -16,13 +16,17 @@ Coverage targets:
 - Multi-factor authentication scenarios
 """
 
-import json
-import hmac
 import hashlib
-from datetime import datetime, timedelta
-from unittest.mock import AsyncMock, MagicMock, patch
+import hmac
+import json
+import logging
+from datetime import UTC, datetime, timedelta, timezone
+from unittest.mock import MagicMock, patch
+
 import pytest
 from fastapi.testclient import TestClient
+
+logger = logging.getLogger(__name__)
 
 
 @pytest.fixture
@@ -68,7 +72,7 @@ class TestAuthenticationFlows:
         with patch("tracertm.api.main.verify_token") as mock_verify:
             mock_verify.return_value = {
                 "sub": "user123",
-                "exp": (datetime.utcnow() + timedelta(hours=1)).timestamp(),
+                "exp": (datetime.now(UTC) + timedelta(hours=1)).timestamp(),
             }
 
             response = client.get("/health")
@@ -90,11 +94,11 @@ class TestAuthenticationFlows:
 
             # No Authorization header
             try:
-                response = client.get("/api/v1/items", params={"project_id": "test"})
+                resp = client.get("/api/v1/items", params={"project_id": "test"})
                 # Should not have successful response when auth is required
-                assert response.status_code in [401, 403] or "auth" in str(response)
-            except Exception:
-                pass  # Expected behavior
+                assert resp.status_code in [401, 403] or "auth" in str(resp)
+            except Exception as e:
+                logger.debug("Expected in test: %s", e)
 
     def test_jwt_authentication_invalid_format(self):
         """Test authentication failure with invalid token format."""
@@ -108,15 +112,17 @@ class TestAuthenticationFlows:
 
             try:
                 client.get("/api/v1/items", params={"project_id": "test"}, headers=headers)
-            except Exception:
-                pass  # Expected behavior
+            except Exception as e:
+                logger.debug("Expected in test: %s", e)
 
     def test_jwt_authentication_wrong_secret(self):
         """Test authentication failure when token was signed with wrong secret."""
         from tracertm.api.main import app
 
         client = TestClient(app)
-        headers = {"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyMTIzIn0.wrong_signature"}
+        headers = {
+            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyMTIzIn0.wrong_signature"
+        }
 
         with patch("tracertm.api.main.verify_token") as mock_verify:
             mock_verify.side_effect = ValueError("Invalid signature")
@@ -249,7 +255,7 @@ class TestTokenValidation:
         with patch("tracertm.api.main.verify_token") as mock_verify:
             mock_verify.return_value = {
                 "sub": "user123",
-                "exp": (datetime.utcnow() + timedelta(hours=1)).timestamp(),
+                "exp": (datetime.now(UTC) + timedelta(hours=1)).timestamp(),
             }
 
             headers = {"Authorization": "Bearer valid_token"}
@@ -294,9 +300,9 @@ class TestAuthorizationControl:
                 headers = {"Authorization": "Bearer valid_token"}
                 try:
                     # Regular user should not be able to delete projects
-                    response = client.delete("/api/v1/projects/test_id", headers=headers)
-                except Exception:
-                    pass  # Expected behavior
+                    client.delete("/api/v1/projects/test_id", headers=headers)
+                except Exception as e:
+                    logger.debug("Expected in test: %s", e)
 
     def test_guest_role_read_only_access(self):
         """Test that guest role has read-only access."""
@@ -313,21 +319,17 @@ class TestAuthorizationControl:
             with patch("tracertm.api.main.check_permission") as mock_perm:
                 mock_perm.return_value = True
                 try:
-                    response = client.get("/api/v1/projects", headers=headers)
-                except Exception:
-                    pass  # May fail for other reasons
+                    client.get("/api/v1/projects", headers=headers)
+                except Exception as e:
+                    logger.debug("May fail for other reasons: %s", e)
 
             # Guest cannot write
             with patch("tracertm.api.main.check_permission") as mock_perm:
                 mock_perm.return_value = False
                 try:
-                    response = client.post(
-                        "/api/v1/projects",
-                        json={"name": "New Project"},
-                        headers=headers
-                    )
-                except Exception:
-                    pass  # Expected behavior
+                    client.post("/api/v1/projects", json={"name": "New Project"}, headers=headers)
+                except Exception as e:
+                    logger.debug("Expected in test: %s", e)
 
     def test_resource_ownership_check(self):
         """Test that users can only access their own resources."""
@@ -343,9 +345,9 @@ class TestAuthorizationControl:
 
                 headers = {"Authorization": "Bearer valid_token"}
                 try:
-                    response = client.get("/api/v1/projects/other_user_project", headers=headers)
-                except Exception:
-                    pass  # Expected behavior
+                    client.get("/api/v1/projects/other_user_project", headers=headers)
+                except Exception as e:
+                    logger.debug("Expected in test: %s", e)
 
     def test_permission_based_access_control(self):
         """Test permission-based access control."""
@@ -354,10 +356,7 @@ class TestAuthorizationControl:
         client = TestClient(app)
 
         with patch("tracertm.api.main.verify_token") as mock_verify:
-            mock_verify.return_value = {
-                "sub": "user123",
-                "permissions": ["read:projects", "write:projects"]
-            }
+            mock_verify.return_value = {"sub": "user123", "permissions": ["read:projects", "write:projects"]}
 
             with patch("tracertm.api.main.has_permission") as mock_has_perm:
                 # User can read
@@ -365,9 +364,9 @@ class TestAuthorizationControl:
                 headers = {"Authorization": "Bearer valid_token"}
 
                 try:
-                    response = client.get("/api/v1/projects", headers=headers)
-                except Exception:
-                    pass  # May fail for other reasons
+                    client.get("/api/v1/projects", headers=headers)
+                except Exception as e:
+                    logger.debug("May fail for other reasons: %s", e)
 
 
 class TestRateLimiting:
@@ -379,7 +378,7 @@ class TestRateLimiting:
 
         client = TestClient(app)
 
-        with patch("tracertm.api.main.RateLimiter") as mock_limiter:
+        with patch("tracertm.api.main.RateLimiter") as _:
             limiter = MagicMock()
             call_count = 0
 
@@ -398,12 +397,12 @@ class TestRateLimiting:
                 headers = {"Authorization": "Bearer valid_token"}
 
                 # Should allow requests until limit
-                for i in range(12):
+                for _i in range(12):
                     try:
                         client.get("/api/v1/projects", headers=headers)
                     except Exception as e:
                         if "429" in str(e) or "rate limit" in str(e).lower():
-                            assert i >= 10  # Should block after 10 requests
+                            assert _i >= 10  # Should block after 10 requests
                             break
 
     def test_rate_limit_per_ip_anonymous(self):
@@ -412,20 +411,20 @@ class TestRateLimiting:
 
         client = TestClient(app)
 
-        with patch("tracertm.api.main.RateLimiter") as mock_limiter:
+        with patch("tracertm.api.main.RateLimiter") as _:
             limiter = MagicMock()
             limiter.is_allowed.return_value = True
             limiter.get_remaining.return_value = 5
 
             # Should apply lower limit for anonymous users
             try:
-                for i in range(10):
-                    response = client.get("/health")
-                    remaining = response.headers.get("X-Rate-Limit-Remaining", 100)
+                for _i in range(10):
+                    resp = client.get("/health")
+                    remaining = resp.headers.get("X-Rate-Limit-Remaining", 100)
                     if remaining == 0:
                         break
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug("Expected in test: %s", e)
 
     def test_rate_limit_headers(self):
         """Test rate limit headers in response."""
@@ -433,12 +432,12 @@ class TestRateLimiting:
 
         client = TestClient(app)
 
-        with patch("tracertm.api.main.RateLimiter") as mock_limiter:
+        with patch("tracertm.api.main.RateLimiter") as _:
             limiter = MagicMock()
             limiter.is_allowed.return_value = True
             limiter.get_remaining.return_value = 99
             limiter.get_limit.return_value = 100
-            limiter.get_reset_time.return_value = datetime.utcnow() + timedelta(seconds=60)
+            limiter.get_reset_time.return_value = datetime.now(UTC) + timedelta(seconds=60)
 
             with patch("tracertm.api.main.verify_token") as mock_verify:
                 mock_verify.return_value = {"sub": "user123"}
@@ -455,13 +454,13 @@ class TestRateLimiting:
 
         client = TestClient(app)
 
-        with patch("tracertm.api.main.RateLimiter") as mock_limiter:
+        with patch("tracertm.api.main.RateLimiter") as _:
             limiter = MagicMock()
 
             request_times = []
 
             def check_limit(user_id, *args, **kwargs):
-                request_times.append(datetime.utcnow())
+                request_times.append(datetime.now(UTC))
                 # Reset after 60 seconds
                 if len(request_times) > 1:
                     elapsed = (request_times[-1] - request_times[0]).total_seconds()
@@ -476,11 +475,11 @@ class TestRateLimiting:
 
                 headers = {"Authorization": "Bearer valid_token"}
 
-                for i in range(5):
+                for _i in range(5):
                     try:
                         client.get("/api/v1/projects", headers=headers)
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        logger.debug("Expected in test: %s", e)
 
     def test_rate_limit_premium_tier(self):
         """Test higher rate limits for premium tier users."""
@@ -488,12 +487,12 @@ class TestRateLimiting:
 
         client = TestClient(app)
 
-        with patch("tracertm.api.main.RateLimiter") as mock_limiter:
+        with patch("tracertm.api.main.RateLimiter") as _:
             limiter = MagicMock()
 
             def check_limit(user_id, tier=None, *args, **kwargs):
                 # Premium users get higher limit
-                return tier == "premium" and 10000 or 100
+                return (tier == "premium" and 10000) or 100
 
             limiter.get_limit.side_effect = check_limit
             limiter.is_allowed.return_value = True
@@ -501,7 +500,6 @@ class TestRateLimiting:
             with patch("tracertm.api.main.verify_token") as mock_verify:
                 mock_verify.return_value = {"sub": "premium_user", "tier": "premium"}
 
-                headers = {"Authorization": "Bearer valid_token"}
                 response = client.get("/health")
                 assert response.status_code == 200
 
@@ -516,24 +514,20 @@ class TestWebhookSecurity:
         client = TestClient(app)
 
         payload = json.dumps({"event": "item.created", "data": {"id": "item123"}})
-        signature = hmac.new(
-            mock_webhook_secret.encode(),
-            payload.encode(),
-            hashlib.sha256
-        ).hexdigest()
+        signature = hmac.new(mock_webhook_secret.encode(), payload.encode(), hashlib.sha256).hexdigest()
 
         headers = {
             "X-Webhook-Signature": signature,
-            "X-Webhook-Timestamp": str(int(datetime.utcnow().timestamp())),
+            "X-Webhook-Timestamp": str(int(datetime.now(UTC).timestamp())),
         }
 
         with patch("tracertm.api.main.verify_webhook_signature") as mock_verify:
             mock_verify.return_value = True
 
             try:
-                response = client.post("/api/v1/webhooks/events", json=json.loads(payload), headers=headers)
-            except Exception:
-                pass  # Endpoint may not exist
+                client.post("/api/v1/webhooks/events", json=json.loads(payload), headers=headers)
+            except Exception as e:
+                logger.debug("Endpoint may not exist: %s", e)
 
     def test_webhook_signature_verification_failure(self, mock_webhook_secret):
         """Test webhook signature verification failure."""
@@ -546,16 +540,16 @@ class TestWebhookSecurity:
 
         headers = {
             "X-Webhook-Signature": bad_signature,
-            "X-Webhook-Timestamp": str(int(datetime.utcnow().timestamp())),
+            "X-Webhook-Timestamp": str(int(datetime.now(UTC).timestamp())),
         }
 
         with patch("tracertm.api.main.verify_webhook_signature") as mock_verify:
             mock_verify.side_effect = ValueError("Signature verification failed")
 
             try:
-                response = client.post("/api/v1/webhooks/events", json=json.loads(payload), headers=headers)
-            except Exception:
-                pass  # Expected behavior
+                client.post("/api/v1/webhooks/events", json=json.loads(payload), headers=headers)
+            except Exception as e:
+                logger.debug("Expected in test: %s", e)
 
     def test_webhook_timestamp_validation(self, mock_webhook_secret):
         """Test webhook timestamp validation to prevent replay attacks."""
@@ -565,13 +559,9 @@ class TestWebhookSecurity:
 
         payload = json.dumps({"event": "item.created"})
         # Use old timestamp (older than 5 minutes)
-        old_timestamp = int((datetime.utcnow() - timedelta(minutes=10)).timestamp())
+        old_timestamp = int((datetime.now(UTC) - timedelta(minutes=10)).timestamp())
 
-        signature = hmac.new(
-            mock_webhook_secret.encode(),
-            payload.encode(),
-            hashlib.sha256
-        ).hexdigest()
+        signature = hmac.new(mock_webhook_secret.encode(), payload.encode(), hashlib.sha256).hexdigest()
 
         headers = {
             "X-Webhook-Signature": signature,
@@ -582,9 +572,9 @@ class TestWebhookSecurity:
             mock_verify.side_effect = ValueError("Timestamp too old (replay attack)")
 
             try:
-                response = client.post("/api/v1/webhooks/events", json=json.loads(payload), headers=headers)
-            except Exception:
-                pass  # Expected behavior
+                client.post("/api/v1/webhooks/events", json=json.loads(payload), headers=headers)
+            except Exception as e:
+                logger.debug("Expected in test: %s", e)
 
     def test_webhook_missing_signature(self):
         """Test webhook request without signature."""
@@ -595,16 +585,16 @@ class TestWebhookSecurity:
         payload = json.dumps({"event": "item.created"})
 
         headers = {
-            "X-Webhook-Timestamp": str(int(datetime.utcnow().timestamp())),
+            "X-Webhook-Timestamp": str(int(datetime.now(UTC).timestamp())),
             # Missing X-Webhook-Signature
         }
 
         try:
-            response = client.post("/api/v1/webhooks/events", json=json.loads(payload), headers=headers)
+            resp = client.post("/api/v1/webhooks/events", json=json.loads(payload), headers=headers)
             # Should require signature
-            assert response.status_code != 200 or "signature" not in str(response)
-        except Exception:
-            pass  # Expected behavior
+            assert resp.status_code != 200 or "signature" not in str(resp)
+        except Exception as e:
+            logger.debug("Expected in test: %s", e)
 
 
 class TestCORSAndSecurityHeaders:
@@ -690,11 +680,11 @@ class TestSessionManagement:
             mock_create.return_value = {
                 "session_id": "sess_1234567890",
                 "user_id": "user123",
-                "created_at": datetime.utcnow().isoformat(),
-                "expires_at": (datetime.utcnow() + timedelta(hours=24)).isoformat(),
+                "created_at": datetime.now(UTC).isoformat(),
+                "expires_at": (datetime.now(UTC) + timedelta(hours=24)).isoformat(),
             }
 
-            response = client.post("/api/auth/login", json={"username": "user", "password": "pass"})
+            client.post("/api/auth/login", json={"username": "user", "password": "pass"})
 
     def test_session_expiration(self):
         """Test session expiration."""
@@ -708,9 +698,9 @@ class TestSessionManagement:
             headers = {"Cookie": "session_id=expired_session"}
 
             try:
-                response = client.get("/api/v1/projects", headers=headers)
-            except Exception:
-                pass  # Expected behavior
+                client.get("/api/v1/projects", headers=headers)
+            except Exception as e:
+                logger.debug("Expected in test: %s", e)
 
     def test_session_invalidation_on_logout(self):
         """Test session invalidation on logout."""
@@ -724,9 +714,9 @@ class TestSessionManagement:
             headers = {"Cookie": "session_id=valid_session"}
 
             try:
-                response = client.post("/api/auth/logout", headers=headers)
-            except Exception:
-                pass  # May fail if endpoint not implemented
+                client.post("/api/auth/logout", headers=headers)
+            except Exception as e:
+                logger.debug("May fail if endpoint not implemented: %s", e)
 
     def test_session_fixation_protection(self):
         """Test protection against session fixation attacks."""
@@ -734,14 +724,11 @@ class TestSessionManagement:
 
         client = TestClient(app)
 
-        # Create session before login
-        before_session_id = "predefined_session_id"
-
         with patch("tracertm.api.main.create_session") as mock_create:
             mock_create.return_value = {"session_id": "new_session_id"}
 
             # Session ID should change after login
-            response = client.post("/api/auth/login", json={"username": "user", "password": "pass"})
+            client.post("/api/auth/login", json={"username": "user", "password": "pass"})
 
 
 class TestInputValidationSecurity:
@@ -761,15 +748,11 @@ class TestInputValidationSecurity:
             headers = {"Authorization": "Bearer valid_token"}
 
             try:
-                response = client.get(
-                    "/api/v1/projects",
-                    params={"search": malicious_input},
-                    headers=headers
-                )
+                resp = client.get("/api/v1/projects", params={"search": malicious_input}, headers=headers)
                 # Should not execute SQL injection
-                assert response.status_code in [200, 400]
-            except Exception:
-                pass
+                assert resp.status_code in [200, 400]
+            except Exception as e:
+                logger.debug("Expected in test: %s", e)
 
     def test_xss_prevention(self):
         """Test prevention of Cross-Site Scripting attacks."""
@@ -785,15 +768,11 @@ class TestInputValidationSecurity:
             headers = {"Authorization": "Bearer valid_token"}
 
             try:
-                response = client.post(
-                    "/api/v1/projects",
-                    json={"name": malicious_input},
-                    headers=headers
-                )
+                resp = client.post("/api/v1/projects", json={"name": malicious_input}, headers=headers)
                 # Response should not contain unescaped script
-                assert "<script>" not in response.text or response.status_code != 200
-            except Exception:
-                pass
+                assert "<script>" not in resp.text or resp.status_code != 200
+            except Exception as e:
+                logger.debug("Expected in test: %s", e)
 
     def test_csrf_token_validation(self):
         """Test CSRF token validation."""
@@ -805,13 +784,9 @@ class TestInputValidationSecurity:
             mock_verify.side_effect = ValueError("Invalid CSRF token")
 
             try:
-                response = client.post(
-                    "/api/v1/projects",
-                    json={"name": "New Project"},
-                    headers={"X-CSRF-Token": "invalid_token"}
-                )
-            except Exception:
-                pass  # Expected behavior
+                client.post("/api/v1/projects", json={"name": "New Project"}, headers={"X-CSRF-Token": "invalid_token"})
+            except Exception as e:
+                logger.debug("Expected in test: %s", e)
 
 
 class TestDataEncryption:
@@ -827,14 +802,11 @@ class TestDataEncryption:
             mock_hash.return_value = "$2b$12$hashed_password"
 
             try:
-                response = client.post(
-                    "/api/auth/register",
-                    json={"username": "user", "password": "plaintext_pass"}
-                )
+                client.post("/api/auth/register", json={"username": "user", "password": "plaintext_pass"})
                 # Password should be hashed, not stored plaintext
                 assert mock_hash.called
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug("Expected in test: %s", e)
 
     def test_sensitive_data_not_logged(self):
         """Test that sensitive data is not logged."""
@@ -842,16 +814,16 @@ class TestDataEncryption:
 
         client = TestClient(app)
 
-        with patch("tracertm.logging_config.logger") as mock_logger:
+        with patch("tracertm.logging_config.logger") as mock_log:
             headers = {"Authorization": "Bearer secret_token"}
 
             try:
-                response = client.get("/api/v1/projects", headers=headers)
+                client.get("/api/v1/projects", headers=headers)
                 # Logs should not contain the actual token
-                for call in mock_logger.method_calls:
+                for call in mock_log.method_calls:
                     assert "secret_token" not in str(call)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug("Expected in test: %s", e)
 
 
 class TestMultiFactorAuthentication:
@@ -872,16 +844,12 @@ class TestMultiFactorAuthentication:
                 headers = {"Authorization": "Bearer valid_token"}
 
                 try:
-                    response = client.post(
-                        "/api/v1/projects",
-                        json={"name": "New Project"},
-                        headers=headers
-                    )
+                    response = client.post("/api/v1/projects", json={"name": "New Project"}, headers=headers)
                     # Should require MFA
                     if response.status_code == 200:
-                        assert False, "Should require MFA"
-                except Exception:
-                    pass
+                        pytest.fail("Should require MFA")
+                except Exception as e:
+                    logger.debug("Expected in test: %s", e)
 
     def test_mfa_verification_code_validation(self):
         """Test MFA verification code validation."""
@@ -893,12 +861,9 @@ class TestMultiFactorAuthentication:
             mock_verify.side_effect = ValueError("Invalid MFA code")
 
             try:
-                response = client.post(
-                    "/api/auth/mfa/verify",
-                    json={"mfa_code": "000000"}
-                )
-            except Exception:
-                pass  # Expected behavior
+                client.post("/api/auth/mfa/verify", json={"mfa_code": "000000"})
+            except Exception as e:
+                logger.debug("Expected in test: %s", e)
 
     def test_mfa_code_expiration(self):
         """Test MFA code expiration."""
@@ -910,12 +875,9 @@ class TestMultiFactorAuthentication:
             mock_verify.side_effect = ValueError("MFA code expired")
 
             try:
-                response = client.post(
-                    "/api/auth/mfa/verify",
-                    json={"mfa_code": "123456"}
-                )
-            except Exception:
-                pass  # Expected behavior
+                client.post("/api/auth/mfa/verify", json={"mfa_code": "123456"})
+            except Exception as e:
+                logger.debug("Expected in test: %s", e)
 
 
 class TestErrorHandlingSecurity:
@@ -928,12 +890,12 @@ class TestErrorHandlingSecurity:
         client = TestClient(app)
 
         try:
-            response = client.get("/api/v1/projects/nonexistent")
+            resp = client.get("/api/v1/projects/nonexistent")
             # Should not reveal database details or internal errors
-            assert "database" not in response.text.lower()
-            assert "traceback" not in response.text.lower()
-        except Exception:
-            pass
+            assert "database" not in resp.text.lower()
+            assert "traceback" not in resp.text.lower()
+        except Exception as e:
+            logger.debug("Expected in test: %s", e)
 
     def test_auth_failure_generic_message(self):
         """Test that auth failures return generic messages."""
@@ -945,16 +907,13 @@ class TestErrorHandlingSecurity:
             mock_verify.side_effect = ValueError("Invalid token")
 
             try:
-                response = client.get(
-                    "/api/v1/projects",
-                    headers={"Authorization": "Bearer invalid"}
-                )
+                resp = client.get("/api/v1/projects", headers={"Authorization": "Bearer invalid"})
                 # Error message should be generic
-                if response.status_code == 401:
-                    error_text = response.text.lower()
+                if resp.status_code == 401:
+                    error_text = resp.text.lower()
                     assert "password" not in error_text or "user" in error_text
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug("Expected in test: %s", e)
 
 
 class TestLoggingAndAuditing:
@@ -966,17 +925,13 @@ class TestLoggingAndAuditing:
 
         client = TestClient(app)
 
-        with patch("tracertm.logging_config.logger") as mock_logger:
-            with patch("tracertm.api.main.verify_token") as mock_verify:
-                mock_verify.side_effect = ValueError("Invalid token")
+        with patch("tracertm.logging_config.logger") as _, patch("tracertm.api.main.verify_token") as mock_verify:
+            mock_verify.side_effect = ValueError("Invalid token")
 
-                try:
-                    response = client.get(
-                        "/api/v1/projects",
-                        headers={"Authorization": "Bearer invalid"}
-                    )
-                except Exception:
-                    pass
+            try:
+                client.get("/api/v1/projects", headers={"Authorization": "Bearer invalid"})
+            except Exception as e:
+                logger.debug("Expected in test: %s", e)
 
     def test_unauthorized_access_logged(self):
         """Test that unauthorized access attempts are logged."""
@@ -984,20 +939,18 @@ class TestLoggingAndAuditing:
 
         client = TestClient(app)
 
-        with patch("tracertm.logging_config.logger") as mock_logger:
-            with patch("tracertm.api.main.verify_token") as mock_verify:
-                mock_verify.return_value = {"sub": "user123", "role": "user"}
+        with (
+            patch("tracertm.logging_config.logger") as _,
+            patch("tracertm.api.main.verify_token") as mock_verify,
+            patch("tracertm.api.main.check_permission") as mock_perm,
+        ):
+            mock_verify.return_value = {"sub": "user123", "role": "user"}
+            mock_perm.return_value = False
 
-                with patch("tracertm.api.main.check_permission") as mock_perm:
-                    mock_perm.return_value = False
-
-                    try:
-                        response = client.delete(
-                            "/api/v1/projects/test",
-                            headers={"Authorization": "Bearer valid_token"}
-                        )
-                    except Exception:
-                        pass
+            try:
+                client.delete("/api/v1/projects/test", headers={"Authorization": "Bearer valid_token"})
+            except Exception as e:
+                logger.debug("Expected in test: %s", e)
 
     def test_sensitive_operations_logged(self):
         """Test that sensitive operations are logged."""
@@ -1005,16 +958,15 @@ class TestLoggingAndAuditing:
 
         client = TestClient(app)
 
-        with patch("tracertm.logging_config.logger") as mock_logger:
-            with patch("tracertm.api.main.verify_token") as mock_verify:
-                mock_verify.return_value = {"sub": "user123"}
+        with patch("tracertm.logging_config.logger") as _, patch("tracertm.api.main.verify_token") as mock_verify:
+            mock_verify.return_value = {"sub": "user123"}
 
-                try:
-                    response = client.post(
-                        "/api/v1/projects",
-                        json={"name": "New Project"},
-                        headers={"Authorization": "Bearer valid_token"}
-                    )
-                    # Should log the operation
-                except Exception:
-                    pass
+            try:
+                client.post(
+                    "/api/v1/projects",
+                    json={"name": "New Project"},
+                    headers={"Authorization": "Bearer valid_token"},
+                )
+                # Should log the operation
+            except Exception as e:
+                logger.debug("Expected in test: %s", e)

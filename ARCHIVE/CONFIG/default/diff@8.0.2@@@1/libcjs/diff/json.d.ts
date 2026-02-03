@@ -20,5 +20,5 @@ export declare function diffJson(oldStr: string | object, newStr: string | objec
 export declare function diffJson(oldStr: string | object, newStr: string | object, options: DiffJsonOptionsAbortable): ChangeObject<string>[] | undefined;
 export declare function diffJson(oldStr: string | object, newStr: string | object, options?: DiffJsonOptionsNonabortable): ChangeObject<string>[];
 export declare function canonicalize(obj: any, stack: Array<any> | null, replacementStack: Array<any> | null, replacer: (k: string, v: any) => any, key?: string): any;
-export {};
+
 //# sourceMappingURL=json.d.ts.map

@@ -218,13 +218,13 @@ async function optimizeAssets(): Promise<void> {
       {
         images: Object.fromEntries(result.images),
         summary: {
-          totalFiles: svgFiles.length + imageFiles.length,
-          svgFiles: result.svgs.size,
           imageFiles: result.images.size,
-          originalSize: result.totalOriginalSize,
           optimizedSize: result.totalOptimizedSize,
+          originalSize: result.totalOriginalSize,
           reduction: result.totalReduction,
           reductionPercent: result.totalReductionPercent,
+          svgFiles: result.svgs.size,
+          totalFiles: svgFiles.length + imageFiles.length,
         },
         svgs: Object.fromEntries(result.svgs),
         timestamp: new Date().toISOString(),

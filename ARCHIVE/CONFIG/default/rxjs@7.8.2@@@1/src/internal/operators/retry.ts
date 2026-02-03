@@ -90,7 +90,7 @@ export function retry<T>(configOrCount: number | RetryConfig = Infinity): MonoTy
       count: configOrCount as number,
     };
   }
-  const { count = Infinity, delay, resetOnSuccess: resetOnSuccess = false } = config;
+  const { count = Infinity, delay, resetOnSuccess = false } = config;
 
   return count <= 0
     ? identity

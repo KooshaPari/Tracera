@@ -25,8 +25,9 @@ def test_watch_start_failure():
     fake_watcher = MagicMock()
     fake_watcher.start.side_effect = RuntimeError("cannot start")
 
-    with patch("tracertm.cli.commands.watch.LocalStorageManager", return_value=fake_storage), patch(
-        "tracertm.cli.commands.watch.TraceFileWatcher", return_value=fake_watcher
+    with (
+        patch("tracertm.cli.commands.watch.LocalStorageManager", return_value=fake_storage),
+        patch("tracertm.cli.commands.watch.TraceFileWatcher", return_value=fake_watcher),
     ):
         result = runner.invoke(app, ["watch", "--path", str(Path.cwd())], catch_exceptions=False)
 

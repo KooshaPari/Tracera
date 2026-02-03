@@ -167,4 +167,4 @@ export interface GraphQLSchemaNormalizedConfig extends GraphQLSchemaConfig {
   extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;
   assumeValid: boolean;
 }
-export {};
+

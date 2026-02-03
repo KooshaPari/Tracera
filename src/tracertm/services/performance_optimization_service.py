@@ -1,6 +1,6 @@
 """Service for performance optimization."""
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -33,9 +33,7 @@ class PerformanceOptimizationService:
             "recommendations": recommendations,
         }
 
-    async def enable_caching(
-        self, cache_key: str, ttl_seconds: int = 300
-    ) -> dict[str, Any]:
+    async def enable_caching(self, cache_key: str, ttl_seconds: int = 300) -> dict[str, Any]:
         """Enable caching for a query."""
         return {
             "cache_key": cache_key,
@@ -70,7 +68,7 @@ class PerformanceOptimizationService:
         return {
             "cached_queries": len(self.query_cache),
             "cache_keys": list(self.query_cache.keys()),
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }
 
     async def bulk_operation_optimization(
@@ -131,7 +129,7 @@ class PerformanceOptimizationService:
 
         return {
             "project_id": project_id,
-            "generated_at": datetime.utcnow().isoformat(),
+            "generated_at": datetime.now(UTC).isoformat(),
             "query_optimization": queries,
             "cache_stats": cache,
             "bulk_operation_optimization": bulk,

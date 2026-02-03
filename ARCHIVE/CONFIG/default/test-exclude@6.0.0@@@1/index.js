@@ -134,12 +134,12 @@ class TestExclude {
 function prepGlobPatterns(patterns) {
     return patterns.reduce((result, pattern) => {
         // Allow gitignore style of directory exclusion
-        if (!/\/\*\*$/.test(pattern)) {
+        if (!pattern.endsWith('/**')) {
             result = result.concat(pattern.replace(/\/$/, '') + '/**');
         }
 
         // Any rules of the form **/foo.js, should also match foo.js.
-        if (/^\*\*\//.test(pattern)) {
+        if (pattern.startsWith('**/')) {
             result = result.concat(pattern.replace(/^\*\*\//, ''));
         }
 

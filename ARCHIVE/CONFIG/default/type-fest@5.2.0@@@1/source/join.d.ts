@@ -67,4 +67,4 @@ export type Join<
 				? `${Join<Head, Delimiter>}${Delimiter}${NullishCoalesce<Last, ''>}`
 				: string;
 
-export {};
+

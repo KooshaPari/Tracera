@@ -1,12 +1,11 @@
 """Chat schemas for AI assistant API."""
 
-from enum import Enum
-from typing import Optional
+from enum import StrEnum
 
 from pydantic import BaseModel, Field
 
 
-class ChatRole(str, Enum):
+class ChatRole(StrEnum):
     """Message role in chat."""
 
     USER = "user"
@@ -14,7 +13,7 @@ class ChatRole(str, Enum):
     SYSTEM = "system"
 
 
-class AIProvider(str, Enum):
+class AIProvider(StrEnum):
     """Supported AI providers."""
 
     CLAUDE = "claude"
@@ -32,10 +31,10 @@ class ChatMessage(BaseModel):
 class ChatContext(BaseModel):
     """Optional context for the chat session."""
 
-    project_id: Optional[str] = None
-    project_name: Optional[str] = None
-    current_view: Optional[str] = None
-    selected_items: Optional[list[dict]] = None
+    project_id: str | None = None
+    project_name: str | None = None
+    current_view: str | None = None
+    selected_items: list[dict] | None = None
 
 
 class ChatRequest(BaseModel):
@@ -44,10 +43,10 @@ class ChatRequest(BaseModel):
     messages: list[ChatMessage] = Field(..., min_length=1)
     model: str = Field(default="claude-sonnet-4-20250514")
     provider: AIProvider = Field(default=AIProvider.CLAUDE)
-    system_prompt: Optional[str] = None
-    context: Optional[ChatContext] = None
+    system_prompt: str | None = None
+    context: ChatContext | None = None
     max_tokens: int = Field(default=4096, ge=1, le=100000)
-    session_id: Optional[str] = Field(
+    session_id: str | None = Field(
         default=None,
         description="Optional session/chat ID for per-session sandbox; tools run under this sandbox path.",
     )
@@ -56,9 +55,9 @@ class ChatRequest(BaseModel):
 class ChatStreamChunk(BaseModel):
     """A single chunk in the SSE stream."""
 
-    content: Optional[str] = None
+    content: str | None = None
     done: bool = False
-    error: Optional[str] = None
+    error: str | None = None
 
 
 class ChatResponse(BaseModel):
@@ -67,4 +66,4 @@ class ChatResponse(BaseModel):
     content: str
     model: str
     provider: AIProvider
-    usage: Optional[dict] = None
+    usage: dict | None = None

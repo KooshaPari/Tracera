@@ -61,4 +61,4 @@ export declare class _Readable extends EventEmitter implements stream.Readable {
     asIndexedPairs(options?: Pick<ArrayOptions, "signal"> | undefined): stream.Readable;
 }
 export declare const Readable: typeof stream.Readable;
-export {};
+

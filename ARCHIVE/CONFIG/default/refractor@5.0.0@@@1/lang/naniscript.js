@@ -8,7 +8,7 @@ naniscript.aliases = ['nani']
 /** @param {Refractor} Prism */
 export default function naniscript(Prism) {
   ;(function (Prism) {
-    var expressionDef = /\{[^\r\n\[\]{}]*\}/
+    var expressionDef = /\{[^\r\n[\]{}]*\}/
     var params = {
       'quoted-string': {
         pattern: /"(?:[^"\\]|\\.)*"/,
@@ -89,14 +89,14 @@ export default function naniscript(Prism) {
         alias: 'punctuation',
         inside: {
           // \{ ... \} ... \[ ... \] ... \"
-          'escaped-char': /\\[{}\[\]"]/,
+          'escaped-char': /\\[{}[\]"]/,
           expression: {
             pattern: expressionDef,
             greedy: true,
             alias: 'selector'
           },
           'inline-command': {
-            pattern: /\[[\t ]*\w[^\r\n\[\]]*\]/,
+            pattern: /\[[\t ]*\w[^\r\n[\]]*\]/,
             greedy: true,
             alias: 'function',
             inside: {
@@ -110,7 +110,7 @@ export default function naniscript(Prism) {
                 lookbehind: true,
                 alias: 'name'
               },
-              'start-stop-char': /[\[\]]/
+              'start-stop-char': /[[\]]/
             }
           }
         }

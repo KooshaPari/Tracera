@@ -90,13 +90,9 @@ class TestCaseRepository:
 
         return test_case
 
-    async def get_by_id(
-        self, test_case_id: str, project_id: str | None = None
-    ) -> TestCase | None:
+    async def get_by_id(self, test_case_id: str, project_id: str | None = None) -> TestCase | None:
         """Get test case by ID, optionally scoped to project."""
-        query = select(TestCase).where(
-            TestCase.id == test_case_id, TestCase.deleted_at.is_(None)
-        )
+        query = select(TestCase).where(TestCase.id == test_case_id, TestCase.deleted_at.is_(None))
 
         if project_id:
             query = query.where(TestCase.project_id == project_id)
@@ -104,13 +100,9 @@ class TestCaseRepository:
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
 
-    async def get_by_number(
-        self, test_case_number: str, project_id: str | None = None
-    ) -> TestCase | None:
+    async def get_by_number(self, test_case_number: str, project_id: str | None = None) -> TestCase | None:
         """Get test case by test case number."""
-        query = select(TestCase).where(
-            TestCase.test_case_number == test_case_number, TestCase.deleted_at.is_(None)
-        )
+        query = select(TestCase).where(TestCase.test_case_number == test_case_number, TestCase.deleted_at.is_(None))
 
         if project_id:
             query = query.where(TestCase.project_id == project_id)
@@ -189,6 +181,69 @@ class TestCaseRepository:
         result = await self.session.execute(query)
         return result.scalar() or 0
 
+    async def get_stats(self, project_id: str) -> dict[str, Any]:
+        """Get statistics for test cases in a project."""
+        from sqlalchemy import and_
+
+        # Total count (excluding soft-deleted)
+        total_result = await self.session.execute(
+            select(func.count(TestCase.id)).where(
+                and_(
+                    TestCase.project_id == project_id,
+                    TestCase.deleted_at.is_(None),
+                )
+            )
+        )
+        total = total_result.scalar() or 0
+
+        # By status
+        status_result = await self.session.execute(
+            select(TestCase.status, func.count())
+            .where(
+                and_(
+                    TestCase.project_id == project_id,
+                    TestCase.deleted_at.is_(None),
+                )
+            )
+            .group_by(TestCase.status)
+        )
+        by_status = {str(row[0]): row[1] for row in status_result}
+
+        # By priority
+        priority_result = await self.session.execute(
+            select(TestCase.priority, func.count())
+            .where(
+                and_(
+                    TestCase.project_id == project_id,
+                    TestCase.deleted_at.is_(None),
+                )
+            )
+            .group_by(TestCase.priority)
+        )
+        by_priority = {str(row[0]): row[1] for row in priority_result}
+
+        # Automated vs manual
+        auto_result = await self.session.execute(
+            select(func.count()).where(
+                and_(
+                    TestCase.project_id == project_id,
+                    TestCase.deleted_at.is_(None),
+                    TestCase.automation_status == "automated",
+                )
+            )
+        )
+        automated_count = auto_result.scalar() or 0
+        manual_count = max(0, total - automated_count)
+
+        return {
+            "project_id": project_id,
+            "total": total,
+            "by_status": by_status,
+            "by_priority": by_priority,
+            "automated_count": automated_count,
+            "manual_count": manual_count,
+        }
+
     async def update(
         self,
         test_case_id: str,
@@ -264,9 +319,7 @@ class TestCaseRepository:
         }
 
         if to_status not in valid_transitions.get(from_status, []):
-            raise ValueError(
-                f"Invalid status transition from {from_status} to {to_status}"
-            )
+            raise ValueError(f"Invalid status transition from {from_status} to {to_status}")
 
         test_case.status = to_status
         test_case.version += 1
@@ -413,13 +466,10 @@ class TestCaseRepository:
             test_case.deleted_at = datetime.now(UTC)
             await self.session.flush()
             return True
-        else:
-            from sqlalchemy import delete
+        from sqlalchemy import delete
 
-            result = await self.session.execute(
-                delete(TestCase).where(TestCase.id == test_case_id)
-            )
-            return result.rowcount > 0
+        result = await self.session.execute(delete(TestCase).where(TestCase.id == test_case_id))
+        return getattr(result, "rowcount", 0) > 0
 
     async def count_by_status(self, project_id: str) -> dict[str, int]:
         """Count test cases by status for a project."""
@@ -433,7 +483,7 @@ class TestCaseRepository:
         )
 
         result = await self.session.execute(query)
-        return dict(result.all())
+        return {r[0]: r[1] for r in result.all()}
 
     async def count_by_type(self, project_id: str) -> dict[str, int]:
         """Count test cases by type for a project."""
@@ -447,7 +497,7 @@ class TestCaseRepository:
         )
 
         result = await self.session.execute(query)
-        return dict(result.all())
+        return {row[0]: row[1] for row in result.all()}
 
     async def count_by_priority(self, project_id: str) -> dict[str, int]:
         """Count test cases by priority for a project."""
@@ -461,7 +511,7 @@ class TestCaseRepository:
         )
 
         result = await self.session.execute(query)
-        return dict(result.all())
+        return {row[0]: row[1] for row in result.all()}
 
     async def count_by_automation_status(self, project_id: str) -> dict[str, int]:
         """Count test cases by automation status for a project."""
@@ -475,7 +525,7 @@ class TestCaseRepository:
         )
 
         result = await self.session.execute(query)
-        return dict(result.all())
+        return {row[0]: row[1] for row in result.all()}
 
     async def get_execution_summary(self, project_id: str) -> dict[str, int]:
         """Get execution statistics summary for a project."""
@@ -496,9 +546,7 @@ class TestCaseRepository:
             "total_failed": row[2] or 0,
         }
 
-    async def get_activities(
-        self, test_case_id: str, limit: int = 50
-    ) -> list[TestCaseActivity]:
+    async def get_activities(self, test_case_id: str, limit: int = 50) -> list[TestCaseActivity]:
         """Get activity log for a test case."""
         query = (
             select(TestCaseActivity)

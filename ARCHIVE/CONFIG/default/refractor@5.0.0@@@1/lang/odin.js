@@ -92,7 +92,7 @@ export default function odin(Prism) {
         alias: 'punctuation'
       },
       operator: /\+\+|--|\.\.[<=]?|(?:&~|[-!*+/=~]|[%&<>|]{1,2})=?|[?^]/,
-      punctuation: /[(),.:;@\[\]{}]/
+      punctuation: /[(),.:;@[\]{}]/
     }
   })(Prism)
 }

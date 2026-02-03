@@ -30,4 +30,4 @@ export declare namespace Label {
         label?: unknown;
     }, viewBox?: ViewBox, checkPropsLabel?: boolean) => React.ReactElement<any, string | React.JSXElementConstructor<any>>[];
 }
-export {};
+

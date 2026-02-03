@@ -17,4 +17,4 @@ interface TrapezoidProps {
 }
 export type Props = SVGProps<SVGPathElement> & TrapezoidProps;
 export declare const Trapezoid: React.FC<Props>;
-export {};
+

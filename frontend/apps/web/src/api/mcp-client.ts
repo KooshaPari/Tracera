@@ -1,4 +1,3 @@
-import EventSourcePolyfill from "event-source-polyfill";
 import type {
 	JsonRpcRequest,
 	JsonRpcResponse,
@@ -10,6 +9,7 @@ import type {
 	ProgressNotification,
 } from "./mcp-client-types";
 import { type MCPClientState, type ProgressCallbacks, mcpClientUtils } from "./mcp-client-utils";
+import EventSourcePolyfill from "event-source-polyfill";
 
 type InitializeResponse = {
 	capabilities: Record<string, unknown>;

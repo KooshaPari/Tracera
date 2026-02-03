@@ -78,12 +78,12 @@ make dev-cli             # Show dev CLI help
 
 #### 4. Installation & Testing
 
-**Installation Script (`scripts/install-dev-cli.sh`):**
+**Installation Script (`scripts/shell/install-dev-cli.sh`):**
 - Creates virtual environment if needed
 - Installs dev CLI dependencies
 - Provides usage instructions
 
-**Test Script (`scripts/test-dev-cli.sh`):**
+**Test Script (`scripts/shell/test-dev-cli.sh`):**
 - Verifies CLI is executable
 - Tests all commands exist
 - Checks utility modules are present
@@ -256,7 +256,7 @@ Flexible log viewing:
 All tests pass:
 
 ```bash
-$ ./scripts/test-dev-cli.sh
+$ ./scripts/shell/test-dev-cli.sh
 
 Testing TraceRTM Development CLI
 =================================
@@ -330,7 +330,7 @@ All tests passed!
 ## Documentation
 
 ### Complete Documentation
-- **Full Guide**: `scripts/README_DEV_CLI.md` (comprehensive)
+- **Full Guide**: `scripts/docs/README_DEV_CLI.md` (comprehensive)
 - **Quick Start**: `docs/guides/quick-start/DEV_CLI_QUICKSTART.md`
 - **Inline Help**: `./scripts/dev --help` for all commands
 

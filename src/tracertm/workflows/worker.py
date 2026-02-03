@@ -13,6 +13,7 @@ from temporalio.client import Client
 from temporalio.worker import Worker
 
 from tracertm.workflows import activities, checkpoint_activities, workflows
+from tracertm.workflows.agent_execution import AgentExecutionResumeWorkflow, AgentExecutionWorkflow
 
 logger = logging.getLogger(__name__)
 
@@ -52,8 +53,8 @@ async def main() -> None:
                 workflows.IntegrationRetryWorkflow,
                 workflows.AgentRunWorkflow,
                 # Phase 3: Agent Execution Workflows
-                workflows.AgentExecutionWorkflow,
-                workflows.AgentExecutionResumeWorkflow,
+                AgentExecutionWorkflow,
+                AgentExecutionResumeWorkflow,
                 workflows.SandboxSnapshotWorkflow,
                 workflows.BulkSnapshotWorkflow,
                 workflows.SnapshotCleanupWorkflow,

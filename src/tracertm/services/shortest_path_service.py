@@ -1,8 +1,8 @@
 """Shortest path service for TraceRTM using Dijkstra's algorithm."""
 
 import heapq
-import json
 import logging
+import uuid
 from dataclasses import dataclass
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -44,9 +44,9 @@ class ShortestPathService:
 
     async def find_shortest_path(
         self,
-        project_id: str,
-        source_id: str,
-        target_id: str,
+        project_id: str | uuid.UUID,
+        source_id: str | uuid.UUID,
+        target_id: str | uuid.UUID,
         link_types: list[str] | None = None,
     ) -> PathResult:
         """
@@ -70,6 +70,9 @@ class ShortestPathService:
         Complexity: O((V + E) log V) where V = items, E = links (without cache)
                    O(1) with cache hit
         """
+        project_id = str(project_id)
+        source_id = str(source_id)
+        target_id = str(target_id)
         # Check cache first
         if self.cache:
             # Generate cache key including link_types filter
@@ -119,9 +122,9 @@ class ShortestPathService:
 
     async def _compute_path(
         self,
-        project_id: str,
-        source_id: str,
-        target_id: str,
+        project_id: str | uuid.UUID,
+        source_id: str | uuid.UUID,
+        target_id: str | uuid.UUID,
         link_types: list[str] | None = None,
     ) -> PathResult:
         """
@@ -136,6 +139,9 @@ class ShortestPathService:
         Returns:
             PathResult with shortest path information
         """
+        project_id = str(project_id)
+        source_id = str(source_id)
+        target_id = str(target_id)
         # Build adjacency list
         adjacency_list: dict[str, list[tuple[str, str]]] = {}
 
@@ -228,8 +234,8 @@ class ShortestPathService:
 
     async def find_all_shortest_paths(
         self,
-        project_id: str,
-        source_id: str,
+        project_id: str | uuid.UUID,
+        source_id: str | uuid.UUID,
         link_types: list[str] | None = None,
     ) -> dict[str, PathResult]:
         """
@@ -251,6 +257,8 @@ class ShortestPathService:
 
         Complexity: O((V + E) log V) without cache, O(1) with cache hit
         """
+        project_id = str(project_id)
+        source_id = str(source_id)
         # Check cache first
         if self.cache:
             # Format: tracertm:graph:{project_id}:all_paths:{source_id}:{link_types_key}
@@ -304,8 +312,8 @@ class ShortestPathService:
 
     async def _compute_all_paths(
         self,
-        project_id: str,
-        source_id: str,
+        project_id: str | uuid.UUID,
+        source_id: str | uuid.UUID,
         link_types: list[str] | None = None,
     ) -> dict[str, PathResult]:
         """
@@ -319,6 +327,8 @@ class ShortestPathService:
         Returns:
             Dict mapping target IDs to PathResult objects
         """
+        project_id = str(project_id)
+        source_id = str(source_id)
         # Build adjacency list
         adjacency_list: dict[str, list[tuple[str, str]]] = {}
 

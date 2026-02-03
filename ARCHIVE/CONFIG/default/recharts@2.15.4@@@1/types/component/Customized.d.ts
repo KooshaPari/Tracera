@@ -14,4 +14,4 @@ export declare function Customized<P, C extends Comp<P>>({ component, ...props }
 export declare namespace Customized {
     var displayName: string;
 }
-export {};
+

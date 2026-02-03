@@ -7,7 +7,6 @@ from tracertm.repositories.agent_repository import AgentRepository
 from tracertm.repositories.project_repository import ProjectRepository
 
 
-
 @pytest.mark.unit
 @pytest.mark.asyncio
 async def test_create_agent(db_session: AsyncSession):

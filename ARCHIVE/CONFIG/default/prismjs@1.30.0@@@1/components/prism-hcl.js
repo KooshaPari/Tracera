@@ -29,7 +29,7 @@ Prism.languages.hcl = {
 		/[\w-]+(?=\s+\{)/
 	],
 	'property': [
-		/[-\w\.]+(?=\s*=(?!=))/,
+		/[-\w.]+(?=\s*=(?!=))/,
 		/"(?:\\[\s\S]|[^\\"])+"(?=\s*[:=])/,
 	],
 	'string': {
@@ -41,7 +41,7 @@ Prism.languages.hcl = {
 				lookbehind: true,
 				inside: {
 					'type': {
-						pattern: /(\b(?:count|data|local|module|path|self|terraform|var)\b\.)[\w\*]+/i,
+						pattern: /(\b(?:count|data|local|module|path|self|terraform|var)\b\.)[\w*]+/i,
 						lookbehind: true,
 						alias: 'variable'
 					},
@@ -52,12 +52,12 @@ Prism.languages.hcl = {
 						greedy: true,
 					},
 					'number': /\b0x[\da-f]+\b|\b\d+(?:\.\d*)?(?:e[+-]?\d+)?/i,
-					'punctuation': /[!\$#%&'()*+,.\/;<=>@\[\\\]^`{|}~?:]/,
+					'punctuation': /[!$#%&'()*+,./;<=>@[\\\]^`{|}~?:]/,
 				}
 			},
 		}
 	},
 	'number': /\b0x[\da-f]+\b|\b\d+(?:\.\d*)?(?:e[+-]?\d+)?/i,
 	'boolean': /\b(?:false|true)\b/i,
-	'punctuation': /[=\[\]{}]/,
+	'punctuation': /[=[\]{}]/,
 };

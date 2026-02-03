@@ -1,0 +1,13 @@
+# Vendored/archived third-party code - do not lint
+ARCHIVE/
+
+# Build and dependencies
+node_modules/
+dist/
+build/
+.next/
+*.min.js
+.turbo/
+coverage/
+.cache/
+out/

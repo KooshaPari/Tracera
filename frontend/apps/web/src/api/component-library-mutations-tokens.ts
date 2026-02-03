@@ -36,8 +36,8 @@ const useCreateDesignToken = (
 
 	const mutationOptions = Object.assign(
 		{
-			mutationFn: (input: CreateDesignTokenInput) =>
-				handleApiResponse(
+			mutationFn: async (input: CreateDesignTokenInput) =>
+				await handleApiResponse(
 					apiPost("/api/v1/libraries/{libraryId}/tokens", {
 						body: {
 							category: input.category,
@@ -49,10 +49,11 @@ const useCreateDesignToken = (
 						params: { path: { libraryId: input.libraryId } },
 					}),
 				),
-			onSuccess: (data: DesignToken) =>
-				void queryClient.invalidateQueries({
+			onSuccess: async (data: DesignToken) => {
+				await queryClient.invalidateQueries({
 					queryKey: componentLibraryQueryKeys.tokens(data.libraryId),
-				}),
+				});
+			},
 		},
 		options,
 	);
@@ -75,17 +76,21 @@ const useUpdateDesignToken = (
 
 	const mutationOptions = Object.assign(
 		{
-			mutationFn: (input: { tokenId: string; data: UpdateDesignTokenInput }) =>
-				handleApiResponse(
+			mutationFn: async (input: {
+				tokenId: string;
+				data: UpdateDesignTokenInput;
+			}) =>
+				await handleApiResponse(
 					apiPut("/api/v1/tokens/{tokenId}", {
 						body: input.data,
 						params: { path: { tokenId: input.tokenId } },
 					}),
 				),
-			onSuccess: (data: DesignToken) =>
-				void queryClient.invalidateQueries({
+			onSuccess: async (data: DesignToken) => {
+				await queryClient.invalidateQueries({
 					queryKey: componentLibraryQueryKeys.tokens(data.libraryId),
-				}),
+				});
+			},
 		},
 		options,
 	);
@@ -104,19 +109,20 @@ const useDeleteDesignToken = (
 
 	const mutationOptions = Object.assign(
 		{
-			mutationFn: (input: { tokenId: string; libraryId: string }) =>
-				handleApiResponse(
+			mutationFn: async (input: { tokenId: string; libraryId: string }) =>
+				await handleApiResponse(
 					apiDelete("/api/v1/tokens/{tokenId}", {
 						params: { path: { tokenId: input.tokenId } },
 					}),
 				),
-			onSuccess: (
+			onSuccess: async (
 				_data: void,
 				variables: { tokenId: string; libraryId: string },
-			) =>
-				void queryClient.invalidateQueries({
+			) => {
+				await queryClient.invalidateQueries({
 					queryKey: componentLibraryQueryKeys.tokens(variables.libraryId),
-				}),
+				});
+			},
 		},
 		options,
 	);

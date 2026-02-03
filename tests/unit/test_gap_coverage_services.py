@@ -3,8 +3,9 @@ Gap coverage tests for low-coverage stub service modules.
 Targets all services at 17-18% coverage.
 """
 
+from unittest.mock import MagicMock
+
 import pytest
-from unittest.mock import MagicMock, AsyncMock
 
 
 class TestGraphService:
@@ -13,6 +14,7 @@ class TestGraphService:
     def test_graph_service_import(self):
         """Test GraphService can be imported."""
         from tracertm.services.graph_service import GraphService
+
         assert GraphService is not None
 
     def test_graph_service_init(self):
@@ -51,6 +53,7 @@ class TestGraphAnalysisService:
     def test_graph_analysis_service_import(self):
         """Test GraphAnalysisService can be imported."""
         from tracertm.services.graph_analysis_service import GraphAnalysisService
+
         assert GraphAnalysisService is not None
 
     def test_graph_analysis_service_init(self):
@@ -76,6 +79,7 @@ class TestHistoryService:
     def test_history_service_import(self):
         """Test HistoryService can be imported."""
         from tracertm.services.history_service import HistoryService
+
         assert HistoryService is not None
 
     def test_history_service_init(self):
@@ -102,6 +106,7 @@ class TestMetricsService:
     def test_metrics_service_import(self):
         """Test MetricsService can be imported."""
         from tracertm.services.metrics_service import MetricsService
+
         assert MetricsService is not None
 
     def test_metrics_service_init(self):
@@ -127,6 +132,7 @@ class TestNotificationService:
     def test_notification_service_import(self):
         """Test NotificationService can be imported."""
         from tracertm.services.notification_service import NotificationService
+
         assert NotificationService is not None
 
     def test_notification_service_init(self):
@@ -152,6 +158,7 @@ class TestPurgeService:
     def test_purge_service_import(self):
         """Test PurgeService can be imported."""
         from tracertm.services.purge_service import PurgeService
+
         assert PurgeService is not None
 
     def test_purge_service_init(self):
@@ -177,6 +184,7 @@ class TestRepairService:
     def test_repair_service_import(self):
         """Test RepairService can be imported."""
         from tracertm.services.repair_service import RepairService
+
         assert RepairService is not None
 
     def test_repair_service_init(self):
@@ -202,6 +210,7 @@ class TestStatsService:
     def test_stats_service_import(self):
         """Test StatsService can be imported."""
         from tracertm.services.stats_service import StatsService
+
         assert StatsService is not None
 
     def test_stats_service_init(self):
@@ -228,6 +237,7 @@ class TestStorageService:
     def test_storage_service_import(self):
         """Test StorageService can be imported."""
         from tracertm.services.storage_service import StorageService
+
         assert StorageService is not None
 
     def test_storage_service_init(self):
@@ -253,6 +263,7 @@ class TestTraceService:
     def test_trace_service_import(self):
         """Test TraceService can be imported."""
         from tracertm.services.trace_service import TraceService
+
         assert TraceService is not None
 
     def test_trace_service_init(self):
@@ -278,6 +289,7 @@ class TestVerificationService:
     def test_verification_service_import(self):
         """Test VerificationService can be imported."""
         from tracertm.services.verification_service import VerificationService
+
         assert VerificationService is not None
 
     def test_verification_service_init(self):
@@ -303,6 +315,7 @@ class TestViewService:
     def test_view_service_import(self):
         """Test ViewService can be imported."""
         from tracertm.services.view_service import ViewService
+
         assert ViewService is not None
 
     def test_view_service_init(self):
@@ -328,6 +341,7 @@ class TestDependencyAnalysisService:
     def test_dependency_analysis_service_import(self):
         """Test DependencyAnalysisService can be imported."""
         from tracertm.services.dependency_analysis_service import DependencyAnalysisService
+
         assert DependencyAnalysisService is not None
 
     def test_dependency_analysis_service_init(self):
@@ -353,6 +367,7 @@ class TestDrillDownService:
     def test_drill_down_service_import(self):
         """Test DrillDownService can be imported."""
         from tracertm.services.drill_down_service import DrillDownService
+
         assert DrillDownService is not None
 
     def test_drill_down_service_init(self):
@@ -378,6 +393,7 @@ class TestFileWatcherService:
     def test_file_watcher_service_import(self):
         """Test FileWatcherService can be imported."""
         from tracertm.services.file_watcher_service import FileWatcherService
+
         assert FileWatcherService is not None
 
     def test_file_watcher_service_init(self):
@@ -388,12 +404,12 @@ class TestFileWatcherService:
         assert service.db_session is None
 
     @pytest.mark.asyncio
-    async def test_file_watcher_service_watch(self):
+    async def test_file_watcher_service_watch(self, tmp_path):
         """Test FileWatcherService watch method."""
         from tracertm.services.file_watcher_service import FileWatcherService
 
         service = FileWatcherService()
-        result = await service.watch("/tmp/test")
+        result = await service.watch(str(tmp_path))
         assert isinstance(result, dict)
 
 
@@ -403,6 +419,7 @@ class TestIngestionService:
     def test_ingestion_service_import(self):
         """Test IngestionService can be imported."""
         from tracertm.services.ingestion_service import IngestionService
+
         assert IngestionService is not None
 
     def test_ingestion_service_init(self):

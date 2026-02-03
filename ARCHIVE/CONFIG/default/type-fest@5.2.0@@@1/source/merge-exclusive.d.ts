@@ -39,4 +39,4 @@ export type MergeExclusive<FirstType, SecondType> =
 		(Without<FirstType, SecondType> & SecondType) | (Without<SecondType, FirstType> & FirstType) :
 		FirstType | SecondType;
 
-export {};
+

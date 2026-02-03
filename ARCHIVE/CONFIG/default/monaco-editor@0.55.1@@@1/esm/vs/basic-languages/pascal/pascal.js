@@ -1,6 +1,6 @@
 const conf = {
   // the default separators except `@$`
-  wordPattern: /(-?\d*\.\d\w*)|([^\`\~\!\#\%\^\&\*\(\)\-\=\+\[\{\]\}\\\|\;\:\'\"\,\.\<\>\/\?\s]+)/g,
+  wordPattern: /(-?\d*\.\d\w*)|([^`~!#%^&*()\-=+[{\]}\\|;:'",.<>/?\s]+)/g,
   comments: {
     lineComment: "//",
     blockComment: ["{", "}"]
@@ -185,7 +185,7 @@ const language = {
     "%"
   ],
   // we include these common regular expressions
-  symbols: /[=><:@\^&|+\-*\/\^%]+/,
+  symbols: /[=><:@^&|+\-*/^%]+/,
   // The main tokenizer for our languages
   tokenizer: {
     root: [
@@ -202,7 +202,7 @@ const language = {
       // whitespace
       { include: "@whitespace" },
       // delimiters and operators
-      [/[{}()\[\]]/, "@brackets"],
+      [/[{}()[\]]/, "@brackets"],
       [/[<>](?!@symbols)/, "@brackets"],
       [
         /@symbols/,
@@ -214,7 +214,7 @@ const language = {
         }
       ],
       // numbers
-      [/\d*\.\d+([eE][\-+]?\d+)?/, "number.float"],
+      [/\d*\.\d+([eE][-+]?\d+)?/, "number.float"],
       [/\$[0-9a-fA-F]{1,16}/, "number.hex"],
       [/\d+/, "number"],
       // delimiter: after number because of .\d floats
@@ -226,13 +226,13 @@ const language = {
       // characters
       [/'[^\\']'/, "string"],
       [/'/, "string.invalid"],
-      [/\#\d+/, "string"]
+      [/#\d+/, "string"]
     ],
     comment: [
-      [/[^\*\}]+/, "comment"],
+      [/[^*}]+/, "comment"],
       //[/\(\*/,    'comment', '@push' ],    // nested comment  not allowed :-(
       [/\}/, "comment", "@pop"],
-      [/[\{]/, "comment"]
+      [/[{]/, "comment"]
     ],
     string: [
       [/[^\\']+/, "string"],

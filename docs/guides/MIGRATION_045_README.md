@@ -70,7 +70,7 @@ Adds 23 high-impact performance indexes across the database to optimize:
   - Testing instructions
 
 ### 3. Test Suite
-- **File**: `/tests/test_performance_indexes.sql`
+- **File**: `/tests/sql/test_performance_indexes.sql`
 - **Size**: 7.7 KB
 - **Contains**:
   - Index verification queries
@@ -202,7 +202,7 @@ AND schemaname = 'public';
 
 ```bash
 # Run SQL test suite
-psql -d trace_db -f tests/test_performance_indexes.sql
+psql -d trace_db -f tests/sql/test_performance_indexes.sql
 
 # Will verify:
 # - All 23 indexes exist
@@ -339,7 +339,7 @@ ANALYZE change_log;
 4. **Concrete Examples**: `/docs/INDEX_EXAMPLES.md`
    - Real-world performance examples
 
-5. **Test Suite**: `/tests/test_performance_indexes.sql`
+5. **Test Suite**: `/tests/sql/test_performance_indexes.sql`
    - Verification and monitoring queries
 
 ## Support & Next Steps
@@ -350,7 +350,7 @@ ANALYZE change_log;
 2. Take database backup
 3. Apply migration: `alembic upgrade head`
 4. Verify indexes: `\di items`
-5. Run test suite: `psql -d trace_db -f tests/test_performance_indexes.sql`
+5. Run test suite: `psql -d trace_db -f tests/sql/test_performance_indexes.sql`
 6. Monitor for 24 hours
 7. Celebrate 80-95% faster queries!
 

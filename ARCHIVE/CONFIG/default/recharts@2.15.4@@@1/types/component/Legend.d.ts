@@ -56,4 +56,4 @@ export declare class Legend extends PureComponent<Props, State> {
     private getDefaultPosition;
     render(): React.JSX.Element;
 }
-export {};
+

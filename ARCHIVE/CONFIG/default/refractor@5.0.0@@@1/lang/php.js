@@ -40,7 +40,7 @@ export default function php(Prism) {
       /\b0b[01]+(?:_[01]+)*\b|\b0o[0-7]+(?:_[0-7]+)*\b|\b0x[\da-f]+(?:_[\da-f]+)*\b|(?:\b\d+(?:_\d+)*\.?(?:\d+(?:_\d+)*)?|\B\.\d+)(?:e[+-]?\d+)?/i
     var operator =
       /<?=>|\?\?=?|\.{3}|\??->|[!=]=?=?|::|\*\*=?|--|\+\+|&&|\|\||<<|>>|[?~]|[/^|%*&<>.+-]=?/
-    var punctuation = /[{}\[\](),:;]/
+    var punctuation = /[{}[\](),:;]/
     Prism.languages.php = {
       delimiter: {
         pattern: /\?>$|^<\?(?:php(?=\s)|=)?/i,
@@ -244,7 +244,7 @@ export default function php(Prism) {
     }
     var string_interpolation = {
       pattern:
-        /\{\$(?:\{(?:\{[^{}]+\}|[^{}]+)\}|[^{}])+\}|(^|[^\\{])\$+(?:\w+(?:\[[^\r\n\[\]]+\]|->\w+)?)/,
+        /\{\$(?:\{(?:\{[^{}]+\}|[^{}]+)\}|[^{}])+\}|(^|[^\\{])\$+(?:\w+(?:\[[^\r\n[\]]+\]|->\w+)?)/,
       lookbehind: true,
       inside: Prism.languages.php
     }
@@ -302,7 +302,7 @@ export default function php(Prism) {
       string: string,
       attribute: {
         pattern:
-          /#\[(?:[^"'\/#]|\/(?![*/])|\/\/.*$|#(?!\[).*$|\/\*(?:[^*]|\*(?!\/))*\*\/|"(?:\\[\s\S]|[^\\"])*"|'(?:\\[\s\S]|[^\\'])*')+\](?=\s*[a-z$#])/im,
+          /#\[(?:[^"'/#]|\/(?![*/])|\/\/.*$|#(?!\[).*$|\/\*(?:[^*]|\*(?!\/))*\*\/|"(?:\\[\s\S]|[^\\"])*"|'(?:\\[\s\S]|[^\\'])*')+\](?=\s*[a-z$#])/im,
         greedy: true,
         inside: {
           'attribute-content': {

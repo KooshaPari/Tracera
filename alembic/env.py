@@ -1,34 +1,14 @@
 """Alembic environment configuration."""
 
+import os
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
+from sqlalchemy import engine_from_config, pool
 
 from alembic import context
 
 # Import all models to ensure they're registered
 from tracertm.models.base import Base
-from tracertm.models.project import Project
-from tracertm.models.item import Item
-from tracertm.models.link import Link
-from tracertm.models.event import Event
-from tracertm.models.agent import Agent
-from tracertm.models.agent_lock import AgentLock
-from tracertm.models.agent_event import AgentEvent
-from tracertm.models.external_link import ExternalLink
-from tracertm.models.graph_change import GraphChange
-from tracertm.models.graph_snapshot import GraphSnapshot
-from tracertm.models.graph_type import GraphType
-from tracertm.models.graph import Graph
-from tracertm.models.graph_node import GraphNode
-from tracertm.models.item_view import ItemView
-from tracertm.models.problem import Problem, ProblemActivity
-from tracertm.models.process import Process, ProcessExecution
-from tracertm.models.node_kind import NodeKind
-from tracertm.models.link_type import LinkType
-from tracertm.models.view import View
-from tracertm.models.node_kind_rule import NodeKindRule
 
 # this is the Alembic Config object
 config = context.config
@@ -57,14 +37,15 @@ def run_migrations_offline() -> None:
 
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
-    import os
+    from pathlib import Path
 
     # Load .env from project root so migrations work when run without sourcing .env
     # (e.g. from setup-native-dev.sh or make db-migrate)
     try:
         from dotenv import load_dotenv
+
         # alembic/ is under project root; go up one level to find .env
-        env_path = os.path.join(os.path.dirname(__file__), "..", ".env")
+        env_path = Path(__file__).parent.parent / ".env"
         load_dotenv(env_path)
     except ImportError:
         pass
@@ -74,6 +55,7 @@ def run_migrations_online() -> None:
         # Fallback when no env: use current OS user so it works on macOS/Homebrew
         # where the default Postgres superuser is the OS user, not "postgres"
         import getpass
+
         user = getpass.getuser()
         database_url = f"postgresql+psycopg2://{user}@localhost:5432/tracertm"
     if database_url:
@@ -83,7 +65,7 @@ def run_migrations_online() -> None:
         elif database_url.startswith("postgresql://"):
             database_url = database_url.replace("postgresql://", "postgresql+psycopg2://", 1)
         config.set_main_option("sqlalchemy.url", database_url)
-    
+
     connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
@@ -91,9 +73,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()

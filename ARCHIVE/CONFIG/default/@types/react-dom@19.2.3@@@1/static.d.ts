@@ -26,7 +26,7 @@ declare global {
 
 import { ReactNode } from "react";
 import { ErrorInfo } from "./client";
-export {};
+
 
 declare const POSTPONED_STATE_SIGIL: unique symbol;
 

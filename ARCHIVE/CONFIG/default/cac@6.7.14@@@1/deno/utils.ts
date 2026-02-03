@@ -120,7 +120,7 @@ export const setByType = (obj: {
   }
 };
 export const getFileName = (input: string) => {
-  const m = /([^\\\/]+)$/.exec(input);
+  const m = /([^\\/]+)$/.exec(input);
   return m ? m[1] : '';
 };
 export const camelcaseOptionName = (name: string) => {

@@ -5,22 +5,23 @@ BMM workflow MCP tools.
 from __future__ import annotations
 
 import asyncio
-from typing import Any, Dict, List
+from typing import Any, cast
 
 from fastmcp import Context
 from fastmcp.exceptions import ToolError
 from fastmcp.server.dependencies import Progress
+from fastmcp.server.elicitation import AcceptedElicitation
 from fastmcp.server.tasks import TaskConfig
 
-from tracertm.mcp.core import mcp
 from tracertm.mcp.bmm_utils import (
+    get_phase_workflows,
     get_project_root,
+    get_status_data,
+    get_workflow_config,
     load_workflow_status,
     save_workflow_status,
-    get_workflow_config,
-    get_phase_workflows,
-    get_next_pending_workflow,
 )
+from tracertm.mcp.core import mcp
 from tracertm.mcp.workflow_executor import run_workflow_with_sub_agent
 
 
@@ -31,16 +32,22 @@ async def init_project(ctx: Context, progress: Progress = Progress()) -> str:
     Uses elicitation for interactive user input.
     """
     status = load_workflow_status()
-    if status and 'project' in status:
+    if status and "project" in status:
         return "OK: Project already initialized"
 
     current_progress = 0
     await progress.set_total(100)
     await progress.set_message("Starting initialization...")
 
-    project_name = await ctx.elicit(
-        prompt="What's your project called?",
-        default="MyProject",
+    name_result = await ctx.elicit(
+        message="What's your project called?",
+        response_type=None,
+    )
+    data = name_result.data if isinstance(name_result.data, dict) else {}
+    project_name = (
+        data.get("value", "MyProject")
+        if isinstance(name_result, AcceptedElicitation)
+        else "MyProject"
     )
 
     increment = 25 - current_progress
@@ -49,10 +56,11 @@ async def init_project(ctx: Context, progress: Progress = Progress()) -> str:
         current_progress = 25
     await progress.set_message("Project name set")
 
-    track = await ctx.elicit(
-        prompt="Select track:",
-        options=["quick-flow", "method", "enterprise"],
+    track_result = await ctx.elicit(
+        message="Select track:",
+        response_type=["quick-flow", "method", "enterprise"],
     )
+    track = track_result.data if isinstance(track_result, AcceptedElicitation) else "method"
 
     increment = 50 - current_progress
     if increment > 0:
@@ -60,10 +68,11 @@ async def init_project(ctx: Context, progress: Progress = Progress()) -> str:
         current_progress = 50
     await progress.set_message("Track selected")
 
-    field_type = await ctx.elicit(
-        prompt="Project type:",
-        options=["greenfield", "brownfield"],
+    field_result = await ctx.elicit(
+        message="Project type:",
+        response_type=["greenfield", "brownfield"],
     )
+    field_type = field_result.data if isinstance(field_result, AcceptedElicitation) else "greenfield"
 
     increment = 75 - current_progress
     if increment > 0:
@@ -101,26 +110,28 @@ async def run_workflow(
     if not workflow:
         raise ToolError(f"Workflow not found: {workflow_id}")
 
-    current_status = workflow.get('status', '')
-    if isinstance(current_status, str) and current_status.startswith('docs/'):
+    current_status = workflow.get("status", "")
+    if isinstance(current_status, str) and current_status.startswith("docs/"):
         return f"OK: Workflow already completed: {workflow_id} -> {current_status}"
 
-    workflow_name = workflow_id.replace('-', ' ').title()
+    workflow_name = workflow_id.replace("-", " ").title()
 
     if not auto:
-        confirm = await ctx.elicit(
-            prompt=f"Run {workflow_name} workflow?\nAgent: {workflow['agent']}\nNote: {workflow.get('note', 'N/A')}",
-            options=["yes", "no", "skip"],
+        confirm_result = await ctx.elicit(
+            message=f"Run {workflow_name} workflow?\nAgent: {workflow['agent']}\nNote: {workflow.get('note', 'N/A')}",
+            response_type=["yes", "no", "skip"],
         )
+        confirm = confirm_result.data if isinstance(confirm_result, AcceptedElicitation) else "no"
         if confirm == "no":
             return f"CANCELLED: {workflow_id}"
         if confirm == "skip":
             status = load_workflow_status()
-            for phase_key, phase_data in status.get('workflow_status', {}).items():
-                if workflow_id in phase_data:
-                    phase_data[workflow_id]['status'] = 'skipped'
-                    break
-            save_workflow_status(status)
+            if status is not None:
+                for phase_data in status.get("workflow_status", {}).values():
+                    if workflow_id in phase_data:
+                        phase_data[workflow_id]["status"] = "skipped"
+                        break
+                save_workflow_status(status)
             return f"SKIPPED: {workflow_id}"
 
     current_progress = 0
@@ -136,8 +147,8 @@ async def run_workflow(
         project_root = get_project_root()
         result = await run_workflow_with_sub_agent(
             project_root=project_root,
-            agent_name=workflow['agent'],
-            workflow_command=workflow['command'],
+            agent_name=workflow["agent"],
+            workflow_command=workflow["command"],
             workflow_id=workflow_id,
             auto=auto,
         )
@@ -149,12 +160,13 @@ async def run_workflow(
         await progress.set_message("Updating workflow status...")
 
         status = load_workflow_status()
-        output_path = workflow.get('output', f"docs/{workflow_id}.md")
-        for phase_key, phase_data in status.get('workflow_status', {}).items():
-            if workflow_id in phase_data:
-                phase_data[workflow_id]['status'] = output_path
-                break
-        save_workflow_status(status)
+        output_path = workflow.get("output", f"docs/{workflow_id}.md")
+        if status is not None:
+            for phase_data in status.get("workflow_status", {}).values():
+                if workflow_id in phase_data:
+                    phase_data[workflow_id]["status"] = output_path
+                    break
+            save_workflow_status(status)
 
         increment = 100 - current_progress
         if increment > 0:
@@ -162,30 +174,34 @@ async def run_workflow(
             current_progress = 100
         await progress.set_message("Complete")
 
-        result_content = result.get('content', '')
+        result_content = result.get("content", "")
         if isinstance(result_content, str):
             return f"OK: Completed {workflow_id}\nOutput: {output_path}\nResult: {result_content}"
-        return f"OK: Completed {workflow_id}\nOutput: {output_path}\nResult: {str(result_content)}"
+        return f"OK: Completed {workflow_id}\nOutput: {output_path}\nResult: {result_content!s}"
 
-    except Exception:
+    except Exception:  # noqa: BLE001
         increment = 25 - current_progress
         if increment > 0:
             await progress.increment(increment)
             current_progress = 25
         await progress.set_message("Preparing workflow execution...")
 
-        result = await ctx.sample(
-            messages=[{
+        from mcp.types import SamplingMessage
+
+        msg = cast(
+            SamplingMessage,
+            {
                 "role": "user",
                 "content": (
                     f"Execute this BMM workflow: {workflow['command']}\n\n"
                     "Follow the workflow instructions exactly. Use elicitation for any user input needed."
                 ),
-            }],
-            system_prompt=f"You are the {workflow['agent']} agent. Execute the workflow command provided.",
-            model_preferences={
-                "hints": [{"name": "claude-sonnet-4.5"}],
             },
+        )
+        result = await ctx.sample(
+            messages=[msg],
+            system_prompt=f"You are the {workflow['agent']} agent. Execute the workflow command provided.",
+            model_preferences="claude-sonnet-4.5",
         )
 
         increment = 75 - current_progress
@@ -195,12 +211,13 @@ async def run_workflow(
         await progress.set_message("Updating workflow status...")
 
         status = load_workflow_status()
-        output_path = workflow.get('output', f"docs/{workflow_id}.md")
-        for phase_key, phase_data in status.get('workflow_status', {}).items():
-            if workflow_id in phase_data:
-                phase_data[workflow_id]['status'] = output_path
-                break
-        save_workflow_status(status)
+        output_path = workflow.get("output", f"docs/{workflow_id}.md")
+        if status is not None:
+            for phase_data in status.get("workflow_status", {}).values():
+                if workflow_id in phase_data:
+                    phase_data[workflow_id]["status"] = output_path
+                    break
+            save_workflow_status(status)
 
         increment = 100 - current_progress
         if increment > 0:
@@ -208,7 +225,8 @@ async def run_workflow(
             current_progress = 100
         await progress.set_message("Complete")
 
-        return f"OK: Completed {workflow_id}\nOutput: {output_path}\nResult: {result.content}"
+        result_text = getattr(result, "content", None) or str(result)
+        return f"OK: Completed {workflow_id}\nOutput: {output_path}\nResult: {result_text}"
 
 
 @mcp.tool(task=TaskConfig(mode="forbidden"))
@@ -242,39 +260,36 @@ async def run_phase(
     await progress.set_total(len(workflows))
     await progress.set_message(f"Starting Phase {phase}: {phase_names[phase]}")
 
-    results: List[str] = []
+    results: list[str] = []
 
     if parallel:
-        agent_groups: Dict[str, List[Dict[str, Any]]] = {}
+        agent_groups: dict[str, list[dict[str, Any]]] = {}
         for wf in workflows:
-            agent = wf['agent']
+            agent = wf["agent"]
             if agent not in agent_groups:
                 agent_groups[agent] = []
             agent_groups[agent].append(wf)
 
-        async def run_agent_workflows(agent: str, agent_workflows: List[Dict[str, Any]]):
+        async def run_agent_workflows(agent: str, agent_workflows: list[dict[str, Any]]):
             agent_results = []
             for wf in agent_workflows:
-                result = await run_workflow(ctx, wf['id'], auto=auto, progress=progress)
+                result = await run_workflow(ctx, wf["id"], auto=auto, progress=progress)  # type: ignore[call-non-callable]
                 agent_results.append(result)
             return agent_results
 
-        all_results = await asyncio.gather(*[
-            run_agent_workflows(agent, wfs)
-            for agent, wfs in agent_groups.items()
-        ])
+        all_results = await asyncio.gather(*[run_agent_workflows(agent, wfs) for agent, wfs in agent_groups.items()])
 
         for agent_results in all_results:
             results.extend(agent_results)
     else:
         for i, wf in enumerate(workflows):
-            wf_name = wf['id'].replace('-', ' ').title()
+            wf_name = wf["id"].replace("-", " ").title()
             increment = i - current_progress
             if increment > 0:
                 await progress.increment(increment)
                 current_progress = i
             await progress.set_message(f"Running {wf_name}...")
-            result = await run_workflow(ctx, wf['id'], auto=auto, progress=progress)
+            result = await run_workflow(ctx, wf["id"], auto=auto, progress=progress)  # type: ignore[call-non-callable]
             results.append(result)
 
     increment = len(workflows) - current_progress
@@ -287,63 +302,20 @@ async def run_phase(
 
 
 @mcp.tool()
-async def get_status() -> Dict[str, Any]:
+async def get_status() -> dict[str, Any]:
     """
     Get comprehensive workflow status including progress, pending workflows, and completion stats.
 
     Returns:
         Dictionary with status information
     """
-    status = load_workflow_status()
-    if not status:
-        return {
-            "initialized": False,
-            "message": "Project not initialized. Run init_project first.",
-        }
-
-    total_workflows = 0
-    completed_workflows = 0
-    pending_workflows: List[Dict[str, Any]] = []
-
-    for phase_key, phase_data in status.get('workflow_status', {}).items():
-        for wf_id, wf_config in phase_data.items():
-            if not wf_config.get('included', True):
-                continue
-
-            total_workflows += 1
-            current_status = wf_config.get('status', '')
-
-            if isinstance(current_status, str) and current_status.startswith('docs/'):
-                completed_workflows += 1
-            else:
-                pending_workflows.append({
-                    'id': wf_id,
-                    'name': wf_id.replace('-', ' ').title(),
-                    'agent': wf_config['agent'],
-                    'status_type': wf_config['status'],
-                    'note': wf_config.get('note', ''),
-                })
-
-    next_workflow = get_next_pending_workflow()
-
-    return {
-        "initialized": True,
-        "project": status.get('project', 'Unknown'),
-        "track": status.get('selected_track', 'Unknown'),
-        "field_type": status.get('field_type', 'Unknown'),
-        "generated": status.get('generated', 'Unknown'),
-        "total_workflows": total_workflows,
-        "completed_workflows": completed_workflows,
-        "pending_workflows": len(pending_workflows),
-        "progress_percentage": round((completed_workflows / total_workflows * 100) if total_workflows > 0 else 0, 1),
-        "next_workflow": next_workflow,
-        "pending_list": pending_workflows[:5],
-    }
+    await asyncio.sleep(0)
+    return get_status_data()
 
 
 __all__ = [
-    "init_project",
-    "run_workflow",
-    "run_phase",
     "get_status",
+    "init_project",
+    "run_phase",
+    "run_workflow",
 ]

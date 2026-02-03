@@ -24,9 +24,7 @@ from tracertm.services.item_service import ItemService
 class TestOptimisticLocking:
     """Tests for optimistic locking conflict detection."""
 
-    async def test_concurrent_updates_same_item(
-        self, db_session, project_factory, item_factory
-    ):
+    async def test_concurrent_updates_same_item(self, db_session, project_factory, item_factory):
         """Test concurrent updates to same item detect conflicts."""
         project = project_factory()
         item = item_factory(project_id=project.id, title="Original")
@@ -47,10 +45,7 @@ class TestOptimisticLocking:
                 conflicts.append(agent_id)
 
         # Concurrent updates
-        tasks = [
-            update_item(i, f"Title from agent {i}")
-            for i in range(10)
-        ]
+        tasks = [update_item(i, f"Title from agent {i}") for i in range(10)]
         await asyncio.gather(*tasks, return_exceptions=True)
 
         # Assertions
@@ -58,9 +53,7 @@ class TestOptimisticLocking:
         assert len(conflicts) > 0, "Expected conflicts not detected"
         assert len(successes) > 0, "Some updates should succeed"
 
-    async def test_version_increment_on_update(
-        self, db_session, project_factory, item_factory
-    ):
+    async def test_version_increment_on_update(self, db_session, project_factory, item_factory):
         """Test that version increments on successful update."""
         project = project_factory()
         item = item_factory(project_id=project.id)
@@ -76,9 +69,7 @@ class TestOptimisticLocking:
         # Assertions
         assert updated.version == initial_version + 1
 
-    async def test_retry_logic_on_conflict(
-        self, db_session, project_factory, item_factory
-    ):
+    async def test_retry_logic_on_conflict(self, db_session, project_factory, item_factory):
         """Test retry logic handles conflicts gracefully."""
         project = project_factory()
         item = item_factory(project_id=project.id)
@@ -99,17 +90,16 @@ class TestOptimisticLocking:
                 except StaleDataError:
                     retry_count += 1
                     if attempt < max_retries - 1:
-                        await asyncio.sleep(0.01 * (2 ** attempt))
+                        await asyncio.sleep(0.01 * (2**attempt))
                     else:
                         raise
+            return None
 
         # Assertions
         result = await update_with_retry()
         assert result is not None
 
-    async def test_no_deadlocks_under_contention(
-        self, db_session, project_factory, item_factory
-    ):
+    async def test_no_deadlocks_under_contention(self, db_session, project_factory, item_factory):
         """Test no deadlocks occur under high contention."""
         project = project_factory()
         items = [item_factory(project_id=project.id) for _ in range(10)]

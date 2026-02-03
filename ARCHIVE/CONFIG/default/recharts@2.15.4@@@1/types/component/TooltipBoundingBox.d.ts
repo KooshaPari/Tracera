@@ -44,4 +44,4 @@ export declare class TooltipBoundingBox extends PureComponent<TooltipBoundingBox
     handleKeyDown: (event: KeyboardEvent) => void;
     render(): React.JSX.Element;
 }
-export {};
+

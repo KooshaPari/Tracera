@@ -6,14 +6,18 @@ attributes, display updates, and time formatting.
 Coverage target: 80%+ of 127 statements
 """
 
-import pytest
 from datetime import datetime, timedelta
 from unittest.mock import MagicMock, Mock
+
+import pytest
 
 # Skip all tests if Textual not available
 pytest.importorskip("textual")
 
-from tracertm.tui.widgets.sync_status import SyncStatusWidget, CompactSyncStatus
+from tracertm.tui.widgets.sync_status import (  # type: ignore[possibly-missing-import]
+    CompactSyncStatus,
+    SyncStatusWidget,
+)
 
 
 class TestSyncStatusWidgetInitialization:
@@ -188,9 +192,9 @@ class TestSyncStatusWidgetDisplay:
         def mock_query_one(selector, *args):
             if "connection-status" in selector:
                 return mock_connection
-            elif "sync-info" in selector:
+            if "sync-info" in selector:
                 return mock_sync
-            elif "conflict-info" in selector:
+            if "conflict-info" in selector:
                 return mock_conflict
             return MagicMock()
 
@@ -219,9 +223,9 @@ class TestSyncStatusWidgetDisplay:
         def mock_query_one(selector, *args):
             if "connection-status" in selector:
                 return mock_connection
-            elif "sync-info" in selector:
+            if "sync-info" in selector:
                 return mock_sync
-            elif "conflict-info" in selector:
+            if "conflict-info" in selector:
                 return mock_conflict
             return MagicMock()
 
@@ -249,9 +253,9 @@ class TestSyncStatusWidgetDisplay:
         def mock_query_one(selector, *args):
             if "connection-status" in selector:
                 return mock_connection
-            elif "sync-info" in selector:
+            if "sync-info" in selector:
                 return mock_sync
-            elif "conflict-info" in selector:
+            if "conflict-info" in selector:
                 return mock_conflict
             return MagicMock()
 
@@ -278,9 +282,9 @@ class TestSyncStatusWidgetDisplay:
         def mock_query_one(selector, *args):
             if "connection-status" in selector:
                 return mock_connection
-            elif "sync-info" in selector:
+            if "sync-info" in selector:
                 return mock_sync
-            elif "conflict-info" in selector:
+            if "conflict-info" in selector:
                 return mock_conflict
             return MagicMock()
 
@@ -306,9 +310,9 @@ class TestSyncStatusWidgetDisplay:
         def mock_query_one(selector, *args):
             if "connection-status" in selector:
                 return mock_connection
-            elif "sync-info" in selector:
+            if "sync-info" in selector:
                 return mock_sync
-            elif "conflict-info" in selector:
+            if "conflict-info" in selector:
                 return mock_conflict
             return MagicMock()
 
@@ -335,9 +339,9 @@ class TestSyncStatusWidgetDisplay:
         def mock_query_one(selector, *args):
             if "connection-status" in selector:
                 return mock_connection
-            elif "sync-info" in selector:
+            if "sync-info" in selector:
                 return mock_sync
-            elif "conflict-info" in selector:
+            if "conflict-info" in selector:
                 return mock_conflict
             return MagicMock()
 
@@ -371,7 +375,7 @@ class TestSyncStatusTimeFormatting:
 
         result = widget._format_time_ago(past)
 
-        assert "5 minutes ago" == result
+        assert result == "5 minutes ago"
 
     def test_format_time_ago_one_minute(self):
         """Test formatting exactly 1 minute (singular)."""
@@ -380,7 +384,7 @@ class TestSyncStatusTimeFormatting:
 
         result = widget._format_time_ago(past)
 
-        assert "1 minute ago" == result
+        assert result == "1 minute ago"
 
     def test_format_time_ago_hours(self):
         """Test formatting time in hours."""
@@ -389,7 +393,7 @@ class TestSyncStatusTimeFormatting:
 
         result = widget._format_time_ago(past)
 
-        assert "2 hours ago" == result
+        assert result == "2 hours ago"
 
     def test_format_time_ago_days(self):
         """Test formatting time in days."""
@@ -398,7 +402,7 @@ class TestSyncStatusTimeFormatting:
 
         result = widget._format_time_ago(past)
 
-        assert "3 days ago" == result
+        assert result == "3 days ago"
 
 
 class TestCompactSyncStatus:

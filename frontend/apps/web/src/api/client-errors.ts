@@ -1,5 +1,5 @@
 /* eslint-disable promise/prefer-await-to-then */
-import apiConstants from "./client-constants";
+import { apiConstants } from "./client-constants";
 
 class ApiError extends Error {
 	public data?: unknown;
@@ -74,4 +74,4 @@ const clientErrors = {
 	safeApiCall,
 };
 
-export default clientErrors;
+export { ApiError, clientErrors, handleApiResponse, safeApiCall };

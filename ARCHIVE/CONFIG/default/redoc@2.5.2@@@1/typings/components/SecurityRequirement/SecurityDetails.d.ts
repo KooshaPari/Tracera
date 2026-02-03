@@ -5,4 +5,4 @@ interface SecuritySchemaProps {
     scheme: SecuritySchemeModel;
 }
 export declare function SecurityDetails(props: SecuritySchemaProps): React.JSX.Element;
-export {};
+

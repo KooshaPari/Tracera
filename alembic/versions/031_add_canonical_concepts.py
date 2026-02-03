@@ -8,9 +8,10 @@ Revises: 030_enhance_item_specs_blockchain
 Create Date: 2026-01-30
 """
 
-from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
+
+from alembic import op
 
 # revision identifiers, used by Alembic
 revision = "031_add_canonical_concepts"
@@ -21,10 +22,10 @@ depends_on = None
 
 def upgrade() -> None:
     """Create canonical_concepts table with pgvector support."""
-    
+
     # Ensure pgvector extension is enabled
     op.execute("CREATE EXTENSION IF NOT EXISTS vector")
-    
+
     # Create canonical_concepts table
     op.create_table(
         "canonical_concepts",
@@ -89,7 +90,7 @@ def upgrade() -> None:
         # Constraints
         sa.UniqueConstraint("project_id", "slug", name="uq_canonical_concepts_project_slug"),
     )
-    
+
     # Create indexes
     op.create_index(
         "ix_canonical_concepts_project_id",
@@ -142,4 +143,3 @@ def downgrade() -> None:
     op.drop_index("ix_canonical_concepts_domain", table_name="canonical_concepts")
     op.drop_index("ix_canonical_concepts_project_id", table_name="canonical_concepts")
     op.drop_table("canonical_concepts")
-

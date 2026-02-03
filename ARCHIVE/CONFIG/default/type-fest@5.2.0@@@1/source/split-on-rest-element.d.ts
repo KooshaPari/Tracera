@@ -103,4 +103,4 @@ export type _SplitOnRestElement<
 			> // Accumulate elements that are present before the rest element.
 			: never; // Should never happen, since `[(infer First)?, ...infer Rest]` is a top-type for arrays.
 
-export {};
+

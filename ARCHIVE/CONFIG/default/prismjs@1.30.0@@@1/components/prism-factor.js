@@ -89,7 +89,7 @@
 			alias: 'number',
 			inside: {
 				'variable': /\\\S/,
-				'keyword': /[+?*\[\]^$(){}.|]/,
+				'keyword': /[+?*[\]^$(){}.|]/,
 				'operator': {
 					pattern: /(\/)[idmsr]+(?:-[idmsr]+)?/,
 					lookbehind: true
@@ -104,7 +104,7 @@
 
 		// SBUF" asd", URL" ://...", P" /etc/"
 		'custom-string': {
-			pattern: /(^|\s)[A-Z0-9\-]+"\s(?:\\\S|[^"\\])*"/,
+			pattern: /(^|\s)[A-Z0-9-]+"\s(?:\\\S|[^"\\])*"/,
 			lookbehind: true,
 			greedy: true,
 			alias: 'string',
@@ -271,7 +271,7 @@
 		},
 
 		'colon-syntax': {
-			pattern: /(^|\s)(?:[A-Z0-9\-]+#?)?:{1,2}\s+(?:;\S+|(?!;)\S+)(?=\s|$)/,
+			pattern: /(^|\s)(?:[A-Z0-9-]+#?)?:{1,2}\s+(?:;\S+|(?!;)\S+)(?=\s|$)/,
 			lookbehind: true,
 			greedy: true,
 			alias: 'function'
@@ -346,7 +346,7 @@
 	};
 
 	var escape = function (str) {
-		return (str + '').replace(/([.?*+\^$\[\]\\(){}|\-])/g, '\\$1');
+		return (str + '').replace(/([.?*+^$[\]\\(){}|-])/g, '\\$1');
 	};
 
 	var arrToWordsRegExp = function (arr) {

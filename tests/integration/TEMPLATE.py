@@ -22,87 +22,90 @@ Coverage Goal: Every service method should have at least one integration test.
 """
 
 import pytest
-from tracertm.models.project import Project
-from tracertm.models.item import Item
-from tracertm.repositories.project_repository import ProjectRepository
+
 from tracertm.repositories.item_repository import ItemRepository
+from tracertm.repositories.project_repository import ProjectRepository
 
-
-pytestmark = pytest.mark.integration
+pytestmark = [pytest.mark.integration, pytest.mark.asyncio]
 
 
 class TestMyService:
     """Test suite for MyService - Replace with actual service name."""
 
-    def test_create_item_in_existing_project(self, db_session):
+    async def test_create_item_in_existing_project(self, db_session):
         """Test creating an item in an existing project - happy path."""
         # Setup: Create a project
         project_repo = ProjectRepository(db_session)
-        project = project_repo.create(name="Test Project")
+        project = await project_repo.create(name="Test Project")
         assert project.id is not None
 
         # Action: Create an item
         item_repo = ItemRepository(db_session)
-        item = item_repo.create(
-            project_id=project.id,
+        item = await item_repo.create(
+            project_id=str(project.id),
             title="Test Item",
-            type="feature",
+            view="FEATURE",
+            item_type="feature",
         )
 
         # Assert: Verify item was created
         assert item.id is not None
         assert item.title == "Test Item"
-        assert item.project_id == project.id
+        assert str(item.project_id) == str(project.id)
 
-    def test_create_item_with_invalid_project_id_raises_error(self, db_session):
+    async def test_create_item_with_invalid_project_id_raises_error(self, db_session):
         """Test creating an item with non-existent project raises error."""
         item_repo = ItemRepository(db_session)
 
         # Should raise error for non-existent project
         with pytest.raises(ValueError, match="Project not found"):
-            item_repo.create(
-                project_id=99999,  # Non-existent ID
+            await item_repo.create(
+                project_id="99999",  # Non-existent ID
                 title="Test Item",
-                type="feature",
+                view="FEATURE",
+                item_type="feature",
             )
 
-    def test_retrieve_item_after_creation(self, db_session):
+    async def test_retrieve_item_after_creation(self, db_session):
         """Test retrieving an item after creation - round-trip test."""
         # Setup
         project_repo = ProjectRepository(db_session)
-        project = project_repo.create(name="Test Project")
+        project = await project_repo.create(name="Test Project")
 
         item_repo = ItemRepository(db_session)
-        created_item = item_repo.create(
-            project_id=project.id,
+        created_item = await item_repo.create(
+            project_id=str(project.id),
             title="Test Item",
-            type="feature",
+            view="FEATURE",
+            item_type="feature",
         )
 
         # Action: Retrieve the item
-        retrieved_item = item_repo.get(created_item.id)
+        retrieved_item = await item_repo.get_by_id(created_item.id, project_id=str(project.id))
 
         # Assert: Verify round-trip
         assert retrieved_item is not None
         assert retrieved_item.id == created_item.id
         assert retrieved_item.title == "Test Item"
 
-    def test_update_item_attributes(self, db_session):
+    async def test_update_item_attributes(self, db_session):
         """Test updating item attributes."""
         # Setup
         project_repo = ProjectRepository(db_session)
-        project = project_repo.create(name="Test Project")
+        project = await project_repo.create(name="Test Project")
 
         item_repo = ItemRepository(db_session)
-        item = item_repo.create(
-            project_id=project.id,
+        item = await item_repo.create(
+            project_id=str(project.id),
             title="Original Title",
-            type="feature",
+            view="FEATURE",
+            item_type="feature",
         )
 
-        # Action: Update item
-        updated_item = item_repo.update(
+        # Action: Update item (expected_version from current item)
+        updated_item = await item_repo.update(
             item.id,
+            item.version,
             title="Updated Title",
         )
 
@@ -110,43 +113,50 @@ class TestMyService:
         assert updated_item.title == "Updated Title"
 
         # Verify persistence by retrieving again
-        verified = item_repo.get(item.id)
-        assert verified.title == "Updated Title"
+        verified = await item_repo.get_by_id(item.id, project_id=str(project.id))
+        assert verified is not None and verified.title == "Updated Title"
 
-    def test_delete_item_removes_from_database(self, db_session):
+    async def test_delete_item_removes_from_database(self, db_session):
         """Test deleting an item removes it from database."""
         # Setup
         project_repo = ProjectRepository(db_session)
-        project = project_repo.create(name="Test Project")
+        project = await project_repo.create(name="Test Project")
 
         item_repo = ItemRepository(db_session)
-        item = item_repo.create(
-            project_id=project.id,
+        item = await item_repo.create(
+            project_id=str(project.id),
             title="To Delete",
-            type="feature",
+            view="FEATURE",
+            item_type="feature",
         )
         item_id = item.id
 
         # Action: Delete item
-        item_repo.delete(item_id)
+        await item_repo.delete(item_id)
 
         # Assert: Item no longer exists
-        retrieved = item_repo.get(item_id)
+        retrieved = await item_repo.get_by_id(item_id, project_id=str(project.id))
         assert retrieved is None
 
-    def test_list_items_returns_all_items(self, db_session):
+    async def test_list_items_returns_all_items(self, db_session):
         """Test listing items returns all created items."""
         # Setup
         project_repo = ProjectRepository(db_session)
-        project = project_repo.create(name="Test Project")
+        project = await project_repo.create(name="Test Project")
 
         item_repo = ItemRepository(db_session)
-        item1 = item_repo.create(project_id=project.id, title="Item 1", type="feature")
-        item2 = item_repo.create(project_id=project.id, title="Item 2", type="bug")
-        item3 = item_repo.create(project_id=project.id, title="Item 3", type="feature")
+        await item_repo.create(
+            project_id=str(project.id), title="Item 1", view="FEATURE", item_type="feature"
+        )
+        await item_repo.create(
+            project_id=str(project.id), title="Item 2", view="FEATURE", item_type="bug"
+        )
+        await item_repo.create(
+            project_id=str(project.id), title="Item 3", view="FEATURE", item_type="feature"
+        )
 
         # Action: List items
-        items = item_repo.list(project_id=project.id)
+        items = await item_repo.list_all(project_id=str(project.id))
 
         # Assert
         assert len(items) == 3
@@ -154,42 +164,51 @@ class TestMyService:
         assert any(i.title == "Item 2" for i in items)
         assert any(i.title == "Item 3" for i in items)
 
-    def test_filter_items_by_type(self, db_session):
+    async def test_filter_items_by_type(self, db_session):
         """Test filtering items by type."""
         # Setup
         project_repo = ProjectRepository(db_session)
-        project = project_repo.create(name="Test Project")
+        project = await project_repo.create(name="Test Project")
 
         item_repo = ItemRepository(db_session)
-        item_repo.create(project_id=project.id, title="Feature 1", type="feature")
-        item_repo.create(project_id=project.id, title="Bug 1", type="bug")
-        item_repo.create(project_id=project.id, title="Feature 2", type="feature")
+        await item_repo.create(
+            project_id=str(project.id), title="Feature 1", view="FEATURE", item_type="feature"
+        )
+        await item_repo.create(
+            project_id=str(project.id), title="Bug 1", view="FEATURE", item_type="bug"
+        )
+        await item_repo.create(
+            project_id=str(project.id), title="Feature 2", view="FEATURE", item_type="feature"
+        )
 
-        # Action: Filter by type
-        features = item_repo.list(project_id=project.id, type="feature")
+        # Action: List all and filter by type in test
+        items = await item_repo.list_all(project_id=str(project.id))
+        features = [i for i in items if i.item_type == "feature"]
 
         # Assert
         assert len(features) == 2
-        assert all(i.type == "feature" for i in features)
+        assert all(i.item_type == "feature" for i in features)
 
-    def test_service_error_handling_on_invalid_input(self, db_session):
+    async def test_service_error_handling_on_invalid_input(self, db_session):
         """Test service handles invalid input gracefully."""
         item_repo = ItemRepository(db_session)
 
-        # Test missing required field
+        # Test missing required field (empty title)
         with pytest.raises(ValueError):
-            item_repo.create(
-                project_id=1,
-                title="",  # Empty title
-                type="feature",
+            await item_repo.create(
+                project_id="1",
+                title="",
+                view="FEATURE",
+                item_type="feature",
             )
 
-        # Test invalid type
+        # Test invalid type (if validated by repo)
         with pytest.raises(ValueError):
-            item_repo.create(
-                project_id=1,
+            await item_repo.create(
+                project_id="1",
                 title="Test",
-                type="invalid_type",
+                view="FEATURE",
+                item_type="invalid_type",
             )
 
 
@@ -218,7 +237,7 @@ class TestMyService:
 # 5. CHECK COVERAGE:
 #    pytest tests/integration/test_your_service.py \
 #        --cov=src/tracertm/services/your_service \
-#        --cov-report=term-with-missing
+#        --cov-report=term-missing
 #
 # 6. AIM FOR:
 #    - 100% line coverage

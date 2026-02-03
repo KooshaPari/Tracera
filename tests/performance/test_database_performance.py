@@ -9,10 +9,10 @@ Tests measure performance of:
 - Bulk insert performance
 """
 
-import time
-from typing import List, Dict, Any
+from typing import Any
+
 import pytest
-from sqlalchemy import select, and_, or_, func
+from sqlalchemy import and_, func, or_
 from sqlalchemy.orm import Session
 
 pytestmark = pytest.mark.performance
@@ -22,11 +22,12 @@ pytestmark = pytest.mark.performance
 # Test Fixtures
 # ============================================================
 
+
 @pytest.fixture
-def seed_items_1000(db_session: Session) -> List[Dict[str, Any]]:
+def seed_items_1000(db_session: Session) -> list[dict[str, Any]]:
     """Seed 1000 items in database."""
     from tracertm.models.item import Item
-    
+
     items = []
     for i in range(1000):
         item = Item(
@@ -42,7 +43,7 @@ def seed_items_1000(db_session: Session) -> List[Dict[str, Any]]:
         )
         items.append(item)
         db_session.add(item)
-    
+
     db_session.commit()
     return items
 
@@ -52,7 +53,7 @@ def seed_items_with_links(db_session: Session):
     """Seed items with link relationships."""
     from tracertm.models.item import Item
     from tracertm.models.link import Link
-    
+
     # Create 100 items
     items = []
     for i in range(100):
@@ -67,9 +68,9 @@ def seed_items_with_links(db_session: Session):
         )
         items.append(item)
         db_session.add(item)
-    
+
     db_session.flush()
-    
+
     # Create links between items
     for i in range(50):
         link = Link(
@@ -80,7 +81,7 @@ def seed_items_with_links(db_session: Session):
             link_type="depends_on",
         )
         db_session.add(link)
-    
+
     db_session.commit()
     return {"items": items, "link_count": 50}
 
@@ -89,14 +90,15 @@ def seed_items_with_links(db_session: Session):
 # Index Lookup Performance
 # ============================================================
 
+
 def test_item_lookup_by_id_indexed(benchmark, db_session: Session, seed_items_1000):
     """Benchmark indexed primary key lookup."""
     from tracertm.models.item import Item
-    
+
     def lookup():
         result = db_session.query(Item).filter(Item.id == "item-500").first()
         return result is not None
-    
+
     result = benchmark(lookup)
     assert result is True
 
@@ -104,13 +106,11 @@ def test_item_lookup_by_id_indexed(benchmark, db_session: Session, seed_items_10
 def test_item_lookup_by_project_indexed(benchmark, db_session: Session, seed_items_1000):
     """Benchmark indexed project_id lookup."""
     from tracertm.models.item import Item
-    
+
     def lookup():
-        result = db_session.query(Item).filter(
-            Item.project_id == "perf-proj"
-        ).first()
+        result = db_session.query(Item).filter(Item.project_id == "perf-proj").first()
         return result is not None
-    
+
     result = benchmark(lookup)
     assert result is True
 
@@ -118,13 +118,11 @@ def test_item_lookup_by_project_indexed(benchmark, db_session: Session, seed_ite
 def test_item_lookup_by_status_indexed(benchmark, db_session: Session, seed_items_1000):
     """Benchmark status index lookup."""
     from tracertm.models.item import Item
-    
+
     def lookup():
-        result = db_session.query(Item).filter(
-            Item.status == "done"
-        ).first()
+        result = db_session.query(Item).filter(Item.status == "done").first()
         return result is not None
-    
+
     result = benchmark(lookup)
     assert result is True
 
@@ -133,13 +131,14 @@ def test_item_lookup_by_status_indexed(benchmark, db_session: Session, seed_item
 # Multi-Row Query Performance
 # ============================================================
 
+
 def test_query_all_items_1000(benchmark, db_session: Session, seed_items_1000, perf_tracker):
     """Benchmark querying all 1000 items."""
     from tracertm.models.item import Item
-    
+
     def query():
         return db_session.query(Item).all()
-    
+
     result = benchmark(query)
     assert len(result) == 1000
 
@@ -147,12 +146,10 @@ def test_query_all_items_1000(benchmark, db_session: Session, seed_items_1000, p
 def test_query_items_with_filter_status_500(benchmark, db_session: Session, seed_items_1000):
     """Benchmark filtering query returning ~333 items."""
     from tracertm.models.item import Item
-    
+
     def query():
-        return db_session.query(Item).filter(
-            Item.status == "todo"
-        ).all()
-    
+        return db_session.query(Item).filter(Item.status == "todo").all()
+
     result = benchmark(query)
     assert len(result) == 334  # 1000 % 3 == 334 items with "todo" status
 
@@ -160,16 +157,15 @@ def test_query_items_with_filter_status_500(benchmark, db_session: Session, seed
 def test_query_items_with_multiple_filters(benchmark, db_session: Session, seed_items_1000):
     """Benchmark query with multiple filter conditions."""
     from tracertm.models.item import Item
-    
+
     def query():
-        return db_session.query(Item).filter(
-            and_(
-                Item.status == "todo",
-                Item.item_type == "feature",
-                Item.priority == "high"
-            )
-        ).all()
-    
+        return (
+            db_session
+            .query(Item)
+            .filter(and_(Item.status == "todo", Item.item_type == "feature", Item.priority == "high"))
+            .all()
+        )
+
     result = benchmark(query)
     assert len(result) > 0
 
@@ -177,15 +173,10 @@ def test_query_items_with_multiple_filters(benchmark, db_session: Session, seed_
 def test_query_items_with_or_conditions(benchmark, db_session: Session, seed_items_1000):
     """Benchmark query with OR conditions."""
     from tracertm.models.item import Item
-    
+
     def query():
-        return db_session.query(Item).filter(
-            or_(
-                Item.status == "done",
-                Item.priority == "high"
-            )
-        ).all()
-    
+        return db_session.query(Item).filter(or_(Item.status == "done", Item.priority == "high")).all()
+
     result = benchmark(query)
     assert len(result) > 0
 
@@ -194,13 +185,14 @@ def test_query_items_with_or_conditions(benchmark, db_session: Session, seed_ite
 # Pagination Performance
 # ============================================================
 
+
 def test_query_items_pagination_first_page(benchmark, db_session: Session, seed_items_1000):
     """Benchmark paginated query - first page."""
     from tracertm.models.item import Item
-    
+
     def query():
         return db_session.query(Item).limit(20).offset(0).all()
-    
+
     result = benchmark(query)
     assert len(result) == 20
 
@@ -208,10 +200,10 @@ def test_query_items_pagination_first_page(benchmark, db_session: Session, seed_
 def test_query_items_pagination_middle_page(benchmark, db_session: Session, seed_items_1000):
     """Benchmark paginated query - middle page."""
     from tracertm.models.item import Item
-    
+
     def query():
         return db_session.query(Item).limit(20).offset(500).all()
-    
+
     result = benchmark(query)
     assert len(result) == 20
 
@@ -219,10 +211,10 @@ def test_query_items_pagination_middle_page(benchmark, db_session: Session, seed
 def test_query_items_pagination_last_page(benchmark, db_session: Session, seed_items_1000):
     """Benchmark paginated query - last page."""
     from tracertm.models.item import Item
-    
+
     def query():
         return db_session.query(Item).limit(20).offset(980).all()
-    
+
     result = benchmark(query)
     assert len(result) == 20
 
@@ -231,16 +223,15 @@ def test_query_items_pagination_last_page(benchmark, db_session: Session, seed_i
 # Join Query Performance
 # ============================================================
 
+
 def test_query_items_with_links_join(benchmark, db_session: Session, seed_items_with_links):
     """Benchmark query with join."""
     from tracertm.models.item import Item
     from tracertm.models.link import Link
-    
+
     def query():
-        return db_session.query(Item).join(
-            Link, Item.id == Link.source_id
-        ).all()
-    
+        return db_session.query(Item).join(Link, Item.id == Link.source_item_id).all()
+
     result = benchmark(query)
     assert len(result) == 50  # Number of items with outgoing links
 
@@ -249,13 +240,14 @@ def test_query_items_with_links_join(benchmark, db_session: Session, seed_items_
 # Aggregation Query Performance
 # ============================================================
 
+
 def test_aggregation_count_items(benchmark, db_session: Session, seed_items_1000):
     """Benchmark count aggregation."""
     from tracertm.models.item import Item
-    
+
     def query():
         return db_session.query(func.count(Item.id)).scalar()
-    
+
     result = benchmark(query)
     assert result == 1000
 
@@ -263,13 +255,10 @@ def test_aggregation_count_items(benchmark, db_session: Session, seed_items_1000
 def test_aggregation_group_by_status(benchmark, db_session: Session, seed_items_1000):
     """Benchmark group by aggregation."""
     from tracertm.models.item import Item
-    
+
     def query():
-        return db_session.query(
-            Item.status,
-            func.count(Item.id)
-        ).group_by(Item.status).all()
-    
+        return db_session.query(Item.status, func.count(Item.id)).group_by(Item.status).all()
+
     result = benchmark(query)
     assert len(result) == 3  # 3 different statuses
 
@@ -277,14 +266,15 @@ def test_aggregation_group_by_status(benchmark, db_session: Session, seed_items_
 def test_aggregation_multiple_grouping(benchmark, db_session: Session, seed_items_1000):
     """Benchmark multi-column group by."""
     from tracertm.models.item import Item
-    
+
     def query():
-        return db_session.query(
-            Item.status,
-            Item.item_type,
-            func.count(Item.id)
-        ).group_by(Item.status, Item.item_type).all()
-    
+        return (
+            db_session
+            .query(Item.status, Item.item_type, func.count(Item.id))
+            .group_by(Item.status, Item.item_type)
+            .all()
+        )
+
     result = benchmark(query)
     assert len(result) > 0
 
@@ -293,10 +283,11 @@ def test_aggregation_multiple_grouping(benchmark, db_session: Session, seed_item
 # Bulk Insert Performance
 # ============================================================
 
+
 def test_bulk_insert_100_items(benchmark, db_session: Session, perf_tracker):
     """Benchmark bulk insert of 100 items."""
     from tracertm.models.item import Item
-    
+
     def insert():
         for i in range(100):
             item = Item(
@@ -310,7 +301,7 @@ def test_bulk_insert_100_items(benchmark, db_session: Session, perf_tracker):
             )
             db_session.add(item)
         db_session.commit()
-    
+
     benchmark(insert)
     perf_tracker.record("bulk_insert_100", benchmark.stats.mean * 1000)
 
@@ -318,7 +309,7 @@ def test_bulk_insert_100_items(benchmark, db_session: Session, perf_tracker):
 def test_bulk_insert_batch_500_items(benchmark, db_session: Session):
     """Benchmark bulk insert with batching - 500 items."""
     from tracertm.models.item import Item
-    
+
     def insert():
         items = [
             Item(
@@ -334,7 +325,7 @@ def test_bulk_insert_batch_500_items(benchmark, db_session: Session):
         ]
         db_session.bulk_save_objects(items)
         db_session.commit()
-    
+
     benchmark(insert)
 
 
@@ -342,22 +333,23 @@ def test_bulk_insert_batch_500_items(benchmark, db_session: Session):
 # Update Performance
 # ============================================================
 
+
 def test_single_item_update(benchmark, db_session: Session, seed_items_1000):
     """Benchmark single item update."""
     from tracertm.models.item import Item
-    
+
     def update():
         item = db_session.query(Item).filter(Item.id == "item-0").first()
         item.status = "done"
         db_session.commit()
-    
+
     benchmark(update)
 
 
 def test_bulk_update_100_items(benchmark, db_session: Session):
     """Benchmark bulk update of 100 items."""
     from tracertm.models.item import Item
-    
+
     # Create items first
     for i in range(100):
         item = Item(
@@ -371,13 +363,11 @@ def test_bulk_update_100_items(benchmark, db_session: Session):
         )
         db_session.add(item)
     db_session.commit()
-    
+
     def update():
-        db_session.query(Item).filter(
-            Item.project_id == "perf-proj-update"
-        ).update({"status": "done"})
+        db_session.query(Item).filter(Item.project_id == "perf-proj-update").update({"status": "done"})
         db_session.commit()
-    
+
     benchmark(update)
 
 
@@ -385,16 +375,20 @@ def test_bulk_update_100_items(benchmark, db_session: Session):
 # Delete Performance
 # ============================================================
 
+
+_delete_call_count = [0]
+
+
 def test_single_item_delete(benchmark, db_session: Session, seed_items_1000):
     """Benchmark single item delete."""
     from tracertm.models.item import Item
-    
+
     # Counter to get different items each time
-    test_single_item_delete.call_count = getattr(test_single_item_delete, 'call_count', 0) + 1
-    item_id = f"item-{900 + test_single_item_delete.call_count}"
-    
+    _delete_call_count[0] += 1
+    item_id = f"item-{900 + _delete_call_count[0]}"
+
     def delete():
         db_session.query(Item).filter(Item.id == item_id).delete()
         db_session.commit()
-    
+
     benchmark(delete)

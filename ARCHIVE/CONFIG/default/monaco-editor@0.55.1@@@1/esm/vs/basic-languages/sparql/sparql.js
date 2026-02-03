@@ -147,7 +147,7 @@ const language = {
       // line comment
       [/#.*/, "comment"],
       // special chars with special meaning
-      [/[{}()\[\]]/, "@brackets"],
+      [/[{}()[\]]/, "@brackets"],
       [/[;,.]/, "delimiter"],
       // (prefixed) name
       [/[_\w\d]+:(\.(?=[\w_\-\\%])|[:\w_-]|\\[-\\_~.!$&'()*+,;=/?#@%]|%[a-f\d][a-f\d])*/, "tag"],
@@ -165,10 +165,10 @@ const language = {
       ],
       // operators
       [/\^\^/, "operator.sql"],
-      [/\^[*+\-<>=&|^\/!?]*/, "operator.sql"],
-      [/[*+\-<>=&|\/!?]/, "operator.sql"],
+      [/\^[*+\-<>=&|^/!?]*/, "operator.sql"],
+      [/[*+\-<>=&|/!?]/, "operator.sql"],
       // symbol
-      [/@[a-z\d\-]*/, "metatag.html"],
+      [/@[a-z\d-]*/, "metatag.html"],
       // whitespaces
       [/\s+/, "white"]
     ],

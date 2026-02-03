@@ -6,4 +6,4 @@ interface MkdirFlags {
     paths: string[];
 }
 export declare function parseArgs(args: string[]): MkdirFlags;
-export {};
+

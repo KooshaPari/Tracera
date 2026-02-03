@@ -102,7 +102,7 @@ cd ..
 
 ```bash
 # Python (Alembic) migrations
-./scripts/run_python_migrations.sh
+./scripts/shell/run_python_migrations.sh
 
 # Or manually:
 # uv run alembic upgrade head
@@ -178,7 +178,7 @@ open http://localhost:4000
 xdg-open http://localhost:4000
 
 # Manual:
-# Visit http://localhost:4000 in your browser
+# Visit http://localhost:4000 in your browser (only dev URL; Vite 5173 is internal)
 ```
 
 ### Check Monitoring
@@ -404,10 +404,10 @@ cd frontend/apps/web
 bun run generate:types
 
 # Python client:
-./scripts/generate-python-client.sh
+./scripts/shell/generate-python-client.sh
 
 # Go client:
-./scripts/generate-openapi-go.sh
+./scripts/shell/generate-openapi-go.sh
 ```
 
 ### Run E2E tests
@@ -450,7 +450,7 @@ python -m debugpy --listen 5678 --wait-for-client src/tracertm/api.py
 # VS Code: F5 (launches Chrome with debugger attached)
 
 # Browser DevTools:
-# Open http://localhost:5173
+# Open http://localhost:4000 (only dev URL; do not use port 5173)
 # F12 → Sources tab → Set breakpoints
 ```
 
@@ -513,14 +513,15 @@ go test ./internal/... -count=1
 ```bash
 # Check what's using the port:
 lsof -i :8080  # Go backend
-lsof -i :5173  # Frontend
+lsof -i :4000  # Gateway (single dev URL)
+lsof -i :5173  # Vite (internal; use 4000 in browser)
 lsof -i :5432  # PostgreSQL
 
 # Kill process:
 kill -9 <PID>
 
 # Or use wrapper scripts (they check before starting):
-bash scripts/postgres-if-not-running.sh
+bash scripts/shell/postgres-if-not-running.sh
 ```
 
 ### Hot reload not working
@@ -550,7 +551,7 @@ pg_isready -h localhost -p 5432
 DATABASE_URL=postgresql://tracertm:password@localhost:5432/tracertm
 
 # Run migrations:
-./scripts/run_python_migrations.sh
+./scripts/shell/run_python_migrations.sh
 ```
 
 ### Frontend build errors

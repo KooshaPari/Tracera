@@ -9,9 +9,10 @@ Tests:
 - DELETE /api/v1/projects/{project_id}
 """
 
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import AsyncMock, MagicMock, patch
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -41,6 +42,7 @@ def mock_db_connection():
 def client(mock_config_manager, mock_db_connection):
     """Create test client with mocked dependencies."""
     from tracertm.api.main import app
+
     return TestClient(app)
 
 
@@ -56,13 +58,13 @@ class TestListProjectsEndpoint:
         mock_project1.name = "Project 1"
         mock_project1.description = "Desc 1"
         mock_project1.metadata = {}
-        
+
         mock_project2 = MagicMock()
         mock_project2.id = "proj-2"
         mock_project2.name = "Project 2"
         mock_project2.description = "Desc 2"
         mock_project2.metadata = {"key": "value"}
-        
+
         mock_projects = [mock_project1, mock_project2]
 
         with patch("tracertm.repositories.project_repository.ProjectRepository") as mock_repo:
@@ -82,10 +84,7 @@ class TestListProjectsEndpoint:
     @pytest.mark.asyncio
     async def test_list_projects_pagination(self, client):
         """Test projects list respects skip and limit parameters."""
-        mock_projects = [
-            MagicMock(id=f"proj-{i}", name=f"Project {i}", description="", metadata={})
-            for i in range(10)
-        ]
+        mock_projects = [MagicMock(id=f"proj-{i}", name=f"Project {i}", description="", metadata={}) for i in range(10)]
 
         with patch("tracertm.repositories.project_repository.ProjectRepository") as mock_repo:
             repo_instance = MagicMock()
@@ -381,7 +380,7 @@ class TestDeleteProjectEndpoint:
 
         mock_link = MagicMock()
         mock_link.id = "link-1"
-        
+
         mock_item = MagicMock()
         mock_item.id = "item-1"
 

@@ -22,12 +22,12 @@ const mockComponents: LibraryComponent[] = [
 		props: [
 			{
 				name: "variant",
-				type: "string",
-				required: false,
 				options: ["primary", "secondary"],
+				required: false,
+				type: "string",
 			},
-			{ name: "size", type: "string", required: false },
-			{ name: "disabled", type: "boolean", required: false },
+			{ name: "size", required: false, type: "string" },
+			{ name: "disabled", required: false, type: "boolean" },
 		],
 		status: "stable",
 		updatedAt: "2025-01-29T00:00:00Z",
@@ -48,8 +48,8 @@ const mockComponents: LibraryComponent[] = [
 		name: "Input",
 		projectId: "proj-1",
 		props: [
-			{ name: "placeholder", type: "string", required: false },
-			{ name: "type", type: "string", required: false },
+			{ name: "placeholder", required: false, type: "string" },
+			{ name: "type", required: false, type: "string" },
 		],
 		status: "stable",
 		updatedAt: "2025-01-29T00:00:00Z",

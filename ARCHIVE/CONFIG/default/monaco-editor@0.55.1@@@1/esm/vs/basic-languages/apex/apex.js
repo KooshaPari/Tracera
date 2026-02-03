@@ -1,6 +1,6 @@
 const conf = {
   // the default separators except `@$`
-  wordPattern: /(-?\d*\.\d\w*)|([^\`\~\!\#\%\^\&\*\(\)\-\=\+\[\{\]\}\\\|\;\:\'\"\,\.\<\>\/\?\s]+)/g,
+  wordPattern: /(-?\d*\.\d\w*)|([^`~!#%^&*()\-=+[{\]}\\|;:'",.<>/?\s]+)/g,
   comments: {
     lineComment: "//",
     blockComment: ["/*", "*/"]
@@ -226,7 +226,7 @@ const language = {
     ">>>="
   ],
   // we include these common regular expressions
-  symbols: /[=><!~?:&|+\-*\/\^%]+/,
+  symbols: /[=><!~?:&|+\-*/^%]+/,
   escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
   digits: /\d+(_+\d+)*/,
   octaldigits: /[0-7]+(_+[0-7]+)*/,
@@ -247,7 +247,7 @@ const language = {
       ],
       // assume that identifiers starting with an uppercase letter are types
       [
-        /[A-Z][\w\$]*/,
+        /[A-Z][\w$]*/,
         {
           cases: {
             "@keywords": { token: "keyword.$0" },
@@ -258,7 +258,7 @@ const language = {
       // whitespace
       { include: "@whitespace" },
       // delimiters and operators
-      [/[{}()\[\]]/, "@brackets"],
+      [/[{}()[\]]/, "@brackets"],
       [/[<>](?!@symbols)/, "@brackets"],
       [
         /@symbols/,
@@ -270,10 +270,10 @@ const language = {
         }
       ],
       // @ annotations.
-      [/@\s*[a-zA-Z_\$][\w\$]*/, "annotation"],
+      [/@\s*[a-zA-Z_$][\w$]*/, "annotation"],
       // numbers
-      [/(@digits)[eE]([\-+]?(@digits))?[fFdD]?/, "number.float"],
-      [/(@digits)\.(@digits)([eE][\-+]?(@digits))?[fFdD]?/, "number.float"],
+      [/(@digits)[eE]([-+]?(@digits))?[fFdD]?/, "number.float"],
+      [/(@digits)\.(@digits)([eE][-+]?(@digits))?[fFdD]?/, "number.float"],
       [/(@digits)[fFdD]/, "number.float"],
       [/(@digits)[lL]?/, "number"],
       // delimiter: after number because of .\d floats
@@ -297,17 +297,17 @@ const language = {
       [/\/\/.*$/, "comment"]
     ],
     comment: [
-      [/[^\/*]+/, "comment"],
+      [/[^/*]+/, "comment"],
       // [/\/\*/, 'comment', '@push' ],    // nested comment not allowed :-(
       // [/\/\*/,    'comment.invalid' ],    // this breaks block comments in the shape of /* //*/
       [/\*\//, "comment", "@pop"],
-      [/[\/*]/, "comment"]
+      [/[/*]/, "comment"]
     ],
     //Identical copy of comment above, except for the addition of .doc
     apexdoc: [
-      [/[^\/*]+/, "comment.doc"],
+      [/[^/*]+/, "comment.doc"],
       [/\*\//, "comment.doc", "@pop"],
-      [/[\/*]/, "comment.doc"]
+      [/[/*]/, "comment.doc"]
     ],
     string: [
       [/[^\\"']+/, "string"],

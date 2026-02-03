@@ -10,23 +10,19 @@ Coverage targets: 90%+ for error handling paths
 Total tests: 50+
 """
 
-import asyncio
-import json
 import tempfile
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timezone
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch, Mock
-from dataclasses import dataclass, field
+from unittest.mock import MagicMock, patch
 
-import httpx
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
-from sqlalchemy.exc import IntegrityError, OperationalError, SQLAlchemyError
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.exc import OperationalError
+from sqlalchemy.orm import sessionmaker
 
 from tracertm.api.client import TraceRTMClient
-from tracertm.api.main import app, get_db
+from tracertm.api.main import app
 from tracertm.api.sync_client import (
     ApiClient,
     ApiConfig,
@@ -39,16 +35,9 @@ from tracertm.api.sync_client import (
     NetworkError,
     RateLimitError,
     SyncOperation,
-    UploadResult,
 )
 from tracertm.config.manager import ConfigManager
-from tracertm.database.connection import DatabaseConnection
 from tracertm.models.base import Base
-from tracertm.models.project import Project
-from tracertm.models.item import Item
-from tracertm.models.link import Link
-from tracertm.models.agent import Agent
-from tracertm.models.event import Event
 
 pytestmark = pytest.mark.integration
 
@@ -117,7 +106,7 @@ def sample_change():
         operation=SyncOperation.CREATE,
         data={"title": "Test Item", "status": "draft"},
         version=1,
-        timestamp=datetime.utcnow(),
+        timestamp=datetime.now(UTC),
     )
 
 
@@ -342,6 +331,7 @@ class TestApiConfigurationErrors:
     def test_api_config_from_config_manager_complete(self):
         """Test ApiConfig from ConfigManager with complete config."""
         with patch.object(ConfigManager, "get") as mock_get:
+
             def get_side_effect(key):
                 config = {
                     "api_url": "https://api.example.com",
@@ -395,6 +385,7 @@ class TestTraceRTMClientConfigurationErrors:
     def test_client_without_project_selected(self):
         """Test error when no project is selected."""
         with patch.object(ConfigManager, "get") as mock_get:
+
             def get_side_effect(key):
                 if key == "database_url":
                     return "sqlite:///test.db"
@@ -430,10 +421,11 @@ class TestTraceRTMClientDatabaseErrors:
     def test_register_agent_database_error(self):
         """Test register_agent handles database errors."""
         with patch.object(ConfigManager, "get") as mock_get:
+
             def get_side_effect(key):
                 if key == "database_url":
                     return "sqlite:///test.db"
-                elif key == "current_project_id":
+                if key == "current_project_id":
                     return "proj-1"
                 return None
 
@@ -441,9 +433,7 @@ class TestTraceRTMClientDatabaseErrors:
             client = TraceRTMClient(agent_name="TestAgent")
 
             with patch.object(client, "_get_session") as mock_session_getter:
-                mock_session_getter.side_effect = OperationalError(
-                    "Connection lost", None, None
-                )
+                mock_session_getter.side_effect = OperationalError("Connection lost", None, Exception("Connection lost"))
 
                 with pytest.raises(OperationalError):
                     client.register_agent("TestAgent")
@@ -451,6 +441,7 @@ class TestTraceRTMClientDatabaseErrors:
     def test_session_reuse(self):
         """Test that database session is reused."""
         with patch.object(ConfigManager, "get") as mock_get:
+
             def get_side_effect(key):
                 if key == "database_url":
                     return "sqlite:///test.db"
@@ -479,6 +470,7 @@ class TestTraceRTMClientLogOperationErrors:
     def test_log_operation_graceful_failure_without_agent(self):
         """Test log operation gracefully fails without agent ID."""
         with patch.object(ConfigManager, "get") as mock_get:
+
             def get_side_effect(key):
                 if key == "database_url":
                     return "sqlite:///test.db"
@@ -563,7 +555,7 @@ class TestChangeObjectHandling:
 
     def test_change_timestamp_handling(self):
         """Test Change timestamp handling."""
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         change = Change(
             entity_type="item",
             entity_id="item-1",
@@ -587,7 +579,7 @@ class TestConflictObjectHandling:
             "remote_version": 2,
             "local_data": {"a": 1},
             "remote_data": {"b": 2},
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }
         conflict = Conflict.from_dict(data)
         assert conflict.conflict_id == "c1"
@@ -748,7 +740,10 @@ class TestHTTPStatusCodeHandling:
 
     def test_conflict_409_status(self):
         """Test 409 status is recognized as conflict."""
-        error = ConflictError("Merge conflict", [], )
+        error = ConflictError(
+            "Merge conflict",
+            [],
+        )
         # ConflictError represents 409 status
         assert isinstance(error, ApiError)
 

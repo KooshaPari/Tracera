@@ -9,7 +9,7 @@ import {
 function outputLink(cap, link, raw, lexer) {
   const href = link.href;
   const title = link.title ? escape(link.title) : null;
-  const text = cap[1].replace(/\\([\[\]])/g, '$1');
+  const text = cap[1].replace(/\\([[\]])/g, '$1');
 
   if (cap[0].charAt(0) !== '!') {
     lexer.state.inLink = true;
@@ -115,11 +115,11 @@ export class Tokenizer {
       let text = cap[2].trim();
 
       // remove trailing #s
-      if (/#$/.test(text)) {
+      if (text.endsWith('#')) {
         const trimmed = rtrim(text, '#');
         if (this.options.pedantic) {
           text = trimmed.trim();
-        } else if (!trimmed || / $/.test(trimmed)) {
+        } else if (!trimmed || trimmed.endsWith(' ')) {
           // CommonMark requires space before trailing #s
           text = trimmed.trim();
         }
@@ -532,9 +532,9 @@ export class Tokenizer {
     const cap = this.rules.inline.link.exec(src);
     if (cap) {
       const trimmedUrl = cap[2].trim();
-      if (!this.options.pedantic && /^</.test(trimmedUrl)) {
+      if (!this.options.pedantic && trimmedUrl.startsWith('<')) {
         // commonmark requires matching angle brackets
-        if (!(/>$/.test(trimmedUrl))) {
+        if (!(trimmedUrl.endsWith('>'))) {
           return;
         }
 
@@ -569,8 +569,8 @@ export class Tokenizer {
       }
 
       href = href.trim();
-      if (/^</.test(href)) {
-        if (this.options.pedantic && !(/>$/.test(trimmedUrl))) {
+      if (href.startsWith('<')) {
+        if (this.options.pedantic && !(trimmedUrl.endsWith('>'))) {
           // pedantic allows starting angle bracket without ending angle bracket
           href = href.slice(1);
         } else {
@@ -675,7 +675,7 @@ export class Tokenizer {
     if (cap) {
       let text = cap[2].replace(/\n/g, ' ');
       const hasNonSpaceChars = /[^ ]/.test(text);
-      const hasSpaceCharsOnBothEnds = /^ /.test(text) && / $/.test(text);
+      const hasSpaceCharsOnBothEnds = text.startsWith(' ') && text.endsWith(' ');
       if (hasNonSpaceChars && hasSpaceCharsOnBothEnds) {
         text = text.substring(1, text.length - 1);
       }

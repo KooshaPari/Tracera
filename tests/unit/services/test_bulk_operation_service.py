@@ -1,11 +1,12 @@
 """Unit tests for BulkOperationService - based on actual implementation."""
 
-import pytest
-from uuid import uuid4
 from unittest.mock import AsyncMock
+from uuid import uuid4
 
-from tracertm.services.bulk_service import BulkOperationService, BulkPreview
+import pytest
+
 from tracertm.models.item import Item
+from tracertm.services.bulk_service import BulkOperationService, BulkPreview
 
 pytestmark = pytest.mark.unit
 
@@ -72,7 +73,7 @@ class TestBulkPreviewDataclass:
             total_count=100,
             sample_items=[{"id": "1", "title": "Item"}],
             validation_warnings=[],
-            estimated_duration_ms=1000
+            estimated_duration_ms=1000,
         )
         assert preview.total_count == 100
         assert len(preview.sample_items) == 1
@@ -81,21 +82,13 @@ class TestBulkPreviewDataclass:
 
     def test_bulk_preview_is_safe_with_no_warnings(self):
         """BulkPreview.is_safe returns True when no warnings."""
-        preview = BulkPreview(
-            total_count=50,
-            sample_items=[],
-            validation_warnings=[],
-            estimated_duration_ms=500
-        )
+        preview = BulkPreview(total_count=50, sample_items=[], validation_warnings=[], estimated_duration_ms=500)
         assert preview.is_safe() is True
 
     def test_bulk_preview_is_safe_with_warnings(self):
         """BulkPreview.is_safe returns False when warnings exist."""
         preview = BulkPreview(
-            total_count=150,
-            sample_items=[],
-            validation_warnings=["Large operation"],
-            estimated_duration_ms=1500
+            total_count=150, sample_items=[], validation_warnings=["Large operation"], estimated_duration_ms=1500
         )
         assert preview.is_safe() is False
 
@@ -113,16 +106,14 @@ class TestBulkOperationServicePreview:
                 title=f"Item {i}",
                 view="Feature",
                 item_type="requirement",
-                status="todo"
+                status="todo",
             )
             for i in range(5)
         ]
         bulk_service.items.query = AsyncMock(return_value=mock_items)
 
         preview = await bulk_service.preview_bulk_update(
-            test_data["project_id"],
-            {"status": "todo"},
-            {"status": "in_progress"}
+            test_data["project_id"], {"status": "todo"}, {"status": "in_progress"}
         )
 
         assert isinstance(preview, BulkPreview)
@@ -139,17 +130,13 @@ class TestBulkOperationServicePreview:
                 project_id=test_data["project_id"],
                 title=f"Item {i}",
                 view="Feature",
-                item_type="requirement"
+                item_type="requirement",
             )
             for i in range(150)
         ]
         bulk_service.items.query = AsyncMock(return_value=large_item_list)
 
-        preview = await bulk_service.preview_bulk_update(
-            test_data["project_id"],
-            {},
-            {"priority": "high"}
-        )
+        preview = await bulk_service.preview_bulk_update(test_data["project_id"], {}, {"priority": "high"})
 
         assert preview.total_count == 150
         assert len(preview.validation_warnings) > 0
@@ -165,15 +152,13 @@ class TestBulkOperationServicePreview:
                 title="Blocked Item",
                 view="Feature",
                 item_type="requirement",
-                status="blocked"
+                status="blocked",
             )
         ]
         bulk_service.items.query = AsyncMock(return_value=mock_items)
 
         preview = await bulk_service.preview_bulk_update(
-            test_data["project_id"],
-            {"status": "blocked"},
-            {"status": "complete"}
+            test_data["project_id"], {"status": "blocked"}, {"status": "complete"}
         )
 
         assert len(preview.validation_warnings) > 0
@@ -190,17 +175,13 @@ class TestBulkOperationServicePreview:
                 title=f"Item {i}",
                 view="Feature",
                 item_type="requirement",
-                status="todo"
+                status="todo",
             )
             for i in range(10)
         ]
         bulk_service.items.query = AsyncMock(return_value=mock_items)
 
-        preview = await bulk_service.preview_bulk_update(
-            test_data["project_id"],
-            {},
-            {"status": "in_progress"}
-        )
+        preview = await bulk_service.preview_bulk_update(test_data["project_id"], {}, {"status": "in_progress"})
 
         assert len(preview.sample_items) <= 5
         for sample in preview.sample_items:
@@ -223,17 +204,14 @@ class TestBulkOperationServiceExecute:
                 title="Item",
                 view="Feature",
                 item_type="requirement",
-                status="blocked"
+                status="blocked",
             )
         ]
         bulk_service.items.query = AsyncMock(return_value=mock_items)
 
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(ValueError, match="warnings") as exc_info:
             await bulk_service.execute_bulk_update(
-                test_data["project_id"],
-                {"status": "blocked"},
-                {"status": "complete"},
-                test_data["agent_id"]
+                test_data["project_id"], {"status": "blocked"}, {"status": "complete"}, test_data["agent_id"]
             )
         assert "warnings" in str(exc_info.value).lower()
 
@@ -247,7 +225,7 @@ class TestBulkOperationServiceExecute:
                 title="Item",
                 view="Feature",
                 item_type="requirement",
-                status="todo"
+                status="todo",
             )
             for _ in range(3)
         ]
@@ -258,7 +236,7 @@ class TestBulkOperationServiceExecute:
                 title=item.title,
                 view=item.view,
                 item_type=item.item_type,
-                status="in_progress"
+                status="in_progress",
             )
             for item in mock_items
         ]
@@ -267,10 +245,7 @@ class TestBulkOperationServiceExecute:
         bulk_service.events.log = AsyncMock()
 
         result = await bulk_service.execute_bulk_update(
-            test_data["project_id"],
-            {"status": "todo"},
-            {"status": "in_progress"},
-            test_data["agent_id"]
+            test_data["project_id"], {"status": "todo"}, {"status": "in_progress"}, test_data["agent_id"]
         )
 
         assert isinstance(result, list)
@@ -286,17 +261,11 @@ class TestBulkOperationServiceExecute:
                 project_id=test_data["project_id"],
                 title="Item",
                 view="Feature",
-                item_type="requirement"
+                item_type="requirement",
             )
         ]
         updated_items = [
-            Item(
-                id=item.id,
-                project_id=item.project_id,
-                title=item.title,
-                view=item.view,
-                item_type=item.item_type
-            )
+            Item(id=item.id, project_id=item.project_id, title=item.title, view=item.view, item_type=item.item_type)
             for item in mock_items
         ]
         bulk_service.items.query = AsyncMock(return_value=mock_items)
@@ -304,11 +273,7 @@ class TestBulkOperationServiceExecute:
         bulk_service.events.log = AsyncMock()
 
         result = await bulk_service.execute_bulk_update(
-            test_data["project_id"],
-            {},
-            {"priority": "high"},
-            test_data["agent_id"],
-            skip_preview=True
+            test_data["project_id"], {}, {"priority": "high"}, test_data["agent_id"], skip_preview=True
         )
 
         assert isinstance(result, list)
@@ -323,17 +288,11 @@ class TestBulkOperationServiceExecute:
                 project_id=test_data["project_id"],
                 title="Item",
                 view="Feature",
-                item_type="requirement"
+                item_type="requirement",
             )
         ]
         updated_items = [
-            Item(
-                id=item.id,
-                project_id=item.project_id,
-                title=item.title,
-                view=item.view,
-                item_type=item.item_type
-            )
+            Item(id=item.id, project_id=item.project_id, title=item.title, view=item.view, item_type=item.item_type)
             for item in mock_items
         ]
         bulk_service.items.query = AsyncMock(return_value=mock_items)
@@ -341,11 +300,7 @@ class TestBulkOperationServiceExecute:
         bulk_service.events.log = AsyncMock()
 
         await bulk_service.execute_bulk_update(
-            test_data["project_id"],
-            {},
-            {"priority": "high"},
-            test_data["agent_id"],
-            skip_preview=True
+            test_data["project_id"], {}, {"priority": "high"}, test_data["agent_id"], skip_preview=True
         )
 
         bulk_service.events.log.assert_called_once()

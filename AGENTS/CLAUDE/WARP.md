@@ -42,3 +42,9 @@ Warp is the default terminal UX for this repo. Keep sessions fast, reproducible,
 
 ## Git Hygiene
 - Review `git diff` + `git status` before any commit. No commits with failing checks. Ensure line-count constraints respected on touched files.
+
+
+## Opinionated Quality Enforcement
+- We want opinionated rules that enforce opinionated styling to a strict degree.
+- This is an exclusively agent/vibecoded project; programmatic enforcement must guard against bad quality and antipatterns.
+- Rather than disables or ignores, fix code properly.

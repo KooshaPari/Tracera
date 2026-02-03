@@ -6,19 +6,18 @@ detection, ODC classification, CVSS scoring, and impact analysis.
 """
 
 from datetime import datetime
-from enum import Enum
-from typing import Any
+from enum import StrEnum
 
-from pydantic import BaseModel, Field, ConfigDict
-
+from pydantic import BaseModel, ConfigDict, Field
 
 # =============================================================================
 # Enums
 # =============================================================================
 
 
-class EARSPatternType(str, Enum):
+class EARSPatternType(StrEnum):
     """EARS pattern types for requirements."""
+
     UBIQUITOUS = "ubiquitous"
     EVENT_DRIVEN = "event_driven"
     STATE_DRIVEN = "state_driven"
@@ -27,8 +26,9 @@ class EARSPatternType(str, Enum):
     UNWANTED = "unwanted"
 
 
-class QualityDimension(str, Enum):
+class QualityDimension(StrEnum):
     """ISO 29148 quality dimensions."""
+
     UNAMBIGUITY = "unambiguity"
     COMPLETENESS = "completeness"
     VERIFIABILITY = "verifiability"
@@ -39,8 +39,9 @@ class QualityDimension(str, Enum):
     TRACEABILITY = "traceability"
 
 
-class QualityGrade(str, Enum):
+class QualityGrade(StrEnum):
     """Quality grade classification."""
+
     A = "A"
     B = "B"
     C = "C"
@@ -48,8 +49,9 @@ class QualityGrade(str, Enum):
     F = "F"
 
 
-class FlakinessPattern(str, Enum):
+class FlakinessPattern(StrEnum):
     """Test flakiness pattern types."""
+
     TIMING = "timing"
     ASYNC = "async"
     ENVIRONMENT = "environment"
@@ -59,8 +61,9 @@ class FlakinessPattern(str, Enum):
     RANDOM = "random"
 
 
-class ODCDefectType(str, Enum):
+class ODCDefectType(StrEnum):
     """IBM ODC defect types."""
+
     FUNCTION = "function"
     INTERFACE = "interface"
     CHECKING = "checking"
@@ -71,8 +74,9 @@ class ODCDefectType(str, Enum):
     ALGORITHM = "algorithm"
 
 
-class ODCTrigger(str, Enum):
+class ODCTrigger(StrEnum):
     """IBM ODC defect triggers."""
+
     COVERAGE = "coverage"
     DESIGN_CONFORMANCE = "design_conformance"
     EXCEPTION_HANDLING = "exception_handling"
@@ -82,8 +86,9 @@ class ODCTrigger(str, Enum):
     RARE_SITUATION = "rare_situation"
 
 
-class ODCImpact(str, Enum):
+class ODCImpact(StrEnum):
     """IBM ODC defect impacts."""
+
     CAPABILITY = "capability"
     USABILITY = "usability"
     PERFORMANCE = "performance"
@@ -94,8 +99,9 @@ class ODCImpact(str, Enum):
     STANDARDS = "standards"
 
 
-class CVSSSeverity(str, Enum):
+class CVSSSeverity(StrEnum):
     """CVSS severity levels."""
+
     NONE = "none"
     LOW = "low"
     MEDIUM = "medium"
@@ -103,8 +109,9 @@ class CVSSSeverity(str, Enum):
     CRITICAL = "critical"
 
 
-class MoSCoWPriority(str, Enum):
+class MoSCoWPriority(StrEnum):
     """MoSCoW prioritization categories."""
+
     MUST = "must"
     SHOULD = "should"
     COULD = "could"
@@ -118,6 +125,7 @@ class MoSCoWPriority(str, Enum):
 
 class EARSComponent(BaseModel):
     """Individual component of an EARS analysis."""
+
     name: str
     value: str | None = None
     confidence: float = Field(ge=0, le=1)
@@ -125,6 +133,7 @@ class EARSComponent(BaseModel):
 
 class EARSAnalysisResponse(BaseModel):
     """Response for EARS pattern analysis of a requirement."""
+
     spec_id: str
     pattern_type: EARSPatternType
     confidence: float = Field(ge=0, le=1)
@@ -155,6 +164,7 @@ class EARSAnalysisResponse(BaseModel):
 
 class QualityIssue(BaseModel):
     """A detected quality issue with a requirement."""
+
     dimension: QualityDimension
     severity: str = Field(pattern="^(error|warning|info)$")
     message: str
@@ -164,6 +174,7 @@ class QualityIssue(BaseModel):
 
 class QualityDimensionScore(BaseModel):
     """Score for a single quality dimension."""
+
     dimension: QualityDimension
     score: float = Field(ge=0, le=1)
     weight: float = Field(ge=0, le=1, default=1.0)
@@ -172,6 +183,7 @@ class QualityDimensionScore(BaseModel):
 
 class QualityScoreResponse(BaseModel):
     """Response for ISO 29148 quality analysis."""
+
     spec_id: str
 
     # Dimension scores
@@ -202,6 +214,7 @@ class QualityScoreResponse(BaseModel):
 
 class MerkleProofResponse(BaseModel):
     """Response for Merkle proof generation/verification."""
+
     spec_id: str
 
     # Merkle proof components
@@ -224,6 +237,7 @@ class MerkleProofResponse(BaseModel):
 
 class ContentAddressResponse(BaseModel):
     """Response for content addressing information."""
+
     spec_id: str
 
     # Content identifiers
@@ -248,6 +262,7 @@ class ContentAddressResponse(BaseModel):
 
 class VersionChainEntry(BaseModel):
     """An entry in the version chain."""
+
     version_hash: str
     version_number: int
     content_hash: str
@@ -259,6 +274,7 @@ class VersionChainEntry(BaseModel):
 
 class VersionChainResponse(BaseModel):
     """Response for version chain history."""
+
     spec_id: str
 
     # Chain info
@@ -282,6 +298,7 @@ class VersionChainResponse(BaseModel):
 
 class FlakinessContributingFactor(BaseModel):
     """A factor contributing to test flakiness."""
+
     factor: str
     weight: float = Field(ge=0, le=1)
     evidence: str | None = None
@@ -289,6 +306,7 @@ class FlakinessContributingFactor(BaseModel):
 
 class FlakinessAnalysisResponse(BaseModel):
     """Response for test flakiness analysis."""
+
     spec_id: str
 
     # Probability metrics
@@ -301,9 +319,7 @@ class FlakinessAnalysisResponse(BaseModel):
     pattern_confidence: float = Field(ge=0, le=1, default=0)
 
     # Contributing factors
-    contributing_factors: list[FlakinessContributingFactor] = Field(
-        default_factory=list
-    )
+    contributing_factors: list[FlakinessContributingFactor] = Field(default_factory=list)
 
     # Recommendation
     quarantine_recommended: bool = False
@@ -326,6 +342,7 @@ class FlakinessAnalysisResponse(BaseModel):
 
 class ODCClassificationResponse(BaseModel):
     """Response for IBM Orthogonal Defect Classification."""
+
     spec_id: str
 
     # Classification
@@ -358,6 +375,7 @@ class ODCClassificationResponse(BaseModel):
 
 class CVSSBreakdown(BaseModel):
     """Breakdown of CVSS score components."""
+
     attack_vector: str
     attack_complexity: str
     privileges_required: str
@@ -370,6 +388,7 @@ class CVSSBreakdown(BaseModel):
 
 class CVSSScoreResponse(BaseModel):
     """Response for CVSS security scoring."""
+
     spec_id: str
 
     # Score
@@ -402,6 +421,7 @@ class CVSSScoreResponse(BaseModel):
 
 class ImpactedItem(BaseModel):
     """An item impacted by a change."""
+
     item_id: str
     item_type: str
     item_title: str
@@ -412,6 +432,7 @@ class ImpactedItem(BaseModel):
 
 class ImpactAnalysisResponse(BaseModel):
     """Response for graph-based impact analysis."""
+
     spec_id: str
 
     # Direct impacts
@@ -450,6 +471,7 @@ class ImpactAnalysisResponse(BaseModel):
 
 class WSJFScore(BaseModel):
     """WSJF (Weighted Shortest Job First) scoring."""
+
     business_value: int = Field(ge=1, le=10)
     time_criticality: int = Field(ge=1, le=10)
     risk_reduction: int = Field(ge=1, le=10)
@@ -459,6 +481,7 @@ class WSJFScore(BaseModel):
 
 class RICEScore(BaseModel):
     """RICE (Reach, Impact, Confidence, Effort) scoring."""
+
     reach: int = Field(ge=0)
     impact: int = Field(ge=1, le=4)  # 1=minimal, 2=low, 3=medium, 4=high
     confidence: float = Field(ge=0, le=1)
@@ -468,6 +491,7 @@ class RICEScore(BaseModel):
 
 class PrioritizationResponse(BaseModel):
     """Response for prioritization calculations."""
+
     spec_id: str
 
     # WSJF
@@ -496,6 +520,7 @@ class PrioritizationResponse(BaseModel):
 
 class CoverageGap(BaseModel):
     """A detected coverage gap."""
+
     requirement_id: str
     requirement_title: str
     gap_type: str  # no_tests, partial_coverage, stale_tests
@@ -505,6 +530,7 @@ class CoverageGap(BaseModel):
 
 class CoverageGapAnalysisResponse(BaseModel):
     """Response for coverage gap analysis."""
+
     project_id: str
 
     # Gaps
@@ -528,6 +554,7 @@ class CoverageGapAnalysisResponse(BaseModel):
 
 class SuspectLink(BaseModel):
     """A suspected invalid or stale traceability link."""
+
     source_id: str
     target_id: str
     link_type: str
@@ -537,6 +564,7 @@ class SuspectLink(BaseModel):
 
 class SuspectLinkAnalysisResponse(BaseModel):
     """Response for suspect link detection."""
+
     project_id: str
 
     # Suspect links
@@ -558,6 +586,7 @@ class SuspectLinkAnalysisResponse(BaseModel):
 
 class SimilarItem(BaseModel):
     """A semantically similar item."""
+
     item_id: str
     item_title: str
     item_type: str
@@ -568,6 +597,7 @@ class SimilarItem(BaseModel):
 
 class SimilarityAnalysisResponse(BaseModel):
     """Response for semantic similarity analysis."""
+
     spec_id: str
 
     # Similar items
@@ -594,36 +624,42 @@ class SimilarityAnalysisResponse(BaseModel):
 
 class AnalyzeEARSRequest(BaseModel):
     """Request for EARS analysis."""
+
     requirement_text: str | None = None  # If not provided, uses spec content
     include_suggestions: bool = True
 
 
 class AnalyzeQualityRequest(BaseModel):
     """Request for quality analysis."""
+
     dimensions: list[QualityDimension] | None = None  # If None, analyze all
     include_suggestions: bool = True
 
 
 class AnalyzeFlakinessRequest(BaseModel):
     """Request for flakiness analysis."""
+
     recent_runs_count: int = Field(default=20, ge=5, le=100)
     include_historical: bool = True
 
 
 class AnalyzeODCRequest(BaseModel):
     """Request for ODC classification."""
+
     defect_description: str | None = None  # If not provided, uses spec content
     include_prevention_suggestions: bool = True
 
 
 class AnalyzeCVSSRequest(BaseModel):
     """Request for CVSS scoring."""
+
     vulnerability_description: str | None = None
     include_remediation: bool = True
 
 
 class AnalyzeImpactRequest(BaseModel):
     """Request for impact analysis."""
+
     max_depth: int = Field(default=3, ge=1, le=10)
     include_transitive: bool = True
     item_types: list[str] | None = None  # Filter by type
@@ -631,6 +667,7 @@ class AnalyzeImpactRequest(BaseModel):
 
 class CalculatePrioritizationRequest(BaseModel):
     """Request for prioritization calculation."""
+
     calculate_wsjf: bool = True
     calculate_rice: bool = True
     suggest_moscow: bool = True
@@ -655,18 +692,21 @@ class CalculatePrioritizationRequest(BaseModel):
 
 class AnalyzeCoverageGapsRequest(BaseModel):
     """Request for coverage gap analysis."""
+
     include_stale: bool = True
     stale_threshold_days: int = Field(default=30, ge=1)
 
 
 class AnalyzeSuspectLinksRequest(BaseModel):
     """Request for suspect link analysis."""
+
     link_types: list[str] | None = None  # Filter by type
     confidence_threshold: float = Field(default=0.7, ge=0, le=1)
 
 
 class AnalyzeSimilarityRequest(BaseModel):
     """Request for similarity analysis."""
+
     similarity_threshold: float = Field(default=0.8, ge=0, le=1)
     max_results: int = Field(default=10, ge=1, le=50)
     include_all_types: bool = True

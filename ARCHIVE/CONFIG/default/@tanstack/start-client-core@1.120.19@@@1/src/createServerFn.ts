@@ -883,7 +883,7 @@ export const applyMiddleware = async (
         },
         sendContext: {
           ...ctx.sendContext,
-          ...(userCtx.sendContext ?? {}),
+          ...userCtx.sendContext,
         },
         headers: mergeHeaders(ctx.headers, userCtx.headers),
         result:

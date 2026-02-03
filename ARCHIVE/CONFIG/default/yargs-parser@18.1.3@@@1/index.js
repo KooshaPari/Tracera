@@ -416,7 +416,7 @@ function parse (args, opts) {
     if (checkAllAliases(key, flags.bools) && !(/^(true|false)$/.test(next))) {
       argsToSet.push(true)
     } else if (isUndefined(next) ||
-        (isUndefined(argAfterEqualSign) && /^-/.test(next) && !negative.test(next) && !isUnknownOptionAsArg(next))) {
+        (isUndefined(argAfterEqualSign) && next.startsWith('-') && !negative.test(next) && !isUnknownOptionAsArg(next))) {
       // for keys without value ==> argsToSet remains an empty []
       // set user default value, if available
       if (defaults[key] !== undefined) {
@@ -432,7 +432,7 @@ function parse (args, opts) {
         if ((!configuration['greedy-arrays'] && argsToSet.length > 0) ||
           (nargsCount && argsToSet.length >= nargsCount)) break
         next = args[ii]
-        if (/^-/.test(next) && !negative.test(next) && !isUnknownOptionAsArg(next)) break
+        if (next.startsWith('-') && !negative.test(next) && !isUnknownOptionAsArg(next)) break
         i = ii
         argsToSet.push(processValue(key, next))
       }

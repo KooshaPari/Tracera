@@ -8,4 +8,4 @@ interface SectorProps extends GeometrySector {
 }
 export type Props = SVGProps<SVGPathElement> & SectorProps;
 export declare const Sector: React.FC<Props>;
-export {};
+

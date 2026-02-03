@@ -73,7 +73,7 @@ export default function wren(Prism) {
     // Functions can be Class.method()
     function: /\b[a-z_]\w*(?=\s*[({])/i,
     operator: /<<|>>|[=!<>]=?|&&|\|\||[-+*/%~^&|?:]|\.{2,3}/,
-    punctuation: /[\[\](){}.,;]/
+    punctuation: /[[\](){}.,;]/
   }
   Prism.languages.wren['string-literal'] = {
     // A single quote string is multiline and can have interpolation (similar to JS backticks ``)

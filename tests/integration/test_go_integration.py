@@ -1,12 +1,11 @@
 """Integration tests for Go Backend client."""
 
 import asyncio
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 
 import httpx
 import pytest
 import pytest_asyncio
-from httpx import AsyncClient
 
 from tracertm.clients.go_client import GoBackendClient, GoBackendError
 

@@ -17,19 +17,19 @@ import hashlib
 import json
 import logging
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import text
 
 from tracertm.storage.conflict_resolver import ConflictStrategy, VectorClock
 
 if TYPE_CHECKING:
-    from tracertm.storage.local_storage import LocalStorageManager
     from tracertm.api.client import TraceRTMClient
     from tracertm.database.connection import DatabaseConnection
+    from tracertm.storage.local_storage import LocalStorageManager
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +41,7 @@ logger = logging.getLogger(__name__)
 
 class OperationType(Enum):
     """Sync operation types."""
+
     CREATE = "create"
     UPDATE = "update"
     DELETE = "delete"
@@ -48,6 +49,7 @@ class OperationType(Enum):
 
 class EntityType(Enum):
     """Entity types that can be synced."""
+
     PROJECT = "project"
     ITEM = "item"
     LINK = "link"
@@ -56,6 +58,7 @@ class EntityType(Enum):
 
 class SyncStatus(Enum):
     """Sync operation status."""
+
     IDLE = "idle"
     SYNCING = "syncing"
     CONFLICT = "conflict"
@@ -66,6 +69,7 @@ class SyncStatus(Enum):
 @dataclass
 class SyncState:
     """Tracks sync metadata and state."""
+
     last_sync: datetime | None = None
     pending_changes: int = 0
     status: SyncStatus = SyncStatus.IDLE
@@ -77,6 +81,7 @@ class SyncState:
 @dataclass
 class QueuedChange:
     """Represents a change in the sync queue."""
+
     id: int
     entity_type: EntityType
     entity_id: str
@@ -90,6 +95,7 @@ class QueuedChange:
 @dataclass
 class SyncResult:
     """Result of a sync operation."""
+
     success: bool
     entities_synced: int = 0
     conflicts: list[dict[str, Any]] = field(default_factory=list)
@@ -116,7 +122,7 @@ class ChangeDetector:
         Returns:
             Hex digest of hash
         """
-        return hashlib.sha256(content.encode('utf-8')).hexdigest()
+        return hashlib.sha256(content.encode("utf-8")).hexdigest()
 
     @staticmethod
     def has_changed(current_content: str, stored_hash: str | None) -> bool:
@@ -137,10 +143,7 @@ class ChangeDetector:
         return current_hash != stored_hash
 
     @staticmethod
-    def detect_changes_in_directory(
-        directory: Path,
-        stored_hashes: dict[str, str]
-    ) -> list[tuple[Path, str]]:
+    def detect_changes_in_directory(directory: Path, stored_hashes: dict[str, str]) -> list[tuple[Path, str]]:
         """
         Detect changed files in a directory.
 
@@ -158,7 +161,7 @@ class ChangeDetector:
 
         for file_path in directory.rglob("*.md"):
             if file_path.is_file():
-                content = file_path.read_text(encoding='utf-8')
+                content = file_path.read_text(encoding="utf-8")
                 current_hash = ChangeDetector.compute_hash(content)
 
                 relative_path = str(file_path.relative_to(directory))
@@ -199,7 +202,8 @@ class SyncQueue:
         """Ensure sync tables exist."""
         with self.engine.connect() as conn:
             # Create sync_queue table
-            conn.execute(text("""
+            conn.execute(
+                text("""
                 CREATE TABLE IF NOT EXISTS sync_queue (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     entity_type TEXT NOT NULL,
@@ -211,25 +215,24 @@ class SyncQueue:
                     last_error TEXT,
                     UNIQUE(entity_type, entity_id, operation)
                 )
-            """))
+            """)
+            )
 
             # Create sync_state table
-            conn.execute(text("""
+            conn.execute(
+                text("""
                 CREATE TABLE IF NOT EXISTS sync_state (
                     key TEXT PRIMARY KEY,
                     value TEXT NOT NULL,
                     updated_at TEXT NOT NULL
                 )
-            """))
+            """)
+            )
 
             conn.commit()
 
     def enqueue(
-        self,
-        entity_type: EntityType,
-        entity_id: str,
-        operation: OperationType,
-        payload: dict[str, Any]
+        self, entity_type: EntityType, entity_id: str, operation: OperationType, payload: dict[str, Any]
     ) -> int:
         """
         Add or update a change in the sync queue.
@@ -260,11 +263,11 @@ class SyncQueue:
                     "entity_id": entity_id,
                     "operation": operation.value,
                     "payload": json.dumps(payload),
-                    "created_at": datetime.utcnow().isoformat(),
+                    "created_at": datetime.now(UTC).isoformat(),
                     "entity_type2": entity_type.value,
                     "entity_id2": entity_id,
-                    "operation2": operation.value
-                }
+                    "operation2": operation.value,
+                },
             )
             conn.commit()
             lastrowid = result.lastrowid
@@ -291,12 +294,11 @@ class SyncQueue:
                 ORDER BY created_at ASC
                 LIMIT :limit
                 """),
-                {"limit": limit}
+                {"limit": limit},
             )
 
-            changes = []
-            for row in result:
-                changes.append(QueuedChange(
+            return [
+                QueuedChange(
                     id=row[0],
                     entity_type=EntityType(row[1]),
                     entity_id=row[2],
@@ -304,10 +306,10 @@ class SyncQueue:
                     payload=json.loads(row[4]),
                     created_at=datetime.fromisoformat(row[5]),
                     retry_count=row[6],
-                    last_error=row[7]
-                ))
-
-            return changes
+                    last_error=row[7],
+                )
+                for row in result
+            ]
 
     def remove(self, queue_id: int) -> None:
         """
@@ -317,10 +319,7 @@ class SyncQueue:
             queue_id: Queue entry ID
         """
         with self.engine.connect() as conn:
-            conn.execute(
-                text("DELETE FROM sync_queue WHERE id = :queue_id"),
-                {"queue_id": queue_id}
-            )
+            conn.execute(text("DELETE FROM sync_queue WHERE id = :queue_id"), {"queue_id": queue_id})
             conn.commit()
 
     def update_retry(self, queue_id: int, error: str) -> None:
@@ -339,7 +338,7 @@ class SyncQueue:
                     last_error = :error
                 WHERE id = :queue_id
                 """),
-                {"error": error, "queue_id": queue_id}
+                {"error": error, "queue_id": queue_id},
             )
             conn.commit()
 
@@ -390,7 +389,8 @@ class SyncStateManager:
     def _ensure_tables(self) -> None:
         """Ensure sync tables exist."""
         with self.engine.connect() as conn:
-            conn.execute(text("""
+            conn.execute(
+                text("""
                 CREATE TABLE IF NOT EXISTS sync_queue (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     entity_type TEXT NOT NULL,
@@ -402,14 +402,17 @@ class SyncStateManager:
                     last_error TEXT,
                     UNIQUE(entity_type, entity_id, operation)
                 )
-            """))
-            conn.execute(text("""
+            """)
+            )
+            conn.execute(
+                text("""
                 CREATE TABLE IF NOT EXISTS sync_state (
                     key TEXT PRIMARY KEY,
                     value TEXT NOT NULL,
                     updated_at TEXT NOT NULL
                 )
-            """))
+            """)
+            )
             conn.commit()
 
     def get_state(self) -> SyncState:
@@ -421,9 +424,7 @@ class SyncStateManager:
         """
         with self.engine.connect() as conn:
             # Get last_sync timestamp
-            result = conn.execute(
-                text("SELECT value FROM sync_state WHERE key = 'last_sync'")
-            )
+            result = conn.execute(text("SELECT value FROM sync_state WHERE key = 'last_sync'"))
             row = result.fetchone()
             last_sync = datetime.fromisoformat(row[0]) if row else None
 
@@ -433,25 +434,16 @@ class SyncStateManager:
             pending_changes: int = int(pending_changes_raw) if pending_changes_raw is not None else 0
 
             # Get status
-            result = conn.execute(
-                text("SELECT value FROM sync_state WHERE key = 'status'")
-            )
+            result = conn.execute(text("SELECT value FROM sync_state WHERE key = 'status'"))
             row = result.fetchone()
             status = SyncStatus(row[0]) if row else SyncStatus.IDLE
 
             # Get last error
-            result = conn.execute(
-                text("SELECT value FROM sync_state WHERE key = 'last_error'")
-            )
+            result = conn.execute(text("SELECT value FROM sync_state WHERE key = 'last_error'"))
             row = result.fetchone()
             last_error = row[0] if row else None
 
-            return SyncState(
-                last_sync=last_sync,
-                pending_changes=pending_changes,
-                status=status,
-                last_error=last_error
-            )
+            return SyncState(last_sync=last_sync, pending_changes=pending_changes, status=status, last_error=last_error)
 
     def update_last_sync(self, timestamp: datetime | None = None) -> None:
         """
@@ -461,7 +453,7 @@ class SyncStateManager:
             timestamp: Sync timestamp (defaults to now)
         """
         if timestamp is None:
-            timestamp = datetime.utcnow()
+            timestamp = datetime.now(UTC)
 
         with self.engine.connect() as conn:
             conn.execute(
@@ -469,11 +461,7 @@ class SyncStateManager:
                 INSERT OR REPLACE INTO sync_state (key, value, updated_at)
                 VALUES (:key, :value, :updated_at)
                 """),
-                {
-                    "key": "last_sync",
-                    "value": timestamp.isoformat(),
-                    "updated_at": datetime.utcnow().isoformat()
-                }
+                {"key": "last_sync", "value": timestamp.isoformat(), "updated_at": datetime.now(UTC).isoformat()},
             )
             conn.commit()
 
@@ -490,11 +478,7 @@ class SyncStateManager:
                 INSERT OR REPLACE INTO sync_state (key, value, updated_at)
                 VALUES (:key, :value, :updated_at)
                 """),
-                {
-                    "key": "status",
-                    "value": status.value,
-                    "updated_at": datetime.utcnow().isoformat()
-                }
+                {"key": "status", "value": status.value, "updated_at": datetime.now(UTC).isoformat()},
             )
             conn.commit()
 
@@ -514,7 +498,7 @@ class SyncStateManager:
                     INSERT OR REPLACE INTO sync_state (key, value, updated_at)
                     VALUES (:error_key, :error_value, :updated_at)
                     """),
-                    {"error_key": "last_error", "error_value": error, "updated_at": datetime.utcnow().isoformat()}
+                    {"error_key": "last_error", "error_value": error, "updated_at": datetime.now(UTC).isoformat()},
                 )
             conn.commit()
 
@@ -543,7 +527,7 @@ class SyncEngine:
         storage_manager: "LocalStorageManager",
         conflict_strategy: ConflictStrategy = ConflictStrategy.LAST_WRITE_WINS,
         max_retries: int = 3,
-        retry_delay: float = 1.0
+        retry_delay: float = 1.0,
     ) -> None:
         """
         Initialize sync engine.
@@ -556,9 +540,9 @@ class SyncEngine:
             max_retries: Maximum retry attempts for failed syncs
             retry_delay: Initial delay between retries (seconds)
         """
-        self.db: "DatabaseConnection" = db_connection
-        self.api: "TraceRTMClient" = api_client
-        self.storage: "LocalStorageManager" = storage_manager
+        self.db: DatabaseConnection = db_connection
+        self.api: TraceRTMClient = api_client
+        self.storage: LocalStorageManager = storage_manager
         self.conflict_strategy: ConflictStrategy = conflict_strategy
         self.max_retries: int = max_retries
         self.retry_delay: float = retry_delay
@@ -597,7 +581,7 @@ class SyncEngine:
                 return SyncResult(success=False, errors=["Sync already in progress"])
 
             self._syncing = True
-            start_time = datetime.utcnow()
+            start_time = datetime.now(UTC)
 
             try:
                 self.state_manager.update_status(SyncStatus.SYNCING)
@@ -620,14 +604,14 @@ class SyncEngine:
                 self.state_manager.update_last_sync()
                 self.state_manager.update_status(SyncStatus.SUCCESS)
 
-                duration = (datetime.utcnow() - start_time).total_seconds()
+                duration = (datetime.now(UTC) - start_time).total_seconds()
 
                 result = SyncResult(
                     success=True,
                     entities_synced=upload_result.entities_synced + download_result.entities_synced,
                     conflicts=upload_result.conflicts + download_result.conflicts,
                     errors=upload_result.errors + download_result.errors,
-                    duration_seconds=duration
+                    duration_seconds=duration,
                 )
 
                 logger.info(
@@ -643,9 +627,7 @@ class SyncEngine:
                 self.state_manager.update_error(str(e))
 
                 return SyncResult(
-                    success=False,
-                    errors=[str(e)],
-                    duration_seconds=(datetime.utcnow() - start_time).total_seconds()
+                    success=False, errors=[str(e)], duration_seconds=(datetime.now(UTC) - start_time).total_seconds()
                 )
 
             finally:
@@ -664,14 +646,13 @@ class SyncEngine:
             # Get all local items from database
             with self.engine.connect() as conn:
                 # Get all items
-                result = conn.execute(
-                    text("SELECT id, content, updated_at FROM item")
-                )
+                result = conn.execute(text("SELECT id, content, updated_at FROM item"))
                 local_items = {row[0]: {"content": row[1], "updated_at": row[2]} for row in result}
 
             # Check for new or modified items
-            if hasattr(self.storage, 'get_item_hashes'):
-                stored_hashes = self.storage.get_item_hashes()
+            get_hashes = getattr(self.storage, "get_item_hashes", None)
+            if callable(get_hashes):
+                stored_hashes = get_hashes()
 
                 for item_id, item_data in local_items.items():
                     content = str(item_data.get("content", ""))
@@ -683,7 +664,7 @@ class SyncEngine:
                             EntityType.ITEM,
                             item_id,
                             OperationType.UPDATE,
-                            {"content": content, "updated_at": item_data.get("updated_at")}
+                            {"content": content, "updated_at": item_data.get("updated_at")},
                         )
                         changes_queued += 1
                         logger.debug(f"Queued change for item {item_id}")
@@ -696,11 +677,7 @@ class SyncEngine:
         return changes_queued
 
     def queue_change(
-        self,
-        entity_type: EntityType,
-        entity_id: str,
-        operation: OperationType,
-        payload: dict[str, Any]
+        self, entity_type: EntityType, entity_id: str, operation: OperationType, payload: dict[str, Any]
     ) -> int:
         """
         Queue a change for sync.
@@ -732,12 +709,8 @@ class SyncEngine:
             try:
                 # Skip if too many retries
                 if change.retry_count >= self.max_retries:
-                    logger.warning(
-                        f"Skipping change {change.id} (too many retries: {change.retry_count})"
-                    )
-                    result.errors.append(
-                        f"Max retries exceeded for {change.entity_type.value} {change.entity_id}"
-                    )
+                    logger.warning(f"Skipping change {change.id} (too many retries: {change.retry_count})")
+                    result.errors.append(f"Max retries exceeded for {change.entity_type.value} {change.entity_id}")
                     continue
 
                 # Upload change to API
@@ -748,7 +721,7 @@ class SyncEngine:
                     result.entities_synced += 1
                 else:
                     # Retry with exponential backoff
-                    delay = self.retry_delay * (2 ** change.retry_count)
+                    delay = self.retry_delay * (2**change.retry_count)
                     await asyncio.sleep(delay)
 
             except Exception as e:
@@ -775,11 +748,12 @@ class SyncEngine:
 
             # Try to fetch remote changes via API client
             remote_changes = []
-            if hasattr(self.api, 'get_changes'):
+            get_changes = getattr(self.api, "get_changes", None)
+            if callable(get_changes):
                 try:
                     # Call API to get changes since last sync
                     params = {"since": since.isoformat()} if since else {}
-                    remote_changes = await self.api.get_changes(**params)
+                    remote_changes = await get_changes(**params)
                 except Exception as e:
                     logger.warning(f"Failed to fetch remote changes: {e}")
                     # Continue with empty list - not a hard failure
@@ -884,43 +858,43 @@ class SyncEngine:
 
             with self.engine.begin() as conn:
                 if operation == OperationType.CREATE:
-                    # Insert new entity
-                    conn.execute(
-                        text(f"""
+                    # Insert new entity (entity_type is Enum, value is safe)
+                    stmt = f"""
                             INSERT OR IGNORE INTO {entity_type.value}
                             (id, content, updated_at, synced_at)
                             VALUES (:id, :content, :updated_at, :synced_at)
-                        """),
+                        """  # noqa: S608
+                    conn.execute(
+                        text(stmt),
                         {
                             "id": entity_id,
                             "content": json.dumps(payload),
-                            "updated_at": datetime.utcnow().isoformat(),
-                            "synced_at": datetime.utcnow().isoformat()
-                        }
+                            "updated_at": datetime.now(UTC).isoformat(),
+                            "synced_at": datetime.now(UTC).isoformat(),
+                        },
                     )
 
                 elif operation == OperationType.UPDATE:
-                    # Update existing entity
-                    conn.execute(
-                        text(f"""
+                    # Update existing entity (entity_type is Enum, value is safe)
+                    stmt = f"""
                             UPDATE {entity_type.value}
                             SET content = :content, updated_at = :updated_at, synced_at = :synced_at
                             WHERE id = :id
-                        """),
+                        """  # noqa: S608
+                    conn.execute(
+                        text(stmt),
                         {
                             "id": entity_id,
                             "content": json.dumps(payload),
-                            "updated_at": datetime.utcnow().isoformat(),
-                            "synced_at": datetime.utcnow().isoformat()
-                        }
+                            "updated_at": datetime.now(UTC).isoformat(),
+                            "synced_at": datetime.now(UTC).isoformat(),
+                        },
                     )
 
                 elif operation == OperationType.DELETE:
-                    # Delete entity
-                    conn.execute(
-                        text(f"DELETE FROM {entity_type.value} WHERE id = :id"),
-                        {"id": entity_id}
-                    )
+                    # Delete entity (entity_type is Enum, value is safe)
+                    stmt = f"DELETE FROM {entity_type.value} WHERE id = :id"  # noqa: S608
+                    conn.execute(text(stmt), {"id": entity_id})
 
             logger.debug(f"Successfully applied remote change for {entity_type.value} {entity_id}")
 
@@ -928,11 +902,7 @@ class SyncEngine:
             logger.error(f"Error applying remote change: {e}", exc_info=True)
             raise
 
-    def _resolve_conflict(
-        self,
-        local_data: dict[str, Any],
-        remote_data: dict[str, Any]
-    ) -> dict[str, Any]:
+    def _resolve_conflict(self, local_data: dict[str, Any], remote_data: dict[str, Any]) -> dict[str, Any]:
         """
         Resolve conflict between local and remote data.
 
@@ -945,17 +915,17 @@ class SyncEngine:
         """
         if self.conflict_strategy == ConflictStrategy.LAST_WRITE_WINS:
             # Compare timestamps
-            local_ts = datetime.fromisoformat(local_data.get('updated_at', ''))
-            remote_ts = datetime.fromisoformat(remote_data.get('updated_at', ''))
+            local_ts = datetime.fromisoformat(local_data.get("updated_at", ""))
+            remote_ts = datetime.fromisoformat(remote_data.get("updated_at", ""))
             return remote_data if remote_ts > local_ts else local_data
 
-        elif self.conflict_strategy == ConflictStrategy.LOCAL_WINS:
+        if self.conflict_strategy == ConflictStrategy.LOCAL_WINS:
             return local_data
 
-        elif self.conflict_strategy == ConflictStrategy.REMOTE_WINS:
+        if self.conflict_strategy == ConflictStrategy.REMOTE_WINS:
             return remote_data
 
-        elif self.conflict_strategy == ConflictStrategy.MANUAL:
+        if self.conflict_strategy == ConflictStrategy.MANUAL:
             # Create conflict file for manual resolution
             try:
                 conflict_file = self._create_conflict_file(local_data, remote_data)
@@ -966,12 +936,7 @@ class SyncEngine:
 
         return local_data
 
-    def create_vector_clock(
-        self,
-        client_id: str,
-        version: int,
-        parent_version: int
-    ) -> VectorClock:
+    def create_vector_clock(self, client_id: str, version: int, parent_version: int) -> VectorClock:
         """
         Create a vector clock for ordering.
 
@@ -984,21 +949,14 @@ class SyncEngine:
             VectorClock instance
         """
         return VectorClock(
-            client_id=client_id,
-            version=version,
-            timestamp=datetime.utcnow(),
-            parent_version=parent_version
+            client_id=client_id, version=version, timestamp=datetime.now(UTC), parent_version=parent_version
         )
 
     # ========================================================================
     # Utility Methods
     # ========================================================================
 
-    def _create_conflict_file(
-        self,
-        local_data: dict[str, Any],
-        remote_data: dict[str, Any]
-    ) -> str:
+    def _create_conflict_file(self, local_data: dict[str, Any], remote_data: dict[str, Any]) -> str:
         """
         Create a conflict file for manual resolution.
 
@@ -1009,7 +967,7 @@ class SyncEngine:
         Returns:
             Path to created conflict file
         """
-        timestamp = datetime.utcnow().isoformat().replace(":", "-")
+        timestamp = datetime.now(UTC).isoformat().replace(":", "-")
         conflict_content = f"""# SYNC CONFLICT
 Date: {timestamp}
 Strategy: MANUAL RESOLUTION REQUIRED
@@ -1031,15 +989,15 @@ Strategy: MANUAL RESOLUTION REQUIRED
 4. Run sync again to continue
 """
 
-        if hasattr(self.storage, 'trace_path'):
-            conflicts_dir = self.storage.trace_path / ".conflicts"
+        trace_path = getattr(self.storage, "trace_path", None)
+        if isinstance(trace_path, Path):
+            conflicts_dir = trace_path / ".conflicts"
             conflicts_dir.mkdir(exist_ok=True)
             conflict_file = conflicts_dir / f"conflict_{timestamp}.md"
             conflict_file.write_text(conflict_content)
             return str(conflict_file)
-        else:
-            logger.warning("Storage manager does not have trace_path attribute")
-            return f"conflict_{timestamp}.md"
+        logger.warning("Storage manager does not have trace_path attribute")
+        return f"conflict_{timestamp}.md"
 
     async def clear_queue(self) -> None:
         """Clear all pending changes from the sync queue."""
@@ -1068,11 +1026,7 @@ Strategy: MANUAL RESOLUTION REQUIRED
 # ============================================================================
 
 
-async def exponential_backoff(
-    attempt: int,
-    initial_delay: float = 1.0,
-    max_delay: float = 60.0
-) -> None:
+async def exponential_backoff(attempt: int, initial_delay: float = 1.0, max_delay: float = 60.0) -> None:
     """
     Sleep with exponential backoff.
 
@@ -1081,7 +1035,7 @@ async def exponential_backoff(
         initial_delay: Initial delay in seconds
         max_delay: Maximum delay in seconds
     """
-    delay = min(initial_delay * (2 ** attempt), max_delay)
+    delay = min(initial_delay * (2**attempt), max_delay)
     await asyncio.sleep(delay)
 
 
@@ -1089,7 +1043,7 @@ def create_sync_engine(
     db_connection: "DatabaseConnection",
     api_client: "TraceRTMClient",
     storage_manager: "LocalStorageManager",
-    **kwargs: Any
+    **kwargs: Any,
 ) -> SyncEngine:
     """
     Factory function to create a configured sync engine.
@@ -1103,9 +1057,4 @@ def create_sync_engine(
     Returns:
         Configured SyncEngine instance
     """
-    return SyncEngine(
-        db_connection=db_connection,
-        api_client=api_client,
-        storage_manager=storage_manager,
-        **kwargs
-    )
+    return SyncEngine(db_connection=db_connection, api_client=api_client, storage_manager=storage_manager, **kwargs)

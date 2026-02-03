@@ -28,4 +28,4 @@ export declare const isInRectangle: (point: {
 }) => boolean;
 export type Props = Omit<SVGProps<SVGPathElement>, 'radius'> & RectangleProps;
 export declare const Rectangle: React.FC<Props>;
-export {};
+

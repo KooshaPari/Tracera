@@ -1,13 +1,14 @@
 """Scenario Service for TraceRTM."""
 
-from typing import Any, List, Optional
+from typing import Any
 
-from sqlalchemy import select, delete
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from tracertm.models.specification import Scenario, Feature
 from tracertm.core.concurrency import update_with_retry
+from tracertm.models.specification import Feature, Scenario
 from tracertm.repositories.event_repository import EventRepository
+
 
 class ScenarioService:
     """Service for BDD Scenarios."""
@@ -16,9 +17,7 @@ class ScenarioService:
         self.session = session
 
     async def _get_project_id(self, feature_id: str) -> str | None:
-        result = await self.session.execute(
-            select(Feature).where(Feature.id == feature_id)
-        )
+        result = await self.session.execute(select(Feature).where(Feature.id == feature_id))
         feature = result.scalar_one_or_none()
         return feature.project_id if feature else None
 
@@ -44,25 +43,23 @@ class ScenarioService:
         title: str,
         gherkin_text: str,
         description: str | None = None,
-        given_steps: List[dict] | None = None,
-        when_steps: List[dict] | None = None,
-        then_steps: List[dict] | None = None,
+        given_steps: list[dict] | None = None,
+        when_steps: list[dict] | None = None,
+        then_steps: list[dict] | None = None,
         status: str = "draft",
-        tags: List[str] | None = None,
+        tags: list[str] | None = None,
         is_outline: bool = False,
         examples: dict | None = None,
     ) -> Scenario:
         """Create a new Scenario."""
         # Simple numbering relative to feature or global? Let's do global per project logic implicitly
         # Or just simple SCEN-XXXX for now.
-        
+
         # We need to find the project ID via feature to scope properly, but for speed just counting total scenarios
         # or just random ID. Let's do a simple count on the table for now.
-        result = await self.session.execute(
-            select(Scenario).order_by(Scenario.created_at.desc()).limit(1)
-        )
+        result = await self.session.execute(select(Scenario).order_by(Scenario.created_at.desc()).limit(1))
         last = result.scalar_one_or_none()
-        
+
         if last:
             try:
                 last_num = int(last.scenario_number.replace("SCEN-", ""))
@@ -71,7 +68,7 @@ class ScenarioService:
                 next_num = 1
         else:
             next_num = 1
-            
+
         scenario_number = f"SCEN-{next_num:04d}"
 
         scenario = Scenario(
@@ -88,7 +85,7 @@ class ScenarioService:
             is_outline=is_outline,
             examples=examples,
         )
-        
+
         self.session.add(scenario)
         await self.session.flush()
         project_id = await self._get_project_id(feature_id)
@@ -107,29 +104,30 @@ class ScenarioService:
         await self.session.refresh(scenario)
         return scenario
 
-    async def get_scenario(self, scenario_id: str) -> Optional[Scenario]:
+    async def get_scenario(self, scenario_id: str) -> Scenario | None:
         """Get Scenario by ID."""
         result = await self.session.execute(select(Scenario).where(Scenario.id == scenario_id))
         return result.scalar_one_or_none()
 
-    async def list_scenarios(self, feature_id: str) -> List[Scenario]:
+    async def list_scenarios(self, feature_id: str) -> list[Scenario]:
         """List Scenarios for a Feature."""
         query = select(Scenario).where(Scenario.feature_id == feature_id)
         result = await self.session.execute(query)
         return list(result.scalars().all())
 
-    async def update_scenario(self, scenario_id: str, **updates: Any) -> Optional[Scenario]:
+    async def update_scenario(self, scenario_id: str, **updates: Any) -> Scenario | None:
         """Update a Scenario."""
+
         async def do_update() -> Scenario:
             scenario = await self.get_scenario(scenario_id)
             if not scenario:
                 raise ValueError(f"Scenario {scenario_id} not found")
 
-            before = {key: getattr(scenario, key, None) for key in updates.keys()}
+            before = {key: getattr(scenario, key, None) for key in updates}
             for key, value in updates.items():
                 if hasattr(scenario, key):
                     setattr(scenario, key, value)
-            
+
             scenario.version += 1
             self.session.add(scenario)
             project_id = await self._get_project_id(scenario.feature_id)
@@ -140,10 +138,7 @@ class ScenarioService:
                     event_type="updated",
                     data={
                         "description": "Scenario updated",
-                        "changes": {
-                            key: {"from": before.get(key), "to": updates.get(key)}
-                            for key in updates.keys()
-                        },
+                        "changes": {key: {"from": before.get(key), "to": updates.get(key)} for key in updates},
                         "from_value": before.get("status"),
                         "to_value": updates.get("status"),
                     },
@@ -176,4 +171,4 @@ class ScenarioService:
             )
         result = await self.session.execute(delete(Scenario).where(Scenario.id == scenario_id))
         await self.session.commit()
-        return result.rowcount > 0
+        return (getattr(result, "rowcount", 0) or 0) > 0

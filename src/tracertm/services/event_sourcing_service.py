@@ -1,5 +1,6 @@
 """Event sourcing service for TraceRTM."""
 
+import uuid
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
@@ -43,23 +44,20 @@ class EventSourcingService:
 
     async def get_audit_trail(
         self,
-        project_id: str,
+        project_id: str | uuid.UUID,
         entity_id: str | None = None,
         limit: int = 100,
     ) -> list[AuditTrailEntry]:
         """Get audit trail for a project or entity."""
+        pid = str(project_id) if isinstance(project_id, uuid.UUID) else project_id
         if entity_id:
             events = await self.events.get_by_entity(entity_id)
         else:
-            events = await self.events.get_by_project(project_id, limit=limit)
+            events = await self.events.get_by_project(pid, limit=limit)
 
         return [
             AuditTrailEntry(
-                timestamp=(
-                    e.created_at.isoformat()
-                    if hasattr(e.created_at, "isoformat")
-                    else str(e.created_at)
-                ),
+                timestamp=(e.created_at.isoformat() if hasattr(e.created_at, "isoformat") else str(e.created_at)),
                 event_type=e.event_type,
                 entity_type=e.entity_type,
                 entity_id=e.entity_id,
@@ -71,20 +69,18 @@ class EventSourcingService:
 
     async def replay_events(
         self,
-        project_id: str,
+        project_id: str | uuid.UUID,
         entity_id: str,
         up_to_timestamp: str | None = None,
     ) -> ReplayResult:
         """Replay events to reconstruct entity state."""
-        # Get all events for entity
+        # Get all events for entity (project_id not used for get_by_entity)
         events = await self.events.get_by_entity(entity_id)
 
         # Filter by timestamp if provided
         if up_to_timestamp:
             cutoff = datetime.fromisoformat(up_to_timestamp)
-            events = [
-                e for e in events if datetime.fromisoformat(str(e.created_at)) <= cutoff
-            ]
+            events = [e for e in events if datetime.fromisoformat(str(e.created_at)) <= cutoff]
 
         # Replay events
         state = {}
@@ -113,14 +109,12 @@ class EventSourcingService:
     ) -> dict[str, Any]:
         """Apply an event to the state."""
         if event.event_type == "item_created":
-            state.update(
-                {
-                    "id": event.entity_id,
-                    "title": event.data.get("title"),
-                    "status": "created",
-                    "version": 1,
-                }
-            )
+            state.update({
+                "id": event.entity_id,
+                "title": event.data.get("title"),
+                "status": "created",
+                "version": 1,
+            })
 
         elif event.event_type == "item_updated":
             state.update(event.data)
@@ -133,12 +127,10 @@ class EventSourcingService:
         elif event.event_type == "link_created":
             if "links" not in state:
                 state["links"] = []
-            state["links"].append(
-                {
-                    "target_id": event.data.get("target_item_id"),
-                    "type": event.data.get("link_type"),
-                }
-            )
+            state["links"].append({
+                "target_id": event.data.get("target_item_id"),
+                "type": event.data.get("link_type"),
+            })
 
         return state
 
@@ -167,11 +159,7 @@ class EventSourcingService:
         start = datetime.fromisoformat(start_timestamp)
         end = datetime.fromisoformat(end_timestamp)
 
-        filtered = [
-            e
-            for e in events
-            if start <= datetime.fromisoformat(str(e.created_at)) <= end
-        ]
+        filtered = [e for e in events if start <= datetime.fromisoformat(str(e.created_at)) <= end]
 
         return [
             AuditTrailEntry(

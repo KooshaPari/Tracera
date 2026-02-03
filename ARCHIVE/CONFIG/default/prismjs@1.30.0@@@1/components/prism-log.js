@@ -87,7 +87,7 @@ Prism.languages.log = {
 	},
 
 	'file-path': {
-		pattern: /\b[a-z]:[\\/][^\s|,;:(){}\[\]"']+|(^|[\s:\[\](>|])\.{0,2}\/\w[^\s|,;:(){}\[\]"']*/i,
+		pattern: /\b[a-z]:[\\/][^\s|,;:(){}[\]"']+|(^|[\s:[\](>|])\.{0,2}\/\w[^\s|,;:(){}[\]"']*/i,
 		lookbehind: true,
 		greedy: true,
 		alias: 'string'
@@ -116,5 +116,5 @@ Prism.languages.log = {
 	},
 
 	'operator': /[;:?<=>~/@!$%&+\-|^(){}*#]/,
-	'punctuation': /[\[\].,]/
+	'punctuation': /[[\].,]/
 };

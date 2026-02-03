@@ -131,4 +131,4 @@ export declare function CartesianGrid(props: Props): React.JSX.Element;
 export declare namespace CartesianGrid {
     var displayName: string;
 }
-export {};
+

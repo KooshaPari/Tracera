@@ -58,7 +58,7 @@
 
 		'boolean': /\b(?:false|true)\b/i,
 		'operator': /\.\.\.|:[>=:]|=>?|->|[<>]=?|[!+\-*/^#|@~]/,
-		'punctuation': /[(){}\[\].:,;]/
+		'punctuation': /[(){}[\].:,;]/
 	};
 
 	Prism.languages.sml['class-name'][0].inside = Prism.languages.sml;

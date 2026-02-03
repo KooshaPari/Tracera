@@ -69,4 +69,4 @@ export declare class DefaultLegendContent extends PureComponent<Props> {
     renderItems(): React.JSX.Element[];
     render(): React.JSX.Element;
 }
-export {};
+

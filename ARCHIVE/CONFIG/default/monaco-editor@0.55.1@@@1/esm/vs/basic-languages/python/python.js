@@ -278,7 +278,7 @@ const language = {
       { include: "@numbers" },
       { include: "@strings" },
       [/[,:;]/, "delimiter"],
-      [/[{}\[\]()]/, "@brackets"],
+      [/[{}[\]()]/, "@brackets"],
       [/@[a-zA-Z_]\w*/, "tag"],
       [
         /[a-zA-Z_]\w*/,
@@ -312,7 +312,7 @@ const language = {
     // Recognize hex, negatives, decimals, imaginaries, longs, and scientific notation
     numbers: [
       [/-?0x([abcdef]|[ABCDEF]|\d)+[lL]?/, "number.hex"],
-      [/-?(\d*\.)?\d+([eE][+\-]?\d+)?[jJ]?[lL]?/, "number"]
+      [/-?(\d*\.)?\d+([eE][+-]?\d+)?[jJ]?[lL]?/, "number"]
     ],
     // Recognize strings, including those broken across lines with \ (but not without)
     strings: [
@@ -324,9 +324,9 @@ const language = {
       [/"/, "string.escape", "@dblStringBody"]
     ],
     fStringBody: [
-      [/[^\\'\{\}]+$/, "string", "@popall"],
-      [/[^\\'\{\}]+/, "string"],
-      [/\{[^\}':!=]+/, "identifier", "@fStringDetail"],
+      [/[^\\'{}]+$/, "string", "@popall"],
+      [/[^\\'{}]+/, "string"],
+      [/\{[^}':!=]+/, "identifier", "@fStringDetail"],
       [/\\./, "string"],
       [/'/, "string.escape", "@popall"],
       [/\\$/, "string"]
@@ -339,9 +339,9 @@ const language = {
       [/\\$/, "string"]
     ],
     fDblStringBody: [
-      [/[^\\"\{\}]+$/, "string", "@popall"],
-      [/[^\\"\{\}]+/, "string"],
-      [/\{[^\}':!=]+/, "identifier", "@fStringDetail"],
+      [/[^\\"{}]+$/, "string", "@popall"],
+      [/[^\\"{}]+/, "string"],
+      [/\{[^}':!=]+/, "identifier", "@fStringDetail"],
       [/\\./, "string"],
       [/"/, "string.escape", "@popall"],
       [/\\$/, "string"]

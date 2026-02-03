@@ -15,15 +15,14 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-from typing import Any, Dict, Optional
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
-from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 from sse_starlette.sse import EventSourceResponse
 
 from tracertm.api.deps import auth_guard
-from tracertm.core.context import current_user_id, current_account_id
+from tracertm.core.context import current_account_id, current_user_id
 from tracertm.mcp.core import get_mcp
 
 logger = logging.getLogger(__name__)
@@ -33,9 +32,11 @@ def _mcp() -> Any:
     """Lazy MCP server for HTTP (no env required for API startup)."""
     return get_mcp("http")
 
+
 # =============================================================================
 # Router Setup
 # =============================================================================
+
 
 router = APIRouter(prefix="/mcp", tags=["MCP"])
 
@@ -50,25 +51,25 @@ class JSONRPCRequest(BaseModel):
 
     jsonrpc: str = Field("2.0", description="JSON-RPC version")
     method: str = Field(..., description="Method name")
-    params: Optional[Dict[str, Any]] = Field(None, description="Method parameters")
-    id: Optional[str | int] = Field(None, description="Request ID")
+    params: dict[str, Any] | None = Field(None, description="Method parameters")
+    id: str | int | None = Field(None, description="Request ID")
 
 
 class JSONRPCResponse(BaseModel):
     """JSON-RPC 2.0 response."""
 
     jsonrpc: str = Field("2.0", description="JSON-RPC version")
-    result: Optional[Any] = Field(None, description="Result data")
-    error: Optional[Dict[str, Any]] = Field(None, description="Error information")
-    id: Optional[str | int] = Field(None, description="Request ID")
+    result: Any | None = Field(None, description="Result data")
+    error: dict[str, Any] | None = Field(None, description="Error information")
+    id: str | int | None = Field(None, description="Request ID")
 
 
 class ToolInfo(BaseModel):
     """Information about an available MCP tool."""
 
     name: str
-    description: Optional[str] = None
-    inputSchema: Optional[Dict[str, Any]] = None
+    description: str | None = None
+    input_schema: dict[str, Any] | None = Field(None, alias="inputSchema")
 
 
 class ToolsListResponse(BaseModel):
@@ -101,7 +102,7 @@ def _set_user_context(claims: dict) -> None:
         logger.debug(f"Set account context: {account_id}")
 
 
-async def _handle_mcp_call(method: str, params: Optional[Dict[str, Any]], claims: dict) -> Any:
+async def _handle_mcp_call(method: str, params: dict[str, Any] | None, claims: dict) -> Any:
     """Handle an MCP method call.
 
     Args:
@@ -121,33 +122,26 @@ async def _handle_mcp_call(method: str, params: Optional[Dict[str, Any]], claims
     try:
         # Route to appropriate MCP handler
         if method == "tools/list":
-            return await _list_tools()
-        elif method == "tools/call":
+            return _list_tools()
+        if method == "tools/call":
             return await _call_tool(params or {})
-        elif method == "resources/list":
-            return await _list_resources()
-        elif method == "resources/read":
+        if method == "resources/list":
+            return _list_resources()
+        if method == "resources/read":
             return await _read_resource(params or {})
-        elif method == "prompts/list":
-            return await _list_prompts()
-        elif method == "prompts/get":
+        if method == "prompts/list":
+            return _list_prompts()
+        if method == "prompts/get":
             return await _get_prompt(params or {})
-        else:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Unknown method: {method}"
-            )
+        raise HTTPException(status_code=400, detail=f"Unknown method: {method}")
     except HTTPException:
         raise
     except Exception as e:
         logger.exception(f"Error handling MCP call {method}: {e}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Internal error: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Internal error: {e!s}") from e
 
 
-async def _list_tools() -> Dict[str, Any]:
+def _list_tools() -> dict[str, Any]:
     """List available MCP tools.
 
     Returns:
@@ -161,14 +155,16 @@ async def _list_tools() -> Dict[str, Any]:
             {
                 "name": tool.name,
                 "description": tool.description,
-                "inputSchema": tool.parameters.model_json_schema() if hasattr(tool.parameters, 'model_json_schema') else {},
+                "inputSchema": tool.parameters.model_json_schema()
+                if hasattr(tool.parameters, "model_json_schema")
+                else {},
             }
             for tool in tools_list
         ]
     }
 
 
-async def _call_tool(params: Dict[str, Any]) -> Dict[str, Any]:
+async def _call_tool(params: dict[str, Any]) -> dict[str, Any]:
     """Call an MCP tool.
 
     Args:
@@ -192,13 +188,10 @@ async def _call_tool(params: Dict[str, Any]) -> Dict[str, Any]:
         return {"content": result}
     except Exception as e:
         logger.exception(f"Error calling tool {tool_name}: {e}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Tool execution failed: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Tool execution failed: {e!s}") from e
 
 
-async def _list_resources() -> Dict[str, Any]:
+def _list_resources() -> dict[str, Any]:
     """List available MCP resources.
 
     Returns:
@@ -219,7 +212,7 @@ async def _list_resources() -> Dict[str, Any]:
     }
 
 
-async def _read_resource(params: Dict[str, Any]) -> Dict[str, Any]:
+async def _read_resource(params: dict[str, Any]) -> dict[str, Any]:
     """Read an MCP resource.
 
     Args:
@@ -240,13 +233,10 @@ async def _read_resource(params: Dict[str, Any]) -> Dict[str, Any]:
         return {"contents": result}
     except Exception as e:
         logger.exception(f"Error reading resource {uri}: {e}")
-        raise HTTPException(
-            status_code=404,
-            detail=f"Resource not found: {str(e)}"
-        )
+        raise HTTPException(status_code=404, detail=f"Resource not found: {e!s}") from e
 
 
-async def _list_prompts() -> Dict[str, Any]:
+def _list_prompts() -> dict[str, Any]:
     """List available MCP prompts.
 
     Returns:
@@ -266,7 +256,7 @@ async def _list_prompts() -> Dict[str, Any]:
     }
 
 
-async def _get_prompt(params: Dict[str, Any]) -> Dict[str, Any]:
+async def _get_prompt(params: dict[str, Any]) -> dict[str, Any]:
     """Get an MCP prompt.
 
     Args:
@@ -289,10 +279,7 @@ async def _get_prompt(params: Dict[str, Any]) -> Dict[str, Any]:
         return {"messages": result}
     except Exception as e:
         logger.exception(f"Error getting prompt {name}: {e}")
-        raise HTTPException(
-            status_code=404,
-            detail=f"Prompt not found: {str(e)}"
-        )
+        raise HTTPException(status_code=404, detail=f"Prompt not found: {e!s}") from e
 
 
 # =============================================================================
@@ -314,7 +301,7 @@ async def mcp_messages_options() -> Response:
             "Access-Control-Allow-Methods": "POST, OPTIONS",
             "Access-Control-Allow-Headers": "Content-Type, Authorization",
             "Access-Control-Max-Age": "86400",
-        }
+        },
     )
 
 
@@ -361,7 +348,7 @@ async def mcp_messages(
             jsonrpc="2.0",
             error={
                 "code": 500,
-                "message": f"Internal server error: {str(e)}",
+                "message": f"Internal server error: {e!s}",
             },
             id=request.id,
         )
@@ -402,7 +389,7 @@ async def mcp_sse(
                     "status": "connected",
                     "user_id": current_user_id.get(),
                     "task_id": task_id,
-                })
+                }),
             }
 
             if task_id:
@@ -413,7 +400,7 @@ async def mcp_sse(
                     "event": "info",
                     "data": json.dumps({
                         "message": f"Streaming progress for task: {task_id}",
-                    })
+                    }),
                 }
 
             # Keep connection alive with heartbeat
@@ -424,16 +411,13 @@ async def mcp_sse(
                     "data": json.dumps({
                         "status": "alive",
                         "timestamp": asyncio.get_event_loop().time(),
-                    })
+                    }),
                 }
         except asyncio.CancelledError:
             logger.debug(f"SSE connection cancelled (task_id: {task_id})")
         except Exception as e:
             logger.exception(f"Error in SSE generator (task_id: {task_id}): {e}")
-            yield {
-                "event": "error",
-                "data": json.dumps({"error": str(e)})
-            }
+            yield {"event": "error", "data": json.dumps({"error": str(e)})}
 
     return EventSourceResponse(event_generator())
 
@@ -455,14 +439,9 @@ async def mcp_tools(
     """
     _set_user_context(claims)
 
-    tools_data = await _list_tools()
+    tools_data = _list_tools()
 
-    return ToolsListResponse(
-        tools=[
-            ToolInfo(**tool)
-            for tool in tools_data["tools"]
-        ]
-    )
+    return ToolsListResponse(tools=[ToolInfo(**tool) for tool in tools_data["tools"]])
 
 
 # =============================================================================
@@ -471,7 +450,7 @@ async def mcp_tools(
 
 
 @router.get("/health")
-async def mcp_health() -> Dict[str, Any]:
+async def mcp_health() -> dict[str, Any]:
     """MCP router health check.
 
     Returns:

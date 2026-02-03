@@ -1,21 +1,13 @@
 """Integration tests for item_spec_service with database."""
 
 import pytest
-from datetime import UTC, datetime
 
 from tracertm.models.item import Item
 from tracertm.models.link import Link
-from tracertm.repositories.item_repository import ItemRepository
-from tracertm.repositories.link_repository import LinkRepository
-from tracertm.repositories.requirement_quality_repository import (
-    RequirementQualityRepository,
-)
 from tracertm.services.item_spec_service import (
+    ImpactAnalyzer,
     RequirementQualityAnalyzer,
     RequirementSpecService,
-    ImpactAnalyzer,
-    VolatilityTracker,
-    WSJFCalculator,
 )
 
 
@@ -238,9 +230,7 @@ class TestRequirementSpecServiceIntegration:
 
         # Should have quality issues
         assert len(spec.quality_issues) > 0
-        completeness_issues = [
-            i for i in spec.quality_issues if i["dimension"] == "completeness"
-        ]
+        completeness_issues = [i for i in spec.quality_issues if i["dimension"] == "completeness"]
         assert len(completeness_issues) > 0
 
     @pytest.mark.asyncio
@@ -265,8 +255,8 @@ class TestImpactAnalyzerIntegration:
     @pytest.fixture
     async def setup_graph(self, session):
         """Create a more complex dependency graph."""
-        from tracertm.models.project import Project
         from tracertm.models.graph import Graph
+        from tracertm.models.project import Project
 
         project = Project(id="test-proj", name="Test")
         session.add(project)
@@ -421,10 +411,7 @@ class TestQualityAnalyzerComplexScenarios:
         """Test requirement with mixed quality issues."""
         analyzer = RequirementQualityAnalyzer()
 
-        text = (
-            "The system should be efficient and provide good user experience. "
-            "Might need TBD for specific metrics."
-        )
+        text = "The system should be efficient and provide good user experience. Might need TBD for specific metrics."
 
         result = analyzer.analyze(text)
 

@@ -695,4 +695,4 @@ export type PackageJson =
 	PackageJson.YarnConfiguration &
 	PackageJson.JSPMConfiguration;
 
-export {};
+

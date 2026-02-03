@@ -1,6 +1,7 @@
 """Service for importing projects from GitHub."""
 
 import json
+import logging
 from typing import Any, ClassVar
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,6 +10,8 @@ from tracertm.repositories.event_repository import EventRepository
 from tracertm.repositories.item_repository import ItemRepository
 from tracertm.repositories.link_repository import LinkRepository
 from tracertm.repositories.project_repository import ProjectRepository
+
+logger = logging.getLogger(__name__)
 
 
 class GitHubImportService:
@@ -80,9 +83,7 @@ class GitHubImportService:
             items_list = data.get("items", data.get("issues", []))
             for item_data in items_list:
                 try:
-                    item = await self._import_github_item(
-                        project.id, item_data, agent_id
-                    )
+                    item = await self._import_github_item(str(project.id), item_data, agent_id)
                     item_map[item_data.get("id", item_data.get("number"))] = item.id
                     items_imported += 1
                 except Exception as e:
@@ -92,9 +93,7 @@ class GitHubImportService:
             links_imported = 0
             for item_data in items_list:
                 try:
-                    links = await self._import_github_links(
-                        project.id, item_data, item_map, agent_id
-                    )
+                    links = await self._import_github_links(str(project.id), item_data, item_map, agent_id)
                     links_imported += len(links)
                 except Exception as e:
                     errors.append(f"Failed to import links: {e!s}")
@@ -146,7 +145,7 @@ class GitHubImportService:
             project_id=project_id,
             event_type="github_item_imported",
             entity_type="item",
-            entity_id=item.id,
+            entity_id=str(item.id),
             data={"github_number": item_data.get("number")},
             agent_id=agent_id,
         )
@@ -180,7 +179,7 @@ class GitHubImportService:
                             link_type="implements",
                         )
                         links.append(link)
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        logger.debug("Link creation skipped: %s", e)
 
         return links

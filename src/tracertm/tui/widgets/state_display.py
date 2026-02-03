@@ -4,6 +4,7 @@ from typing import Any
 
 try:
     from textual.widgets import DataTable, Static
+
     TEXTUAL_AVAILABLE = True
 except ImportError:
     TEXTUAL_AVAILABLE = False

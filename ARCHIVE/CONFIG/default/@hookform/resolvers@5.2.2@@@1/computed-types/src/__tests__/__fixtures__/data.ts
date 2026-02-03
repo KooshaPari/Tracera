@@ -16,7 +16,7 @@ export const schema = Schema({
   accessToken: Schema.either(string, number).optional(),
   birthYear: number.min(1900).max(2013).optional(),
   email: string
-    .regexp(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)
+    .regexp(/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/)
     .error('Incorrect email'),
   tags: array.of(string),
   enabled: boolean,

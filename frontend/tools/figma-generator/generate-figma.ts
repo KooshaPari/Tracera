@@ -214,9 +214,9 @@ export class FigmaGenerator {
 				children: node.children?.map((child) => ({
 					id: child.id,
 					name: child.name,
-					type: child.type,
 					properties: child.properties,
 					styles: child.styles,
+					type: child.type,
 				})),
 				id: node.id,
 				name: node.name,

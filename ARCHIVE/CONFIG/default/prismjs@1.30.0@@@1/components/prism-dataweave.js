@@ -27,7 +27,7 @@
 			}
 		],
 		'regex': {
-			pattern: /\/(?:[^\\\/\r\n]|\\[^\r\n])+\//,
+			pattern: /\/(?:[^\\/\r\n]|\\[^\r\n])+\//,
 			greedy: true
 		},
 		'keyword': /\b(?:and|as|at|case|do|else|fun|if|input|is|match|not|ns|null|or|output|type|unless|update|using|var)\b/,

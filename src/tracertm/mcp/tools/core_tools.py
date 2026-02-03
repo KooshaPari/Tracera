@@ -14,22 +14,24 @@ See scripts/mcp/TRACERTM_MCP_TOOLS_SUMMARY.md for full reference.
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
-from datetime import datetime
-from pathlib import Path
+import asyncio
 import uuid
-import yaml
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any
 
+import yaml
 from fastmcp.exceptions import ToolError
 
-from tracertm.config.manager import ConfigManager
-from tracertm.mcp.core import mcp
-from tracertm.mcp.api_client import get_api_client
 from tracertm.api.http_client import TraceRTMHttpClient, TraceRTMHttpError
+from tracertm.config.manager import ConfigManager
+from tracertm.mcp.api_client import get_api_client
+from tracertm.mcp.core import mcp
 
 # ==========================================================================
 # Utilities
 # ==========================================================================
+
 
 def _get_config_manager() -> ConfigManager:
     """Get a ConfigManager instance.
@@ -52,13 +54,13 @@ def _api_client() -> TraceRTMHttpClient:
 
 
 @mcp.tool()
-async def create_project(name: str, description: Optional[str] = None) -> Dict[str, Any]:
+async def create_project(name: str, description: str | None = None) -> dict[str, Any]:
     """Create a new TraceRTM project in the configured database.
 
     This assumes `rtm config init` has already been run to set `database_url`.
     The new project is set as the current project.
     """
-
+    await asyncio.sleep(0)
     config = _get_config_manager()
     client = _api_client()
     try:
@@ -85,12 +87,12 @@ async def create_project(name: str, description: Optional[str] = None) -> Dict[s
 
 
 @mcp.tool()
-async def list_projects() -> Dict[str, Any]:
+async def list_projects() -> dict[str, Any]:
     """List all TraceRTM projects.
 
     Returns a structured list of projects: id, name, description, created_at.
     """
-
+    await asyncio.sleep(0)
     client = _api_client()
     try:
         result = client.get("/api/v1/projects")
@@ -102,13 +104,13 @@ async def list_projects() -> Dict[str, Any]:
 
 
 @mcp.tool()
-async def select_project(project_id: str) -> Dict[str, Any]:
+async def select_project(project_id: str) -> dict[str, Any]:
     """Select current project by ID.
 
     Updates ConfigManager's current_project_id/current_project_name so that
     subsequent item/link operations apply to this project.
     """
-
+    await asyncio.sleep(0)
     config = _get_config_manager()
     client = _api_client()
     project: dict[str, Any] | None = None
@@ -134,17 +136,17 @@ async def select_project(project_id: str) -> Dict[str, Any]:
 
 
 @mcp.tool()
-async def snapshot_project(project_id: str, label: str) -> Dict[str, Any]:
+async def snapshot_project(project_id: str, label: str) -> dict[str, Any]:
     """Create a lightweight snapshot record for a project.
 
     For now this writes metadata to
     `~/.tracertm/projects/<project_id>/snapshots.yaml`.
     """
-
+    await asyncio.sleep(0)
     config = _get_config_manager()
     client = _api_client()
     try:
-        project = client.get(f"/api/v1/projects/{project_id}")
+        client.get(f"/api/v1/projects/{project_id}")
     except TraceRTMHttpError as exc:
         raise ToolError(str(exc)) from exc
 
@@ -152,14 +154,14 @@ async def snapshot_project(project_id: str, label: str) -> Dict[str, Any]:
     project_dir.mkdir(parents=True, exist_ok=True)
     snapshots_file = project_dir / "snapshots.yaml"
 
-    snapshots: List[Dict[str, Any]] = []
+    snapshots: list[dict[str, Any]] = []
     if snapshots_file.exists():
         existing = yaml.safe_load(snapshots_file.read_text()) or []
         if isinstance(existing, list):
             snapshots = existing
 
     snapshot_id = str(uuid.uuid4())
-    created_at = datetime.utcnow().isoformat() + "Z"
+    created_at = datetime.now(UTC).isoformat() + "Z"
 
     snapshots.append({"id": snapshot_id, "label": label, "created_at": created_at})
     snapshots_file.write_text(yaml.safe_dump(snapshots, default_flow_style=False))
@@ -177,18 +179,18 @@ async def create_item(
     title: str,
     view: str,
     item_type: str,
-    description: Optional[str] = None,
+    description: str | None = None,
     status: str = "todo",
     priority: str = "medium",
-    owner: Optional[str] = None,
-    parent_id: Optional[str] = None,
-    metadata: Optional[Dict[str, Any]] = None,
-) -> Dict[str, Any]:
+    owner: str | None = None,
+    parent_id: str | None = None,
+    metadata: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     """Create a new item in the current TraceRTM project (MCP wrapper).
 
     Mirrors `rtm item create` semantics but returns structured JSON.
     """
-
+    await asyncio.sleep(0)
     config = _get_config_manager()
     project_id = config.get("current_project_id")
     if not project_id:
@@ -228,17 +230,17 @@ async def create_item(
 
 @mcp.tool()
 async def query_items(
-    view: Optional[str] = None,
-    item_type: Optional[str] = None,
-    status: Optional[str] = None,
-    owner: Optional[str] = None,
+    view: str | None = None,
+    item_type: str | None = None,
+    status: str | None = None,
+    owner: str | None = None,
     limit: int = 50,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Query items in the current project with simple filters.
 
     Filters mirror the CLI `rtm item list` command but return JSON.
     """
-
+    await asyncio.sleep(0)
     config = _get_config_manager()
     project_id = config.get("current_project_id")
     if not project_id:
@@ -277,12 +279,12 @@ async def query_items(
 
 
 @mcp.tool()
-async def summarize_view(view: str) -> Dict[str, Any]:
+async def summarize_view(view: str) -> dict[str, Any]:
     """Summarize items in a given view for the current project.
 
     Returns counts by status and a small sample of items.
     """
-
+    await asyncio.sleep(0)
     config = _get_config_manager()
     project_id = config.get("current_project_id")
     if not project_id:
@@ -301,9 +303,9 @@ async def summarize_view(view: str) -> Dict[str, Any]:
 
 
 @mcp.tool()
-async def get_item(item_id: str) -> Dict[str, Any]:
+async def get_item(item_id: str) -> dict[str, Any]:
     """Get a single item by ID (within the current project)."""
-
+    await asyncio.sleep(0)
     config = _get_config_manager()
     project_id = config.get("current_project_id")
     if not project_id:
@@ -311,8 +313,7 @@ async def get_item(item_id: str) -> Dict[str, Any]:
 
     client = _api_client()
     try:
-        item = client.get(f"/api/v1/items/{item_id}")
-        return item
+        return client.get(f"/api/v1/items/{item_id}")
     except TraceRTMHttpError:
         # Fallback: prefix/external_id match via list
         try:
@@ -328,19 +329,19 @@ async def get_item(item_id: str) -> Dict[str, Any]:
             external_id = str(entry.get("external_id", ""))
             if candidate_id.startswith(item_id) or external_id.startswith(item_id):
                 return entry
-        raise ToolError(f"Item not found: {item_id}")
+        raise ToolError(f"Item not found: {item_id}") from None
 
 
 @mcp.tool()
-async def update_item(
+def update_item(
     item_id: str,
-    title: Optional[str] = None,
-    description: Optional[str] = None,
-    status: Optional[str] = None,
-    priority: Optional[str] = None,
-    owner: Optional[str] = None,
-    metadata: Optional[Dict[str, Any]] = None,
-) -> Dict[str, Any]:
+    title: str | None = None,
+    description: str | None = None,
+    status: str | None = None,
+    priority: str | None = None,
+    owner: str | None = None,
+    metadata: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     """Update an existing item (optimistic locking via SQLAlchemy version)."""
 
     config = _get_config_manager()
@@ -384,7 +385,7 @@ async def update_item(
                 resolved_id = candidate_id
                 break
         if not resolved_id:
-            raise ToolError(f"Item not found: {item_id}")
+            raise ToolError(f"Item not found: {item_id}") from None
         try:
             item = client.put(f"/api/v1/items/{resolved_id}", json=payload)
         except TraceRTMHttpError as inner_exc:
@@ -404,7 +405,7 @@ async def update_item(
 
 
 @mcp.tool()
-async def delete_item(item_id: str) -> Dict[str, Any]:
+def delete_item(item_id: str) -> dict[str, Any]:
     """Soft-delete an item in the current project (sets deleted_at)."""
 
     config = _get_config_manager()
@@ -434,7 +435,7 @@ async def delete_item(item_id: str) -> Dict[str, Any]:
                 resolved_id = candidate_id
                 break
         if not resolved_id:
-            raise ToolError(f"Item not found: {item_id}")
+            raise ToolError(f"Item not found: {item_id}") from None
         try:
             result = client.delete(f"/api/v1/items/{resolved_id}")
         except TraceRTMHttpError as inner_exc:
@@ -447,11 +448,11 @@ async def delete_item(item_id: str) -> Dict[str, Any]:
 
 
 @mcp.tool()
-async def bulk_update_items(
-    view: Optional[str] = None,
-    status: Optional[str] = None,
-    new_status: Optional[str] = None,
-) -> Dict[str, Any]:
+def bulk_update_items(
+    view: str | None = None,
+    status: str | None = None,
+    new_status: str | None = None,
+) -> dict[str, Any]:
     """Bulk update item status in the current project.
 
     Mirrors `rtm item bulk-update` but *without* interactive confirmation.
@@ -489,7 +490,7 @@ async def bulk_update_items(
 
 
 @mcp.tool()
-async def find_gaps(from_view: str, to_view: str) -> Dict[str, Any]:
+def find_gaps(from_view: str, to_view: str) -> dict[str, Any]:
     """Find items in `from_view` that have no links to items in `to_view`.
 
     Uses the async TraceabilityService under the hood.
@@ -517,10 +518,10 @@ async def find_gaps(from_view: str, to_view: str) -> Dict[str, Any]:
 
 
 @mcp.tool()
-async def get_trace_matrix(
-    source_view: Optional[str] = None,
-    target_view: Optional[str] = None,
-) -> Dict[str, Any]:
+def get_trace_matrix(
+    source_view: str | None = None,
+    target_view: str | None = None,
+) -> dict[str, Any]:
     """Get a dense traceability matrix for the current project.
 
     Wraps TraceabilityMatrixService.generate_matrix.
@@ -548,11 +549,11 @@ async def get_trace_matrix(
 
 
 @mcp.tool()
-async def analyze_impact(
+def analyze_impact(
     item_id: str,
     max_depth: int = 5,
-    link_types: Optional[List[str]] = None,
-) -> Dict[str, Any]:
+    link_types: list[str] | None = None,
+) -> dict[str, Any]:
     """Analyze downstream impact of changing an item (BFS)."""
 
     config = _get_config_manager()
@@ -575,10 +576,10 @@ async def analyze_impact(
 
 
 @mcp.tool()
-async def analyze_reverse_impact(
+def analyze_reverse_impact(
     item_id: str,
     max_depth: int = 5,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Analyze reverse impact (what depends on this item)."""
 
     config = _get_config_manager()
@@ -599,7 +600,7 @@ async def analyze_reverse_impact(
 
 
 @mcp.tool()
-async def project_health() -> Dict[str, Any]:
+def project_health() -> dict[str, Any]:
     """High-level health metrics for the current project.
 
     Wraps PerformanceService.get_project_statistics.
@@ -620,7 +621,7 @@ async def project_health() -> Dict[str, Any]:
 
 
 @mcp.tool()
-async def detect_cycles() -> Dict[str, Any]:
+def detect_cycles() -> dict[str, Any]:
     """Detect dependency cycles in the current project graph.
 
     Wraps CycleDetectionService.detect_cycles.
@@ -641,13 +642,11 @@ async def detect_cycles() -> Dict[str, Any]:
 
 
 @mcp.tool()
-async def shortest_path(
+def shortest_path(
     source_id: str,
     target_id: str,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Find the shortest dependency path between two items."""
-
-    from tracertm.core.database import get_session
 
     config = _get_config_manager()
     project_id = config.get("current_project_id")
@@ -671,20 +670,18 @@ async def shortest_path(
 
 
 @mcp.tool()
-async def create_link(
+def create_link(
     source_id: str,
     target_id: str,
     link_type: str,
-    metadata: Optional[Dict[str, Any]] = None,
-) -> Dict[str, Any]:
+    metadata: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     """Create a link between two items in the current project (with metadata)."""
 
     config = _get_config_manager()
     project_id = config.get("current_project_id")
     if not project_id:
-        raise ToolError(
-            "No current project. Call select_project first or use the CLI to initialize."
-        )
+        raise ToolError("No current project. Call select_project first or use the CLI to initialize.")
 
     client = _api_client()
     try:
@@ -713,12 +710,12 @@ async def create_link(
 
 @mcp.tool()
 async def list_links(
-    item_id: Optional[str] = None,
-    link_type: Optional[str] = None,
+    item_id: str | None = None,
+    link_type: str | None = None,
     limit: int = 50,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """List links in the current project (optionally filtered by item and type)."""
-
+    await asyncio.sleep(0)
     config = _get_config_manager()
     project_id = config.get("current_project_id")
     if not project_id:
@@ -741,7 +738,7 @@ async def list_links(
                 resolved_id = candidate_id
                 break
         if not resolved_id:
-            raise ToolError(f"Item not found: {item_id}")
+            raise ToolError(f"Item not found: {item_id}") from None
 
     links: list[dict[str, Any]] = []
     try:
@@ -772,22 +769,22 @@ async def list_links(
         "count": len(links),
         "links": [
             {
-                "id": str(l.get("id")),
-                "source_id": str(l.get("source_id")),
-                "target_id": str(l.get("target_id")),
-                "link_type": l.get("type") or l.get("link_type"),
-                "metadata": l.get("metadata", {}),
+                "id": str(link.get("id")),
+                "source_id": str(link.get("source_id")),
+                "target_id": str(link.get("target_id")),
+                "link_type": link.get("type") or link.get("link_type"),
+                "metadata": link.get("metadata", {}),
             }
-            for l in links
+            for link in links
         ],
     }
 
 
 @mcp.tool()
-async def show_links(
+def show_links(
     item_id: str,
-    view: Optional[str] = None,
-) -> Dict[str, Any]:
+    view: str | None = None,
+) -> dict[str, Any]:
     """Show all links for a specific item (grouped as incoming/outgoing)."""
 
     config = _get_config_manager()

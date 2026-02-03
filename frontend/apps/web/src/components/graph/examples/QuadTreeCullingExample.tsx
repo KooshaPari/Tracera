@@ -46,8 +46,8 @@ export function QuadTreeCullingExample({
 				data: {
 					id: item.id,
 					label: item.title,
-					type: item.type,
 					status: item.status,
+					type: item.type,
 				},
 				height: 120,
 				id: item.id,

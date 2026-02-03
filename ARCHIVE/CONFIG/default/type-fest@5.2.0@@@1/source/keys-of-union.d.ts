@@ -41,4 +41,4 @@ export type KeysOfUnion<ObjectType> =
   // Hack to fix https://github.com/sindresorhus/type-fest/issues/1008
   keyof UnionToIntersection<ObjectType extends unknown ? Record<keyof ObjectType, never> : never>;
 
-export {};
+

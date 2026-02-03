@@ -30,7 +30,7 @@
 
 	Prism.languages.yaml = {
 		'scalar': {
-			pattern: RegExp(/([\-:]\s*(?:\s<<prop>>[ \t]+)?[|>])[ \t]*(?:((?:\r?\n|\r)[ \t]+)\S[^\r\n]*(?:\2[^\r\n]+)*)/.source
+			pattern: RegExp(/([-:]\s*(?:\s<<prop>>[ \t]+)?[|>])[ \t]*(?:((?:\r?\n|\r)[ \t]+)\S[^\r\n]*(?:\2[^\r\n]+)*)/.source
 				.replace(/<<prop>>/g, function () { return properties; })),
 			lookbehind: true,
 			alias: 'string'

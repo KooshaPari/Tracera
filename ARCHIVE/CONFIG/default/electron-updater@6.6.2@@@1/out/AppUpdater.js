@@ -588,7 +588,7 @@ class AppUpdater extends events_1.EventEmitter {
         const tempUpdateFile = await (0, DownloadedUpdateHelper_1.createTempUpdateFile)(`temp-${updateFileName}`, cacheDir, log);
         try {
             await taskOptions.task(tempUpdateFile, downloadOptions, packageFile, removeFileIfAny);
-            await (0, builder_util_runtime_1.retry)(() => (0, fs_extra_1.rename)(tempUpdateFile, updateFile), 60, 500, 0, 0, error => error instanceof Error && /^EBUSY:/.test(error.message));
+            await (0, builder_util_runtime_1.retry)(() => (0, fs_extra_1.rename)(tempUpdateFile, updateFile), 60, 500, 0, 0, error => error instanceof Error && error.message.startsWith('EBUSY:'));
         }
         catch (e) {
             await removeFileIfAny();

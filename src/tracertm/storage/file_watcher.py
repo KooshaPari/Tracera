@@ -10,10 +10,10 @@ from __future__ import annotations
 
 import logging
 from collections import defaultdict
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from threading import Lock, Timer
-from typing import Any, TYPE_CHECKING
+from typing import Any
 
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
 from watchdog.observers import Observer
@@ -80,7 +80,7 @@ class TraceFileWatcher:
         self._changes_by_type: dict[str, int] = defaultdict(int)
 
         # Watchdog observer
-        self._observer: "Observer | None" = None  # type: ignore[valid-type]
+        self._observer: Observer | None = None  # type: ignore[valid-type]
         self._event_handler = _TraceEventHandler(self)
 
         # Load or create project in database
@@ -212,7 +212,7 @@ class TraceFileWatcher:
 
             # Update stats
             self._events_processed += 1
-            self._last_event_time = datetime.now()
+            self._last_event_time = datetime.now(UTC)
             self._changes_by_type[event_type] += 1
 
         except Exception as e:
@@ -239,7 +239,8 @@ class TraceFileWatcher:
                 from tracertm.models import Item
 
                 item = (
-                    session.query(Item)
+                    session
+                    .query(Item)
                     .filter(
                         Item.project_id == self.project.id,
                         Item.item_metadata["external_id"].astext == external_id,
@@ -405,7 +406,7 @@ class _TraceEventHandler(FileSystemEventHandler):
         if event.is_directory:
             return
 
-        src_path = event.src_path if isinstance(event.src_path, str) else event.src_path.decode('utf-8')
+        src_path = event.src_path if isinstance(event.src_path, str) else event.src_path.decode("utf-8")
         path = Path(src_path)
         if self._should_process(path):
             logger.debug(f"File created: {path}")
@@ -416,7 +417,7 @@ class _TraceEventHandler(FileSystemEventHandler):
         if event.is_directory:
             return
 
-        src_path = event.src_path if isinstance(event.src_path, str) else event.src_path.decode('utf-8')
+        src_path = event.src_path if isinstance(event.src_path, str) else event.src_path.decode("utf-8")
         path = Path(src_path)
         if self._should_process(path):
             logger.debug(f"File modified: {path}")
@@ -427,7 +428,7 @@ class _TraceEventHandler(FileSystemEventHandler):
         if event.is_directory:
             return
 
-        src_path = event.src_path if isinstance(event.src_path, str) else event.src_path.decode('utf-8')
+        src_path = event.src_path if isinstance(event.src_path, str) else event.src_path.decode("utf-8")
         path = Path(src_path)
         if self._should_process(path):
             logger.debug(f"File deleted: {path}")

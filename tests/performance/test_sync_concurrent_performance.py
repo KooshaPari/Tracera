@@ -12,27 +12,24 @@ Tests performance-critical paths:
 Target: +2% coverage on performance-sensitive paths
 """
 
-import pytest
-import time
 import asyncio
-from datetime import datetime, timedelta, timezone
-from unittest.mock import AsyncMock, MagicMock, patch
-from collections import deque
+import time
+from datetime import UTC, datetime
 
+import pytest
 from sqlalchemy.orm.exc import StaleDataError
 
 from tracertm.services.concurrent_operations_service import (
-    retry_with_backoff,
     ConcurrencyError,
+    retry_with_backoff,
 )
 from tracertm.storage.sync_engine import (
     ChangeDetector,
-    SyncEngine,
-    SyncState,
+    EntityType,
+    OperationType,
     QueuedChange,
     SyncResult,
-    OperationType,
-    EntityType,
+    SyncState,
     SyncStatus,
 )
 
@@ -176,12 +173,7 @@ class TestRetryWithBackoffPerformance:
         """Test exponential backoff timing."""
         call_times = []
 
-        @retry_with_backoff(
-            max_retries=3,
-            initial_delay=0.01,
-            exponential_base=2.0,
-            jitter=False
-        )
+        @retry_with_backoff(max_retries=3, initial_delay=0.01, exponential_base=2.0, jitter=False)
         def operation():
             call_times.append(time.time())
             if len(call_times) < 4:
@@ -196,9 +188,7 @@ class TestRetryWithBackoffPerformance:
         assert len(call_times) == 4
 
         # Check that delays increase exponentially
-        delays = []
-        for i in range(1, len(call_times)):
-            delays.append(call_times[i] - call_times[i-1])
+        delays = [call_times[i] - call_times[i - 1] for i in range(1, len(call_times))]
 
         # Each delay should be ~2x the previous
         assert delays[0] < delays[1] < delays[2]
@@ -208,11 +198,7 @@ class TestRetryWithBackoffPerformance:
         call_count = 0
         call_times = []
 
-        @retry_with_backoff(
-            max_retries=2,
-            initial_delay=0.05,
-            jitter=True
-        )
+        @retry_with_backoff(max_retries=2, initial_delay=0.05, jitter=True)
         def operation():
             nonlocal call_count
             call_times.append(time.time())
@@ -236,13 +222,7 @@ class TestRetryWithBackoffPerformance:
         """Test that delays are clamped to max_delay."""
         call_count = 0
 
-        @retry_with_backoff(
-            max_retries=5,
-            initial_delay=0.1,
-            max_delay=0.2,
-            exponential_base=2.0,
-            jitter=False
-        )
+        @retry_with_backoff(max_retries=5, initial_delay=0.1, max_delay=0.2, exponential_base=2.0, jitter=False)
         def operation():
             nonlocal call_count
             call_count += 1
@@ -314,7 +294,7 @@ class TestSyncQueuePerformance:
                 entity_id=f"item-{i}",
                 operation=OperationType.UPDATE,
                 payload={"title": f"Item {i}"},
-                created_at=datetime.now(timezone.utc),
+                created_at=datetime.now(UTC),
             )
             changes.append(change)
 
@@ -339,11 +319,7 @@ class TestSyncQueuePerformance:
     @pytest.mark.asyncio
     async def test_sync_result_aggregation(self):
         """Test sync result aggregation."""
-        result = SyncResult(
-            success=True,
-            entities_synced=100,
-            duration_seconds=2.5
-        )
+        result = SyncResult(success=True, entities_synced=100, duration_seconds=2.5)
 
         assert result.success is True
         assert result.entities_synced == 100
@@ -361,7 +337,7 @@ class TestSyncQueuePerformance:
                 {"entity_id": "item-2", "reason": "concurrent_edit"},
             ],
             errors=["Network timeout"],
-            duration_seconds=3.0
+            duration_seconds=3.0,
         )
 
         assert result.success is False
@@ -382,9 +358,7 @@ class TestConcurrentOperationsPerformance:
             return f"sync-{op_id}-done"
 
         start_time = time.time()
-        results = await asyncio.gather(*[
-            sync_operation(i) for i in range(20)
-        ])
+        results = await asyncio.gather(*[sync_operation(i) for i in range(20)])
         elapsed = time.time() - start_time
 
         assert len(results) == 20
@@ -415,11 +389,10 @@ class TestConcurrentOperationsPerformance:
 
                 await asyncio.sleep(0.01)
                 return f"success-{op_id}"
+            return None
 
         start_time = time.time()
-        results = await asyncio.gather(*[
-            operation(i) for i in range(10)
-        ])
+        results = await asyncio.gather(*[operation(i) for i in range(10)])
         elapsed = time.time() - start_time
 
         assert len(results) == 10
@@ -464,7 +437,7 @@ class TestConcurrentOperationsPerformance:
         snapshot_after = tracemalloc.take_snapshot()
         tracemalloc.stop()
 
-        stats = snapshot_after.compare_to(snapshot_before, 'lineno')
+        stats = snapshot_after.compare_to(snapshot_before, "lineno")
         total_increase = sum(stat.size_diff for stat in stats) / (1024 * 1024)
 
         # 100 operations * 1KB should use < 5MB
@@ -498,18 +471,15 @@ class TestConcurrentOperationsPerformance:
                 "entity_id": f"item-{i}",
                 "local_version": i,
                 "remote_version": i + 1,
-                "timestamp": datetime.now(timezone.utc)
+                "timestamp": datetime.now(UTC),
             }
             conflicts.append(conflict)
 
         start_time = time.time()
         # Simulate conflict resolution (choosing remote version)
-        resolved = []
-        for conflict in conflicts:
-            resolved.append({
-                "entity_id": conflict["entity_id"],
-                "version": conflict["remote_version"]
-            })
+        resolved = [
+            {"entity_id": conflict["entity_id"], "version": conflict["remote_version"]} for conflict in conflicts
+        ]
         elapsed = time.time() - start_time
 
         assert len(resolved) == 100

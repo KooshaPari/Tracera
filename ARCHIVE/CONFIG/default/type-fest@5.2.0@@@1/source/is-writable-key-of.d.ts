@@ -48,4 +48,4 @@ export type IsWritableKeyOf<Type extends object, Key extends keyof Type> =
 			? Not<IsReadonlyKeyOf<Type, Key>>
 			: false;
 
-export {};
+

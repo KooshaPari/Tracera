@@ -12,7 +12,7 @@ export default function ichigojam(Prism) {
   Prism.languages.ichigojam = {
     comment: /(?:\B'|REM)(?:[^\n\r]*)/i,
     string: {
-      pattern: /"(?:""|[!#$%&'()*,\/:;<=>?^\w +\-.])*"/,
+      pattern: /"(?:""|[!#$%&'()*,/:;<=>?^\w +\-.])*"/,
       greedy: true
     },
     number: /\B#[0-9A-F]+|\B`[01]+|(?:\b\d+(?:\.\d*)?|\B\.\d+)(?:E[+-]?\d+)?/i,
@@ -21,7 +21,7 @@ export default function ichigojam(Prism) {
     function:
       /\b(?:ABS|ANA|ASC|BIN|BTN|DEC|END|FREE|HELP|HEX|I2CR|I2CW|IN|INKEY|LEN|LINE|PEEK|RND|SCR|SOUND|STR|TICK|USR|VER|VPEEK|ZER)(?:\$|\b)/i,
     label: /(?:\B@\S+)/,
-    operator: /<[=>]?|>=?|\|\||&&|[+\-*\/=|&^~!]|\b(?:AND|NOT|OR)\b/i,
-    punctuation: /[\[,;:()\]]/
+    operator: /<[=>]?|>=?|\|\||&&|[+\-*/=|&^~!]|\b(?:AND|NOT|OR)\b/i,
+    punctuation: /[[,;:()\]]/
   }
 }

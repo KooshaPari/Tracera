@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-import pytest
-from unittest.mock import MagicMock, patch
 from typing import Any
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 
 @pytest.fixture
@@ -26,6 +27,7 @@ def mock_mcp_server():
                 "description": kwargs.get("description", ""),
             }
             return fn
+
         return decorator
 
     def mock_resource(uri: str):
@@ -34,6 +36,7 @@ def mock_mcp_server():
                 "fn": fn,
             }
             return fn
+
         return decorator
 
     def mock_prompt(name: str):
@@ -42,6 +45,7 @@ def mock_mcp_server():
                 "fn": fn,
             }
             return fn
+
         return decorator
 
     mock.tool = mock_tool
@@ -157,9 +161,9 @@ class MockItem:
         priority: str = "medium",
         owner: str | None = None,
         project_id: str = "test-project",
-        created_at = None,
-        updated_at = None,
-        deleted_at = None,
+        created_at=None,
+        updated_at=None,
+        deleted_at=None,
     ):
         self.id = id
         self.title = title
@@ -184,8 +188,8 @@ class MockLink:
         target_id: str,
         link_type: str = "relates_to",
         project_id: str = "test-project",
-        created_at = None,
-        deleted_at = None,
+        created_at=None,
+        deleted_at=None,
     ):
         self.id = id
         self.source_id = source_id
@@ -204,8 +208,8 @@ class MockProject:
         id: str,
         name: str,
         description: str = "",
-        created_at = None,
-        deleted_at = None,
+        created_at=None,
+        deleted_at=None,
     ):
         self.id = id
         self.name = name
@@ -217,29 +221,33 @@ class MockProject:
 @pytest.fixture
 def mock_items_factory():
     """Factory fixture to create mock items."""
+
     def factory(count: int = 3, project_id: str = "test-project") -> list[MockItem]:
-        items = []
-        for i in range(count):
-            items.append(MockItem(
+        return [
+            MockItem(
                 id=f"item-{i:03d}",
                 title=f"Item {i}",
                 project_id=project_id,
-            ))
-        return items
+            )
+            for i in range(count)
+        ]
+
     return factory
 
 
 @pytest.fixture
 def mock_links_factory():
     """Factory fixture to create mock links."""
+
     def factory(items: list[MockItem]) -> list[MockLink]:
-        links = []
-        for i in range(len(items) - 1):
-            links.append(MockLink(
+        return [
+            MockLink(
                 id=f"link-{i:03d}",
                 source_id=items[i].id,
                 target_id=items[i + 1].id,
                 project_id=items[i].project_id,
-            ))
-        return links
+            )
+            for i in range(len(items) - 1)
+        ]
+
     return factory

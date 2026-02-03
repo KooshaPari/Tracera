@@ -2,12 +2,14 @@
 Pytest configuration for MCP unit tests.
 """
 
-import pytest
-from pathlib import Path
-import tempfile
+import asyncio
 import os
+import tempfile
+from pathlib import Path
 
+import pytest
 from sqlalchemy import text
+
 from tracertm.config.manager import ConfigManager
 from tracertm.mcp.database_adapter import get_async_engine, reset_engine
 from tracertm.models.base import Base
@@ -27,7 +29,7 @@ def test_database_url(temp_config_dir):
     return f"sqlite:///{db_path}"
 
 
-@pytest.fixture(scope="function", autouse=True)
+@pytest.fixture(autouse=True)
 async def setup_test_database(test_database_url, temp_config_dir, monkeypatch):
     """Set up test database for each test."""
     # CRITICAL: Set environment variables BEFORE any imports or engine creation
@@ -36,19 +38,27 @@ async def setup_test_database(test_database_url, temp_config_dir, monkeypatch):
     monkeypatch.setenv("TRACERTM_DATABASE_URL", test_database_url)
     monkeypatch.setenv("DATABASE_URL", test_database_url)
 
-    # Create a config file in the temp directory
+    # Create a config file in the temp directory (run in thread to avoid ASYNC230)
+    import yaml
+
     config_path = temp_config_dir / "config.yaml"
     config_path.parent.mkdir(parents=True, exist_ok=True)
-    import yaml
-    with open(config_path, "w") as f:
-        yaml.safe_dump({
-            "database_url": test_database_url,
-            "current_project_id": None,
-            "default_view": "FEATURE",
-            "output_format": "table",
-            "max_agents": 4,
-            "log_level": "INFO",
-        }, f)
+
+    def _write_config():
+        with Path(config_path).open("w") as f:
+            yaml.safe_dump(
+                {
+                    "database_url": test_database_url,
+                    "current_project_id": None,
+                    "default_view": "FEATURE",
+                    "output_format": "table",
+                    "max_agents": 4,
+                    "log_level": "INFO",
+                },
+                f,
+            )
+
+    await asyncio.to_thread(_write_config)
 
     # Reset any existing engine
     await reset_engine()

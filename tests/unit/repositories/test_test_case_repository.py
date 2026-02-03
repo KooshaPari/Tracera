@@ -22,15 +22,14 @@ Tests for:
 - get_activities() - activity logs
 """
 
-from datetime import datetime, timezone
 from uuid import uuid4
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from tracertm.repositories.project_repository import ProjectRepository
-from tracertm.repositories import test_case_repository as tc_repo
 from tracertm.core.concurrency import ConcurrencyError
+from tracertm.repositories import test_case_repository as tc_repo
+from tracertm.repositories.project_repository import ProjectRepository
 
 # Use module-qualified names to avoid pytest collection issues
 CaseRepository = tc_repo.TestCaseRepository

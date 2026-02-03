@@ -15,5 +15,5 @@ export declare function diffArrays<T>(oldArr: T[], newArr: T[], options: DiffArr
 export declare function diffArrays<T>(oldArr: T[], newArr: T[], options: DiffArraysOptionsNonabortable<T> & CallbackOptionNonabortable<T[]>): undefined;
 export declare function diffArrays<T>(oldArr: T[], newArr: T[], options: DiffArraysOptionsAbortable<T>): ChangeObject<T[]>[] | undefined;
 export declare function diffArrays<T>(oldArr: T[], newArr: T[], options?: DiffArraysOptionsNonabortable<T>): ChangeObject<T[]>[];
-export {};
+
 //# sourceMappingURL=array.d.ts.map

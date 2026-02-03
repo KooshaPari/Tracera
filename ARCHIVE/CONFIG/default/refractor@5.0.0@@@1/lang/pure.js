@@ -58,9 +58,9 @@ export default function pure(Prism) {
       // Any combination of operator chars can be an operator
       // eslint-disable-next-line no-misleading-character-class
       operator:
-        /(?:[!"#$%&'*+,\-.\/:<=>?@\\^`|~\u00a1-\u00bf\u00d7-\u00f7\u20d0-\u2bff]|\b_+\b)+|\b(?:and|div|mod|not|or)\b/,
+        /(?:[!"#$%&'*+,\-./:<=>?@\\^`|~\u00a1-\u00bf\u00d7-\u00f7\u20d0-\u2bff]|\b_+\b)+|\b(?:and|div|mod|not|or)\b/,
       // FIXME: How can we prevent | and , to be highlighted as operator when they are used alone?
-      punctuation: /[(){}\[\];,|]/
+      punctuation: /[(){}[\];,|]/
     }
     var inlineLanguages = [
       'c',
@@ -83,7 +83,7 @@ export default function pure(Prism) {
           pattern: RegExp(
             inlineLanguageRe.replace(
               '<lang>',
-              lang.replace(/([.+*?\/\\(){}\[\]])/g, '\\$1')
+              lang.replace(/([.+*?/\\(){}[\]])/g, '\\$1')
             ),
             'i'
           ),

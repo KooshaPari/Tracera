@@ -1321,4 +1321,4 @@ export type TsConfigJson = {
 	references?: TsConfigJson.References[];
 };
 
-export {};
+

@@ -51,7 +51,7 @@ export default function crystal(Prism) {
             inside: Prism.languages.crystal
           },
           delimiter: {
-            pattern: /^\{[\{%]|[\}%]\}$/,
+            pattern: /^\{[{%]|[}%]\}$/,
             alias: 'operator'
           }
         }

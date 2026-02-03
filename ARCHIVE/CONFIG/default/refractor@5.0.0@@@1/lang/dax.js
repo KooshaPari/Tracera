@@ -34,7 +34,7 @@ export default function dax(Prism) {
       alias: 'constant'
     },
     number: /\b\d+(?:\.\d*)?|\B\.\d+\b/,
-    operator: /:=|[-+*\/=^]|&&?|\|\||<(?:=>?|<|>)?|>[>=]?|\b(?:IN|NOT)\b/i,
-    punctuation: /[;\[\](){}`,.]/
+    operator: /:=|[-+*/=^]|&&?|\|\||<(?:=>?|<|>)?|>[>=]?|\b(?:IN|NOT)\b/i,
+    punctuation: /[;[\](){}`,.]/
   }
 }

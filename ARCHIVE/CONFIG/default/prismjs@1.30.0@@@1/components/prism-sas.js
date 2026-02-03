@@ -37,7 +37,7 @@
 		greedy: true
 	};
 
-	var punctuation = /[$%@.(){}\[\];,\\]/;
+	var punctuation = /[$%@.(){}[\];,\\]/;
 
 	var func = {
 		pattern: /%?\b\w+(?=\()/,
@@ -47,7 +47,7 @@
 	var args = {
 		'function': func,
 		'arg-value': {
-			pattern: /(=\s*)[A-Z\.]+/i,
+			pattern: /(=\s*)[A-Z.]+/i,
 			lookbehind: true
 		},
 		'operator': /=/,
@@ -319,7 +319,7 @@
 		},
 		// Decimal (1.2e23), hexadecimal (0c1x)
 		'number': number,
-		'operator': /\*\*?|\|\|?|!!?|¦¦?|<[>=]?|>[<=]?|[-+\/=&]|[~¬^]=?/,
+		'operator': /\*\*?|\|\|?|!!?|¦¦?|<[>=]?|>[<=]?|[-+/=&]|[~¬^]=?/,
 		'punctuation': punctuation
 	};
 

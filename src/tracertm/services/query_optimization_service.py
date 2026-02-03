@@ -1,6 +1,6 @@
 """Service for query optimization and analysis."""
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -25,12 +25,12 @@ class QueryOptimizationService:
         query_filters: dict[str, Any],
     ) -> dict[str, Any]:
         """Analyze query performance."""
-        start_time = datetime.utcnow()
+        start_time = datetime.now(UTC)
 
         # Execute query
         items = await self.items.query(project_id, query_filters)
 
-        end_time = datetime.utcnow()
+        end_time = datetime.now(UTC)
         execution_time = (end_time - start_time).total_seconds()
 
         # Record stats
@@ -47,25 +47,20 @@ class QueryOptimizationService:
             "execution_time_seconds": execution_time,
             "items_returned": len(items),
             "performance_rating": self._rate_performance(execution_time),
-            "optimization_suggestions": self._suggest_optimizations(
-                execution_time, len(items)
-            ),
+            "optimization_suggestions": self._suggest_optimizations(execution_time, len(items)),
         }
 
     def _rate_performance(self, execution_time: float) -> str:
         """Rate query performance."""
         if execution_time < 0.1:
             return "Excellent"
-        elif execution_time < 0.5:
+        if execution_time < 0.5:
             return "Good"
-        elif execution_time < 1.0:
+        if execution_time < 1.0:
             return "Fair"
-        else:
-            return "Poor"
+        return "Poor"
 
-    def _suggest_optimizations(
-        self, execution_time: float, result_count: int
-    ) -> list[str]:
+    def _suggest_optimizations(self, execution_time: float, result_count: int) -> list[str]:
         """Suggest query optimizations."""
         suggestions = []
 
@@ -89,7 +84,7 @@ class QueryOptimizationService:
         """Cache query result."""
         self.query_cache[query_key] = {
             "result": result,
-            "cached_at": datetime.utcnow().isoformat(),
+            "cached_at": datetime.now(UTC).isoformat(),
             "ttl_seconds": ttl_seconds,
         }
 
@@ -99,13 +94,12 @@ class QueryOptimizationService:
             cached = self.query_cache[query_key]
             # Check if cache is still valid
             cached_at = datetime.fromisoformat(cached["cached_at"])
-            age = (datetime.utcnow() - cached_at).total_seconds()
+            age = (datetime.now(UTC) - cached_at).total_seconds()
 
             if age < cached["ttl_seconds"]:
                 return cached["result"]
-            else:
-                # Cache expired
-                del self.query_cache[query_key]
+            # Cache expired
+            del self.query_cache[query_key]
 
         return None
 
@@ -150,16 +144,12 @@ class QueryOptimizationService:
         # Analyze query stats
         if len(self.query_stats) > 10:
             # If many queries filter by status, recommend status index
-            status_queries = [
-                s for s in self.query_stats if "status" in s.get("query_filters", {})
-            ]
+            status_queries = [s for s in self.query_stats if "status" in s.get("query_filters", {})]
             if len(status_queries) > len(self.query_stats) * 0.5:
                 recommendations.append("CREATE INDEX idx_item_status ON items(status)")
 
             # If many queries filter by view, recommend view index
-            view_queries = [
-                s for s in self.query_stats if "view" in s.get("query_filters", {})
-            ]
+            view_queries = [s for s in self.query_stats if "view" in s.get("query_filters", {})]
             if len(view_queries) > len(self.query_stats) * 0.5:
                 recommendations.append("CREATE INDEX idx_item_view ON items(view)")
 

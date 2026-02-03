@@ -5,6 +5,7 @@ Integration tests for Epic 6: Project Switching & Isolation (Stories 6.3, 6.4).
 import time
 
 import pytest
+
 pytestmark = pytest.mark.integration
 from sqlalchemy.orm import Session
 
@@ -78,13 +79,13 @@ def test_project_isolation(multi_project_setup):
     # Create items in project 1
     config_manager.set("current_project_id", project1_id)
     client1 = TraceRTMClient()
-    client1.register_agent("agent-1", "ai_agent")
+    client1.register_agent("agent-1", agent_type="ai_agent")
     item1 = client1.create_item("Project 1 Item", "FEATURE", "feature")
 
     # Switch to project 2
     config_manager.set("current_project_id", project2_id)
     client2 = TraceRTMClient()
-    client2.register_agent("agent-2", "ai_agent")
+    client2.register_agent("agent-2", agent_type="ai_agent")
     item2 = client2.create_item("Project 2 Item", "FEATURE", "feature")
 
     # Verify isolation - project 1 items not visible in project 2

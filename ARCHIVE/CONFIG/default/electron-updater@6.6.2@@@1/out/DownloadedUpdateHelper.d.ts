@@ -32,4 +32,4 @@ interface CachedUpdateInfo {
     readonly isAdminRightsRequired: boolean;
 }
 export declare function createTempUpdateFile(name: string, cacheDir: string, log: Logger): Promise<string>;
-export {};
+

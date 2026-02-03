@@ -2,19 +2,16 @@
 
 import logging
 from collections.abc import AsyncGenerator
-from functools import lru_cache
-from typing import Optional, Any
 
 from fastapi import HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.config.manager import ConfigManager
-from tracertm.services import workos_auth_service
-from tracertm.services.cache_service import CacheService, RedisUnavailableError
-from tracertm.services.token_bridge import get_token_bridge, TokenBridge
 from tracertm.core.context import current_user_id
 from tracertm.infrastructure.event_bus import EventBus
 from tracertm.infrastructure.nats_client import NATSClient
+from tracertm.services.cache_service import CacheService, RedisUnavailableError
+from tracertm.services.token_bridge import TokenBridge, get_token_bridge
 
 logger = logging.getLogger(__name__)
 
@@ -76,6 +73,7 @@ async def get_event_bus() -> EventBus:
             raise RuntimeError(f"Failed to initialize EventBus: {e}") from e
 
     return _event_bus
+
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """
@@ -141,6 +139,7 @@ def auth_guard(request: Request) -> dict:
     account_id = claims.get("org_id") or claims.get("account_id") if claims else None
     if account_id:
         from tracertm.core.context import current_account_id
+
         current_account_id.set(account_id)
 
     return claims or {}

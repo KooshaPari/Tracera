@@ -1,6 +1,7 @@
-import pytest
-from types import SimpleNamespace
 from datetime import datetime, timedelta
+from types import SimpleNamespace
+
+import pytest
 
 from tracertm.services.advanced_analytics_service import AdvancedAnalyticsService
 
@@ -24,6 +25,7 @@ async def test_project_metrics_counts_status_and_view(monkeypatch, async_session
     ]
 
     svc = AdvancedAnalyticsService(async_session)
+
     async def fake_query(project_id, filters):
         return items
 
@@ -45,6 +47,7 @@ async def test_team_analytics_counts_agents(monkeypatch, async_session):
         _Event(agent_id="a2"),
     ]
     svc = AdvancedAnalyticsService(async_session)
+
     async def fake_events(project_id):
         return events
 
@@ -58,19 +61,22 @@ async def test_team_analytics_counts_agents(monkeypatch, async_session):
 
 @pytest.mark.asyncio
 async def test_trend_analysis_filters_by_days(monkeypatch, async_session):
-    now = datetime.utcnow()
+    now = datetime.now(datetime.UTC)
     events = [
         _Event(created_at=now),
         _Event(created_at=now - timedelta(days=2)),
         _Event(created_at=now - timedelta(days=40)),
     ]
     svc = AdvancedAnalyticsService(async_session)
+
     async def fake_query(project_id, filters):
         return []
 
     monkeypatch.setattr(svc.items, "query", fake_query)
+
     async def fake_events(project_id):
         return events
+
     monkeypatch.setattr(svc.events, "get_by_project", fake_events)
 
     trend = await svc.trend_analysis("proj-1", days=7)
@@ -85,8 +91,10 @@ async def test_dependency_metrics_handles_missing_links(monkeypatch, async_sessi
         _Item(outgoing_links=[]),
     ]
     svc = AdvancedAnalyticsService(async_session)
+
     async def fake_query_items(project_id, filters):
         return items
+
     monkeypatch.setattr(svc.items, "query", fake_query_items)
 
     deps = await svc.dependency_metrics("proj-1")
@@ -101,8 +109,10 @@ async def test_quality_metrics_counts_descriptions(monkeypatch, async_session):
         _Item(description=None, outgoing_links=[]),
     ]
     svc = AdvancedAnalyticsService(async_session)
+
     async def fake_query_items2(project_id, filters):
         return items
+
     monkeypatch.setattr(svc.items, "query", fake_query_items2)
 
     quality = await svc.quality_metrics("proj-1")

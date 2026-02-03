@@ -23,4 +23,4 @@ type C = IsSet<string>;
 */
 export type UnknownSet = ReadonlySet<unknown>;
 
-export {};
+

@@ -6,19 +6,15 @@ Target: 35+ tests with 95%+ coverage.
 """
 
 import pytest
-import threading
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime, timedelta
-from sqlalchemy.orm import Session
 
 from tracertm.models.event import Event
 from tracertm.models.item import Item
 from tracertm.models.project import Project
 from tracertm.services.status_workflow_service import (
-    StatusWorkflowService,
-    VALID_STATUSES,
-    STATUS_TRANSITIONS,
     STATUS_PROGRESS,
+    STATUS_TRANSITIONS,
+    VALID_STATUSES,
+    StatusWorkflowService,
 )
 
 pytestmark = pytest.mark.integration
@@ -222,9 +218,7 @@ class TestTransitionValidation:
         """Test validation: archived → any (all invalid)."""
         for status in VALID_STATUSES:
             if status != "archived":
-                assert (
-                    workflow_service.validate_transition("archived", status) is False
-                )
+                assert workflow_service.validate_transition("archived", status) is False
 
     def test_validate_invalid_current_status(self, workflow_service):
         """Test validation with invalid current status."""
@@ -323,16 +317,11 @@ class TestStatusHistory:
 
     def test_history_with_agent_id(self, workflow_service, test_item):
         """Test history includes agent_id when provided."""
-        workflow_service.update_item_status(
-            test_item.id, "in_progress", agent_id="test-agent"
-        )
+        workflow_service.update_item_status(test_item.id, "in_progress", agent_id="test-agent")
 
         history = workflow_service.get_status_history(test_item.id)
 
-        assert any(
-            h["agent_id"] == "test-agent" and h["new_status"] == "in_progress"
-            for h in history
-        )
+        assert any(h["agent_id"] == "test-agent" and h["new_status"] == "in_progress" for h in history)
 
     def test_history_with_null_agent_id(self, workflow_service, test_item):
         """Test history handles null agent_id."""
@@ -378,12 +367,11 @@ class TestEventLogging:
 
     def test_status_change_event_created(self, workflow_service, db_session, test_item):
         """Test status change event is created."""
-        workflow_service.update_item_status(
-            test_item.id, "in_progress", agent_id="test-agent"
-        )
+        workflow_service.update_item_status(test_item.id, "in_progress", agent_id="test-agent")
 
         events = (
-            db_session.query(Event)
+            db_session
+            .query(Event)
             .filter(
                 Event.entity_type == "item",
                 Event.entity_id == test_item.id,
@@ -401,7 +389,8 @@ class TestEventLogging:
         workflow_service.update_item_status(test_item.id, "in_progress")
 
         event = (
-            db_session.query(Event)
+            db_session
+            .query(Event)
             .filter(
                 Event.entity_type == "item",
                 Event.entity_id == test_item.id,
@@ -414,12 +403,11 @@ class TestEventLogging:
 
     def test_event_includes_agent_id(self, workflow_service, db_session, test_item):
         """Test event data includes agent_id."""
-        workflow_service.update_item_status(
-            test_item.id, "in_progress", agent_id="my-agent"
-        )
+        workflow_service.update_item_status(test_item.id, "in_progress", agent_id="my-agent")
 
         event = (
-            db_session.query(Event)
+            db_session
+            .query(Event)
             .filter(
                 Event.entity_type == "item",
                 Event.entity_id == test_item.id,
@@ -647,7 +635,7 @@ class TestStateMachineEdgeCases:
 
     def test_progress_values_valid_range(self):
         """Test progress values are in valid range [0, 100]."""
-        for status, progress in STATUS_PROGRESS.items():
+        for progress in STATUS_PROGRESS.values():
             assert 0 <= progress <= 100
 
     def test_no_unreachable_states(self):
@@ -707,9 +695,7 @@ class TestIdempotencyAndRecovery:
         for _ in range(5):
             assert workflow_service.validate_transition("todo", "in_progress") is True
 
-    def test_item_state_consistency_after_error(
-        self, workflow_service, db_session, test_item
-    ):
+    def test_item_state_consistency_after_error(self, workflow_service, db_session, test_item):
         """Test item state remains consistent after invalid transition error."""
         original_status = test_item.status
 
@@ -726,7 +712,8 @@ class TestIdempotencyAndRecovery:
     def test_transaction_rollback_on_error(self, workflow_service, db_session, test_item):
         """Test transaction rollback on error."""
         initial_event_count = (
-            db_session.query(Event)
+            db_session
+            .query(Event)
             .filter(Event.entity_id == test_item.id, Event.event_type == "status_changed")
             .count()
         )
@@ -739,7 +726,8 @@ class TestIdempotencyAndRecovery:
 
         # Event count should not increase for invalid transition
         final_event_count = (
-            db_session.query(Event)
+            db_session
+            .query(Event)
             .filter(Event.entity_id == test_item.id, Event.event_type == "status_changed")
             .count()
         )
@@ -753,14 +741,13 @@ class TestIdempotencyAndRecovery:
 class TestIntegrationWithOtherComponents:
     """Test integration with other system components."""
 
-    def test_event_queryable_after_status_change(
-        self, workflow_service, db_session, test_item
-    ):
+    def test_event_queryable_after_status_change(self, workflow_service, db_session, test_item):
         """Test events are queryable after status change."""
         workflow_service.update_item_status(test_item.id, "in_progress")
 
         event = (
-            db_session.query(Event)
+            db_session
+            .query(Event)
             .filter(
                 Event.entity_type == "item",
                 Event.entity_id == test_item.id,
@@ -868,14 +855,9 @@ class TestCoverageGaps:
             for target in VALID_STATUSES:
                 expected = target in allowed
                 actual = workflow_service.validate_transition(current, target)
-                assert actual == expected, (
-                    f"Transition {current}→{target}: expected {expected}, "
-                    f"got {actual}"
-                )
+                assert actual == expected, f"Transition {current}→{target}: expected {expected}, got {actual}"
 
-    def test_update_item_status_return_value_accuracy(
-        self, workflow_service, test_item
-    ):
+    def test_update_item_status_return_value_accuracy(self, workflow_service, test_item):
         """Test update_item_status returns accurate information."""
         result = workflow_service.update_item_status(test_item.id, "in_progress")
 

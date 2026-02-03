@@ -7,7 +7,7 @@ Tests for:
 - update_by_external_id() - updating runs by external ID
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import uuid4
 
 import pytest
@@ -38,7 +38,7 @@ async def test_create_run_basic(db_session: AsyncSession):
     repo = WorkflowRunRepository(db_session)
     run = await repo.create_run(
         workflow_name="test_workflow",
-        project_id=project.id,
+        project_id=str(project.id),
     )
 
     assert run.id is not None
@@ -61,7 +61,7 @@ async def test_create_run_with_payload(db_session: AsyncSession):
     payload = {"input": "test_data", "config": {"option": True}}
     run = await repo.create_run(
         workflow_name="data_processing",
-        project_id=project.id,
+        project_id=str(project.id),
         payload=payload,
     )
 
@@ -80,7 +80,7 @@ async def test_create_run_with_external_id(db_session: AsyncSession):
     external_id = f"ext-{uuid4().hex[:8]}"
     run = await repo.create_run(
         workflow_name="external_workflow",
-        project_id=project.id,
+        project_id=str(project.id),
         external_run_id=external_id,
     )
 
@@ -95,14 +95,14 @@ async def test_create_run_with_graph_id(db_session: AsyncSession):
 
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
-    graph = await create_default_graph_for_project(db_session, project.id)
+    graph = await create_default_graph_for_project(db_session, str(project.id))
     await db_session.commit()
 
     repo = WorkflowRunRepository(db_session)
     run = await repo.create_run(
         workflow_name="graph_workflow",
-        project_id=project.id,
-        graph_id=graph.id,
+        project_id=str(project.id),
+        graph_id=str(graph.id),
     )
 
     assert run.graph_id == graph.id
@@ -120,7 +120,7 @@ async def test_create_run_with_user_id(db_session: AsyncSession):
     user_id = f"user-{uuid4().hex[:8]}"
     run = await repo.create_run(
         workflow_name="user_workflow",
-        project_id=project.id,
+        project_id=str(project.id),
         created_by_user_id=user_id,
     )
 
@@ -135,7 +135,7 @@ async def test_create_run_with_all_fields(db_session: AsyncSession):
 
     project_repo = ProjectRepository(db_session)
     project = await project_repo.create(name=unique_project_name())
-    graph = await create_default_graph_for_project(db_session, project.id)
+    graph = await create_default_graph_for_project(db_session, str(project.id))
     await db_session.commit()
 
     repo = WorkflowRunRepository(db_session)
@@ -145,8 +145,8 @@ async def test_create_run_with_all_fields(db_session: AsyncSession):
 
     run = await repo.create_run(
         workflow_name="complete_workflow",
-        project_id=project.id,
-        graph_id=graph.id,
+        project_id=str(project.id),
+        graph_id=str(graph.id),
         payload=payload,
         external_run_id=external_id,
         created_by_user_id=user_id,
@@ -186,12 +186,12 @@ async def test_list_runs_basic(db_session: AsyncSession):
     await db_session.commit()
 
     repo = WorkflowRunRepository(db_session)
-    await repo.create_run(workflow_name="workflow1", project_id=project.id)
-    await repo.create_run(workflow_name="workflow2", project_id=project.id)
-    await repo.create_run(workflow_name="workflow3", project_id=project.id)
+    await repo.create_run(workflow_name="workflow1", project_id=str(project.id))
+    await repo.create_run(workflow_name="workflow2", project_id=str(project.id))
+    await repo.create_run(workflow_name="workflow3", project_id=str(project.id))
     await db_session.commit()
 
-    runs = await repo.list_runs(project_id=project.id)
+    runs = await repo.list_runs(project_id=str(project.id))
 
     assert len(runs) == 3
 
@@ -206,13 +206,13 @@ async def test_list_runs_filters_by_project(db_session: AsyncSession):
     await db_session.commit()
 
     repo = WorkflowRunRepository(db_session)
-    await repo.create_run(workflow_name="workflow1", project_id=project1.id)
-    await repo.create_run(workflow_name="workflow2", project_id=project1.id)
-    await repo.create_run(workflow_name="workflow3", project_id=project2.id)
+    await repo.create_run(workflow_name="workflow1", project_id=str(project1.id))
+    await repo.create_run(workflow_name="workflow2", project_id=str(project1.id))
+    await repo.create_run(workflow_name="workflow3", project_id=str(project2.id))
     await db_session.commit()
 
-    runs1 = await repo.list_runs(project_id=project1.id)
-    runs2 = await repo.list_runs(project_id=project2.id)
+    runs1 = await repo.list_runs(project_id=str(project1.id))
+    runs2 = await repo.list_runs(project_id=str(project2.id))
 
     assert len(runs1) == 2
     assert len(runs2) == 1
@@ -227,9 +227,9 @@ async def test_list_runs_filter_by_status(db_session: AsyncSession):
     await db_session.commit()
 
     repo = WorkflowRunRepository(db_session)
-    run1 = await repo.create_run(workflow_name="workflow1", project_id=project.id)
-    run2 = await repo.create_run(workflow_name="workflow2", project_id=project.id)
-    await repo.create_run(workflow_name="workflow3", project_id=project.id)
+    run1 = await repo.create_run(workflow_name="workflow1", project_id=str(project.id))
+    await repo.create_run(workflow_name="workflow2", project_id=str(project.id))
+    await repo.create_run(workflow_name="workflow3", project_id=str(project.id))
     await db_session.commit()
 
     # Update some runs to different statuses
@@ -240,7 +240,7 @@ async def test_list_runs_filter_by_status(db_session: AsyncSession):
     await db_session.commit()
 
     # Filter by queued status (default)
-    queued_runs = await repo.list_runs(project_id=project.id, status="queued")
+    queued_runs = await repo.list_runs(project_id=str(project.id), status="queued")
 
     # Should return runs that are still queued
     assert all(run.status == "queued" for run in queued_runs)
@@ -255,19 +255,13 @@ async def test_list_runs_filter_by_workflow_name(db_session: AsyncSession):
     await db_session.commit()
 
     repo = WorkflowRunRepository(db_session)
-    await repo.create_run(workflow_name="data_sync", project_id=project.id)
-    await repo.create_run(workflow_name="data_sync", project_id=project.id)
-    await repo.create_run(workflow_name="analysis", project_id=project.id)
+    await repo.create_run(workflow_name="data_sync", project_id=str(project.id))
+    await repo.create_run(workflow_name="data_sync", project_id=str(project.id))
+    await repo.create_run(workflow_name="analysis", project_id=str(project.id))
     await db_session.commit()
 
-    data_sync_runs = await repo.list_runs(
-        project_id=project.id,
-        workflow_name="data_sync"
-    )
-    analysis_runs = await repo.list_runs(
-        project_id=project.id,
-        workflow_name="analysis"
-    )
+    data_sync_runs = await repo.list_runs(project_id=str(project.id), workflow_name="data_sync")
+    analysis_runs = await repo.list_runs(project_id=str(project.id), workflow_name="analysis")
 
     assert len(data_sync_runs) == 2
     assert len(analysis_runs) == 1
@@ -285,10 +279,10 @@ async def test_list_runs_pagination_limit(db_session: AsyncSession):
 
     repo = WorkflowRunRepository(db_session)
     for i in range(10):
-        await repo.create_run(workflow_name=f"workflow_{i}", project_id=project.id)
+        await repo.create_run(workflow_name=f"workflow_{i}", project_id=str(project.id))
     await db_session.commit()
 
-    runs = await repo.list_runs(project_id=project.id, limit=5)
+    runs = await repo.list_runs(project_id=str(project.id), limit=5)
 
     assert len(runs) == 5
 
@@ -303,10 +297,10 @@ async def test_list_runs_pagination_offset(db_session: AsyncSession):
 
     repo = WorkflowRunRepository(db_session)
     for i in range(10):
-        await repo.create_run(workflow_name=f"workflow_{i}", project_id=project.id)
+        await repo.create_run(workflow_name=f"workflow_{i}", project_id=str(project.id))
     await db_session.commit()
 
-    runs = await repo.list_runs(project_id=project.id, limit=5, offset=5)
+    runs = await repo.list_runs(project_id=str(project.id), limit=5, offset=5)
 
     assert len(runs) == 5
 
@@ -320,7 +314,7 @@ async def test_list_runs_empty_when_no_runs(db_session: AsyncSession):
     await db_session.commit()
 
     repo = WorkflowRunRepository(db_session)
-    runs = await repo.list_runs(project_id=project.id)
+    runs = await repo.list_runs(project_id=str(project.id))
 
     assert runs == []
 
@@ -342,7 +336,7 @@ async def test_update_by_external_id_status(db_session: AsyncSession):
     external_id = f"ext-{uuid4().hex[:8]}"
     run = await repo.create_run(
         workflow_name="workflow",
-        project_id=project.id,
+        project_id=str(project.id),
         external_run_id=external_id,
     )
     await db_session.commit()
@@ -371,7 +365,7 @@ async def test_update_by_external_id_with_result(db_session: AsyncSession):
     external_id = f"ext-{uuid4().hex[:8]}"
     run = await repo.create_run(
         workflow_name="workflow",
-        project_id=project.id,
+        project_id=str(project.id),
         external_run_id=external_id,
     )
     await db_session.commit()
@@ -402,7 +396,7 @@ async def test_update_by_external_id_with_error(db_session: AsyncSession):
     external_id = f"ext-{uuid4().hex[:8]}"
     run = await repo.create_run(
         workflow_name="workflow",
-        project_id=project.id,
+        project_id=str(project.id),
         external_run_id=external_id,
     )
     await db_session.commit()
@@ -432,13 +426,13 @@ async def test_update_by_external_id_with_timestamps(db_session: AsyncSession):
     external_id = f"ext-{uuid4().hex[:8]}"
     run = await repo.create_run(
         workflow_name="workflow",
-        project_id=project.id,
+        project_id=str(project.id),
         external_run_id=external_id,
     )
     await db_session.commit()
 
-    started = datetime.now(timezone.utc)
-    completed = datetime.now(timezone.utc)
+    started = datetime.now(UTC)
+    completed = datetime.now(UTC)
 
     await repo.update_by_external_id(
         external_run_id=external_id,
@@ -466,13 +460,13 @@ async def test_update_by_external_id_all_fields(db_session: AsyncSession):
     external_id = f"ext-{uuid4().hex[:8]}"
     run = await repo.create_run(
         workflow_name="workflow",
-        project_id=project.id,
+        project_id=str(project.id),
         external_run_id=external_id,
     )
     await db_session.commit()
 
-    started = datetime.now(timezone.utc)
-    completed = datetime.now(timezone.utc)
+    started = datetime.now(UTC)
+    completed = datetime.now(UTC)
     result = {"success": True}
 
     await repo.update_by_external_id(

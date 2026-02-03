@@ -8,17 +8,17 @@ Provides REST endpoints for:
 
 from datetime import datetime
 from typing import Any
-from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Path, Body
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
 from pydantic import BaseModel, Field
+from sqlalchemy import Integer
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from tracertm.api.deps import get_db, auth_guard
+from tracertm.api.deps import auth_guard, get_db
 from tracertm.repositories import (
-    VersionBlockRepository,
     BaselineRepository,
     SpecEmbeddingRepository,
+    VersionBlockRepository,
 )
 
 router = APIRouter(prefix="/blockchain", tags=["blockchain"])
@@ -36,6 +36,7 @@ embedding_repo = SpecEmbeddingRepository()
 
 class CreateBaselineRequest(BaseModel):
     """Request to create a new baseline."""
+
     name: str = Field(..., min_length=1, max_length=255)
     description: str | None = None
     baseline_type: str = Field(default="snapshot", pattern="^(snapshot|release|freeze|audit)$")
@@ -49,6 +50,7 @@ class CreateBaselineRequest(BaseModel):
 
 class BaselineResponse(BaseModel):
     """Response for a baseline."""
+
     id: str
     baseline_id: str
     project_id: str
@@ -68,12 +70,14 @@ class BaselineResponse(BaseModel):
 
 class BaselineListResponse(BaseModel):
     """Response for baseline list."""
+
     baselines: list[BaselineResponse]
     total: int
 
 
 class BaselineItemResponse(BaseModel):
     """Response for a baseline item."""
+
     item_id: str
     item_type: str
     content_hash: str
@@ -84,12 +88,14 @@ class BaselineItemResponse(BaseModel):
 
 class BaselineDetailResponse(BaseModel):
     """Detailed baseline response with items."""
+
     baseline: BaselineResponse
     items: list[BaselineItemResponse]
 
 
 class GenerateEmbeddingsRequest(BaseModel):
     """Request to generate embeddings for specs."""
+
     spec_ids: list[str] = Field(..., min_length=1, max_length=100)
     spec_type: str = Field(..., pattern="^(requirements|tests|epics|stories|tasks|defects)$")
     model_name: str = Field(default="sentence-transformers/all-MiniLM-L6-v2")
@@ -98,6 +104,7 @@ class GenerateEmbeddingsRequest(BaseModel):
 
 class EmbeddingStatusResponse(BaseModel):
     """Response for embedding generation status."""
+
     total_requested: int
     generated: int
     skipped: int
@@ -108,6 +115,7 @@ class EmbeddingStatusResponse(BaseModel):
 
 class VersionChainStatsResponse(BaseModel):
     """Statistics for version chains in a project."""
+
     total_chains: int
     total_blocks: int
     valid_chains: int
@@ -149,10 +157,7 @@ async def create_baseline(
         user_id = claims.get("sub") or claims.get("user_id")
 
         # Convert items to tuple format
-        items_tuples = [
-            (item["item_id"], item["item_type"], item["content_hash"])
-            for item in request.items
-        ]
+        items_tuples = [(item["item_id"], item["item_type"], item["content_hash"]) for item in request.items]
 
         baseline = await baseline_repo.create_baseline(
             db=db,
@@ -217,7 +222,8 @@ async def list_baselines(
         BaselineListResponse: List of baselines
     """
     try:
-        from sqlalchemy import select, func
+        from sqlalchemy import func, select
+
         from tracertm.models.blockchain import Baseline
 
         # Build query
@@ -289,6 +295,7 @@ async def get_baseline(
     try:
         from sqlalchemy import select
         from sqlalchemy.orm import selectinload
+
         from tracertm.models.blockchain import Baseline
 
         result = await db.execute(
@@ -355,14 +362,13 @@ async def delete_baseline(
         db: Database session
     """
     try:
-        from sqlalchemy import select, delete
+        from sqlalchemy import delete, select
+
         from tracertm.models.blockchain import Baseline
 
         # Verify exists
         result = await db.execute(
-            select(Baseline)
-            .where(Baseline.baseline_id == baseline_id)
-            .where(Baseline.project_id == project_id)
+            select(Baseline).where(Baseline.baseline_id == baseline_id).where(Baseline.project_id == project_id)
         )
         baseline = result.scalar_one_or_none()
 
@@ -370,9 +376,7 @@ async def delete_baseline(
             raise HTTPException(status_code=404, detail=f"Baseline {baseline_id} not found")
 
         # Delete (cascade will handle items and proofs)
-        await db.execute(
-            delete(Baseline).where(Baseline.id == baseline.id)
-        )
+        await db.execute(delete(Baseline).where(Baseline.id == baseline.id))
         await db.commit()
 
     except HTTPException:
@@ -417,24 +421,21 @@ async def generate_embeddings(
         failed = 0
         details = []
 
-        # Check if sentence-transformers is available
+        # Check if sentence-transformers is available (optional deps)
         try:
-            from sentence_transformers import SentenceTransformer
-            import numpy as np
+            import numpy as np  # type: ignore[import-untyped]
+            from sentence_transformers import SentenceTransformer  # type: ignore[import-untyped]
 
             model = SentenceTransformer(request.model_name)
         except ImportError:
             raise HTTPException(
-                status_code=501,
-                detail="sentence-transformers not installed. Install with: pip install 'tracertm[ml]'"
-            )
+                status_code=501, detail="sentence-transformers not installed. Install with: pip install 'tracertm[ml]'"
+            ) from None
 
         for spec_id in request.spec_ids:
             try:
                 # Check if embedding already exists
-                existing = await embedding_repo.get_embedding(
-                    db, spec_id, request.spec_type, request.model_name
-                )
+                existing = await embedding_repo.get_embedding(db, spec_id, request.spec_type, request.model_name)
 
                 if existing and not request.force_refresh:
                     skipped += 1
@@ -520,7 +521,8 @@ async def get_embedding_stats(
         Statistics about embeddings in the project
     """
     try:
-        from sqlalchemy import select, func
+        from sqlalchemy import func, select
+
         from tracertm.models.blockchain import SpecEmbedding
 
         # Count by spec type
@@ -577,7 +579,8 @@ async def delete_embeddings(
         db: Database session
     """
     try:
-        from sqlalchemy import delete, and_
+        from sqlalchemy import and_, delete
+
         from tracertm.models.blockchain import SpecEmbedding
 
         conditions = [SpecEmbedding.project_id == project_id]
@@ -587,9 +590,7 @@ async def delete_embeddings(
         if model_name:
             conditions.append(SpecEmbedding.embedding_model == model_name)
 
-        await db.execute(
-            delete(SpecEmbedding).where(and_(*conditions))
-        )
+        await db.execute(delete(SpecEmbedding).where(and_(*conditions)))
         await db.commit()
 
     except Exception as e:
@@ -622,16 +623,16 @@ async def get_version_chain_stats(
         VersionChainStatsResponse: Chain statistics
     """
     try:
-        from sqlalchemy import select, func
-        from tracertm.models.blockchain import VersionChainIndex, VersionBlock
+        from sqlalchemy import func, select
+
+        from tracertm.models.blockchain import VersionBlock, VersionChainIndex
 
         # Count chains
         chains_result = await db.execute(
             select(
                 func.count(VersionChainIndex.id).label("total"),
                 func.sum(func.cast(VersionChainIndex.is_valid, Integer)).label("valid"),
-            )
-            .where(VersionChainIndex.project_id == project_id)
+            ).where(VersionChainIndex.project_id == project_id)
         )
         chains_row = chains_result.one()
         total_chains = chains_row.total or 0
@@ -639,8 +640,7 @@ async def get_version_chain_stats(
 
         # Count blocks
         blocks_result = await db.execute(
-            select(func.count(VersionBlock.id))
-            .where(VersionBlock.project_id == project_id)
+            select(func.count(VersionBlock.id)).where(VersionBlock.project_id == project_id)
         )
         total_blocks = blocks_result.scalar() or 0
 
@@ -665,7 +665,3 @@ async def get_version_chain_stats(
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
-
-
-# Need to import Integer for the cast
-from sqlalchemy import Integer

@@ -9,7 +9,7 @@ Two-tier storage model:
 
 import hashlib
 import json
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -282,9 +282,7 @@ class LocalStorageManager:
 
         # Create agents.yaml
         agents_yaml_path = trace_dir / ".meta" / "agents.yaml"
-        agents_yaml_path.write_text(
-            "# Agent configurations\nagents: []\n", encoding="utf-8"
-        )
+        agents_yaml_path.write_text("# Agent configurations\nagents: []\n", encoding="utf-8")
 
         # Create .gitignore entry suggestion
         gitignore_path = project_path / ".gitignore"
@@ -358,9 +356,7 @@ class LocalStorageManager:
 
         return project_id
 
-    def _register_project_in_db(
-        self, project_id: str, project_name: str, project_path: Path
-    ) -> None:
+    def _register_project_in_db(self, project_id: str, project_name: str, project_path: Path) -> None:
         """
         Register project in the global SQLite index.
 
@@ -371,7 +367,7 @@ class LocalStorageManager:
         """
         session = self.get_session()
         try:
-            now = datetime.now().isoformat()
+            now = datetime.now(UTC).isoformat()
 
             session.execute(
                 text(
@@ -476,8 +472,8 @@ class LocalStorageManager:
                 ),
                 {
                     "id": project_id,
-                    "last_indexed": datetime.now().isoformat(),
-                    "updated_at": datetime.now().isoformat(),
+                    "last_indexed": datetime.now(UTC).isoformat(),
+                    "updated_at": datetime.now(UTC).isoformat(),
                 },
             )
             session.commit()
@@ -486,9 +482,7 @@ class LocalStorageManager:
 
         return counts
 
-    def _index_markdown_file(
-        self, md_file: Path, project_id: str, item_type: str
-    ) -> None:
+    def _index_markdown_file(self, md_file: Path, project_id: str, item_type: str) -> None:
         """
         Parse and index a markdown file.
 
@@ -628,9 +622,7 @@ class LocalStorageManager:
         finally:
             session.close()
 
-    def get_project_storage_by_id(
-        self, project_id: str, trace_dir: Path
-    ) -> "ProjectStorage | None":
+    def get_project_storage_by_id(self, project_id: str, trace_dir: Path) -> "ProjectStorage | None":
         """
         Get ProjectStorage for a project by ID.
 
@@ -645,9 +637,7 @@ class LocalStorageManager:
         try:
             project = session.get(Project, project_id)
             if project:
-                return ProjectStorage(
-                    self, project.name, trace_dir=trace_dir, project_id=project_id
-                )
+                return ProjectStorage(self, project.name, trace_dir=trace_dir, project_id=project_id)
             return None
         finally:
             session.close()
@@ -679,9 +669,7 @@ class LocalStorageManager:
             return counters_raw
         return default_counters
 
-    def increment_project_counter(
-        self, project_path: Path, item_type: str
-    ) -> tuple[int, str]:
+    def increment_project_counter(self, project_path: Path, item_type: str) -> tuple[int, str]:
         """
         Increment a counter in project.yaml and return the next ID.
 
@@ -775,9 +763,7 @@ class LocalStorageManager:
         project_name = project_config.get("name", project_path.name)
         project_id = project_config.get("id")
 
-        return ProjectStorage(
-            self, project_name, trace_dir=trace_dir, project_id=project_id
-        )
+        return ProjectStorage(self, project_name, trace_dir=trace_dir, project_id=project_id)
 
     def search_items(self, query: str, project_id: str | None = None) -> list[Item]:
         """
@@ -818,9 +804,7 @@ class LocalStorageManager:
         finally:
             session.close()
 
-    def queue_sync(
-        self, entity_type: str, entity_id: str, operation: str, payload: dict[str, Any]
-    ) -> None:
+    def queue_sync(self, entity_type: str, entity_id: str, operation: str, payload: dict[str, Any]) -> None:
         """
         Queue a change for sync to remote server.
 
@@ -845,7 +829,7 @@ class LocalStorageManager:
                     "entity_id": entity_id,
                     "operation": operation,
                     "payload": json.dumps(payload),
-                    "created_at": datetime.now().isoformat(),
+                    "created_at": datetime.now(UTC).isoformat(),
                 },
             )
             session.commit()
@@ -901,9 +885,7 @@ class LocalStorageManager:
         """
         session = self.get_session()
         try:
-            session.execute(
-                text("DELETE FROM sync_queue WHERE id = :id"), {"id": queue_id}
-            )
+            session.execute(text("DELETE FROM sync_queue WHERE id = :id"), {"id": queue_id})
             session.commit()
         finally:
             session.close()
@@ -925,7 +907,7 @@ class LocalStorageManager:
                 VALUES (:key, :value, :updated_at)
             """
                 ),
-                {"key": key, "value": value, "updated_at": datetime.now().isoformat()},
+                {"key": key, "value": value, "updated_at": datetime.now(UTC).isoformat()},
             )
             session.commit()
         finally:
@@ -943,9 +925,7 @@ class LocalStorageManager:
         """
         session = self.get_session()
         try:
-            result = session.execute(
-                text("SELECT value FROM sync_state WHERE key = :key"), {"key": key}
-            )
+            result = session.execute(text("SELECT value FROM sync_state WHERE key = :key"), {"key": key})
             row = result.fetchone()
             return row[0] if row else None
         finally:
@@ -1016,9 +996,7 @@ class ProjectStorage:
         # Initialize links file
         self.links_file = self.meta_dir / "links.yaml"
         if not self.links_file.exists():
-            self.links_file.write_text(
-                "# Traceability links\nlinks: []\n", encoding="utf-8"
-            )
+            self.links_file.write_text("# Traceability links\nlinks: []\n", encoding="utf-8")
 
     def create_or_update_project(
         self, name: str, description: str | None = None, metadata: dict[str, Any] | None = None
@@ -1045,7 +1023,7 @@ class ProjectStorage:
                     project.description = description
                 if metadata is not None:
                     project.project_metadata = metadata
-                project.updated_at = datetime.now()
+                project.updated_at = datetime.now(UTC)
             else:
                 # Create new
                 project = Project(
@@ -1066,7 +1044,7 @@ class ProjectStorage:
             is_update = session.query(Project).filter(Project.id == project.id).count() > 1
             self.manager.queue_sync(
                 "project",
-                project.id,
+                str(project.id),
                 "update" if is_update else "create",
                 {
                     "id": project.id,
@@ -1091,7 +1069,7 @@ class ProjectStorage:
 
         content = f"""# {project.name}
 
-{project.description or 'No description provided.'}
+{project.description or "No description provided."}
 
 ## Project Structure
 
@@ -1120,11 +1098,7 @@ Project ID: `{project.id}`
         """
         session = self.manager.get_session()
         try:
-            return (
-                session.query(Project)
-                .filter(Project.name == self.project_name)
-                .first()
-            )
+            return session.query(Project).filter(Project.name == self.project_name).first()
         finally:
             session.close()
 
@@ -1245,7 +1219,7 @@ class ItemStorage:
             # Queue for sync
             self.manager.queue_sync(
                 "item",
-                item.id,
+                str(item.id),
                 "create",
                 self._item_to_dict(item, external_id),
             )
@@ -1302,7 +1276,7 @@ class ItemStorage:
                 current_metadata.update(metadata)
                 item.item_metadata = current_metadata
 
-            item.updated_at = datetime.now()
+            item.updated_at = datetime.now(UTC)
             session.commit()
             session.refresh(item)
 
@@ -1351,7 +1325,7 @@ class ItemStorage:
                 raise ValueError(f"Item not found: {item_id}")
 
             # Soft delete
-            item.deleted_at = datetime.now()
+            item.deleted_at = datetime.now(UTC)
             session.commit()
 
             # Delete markdown file
@@ -1407,9 +1381,7 @@ class ItemStorage:
         """
         session = self.manager.get_session()
         try:
-            query = session.query(Item).filter(
-                Item.project_id == self.project.id, Item.deleted_at.is_(None)
-            )
+            query = session.query(Item).filter(Item.project_id == self.project.id, Item.deleted_at.is_(None))
 
             if item_type:
                 query = query.filter(Item.item_type == item_type)
@@ -1468,7 +1440,7 @@ class ItemStorage:
             # Queue for sync
             self.manager.queue_sync(
                 "link",
-                link.id,
+                str(link.id),
                 "create",
                 {
                     "id": link.id,
@@ -1551,10 +1523,10 @@ class ItemStorage:
             Markdown content string
         """
         # Get links
-        links = self.list_links(source_id=item.id)
+        links = self.list_links(source_id=str(item.id))
         links_data = []
         for link in links:
-            target = self.get_item(link.target_item_id)
+            target = self.get_item(str(link.target_item_id))
             if target:
                 target_external_id = target.item_metadata.get("external_id", target.id)
                 links_data.append({"type": link.link_type, "target": target_external_id})
@@ -1594,9 +1566,7 @@ class ItemStorage:
 
         return "\n".join(md_lines)
 
-    def _write_item_markdown(
-        self, item: Item, external_id: str | None, content: str
-    ) -> None:
+    def _write_item_markdown(self, item: Item, external_id: str | None, content: str) -> None:
         """
         Write item markdown file to project-local .trace/ directory.
 
@@ -1694,15 +1664,13 @@ class ItemStorage:
                     source_external_id = source.item_metadata.get("external_id", source.id)
                     target_external_id = target.item_metadata.get("external_id", target.id)
 
-                    links_data.append(
-                        {
-                            "id": link.id,
-                            "source": source_external_id,
-                            "target": target_external_id,
-                            "type": link.link_type,
-                            "created": link.created_at.isoformat(),
-                        }
-                    )
+                    links_data.append({
+                        "id": link.id,
+                        "source": source_external_id,
+                        "target": target_external_id,
+                        "type": link.link_type,
+                        "created": link.created_at.isoformat(),
+                    })
 
             yaml_content = {
                 "links": links_data,

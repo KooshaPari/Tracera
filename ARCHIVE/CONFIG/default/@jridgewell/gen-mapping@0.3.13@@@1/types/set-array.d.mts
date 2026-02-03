@@ -29,5 +29,5 @@ export declare function pop<T extends Key>(setarr: SetArray<T>): void;
  * Removes the key, if it exists in the set.
  */
 export declare function remove<T extends Key>(setarr: SetArray<T>, key: T): void;
-export {};
+
 //# sourceMappingURL=set-array.d.ts.map

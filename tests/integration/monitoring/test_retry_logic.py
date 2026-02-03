@@ -5,6 +5,7 @@ Integration tests for Epic 5: Retry Logic (Story 5.3).
 import time
 
 import pytest
+
 pytestmark = pytest.mark.integration
 
 from tracertm.api.client import TraceRTMClient
@@ -18,6 +19,7 @@ def temp_project_setup(tmp_path, monkeypatch):
     monkeypatch.setenv("HOME", str(tmp_path))
 
     from tracertm.config.manager import ConfigManager
+
     config_manager = ConfigManager()
 
     db_path = tmp_path / "test.db"
@@ -48,10 +50,10 @@ def temp_project_setup(tmp_path, monkeypatch):
 def test_retry_on_conflict(temp_project_setup):
     """Test retry logic on conflict (Story 5.3)."""
     client1 = TraceRTMClient()
-    client1.register_agent("agent-1", "ai_agent")
+    client1.register_agent("agent-1", agent_type="ai_agent")
 
     client2 = TraceRTMClient()
-    client2.register_agent("agent-2", "ai_agent")
+    client2.register_agent("agent-2", agent_type="ai_agent")
 
     # Create item
     item = client1.create_item("Test Item", "FEATURE", "feature")
@@ -70,7 +72,7 @@ def test_retry_on_conflict(temp_project_setup):
 def test_retry_exponential_backoff(temp_project_setup):
     """Test exponential backoff in retry logic (Story 5.3)."""
     client = TraceRTMClient()
-    client.register_agent("test-agent", "ai_agent")
+    client.register_agent("test-agent", agent_type="ai_agent")
 
     item = client.create_item("Test Item", "FEATURE", "feature")
 

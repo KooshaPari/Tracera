@@ -12,9 +12,8 @@ Target: Additional +1-2% coverage
 """
 
 import asyncio
-from datetime import datetime, timezone
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
-from uuid import uuid4
+from datetime import UTC, datetime
+from unittest.mock import AsyncMock
 
 import pytest
 
@@ -86,7 +85,7 @@ class TestBatchOperationEdgeCases:
             {"id": "item-2", "project_id": "proj-1", "title": "Item 2"},
         ]
 
-        unique_ids = set(item["id"] for item in items)
+        unique_ids = {item["id"] for item in items}
         assert len(unique_ids) == 2
 
 
@@ -144,8 +143,7 @@ class TestConcurrentRepositoryOperations:
         async def mixed_op(idx):
             if idx % 2 == 0:
                 return f"write_{idx}"
-            else:
-                return await repo.get_by_id(f"item_{idx}")
+            return await repo.get_by_id(f"item_{idx}")
 
         tasks = [mixed_op(i) for i in range(50)]
         results = await asyncio.gather(*tasks)
@@ -266,6 +264,7 @@ class TestProjectRepositoryBoundaryConditions:
             description=long_desc,
         )
 
+        assert project.description is not None
         assert len(project.description) == 10000
 
 
@@ -338,8 +337,8 @@ class TestStorageSyncEdgeCases:
         session = AsyncMock()
 
         deleted_items = [
-            {"id": "item-1", "deleted_at": datetime.now(timezone.utc)},
-            {"id": "item-2", "deleted_at": datetime.now(timezone.utc)},
+            {"id": "item-1", "deleted_at": datetime.now(UTC)},
+            {"id": "item-2", "deleted_at": datetime.now(UTC)},
         ]
 
         assert len(deleted_items) == 2
@@ -504,31 +503,31 @@ class TestTimestampEdgeCases:
 
     def test_timestamp_microsecond_precision(self):
         """Test timestamp with microsecond precision."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         assert now.microsecond >= 0
         assert now.microsecond < 1_000_000
 
     def test_timestamp_epoch_zero(self):
         """Test timestamp at epoch (1970-01-01)."""
-        epoch = datetime(1970, 1, 1, tzinfo=timezone.utc)
+        epoch = datetime(1970, 1, 1, tzinfo=UTC)
         assert epoch.year == 1970
         assert epoch.month == 1
         assert epoch.day == 1
 
     def test_timestamp_year_2038(self):
         """Test timestamp at 2038 (Unix 32-bit limit)."""
-        year_2038 = datetime(2038, 1, 19, tzinfo=timezone.utc)
+        year_2038 = datetime(2038, 1, 19, tzinfo=UTC)
         assert year_2038.year == 2038
 
     def test_timestamp_far_future(self):
         """Test timestamp far in the future."""
-        year_9999 = datetime(9999, 12, 31, tzinfo=timezone.utc)
+        year_9999 = datetime(9999, 12, 31, tzinfo=UTC)
         assert year_9999.year == 9999
 
     def test_timestamp_comparison_edge_cases(self):
         """Test timestamp comparison with edge cases."""
-        dt1 = datetime(2024, 1, 1, 0, 0, 0, tzinfo=timezone.utc)
-        dt2 = datetime(2024, 1, 1, 0, 0, 0, 1, tzinfo=timezone.utc)  # 1 microsecond later
+        dt1 = datetime(2024, 1, 1, 0, 0, 0, tzinfo=UTC)
+        dt2 = datetime(2024, 1, 1, 0, 0, 0, 1, tzinfo=UTC)  # 1 microsecond later
 
         assert dt1 < dt2
 
@@ -539,6 +538,7 @@ class TestAsyncEdgeCases:
     @pytest.mark.asyncio
     async def test_async_operation_immediate_completion(self):
         """Test async operation that completes immediately."""
+
         async def immediate():
             return "result"
 
@@ -548,6 +548,7 @@ class TestAsyncEdgeCases:
     @pytest.mark.asyncio
     async def test_async_operation_with_cancellation(self):
         """Test async operation with cancellation."""
+
         async def slow_operation():
             await asyncio.sleep(10)
 
@@ -560,6 +561,7 @@ class TestAsyncEdgeCases:
     @pytest.mark.asyncio
     async def test_async_operation_exception_propagation(self):
         """Test exception propagation in async operations."""
+
         async def failing_operation():
             raise ValueError("Test error")
 
@@ -576,6 +578,7 @@ class TestAsyncEdgeCases:
     @pytest.mark.asyncio
     async def test_async_gather_partial_failure(self):
         """Test asyncio.gather with some failures."""
+
         async def success():
             return "ok"
 

@@ -30,8 +30,8 @@ test.describe("Real-time Updates", () => {
 			"http://localhost:8080/api/v1/items",
 			{
 				data: {
-					title: "Real-time Test Item",
 					project_id: "test-project",
+					title: "Real-time Test Item",
 					type: "requirement",
 				},
 				headers: {
@@ -57,8 +57,8 @@ test.describe("Real-time Updates", () => {
 			"http://localhost:8080/api/v1/items",
 			{
 				data: {
-					title: "Original Title",
 					project_id: "test-project",
+					title: "Original Title",
 					type: "requirement",
 				},
 				headers: {
@@ -101,8 +101,8 @@ test.describe("Real-time Updates", () => {
 			"http://localhost:8080/api/v1/items",
 			{
 				data: {
-					title: "Source Item",
 					project_id: "test-project",
+					title: "Source Item",
 					type: "requirement",
 				},
 				headers: { "Content-Type": "application/json" },
@@ -114,8 +114,8 @@ test.describe("Real-time Updates", () => {
 			"http://localhost:8080/api/v1/items",
 			{
 				data: {
-					title: "Target Item",
 					project_id: "test-project",
+					title: "Target Item",
 					type: "feature",
 				},
 				headers: { "Content-Type": "application/json" },
@@ -126,10 +126,10 @@ test.describe("Real-time Updates", () => {
 		// Create link via API
 		await page.request.post("http://localhost:8080/api/v1/links", {
 			data: {
-				source_id: item1.id,
-				target_id: item2.id,
 				link_type: "implements",
 				project_id: "test-project",
+				source_id: item1.id,
+				target_id: item2.id,
 			},
 			headers: { "Content-Type": "application/json" },
 		});
@@ -147,8 +147,8 @@ test.describe("Real-time Updates", () => {
 		// Create item via API
 		await page.request.post("http://localhost:8080/api/v1/items", {
 			data: {
-				title: "Toast Test Item",
 				project_id: "test-project",
+				title: "Toast Test Item",
 				type: "requirement",
 			},
 			headers: { "Content-Type": "application/json" },
@@ -179,8 +179,8 @@ test.describe("Real-time Updates", () => {
 		// Create item - should work after reconnection
 		await page.request.post("http://localhost:8080/api/v1/items", {
 			data: {
-				title: "Reconnection Test Item",
 				project_id: "test-project",
+				title: "Reconnection Test Item",
 				type: "requirement",
 			},
 			headers: { "Content-Type": "application/json" },
@@ -199,8 +199,8 @@ test.describe("Real-time Updates", () => {
 		// Create item in project B (should NOT appear)
 		await page.request.post("http://localhost:8080/api/v1/items", {
 			data: {
-				title: "Project B Item",
 				project_id: "project-b",
+				title: "Project B Item",
 				type: "requirement",
 			},
 			headers: { "Content-Type": "application/json" },
@@ -213,8 +213,8 @@ test.describe("Real-time Updates", () => {
 		// Create item in project A (should appear)
 		await page.request.post("http://localhost:8080/api/v1/items", {
 			data: {
-				title: "Project A Item",
 				project_id: "project-a",
+				title: "Project A Item",
 				type: "requirement",
 			},
 			headers: { "Content-Type": "application/json" },
@@ -236,8 +236,8 @@ test.describe("Real-time Updates", () => {
 			const event = new CustomEvent("nats_event", {
 				detail: {
 					data: {
-						spec_id: "spec-123",
 						analysis: "Complete",
+						spec_id: "spec-123",
 					},
 					entity_id: "spec-123",
 					event_type: "ai.analysis.complete",

@@ -16,7 +16,6 @@ from sqlalchemy.orm import Session
 from tracertm.config.manager import ConfigManager
 from tracertm.database.connection import DatabaseConnection
 
-
 # Module-level singletons (lazy initialized)
 _config_manager: ConfigManager | None = None
 _db_connection: DatabaseConnection | None = None
@@ -79,6 +78,7 @@ def set_current_project(project_id: str) -> None:
 
 # Response envelope utilities
 
+
 def wrap_success(
     data: Any,
     action: str,
@@ -99,14 +99,13 @@ def wrap_success(
     if lean:
         # Lean mode: return just the data
         return data
-    else:
-        # Standard mode: include basic metadata
-        return {
-            "ok": True,
-            "action": action,
-            "data": data,
-            "actor": extract_actor(ctx),
-        }
+    # Standard mode: include basic metadata
+    return {
+        "ok": True,
+        "action": action,
+        "data": data,
+        "actor": extract_actor(ctx),
+    }
 
 
 def wrap_error(
@@ -131,13 +130,12 @@ def wrap_error(
             "ok": False,
             "error": error,
         }
-    else:
-        return {
-            "ok": False,
-            "action": action,
-            "error": error,
-            "actor": extract_actor(ctx),
-        }
+    return {
+        "ok": False,
+        "action": action,
+        "error": error,
+        "actor": extract_actor(ctx),
+    }
 
 
 def extract_actor(ctx: Any | None) -> dict[str, Any] | None:
@@ -188,6 +186,7 @@ def resolve_project_from_token(
 
     try:
         from fastmcp.server.dependencies import get_access_token
+
         token = get_access_token()
     except Exception:
         return project_id
@@ -222,14 +221,14 @@ def resolve_project_from_token(
 
 
 __all__ = [
+    "extract_actor",
     "get_config_manager",
+    "get_current_project_id",
     "get_db_connection",
     "get_session",
-    "get_current_project_id",
     "require_project",
-    "set_current_project",
-    "wrap_success",
-    "wrap_error",
-    "extract_actor",
     "resolve_project_from_token",
+    "set_current_project",
+    "wrap_error",
+    "wrap_success",
 ]

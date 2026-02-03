@@ -31,10 +31,10 @@ describe("Traceability Matrix API", () => {
 		it("should fetch matrix for a project", async () => {
 			const mockMatrix: TraceabilityMatrix = {
 				coverage: {
+					percentage: 66.67,
 					total: 3,
 					traced: 2,
 					untraced: 1,
-					percentage: 66.67,
 				},
 				items: mockItems,
 				links: mockLinks,
@@ -64,7 +64,7 @@ describe("Traceability Matrix API", () => {
 			const result = await fetchMatrix("proj-empty");
 
 			expect(result).toEqual({
-				coverage: { total: 0, traced: 0, untraced: 0, percentage: 0 },
+				coverage: { percentage: 0, total: 0, traced: 0, untraced: 0 },
 				items: [],
 				links: [],
 			});
@@ -76,7 +76,7 @@ describe("Traceability Matrix API", () => {
 			const result = await fetchMatrix("proj-1");
 
 			expect(result).toEqual({
-				coverage: { total: 0, traced: 0, untraced: 0, percentage: 0 },
+				coverage: { percentage: 0, total: 0, traced: 0, untraced: 0 },
 				items: [],
 				links: [],
 			});
@@ -85,10 +85,10 @@ describe("Traceability Matrix API", () => {
 		it("should include traced/untraced coverage statistics", async () => {
 			const mockMatrix: TraceabilityMatrix = {
 				coverage: {
+					percentage: 100,
 					total: 2,
 					traced: 2,
 					untraced: 0,
-					percentage: 100,
 				},
 				items: mockItems.slice(0, 2),
 				links: mockLinks,
@@ -110,7 +110,7 @@ describe("Traceability Matrix API", () => {
 		it("should call API with correct project ID", async () => {
 			vi.mocked(safeApiCall).mockResolvedValue({
 				data: {
-					coverage: { total: 0, traced: 0, untraced: 0, percentage: 0 },
+					coverage: { percentage: 0, total: 0, traced: 0, untraced: 0 },
 					items: [],
 					links: [],
 				},
@@ -276,7 +276,7 @@ describe("Traceability Matrix API", () => {
 			const result = await fetchMatrix("proj-1");
 
 			expect(result).toEqual({
-				coverage: { total: 0, traced: 0, untraced: 0, percentage: 0 },
+				coverage: { percentage: 0, total: 0, traced: 0, untraced: 0 },
 				items: [],
 				links: [],
 			});

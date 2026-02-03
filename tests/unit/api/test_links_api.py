@@ -4,13 +4,13 @@ Comprehensive tests for Links API endpoints.
 Tests all CRUD operations, validation, filtering, and edge cases for links.
 """
 
-import pytest
 from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 from fastapi.testclient import TestClient
 
 from tracertm.api.main import app
-
 
 client = TestClient(app)
 
@@ -202,7 +202,7 @@ class TestLinksFiltering:
             MagicMock(
                 id=f"link{i}",
                 source_item_id=f"item{i}",
-                target_item_id=f"item{i+1}",
+                target_item_id=f"item{i + 1}",
                 link_type="depends_on",
                 created_at=datetime.now(),
                 link_metadata=None,

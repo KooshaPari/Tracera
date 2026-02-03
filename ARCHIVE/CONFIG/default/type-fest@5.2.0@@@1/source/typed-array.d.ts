@@ -16,4 +16,4 @@ export type TypedArray =
 	| BigInt64Array
 	| BigUint64Array;
 
-export {};
+

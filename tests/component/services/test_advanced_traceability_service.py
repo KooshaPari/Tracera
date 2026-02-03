@@ -1,6 +1,7 @@
-import pytest
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
+
+import pytest
 
 from tracertm.services.advanced_traceability_service import AdvancedTraceabilityService
 
@@ -17,7 +18,7 @@ async def test_find_all_paths(monkeypatch, async_session):
         SimpleNamespace(target_item_id="i3"),
     ]
     # Use AsyncMock for async method
-    svc.links.get_by_source = AsyncMock(side_effect=lambda src: path_links if src == "i1" else [])
+    svc.links.get_by_source = AsyncMock(side_effect=lambda src: path_links if src == "i1" else [])  # type: ignore[assignment]
 
     paths = await svc.find_all_paths("i1", "i2", max_depth=3)
     assert any(p.target_id == "i2" for p in paths)
@@ -62,7 +63,7 @@ async def test_circular_dependency_check(monkeypatch, async_session):
 
     svc = AdvancedTraceabilityService(async_session)
     # Use AsyncMock for async method
-    svc.items.query = AsyncMock(return_value=items)
+    svc.items.query = AsyncMock(return_value=items)  # type: ignore[assignment]
     monkeypatch.setattr(svc.links, "get_by_source", get_by_source)
 
     cycles = await svc.circular_dependency_check("proj-1")

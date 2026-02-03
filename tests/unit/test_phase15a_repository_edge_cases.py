@@ -6,8 +6,7 @@ Target: LinkRepository and other repository methods
 Coverage Goal: Increase repository coverage with edge cases
 """
 
-from unittest.mock import AsyncMock, MagicMock, Mock, patch, call
-from uuid import uuid4
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -34,10 +33,7 @@ class TestLinkRepositoryEdgeCases:
         repo = LinkRepository(mock_session)
 
         link = await repo.create(
-            project_id="proj-1",
-            source_item_id="item-1",
-            target_item_id="item-2",
-            link_type="depends_on"
+            project_id="proj-1", source_item_id="item-1", target_item_id="item-2", link_type="depends_on"
         )
 
         assert link.project_id == "proj-1"
@@ -58,7 +54,7 @@ class TestLinkRepositoryEdgeCases:
             source_item_id="item-1",
             target_item_id="item-2",
             link_type="depends_on",
-            metadata=metadata
+            metadata=metadata,
         )
 
         assert link.metadata == metadata
@@ -70,11 +66,7 @@ class TestLinkRepositoryEdgeCases:
         repo = LinkRepository(mock_session)
 
         link = await repo.create(
-            project_id="proj-1",
-            source_item_id="item-1",
-            target_item_id="item-2",
-            link_type="related_to",
-            metadata={}
+            project_id="proj-1", source_item_id="item-1", target_item_id="item-2", link_type="related_to", metadata={}
         )
 
         assert link.metadata == {}
@@ -86,11 +78,7 @@ class TestLinkRepositoryEdgeCases:
         repo = LinkRepository(mock_session)
 
         link = await repo.create(
-            project_id="proj-1",
-            source_item_id="item-1",
-            target_item_id="item-2",
-            link_type="related_to",
-            metadata=None
+            project_id="proj-1", source_item_id="item-1", target_item_id="item-2", link_type="related_to", metadata=None
         )
 
         assert link.metadata == {}
@@ -102,10 +90,7 @@ class TestLinkRepositoryEdgeCases:
         repo = LinkRepository(mock_session)
 
         link = await repo.create(
-            project_id="proj-1",
-            source_item_id="item-1",
-            target_item_id="item-2",
-            link_type="depends_on"
+            project_id="proj-1", source_item_id="item-1", target_item_id="item-2", link_type="depends_on"
         )
 
         # UUID should be string format
@@ -129,10 +114,7 @@ class TestLinkRepositoryEdgeCases:
 
         for link_type in link_types:
             link = await repo.create(
-                project_id="proj-1",
-                source_item_id="item-1",
-                target_item_id="item-2",
-                link_type=link_type
+                project_id="proj-1", source_item_id="item-1", target_item_id="item-2", link_type=link_type
             )
             assert link.link_type == link_type
 
@@ -143,10 +125,7 @@ class TestLinkRepositoryEdgeCases:
         repo = LinkRepository(mock_session)
 
         link = await repo.create(
-            project_id="proj-1",
-            source_item_id="item-1",
-            target_item_id="item-1",
-            link_type="related_to"
+            project_id="proj-1", source_item_id="item-1", target_item_id="item-1", link_type="related_to"
         )
 
         assert link.source_item_id == link.target_item_id
@@ -157,12 +136,7 @@ class TestLinkRepositoryEdgeCases:
         mock_session = AsyncMock(spec=AsyncSession)
         repo = LinkRepository(mock_session)
 
-        await repo.create(
-            project_id="proj-1",
-            source_item_id="item-1",
-            target_item_id="item-2",
-            link_type="depends_on"
-        )
+        await repo.create(project_id="proj-1", source_item_id="item-1", target_item_id="item-2", link_type="depends_on")
 
         mock_session.add.assert_called_once()
         mock_session.flush.assert_called_once()
@@ -173,11 +147,7 @@ class TestLinkRepositoryEdgeCases:
         """Test getting link by ID when it exists."""
         mock_session = AsyncMock(spec=AsyncSession)
         mock_link = Link(
-            id="link-1",
-            project_id="proj-1",
-            source_item_id="item-1",
-            target_item_id="item-2",
-            link_type="depends_on"
+            id="link-1", project_id="proj-1", source_item_id="item-1", target_item_id="item-2", link_type="depends_on"
         )
         # Use MagicMock for result object (sync methods)
         mock_result = MagicMock()
@@ -224,10 +194,20 @@ class TestLinkRepositoryEdgeCases:
         """Test getting multiple links for a project."""
         mock_session = AsyncMock(spec=AsyncSession)
         mock_links = [
-            Link(id="link-1", project_id="proj-1", source_item_id="item-1",
-                 target_item_id="item-2", link_type="depends_on"),
-            Link(id="link-2", project_id="proj-1", source_item_id="item-2",
-                 target_item_id="item-3", link_type="related_to"),
+            Link(
+                id="link-1",
+                project_id="proj-1",
+                source_item_id="item-1",
+                target_item_id="item-2",
+                link_type="depends_on",
+            ),
+            Link(
+                id="link-2",
+                project_id="proj-1",
+                source_item_id="item-2",
+                target_item_id="item-3",
+                link_type="related_to",
+            ),
         ]
         # Use MagicMock for result and scalars (sync methods)
         mock_scalars = MagicMock()
@@ -263,10 +243,20 @@ class TestLinkRepositoryEdgeCases:
         """Test getting multiple links from source item."""
         mock_session = AsyncMock(spec=AsyncSession)
         mock_links = [
-            Link(id="link-1", project_id="proj-1", source_item_id="item-1",
-                 target_item_id="item-2", link_type="depends_on"),
-            Link(id="link-2", project_id="proj-1", source_item_id="item-1",
-                 target_item_id="item-3", link_type="related_to"),
+            Link(
+                id="link-1",
+                project_id="proj-1",
+                source_item_id="item-1",
+                target_item_id="item-2",
+                link_type="depends_on",
+            ),
+            Link(
+                id="link-2",
+                project_id="proj-1",
+                source_item_id="item-1",
+                target_item_id="item-3",
+                link_type="related_to",
+            ),
         ]
         # Use MagicMock for result and scalars (sync methods)
         mock_scalars = MagicMock()
@@ -302,10 +292,20 @@ class TestLinkRepositoryEdgeCases:
         """Test getting multiple links to target item."""
         mock_session = AsyncMock(spec=AsyncSession)
         mock_links = [
-            Link(id="link-1", project_id="proj-1", source_item_id="item-1",
-                 target_item_id="item-3", link_type="depends_on"),
-            Link(id="link-2", project_id="proj-1", source_item_id="item-2",
-                 target_item_id="item-3", link_type="related_to"),
+            Link(
+                id="link-1",
+                project_id="proj-1",
+                source_item_id="item-1",
+                target_item_id="item-3",
+                link_type="depends_on",
+            ),
+            Link(
+                id="link-2",
+                project_id="proj-1",
+                source_item_id="item-2",
+                target_item_id="item-3",
+                link_type="related_to",
+            ),
         ]
         # Use MagicMock for result and scalars (sync methods)
         mock_scalars = MagicMock()
@@ -341,10 +341,20 @@ class TestLinkRepositoryEdgeCases:
         """Test getting links where item is both source and target."""
         mock_session = AsyncMock(spec=AsyncSession)
         mock_links = [
-            Link(id="link-1", project_id="proj-1", source_item_id="item-1",
-                 target_item_id="item-2", link_type="depends_on"),
-            Link(id="link-2", project_id="proj-1", source_item_id="item-3",
-                 target_item_id="item-1", link_type="related_to"),
+            Link(
+                id="link-1",
+                project_id="proj-1",
+                source_item_id="item-1",
+                target_item_id="item-2",
+                link_type="depends_on",
+            ),
+            Link(
+                id="link-2",
+                project_id="proj-1",
+                source_item_id="item-3",
+                target_item_id="item-1",
+                link_type="related_to",
+            ),
         ]
         # Use MagicMock for result and scalars (sync methods)
         mock_scalars = MagicMock()
@@ -440,7 +450,7 @@ class TestLinkRepositoryEdgeCases:
             source_item_id="item-1",
             target_item_id="item-2",
             link_type="related_to",
-            metadata=metadata
+            metadata=metadata,
         )
 
         assert link.metadata == metadata
@@ -467,7 +477,7 @@ class TestLinkRepositoryEdgeCases:
             source_item_id="item-1",
             target_item_id="item-2",
             link_type="validates",
-            metadata=metadata
+            metadata=metadata,
         )
 
         assert link.metadata == metadata
@@ -479,17 +489,11 @@ class TestLinkRepositoryEdgeCases:
         repo = LinkRepository(mock_session)
 
         link1 = await repo.create(
-            project_id="proj-1",
-            source_item_id="item-1",
-            target_item_id="item-2",
-            link_type="depends_on"
+            project_id="proj-1", source_item_id="item-1", target_item_id="item-2", link_type="depends_on"
         )
 
         link2 = await repo.create(
-            project_id="proj-1",
-            source_item_id="item-1",
-            target_item_id="item-2",
-            link_type="related_to"
+            project_id="proj-1", source_item_id="item-1", target_item_id="item-2", link_type="related_to"
         )
 
         # Should create two separate links
@@ -505,10 +509,7 @@ class TestLinkRepositoryEdgeCases:
         long_id = "a" * 255  # Very long ID
 
         link = await repo.create(
-            project_id=long_id,
-            source_item_id=long_id,
-            target_item_id=long_id,
-            link_type="related_to"
+            project_id=long_id, source_item_id=long_id, target_item_id=long_id, link_type="related_to"
         )
 
         assert link.project_id == long_id
@@ -520,10 +521,7 @@ class TestLinkRepositoryEdgeCases:
         repo = LinkRepository(mock_session)
 
         link = await repo.create(
-            project_id="12345",
-            source_item_id="67890",
-            target_item_id="11111",
-            link_type="depends_on"
+            project_id="12345", source_item_id="67890", target_item_id="11111", link_type="depends_on"
         )
 
         assert link.project_id == "12345"
@@ -537,18 +535,12 @@ class TestLinkRepositoryEdgeCases:
 
         # Link from A to B
         link1 = await repo.create(
-            project_id="proj-1",
-            source_item_id="item-A",
-            target_item_id="item-B",
-            link_type="depends_on"
+            project_id="proj-1", source_item_id="item-A", target_item_id="item-B", link_type="depends_on"
         )
 
         # Link from B to A (reverse direction)
         link2 = await repo.create(
-            project_id="proj-1",
-            source_item_id="item-B",
-            target_item_id="item-A",
-            link_type="depends_on"
+            project_id="proj-1", source_item_id="item-B", target_item_id="item-A", link_type="depends_on"
         )
 
         assert link1.source_item_id == link2.target_item_id

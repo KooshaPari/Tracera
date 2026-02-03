@@ -4,7 +4,7 @@ Agent monitoring service for Epic 5 (Story 5.8).
 Provides health checks, alerting, and monitoring capabilities.
 """
 
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from sqlalchemy.orm import Session
@@ -56,7 +56,7 @@ class AgentMonitoringService:
             if agent.last_activity_at:
                 try:
                     last_activity = datetime.fromisoformat(agent.last_activity_at.replace("Z", "+00:00"))
-                    hours_since = (datetime.utcnow() - last_activity.replace(tzinfo=None)).total_seconds() / 3600
+                    hours_since = (datetime.now(UTC) - last_activity.replace(tzinfo=None)).total_seconds() / 3600
 
                     if hours_since < 1:
                         health = "healthy"
@@ -111,39 +111,45 @@ class AgentMonitoringService:
         # Check for stale agents
         if "stale" in alert_types:
             health_status = self.check_agent_health(project_id)
-            for status in health_status:
-                if status["health"] == "stale":
-                    alerts.append({
-                        "type": "stale_agent",
-                        "severity": "warning",
-                        "agent_id": status["agent_id"],
-                        "agent_name": status["agent_name"],
-                        "message": f"Agent {status['agent_name']} has been inactive for {status['hours_since_activity']} hours",
-                    })
+            alerts.extend(
+                {
+                    "type": "stale_agent",
+                    "severity": "warning",
+                    "agent_id": status["agent_id"],
+                    "agent_name": status["agent_name"],
+                    "message": f"Agent {status['agent_name']} has been inactive for {status['hours_since_activity']} hours",
+                }
+                for status in health_status
+                if status["health"] == "stale"
+            )
 
         # Check for high conflict rates
         if "high_conflict_rate" in alert_types:
             from tracertm.services.agent_metrics_service import AgentMetricsService
+
             metrics_service = AgentMetricsService(self.session)
-            since = datetime.utcnow() - timedelta(hours=1)
+            since = datetime.now(UTC) - timedelta(hours=1)
             metrics = metrics_service.calculate_metrics(project_id, since=since)
 
-            for metric in metrics.get("metrics", []):
-                if metric.get("conflict_rate", 0) > 10.0:  # >10% conflict rate
-                    alerts.append({
-                        "type": "high_conflict_rate",
-                        "severity": "warning",
-                        "agent_id": metric["agent_id"],
-                        "agent_name": metric["agent_name"],
-                        "message": f"Agent {metric['agent_name']} has {metric['conflict_rate']:.1f}% conflict rate",
-                    })
+            alerts.extend(
+                {
+                    "type": "high_conflict_rate",
+                    "severity": "warning",
+                    "agent_id": metric["agent_id"],
+                    "agent_name": metric["agent_name"],
+                    "message": f"Agent {metric['agent_name']} has {metric['conflict_rate']:.1f}% conflict rate",
+                }
+                for metric in metrics.get("metrics", [])
+                if metric.get("conflict_rate", 0) > 10.0
+            )
 
         # Check for error rates
         if "error_rate" in alert_types:
             # Count error events
-            since = datetime.utcnow() - timedelta(hours=1)
+            since = datetime.now(UTC) - timedelta(hours=1)
             error_events = (
-                self.session.query(Event)
+                self.session
+                .query(Event)
                 .filter(
                     Event.project_id == project_id,
                     Event.event_type == "error",

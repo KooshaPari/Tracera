@@ -42,8 +42,8 @@ export default function tremor(Prism) {
         alias: 'punctuation'
       },
       operator:
-        /[-+*\/%~!^]=?|=[=>]?|&[&=]?|\|[|=]?|<<?=?|>>?>?=?|(?:absent|and|not|or|present|xor)\b/,
-      punctuation: /::|[;\[\]()\{\},.:]/
+        /[-+*/%~!^]=?|=[=>]?|&[&=]?|\|[|=]?|<<?=?|>>?>?=?|(?:absent|and|not|or|present|xor)\b/,
+      punctuation: /::|[;[\](){},.:]/
     }
     var interpolationPattern =
       /#\{(?:[^"{}]|\{[^{}]*\}|"(?:[^"\\\r\n]|\\(?:\r\n|[\s\S]))*")*\}/.source

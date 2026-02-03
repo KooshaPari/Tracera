@@ -1,5 +1,7 @@
 # TraceRTM Test Suite
 
+Test index, config docs, and SQL fixtures: [docs/](docs/), [sql/](sql/).
+
 **Test Framework**: pytest 7.4+  
 **Coverage Target**: 80%+ (90%+ for business logic)  
 **Test Strategy**: Unit → Integration → E2E

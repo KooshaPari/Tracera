@@ -20,4 +20,4 @@ type ExtraGlobals = GlobalThis & {
 */
 export type GlobalThis = typeof globalThis;
 
-export {};
+

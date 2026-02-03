@@ -27,7 +27,7 @@ const defaultOptions = {
     { regex: new RegExp("&", "g"), val: "&amp;" },//it must be on top
     { regex: new RegExp(">", "g"), val: "&gt;" },
     { regex: new RegExp("<", "g"), val: "&lt;" },
-    { regex: new RegExp("\'", "g"), val: "&apos;" },
+    { regex: new RegExp("'", "g"), val: "&apos;" },
     { regex: new RegExp("\"", "g"), val: "&quot;" }
   ],
   processEntities: true,

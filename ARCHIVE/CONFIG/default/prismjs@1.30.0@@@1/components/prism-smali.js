@@ -29,7 +29,7 @@ Prism.languages.smali = {
 	'builtin': [
 		{
 			// Reference: https://github.com/JesusFreke/smali/wiki/TypesMethodsAndFields#types
-			pattern: /([();\[])[BCDFIJSVZ]+/,
+			pattern: /([();[])[BCDFIJSVZ]+/,
 			lookbehind: true
 		},
 		{
@@ -82,6 +82,6 @@ Prism.languages.smali = {
 		alias: 'property'
 	},
 
-	'operator': /->|\.\.|[\[=]/,
+	'operator': /->|\.\.|[[=]/,
 	'punctuation': /[{}(),;:]/
 };

@@ -27,7 +27,7 @@ Prism.languages.twig = {
 		},
 		/[=<>]=?|!=|\*\*?|\/\/?|\?:?|[-+~%|]/
 	],
-	'punctuation': /[()\[\]{}:.,]/
+	'punctuation': /[()[\]{}:.,]/
 };
 
 Prism.hooks.add('before-tokenize', function (env) {

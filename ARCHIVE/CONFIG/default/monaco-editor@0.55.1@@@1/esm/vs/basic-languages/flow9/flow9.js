@@ -81,7 +81,7 @@ const language = {
     "??",
     "^"
   ],
-  symbols: /[@$=><!~?:&|+\-*\\\/\^%]+/,
+  symbols: /[@$=><!~?:&|+\-*\\/^%]+/,
   escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
   // The main tokenizer for our languages
   tokenizer: {
@@ -100,7 +100,7 @@ const language = {
       // whitespace
       { include: "@whitespace" },
       // delimiters and operators
-      [/[{}()\[\]]/, "delimiter"],
+      [/[{}()[\]]/, "delimiter"],
       [/[<>](?!@symbols)/, "delimiter"],
       [
         /@symbols/,
@@ -125,9 +125,9 @@ const language = {
       [/\/\/.*$/, "comment"]
     ],
     comment: [
-      [/[^\/*]+/, "comment"],
+      [/[^/*]+/, "comment"],
       [/\*\//, "comment", "@pop"],
-      [/[\/*]/, "comment"]
+      [/[/*]/, "comment"]
     ],
     string: [
       [/[^\\"]+/, "string"],

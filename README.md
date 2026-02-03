@@ -12,6 +12,15 @@ TracerTM is a comprehensive requirements traceability matrix (RTM) system design
 - **Graph visualization** - Interactive dependency graphs and impact analysis
 - **Full traceability** - Link requirements to code, tests, and deployments
 
+## Root layout (tier 1)
+
+- **`deploy/`** – k8s, infrastructure, nginx, monitoring, Procfile  
+- **`data/`** – backup, exports, tmp, test.db, runtime artifacts  
+- **`samples/`** – DEMO_PROJECT, examples  
+- **`config/`** – process-compose, Caddy, redis.conf  
+- **`docs/`** – documentation; **`docs/site/`** – Fumadocs site  
+- **`load-tests/`** – load test scripts; **`load-tests/results/`** – k6 output  
+
 ## Architecture
 
 The system consists of three main components:
@@ -27,7 +36,7 @@ The system consists of three main components:
 Before starting services, run database migrations so project pages (Test Cases, Links, Graphs, Test Runs) don’t return 500:
 
 1. Set **DATABASE_URL** (or **TRACERTM_DATABASE_URL**) in `.env`.
-2. Run **Python (Alembic) migrations**: `./scripts/run_python_migrations.sh` (or `uv run alembic upgrade head`).
+2. Run **Python (Alembic) migrations**: `./scripts/shell/run_python_migrations.sh` (or `uv run alembic upgrade head`).
 
 Full steps (deps, env, Go migrations if any, Python migrations, start): **[First Run Checklist](/docs/checklists/FIRST_RUN_CHECKLIST.md)**.
 
@@ -58,7 +67,7 @@ The new native development environment uses Process Compose to orchestrate all s
 make install-native
 
 # Run Python DB migrations (required for Test Cases, Links, Graphs — avoid 500s)
-./scripts/run_python_migrations.sh
+./scripts/shell/run_python_migrations.sh
 
 # Start all services with interactive dashboard
 make dev-tui
@@ -66,10 +75,10 @@ make dev-tui
 # Or start in background
 make dev
 
-# Access the application
-# Gateway:    http://localhost:4000
-# Go API:     http://localhost:8080
-# Python API: http://localhost:4000
+# Access the application (use the gateway only – do not open port 5173 directly)
+# Gateway:    http://localhost:4000   ← single dev URL (frontend + API + docs)
+# Go API:     http://localhost:8080   (internal; use /api/v1/* via gateway)
+# Python API: http://localhost:4000   (internal; use /api/py/* via gateway)
 # Grafana:    http://localhost:3000
 # Prometheus: http://localhost:9090
 ```
@@ -131,8 +140,8 @@ Native Services:
 - **Resource Efficient** - 60-80% less memory/CPU vs Docker
 - **Native Performance** - Direct system access, no virtualization
 - **Cross-Platform** - macOS, Linux, Windows support
-- **Single Port** - Unified gateway on port 4000
-- **No CORS** - All services on same origin
+- **Single Port** - Unified gateway on port 4000 (use **http://localhost:4000** only; Vite on 5173 is internal)
+- **No CORS** - All services on same origin when using the gateway
 - **Hot Reload** - All services support live reloading
 - **Process Management** - Process Compose TUI dashboard
 - **Easy Debugging** - Direct process access, no container exec
@@ -171,11 +180,15 @@ make prometheus-ui       # Opens Prometheus
 
 ### Port Configuration
 
+**Use http://localhost:4000 as the only dev URL.** The frontend (Vite) runs on 5173 internally; Caddy proxies it. Do not open port 5173 in the browser.
+
 | Service | Port | Access |
 |---------|------|--------|
-| Caddy (Gateway) | 4000 | http://localhost:4000 |
-| Go API | 8080 | http://localhost:8080 or via /api/v1/* |
-| Python API | 8000 | http://localhost:4000 or via /api/py/* |
+| Caddy (Gateway) | 4000 | **http://localhost:4000** (frontend + API + doc sites – use this only) |
+| Go API | 8080 | Via gateway /api/v1/* |
+| Python API | 8000 | Via gateway /api/py/* |
+| Doc site (Next.js) | 3001 | http://localhost:3001 or http://localhost:4000/documentation |
+| Storybook | 6006 | http://localhost:6006 or http://localhost:4000/storybook |
 | PostgreSQL | 5432 | localhost:5432 |
 | Redis | 6379 | localhost:6379 |
 | Neo4j (Bolt) | 7687 | bolt://localhost:7687 |
@@ -208,7 +221,7 @@ NATS_URL=nats://localhost:4222
 
 # API
 API_PORT=8080
-FRONTEND_PORT=5173
+FRONTEND_PORT=5173   # Internal only; use gateway http://localhost:4000
 PROXY_PORT=4000
 
 # Auth (WorkOS)
@@ -229,7 +242,7 @@ cp .env.example .env
 
 # Local dev with Vault (for testing)
 make dev  # Vault starts automatically
-./scripts/vault-setup-secrets.sh .env
+./scripts/shell/vault-setup-secrets.sh .env
 # Edit .env with USE_VAULT=true
 
 # Production: use proper Vault setup
@@ -260,7 +273,7 @@ Access Grafana at http://localhost:3000 (admin/admin)
 
 ```bash
 # Check Loki installation
-./scripts/check-loki-installation.sh
+./scripts/shell/check-loki-installation.sh
 
 # View logs in Grafana
 # 1. Open http://localhost:3000/explore
@@ -364,7 +377,7 @@ cd frontend/apps/web && bun run test:e2e
 pre-commit run --all-files
 
 # Measure pre-commit performance
-./scripts/measure-precommit-performance.sh
+./scripts/shell/measure-precommit-performance.sh
 
 # Run comprehensive checks (CI-level validation)
 # Type checking
@@ -396,7 +409,7 @@ TracerTM uses Dependabot for automated dependency updates across all package eco
 gh pr list --author "dependabot[bot]"
 
 # Validate Dependabot configuration
-./scripts/validate-dependabot.sh
+./scripts/shell/validate-dependabot.sh
 
 # View update schedules and auto-merge rules
 cat .github/dependabot.yml
@@ -491,7 +504,7 @@ process-compose version
 process-compose config
 
 # Check for config errors
-process-compose -f process-compose.yaml validate
+process-compose -f config/process-compose.yaml validate
 
 # Start with debug logging
 PROCESS_COMPOSE_LOG_LEVEL=debug make dev-tui

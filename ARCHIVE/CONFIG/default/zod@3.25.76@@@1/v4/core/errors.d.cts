@@ -205,4 +205,4 @@ interface BaseError {
     issues: $ZodIssueBase[];
 }
 export declare function prettifyError(error: BaseError): string;
-export {};
+

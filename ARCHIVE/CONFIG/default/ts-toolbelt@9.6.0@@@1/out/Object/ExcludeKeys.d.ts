@@ -35,4 +35,4 @@ export declare type ExcludeKeys<O extends object, O1 extends object, match exten
     '<-extends': ExcludeMatch<O, O1, '<-extends'>;
     'equals': ExcludeMatch<O, O1, 'equals'>;
 }[match];
-export {};
+

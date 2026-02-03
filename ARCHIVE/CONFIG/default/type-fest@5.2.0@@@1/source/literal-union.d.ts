@@ -36,4 +36,4 @@ export type LiteralUnion<
 	BaseType extends Primitive,
 > = LiteralType | (BaseType & Record<never, never>);
 
-export {};
+

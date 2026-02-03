@@ -18,7 +18,6 @@ from tracertm.database.connection import DatabaseConnection
 from tracertm.mcp.database_manager import get_database_manager
 from tracertm.mcp.query_optimizer import QueryOptimizer
 from tracertm.models.item import Item
-from tracertm.models.link import Link
 
 
 class BenchmarkRunner:
@@ -30,7 +29,7 @@ class BenchmarkRunner:
 
     def benchmark_sync_queries(self, project_id: str, iterations: int = 100):
         """Benchmark old synchronous queries without pooling."""
-        print(f"\n=== Benchmarking OLD implementation (sync, no pooling) ===")
+        print("\n=== Benchmarking OLD implementation (sync, no pooling) ===")
 
         # Create new connection for each iteration (simulates old behavior)
         times = []
@@ -42,12 +41,7 @@ class BenchmarkRunner:
             session = Session(db.engine)
 
             # Query items
-            items = (
-                session.query(Item)
-                .filter(Item.project_id == project_id, Item.deleted_at.is_(None))
-                .limit(50)
-                .all()
-            )
+            items = session.query(Item).filter(Item.project_id == project_id, Item.deleted_at.is_(None)).limit(50).all()
 
             # N+1 query: Access links for each item
             for item in items[:10]:  # Just first 10 to keep it reasonable
@@ -79,7 +73,7 @@ class BenchmarkRunner:
 
     async def benchmark_async_pooled(self, project_id: str, iterations: int = 100):
         """Benchmark new async queries with connection pooling."""
-        print(f"\n=== Benchmarking NEW implementation (async + pooling) ===")
+        print("\n=== Benchmarking NEW implementation (async + pooling) ===")
 
         db_manager = await get_database_manager()
 
@@ -89,10 +83,14 @@ class BenchmarkRunner:
 
             async with db_manager.session() as session:
                 # Query items
-                query = select(Item).where(
-                    Item.project_id == project_id,
-                    Item.deleted_at.is_(None),
-                ).limit(50)
+                query = (
+                    select(Item)
+                    .where(
+                        Item.project_id == project_id,
+                        Item.deleted_at.is_(None),
+                    )
+                    .limit(50)
+                )
 
                 result = await session.execute(query)
                 items = result.scalars().all()
@@ -124,7 +122,7 @@ class BenchmarkRunner:
 
     async def benchmark_eager_loading(self, project_id: str, iterations: int = 100):
         """Benchmark with eager loading (no N+1)."""
-        print(f"\n=== Benchmarking EAGER LOADING (no N+1) ===")
+        print("\n=== Benchmarking EAGER LOADING (no N+1) ===")
 
         db_manager = await get_database_manager()
 
@@ -142,8 +140,10 @@ class BenchmarkRunner:
 
                 # Access links (already loaded)
                 for item in items[:10]:
-                    _ = len(item.source_links or [])
-                    _ = len(item.target_links or [])
+                    src_links = getattr(item, "source_links", None) or []
+                    tgt_links = getattr(item, "target_links", None) or []
+                    _ = len(src_links)
+                    _ = len(tgt_links)
 
             elapsed = (time.perf_counter() - start) * 1000
             times.append(elapsed)
@@ -167,7 +167,7 @@ class BenchmarkRunner:
 
     async def benchmark_with_cache(self, project_id: str, iterations: int = 100):
         """Benchmark with query caching."""
-        print(f"\n=== Benchmarking WITH CACHING ===")
+        print("\n=== Benchmarking WITH CACHING ===")
 
         from tracertm.mcp.cache import get_query_cache
 
@@ -201,7 +201,8 @@ class BenchmarkRunner:
 
             # Access data
             for item in items[:10]:
-                _ = len(item.source_links or [])
+                src_links = getattr(item, "source_links", None) or []
+                _ = len(src_links)
 
             elapsed = (time.perf_counter() - start) * 1000
             times.append(elapsed)
@@ -238,7 +239,7 @@ class BenchmarkRunner:
             pooled_avg = self.results["pooled_implementation"]["avg_ms"]
             pooling_improvement = ((old_avg - pooled_avg) / old_avg) * 100
 
-            print(f"\nConnection Pooling Impact:")
+            print("\nConnection Pooling Impact:")
             print(f"  Old (no pooling):  {old_avg:.2f}ms")
             print(f"  New (with pool):   {pooled_avg:.2f}ms")
             print(f"  Improvement:       {pooling_improvement:+.1f}%")
@@ -248,7 +249,7 @@ class BenchmarkRunner:
             eager_avg = self.results["eager_loading"]["avg_ms"]
             eager_improvement = ((pooled_avg - eager_avg) / pooled_avg) * 100
 
-            print(f"\nEager Loading Impact:")
+            print("\nEager Loading Impact:")
             print(f"  Without eager:     {pooled_avg:.2f}ms")
             print(f"  With eager:        {eager_avg:.2f}ms")
             print(f"  Improvement:       {eager_improvement:+.1f}%")
@@ -259,7 +260,7 @@ class BenchmarkRunner:
             cache_improvement = ((eager_avg - cache_avg) / eager_avg) * 100
             hit_rate = self.results["with_caching"]["hit_rate"]
 
-            print(f"\nCaching Impact:")
+            print("\nCaching Impact:")
             print(f"  Without cache:     {eager_avg:.2f}ms")
             print(f"  With cache:        {cache_avg:.2f}ms")
             print(f"  Improvement:       {cache_improvement:+.1f}%")
@@ -271,7 +272,7 @@ class BenchmarkRunner:
             total_improvement = ((old_avg - final_avg) / old_avg) * 100
 
             print(f"\n{'=' * 70}")
-            print(f"TOTAL IMPROVEMENT (Old → Fully Optimized)")
+            print("TOTAL IMPROVEMENT (Old → Fully Optimized)")
             print(f"{'=' * 70}")
             print(f"  Before:            {old_avg:.2f}ms")
             print(f"  After:             {final_avg:.2f}ms")
@@ -293,7 +294,7 @@ async def run_benchmark(database_url: str, project_id: str):
     print("=" * 70)
     print(f"\nDatabase: {database_url}")
     print(f"Project ID: {project_id}")
-    print(f"Iterations per test: 100")
+    print("Iterations per test: 100")
 
     runner = BenchmarkRunner(database_url)
 

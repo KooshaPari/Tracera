@@ -133,7 +133,7 @@ define("vs/fsharp-DHdXPb1O", ["exports"], (function(exports) {
       "yield"
     ],
     // we include these common regular expressions
-    symbols: /[=><!~?:&|+\-*\^%;\.,\/]+/,
+    symbols: /[=><!~?:&|+\-*^%;.,/]+/,
     escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
     integersuffix: /[uU]?[yslnLI]?/,
     floatsuffix: /[fFmM]?/,
@@ -157,12 +157,12 @@ define("vs/fsharp-DHdXPb1O", ["exports"], (function(exports) {
         // Preprocessor directive
         [/^#(if|else|endif)/, "keyword"],
         // delimiters and operators
-        [/[{}()\[\]]/, "@brackets"],
+        [/[{}()[\]]/, "@brackets"],
         [/[<>](?!@symbols)/, "@brackets"],
         [/@symbols/, "delimiter"],
         // numbers
-        [/\d*\d+[eE]([\-+]?\d+)?(@floatsuffix)/, "number.float"],
-        [/\d*\.\d+([eE][\-+]?\d+)?(@floatsuffix)/, "number.float"],
+        [/\d*\d+[eE]([-+]?\d+)?(@floatsuffix)/, "number.float"],
+        [/\d*\.\d+([eE][-+]?\d+)?(@floatsuffix)/, "number.float"],
         [/0x[0-9a-fA-F]+LF/, "number.float"],
         [/0x[0-9a-fA-F]+(@integersuffix)/, "number.hex"],
         [/0b[0-1]+(@integersuffix)/, "number.bin"],
@@ -175,7 +175,7 @@ define("vs/fsharp-DHdXPb1O", ["exports"], (function(exports) {
         [/"""/, "string", '@string."""'],
         [/"/, "string", '@string."'],
         // literal string
-        [/\@"/, { token: "string.quote", next: "@litstring" }],
+        [/@"/, { token: "string.quote", next: "@litstring" }],
         // characters
         [/'[^\\']'B?/, "string"],
         [/(')(@escapes)(')/, ["string", "string.escape", "string"]],

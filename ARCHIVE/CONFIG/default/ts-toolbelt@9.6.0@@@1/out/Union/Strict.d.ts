@@ -15,4 +15,4 @@ declare type _Strict<U, _U = U> = U extends unknown ? U & OptionalFlat<Record<Ex
  * ```
  */
 export declare type Strict<U extends object> = ComputeRaw<_Strict<U>>;
-export {};
+

@@ -6,11 +6,12 @@ Tests app initialization, widget composition, state management, and user interac
 """
 
 import pytest
-from unittest.mock import MagicMock, Mock, patch, AsyncMock
 
 try:
     from textual.app import App
+
     from tracertm.tui.apps.dashboard import *
+
     TEXTUAL_AVAILABLE = True
 except ImportError:
     TEXTUAL_AVAILABLE = False
@@ -30,9 +31,11 @@ class TestDashboardApp:
         # Try to find the app class
         try:
             import importlib
-            module = importlib.import_module(f"tracertm.tui.apps.dashboard")
+
+            module = importlib.import_module("tracertm.tui.apps.dashboard")
             app_classes = [
-                obj for name, obj in vars(module).items()
+                obj
+                for name, obj in vars(module).items()
                 if isinstance(obj, type) and (name.endswith("App") or name == "Dashboard")
             ]
             if app_classes:
@@ -46,7 +49,8 @@ class TestDashboardApp:
         """Test app defines widgets."""
         try:
             import importlib
-            module = importlib.import_module(f"tracertm.tui.apps.dashboard")
+
+            module = importlib.import_module("tracertm.tui.apps.dashboard")
             # Module loaded successfully
             assert module is not None
         except:

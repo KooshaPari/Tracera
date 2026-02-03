@@ -8,12 +8,10 @@ Coverage Goal: 75% → 80%
 
 import asyncio
 from pathlib import Path
-from unittest.mock import MagicMock, Mock, mock_open, patch
+from unittest.mock import Mock, mock_open, patch
 
 import pytest
-import yaml
 from sqlalchemy import create_engine
-from sqlalchemy.dialects import postgresql, sqlite
 
 from tracertm.core.concurrency import ConcurrencyError, update_with_retry
 from tracertm.core.config import Config, DatabaseConfig, UIConfig, get_config, set_config
@@ -95,7 +93,7 @@ class TestDatabaseConfigEdgeCases:
             username="admin",
             password="secure_pass",
             pool_size=50,
-            max_overflow=20
+            max_overflow=20,
         )
         assert config.host == "db.example.com"
         assert config.port == 5433
@@ -105,28 +103,21 @@ class TestDatabaseConfigEdgeCases:
         """Test URL generation with special characters in credentials."""
         config = DatabaseConfig(
             username="user@domain",
-            password="p@ss:w/rd"
+            password="p@ss:w/rd",
         )
         # URL should be generated even with special chars
         assert "user@domain" in config.url or "p@ss" in config.url
 
     def test_database_config_boundary_values(self):
         """Test boundary values for ports and pool sizes."""
-        config = DatabaseConfig(
-            port=1,
-            pool_size=1,
-            max_overflow=0
-        )
+        config = DatabaseConfig(port=1, pool_size=1, max_overflow=0)
         assert config.port == 1
         assert config.pool_size == 1
         assert config.max_overflow == 0
 
     def test_database_config_large_pool_sizes(self):
         """Test large pool size values."""
-        config = DatabaseConfig(
-            pool_size=1000,
-            max_overflow=500
-        )
+        config = DatabaseConfig(pool_size=1000, max_overflow=500)
         assert config.pool_size == 1000
         assert config.max_overflow == 500
 
@@ -148,19 +139,13 @@ class TestUIConfigEdgeCases:
 
     def test_ui_config_all_disabled(self):
         """Test configuration with all features disabled."""
-        config = UIConfig(
-            force_bold=False,
-            use_symbols=False
-        )
+        config = UIConfig(force_bold=False, use_symbols=False)
         assert config.force_bold is False
         assert config.use_symbols is False
 
     def test_ui_config_all_enabled(self):
         """Test configuration with all features enabled."""
-        config = UIConfig(
-            force_bold=True,
-            use_symbols=True
-        )
+        config = UIConfig(force_bold=True, use_symbols=True)
         assert config.force_bold is True
         assert config.use_symbols is True
 
@@ -186,9 +171,9 @@ class TestConfigEdgeCases:
         config = Config(current_project="my-project")
         assert config.current_project == "my-project"
 
-    def test_config_with_custom_data_dir(self):
+    def test_config_with_custom_data_dir(self, tmp_path):
         """Test configuration with custom data directory."""
-        custom_dir = Path("/tmp/tracertm-test")
+        custom_dir = tmp_path / "tracertm-test"
         config = Config(data_dir=custom_dir)
         assert config.data_dir == custom_dir
 
@@ -200,39 +185,39 @@ class TestConfigEdgeCases:
 
     @patch("pathlib.Path.exists")
     @patch("builtins.open", new_callable=mock_open, read_data="database:\n  host: testhost\n")
-    def test_config_load_existing_file(self, mock_file, mock_exists):
+    def test_config_load_existing_file(self, mock_file, mock_exists, tmp_path):
         """Test loading configuration from existing file."""
         mock_exists.return_value = True
 
-        config = Config.load(Path("/tmp/config.yaml"))
+        config = Config.load(tmp_path / "config.yaml")
         assert config is not None
 
     @patch("pathlib.Path.exists")
     @patch("pathlib.Path.mkdir")
     @patch("builtins.open", new_callable=mock_open)
-    def test_config_load_creates_default(self, mock_file, mock_mkdir, mock_exists):
+    def test_config_load_creates_default(self, mock_file, mock_mkdir, mock_exists, tmp_path):
         """Test that load creates default config when file doesn't exist."""
         mock_exists.return_value = False
 
-        config = Config.load(Path("/tmp/config.yaml"))
+        config = Config.load(tmp_path / "config.yaml")
         assert config is not None
         # Verify default values
         assert config.database.host == "localhost"
 
     @patch("pathlib.Path.mkdir")
     @patch("builtins.open", new_callable=mock_open)
-    def test_config_save_creates_directory(self, mock_file, mock_mkdir):
+    def test_config_save_creates_directory(self, mock_file, mock_mkdir, tmp_path):
         """Test that save creates parent directory if needed."""
         config = Config()
-        config.save(Path("/tmp/tracertm/config.yaml"))
+        config.save(tmp_path / "tracertm" / "config.yaml")
         mock_mkdir.assert_called_once()
 
     @patch("pathlib.Path.mkdir")
     @patch("builtins.open", new_callable=mock_open)
-    def test_config_save_writes_yaml(self, mock_file, mock_mkdir):
+    def test_config_save_writes_yaml(self, mock_file, mock_mkdir, tmp_path):
         """Test that save writes YAML correctly."""
         config = Config()
-        config.save(Path("/tmp/config.yaml"))
+        config.save(tmp_path / "config.yaml")
         mock_file.assert_called_once()
 
     def test_config_model_dump(self):
@@ -250,6 +235,7 @@ class TestConfigEdgeCases:
 
         # Reset global config
         import tracertm.core.config
+
         tracertm.core.config._config = None
 
         config1 = get_config()
@@ -270,21 +256,11 @@ class TestConfigEdgeCases:
 
     def test_config_with_all_custom_values(self):
         """Test configuration with all custom values."""
-        db_config = DatabaseConfig(
-            host="custom-host",
-            port=5433,
-            database="custom-db"
-        )
-        ui_config = UIConfig(
-            theme="custom-theme",
-            force_bold=True
-        )
+        db_config = DatabaseConfig(host="custom-host", port=5433, database="custom-db")
+        ui_config = UIConfig(theme="custom-theme", force_bold=True)
 
         config = Config(
-            database=db_config,
-            ui=ui_config,
-            data_dir=Path("/custom/dir"),
-            current_project="custom-project"
+            database=db_config, ui=ui_config, data_dir=Path("/custom/dir"), current_project="custom-project"
         )
 
         assert config.database.host == "custom-host"
@@ -312,6 +288,7 @@ class TestConcurrencyEdgeCases:
         call_count = 0
 
         async def update_fn():
+            await asyncio.sleep(0)
             nonlocal call_count
             call_count += 1
             return "success"
@@ -326,6 +303,7 @@ class TestConcurrencyEdgeCases:
         call_count = 0
 
         async def update_fn():
+            await asyncio.sleep(0)
             nonlocal call_count
             call_count += 1
             if call_count < 3:
@@ -342,6 +320,7 @@ class TestConcurrencyEdgeCases:
         call_count = 0
 
         async def update_fn():
+            await asyncio.sleep(0)
             nonlocal call_count
             call_count += 1
             raise ConcurrencyError("Always fails")
@@ -358,6 +337,7 @@ class TestConcurrencyEdgeCases:
         call_count = 0
 
         async def update_fn():
+            await asyncio.sleep(0)
             nonlocal call_count
             call_count += 1
             raise ConcurrencyError("Fail")
@@ -373,6 +353,7 @@ class TestConcurrencyEdgeCases:
         start_time = asyncio.get_event_loop().time()
 
         async def update_fn():
+            await asyncio.sleep(0)
             raise ConcurrencyError("Fail")
 
         with pytest.raises(ConcurrencyError):
@@ -388,6 +369,7 @@ class TestConcurrencyEdgeCases:
         call_times = []
 
         async def update_fn():
+            await asyncio.sleep(0)
             call_times.append(asyncio.get_event_loop().time())
             raise ConcurrencyError("Fail")
 
@@ -406,6 +388,7 @@ class TestConcurrencyEdgeCases:
         test_object = {"key": "value", "number": 42}
 
         async def update_fn():
+            await asyncio.sleep(0)
             return test_object
 
         result = await update_with_retry(update_fn)
@@ -418,6 +401,7 @@ class TestConcurrencyEdgeCases:
         error_message = "Custom error message with details"
 
         async def update_fn():
+            await asyncio.sleep(0)
             raise ConcurrencyError(error_message)
 
         with pytest.raises(ConcurrencyError) as exc_info:
@@ -431,6 +415,7 @@ class TestConcurrencyEdgeCases:
         call_count = 0
 
         async def update_fn():
+            await asyncio.sleep(0)
             nonlocal call_count
             call_count += 1
             if call_count == 1:
@@ -447,10 +432,12 @@ class TestConcurrencyEdgeCases:
     @pytest.mark.asyncio
     async def test_update_with_retry_propagates_other_exceptions(self):
         """Test that non-ConcurrencyError exceptions are propagated."""
+
         async def update_fn():
+            await asyncio.sleep(0)
             raise ValueError("Different error type")
 
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(ValueError, match="Different error type") as exc_info:
             await update_with_retry(update_fn)
 
         assert "Different error type" in str(exc_info.value)
@@ -458,8 +445,10 @@ class TestConcurrencyEdgeCases:
     @pytest.mark.asyncio
     async def test_update_with_retry_handles_none_return(self):
         """Test handling of None return value."""
+
         async def update_fn():
-            return None
+            await asyncio.sleep(0)
+            return
 
         result = await update_with_retry(update_fn)
         assert result is None
@@ -477,9 +466,7 @@ class TestConcurrencyEdgeCases:
 
         # Run multiple retries concurrently
         results = await asyncio.gather(
-            update_with_retry(update_fn),
-            update_with_retry(update_fn),
-            update_with_retry(update_fn)
+            update_with_retry(update_fn), update_with_retry(update_fn), update_with_retry(update_fn)
         )
 
         # All should succeed
@@ -530,6 +517,7 @@ class TestCoreIntegration:
         attempt = 0
 
         async def update_config():
+            await asyncio.sleep(0)
             nonlocal attempt
             attempt += 1
             if attempt < 2:

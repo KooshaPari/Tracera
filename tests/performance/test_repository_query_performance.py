@@ -12,20 +12,17 @@ Tests performance-critical paths:
 Target: +2% coverage on performance-sensitive paths
 """
 
+import asyncio
+import time
+from datetime import UTC, datetime
+from unittest.mock import AsyncMock, MagicMock
+
 import pytest
 import pytest_asyncio
-import time
-import asyncio
-from datetime import datetime, timezone
-from unittest.mock import AsyncMock, MagicMock, patch
-from uuid import uuid4
-
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 
-from tracertm.repositories.item_repository import ItemRepository
 from tracertm.models.item import Item
-from tracertm.core.concurrency import ConcurrencyError
+from tracertm.repositories.item_repository import ItemRepository
 
 
 @pytest_asyncio.fixture
@@ -57,7 +54,7 @@ class TestItemRepositoryPerformance:
             item_type="requirement",
             description="Test description",
             status="todo",
-            priority="medium"
+            priority="medium",
         )
         elapsed = time.time() - start_time
 
@@ -72,12 +69,7 @@ class TestItemRepositoryPerformance:
 
         start_time = time.time()
         for i in range(100):
-            await repo.create(
-                project_id="proj-001",
-                title=f"Item {i}",
-                view="requirements",
-                item_type="requirement"
-            )
+            await repo.create(project_id="proj-001", title=f"Item {i}", view="requirements", item_type="requirement")
         elapsed = time.time() - start_time
 
         assert elapsed < 2.0, "Creating 100 items sequentially should be < 2s"
@@ -91,10 +83,7 @@ class TestItemRepositoryPerformance:
         async def create_item(i: int):
             """Create single item."""
             return await repo.create(
-                project_id="proj-001",
-                title=f"Item {i}",
-                view="requirements",
-                item_type="requirement"
+                project_id="proj-001", title=f"Item {i}", view="requirements", item_type="requirement"
             )
 
         start_time = time.time()
@@ -123,6 +112,7 @@ class TestItemRepositoryPerformance:
         elapsed = time.time() - start_time
 
         assert elapsed < 0.05
+        assert result is not None
         assert result.id == "item-001"
 
     @pytest.mark.asyncio
@@ -286,7 +276,7 @@ class TestItemRepositoryPerformance:
         snapshot_after = tracemalloc.take_snapshot()
         tracemalloc.stop()
 
-        stats = snapshot_after.compare_to(snapshot_before, 'lineno')
+        stats = snapshot_after.compare_to(snapshot_before, "lineno")
         total_increase = sum(stat.size_diff for stat in stats) / (1024 * 1024)
 
         # 500 items with descriptions should use < 10MB
@@ -312,7 +302,7 @@ class TestItemRepositoryPerformance:
             title="Child Item",
             view="requirements",
             item_type="requirement",
-            parent_id="parent-001"
+            parent_id="parent-001",
         )
         elapsed = time.time() - start_time
 
@@ -362,7 +352,7 @@ class TestItemRepositoryPerformance:
 
         start_time = time.time()
         # Simulate soft delete
-        item.deleted_at = datetime.now(timezone.utc)
+        item.deleted_at = datetime.now(UTC)
         await mock_async_session.flush()
         elapsed = time.time() - start_time
 
@@ -383,7 +373,7 @@ class TestItemRepositoryPerformance:
         start_time = time.time()
         # Simulate bulk soft delete
         for item in items:
-            item.deleted_at = datetime.now(timezone.utc)
+            item.deleted_at = datetime.now(UTC)
         await mock_async_session.flush()
         elapsed = time.time() - start_time
 
@@ -426,10 +416,7 @@ class TestItemRepositoryPerformance:
             """Create and update item."""
             # Create
             item = await repo.create(
-                project_id="proj-001",
-                title=f"Item {i}",
-                view="requirements",
-                item_type="requirement"
+                project_id="proj-001", title=f"Item {i}", view="requirements", item_type="requirement"
             )
 
             # Update

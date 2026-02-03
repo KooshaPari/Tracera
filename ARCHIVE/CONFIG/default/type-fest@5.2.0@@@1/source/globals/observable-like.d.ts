@@ -75,4 +75,4 @@ export type ObservableLike<ValueType = unknown> = {
 	[Symbol.observable](): ObservableLike<ValueType>;
 };
 
-export {};
+

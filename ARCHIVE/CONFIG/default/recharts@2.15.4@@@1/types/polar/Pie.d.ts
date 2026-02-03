@@ -147,4 +147,4 @@ export declare class Pie extends PureComponent<Props, State> {
     componentDidMount(): void;
     render(): React.JSX.Element;
 }
-export {};
+

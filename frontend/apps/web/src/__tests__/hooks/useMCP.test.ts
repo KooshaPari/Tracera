@@ -13,18 +13,18 @@ vi.mock("../../api/mcp-client", () => ({
 		callTool: vi.fn().mockResolvedValue({ success: true }),
 		close: vi.fn().mockResolvedValue(),
 		initialize: vi.fn().mockResolvedValue({
+			capabilities: {},
 			protocolVersion: "2024-11-05",
 			serverInfo: {
 				name: "TraceRTM MCP Server",
 				version: "1.0.0",
 			},
-			capabilities: {},
 		}),
 		listTools: vi.fn().mockResolvedValue({
 			tools: [
 				{
-					name: "project_manage",
 					description: "Manage projects",
+					name: "project_manage",
 					parameters: [],
 				},
 			],
@@ -96,9 +96,9 @@ describe(useMCP, () => {
 		(createMCPClient as any).mockReturnValueOnce({
 			close: closeMock,
 			initialize: vi.fn().mockResolvedValue({
+				capabilities: {},
 				protocolVersion: "2024-11-05",
 				serverInfo: { name: "Test", version: "1.0" },
-				capabilities: {},
 			}),
 		});
 

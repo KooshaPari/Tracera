@@ -110,6 +110,7 @@ class TestQueryCache:
         call_count = 0
 
         async def compute():
+            await asyncio.sleep(0)
             nonlocal call_count
             call_count += 1
             return "computed_value"
@@ -177,6 +178,7 @@ class TestQueryCache:
     @pytest.mark.asyncio
     async def test_concurrent_access(self, cache):
         """Test concurrent cache access."""
+
         async def write_cache(i):
             await cache.set("test", f"value{i}", key=i)
 

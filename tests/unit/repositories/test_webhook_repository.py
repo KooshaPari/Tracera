@@ -5,17 +5,15 @@ Comprehensive tests covering webhook integration CRUD operations, rate limiting,
 request logging, and statistics.
 """
 
-import pytest
-import pytest_asyncio
-from datetime import datetime, timedelta
 from uuid import uuid4
 
+import pytest
+import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from tracertm.repositories.webhook_repository import WebhookRepository
+from tracertm.models.webhook_integration import WebhookProvider, WebhookStatus
 from tracertm.repositories.project_repository import ProjectRepository
-from tracertm.models.webhook_integration import WebhookStatus, WebhookProvider
-
+from tracertm.repositories.webhook_repository import WebhookRepository
 
 # ==================== Fixtures ====================
 
@@ -39,7 +37,7 @@ async def webhook_setup(project_setup):
     repo = WebhookRepository(session)
 
     webhook = await repo.create(
-        project_id=project.id,
+        project_id=str(project.id),
         name="Test Webhook",
         description="Test webhook for unit tests",
         provider="custom",
@@ -68,7 +66,7 @@ class TestWebhookCreate:
         repo = WebhookRepository(session)
 
         webhook = await repo.create(
-            project_id=project.id,
+            project_id=str(project.id),
             name="Minimal Webhook",
         )
 
@@ -87,7 +85,7 @@ class TestWebhookCreate:
         repo = WebhookRepository(session)
 
         webhook = await repo.create(
-            project_id=project.id,
+            project_id=str(project.id),
             name="Full Webhook",
             description="Webhook with all fields",
             provider="github_actions",
@@ -125,7 +123,7 @@ class TestWebhookCreate:
         providers = ["custom", "github_actions", "gitlab_ci", "jenkins", "azure_devops", "circleci", "travis_ci"]
         for provider_name in providers:
             webhook = await repo.create(
-                project_id=project.id,
+                project_id=str(project.id),
                 name=f"{provider_name} Webhook",
                 provider=provider_name,
             )
@@ -139,7 +137,7 @@ class TestWebhookCreate:
         repo = WebhookRepository(session)
 
         webhook = await repo.create(
-            project_id=project.id,
+            project_id=str(project.id),
             name="UUID Test Webhook",
         )
 
@@ -155,14 +153,15 @@ class TestWebhookCreate:
         repo = WebhookRepository(session)
 
         webhook = await repo.create(
-            project_id=project.id,
+            project_id=str(project.id),
             name="Default Events Webhook",
         )
 
-        assert "test_run_start" in webhook.enabled_events
-        assert "test_run_complete" in webhook.enabled_events
-        assert "test_result_submit" in webhook.enabled_events
-        assert "bulk_results" in webhook.enabled_events
+        events = webhook.enabled_events or []
+        assert "test_run_start" in events
+        assert "test_run_complete" in events
+        assert "test_result_submit" in events
+        assert "bulk_results" in events
 
 
 # ==================== Get Tests ====================
@@ -206,7 +205,7 @@ class TestWebhookList:
         project = project_setup["project"]
         repo = WebhookRepository(session)
 
-        webhooks, total = await repo.list_by_project(project.id)
+        webhooks, total = await repo.list_by_project(str(project.id))
 
         assert webhooks == []
         assert total == 0
@@ -221,11 +220,11 @@ class TestWebhookList:
         # Create multiple webhooks
         for i in range(5):
             await repo.create(
-                project_id=project.id,
+                project_id=str(project.id),
                 name=f"Webhook {i}",
             )
 
-        webhooks, total = await repo.list_by_project(project.id)
+        webhooks, total = await repo.list_by_project(str(project.id))
 
         assert len(webhooks) == 5
         assert total == 5
@@ -238,13 +237,11 @@ class TestWebhookList:
         repo = WebhookRepository(session)
 
         # Create webhooks with different providers
-        await repo.create(project_id=project.id, name="Custom 1", provider="custom")
-        await repo.create(project_id=project.id, name="GitHub 1", provider="github_actions")
-        await repo.create(project_id=project.id, name="Custom 2", provider="custom")
+        await repo.create(project_id=str(project.id), name="Custom 1", provider="custom")
+        await repo.create(project_id=str(project.id), name="GitHub 1", provider="github_actions")
+        await repo.create(project_id=str(project.id), name="Custom 2", provider="custom")
 
-        webhooks, total = await repo.list_by_project(
-            project.id, provider=WebhookProvider.CUSTOM
-        )
+        webhooks, total = await repo.list_by_project(str(project.id), provider=WebhookProvider.CUSTOM)
 
         assert len(webhooks) == 2
         assert total == 2
@@ -257,13 +254,11 @@ class TestWebhookList:
         repo = WebhookRepository(session)
 
         # Create webhooks and change some statuses
-        wh1 = await repo.create(project_id=project.id, name="Active")
-        wh2 = await repo.create(project_id=project.id, name="Paused")
+        await repo.create(project_id=str(project.id), name="Active")
+        wh2 = await repo.create(project_id=str(project.id), name="Paused")
         await repo.set_status(wh2.id, "paused")
 
-        webhooks, total = await repo.list_by_project(
-            project.id, status=WebhookStatus.ACTIVE
-        )
+        webhooks, _total = await repo.list_by_project(str(project.id), status=WebhookStatus.ACTIVE)
 
         assert len(webhooks) == 1
         assert webhooks[0].name == "Active"
@@ -277,15 +272,15 @@ class TestWebhookList:
 
         # Create 10 webhooks
         for i in range(10):
-            await repo.create(project_id=project.id, name=f"Webhook {i}")
+            await repo.create(project_id=str(project.id), name=f"Webhook {i}")
 
         # Get first page
-        page1, total = await repo.list_by_project(project.id, skip=0, limit=3)
+        page1, total = await repo.list_by_project(str(project.id), skip=0, limit=3)
         assert len(page1) == 3
         assert total == 10
 
         # Get second page
-        page2, _ = await repo.list_by_project(project.id, skip=3, limit=3)
+        page2, _ = await repo.list_by_project(str(project.id), skip=3, limit=3)
         assert len(page2) == 3
 
         # Ensure different results
@@ -505,7 +500,7 @@ class TestWebhookRateLimit:
 
         # Create webhook with low rate limit
         webhook = await repo.create(
-            project_id=project.id,
+            project_id=str(project.id),
             name="Low Limit Webhook",
             rate_limit_per_minute=3,
         )
@@ -557,9 +552,7 @@ class TestWebhookRecordRequest:
         repo = webhook_setup["repo"]
         webhook = webhook_setup["webhook"]
 
-        await repo.record_request(
-            webhook.id, success=False, error_message="Connection timeout"
-        )
+        await repo.record_request(webhook.id, success=False, error_message="Connection timeout")
 
         result = await repo.get_by_id(webhook.id)
         assert result.total_requests == 1
@@ -739,7 +732,7 @@ class TestWebhookStats:
         project = project_setup["project"]
         repo = WebhookRepository(session)
 
-        stats = await repo.get_stats(project.id)
+        stats = await repo.get_stats(str(project.id))
 
         assert stats["project_id"] == project.id
         assert stats["total"] == 0
@@ -753,16 +746,16 @@ class TestWebhookStats:
         repo = WebhookRepository(session)
 
         # Create webhooks with different providers and statuses
-        wh1 = await repo.create(project_id=project.id, name="WH1", provider="github_actions")
-        wh2 = await repo.create(project_id=project.id, name="WH2", provider="github_actions")
-        wh3 = await repo.create(project_id=project.id, name="WH3", provider="custom")
+        wh1 = await repo.create(project_id=str(project.id), name="WH1", provider="github_actions")
+        wh2 = await repo.create(project_id=str(project.id), name="WH2", provider="github_actions")
+        await repo.create(project_id=str(project.id), name="WH3", provider="custom")
 
         # Record some requests
         await repo.record_request(wh1.id, success=True)
         await repo.record_request(wh1.id, success=True)
         await repo.record_request(wh2.id, success=False)
 
-        stats = await repo.get_stats(project.id)
+        stats = await repo.get_stats(str(project.id))
 
         assert stats["total"] == 3
         assert stats["by_provider"]["github_actions"] == 2
@@ -778,13 +771,13 @@ class TestWebhookStats:
         project = project_setup["project"]
         repo = WebhookRepository(session)
 
-        wh1 = await repo.create(project_id=project.id, name="Active1")
-        wh2 = await repo.create(project_id=project.id, name="Paused1")
-        await repo.create(project_id=project.id, name="Active2")
+        await repo.create(project_id=str(project.id), name="Active1")
+        wh2 = await repo.create(project_id=str(project.id), name="Paused1")
+        await repo.create(project_id=str(project.id), name="Active2")
 
         await repo.set_status(wh2.id, "paused")
 
-        stats = await repo.get_stats(project.id)
+        stats = await repo.get_stats(str(project.id))
 
         assert stats["by_status"]["active"] == 2
         assert stats["by_status"]["paused"] == 1

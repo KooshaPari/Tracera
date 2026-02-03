@@ -334,9 +334,7 @@ class ViewRegistryService:
         return cls.REGISTRY.get(view_type)
 
     @classmethod
-    def list_views(
-        cls, phase: int | None = None, category: str | None = None
-    ) -> list[ViewMetadata]:
+    def list_views(cls, phase: int | None = None, category: str | None = None) -> list[ViewMetadata]:
         """List all views, optionally filtered."""
         views = list(cls.REGISTRY.values())
 

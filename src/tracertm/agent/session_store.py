@@ -5,7 +5,7 @@ When DB session is provided, can persist agent_sessions for restart survival and
 """
 
 import logging
-from typing import Any, Optional
+from typing import Any
 
 from tracertm.agent.sandbox.base import SandboxProvider
 from tracertm.agent.sandbox.local_fs import LocalFilesystemSandboxProvider
@@ -25,14 +25,14 @@ def _agent_session_cache_key(session_id: str) -> str:
 class SessionSandboxStore:
     """Maps session_id to sandbox path. Uses SandboxProvider to create sandboxes."""
 
-    def __init__(self, sandbox_provider: Optional[SandboxProvider] = None):
+    def __init__(self, sandbox_provider: SandboxProvider | None = None):
         self._provider = sandbox_provider or LocalFilesystemSandboxProvider()
         self._store: dict[str, SandboxMetadata] = {}
 
     async def get_or_create(
         self,
         session_id: str,
-        config: Optional[SandboxConfig] = None,
+        config: SandboxConfig | None = None,
         db_session: Any = None,
     ) -> tuple[str, bool]:
         """Return (sandbox root path, created). created=True if sandbox was just created."""
@@ -47,7 +47,7 @@ class SessionSandboxStore:
             raise RuntimeError(f"Provider did not set sandbox_root for {session_id}")
         return metadata.sandbox_root, True
 
-    def get(self, session_id: str) -> Optional[SandboxMetadata]:
+    def get(self, session_id: str) -> SandboxMetadata | None:
         """Return sandbox metadata if session exists."""
         return self._store.get(session_id)
 
@@ -64,7 +64,7 @@ class SessionSandboxStoreDB(SessionSandboxStore):
 
     def __init__(
         self,
-        sandbox_provider: Optional[SandboxProvider] = None,
+        sandbox_provider: SandboxProvider | None = None,
         cache_service: Any = None,
     ):
         super().__init__(sandbox_provider)
@@ -73,7 +73,7 @@ class SessionSandboxStoreDB(SessionSandboxStore):
     async def get_or_create(
         self,
         session_id: str,
-        config: Optional[SandboxConfig] = None,
+        config: SandboxConfig | None = None,
         db_session: Any = None,
     ) -> tuple[str, bool]:
         """Return (sandbox root path, created). Uses Redis cache then DB when available."""
@@ -87,14 +87,12 @@ class SessionSandboxStoreDB(SessionSandboxStore):
                 logger.debug("Agent session cache get failed: %s", e)
 
         if db_session is not None:
-            from datetime import datetime
             from sqlalchemy import select
+
             from tracertm.agent.types import SandboxStatus
             from tracertm.models.agent_session import AgentSession
 
-            result = await db_session.execute(
-                select(AgentSession).where(AgentSession.session_id == session_id)
-            )
+            result = await db_session.execute(select(AgentSession).where(AgentSession.session_id == session_id))
             row = result.scalar_one_or_none()
             if row is not None:
                 meta = SandboxMetadata(
@@ -115,6 +113,7 @@ class SessionSandboxStoreDB(SessionSandboxStore):
         path, created = await super().get_or_create(session_id, config, db_session)
         if created and db_session is not None:
             import uuid
+
             from tracertm.models.agent_session import AgentSession
 
             raw_pid = getattr(config, "project_id", None) if config else None

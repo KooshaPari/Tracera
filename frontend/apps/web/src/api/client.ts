@@ -1,15 +1,15 @@
 /* eslint-disable import/no-default-export */
 import { clientCore } from "./client-core";
-import clientErrors from "./client-errors";
+import { ApiError, handleApiResponse, safeApiCall } from "./client-errors";
 
 const client = {
 	API_BASE_URL: clientCore.API_BASE_URL,
-	ApiError: clientErrors.ApiError,
+	ApiError,
 	apiClient: clientCore.apiClient,
 	getAuthHeaders: clientCore.getAuthHeaders,
 	getBackendURL: clientCore.getBackendURL,
-	handleApiResponse: clientErrors.handleApiResponse,
-	safeApiCall: clientErrors.safeApiCall,
+	handleApiResponse,
+	safeApiCall,
 	validateSession: clientCore.validateSession,
 };
 

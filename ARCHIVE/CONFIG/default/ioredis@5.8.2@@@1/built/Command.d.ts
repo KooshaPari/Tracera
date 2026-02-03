@@ -120,4 +120,4 @@ export default class Command implements Respondable {
      */
     private _convertValue;
 }
-export {};
+

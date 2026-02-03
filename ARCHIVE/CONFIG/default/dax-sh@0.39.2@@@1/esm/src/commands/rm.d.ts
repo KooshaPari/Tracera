@@ -8,4 +8,4 @@ interface RmFlags {
     paths: string[];
 }
 export declare function parseArgs(args: string[]): RmFlags;
-export {};
+

@@ -4,11 +4,12 @@ Revision ID: 024_linear_app_installations
 Revises: 023_github_projects
 Create Date: 2026-01-28 13:30:00.000000
 """
-from alembic import op
-from alembic import context
+
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import JSON
-from sqlalchemy.dialects.sqlite import JSON as SQLiteJSON
+from sqlalchemy.dialects.sqlite import JSON as sqlite_json  # noqa: N811
+
+from alembic import context, op
 
 # revision identifiers, used by Alembic.
 revision = "024_linear_app_installations"
@@ -20,12 +21,8 @@ depends_on = None
 def upgrade() -> None:
     # Determine JSON type based on database
     bind = op.get_bind()
-    dialect_name = (
-        bind.dialect.name
-        if bind is not None
-        else context.get_context().dialect.name
-    )
-    json_type = JSON if dialect_name == "postgresql" else SQLiteJSON
+    dialect_name = bind.dialect.name if bind is not None else context.get_context().dialect.name
+    json_type = JSON if dialect_name == "postgresql" else sqlite_json
 
     # Create linear_app_installations table
     op.create_table(
@@ -34,7 +31,12 @@ def upgrade() -> None:
         sa.Column("account_id", sa.String(36), sa.ForeignKey("accounts.id", ondelete="CASCADE"), nullable=False),
         sa.Column("workspace_id", sa.String(255), nullable=False, unique=True),
         sa.Column("workspace_name", sa.String(255), nullable=False),
-        sa.Column("integration_credential_id", sa.String(36), sa.ForeignKey("integration_credentials.id", ondelete="SET NULL"), nullable=True),
+        sa.Column(
+            "integration_credential_id",
+            sa.String(36),
+            sa.ForeignKey("integration_credentials.id", ondelete="SET NULL"),
+            nullable=True,
+        ),
         sa.Column("scopes", json_type, nullable=False, server_default="[]"),
         sa.Column("suspended_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column("suspended_by", sa.String(255), nullable=True),
@@ -52,16 +54,22 @@ def upgrade() -> None:
         "linear_app_installations",
         ["linear_app_installation_id"],
         ["id"],
-        ondelete="SET NULL"
+        ondelete="SET NULL",
     )
-    op.create_index("ix_integration_credentials_linear_app_installation_id", "integration_credentials", ["linear_app_installation_id"])
+    op.create_index(
+        "ix_integration_credentials_linear_app_installation_id",
+        "integration_credentials",
+        ["linear_app_installation_id"],
+    )
 
 
 def downgrade() -> None:
     # Remove linear_app_installation_id from integration_credentials
     op.drop_index("ix_integration_credentials_linear_app_installation_id", table_name="integration_credentials")
-    op.drop_constraint("fk_integration_credentials_linear_app_installation_id", "integration_credentials", type_="foreignkey")
+    op.drop_constraint(
+        "fk_integration_credentials_linear_app_installation_id", "integration_credentials", type_="foreignkey"
+    )
     op.drop_column("integration_credentials", "linear_app_installation_id")
-    
+
     # Drop linear_app_installations table
     op.drop_table("linear_app_installations")

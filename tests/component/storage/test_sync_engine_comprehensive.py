@@ -11,8 +11,7 @@ Tests cover:
 """
 
 import asyncio
-from datetime import datetime, timedelta
-from pathlib import Path
+from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
@@ -133,7 +132,7 @@ class TestSyncQueue:
     @pytest.fixture
     def sync_queue(self, mock_db):
         """Create SyncQueue instance."""
-        with patch.object(SyncQueue, '_ensure_tables'):
+        with patch.object(SyncQueue, "_ensure_tables"):
             return SyncQueue(mock_db)
 
     def test_enqueue_creates_entry(self, sync_queue, mock_db):
@@ -144,12 +143,7 @@ class TestSyncQueue:
         mock_conn.__enter__.return_value.execute.return_value = mock_result
         mock_db.engine.connect.return_value = mock_conn
 
-        queue_id = sync_queue.enqueue(
-            EntityType.ITEM,
-            "item-123",
-            OperationType.CREATE,
-            {"title": "Test"}
-        )
+        queue_id = sync_queue.enqueue(EntityType.ITEM, "item-123", OperationType.CREATE, {"title": "Test"})
 
         assert queue_id == 1
         mock_conn.__enter__.return_value.execute.assert_called()
@@ -159,9 +153,7 @@ class TestSyncQueue:
         """Test getting pending changes."""
         mock_conn = MagicMock()
         # Make result iterable for the for loop in get_pending
-        mock_result = [
-            (1, "item", "item-123", "create", '{"title": "Test"}', "2024-01-01T00:00:00", 0, None)
-        ]
+        mock_result = [(1, "item", "item-123", "create", '{"title": "Test"}', "2024-01-01T00:00:00", 0, None)]
         mock_conn.__enter__.return_value.execute.return_value = mock_result
         mock_db.engine.connect.return_value = mock_conn
 
@@ -272,9 +264,9 @@ class TestSyncStateManager:
         mock_conn = MagicMock()
         mock_db.engine.connect.return_value = mock_conn
 
-        before = datetime.utcnow()
+        before = datetime.now(UTC)
         state_manager.update_last_sync()
-        after = datetime.utcnow()
+        after = datetime.now(UTC)
 
         # Verify timestamp was passed (can't check exact value)
         mock_conn.__enter__.return_value.execute.assert_called()
@@ -333,15 +325,11 @@ class TestSyncEngine:
     @pytest.fixture
     def sync_engine(self, mock_db, mock_api, mock_storage):
         """Create SyncEngine instance."""
-        with patch.object(SyncQueue, '__init__', return_value=None), \
-             patch.object(SyncStateManager, '__init__', return_value=None):
-            engine = SyncEngine(
-                mock_db,
-                mock_api,
-                mock_storage,
-                max_retries=3,
-                retry_delay=0.1
-            )
+        with (
+            patch.object(SyncQueue, "__init__", return_value=None),
+            patch.object(SyncStateManager, "__init__", return_value=None),
+        ):
+            engine = SyncEngine(mock_db, mock_api, mock_storage, max_retries=3, retry_delay=0.1)
             engine.queue = Mock(spec=SyncQueue)
             engine.state_manager = Mock(spec=SyncStateManager)
             engine.change_detector = ChangeDetector()
@@ -402,12 +390,7 @@ class TestSyncEngine:
         """Test queueing a change."""
         sync_engine.queue.enqueue.return_value = 1
 
-        queue_id = sync_engine.queue_change(
-            EntityType.ITEM,
-            "item-123",
-            OperationType.UPDATE,
-            {"title": "Updated"}
-        )
+        queue_id = sync_engine.queue_change(EntityType.ITEM, "item-123", OperationType.UPDATE, {"title": "Updated"})
 
         assert queue_id == 1
         sync_engine.queue.enqueue.assert_called_once()
@@ -432,7 +415,7 @@ class TestSyncEngine:
             operation=OperationType.CREATE,
             payload={},
             created_at=datetime.now(),
-            retry_count=10  # Exceeds max_retries
+            retry_count=10,  # Exceeds max_retries
         )
         sync_engine.queue.get_pending.return_value = [change]
 
@@ -451,11 +434,11 @@ class TestSyncEngine:
             operation=OperationType.CREATE,
             payload={"title": "Test"},
             created_at=datetime.now(),
-            retry_count=0
+            retry_count=0,
         )
         sync_engine.queue.get_pending.return_value = [change]
 
-        with patch.object(sync_engine, '_upload_change', return_value=True):
+        with patch.object(sync_engine, "_upload_change", return_value=True):
             result = await sync_engine.process_queue()
 
         assert result.entities_synced == 1
@@ -471,11 +454,11 @@ class TestSyncEngine:
             operation=OperationType.CREATE,
             payload={},
             created_at=datetime.now(),
-            retry_count=0
+            retry_count=0,
         )
         sync_engine.queue.get_pending.return_value = [change]
 
-        with patch.object(sync_engine, '_upload_change', return_value=False):
+        with patch.object(sync_engine, "_upload_change", return_value=False):
             result = await sync_engine.process_queue()
 
         assert result.entities_synced == 0
@@ -491,7 +474,7 @@ class TestSyncEngine:
             entity_id="item-123",
             operation=OperationType.CREATE,
             payload={"title": "New Item"},
-            created_at=datetime.now()
+            created_at=datetime.now(),
         )
 
         success = await sync_engine._upload_change(change)
@@ -507,7 +490,7 @@ class TestSyncEngine:
             entity_id="item-123",
             operation=OperationType.UPDATE,
             payload={"title": "Updated Item"},
-            created_at=datetime.now()
+            created_at=datetime.now(),
         )
 
         success = await sync_engine._upload_change(change)
@@ -522,7 +505,7 @@ class TestSyncEngine:
             entity_id="item-123",
             operation=OperationType.DELETE,
             payload={},
-            created_at=datetime.now()
+            created_at=datetime.now(),
         )
 
         success = await sync_engine._upload_change(change)
@@ -546,10 +529,7 @@ class TestSyncEngine:
 
     def test_get_status(self, sync_engine):
         """Test getting sync status."""
-        mock_state = SyncState(
-            status=SyncStatus.IDLE,
-            pending_changes=5
-        )
+        mock_state = SyncState(status=SyncStatus.IDLE, pending_changes=5)
         sync_engine.state_manager.get_state.return_value = mock_state
 
         state = sync_engine.get_status()

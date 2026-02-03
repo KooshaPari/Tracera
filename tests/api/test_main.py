@@ -1,6 +1,6 @@
-import asyncio
-from datetime import datetime
+from datetime import UTC, datetime, timezone
 from types import SimpleNamespace
+from typing import cast
 from uuid import uuid4
 
 import pytest
@@ -17,7 +17,7 @@ class _FakeItem:
         self.title = title
         self.view = view
         self.status = status
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         self.created_at = now
         self.updated_at = now
         self.description = f"{title} description"
@@ -200,6 +200,7 @@ async def test_find_shortest_path(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_get_db_raises_when_missing_database_url(monkeypatch):
     monkeypatch.setattr("tracertm.config.manager.ConfigManager.get", lambda self, key: None)
-    with pytest.raises(HTTPException) as exc:
+    with pytest.raises(HTTPException) as exc_info:
         await anext(main.get_db())
-    assert exc.value.status_code == 500
+    exc = cast(HTTPException, exc_info.value)
+    assert exc.status_code == 500

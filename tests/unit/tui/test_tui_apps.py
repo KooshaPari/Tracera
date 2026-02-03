@@ -16,7 +16,7 @@ class TestDashboardApp:
     def test_dashboard_app_initialization(self, mock_config_class):
         """Test dashboard app can be initialized."""
         try:
-            from tracertm.tui.apps.dashboard import DashboardApp
+            from tracertm.tui.apps.dashboard import DashboardApp  # type: ignore[possibly-missing-import]
 
             mock_config = MagicMock()
             mock_config.get.return_value = "sqlite:///test.db"
@@ -31,7 +31,6 @@ class TestDashboardApp:
     def test_dashboard_app_no_textual(self):
         """Test dashboard app raises when Textual not available."""
         # Import first, then patch the instance check
-        from tracertm.tui.apps.dashboard import DashboardApp
 
         # Patch TEXTUAL_AVAILABLE before instantiation won't work because
         # the class is already defined. Instead, test the placeholder class directly.
@@ -51,7 +50,7 @@ class TestBrowserApp:
     def test_browser_app_initialization(self, mock_config_class):
         """Test browser app can be initialized."""
         try:
-            from tracertm.tui.apps.browser import BrowserApp
+            from tracertm.tui.apps.browser import BrowserApp  # type: ignore[possibly-missing-import]
 
             mock_config = MagicMock()
             mock_config.get.return_value = "sqlite:///test.db"
@@ -65,7 +64,6 @@ class TestBrowserApp:
     def test_browser_app_no_textual(self):
         """Test browser app raises when Textual not available."""
         # Import first, then patch the instance check
-        from tracertm.tui.apps.browser import BrowserApp
 
         # Patch TEXTUAL_AVAILABLE before instantiation won't work because
         # the class is already defined. Instead, test the placeholder class directly.
@@ -85,7 +83,7 @@ class TestGraphApp:
     def test_graph_app_initialization(self, mock_config_class):
         """Test graph app can be initialized."""
         try:
-            from tracertm.tui.apps.graph import GraphApp
+            from tracertm.tui.apps.graph import GraphApp  # type: ignore[possibly-missing-import]
 
             mock_config = MagicMock()
             mock_config.get.return_value = "sqlite:///test.db"
@@ -99,7 +97,6 @@ class TestGraphApp:
     def test_graph_app_no_textual(self):
         """Test graph app raises when Textual not available."""
         # Import first, then patch the instance check
-        from tracertm.tui.apps.graph import GraphApp
 
         # Patch TEXTUAL_AVAILABLE before instantiation won't work because
         # the class is already defined. Instead, test the placeholder class directly.

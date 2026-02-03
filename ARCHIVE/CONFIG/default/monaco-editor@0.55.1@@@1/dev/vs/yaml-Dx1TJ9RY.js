@@ -98,7 +98,7 @@ define("vs/yaml-Dx1TJ9RY", ["exports", "./editor.api-CykLys8L"], (function(expor
         // Flow Mapping Key:Value delimiter
         [/:(?= )/, "operators"],
         // Flow Mapping Key:Value key
-        [/(?:".*?"|'.*?'|[^,\{\[]+?)(?=: )/, "type"],
+        [/(?:".*?"|'.*?'|[^,{[]+?)(?=: )/, "type"],
         // Start Flow Style
         { include: "@flowCollections" },
         { include: "@flowScalars" },
@@ -108,7 +108,7 @@ define("vs/yaml-Dx1TJ9RY", ["exports", "./editor.api-CykLys8L"], (function(expor
         { include: "@flowNumber" },
         // Other value (keyword or string)
         [
-          /[^\},]+/,
+          /[^},]+/,
           {
             cases: {
               "@keywords": "keyword",
@@ -183,15 +183,15 @@ define("vs/yaml-Dx1TJ9RY", ["exports", "./editor.api-CykLys8L"], (function(expor
       blockStyle: [[/[>|][0-9]*[+-]?$/, "operators", "@multiString"]],
       // Numbers in Flow Collections (terminate with ,]})
       flowNumber: [
-        [/@numberInteger(?=[ \t]*[,\]\}])/, "number"],
-        [/@numberFloat(?=[ \t]*[,\]\}])/, "number.float"],
-        [/@numberOctal(?=[ \t]*[,\]\}])/, "number.octal"],
-        [/@numberHex(?=[ \t]*[,\]\}])/, "number.hex"],
-        [/@numberInfinity(?=[ \t]*[,\]\}])/, "number.infinity"],
-        [/@numberNaN(?=[ \t]*[,\]\}])/, "number.nan"],
-        [/@numberDate(?=[ \t]*[,\]\}])/, "number.date"]
+        [/@numberInteger(?=[ \t]*[,\]}])/, "number"],
+        [/@numberFloat(?=[ \t]*[,\]}])/, "number.float"],
+        [/@numberOctal(?=[ \t]*[,\]}])/, "number.octal"],
+        [/@numberHex(?=[ \t]*[,\]}])/, "number.hex"],
+        [/@numberInfinity(?=[ \t]*[,\]}])/, "number.infinity"],
+        [/@numberNaN(?=[ \t]*[,\]}])/, "number.nan"],
+        [/@numberDate(?=[ \t]*[,\]}])/, "number.date"]
       ],
-      tagHandle: [[/\![^ ]*/, "tag"]],
+      tagHandle: [[/![^ ]*/, "tag"]],
       anchor: [[/[&*][^ ]+/, "namespace"]]
     }
   };

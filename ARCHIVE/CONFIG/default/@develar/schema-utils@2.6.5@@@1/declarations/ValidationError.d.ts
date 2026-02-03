@@ -66,7 +66,7 @@ declare class ValidationError extends Error {
       | import('json-schema').JSONSchema4
       | import('json-schema').JSONSchema6
       | import('json-schema').JSONSchema7,
-    prevSchemas?: Object[]
+    prevSchemas?: object[]
   ): string;
   /**
    * @param {Schema=} schemaPart

@@ -64,13 +64,13 @@ define("vs/scheme-DM9P8uKD", ["exports"], (function(exports) {
         [/#[xXoObB][0-9a-fA-F]+/, "number.hex"],
         [/[+-]?\d+(?:(?:\.\d*)?(?:[eE][+-]?\d+)?)?/, "number.float"],
         [
-          /(?:\b(?:(define|define-syntax|define-macro))\b)(\s+)((?:\w|\-|\!|\?)*)/,
+          /(?:\b(?:(define|define-syntax|define-macro))\b)(\s+)((?:\w|-|!|\?)*)/,
           ["keyword", "white", "variable"]
         ],
         { include: "@whitespace" },
         { include: "@strings" },
         [
-          /[a-zA-Z_#][a-zA-Z0-9_\-\?\!\*]*/,
+          /[a-zA-Z_#][a-zA-Z0-9_\-?!*]*/,
           {
             cases: {
               "@keywords": "keyword",
@@ -82,10 +82,10 @@ define("vs/scheme-DM9P8uKD", ["exports"], (function(exports) {
         ]
       ],
       comment: [
-        [/[^\|#]+/, "comment"],
+        [/[^|#]+/, "comment"],
         [/#\|/, "comment", "@push"],
         [/\|#/, "comment", "@pop"],
-        [/[\|#]/, "comment"]
+        [/[|#]/, "comment"]
       ],
       whitespace: [
         [/[ \t\r\n]+/, "white"],

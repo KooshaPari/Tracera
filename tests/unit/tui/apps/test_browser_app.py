@@ -6,11 +6,12 @@ Tests app initialization, widget composition, state management, and user interac
 """
 
 import pytest
-from unittest.mock import MagicMock, Mock, patch, AsyncMock
 
 try:
-    from textual.app import App
+    from textual.app import App  # type: ignore[unresolved-import]
+
     from tracertm.tui.apps.browser import *
+
     TEXTUAL_AVAILABLE = True
 except ImportError:
     TEXTUAL_AVAILABLE = False
@@ -30,9 +31,11 @@ class TestBrowserApp:
         # Try to find the app class
         try:
             import importlib
-            module = importlib.import_module(f"tracertm.tui.apps.browser")
+
+            module = importlib.import_module("tracertm.tui.apps.browser")
             app_classes = [
-                obj for name, obj in vars(module).items()
+                obj
+                for name, obj in vars(module).items()
                 if isinstance(obj, type) and (name.endswith("App") or name == "Browser")
             ]
             if app_classes:
@@ -46,7 +49,8 @@ class TestBrowserApp:
         """Test app defines widgets."""
         try:
             import importlib
-            module = importlib.import_module(f"tracertm.tui.apps.browser")
+
+            module = importlib.import_module("tracertm.tui.apps.browser")
             # Module loaded successfully
             assert module is not None
         except:

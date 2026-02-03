@@ -11,7 +11,7 @@ glob(pattern, function (er, files) {
     Promise.all(
         files
             // Use relative paths
-            .map(f => f.replace(/^([^\/])/, './$1'))
+            .map(f => f.replace(/^([^/])/, './$1'))
             .map(f => import(f)
                 .catch(e => {
                     console.error('** Error loading ' + f + ': ');

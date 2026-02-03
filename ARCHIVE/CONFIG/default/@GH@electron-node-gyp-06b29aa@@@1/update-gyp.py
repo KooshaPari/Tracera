@@ -33,8 +33,8 @@ with tempfile.TemporaryDirectory() as tmp_dir:
 
         print("Unzipping...")
         with tarfile.open(tar_file, "r:gz") as tar_ref:
-            def is_within_directory(directory, target):
 
+            def is_within_directory(directory, target):
                 abs_directory = os.path.abspath(directory)
                 abs_target = os.path.abspath(target)
 
@@ -43,7 +43,6 @@ with tempfile.TemporaryDirectory() as tmp_dir:
                 return prefix == abs_directory
 
             def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
-
                 for member in tar.getmembers():
                     member_path = os.path.join(path, member.name)
                     if not is_within_directory(path, member_path):
@@ -56,9 +55,7 @@ with tempfile.TemporaryDirectory() as tmp_dir:
         print("Moving to current checkout (" + CHECKOUT_PATH + ")...")
         if os.path.exists(CHECKOUT_GYP_PATH):
             shutil.rmtree(CHECKOUT_GYP_PATH)
-        shutil.move(
-            os.path.join(unzip_target, os.listdir(unzip_target)[0]), CHECKOUT_GYP_PATH
-        )
+        shutil.move(os.path.join(unzip_target, os.listdir(unzip_target)[0]), CHECKOUT_GYP_PATH)
 
 subprocess.check_output(["git", "add", "gyp"], cwd=CHECKOUT_PATH)
 subprocess.check_output(["git", "commit", "-m", "feat(gyp): update gyp to " + args.tag])

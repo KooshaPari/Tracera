@@ -1244,7 +1244,7 @@ function pushStartGenericElement(target, props, tag) {
     : tag;
 }
 var leadingNewline = stringToPrecomputedChunk("\n"),
-  VALID_TAG_REGEX = /^[a-zA-Z][a-zA-Z:_\.\-\d]*$/,
+  VALID_TAG_REGEX = /^[a-zA-Z][a-zA-Z:_.\-\d]*$/,
   validatedTagCache = new Map();
 function startChunkForTag(tag) {
   var tagStartChunk = validatedTagCache.get(tag);

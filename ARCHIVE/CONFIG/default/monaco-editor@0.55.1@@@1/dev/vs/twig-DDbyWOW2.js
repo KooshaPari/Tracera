@@ -1,7 +1,7 @@
 define("vs/twig-DDbyWOW2", ["exports"], (function(exports) {
   "use strict";
   const conf = {
-    wordPattern: /(-?\d*\.\d\w*)|([^\`\~\!\@\$\^\&\*\(\)\=\+\[\{\]\}\\\|\;\:\'\"\,\.\<\>\/\s]+)/g,
+    wordPattern: /(-?\d*\.\d\w*)|([^`~!@$^&*()=+[{\]}\\|;:'",.<>/\s]+)/g,
     comments: {
       blockComment: ["{#", "#}"]
     },
@@ -82,11 +82,11 @@ define("vs/twig-DDbyWOW2", ["exports"], (function(exports) {
         // HTML
         [/<!DOCTYPE/, "metatag.html", "@doctype"],
         [/<!--/, "comment.html", "@comment"],
-        [/(<)((?:[\w\-]+:)?[\w\-]+)(\s*)(\/>)/, ["delimiter.html", "tag.html", "", "delimiter.html"]],
+        [/(<)((?:[\w-]+:)?[\w-]+)(\s*)(\/>)/, ["delimiter.html", "tag.html", "", "delimiter.html"]],
         [/(<)(script)/, ["delimiter.html", { token: "tag.html", next: "@script" }]],
         [/(<)(style)/, ["delimiter.html", { token: "tag.html", next: "@style" }]],
-        [/(<)((?:[\w\-]+:)?[\w\-]+)/, ["delimiter.html", { token: "tag.html", next: "@otherTag" }]],
-        [/(<\/)((?:[\w\-]+:)?[\w\-]+)/, ["delimiter.html", { token: "tag.html", next: "@otherTag" }]],
+        [/(<)((?:[\w-]+:)?[\w-]+)/, ["delimiter.html", { token: "tag.html", next: "@otherTag" }]],
+        [/(<\/)((?:[\w-]+:)?[\w-]+)/, ["delimiter.html", { token: "tag.html", next: "@otherTag" }]],
         [/</, "delimiter.html"],
         [/[^<{]+/]
         // text
@@ -174,7 +174,7 @@ define("vs/twig-DDbyWOW2", ["exports"], (function(exports) {
         // punctuation
         [/\(|\)|\[|\]|{|}|,/, "delimiter.twig"],
         // strings
-        [/"([^#"\\]*(?:\\.[^#"\\]*)*)"|\'([^\'\\]*(?:\\.[^\'\\]*)*)\'/, "string.twig"],
+        [/"([^#"\\]*(?:\\.[^#"\\]*)*)"|'([^'\\]*(?:\\.[^'\\]*)*)'/, "string.twig"],
         // opening double quoted string
         [/"/, "string.twig", "@stringState"],
         // misc syntactic constructs
@@ -201,7 +201,7 @@ define("vs/twig-DDbyWOW2", ["exports"], (function(exports) {
         [/\/?>/, "delimiter.html", "@pop"],
         [/"([^"]*)"/, "attribute.value.html"],
         [/'([^']*)'/, "attribute.value.html"],
-        [/[\w\-]+/, "attribute.name.html"],
+        [/[\w-]+/, "attribute.name.html"],
         [/=/, "delimiter.html"],
         [/[ \t\r\n]+/]
         // whitespace
@@ -212,7 +212,7 @@ define("vs/twig-DDbyWOW2", ["exports"], (function(exports) {
         [/type/, "attribute.name.html", "@scriptAfterType"],
         [/"([^"]*)"/, "attribute.value.html"],
         [/'([^']*)'/, "attribute.value.html"],
-        [/[\w\-]+/, "attribute.name.html"],
+        [/[\w-]+/, "attribute.name.html"],
         [/=/, "delimiter.html"],
         [
           />/,
@@ -286,7 +286,7 @@ define("vs/twig-DDbyWOW2", ["exports"], (function(exports) {
         ],
         [/"([^"]*)"/, "attribute.value.html"],
         [/'([^']*)'/, "attribute.value.html"],
-        [/[\w\-]+/, "attribute.name.html"],
+        [/[\w-]+/, "attribute.name.html"],
         [/=/, "delimiter.html"],
         [/[ \t\r\n]+/],
         // whitespace
@@ -303,7 +303,7 @@ define("vs/twig-DDbyWOW2", ["exports"], (function(exports) {
         [/type/, "attribute.name.html", "@styleAfterType"],
         [/"([^"]*)"/, "attribute.value.html"],
         [/'([^']*)'/, "attribute.value.html"],
-        [/[\w\-]+/, "attribute.name.html"],
+        [/[\w-]+/, "attribute.name.html"],
         [/=/, "delimiter.html"],
         [
           />/,
@@ -377,7 +377,7 @@ define("vs/twig-DDbyWOW2", ["exports"], (function(exports) {
         ],
         [/"([^"]*)"/, "attribute.value.html"],
         [/'([^']*)'/, "attribute.value.html"],
-        [/[\w\-]+/, "attribute.name.html"],
+        [/[\w-]+/, "attribute.name.html"],
         [/=/, "delimiter.html"],
         [/[ \t\r\n]+/],
         // whitespace

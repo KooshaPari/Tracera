@@ -20,7 +20,7 @@ describe(IncrementalGraphBuilder, () => {
 
 			const chunks = [
 				{
-					data: { totalNodes: 2, totalEdges: 1 },
+					data: { totalEdges: 1, totalNodes: 2 },
 					timestamp: Date.now(),
 					type: "metadata",
 				},
@@ -63,9 +63,9 @@ describe(IncrementalGraphBuilder, () => {
 				data: { id: "n1", label: "Node 1", position: { x: 0, y: 0 } },
 				progress: {
 					current: 1,
-					total: 10,
 					percentage: 10,
 					stage: "nodes",
+					total: 10,
 				},
 				timestamp: Date.now(),
 				type: "node",
@@ -111,22 +111,22 @@ describe(IncrementalGraphBuilder, () => {
 				{ data: { totalNodes: 2 }, timestamp: Date.now(), type: "metadata" },
 				{
 					data: {
+						data: {},
 						id: "n1",
-						type: "test",
 						label: "Node 1",
 						position: { x: 0, y: 0 },
-						data: {},
+						type: "test",
 					},
 					timestamp: Date.now(),
 					type: "node",
 				},
 				{
 					data: {
+						data: {},
 						id: "n2",
-						type: "test",
 						label: "Node 2",
 						position: { x: 100, y: 100 },
-						data: {},
+						type: "test",
 					},
 					timestamp: Date.now(),
 					type: "node",
@@ -307,11 +307,11 @@ describe(useIncrementalGraph, () => {
 		const mockStreamData = [
 			{
 				data: {
+					data: {},
 					id: "n1",
-					type: "test",
 					label: "Node 1",
 					position: { x: 0, y: 0 },
-					data: {},
+					type: "test",
 				},
 				timestamp: Date.now(),
 				type: "node",
@@ -472,7 +472,7 @@ describe("Edge cases", () => {
 		const builder = new IncrementalGraphBuilder();
 
 		builder.processChunk({
-			data: { totalNodes: 0, totalEdges: 0 },
+			data: { totalEdges: 0, totalNodes: 0 },
 			timestamp: Date.now(),
 			type: "complete",
 		});

@@ -17,7 +17,7 @@ export default function applescript(Prism) {
     string: /"(?:\\.|[^"\\\r\n])*"/,
     number: /(?:\b\d+(?:\.\d*)?|\B\.\d+)(?:e-?\d+)?\b/i,
     operator: [
-      /[&=≠≤≥*+\-\/÷^]|[<>]=?/,
+      /[&=≠≤≥*+\-/÷^]|[<>]=?/,
       /\b(?:(?:begin|end|start)s? with|(?:contains?|(?:does not|doesn't) contain)|(?:is|isn't|is not) (?:contained by|in)|(?:(?:is|isn't|is not) )?(?:greater|less) than(?: or equal)?(?: to)?|(?:comes|(?:does not|doesn't) come) (?:after|before)|(?:is|isn't|is not) equal(?: to)?|(?:(?:does not|doesn't) equal|equal to|equals|is not|isn't)|(?:a )?(?:ref(?: to)?|reference to)|(?:and|as|div|mod|not|or))\b/
     ],
     keyword:

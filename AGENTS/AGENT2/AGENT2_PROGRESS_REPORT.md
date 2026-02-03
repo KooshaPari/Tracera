@@ -141,3 +141,9 @@ Agent 2 has completed **Day 1-2 work** on Epic 5, implementing Stories 5.2-5.8 (
 - Code follows project conventions
 
 **Status:** ✅ Epic 5 Stories 5.2-5.8 **COMPLETE**
+
+
+## Opinionated Quality Enforcement
+- We want opinionated rules that enforce opinionated styling to a strict degree.
+- This is an exclusively agent/vibecoded project; programmatic enforcement must guard against bad quality and antipatterns.
+- Rather than disables or ignores, fix code properly.

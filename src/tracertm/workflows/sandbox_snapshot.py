@@ -11,6 +11,7 @@ from datetime import timedelta
 from typing import Any
 
 from temporalio import workflow
+from temporalio.common import RetryPolicy
 
 # Import activity functions for workflow execution
 with workflow.unsafe.imports_passed_through():
@@ -75,7 +76,7 @@ class SandboxSnapshotWorkflow:
                 ],
                 start_to_close_timeout=timedelta(minutes=10),
                 heartbeat_timeout=timedelta(seconds=30),
-                retry_policy=workflow.RetryPolicy(
+                retry_policy=RetryPolicy(
                     maximum_attempts=3,
                     initial_interval=timedelta(seconds=5),
                     maximum_interval=timedelta(seconds=30),
@@ -94,7 +95,7 @@ class SandboxSnapshotWorkflow:
                         snapshot_result.get("snapshot_metadata", {}),
                     ],
                     start_to_close_timeout=timedelta(seconds=30),
-                    retry_policy=workflow.RetryPolicy(
+                    retry_policy=RetryPolicy(
                         maximum_attempts=2,
                         initial_interval=timedelta(seconds=1),
                         maximum_interval=timedelta(seconds=5),
@@ -102,9 +103,7 @@ class SandboxSnapshotWorkflow:
                     ),
                 )
 
-            workflow.logger.info(
-                f"Snapshot created successfully: {snapshot_result.get('s3_key')}"
-            )
+            workflow.logger.info(f"Snapshot created successfully: {snapshot_result.get('s3_key')}")
             return {
                 "status": "success",
                 "session_id": session_id,
@@ -213,9 +212,7 @@ class BulkSnapshotWorkflow:
                         "error": str(e),
                     })
 
-        workflow.logger.info(
-            f"Bulk snapshot completed: {successful} successful, {failed} failed"
-        )
+        workflow.logger.info(f"Bulk snapshot completed: {successful} successful, {failed} failed")
 
         return {
             "status": "success",
@@ -248,17 +245,14 @@ class SnapshotCleanupWorkflow:
         Returns:
             dict: Cleanup results with count of deleted snapshots
         """
-        workflow.logger.info(
-            f"Starting snapshot cleanup workflow "
-            f"(retention={retention_days}d, dry_run={dry_run})"
-        )
+        workflow.logger.info(f"Starting snapshot cleanup workflow (retention={retention_days}d, dry_run={dry_run})")
 
         # Execute cleanup activity (Phase 4 will implement MinIO deletion)
         cleanup_result = await workflow.execute_activity(
             checkpoint_activities.cleanup_old_snapshots,
             args=[retention_days, dry_run],
             start_to_close_timeout=timedelta(minutes=30),
-            retry_policy=workflow.RetryPolicy(
+            retry_policy=RetryPolicy(
                 maximum_attempts=2,
                 initial_interval=timedelta(seconds=5),
                 maximum_interval=timedelta(seconds=30),

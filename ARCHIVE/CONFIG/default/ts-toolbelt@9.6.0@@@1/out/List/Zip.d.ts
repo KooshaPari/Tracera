@@ -29,4 +29,4 @@ export declare type _Zip<L extends List, L1 extends List> = __Zip<Naked<L>, L1> 
  * ```
  */
 export declare type Zip<L extends List, L1 extends List> = L extends unknown ? L1 extends unknown ? _Zip<L, L1> : never : never;
-export {};
+

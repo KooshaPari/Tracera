@@ -4,8 +4,8 @@ Revision ID: 026_fix_rls_policies
 Revises: 025_enable_rls
 Create Date: 2026-01-29 01:00:00.000000
 """
+
 from alembic import op
-import sqlalchemy as sa
 
 revision = "026_fix_rls_policies"
 down_revision = "025_enable_rls"
@@ -16,7 +16,7 @@ depends_on = None
 def upgrade() -> None:
     # 1. account_users
     op.execute("DROP POLICY IF EXISTS account_users_isolation_policy ON account_users")
-    
+
     # Select: See all members in my accounts
     op.execute("""
         CREATE POLICY account_users_select_policy ON account_users FOR SELECT
@@ -27,7 +27,7 @@ def upgrade() -> None:
             )
         )
     """)
-    
+
     # Insert: Can insert myself (new account) OR insert others into my accounts (invite)
     op.execute("""
         CREATE POLICY account_users_insert_policy ON account_users FOR INSERT
@@ -40,7 +40,7 @@ def upgrade() -> None:
             )
         )
     """)
-    
+
     # Update/Delete: Can manage my accounts
     op.execute("""
         CREATE POLICY account_users_write_policy ON account_users FOR UPDATE
@@ -63,7 +63,7 @@ def upgrade() -> None:
 
     # 2. accounts
     op.execute("DROP POLICY IF EXISTS accounts_isolation_policy ON accounts")
-    
+
     # Select: My accounts
     op.execute("""
         CREATE POLICY accounts_select_policy ON accounts FOR SELECT
@@ -74,13 +74,13 @@ def upgrade() -> None:
             )
         )
     """)
-    
+
     # Insert: Allow authenticated creation (bootstrap)
     op.execute("""
         CREATE POLICY accounts_insert_policy ON accounts FOR INSERT
         WITH CHECK (current_setting('app.current_user_id', true) IS NOT NULL)
     """)
-    
+
     # Update/Delete: My accounts
     op.execute("""
         CREATE POLICY accounts_write_policy ON accounts FOR UPDATE
@@ -109,7 +109,7 @@ def downgrade() -> None:
     op.execute("DROP POLICY IF EXISTS account_users_insert_policy ON account_users")
     op.execute("DROP POLICY IF EXISTS account_users_write_policy ON account_users")
     op.execute("DROP POLICY IF EXISTS account_users_delete_policy ON account_users")
-    
+
     op.execute("DROP POLICY IF EXISTS accounts_select_policy ON accounts")
     op.execute("DROP POLICY IF EXISTS accounts_insert_policy ON accounts")
     op.execute("DROP POLICY IF EXISTS accounts_write_policy ON accounts")

@@ -4,7 +4,6 @@ Tests the logging_config module to ensure proper configuration of
 the logging system for the TraceRTM application using loguru.
 """
 
-
 import pytest
 
 from tracertm.logging_config import get_logger, setup_logging
@@ -122,8 +121,8 @@ class TestLoggingIntegration:
         logger = get_logger("tracertm.exceptions")
 
         try:
-            # Trigger an exception
-            1 / 0
+            # Trigger an exception (B018: intentionally unused to trigger except)
+            _ = 1 / 0
         except ZeroDivisionError:
             # Log with exception info
             try:
@@ -138,6 +137,7 @@ class TestLoggingIntegration:
 
         # Log many messages
         import time
+
         start = time.time()
         for i in range(100):  # Reduced from 1000
             logger.debug(f"Message {i}")

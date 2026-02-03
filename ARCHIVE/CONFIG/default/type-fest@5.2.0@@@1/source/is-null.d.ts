@@ -19,4 +19,4 @@ type Example2 = NonNullFallback<number, string>;
 */
 export type IsNull<T> = [T] extends [null] ? true : false;
 
-export {};
+

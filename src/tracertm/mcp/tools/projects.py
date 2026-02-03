@@ -7,13 +7,12 @@ Provides tools for creating, listing, selecting, and snapshotting projects.
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 import yaml
 from fastmcp.exceptions import ToolError
-
 from sqlalchemy import select
 
 from tracertm.mcp.core import mcp
@@ -49,14 +48,14 @@ async def create_project(
             id=str(uuid.uuid4()),
             name=name,
             description=description or "",
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
         )
         session.add(project)
         await session.commit()
 
         # Set as current project
-        await set_current_project(project.id)
+        await set_current_project(str(project.id))
 
         return wrap_success(
             {
@@ -112,22 +111,18 @@ async def select_project(
 
     async with get_mcp_session() as session:
         # Try exact match first
-        result = await session.execute(
-            select(Project).filter(Project.id == project_id)
-        )
+        result = await session.execute(select(Project).filter(Project.id == project_id))
         project = result.scalar_one_or_none()
 
         # Try prefix match if no exact match
         if not project:
-            result = await session.execute(
-                select(Project).filter(Project.id.like(f"{project_id}%"))
-            )
+            result = await session.execute(select(Project).filter(Project.id.like(f"{project_id}%")))
             project = result.scalar_one_or_none()
 
         if not project:
             raise ToolError(f"Project not found: {project_id}")
 
-        await set_current_project(project.id)
+        await set_current_project(str(project.id))
 
         return wrap_success(
             {
@@ -162,9 +157,7 @@ async def snapshot_project(
         raise ToolError("project_id and label are required.")
 
     async with get_mcp_session() as session:
-        result = await session.execute(
-            select(Project).filter(Project.id == project_id)
-        )
+        result = await session.execute(select(Project).filter(Project.id == project_id))
         project = result.scalar_one_or_none()
         if not project:
             raise ToolError(f"Project not found: {project_id}")
@@ -177,7 +170,7 @@ async def snapshot_project(
 
         # Load existing snapshots
         if snapshots_file.exists():
-            with open(snapshots_file) as f:
+            with snapshots_file.open() as f:
                 snapshots = yaml.safe_load(f) or []
         else:
             snapshots = []
@@ -186,14 +179,14 @@ async def snapshot_project(
         snapshot = {
             "id": str(uuid.uuid4()),
             "label": label,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "project_id": project_id,
             "project_name": project.name,
         }
         snapshots.append(snapshot)
 
         # Save snapshots
-        with open(snapshots_file, "w") as f:
+        with snapshots_file.open("w") as f:
             yaml.safe_dump(snapshots, f, default_flow_style=False)
 
         return wrap_success(snapshot, "snapshot", ctx)

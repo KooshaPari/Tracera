@@ -2,10 +2,14 @@
 Unit tests for specification services.
 """
 
-import pytest
-from datetime import datetime, date as date_type
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
+import pytest
+
+from tracertm.models.adr import ADR
+from tracertm.models.contract import Contract
+from tracertm.models.feature import Feature
+from tracertm.models.scenario import Scenario
 from tracertm.services.specification_service import (
     ADRService,
     ContractService,
@@ -13,10 +17,6 @@ from tracertm.services.specification_service import (
     ScenarioService,
     StepDefinitionService,
 )
-from tracertm.models.adr import ADR
-from tracertm.models.contract import Contract
-from tracertm.models.feature import Feature
-from tracertm.models.scenario import Scenario
 
 
 class TestADRService:
@@ -110,7 +110,9 @@ class TestADRService:
         # Mock count query
         mock_session.execute.side_effect = [
             MagicMock(scalar=MagicMock(return_value=2)),  # count query
-            MagicMock(scalars=MagicMock(return_value=MagicMock(all=MagicMock(return_value=[mock_adr1, mock_adr2])))),  # list query
+            MagicMock(
+                scalars=MagicMock(return_value=MagicMock(all=MagicMock(return_value=[mock_adr1, mock_adr2])))
+            ),  # list query
         ]
 
         # Execute
@@ -205,9 +207,7 @@ class TestADRService:
         service.get = AsyncMock(return_value=mock_adr)
 
         # Execute
-        result = await service.link_requirements(
-            "adr-1", ["REQ-002", "REQ-003"]
-        )
+        result = await service.link_requirements("adr-1", ["REQ-002", "REQ-003"])
 
         # Assert
         assert "REQ-001" in result.related_requirements
@@ -424,12 +424,8 @@ class TestScenarioService:
             status="draft",
         )
         mock_session.execute.side_effect = [
-            MagicMock(
-                scalar_one_or_none=MagicMock(return_value=mock_feature)
-            ),  # Feature lookup
-            MagicMock(
-                scalar_one_or_none=MagicMock(return_value=None)
-            ),  # Last scenario lookup
+            MagicMock(scalar_one_or_none=MagicMock(return_value=mock_feature)),  # Feature lookup
+            MagicMock(scalar_one_or_none=MagicMock(return_value=None)),  # Last scenario lookup
         ]
 
         # Execute
@@ -515,9 +511,7 @@ class TestScenarioService:
         service.get = AsyncMock(return_value=mock_scenario)
 
         # Execute
-        result = await service.link_test_cases(
-            "scenario-1", ["TC-002", "TC-003"]
-        )
+        result = await service.link_test_cases("scenario-1", ["TC-002", "TC-003"])
 
         # Assert
         assert "TC-001" in result.test_case_ids

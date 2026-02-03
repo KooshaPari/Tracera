@@ -8,12 +8,12 @@ describe('options', function () {
   it('options in environment', () => {
     // `npm test` dumps a ton of npm_config_* variables in the environment.
     Object.keys(process.env)
-      .filter((key) => /^npm_config_/.test(key))
+      .filter((key) => key.startsWith('npm_config_'))
       .forEach((key) => { delete process.env[key] })
 
     // in some platforms, certain keys are stubborn and cannot be removed
     const keys = Object.keys(process.env)
-      .filter((key) => /^npm_config_/.test(key))
+      .filter((key) => key.startsWith('npm_config_'))
       .map((key) => key.substring('npm_config_'.length))
       .concat('argv', 'x')
 

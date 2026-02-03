@@ -8,9 +8,10 @@ Revises: 034_add_code_entities
 Create Date: 2026-01-30
 """
 
-from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
+
+from alembic import op
 
 # revision identifiers, used by Alembic
 revision = "035_add_perspective_configs"
@@ -21,7 +22,7 @@ depends_on = None
 
 def upgrade() -> None:
     """Create perspective_configs table."""
-    
+
     op.create_table(
         "perspective_configs",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
@@ -92,7 +93,7 @@ def upgrade() -> None:
         # Unique constraint
         sa.UniqueConstraint("project_id", "perspective_type", name="uq_perspective_configs_project_type"),
     )
-    
+
     # Create indexes
     op.create_index("ix_perspective_configs_project_id", "perspective_configs", ["project_id"])
     op.create_index("ix_perspective_configs_perspective_type", "perspective_configs", ["perspective_type"])
@@ -107,4 +108,3 @@ def downgrade() -> None:
     op.drop_index("ix_perspective_configs_perspective_type", table_name="perspective_configs")
     op.drop_index("ix_perspective_configs_project_id", table_name="perspective_configs")
     op.drop_table("perspective_configs")
-

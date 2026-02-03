@@ -43,4 +43,4 @@ export type MultidimensionalArray<Element, Dimensions extends number> = number e
 		? Element
 		: Array<MultidimensionalArray<Element, Subtract<Dimensions, 1>>>;
 
-export {};
+

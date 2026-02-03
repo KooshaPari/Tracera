@@ -42,15 +42,15 @@ describe(MCPClient, () => {
 				id: 1,
 				jsonrpc: "2.0",
 				result: {
+					capabilities: {
+						prompts: true,
+						resources: true,
+						tools: true,
+					},
 					protocolVersion: "2024-11-05",
 					serverInfo: {
 						name: "TraceRTM MCP Server",
 						version: "1.0.0",
-					},
-					capabilities: {
-						tools: true,
-						resources: true,
-						prompts: true,
 					},
 				},
 			};
@@ -68,8 +68,8 @@ describe(MCPClient, () => {
 				"http://localhost:4000/mcp/rpc",
 				expect.objectContaining({
 					headers: expect.objectContaining({
-						"Content-Type": "application/json",
 						Authorization: "Bearer test-token",
+						"Content-Type": "application/json",
 					}),
 					method: "POST",
 				}),
@@ -85,8 +85,8 @@ describe(MCPClient, () => {
 				result: {
 					tools: [
 						{
-							name: "project_manage",
 							description: "Manage projects",
+							name: "project_manage",
 							parameters: [],
 						},
 					],
@@ -135,9 +135,9 @@ describe(MCPClient, () => {
 				result: {
 					resources: [
 						{
-							uri: "tracertm://project/1",
-							name: "Project 1",
 							mimeType: "application/json",
+							name: "Project 1",
+							uri: "tracertm://project/1",
 						},
 					],
 				},
@@ -183,8 +183,8 @@ describe(MCPClient, () => {
 				result: {
 					prompts: [
 						{
-							name: "analyze_requirements",
 							description: "Analyze requirements",
+							name: "analyze_requirements",
 						},
 					],
 				},
@@ -206,7 +206,7 @@ describe(MCPClient, () => {
 				id: 1,
 				jsonrpc: "2.0",
 				result: {
-					messages: [{ role: "user", content: "Analyze this requirement" }],
+					messages: [{ content: "Analyze this requirement", role: "user" }],
 				},
 			};
 

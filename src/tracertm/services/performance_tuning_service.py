@@ -1,6 +1,6 @@
 """Service for performance tuning and optimization."""
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -22,7 +22,7 @@ class PerformanceTuningService:
     async def analyze_performance(self) -> dict[str, Any]:
         """Analyze overall performance."""
         return {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "metrics_collected": len(self.metrics),
             "cache_enabled": self.cache_config["enabled"],
             "cache_ttl": self.cache_config["ttl_seconds"],
@@ -40,7 +40,7 @@ class PerformanceTuningService:
             "name": metric_name,
             "value": value,
             "unit": unit,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }
         self.metrics.append(metric)
 
@@ -129,16 +129,14 @@ class PerformanceTuningService:
             if avg_time > 100:  # > 100ms
                 recommendations.append("CREATE INDEX idx_item_status ON items(status)")
                 recommendations.append("CREATE INDEX idx_item_view ON items(view)")
-                recommendations.append(
-                    "CREATE INDEX idx_link_source ON links(source_item_id)"
-                )
+                recommendations.append("CREATE INDEX idx_link_source ON links(source_item_id)")
 
         return recommendations
 
     def get_tuning_report(self) -> dict[str, Any]:
         """Generate comprehensive tuning report."""
         return {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "metrics_count": len(self.metrics),
             "recommendations_count": len(self.recommendations),
             "cache_config": self.cache_config,

@@ -140,7 +140,7 @@ class PluginService:
         enabled = len([p for p in self.plugins.values() if p.enabled])
         disabled = total - enabled
 
-        by_type: dict[PluginType, list[Plugin]] = {}
+        by_type: dict[str, int] = {}
         for plugin in self.plugins.values():
             plugin_type = plugin.plugin_type.value
             by_type[plugin_type] = by_type.get(plugin_type, 0) + 1

@@ -37,4 +37,4 @@ export declare type _Undefinable<O extends object, K extends Key, depth extends 
  * ```
  */
 export declare type Undefinable<O extends object, K extends Key = Key, depth extends Depth = 'flat'> = O extends unknown ? _Undefinable<O, K, depth> : never;
-export {};
+

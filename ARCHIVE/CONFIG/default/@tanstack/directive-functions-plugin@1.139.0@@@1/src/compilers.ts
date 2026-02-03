@@ -500,11 +500,9 @@ export function findDirectives(
       const replacement = babel.template.expression(replacer, {
         placeholderPattern: false,
         placeholderWhitelist: new Set(['$$fn$$']),
-      })({
-        ...(replacer.includes('$$fn$$')
+      })((replacer.includes('$$fn$$')
           ? { $$fn$$: babel.types.toExpression(directiveFn.node) }
-          : {}),
-      })
+          : {}))
 
       directiveFn.replaceWith(replacement)
     }

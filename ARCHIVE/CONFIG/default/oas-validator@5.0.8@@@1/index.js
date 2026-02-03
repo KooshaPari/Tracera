@@ -57,11 +57,11 @@ function validateUrl(s, contextServers, context, options) {
 }
 
 function validateComponentName(name) {
-    return /^[a-zA-Z0-9\.\-_]+$/.test(name);
+    return /^[a-zA-Z0-9.\-_]+$/.test(name);
 }
 
 function validateHeaderName(name) {
-    return /^[A-Za-z0-9!#\-\$%&'\*\+\\\.\^_`\|~]+$/.test(name);
+    return /^[A-Za-z0-9!#\-$%&'*+\\.^_`|~]+$/.test(name);
 }
 
 function checkSubSchema(schema, parent, state) {
@@ -341,7 +341,7 @@ function checkContent(content, contextServers, openapi, options) {
         contextAppend(options, jptr.jpescape(ct));
         // validate ct against https://tools.ietf.org/html/rfc6838#section-4.2
         if (options.mediatype) {
-            should(/[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+\/[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+/.test(ct)).be.exactly(true,'media-type should match RFC6838 format'); // this is a SHOULD not MUST
+            should(/[a-zA-Z0-9!#$%^&*_\-+{}|'.`~]+\/[a-zA-Z0-9!#$%^&*_\-+{}|'.`~]+/.test(ct)).be.exactly(true,'media-type should match RFC6838 format'); // this is a SHOULD not MUST
         }
         let contentType = content[ct];
         should(contentType).be.an.Object();

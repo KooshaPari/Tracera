@@ -61,4 +61,4 @@ export type Entries<BaseType> =
 				: BaseType extends object ? ObjectEntries<BaseType>
 					: never;
 
-export {};
+

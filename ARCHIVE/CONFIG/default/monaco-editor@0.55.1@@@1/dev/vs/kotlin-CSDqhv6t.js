@@ -2,7 +2,7 @@ define("vs/kotlin-CSDqhv6t", ["exports"], (function(exports) {
   "use strict";
   const conf = {
     // the default separators except `@$`
-    wordPattern: /(-?\d*\.\d\w*)|([^\`\~\!\#\%\^\&\*\(\)\-\=\+\[\{\]\}\\\|\;\:\'\"\,\.\<\>\/\?\s]+)/g,
+    wordPattern: /(-?\d*\.\d\w*)|([^`~!#%^&*()\-=+[{\]}\\|;:'",.<>/?\s]+)/g,
     comments: {
       lineComment: "//",
       blockComment: ["/*", "*/"]
@@ -158,7 +158,7 @@ define("vs/kotlin-CSDqhv6t", ["exports"], (function(exports) {
       "_"
     ],
     // we include these common regular expressions
-    symbols: /[=><!~?:&|+\-*\/\^%]+/,
+    symbols: /[=><!~?:&|+\-*/^%]+/,
     escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
     digits: /\d+(_+\d+)*/,
     octaldigits: /[0-7]+(_+[0-7]+)*/,
@@ -168,7 +168,7 @@ define("vs/kotlin-CSDqhv6t", ["exports"], (function(exports) {
     tokenizer: {
       root: [
         // class name highlighting
-        [/[A-Z][\w\$]*/, "type.identifier"],
+        [/[A-Z][\w$]*/, "type.identifier"],
         // identifiers and keywords
         [
           /[a-zA-Z_$][\w$]*/,
@@ -182,7 +182,7 @@ define("vs/kotlin-CSDqhv6t", ["exports"], (function(exports) {
         // whitespace
         { include: "@whitespace" },
         // delimiters and operators
-        [/[{}()\[\]]/, "@brackets"],
+        [/[{}()[\]]/, "@brackets"],
         [/[<>](?!@symbols)/, "@brackets"],
         [
           /@symbols/,
@@ -194,10 +194,10 @@ define("vs/kotlin-CSDqhv6t", ["exports"], (function(exports) {
           }
         ],
         // @ annotations.
-        [/@\s*[a-zA-Z_\$][\w\$]*/, "annotation"],
+        [/@\s*[a-zA-Z_$][\w$]*/, "annotation"],
         // numbers
-        [/(@digits)[eE]([\-+]?(@digits))?[fF]?/, "number.float"],
-        [/(@digits)?\.(@digits)([eE][\-+]?(@digits))?[fF]?/, "number.float"],
+        [/(@digits)[eE]([-+]?(@digits))?[fF]?/, "number.float"],
+        [/(@digits)?\.(@digits)([eE][-+]?(@digits))?[fF]?/, "number.float"],
         [/0[xX](@hexdigits)[uU]?L?/, "number.hex"],
         [/0[bB](@binarydigits)[uU]?L?/, "number.binary"],
         [/(@digits)[fF]/, "number.float"],
@@ -221,18 +221,18 @@ define("vs/kotlin-CSDqhv6t", ["exports"], (function(exports) {
         [/\/\/.*$/, "comment"]
       ],
       comment: [
-        [/[^\/*]+/, "comment"],
+        [/[^/*]+/, "comment"],
         [/\/\*/, "comment", "@comment"],
         [/\*\//, "comment", "@pop"],
-        [/[\/*]/, "comment"]
+        [/[/*]/, "comment"]
       ],
       //Identical copy of comment above, except for the addition of .doc
       javadoc: [
-        [/[^\/*]+/, "comment.doc"],
+        [/[^/*]+/, "comment.doc"],
         [/\/\*/, "comment.doc", "@push"],
         [/\/\*/, "comment.doc.invalid"],
         [/\*\//, "comment.doc", "@pop"],
-        [/[\/*]/, "comment.doc"]
+        [/[/*]/, "comment.doc"]
       ],
       string: [
         [/[^\\"]+/, "string"],

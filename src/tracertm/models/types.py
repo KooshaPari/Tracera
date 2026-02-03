@@ -24,5 +24,4 @@ class JSONType(TypeDecorator[dict[str, Any]]):
         """Load the appropriate type for the dialect."""
         if dialect.name == "postgresql":
             return dialect.type_descriptor(JSONB())
-        else:
-            return dialect.type_descriptor(JSON())
+        return dialect.type_descriptor(JSON())

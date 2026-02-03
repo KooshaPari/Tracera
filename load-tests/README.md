@@ -6,16 +6,16 @@ Comprehensive performance testing suite for TraceRTM using k6.
 
 ```bash
 # 1. Install k6
-./scripts/install_k6.sh
+./scripts/shell/install_k6.sh
 
 # 2. Start backend services
 docker-compose up -d
 
 # 3. Run all tests
-./scripts/run_load_tests.sh
+./scripts/shell/run_load_tests.sh
 
 # 4. View results
-open load-test-results/report.html
+open load-tests/results/report.html
 ```
 
 ## Test Files
@@ -81,7 +81,7 @@ k6 run load-tests/go-items.js
 
 ```bash
 # Go Items CRUD
-k6 run --out json=load-test-results/go-items.json load-tests/go-items.js
+k6 run --out json=load-tests/results/go-items.json load-tests/go-items.js
 
 # View summary
 k6 run load-tests/go-items.js

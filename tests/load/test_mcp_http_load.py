@@ -13,11 +13,9 @@ from __future__ import annotations
 import asyncio
 import time
 from typing import Any
-from concurrent.futures import ThreadPoolExecutor, as_completed
 
-import pytest
 import httpx
-
+import pytest
 
 # ============================================================================
 # Configuration
@@ -37,50 +35,30 @@ TEST_DURATION = 60  # seconds
 @pytest.fixture
 def auth_headers():
     """Return auth headers for load testing."""
-    return {
-        "Authorization": f"Bearer {TEST_TOKEN}",
-        "Content-Type": "application/json"
-    }
+    return {"Authorization": f"Bearer {TEST_TOKEN}", "Content-Type": "application/json"}
 
 
 @pytest.fixture
 def sample_requests():
     """Return sample requests for load testing."""
     return [
-        {
-            "jsonrpc": "2.0",
-            "method": "tools/list",
-            "params": {},
-            "id": 1
-        },
+        {"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1},
         {
             "jsonrpc": "2.0",
             "method": "tools/call",
-            "params": {
-                "name": "project_manage",
-                "arguments": {"action": "list"}
-            },
-            "id": 2
+            "params": {"name": "project_manage", "arguments": {"action": "list"}},
+            "id": 2,
         },
         {
             "jsonrpc": "2.0",
             "method": "tools/call",
             "params": {
                 "name": "item_manage",
-                "arguments": {
-                    "action": "create",
-                    "title": "Load Test Item",
-                    "item_type": "feature"
-                }
+                "arguments": {"action": "create", "title": "Load Test Item", "item_type": "feature"},
             },
-            "id": 3
+            "id": 3,
         },
-        {
-            "jsonrpc": "2.0",
-            "method": "resources/list",
-            "params": {},
-            "id": 4
-        }
+        {"jsonrpc": "2.0", "method": "resources/list", "params": {}, "id": 4},
     ]
 
 
@@ -90,9 +68,7 @@ def sample_requests():
 
 
 async def make_request(
-    client: httpx.AsyncClient,
-    request_data: dict[str, Any],
-    headers: dict[str, str]
+    client: httpx.AsyncClient, request_data: dict[str, Any], headers: dict[str, str]
 ) -> tuple[int, float]:
     """Make a single HTTP request and measure response time.
 
@@ -104,7 +80,7 @@ async def make_request(
         response = await client.post("/messages", json=request_data, headers=headers)
         duration = (time.time() - start) * 1000  # Convert to ms
         return (response.status_code, duration)
-    except Exception as e:
+    except Exception:
         duration = (time.time() - start) * 1000
         return (-1, duration)
 
@@ -120,7 +96,7 @@ def calculate_percentiles(values: list[float]) -> dict[str, float]:
     return {
         "p50": sorted_values[int(n * 0.50)],
         "p95": sorted_values[int(n * 0.95)],
-        "p99": sorted_values[int(n * 0.99)]
+        "p99": sorted_values[int(n * 0.99)],
     }
 
 
@@ -134,24 +110,12 @@ class TestConcurrentRequests:
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("concurrent_count", [1, 5, 10, 25])
-    async def test_concurrent_tools_list(
-        self,
-        auth_headers,
-        concurrent_count
-    ):
+    async def test_concurrent_tools_list(self, auth_headers, concurrent_count):
         """Test concurrent tools/list requests."""
-        request_data = {
-            "jsonrpc": "2.0",
-            "method": "tools/list",
-            "params": {},
-            "id": 1
-        }
+        request_data = {"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}
 
         async with httpx.AsyncClient(base_url=MCP_BASE_URL, timeout=30.0) as client:
-            tasks = [
-                make_request(client, request_data, auth_headers)
-                for _ in range(concurrent_count)
-            ]
+            tasks = [make_request(client, request_data, auth_headers) for _ in range(concurrent_count)]
 
             results = await asyncio.gather(*tasks, return_exceptions=True)
 
@@ -163,20 +127,17 @@ class TestConcurrentRequests:
             print(f"  Successful: {len(successful)}/{concurrent_count}")
             if response_times:
                 percentiles = calculate_percentiles(response_times)
-                print(f"  Response times: p50={percentiles['p50']:.2f}ms, "
-                      f"p95={percentiles['p95']:.2f}ms, p99={percentiles['p99']:.2f}ms")
+                print(
+                    f"  Response times: p50={percentiles['p50']:.2f}ms, "
+                    f"p95={percentiles['p95']:.2f}ms, p99={percentiles['p99']:.2f}ms"
+                )
 
             # Assertions
             assert len(successful) >= concurrent_count * 0.95  # 95% success rate
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("concurrent_count", [1, 5, 10])
-    async def test_concurrent_tool_calls(
-        self,
-        auth_headers,
-        sample_requests,
-        concurrent_count
-    ):
+    async def test_concurrent_tool_calls(self, auth_headers, sample_requests, concurrent_count):
         """Test concurrent tool call requests."""
         async with httpx.AsyncClient(base_url=MCP_BASE_URL, timeout=30.0) as client:
             tasks = []
@@ -195,8 +156,10 @@ class TestConcurrentRequests:
             print(f"  Successful: {len(successful)}/{concurrent_count}")
             if response_times:
                 percentiles = calculate_percentiles(response_times)
-                print(f"  Response times: p50={percentiles['p50']:.2f}ms, "
-                      f"p95={percentiles['p95']:.2f}ms, p99={percentiles['p99']:.2f}ms")
+                print(
+                    f"  Response times: p50={percentiles['p50']:.2f}ms, "
+                    f"p95={percentiles['p95']:.2f}ms, p99={percentiles['p99']:.2f}ms"
+                )
 
             assert len(successful) >= concurrent_count * 0.90  # 90% success rate
 
@@ -212,12 +175,7 @@ class TestResponseTime:
     @pytest.mark.asyncio
     async def test_response_time_baseline(self, auth_headers):
         """Test baseline response time with no load."""
-        request_data = {
-            "jsonrpc": "2.0",
-            "method": "tools/list",
-            "params": {},
-            "id": 1
-        }
+        request_data = {"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}
 
         async with httpx.AsyncClient(base_url=MCP_BASE_URL, timeout=10.0) as client:
             # Make 10 sequential requests
@@ -229,7 +187,7 @@ class TestResponseTime:
             avg_time = sum(response_times) / len(response_times)
             percentiles = calculate_percentiles(response_times)
 
-            print(f"\nBaseline response times:")
+            print("\nBaseline response times:")
             print(f"  Average: {avg_time:.2f}ms")
             print(f"  p50: {percentiles['p50']:.2f}ms")
             print(f"  p95: {percentiles['p95']:.2f}ms")
@@ -240,21 +198,13 @@ class TestResponseTime:
     @pytest.mark.asyncio
     async def test_response_time_degradation(self, auth_headers):
         """Test response time degradation under increasing load."""
-        request_data = {
-            "jsonrpc": "2.0",
-            "method": "tools/list",
-            "params": {},
-            "id": 1
-        }
+        request_data = {"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}
 
         results_by_load = {}
 
         for concurrent_count in [1, 10, 25, 50]:
             async with httpx.AsyncClient(base_url=MCP_BASE_URL, timeout=30.0) as client:
-                tasks = [
-                    make_request(client, request_data, auth_headers)
-                    for _ in range(concurrent_count)
-                ]
+                tasks = [make_request(client, request_data, auth_headers) for _ in range(concurrent_count)]
 
                 results = await asyncio.gather(*tasks, return_exceptions=True)
                 response_times = [r[1] for r in results if isinstance(r, tuple)]
@@ -262,15 +212,11 @@ class TestResponseTime:
                 if response_times:
                     avg_time = sum(response_times) / len(response_times)
                     percentiles = calculate_percentiles(response_times)
-                    results_by_load[concurrent_count] = {
-                        "avg": avg_time,
-                        "p95": percentiles["p95"]
-                    }
+                    results_by_load[concurrent_count] = {"avg": avg_time, "p95": percentiles["p95"]}
 
         print("\nResponse time degradation:")
         for load, metrics in results_by_load.items():
-            print(f"  {load} concurrent: avg={metrics['avg']:.2f}ms, "
-                  f"p95={metrics['p95']:.2f}ms")
+            print(f"  {load} concurrent: avg={metrics['avg']:.2f}ms, p95={metrics['p95']:.2f}ms")
 
         # p95 should stay reasonable even under load
         if 50 in results_by_load:
@@ -288,25 +234,13 @@ class TestConnectionPool:
     @pytest.mark.asyncio
     async def test_connection_pool_limits(self, auth_headers):
         """Test connection pool limit handling."""
-        request_data = {
-            "jsonrpc": "2.0",
-            "method": "tools/list",
-            "params": {},
-            "id": 1
-        }
+        request_data = {"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}
 
         # Create client with limited pool
         limits = httpx.Limits(max_keepalive_connections=5, max_connections=10)
-        async with httpx.AsyncClient(
-            base_url=MCP_BASE_URL,
-            timeout=30.0,
-            limits=limits
-        ) as client:
+        async with httpx.AsyncClient(base_url=MCP_BASE_URL, timeout=30.0, limits=limits) as client:
             # Make more requests than pool size
-            tasks = [
-                make_request(client, request_data, auth_headers)
-                for _ in range(20)
-            ]
+            tasks = [make_request(client, request_data, auth_headers) for _ in range(20)]
 
             results = await asyncio.gather(*tasks, return_exceptions=True)
 
@@ -319,17 +253,12 @@ class TestConnectionPool:
     @pytest.mark.asyncio
     async def test_connection_reuse(self, auth_headers):
         """Test connection reuse efficiency."""
-        request_data = {
-            "jsonrpc": "2.0",
-            "method": "tools/list",
-            "params": {},
-            "id": 1
-        }
+        request_data = {"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}
 
         async with httpx.AsyncClient(base_url=MCP_BASE_URL, timeout=10.0) as client:
             # Make sequential requests (should reuse connection)
             response_times = []
-            for i in range(10):
+            for _i in range(10):
                 _, duration = await make_request(client, request_data, auth_headers)
                 response_times.append(duration)
 
@@ -338,7 +267,7 @@ class TestConnectionPool:
             first_request = response_times[0]
             avg_subsequent = sum(response_times[1:]) / len(response_times[1:])
 
-            print(f"\nConnection reuse:")
+            print("\nConnection reuse:")
             print(f"  First request: {first_request:.2f}ms")
             print(f"  Avg subsequent: {avg_subsequent:.2f}ms")
 
@@ -359,12 +288,7 @@ class TestResourceLeaks:
     @pytest.mark.slow
     async def test_sustained_load_no_leaks(self, auth_headers):
         """Test sustained load for resource leaks."""
-        request_data = {
-            "jsonrpc": "2.0",
-            "method": "tools/list",
-            "params": {},
-            "id": 1
-        }
+        request_data = {"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}
 
         # Run for 30 seconds
         duration = 30
@@ -399,12 +323,7 @@ class TestResourceLeaks:
         # This would ideally monitor memory usage
         # For now, just verify requests complete without errors
 
-        request_data = {
-            "jsonrpc": "2.0",
-            "method": "tools/list",
-            "params": {},
-            "id": 1
-        }
+        request_data = {"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}
 
         async with httpx.AsyncClient(base_url=MCP_BASE_URL, timeout=10.0) as client:
             # Make many requests
@@ -426,12 +345,7 @@ class TestThroughput:
     @pytest.mark.asyncio
     async def test_max_throughput(self, auth_headers):
         """Test maximum throughput (requests per second)."""
-        request_data = {
-            "jsonrpc": "2.0",
-            "method": "tools/list",
-            "params": {},
-            "id": 1
-        }
+        request_data = {"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}
 
         test_duration = 10  # seconds
         concurrent_requests = 10
@@ -442,10 +356,7 @@ class TestThroughput:
 
             while time.time() - start_time < test_duration:
                 # Make batch of concurrent requests
-                tasks = [
-                    make_request(client, request_data, auth_headers)
-                    for _ in range(concurrent_requests)
-                ]
+                tasks = [make_request(client, request_data, auth_headers) for _ in range(concurrent_requests)]
 
                 results = await asyncio.gather(*tasks, return_exceptions=True)
                 request_count += len([r for r in results if isinstance(r, tuple)])
@@ -453,7 +364,7 @@ class TestThroughput:
             elapsed = time.time() - start_time
             throughput = request_count / elapsed
 
-            print(f"\nThroughput test:")
+            print("\nThroughput test:")
             print(f"  Total requests: {request_count}")
             print(f"  Duration: {elapsed:.2f}s")
             print(f"  Throughput: {throughput:.2f} req/s")
@@ -474,18 +385,9 @@ class TestErrorScenarios:
     async def test_invalid_requests_under_load(self, auth_headers):
         """Test handling invalid requests under load."""
         # Mix of valid and invalid requests
-        valid_request = {
-            "jsonrpc": "2.0",
-            "method": "tools/list",
-            "params": {},
-            "id": 1
-        }
+        valid_request = {"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}
 
-        invalid_request = {
-            "jsonrpc": "2.0",
-            "method": "invalid_method",
-            "id": 2
-        }
+        invalid_request = {"jsonrpc": "2.0", "method": "invalid_method", "id": 2}
 
         async with httpx.AsyncClient(base_url=MCP_BASE_URL, timeout=10.0) as client:
             tasks = []
@@ -502,12 +404,7 @@ class TestErrorScenarios:
     @pytest.mark.asyncio
     async def test_timeout_handling(self, auth_headers):
         """Test timeout handling."""
-        request_data = {
-            "jsonrpc": "2.0",
-            "method": "tools/list",
-            "params": {},
-            "id": 1
-        }
+        request_data = {"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}
 
         # Very short timeout
         async with httpx.AsyncClient(base_url=MCP_BASE_URL, timeout=0.1) as client:

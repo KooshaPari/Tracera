@@ -67,4 +67,4 @@ type _ArrayTail<TArray extends UnknownArray> = TArray extends readonly [unknown?
 		: Tail
 	: [];
 
-export {};
+

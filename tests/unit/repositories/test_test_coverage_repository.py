@@ -4,19 +4,20 @@ Tests for TestCoverageRepository.
 Comprehensive test coverage for test coverage traceability operations.
 """
 
-import pytest
-import pytest_asyncio
-from datetime import datetime, timezone
+from datetime import datetime
 from uuid import uuid4
 
+import pytest
+import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from tracertm.models import test_case as tc_models
+from tracertm.models import test_coverage as cov_models
 
 # Use module-qualified imports to avoid pytest collection issues with Test* classes
 from tracertm.repositories import test_coverage_repository as tc_repo
-from tracertm.repositories.project_repository import ProjectRepository
 from tracertm.repositories.item_repository import ItemRepository
-from tracertm.models import test_case as tc_models
-from tracertm.models import test_coverage as cov_models
+from tracertm.repositories.project_repository import ProjectRepository
 
 # Aliases
 CoverageRepository = tc_repo.TestCoverageRepository
@@ -35,10 +36,7 @@ class TestCoverageRepositoryCreate:
         """Create project, test case, and requirement for coverage tests."""
         # Create project
         project_repo = ProjectRepository(db_session)
-        project = await project_repo.create(
-            name="Coverage Test Project",
-            description="Project for testing coverage"
-        )
+        project = await project_repo.create(name="Coverage Test Project", description="Project for testing coverage")
 
         # Create requirement (item)
         item_repo = ItemRepository(db_session)
@@ -310,7 +308,7 @@ class TestCoverageRepositoryList:
 
         # Create different types of coverages
         types = ["direct", "partial", "indirect"]
-        for i, (tc, req, ctype) in enumerate(zip(test_cases, requirements, types)):
+        for _i, (tc, req, ctype) in enumerate(zip(test_cases, requirements, types, strict=True)):
             cov = await repo.create(
                 project_id=project.id,
                 test_case_id=tc.id,
@@ -356,7 +354,7 @@ class TestCoverageRepositoryList:
         repo = CoverageRepository(db_session)
         entities = multiple_coverages
 
-        coverages, total = await repo.list_by_project(
+        coverages, _total = await repo.list_by_project(
             entities["project"].id,
             coverage_type="direct",
         )
@@ -369,7 +367,7 @@ class TestCoverageRepositoryList:
         repo = CoverageRepository(db_session)
         entities = multiple_coverages
 
-        coverages, total = await repo.list_by_project(
+        coverages, _total = await repo.list_by_project(
             entities["project"].id,
             test_case_id=entities["test_cases"][0].id,
         )
@@ -381,7 +379,7 @@ class TestCoverageRepositoryList:
         repo = CoverageRepository(db_session)
         entities = multiple_coverages
 
-        coverages, total = await repo.list_by_project(
+        coverages, _total = await repo.list_by_project(
             entities["project"].id,
             requirement_id=entities["requirements"][0].id,
         )
@@ -435,15 +433,13 @@ class TestCoverageRepositoryUpdate:
         await db_session.flush()
 
         repo = CoverageRepository(db_session)
-        coverage = await repo.create(
+        return await repo.create(
             project_id=project.id,
             test_case_id=test_case.id,
             requirement_id=requirement.id,
             coverage_type="direct",
             coverage_percentage=50,
         )
-
-        return coverage
 
     @pytest.mark.asyncio
     async def test_update_coverage_success(self, db_session: AsyncSession, coverage_for_update):
@@ -538,11 +534,14 @@ class TestCoverageRepositoryUpdate:
         )
 
         assert updated is not None
-        assert updated.last_test_result == "failed"
+        u = updated
+        assert u.last_test_result == "failed"
         # Compare date components (SQLite may strip timezone)
-        assert updated.last_tested_at.year == 2025
-        assert updated.last_tested_at.month == 1
-        assert updated.last_tested_at.day == 15
+        assert u.last_tested_at is not None
+        dt = u.last_tested_at
+        assert dt.year == 2025
+        assert dt.month == 1
+        assert dt.day == 15
 
     @pytest.mark.asyncio
     async def test_update_test_result_not_found(self, db_session: AsyncSession):
@@ -581,14 +580,12 @@ class TestCoverageRepositoryDelete:
         await db_session.flush()
 
         repo = CoverageRepository(db_session)
-        coverage = await repo.create(
+        return await repo.create(
             project_id=project.id,
             test_case_id=test_case.id,
             requirement_id=requirement.id,
             coverage_type="direct",
         )
-
-        return coverage
 
     @pytest.mark.asyncio
     async def test_delete_coverage_success(self, db_session: AsyncSession, coverage_for_delete):

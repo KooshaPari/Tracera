@@ -10,7 +10,7 @@ Prism.languages.clojure = {
 	},
 	'char': /\\\w+/,
 	'symbol': {
-		pattern: /(^|[\s()\[\]{},])::?[\w*+!?'<>=/.-]+/,
+		pattern: /(^|[\s()[\]{},])::?[\w*+!?'<>=/.-]+/,
 		lookbehind: true
 	},
 	'keyword': {
@@ -27,5 +27,5 @@ Prism.languages.clojure = {
 		lookbehind: true
 	},
 	'operator': /[#@^`~]/,
-	'punctuation': /[{}\[\](),]/
+	'punctuation': /[{}[\](),]/
 };

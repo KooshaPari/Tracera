@@ -8,7 +8,7 @@ Items represent traceable artifacts: requirements, features, tests, etc.
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from fastmcp.exceptions import ToolError
@@ -16,6 +16,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm.exc import StaleDataError
 
 from tracertm.mcp.core import mcp
+from tracertm.mcp.tools.base import get_session
 from tracertm.mcp.tools.base_async import (
     get_mcp_session,
     require_project,
@@ -82,9 +83,7 @@ async def create_item(
     async with get_mcp_session() as session:
         # Generate external ID
         count_result = await session.execute(
-            select(func.count(Item.id)).filter(
-                Item.project_id == project_id, Item.view == view
-            )
+            select(func.count(Item.id)).filter(Item.project_id == project_id, Item.view == view)
         )
         count = count_result.scalar()
         external_id = f"{view[:3].upper()}-{count + 1}"
@@ -102,8 +101,8 @@ async def create_item(
             owner=owner,
             parent_id=parent_id,
             item_metadata=metadata or {},
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
         )
         session.add(item)
         await session.commit()
@@ -185,18 +184,17 @@ async def update_item(
     if not item_id:
         raise ToolError("item_id is required.")
 
-    project_id = require_project()
+    project_id = await require_project()
 
     with get_session() as session:
         item = (
-            session.query(Item)
+            session
+            .query(Item)
             .filter(
                 Item.project_id == project_id,
                 Item.deleted_at.is_(None),
             )
-            .filter(
-                (Item.id == item_id) | (Item.external_id.ilike(f"{item_id}%"))
-            )
+            .filter((Item.id == item_id) | (Item.external_id.ilike(f"{item_id}%")))
             .first()
         )
 
@@ -220,13 +218,13 @@ async def update_item(
             current.update(metadata)
             item.item_metadata = current
 
-        item.updated_at = datetime.utcnow()
+        item.updated_at = datetime.now(UTC)
 
         try:
             session.commit()
-        except StaleDataError:
+        except StaleDataError as err:
             session.rollback()
-            raise ToolError("Item was modified by another process. Please retry.")
+            raise ToolError("Item was modified by another process. Please retry.") from err
 
         return wrap_success(_item_to_dict(item), "update", ctx)
 
@@ -247,26 +245,25 @@ async def delete_item(
     if not item_id:
         raise ToolError("item_id is required.")
 
-    project_id = require_project()
+    project_id = await require_project()
 
     with get_session() as session:
         item = (
-            session.query(Item)
+            session
+            .query(Item)
             .filter(
                 Item.project_id == project_id,
                 Item.deleted_at.is_(None),
             )
-            .filter(
-                (Item.id == item_id) | (Item.external_id.ilike(f"{item_id}%"))
-            )
+            .filter((Item.id == item_id) | (Item.external_id.ilike(f"{item_id}%")))
             .first()
         )
 
         if not item:
             raise ToolError(f"Item not found: {item_id}")
 
-        item.deleted_at = datetime.utcnow()
-        item.updated_at = datetime.utcnow()
+        item.deleted_at = datetime.now(UTC)
+        item.updated_at = datetime.now(UTC)
         session.commit()
 
         return wrap_success(
@@ -297,7 +294,7 @@ async def query_items(
     Returns:
         List of matching items
     """
-    project_id = require_project()
+    project_id = await require_project()
     limit = min(limit, 500)
 
     with get_session() as session:
@@ -344,13 +341,14 @@ async def summarize_view(
     if not view:
         raise ToolError("view is required.")
 
-    project_id = require_project()
+    project_id = await require_project()
     view = view.upper()
 
     with get_session() as session:
         # Get counts by status
         status_counts = (
-            session.query(Item.status, func.count(Item.id))
+            session
+            .query(Item.status, func.count(Item.id))
             .filter(
                 Item.project_id == project_id,
                 Item.view == view,
@@ -362,7 +360,8 @@ async def summarize_view(
 
         # Get sample items
         samples = (
-            session.query(Item)
+            session
+            .query(Item)
             .filter(
                 Item.project_id == project_id,
                 Item.view == view,
@@ -376,7 +375,7 @@ async def summarize_view(
         return wrap_success(
             {
                 "view": view,
-                "status_counts": {status: count for status, count in status_counts},
+                "status_counts": dict(status_counts),
                 "total": sum(count for _, count in status_counts),
                 "samples": [_item_to_dict(i) for i in samples],
             },
@@ -405,7 +404,7 @@ async def bulk_update_items(
     if not new_status:
         raise ToolError("new_status is required.")
 
-    project_id = require_project()
+    project_id = await require_project()
 
     with get_session() as session:
         query = session.query(Item).filter(
@@ -423,7 +422,7 @@ async def bulk_update_items(
 
         for item in items:
             item.status = new_status
-            item.updated_at = datetime.utcnow()
+            item.updated_at = datetime.now(UTC)
             count += 1
 
         session.commit()
@@ -440,11 +439,11 @@ async def bulk_update_items(
 
 
 __all__ = [
+    "bulk_update_items",
     "create_item",
-    "get_item",
-    "update_item",
     "delete_item",
+    "get_item",
     "query_items",
     "summarize_view",
-    "bulk_update_items",
+    "update_item",
 ]

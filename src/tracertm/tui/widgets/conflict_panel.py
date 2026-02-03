@@ -24,6 +24,7 @@ except ImportError:
         from textual.message import Message
         from textual.widgets import Button, DataTable, Label, Static
     else:
+
         class Container:
             pass
 
@@ -214,38 +215,24 @@ if TEXTUAL_AVAILABLE:
             if differences["added"]:
                 lines.append(f"  Added in remote: {', '.join(differences['added'])}")
             if differences["removed"]:
-                lines.append(
-                    f"  Removed in remote: {', '.join(differences['removed'])}"
-                )
+                lines.append(f"  Removed in remote: {', '.join(differences['removed'])}")
 
             detail_content.update("\n".join(lines))
 
         def action_resolve_local(self) -> None:
             """Resolve conflict using local version."""
             if self.selected_conflict:
-                self.post_message(
-                    self.ConflictResolved(
-                        conflict=self.selected_conflict, strategy="local"
-                    )
-                )
+                self.post_message(self.ConflictResolved(conflict=self.selected_conflict, strategy="local"))
 
         def action_resolve_remote(self) -> None:
             """Resolve conflict using remote version."""
             if self.selected_conflict:
-                self.post_message(
-                    self.ConflictResolved(
-                        conflict=self.selected_conflict, strategy="remote"
-                    )
-                )
+                self.post_message(self.ConflictResolved(conflict=self.selected_conflict, strategy="remote"))
 
         def action_resolve_manual(self) -> None:
             """Resolve conflict manually."""
             if self.selected_conflict:
-                self.post_message(
-                    self.ConflictResolved(
-                        conflict=self.selected_conflict, strategy="manual"
-                    )
-                )
+                self.post_message(self.ConflictResolved(conflict=self.selected_conflict, strategy="manual"))
 
         def action_close(self) -> None:
             """Close the conflict panel."""
@@ -279,8 +266,53 @@ if TEXTUAL_AVAILABLE:
 
 
 if not TEXTUAL_AVAILABLE:
-    # Fallback when Textual is not available
+    # Fallback when Textual is not available (stub for type checker)
     class ConflictPanel:  # type: ignore[no-redef]
         """Placeholder when Textual is not installed."""
 
-        pass
+        BINDINGS: ClassVar[list] = []
+        conflicts: list
+        selected_conflict: object | None
+
+        def __init__(self, conflicts: list | None = None, *args: object, **kwargs: object) -> None:
+            self.conflicts = conflicts or []
+            self.selected_conflict = None
+
+        def compose(self):  # type: ignore[no-untyped-def]
+            return iter(())
+
+        def on_mount(self) -> None:
+            pass
+
+        def refresh_conflict_list(self) -> None:
+            pass
+
+        def on_data_table_row_selected(self, event: object) -> None:
+            pass
+
+        def show_conflict_detail(self, conflict: object) -> None:
+            pass
+
+        def action_resolve_local(self) -> None:
+            pass
+
+        def action_resolve_remote(self) -> None:
+            pass
+
+        def action_resolve_manual(self) -> None:
+            pass
+
+        def action_close(self) -> None:
+            pass
+
+        def on_button_pressed(self, event: object) -> None:
+            pass
+
+        def post_message(self, message: object) -> None:
+            pass
+
+        class ConflictResolved:
+            def __init__(self, conflict: object, strategy: str) -> None: ...
+
+        class ConflictPanelClosed:
+            def __init__(self) -> None: ...

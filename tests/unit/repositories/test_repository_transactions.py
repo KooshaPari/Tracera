@@ -7,7 +7,6 @@ from tracertm.repositories.item_repository import ItemRepository
 from tracertm.repositories.link_repository import LinkRepository
 from tracertm.repositories.project_repository import ProjectRepository
 
-
 # Use link_test_setup fixture for link-related tests
 pytestmark = pytest.mark.usefixtures("link_test_setup")
 
@@ -238,18 +237,24 @@ async def test_project_update_partial_fields(db_session: AsyncSession):
 
     # Update only name
     updated = await project_repo.update(project.id, name="New Name")
-    assert updated.name == "New Name"
-    assert updated.description == "Original Description"
-    assert updated.metadata == {"key": "value"}
+    assert updated is not None
+    u = updated
+    assert u.name == "New Name"
+    assert u.description == "Original Description"
+    assert u.metadata == {"key": "value"}
 
     # Update only description
     updated = await project_repo.update(project.id, description="New Description")
-    assert updated.name == "New Name"
-    assert updated.description == "New Description"
-    assert updated.metadata == {"key": "value"}
+    assert updated is not None
+    u = updated
+    assert u.name == "New Name"
+    assert u.description == "New Description"
+    assert u.metadata == {"key": "value"}
 
     # Update only metadata
     updated = await project_repo.update(project.id, metadata={"new": "data"})
-    assert updated.name == "New Name"
-    assert updated.description == "New Description"
-    assert updated.metadata == {"new": "data"}
+    assert updated is not None
+    u = updated
+    assert u.name == "New Name"
+    assert u.description == "New Description"
+    assert u.metadata == {"new": "data"}

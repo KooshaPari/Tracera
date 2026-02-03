@@ -57,7 +57,7 @@
 			pattern: /\b[a-z_]\w*(?=\s*\()/i,
 			alias: 'function'
 		},
-		'punctuation': /::|[()\[\]{},:;]|\.(?=\s*[\[\w$])/,
+		'punctuation': /::|[()[\]{},:;]|\.(?=\s*[[\w$])/,
 		'dot': {
 			pattern: /\./,
 			alias: 'important'

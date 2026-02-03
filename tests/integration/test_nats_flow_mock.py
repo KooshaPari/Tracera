@@ -1,7 +1,6 @@
 """Integration tests for NATS event flow between Go and Python backends - Simple Mock Version."""
 
 import asyncio
-from typing import List
 
 import pytest
 import pytest_asyncio
@@ -13,7 +12,7 @@ class MockNATSClient:
     def __init__(self, nats_url: str):
         self.nats_url = nats_url
         self.connected = False
-        self.published_messages: List[dict] = []
+        self.published_messages: list[dict] = []
         self.subscriptions: dict[str, list] = {}
 
     async def connect(self):
@@ -30,9 +29,7 @@ class MockNATSClient:
 
     async def publish(self, subject: str, data: dict):
         """Mock publish - store message for verification."""
-        self.published_messages.append(
-            {"subject": subject, "data": data, "timestamp": asyncio.get_event_loop().time()}
-        )
+        self.published_messages.append({"subject": subject, "data": data, "timestamp": asyncio.get_event_loop().time()})
 
     async def subscribe(self, subject: str, consumer_name: str, handler):
         """Mock subscribe - register handler."""
@@ -53,9 +50,7 @@ class MockEventBus:
     def __init__(self, nats_client: MockNATSClient):
         self.nats = nats_client
 
-    async def publish(
-        self, event_type: str, project_id: str, entity_id: str, entity_type: str, payload: dict
-    ):
+    async def publish(self, event_type: str, project_id: str, entity_id: str, entity_type: str, payload: dict):
         """Publish event to NATS."""
         subject = f"tracertm.events.{entity_type}.{event_type}"
         data = {
@@ -181,7 +176,9 @@ async def test_bidirectional_flow(nats_client: MockNATSClient, event_bus: MockEv
         "changes": {"status": "approved"},
     }
     await nats_client.trigger_subscription("tracertm.bridge.go.*.item.updated", go_event)
-    await nats_client.trigger_subscription("tracertm.events.specification.analyzed", nats_client.published_messages[0]["data"])
+    await nats_client.trigger_subscription(
+        "tracertm.events.specification.analyzed", nats_client.published_messages[0]["data"]
+    )
     await asyncio.sleep(0.1)
 
     assert len(go_events_received) == 1

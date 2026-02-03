@@ -18,4 +18,4 @@ type CreateWithEqualityFn = {
     <T>(): <Mos extends [StoreMutatorIdentifier, unknown][] = []>(initializer: StateCreator<T, [], Mos>, defaultEqualityFn?: <U>(a: U, b: U) => boolean) => UseBoundStoreWithEqualityFn<Mutate<StoreApi<T>, Mos>>;
 };
 export declare const createWithEqualityFn: CreateWithEqualityFn;
-export {};
+

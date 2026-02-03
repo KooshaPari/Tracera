@@ -1,7 +1,8 @@
 """Agent coordination service for TraceRTM."""
 
+import uuid
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -43,14 +44,15 @@ class AgentCoordinationService:
 
     async def register_agent(
         self,
-        project_id: str,
+        project_id: str | uuid.UUID,
         name: str,
         agent_type: str,
         metadata: dict[str, Any] | None = None,
     ) -> Agent:
         """Register a new agent."""
+        pid = str(project_id) if isinstance(project_id, uuid.UUID) else project_id
         agent = await self.agents.create(
-            project_id=project_id,
+            project_id=pid,
             name=name,
             agent_type=agent_type,
             metadata=metadata,
@@ -58,12 +60,12 @@ class AgentCoordinationService:
 
         # Log registration event
         await self.events.log(
-            project_id=project_id,
+            project_id=pid,
             event_type="agent_registered",
             entity_type="agent",
-            entity_id=agent.id,
+            entity_id=str(agent.id),
             data={"name": name, "type": agent_type},
-            agent_id=agent.id,
+            agent_id=str(agent.id),
         )
 
         return agent
@@ -91,8 +93,8 @@ class AgentCoordinationService:
                     if abs((time1 - time2).total_seconds()) < 60:
                         conflicts.append(
                             AgentConflict(
-                                agent1_id=agent1.id,
-                                agent2_id=agent2.id,
+                                agent1_id=str(agent1.id),
+                                agent2_id=str(agent2.id),
                                 conflict_type="concurrent_activity",
                                 entity_id="unknown",
                                 description=f"Agents {agent1.name} and {agent2.name} have concurrent activity",
@@ -117,12 +119,8 @@ class AgentCoordinationService:
         # Apply resolution strategy
         if strategy == "last_write_wins":
             # Determine which agent wrote last
-            time1 = datetime.fromisoformat(
-                agent1.last_activity_at or "1970-01-01T00:00:00"
-            )
-            time2 = datetime.fromisoformat(
-                agent2.last_activity_at or "1970-01-01T00:00:00"
-            )
+            time1 = datetime.fromisoformat(agent1.last_activity_at or "1970-01-01T00:00:00")
+            time2 = datetime.fromisoformat(agent2.last_activity_at or "1970-01-01T00:00:00")
 
             if time1 > time2:
                 winner_id = agent1.id
@@ -155,19 +153,20 @@ class AgentCoordinationService:
 
         return ConflictResolution(
             resolved=True,
-            winner_agent_id=winner_id,
-            loser_agent_id=loser_id,
+            winner_agent_id=str(winner_id),
+            loser_agent_id=str(loser_id),
             resolution_strategy=strategy,
-            timestamp=datetime.utcnow().isoformat(),
+            timestamp=datetime.now(UTC).isoformat(),
         )
 
     async def get_agent_activity(
         self,
-        agent_id: str,
+        agent_id: str | uuid.UUID,
         limit: int = 100,
     ) -> list[dict[str, Any]]:
         """Get activity history for an agent."""
-        events = await self.events.get_by_agent(agent_id)
+        aid = str(agent_id) if isinstance(agent_id, uuid.UUID) else agent_id
+        events = await self.events.get_by_agent(aid)
 
         return [
             {

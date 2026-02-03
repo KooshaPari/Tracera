@@ -14,13 +14,10 @@ Tests for:
 
 import asyncio
 import time
-from unittest.mock import AsyncMock, MagicMock, patch
-from typing import Any
 
 import pytest
 
 from tracertm.core.concurrency import ConcurrencyError, update_with_retry
-
 
 # ==============================================================================
 # Concurrent API Requests Tests
@@ -33,13 +30,12 @@ class TestConcurrentAPIRequests:
     @pytest.mark.asyncio
     async def test_concurrent_api_requests_success(self):
         """Test multiple concurrent API requests."""
+
         async def make_request(request_id: int) -> dict:
             await asyncio.sleep(0.01)
             return {"id": request_id, "status": "success"}
 
-        results = await asyncio.gather(*[
-            make_request(i) for i in range(5)
-        ])
+        results = await asyncio.gather(*[make_request(i) for i in range(5)])
 
         assert len(results) == 5
         assert all(r["status"] == "success" for r in results)
@@ -58,9 +54,7 @@ class TestConcurrentAPIRequests:
                 return request_id
 
         start = time.time()
-        results = await asyncio.gather(*[
-            limited_request(i) for i in range(6)
-        ])
+        results = await asyncio.gather(*[limited_request(i) for i in range(6)])
         elapsed = time.time() - start
 
         assert results == [0, 1, 2, 3, 4, 5]
@@ -70,15 +64,14 @@ class TestConcurrentAPIRequests:
     @pytest.mark.asyncio
     async def test_concurrent_requests_partial_failure(self):
         """Test concurrent requests where some fail."""
+
         async def request_with_failure(request_id: int) -> dict:
             await asyncio.sleep(0.01)
             if request_id % 2 == 0:
                 raise ValueError(f"Request {request_id} failed")
             return {"id": request_id, "status": "success"}
 
-        results = await asyncio.gather(*[
-            request_with_failure(i) for i in range(4)
-        ], return_exceptions=True)
+        results = await asyncio.gather(*[request_with_failure(i) for i in range(4)], return_exceptions=True)
 
         assert len(results) == 4
         assert isinstance(results[0], ValueError)
@@ -89,23 +82,18 @@ class TestConcurrentAPIRequests:
     @pytest.mark.asyncio
     async def test_concurrent_requests_timeout(self):
         """Test timeout in concurrent requests."""
+
         async def slow_request(request_id: int) -> int:
             await asyncio.sleep(1)
             return request_id
 
         with pytest.raises(asyncio.TimeoutError):
-            await asyncio.wait_for(
-                asyncio.gather(
-                    slow_request(1),
-                    slow_request(2),
-                    slow_request(3)
-                ),
-                timeout=0.1
-            )
+            await asyncio.wait_for(asyncio.gather(slow_request(1), slow_request(2), slow_request(3)), timeout=0.1)
 
     @pytest.mark.asyncio
     async def test_concurrent_api_request_ordering(self):
         """Test that concurrent requests return in completion order."""
+
         async def timed_request(request_id: int, delay: float) -> dict:
             await asyncio.sleep(delay)
             return {"id": request_id, "completed_at": time.time()}
@@ -125,6 +113,7 @@ class TestConcurrentAPIRequests:
     @pytest.mark.asyncio
     async def test_concurrent_requests_cancellation(self):
         """Test cancelling concurrent requests."""
+
         async def cancellable_request(request_id: int) -> int:
             try:
                 await asyncio.sleep(10)
@@ -133,10 +122,7 @@ class TestConcurrentAPIRequests:
                 raise
 
         async def gather_requests():
-            return await asyncio.gather(
-                cancellable_request(1),
-                cancellable_request(2)
-            )
+            return await asyncio.gather(cancellable_request(1), cancellable_request(2))
 
         task = asyncio.create_task(gather_requests())
 
@@ -167,15 +153,14 @@ class TestConcurrentDatabaseOperations:
             return op_id
 
         # Concurrent reads should work
-        await asyncio.gather(*[
-            read_operation(i) for i in range(5)
-        ])
+        await asyncio.gather(*[read_operation(i) for i in range(5)])
 
         assert len(results) == 5
 
     @pytest.mark.asyncio
     async def test_concurrent_writes_with_conflict_resolution(self):
         """Test concurrent writes with conflict detection and resolution."""
+
         class DataStore:
             def __init__(self):
                 self.data = {"version": 1, "value": "initial"}
@@ -192,9 +177,7 @@ class TestConcurrentDatabaseOperations:
         async def concurrent_update(op_id: int) -> bool:
             return await store.update(f"value_{op_id}")
 
-        results = await asyncio.gather(*[
-            concurrent_update(i) for i in range(3)
-        ])
+        results = await asyncio.gather(*[concurrent_update(i) for i in range(3)])
 
         assert all(results)
         assert store.data["version"] == 4  # Initial + 3 updates
@@ -204,21 +187,21 @@ class TestConcurrentDatabaseOperations:
         """Test timeout when acquiring database lock."""
         lock = asyncio.Lock()
 
-        async def lock_operation(timeout: float | None = None) -> bool:
+        async def lock_operation(timeout_sec: float | None = None) -> bool:
             try:
-                async with asyncio.timeout(timeout):
+                async with asyncio.timeout(timeout_sec):
                     async with lock:
                         await asyncio.sleep(0.5)
                         return True
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 return False
 
         # First operation holds the lock
-        task1 = asyncio.create_task(lock_operation(timeout=None))
+        task1 = asyncio.create_task(lock_operation(timeout_sec=None))
         await asyncio.sleep(0.05)
 
         # Second operation times out trying to acquire lock
-        result2 = await lock_operation(timeout=0.1)
+        result2 = await lock_operation(timeout_sec=0.1)
 
         assert result2 is False
         await task1
@@ -226,6 +209,7 @@ class TestConcurrentDatabaseOperations:
     @pytest.mark.asyncio
     async def test_transaction_rollback_on_concurrent_conflict(self):
         """Test transaction rollback when concurrent conflict detected."""
+
         class Transaction:
             def __init__(self):
                 self.state = {"count": 0}
@@ -244,8 +228,8 @@ class TestConcurrentDatabaseOperations:
                 return True
 
         async def transaction_with_retry(tx: Transaction) -> bool:
-            for attempt in range(3):
-                value = await tx.increment()
+            for _attempt in range(3):
+                _ = await tx.increment()
                 if await tx.commit():
                     return True
                 # Reset on conflict
@@ -259,14 +243,13 @@ class TestConcurrentDatabaseOperations:
     @pytest.mark.asyncio
     async def test_concurrent_batch_operations(self):
         """Test concurrent batch database operations."""
+
         async def batch_insert(batch_id: int, item_count: int) -> int:
             # Simulate batch insert
             await asyncio.sleep(0.01)
             return batch_id * item_count
 
-        results = await asyncio.gather(*[
-            batch_insert(i, 10) for i in range(3)
-        ])
+        results = await asyncio.gather(*[batch_insert(i, 10) for i in range(3)])
 
         assert results == [0, 10, 20]
 
@@ -306,6 +289,7 @@ class TestAsyncContextManagers:
     @pytest.mark.asyncio
     async def test_async_context_manager_exception_handling(self):
         """Test async context manager handles exceptions."""
+
         class AsyncResource:
             def __init__(self):
                 self.closed = False
@@ -319,7 +303,7 @@ class TestAsyncContextManagers:
 
         resource = AsyncResource()
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Test error"):
             async with resource:
                 assert not resource.closed
                 raise ValueError("Test error")
@@ -343,19 +327,22 @@ class TestAsyncContextManagers:
                 context_order.append(f"exit_{self.name}")
                 return False
 
-        async with NestedContext("outer"):
-            async with NestedContext("middle"):
-                async with NestedContext("inner"):
-                    pass
+        async with NestedContext("outer"), NestedContext("middle"), NestedContext("inner"):
+            pass
 
         assert context_order == [
-            "enter_outer", "enter_middle", "enter_inner",
-            "exit_inner", "exit_middle", "exit_outer"
+            "enter_outer",
+            "enter_middle",
+            "enter_inner",
+            "exit_inner",
+            "exit_middle",
+            "exit_outer",
         ]
 
     @pytest.mark.asyncio
     async def test_async_context_manager_with_exception_in_exit(self):
         """Test async context manager when exit raises exception."""
+
         class ProblematicContext:
             async def __aenter__(self):
                 return self
@@ -421,9 +408,7 @@ class TestRaceConditions:
             counter = temp + 1
 
         # Run many increments concurrently
-        await asyncio.gather(*[
-            increment_unsafe() for _ in range(100)
-        ])
+        await asyncio.gather(*[increment_unsafe() for _ in range(100)])
 
         # Counter will be less than 100 due to race condition
         assert counter < 100
@@ -441,9 +426,7 @@ class TestRaceConditions:
                 await asyncio.sleep(0.0001)
                 counter = temp + 1
 
-        await asyncio.gather(*[
-            increment_safe() for _ in range(100)
-        ])
+        await asyncio.gather(*[increment_safe() for _ in range(100)])
 
         # Counter should be exactly 100 with lock protection
         assert counter == 100
@@ -451,6 +434,7 @@ class TestRaceConditions:
     @pytest.mark.asyncio
     async def test_race_condition_data_corruption(self):
         """Test data corruption from race conditions."""
+
         class SharedData:
             def __init__(self):
                 self.items = []
@@ -458,7 +442,7 @@ class TestRaceConditions:
             async def add_item_unsafe(self, item: str) -> None:
                 current = self.items.copy()
                 await asyncio.sleep(0.0001)
-                self.items = current + [item]
+                self.items = [*current, item]
 
         data = SharedData()
 
@@ -477,6 +461,7 @@ class TestRaceConditions:
     @pytest.mark.asyncio
     async def test_check_then_act_race_condition(self):
         """Test classic check-then-act race condition."""
+
         class Registry:
             def __init__(self):
                 self.items = {}
@@ -516,6 +501,7 @@ class TestTimeoutHandling:
     @pytest.mark.asyncio
     async def test_operation_timeout(self):
         """Test operation timeout."""
+
         async def slow_operation() -> int:
             await asyncio.sleep(10)
             return 42
@@ -533,22 +519,27 @@ class TestTimeoutHandling:
             try:
                 await asyncio.sleep(10)
                 return 42
-            except asyncio.TimeoutError:
+            except TimeoutError:
+                cleanup_called = True
+                raise
+
+        async def run_with_cleanup_track() -> None:
+            nonlocal cleanup_called
+            try:
+                await asyncio.wait_for(operation_with_cleanup(), timeout=0.1)
+            except TimeoutError:
                 cleanup_called = True
                 raise
 
         with pytest.raises(asyncio.TimeoutError):
-            try:
-                await asyncio.wait_for(operation_with_cleanup(), timeout=0.1)
-            except asyncio.TimeoutError:
-                cleanup_called = True
-                raise
+            await run_with_cleanup_track()
 
         assert cleanup_called
 
     @pytest.mark.asyncio
     async def test_multiple_operations_with_timeout(self):
         """Test timeout on multiple concurrent operations."""
+
         async def operation(duration: float) -> int:
             await asyncio.sleep(duration)
             return 1
@@ -558,14 +549,15 @@ class TestTimeoutHandling:
                 asyncio.gather(
                     operation(0.05),
                     operation(0.5),  # This will timeout
-                    operation(0.03)
+                    operation(0.03),
                 ),
-                timeout=0.1
+                timeout=0.1,
             )
 
     @pytest.mark.asyncio
     async def test_timeout_with_retry(self):
         """Test timeout with retry logic."""
+
         async def flaky_operation() -> str:
             await asyncio.sleep(0.2)
             return "success"
@@ -577,14 +569,12 @@ class TestTimeoutHandling:
             for attempt in range(3):
                 call_count += 1
                 try:
-                    return await asyncio.wait_for(
-                        flaky_operation(),
-                        timeout=0.05
-                    )
-                except asyncio.TimeoutError:
+                    return await asyncio.wait_for(flaky_operation(), timeout=0.05)
+                except TimeoutError:
                     if attempt == 2:
                         raise
                     await asyncio.sleep(0.01)
+            return None
 
         with pytest.raises(asyncio.TimeoutError):
             await operation_with_timeout_retry()
@@ -610,10 +600,7 @@ class TestTimeoutHandling:
         ]
 
         with pytest.raises(asyncio.TimeoutError):
-            await asyncio.wait_for(
-                asyncio.gather(*tasks),
-                timeout=0.1
-            )
+            await asyncio.wait_for(asyncio.gather(*tasks), timeout=0.1)
 
         # Fast tasks may have started but might not complete due to cancellation
         # This tests that timeout doesn't silently succeed
@@ -630,6 +617,7 @@ class TestCancellationScenarios:
     @pytest.mark.asyncio
     async def test_task_cancellation(self):
         """Test basic task cancellation."""
+
         async def long_running() -> int:
             await asyncio.sleep(10)
             return 42
@@ -666,6 +654,7 @@ class TestCancellationScenarios:
     @pytest.mark.asyncio
     async def test_cancellation_with_shield(self):
         """Test cancellation prevention with shield."""
+
         async def critical_operation() -> str:
             await asyncio.sleep(0.05)
             return "critical"
@@ -722,10 +711,7 @@ class TestCancellationScenarios:
                 raise
 
         async def main_task() -> None:
-            tasks = [
-                asyncio.create_task(subtask(i))
-                for i in range(3)
-            ]
+            tasks = [asyncio.create_task(subtask(i)) for i in range(3)]
             await asyncio.gather(*tasks)
 
         task = asyncio.create_task(main_task())
@@ -772,13 +758,14 @@ class TestDeadlockPrevention:
         timeout_occurred = False
 
         async with lock:
+
             async def try_acquire_with_timeout() -> None:
                 nonlocal timeout_occurred
                 try:
                     async with asyncio.timeout(0.05):
                         async with lock:
                             pass
-                except asyncio.TimeoutError:
+                except TimeoutError:
                     timeout_occurred = True
 
             await try_acquire_with_timeout()
@@ -820,17 +807,14 @@ class TestAsyncRetryPatterns:
         call_counts = {1: 0, 2: 0, 3: 0}
 
         async def operation(op_id: int) -> str:
+            await asyncio.sleep(0)
             call_counts[op_id] += 1
             if call_counts[op_id] < 2:
                 raise ConcurrencyError("Conflict")
             return f"op_{op_id}"
 
         results = await asyncio.gather(*[
-            update_with_retry(
-                lambda oid=op_id: operation(oid),
-                max_retries=3
-            )
-            for op_id in [1, 2, 3]
+            update_with_retry(lambda oid=op_id: operation(oid), max_retries=3) for op_id in [1, 2, 3]
         ])
 
         assert all(r.startswith("op_") for r in results)
@@ -842,17 +826,14 @@ class TestAsyncRetryPatterns:
         attempt_times = []
 
         async def operation_with_timing() -> str:
+            await asyncio.sleep(0)
             attempt_times.append(time.time())
             if len(attempt_times) < 2:
                 raise ConcurrencyError("Conflict")
             return "success"
 
         start = time.time()
-        result = await update_with_retry(
-            operation_with_timing,
-            max_retries=3,
-            base_delay=0.01
-        )
+        result = await update_with_retry(operation_with_timing, max_retries=3, base_delay=0.01)
         elapsed = time.time() - start
 
         assert result == "success"
@@ -863,15 +844,13 @@ class TestAsyncRetryPatterns:
     @pytest.mark.asyncio
     async def test_retry_failure_with_concurrent_operations(self):
         """Test retry failure when concurrent operations conflict."""
+
         async def always_conflicts() -> str:
+            await asyncio.sleep(0)
             raise ConcurrencyError("Always conflicts")
 
         with pytest.raises(ConcurrencyError):
-            await update_with_retry(
-                always_conflicts,
-                max_retries=2,
-                base_delay=0.001
-            )
+            await update_with_retry(always_conflicts, max_retries=2, base_delay=0.001)
 
 
 # ==============================================================================
@@ -885,14 +864,12 @@ class TestEventLoopManagement:
     @pytest.mark.asyncio
     async def test_task_creation_and_management(self):
         """Test creating and managing multiple tasks."""
+
         async def simple_task(task_id: int) -> int:
             await asyncio.sleep(0.01)
             return task_id * 2
 
-        tasks = [
-            asyncio.create_task(simple_task(i))
-            for i in range(5)
-        ]
+        tasks = [asyncio.create_task(simple_task(i)) for i in range(5)]
 
         results = await asyncio.gather(*tasks)
         assert results == [0, 2, 4, 6, 8]
@@ -900,6 +877,7 @@ class TestEventLoopManagement:
     @pytest.mark.asyncio
     async def test_task_result_retrieval(self):
         """Test retrieving results from completed tasks."""
+
         async def get_value(val: int) -> int:
             await asyncio.sleep(0.01)
             return val * 2
@@ -911,7 +889,9 @@ class TestEventLoopManagement:
     @pytest.mark.asyncio
     async def test_task_exception_handling(self):
         """Test exception handling in tasks."""
+
         async def failing_task() -> None:
+            await asyncio.sleep(0)
             raise ValueError("Task error")
 
         task = asyncio.create_task(failing_task())
@@ -922,6 +902,7 @@ class TestEventLoopManagement:
     @pytest.mark.asyncio
     async def test_task_done_check(self):
         """Test checking if task is done."""
+
         async def quick_task() -> int:
             await asyncio.sleep(0.01)
             return 42
@@ -942,10 +923,7 @@ class TestEventLoopManagement:
             result = await future
             results.append((waiter_id, result))
 
-        tasks = [
-            asyncio.create_task(waiter(i))
-            for i in range(3)
-        ]
+        tasks = [asyncio.create_task(waiter(i)) for i in range(3)]
 
         await asyncio.sleep(0.01)
         future.set_result("complete")
@@ -980,13 +958,13 @@ class TestAsyncIntegrationPatterns:
             for attempt in range(3):
                 try:
                     return await asyncio.wait_for(
-                        update_with_retry(flaky_operation, max_retries=2, base_delay=0.001),
-                        timeout=0.5
+                        update_with_retry(flaky_operation, max_retries=2, base_delay=0.001), timeout=0.5
                     )
-                except asyncio.TimeoutError:
+                except TimeoutError:
                     if attempt == 2:
                         raise
                     await asyncio.sleep(0.01)
+            return None
 
         result = await operation_with_retry_and_timeout()
         assert result == "success"
@@ -1030,6 +1008,7 @@ class TestAsyncIntegrationPatterns:
     @pytest.mark.asyncio
     async def test_fan_out_fan_in(self):
         """Test fan-out and fan-in pattern."""
+
         async def worker(item: int) -> int:
             await asyncio.sleep(0.01)
             return item * 2
@@ -1037,10 +1016,7 @@ class TestAsyncIntegrationPatterns:
         items = [1, 2, 3, 4, 5]
 
         # Fan out
-        tasks = [
-            asyncio.create_task(worker(item))
-            for item in items
-        ]
+        tasks = [asyncio.create_task(worker(item)) for item in items]
 
         # Fan in
         results = await asyncio.gather(*tasks)
@@ -1058,9 +1034,7 @@ class TestAsyncIntegrationPatterns:
             await barrier.wait()
             events.append(f"after_{worker_id}")
 
-        await asyncio.gather(*[
-            worker(i) for i in range(3)
-        ])
+        await asyncio.gather(*[worker(i) for i in range(3)])
 
         # All before events should come before all after events
         before_count = sum(1 for e in events if e.startswith("before_"))
@@ -1081,9 +1055,7 @@ class TestAsyncIntegrationPatterns:
                 await asyncio.sleep(0.05)
                 active_count -= 1
 
-        await asyncio.gather(*[
-            resource_user(i) for i in range(5)
-        ])
+        await asyncio.gather(*[resource_user(i) for i in range(5)])
 
         assert max_active == 2  # Max concurrent should be limited to semaphore size
 

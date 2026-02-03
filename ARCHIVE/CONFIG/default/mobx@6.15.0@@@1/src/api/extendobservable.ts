@@ -13,7 +13,7 @@ import {
     initObservable
 } from "../internal"
 
-export function extendObservable<A extends Object, B extends Object>(
+export function extendObservable<A extends object, B extends object>(
     target: A,
     properties: B,
     annotations?: AnnotationsMap<B, never>,

@@ -4,7 +4,7 @@ Conflict resolution service for Epic 5 (Story 5.5, FR43).
 Provides conflict detection and resolution strategies.
 """
 
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from sqlalchemy.orm import Session
@@ -42,15 +42,12 @@ class ConflictResolutionService:
         conflicts = []
 
         # Find recent update events
-        time_threshold = datetime.utcnow() - timedelta(seconds=time_window_seconds)
+        time_threshold = datetime.now(UTC) - timedelta(seconds=time_window_seconds)
 
-        query = (
-            self.session.query(Event)
-            .filter(
-                Event.project_id == project_id,
-                Event.event_type.in_(["item_updated", "conflict_detected"]),
-                Event.created_at >= time_threshold,
-            )
+        query = self.session.query(Event).filter(
+            Event.project_id == project_id,
+            Event.event_type.in_(["item_updated", "conflict_detected"]),
+            Event.created_at >= time_threshold,
         )
 
         if item_id:
@@ -99,18 +96,15 @@ class ConflictResolutionService:
         Returns:
             Resolution result dictionary
         """
-        item = (
-            self.session.query(Item)
-            .filter(Item.id == item_id, Item.project_id == project_id)
-            .first()
-        )
+        item = self.session.query(Item).filter(Item.id == item_id, Item.project_id == project_id).first()
 
         if not item:
             raise ValueError(f"Item not found: {item_id}")
 
         # Get recent events for this item
         events = (
-            self.session.query(Event)
+            self.session
+            .query(Event)
             .filter(
                 Event.project_id == project_id,
                 Event.entity_id == item_id,
@@ -137,7 +131,7 @@ class ConflictResolutionService:
                 "item_version": item.version,
             }
 
-        elif strategy == "merge":
+        if strategy == "merge":
             # Attempt to merge changes (simplified - would need field-level merging)
             return {
                 "resolved": True,
@@ -145,5 +139,4 @@ class ConflictResolutionService:
                 "note": "Merge strategy requires manual review",
             }
 
-        else:
-            raise ValueError(f"Unknown resolution strategy: {strategy}")
+        raise ValueError(f"Unknown resolution strategy: {strategy}")

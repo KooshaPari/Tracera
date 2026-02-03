@@ -5,17 +5,16 @@ Tests all CRUD operations, query methods, error handling, and edge cases
 for all repositories.
 """
 
+from datetime import UTC, datetime
+
 import pytest
-from datetime import datetime, UTC
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from tracertm.core.concurrency import ConcurrencyError
+from tracertm.repositories.agent_repository import AgentRepository
+from tracertm.repositories.event_repository import EventRepository
 from tracertm.repositories.item_repository import ItemRepository
 from tracertm.repositories.link_repository import LinkRepository
-from tracertm.repositories.event_repository import EventRepository
 from tracertm.repositories.project_repository import ProjectRepository
-from tracertm.repositories.agent_repository import AgentRepository
-
 
 # ============================================================
 # ItemRepository Tests
@@ -95,7 +94,7 @@ class TestItemRepository:
         """Test retrieving an item by ID with project scope."""
         project_repo = ProjectRepository(db_session)
         project1 = await project_repo.create(name="Project 1")
-        project2 = await project_repo.create(name="Project 2")
+        await project_repo.create(name="Project 2")
 
         item_repo = ItemRepository(db_session)
         item = await item_repo.create(
@@ -123,19 +122,19 @@ class TestItemRepository:
         item_repo = ItemRepository(db_session)
 
         # Create items in different views
-        feature1 = await item_repo.create(
+        await item_repo.create(
             project_id=project.id,
             title="Feature 1",
             view="FEATURE",
             item_type="feature",
         )
-        feature2 = await item_repo.create(
+        await item_repo.create(
             project_id=project.id,
             title="Feature 2",
             view="FEATURE",
             item_type="feature",
         )
-        test_item = await item_repo.create(
+        await item_repo.create(
             project_id=project.id,
             title="Test 1",
             view="TEST",
@@ -418,7 +417,7 @@ class TestItemRepository:
             item_type="feature",
         )
 
-        child = await item_repo.create(
+        await item_repo.create(
             project_id=project.id,
             title="Child",
             view="FEATURE",
@@ -479,7 +478,7 @@ class TestItemRepository:
         item_repo = ItemRepository(db_session)
 
         # Try to create item with non-existent parent
-        with pytest.raises(ValueError, match="Parent item .* not found"):
+        with pytest.raises(ValueError, match=r"Parent item .* not found"):
             await item_repo.create(
                 project_id=project.id,
                 title="Orphan",
@@ -504,7 +503,7 @@ class TestItemRepository:
         )
 
         # Try to create child in different project with parent from project 1
-        with pytest.raises(ValueError, match="Parent item .* not in same project"):
+        with pytest.raises(ValueError, match=r"Parent item .* not in same project"):
             await item_repo.create(
                 project_id=project2.id,
                 title="Child in Project 2",
@@ -520,7 +519,7 @@ class TestItemRepository:
 
         item_repo = ItemRepository(db_session)
 
-        item1 = await item_repo.create(
+        await item_repo.create(
             project_id=project.id,
             title="Active",
             view="FEATURE",
@@ -532,9 +531,7 @@ class TestItemRepository:
         assert len(items_default) >= 1
 
         # List with include_deleted=True
-        items_include = await item_repo.list_by_view(
-            project.id, "FEATURE", include_deleted=True
-        )
+        items_include = await item_repo.list_by_view(project.id, "FEATURE", include_deleted=True)
         assert len(items_include) >= 1
 
         # Both should work without error
@@ -912,7 +909,7 @@ class TestLinkRepository:
 
         link_repo = LinkRepository(db_session)
 
-        for i in range(3):
+        for _ in range(3):
             await link_repo.create(
                 project_id=project.id,
                 source_item_id=item1.id,
@@ -1274,7 +1271,6 @@ class TestAgentRepository:
             agent_type="analyzer",
         )
 
-        original_activity = agent.last_activity_at
         updated = await agent_repo.update_activity(agent.id)
 
         assert updated.last_activity_at is not None
@@ -1312,7 +1308,7 @@ class TestRepositoryErrorHandling:
         """Test updating non-existent item raises error."""
         item_repo = ItemRepository(db_session)
 
-        with pytest.raises(ValueError, match="Item .* not found"):
+        with pytest.raises(ValueError, match=r"Item .* not found"):
             await item_repo.update("nonexistent", expected_version=1, title="Updated")
 
     async def test_project_update_nonexistent_returns_none(self, db_session: AsyncSession):
@@ -1326,14 +1322,14 @@ class TestRepositoryErrorHandling:
         """Test updating status of non-existent agent raises error."""
         agent_repo = AgentRepository(db_session)
 
-        with pytest.raises(ValueError, match="Agent .* not found"):
+        with pytest.raises(ValueError, match=r"Agent .* not found"):
             await agent_repo.update_status("nonexistent", "inactive")
 
     async def test_agent_update_activity_nonexistent_raises_error(self, db_session: AsyncSession):
         """Test updating activity of non-existent agent raises error."""
         agent_repo = AgentRepository(db_session)
 
-        with pytest.raises(ValueError, match="Agent .* not found"):
+        with pytest.raises(ValueError, match=r"Agent .* not found"):
             await agent_repo.update_activity("nonexistent")
 
 
@@ -1463,7 +1459,9 @@ class TestRepositoryEdgeCases:
         # Note: Current implementation may not prevent this, but it's worth testing
         # For now, just verify structure is valid
         item2_check = await item_repo.get_by_id(item2.id)
-        assert item2_check.parent_id == item1.id
+        assert item2_check is not None
+        c = item2_check
+        assert c.parent_id == item1.id
 
     async def test_unicode_in_item_title(self, db_session: AsyncSession):
         """Test handling Unicode characters in item title."""
@@ -1481,4 +1479,6 @@ class TestRepositoryEdgeCases:
         )
 
         retrieved = await item_repo.get_by_id(item.id)
-        assert retrieved.title == unicode_title
+        assert retrieved is not None
+        r = retrieved
+        assert r.title == unicode_title

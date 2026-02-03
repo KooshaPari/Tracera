@@ -32,7 +32,7 @@ class TestCacheServiceEdgeCases:
             mock_redis.return_value = mock_client
             mock_client.ping.return_value = True
 
-            service = CacheService()
+            CacheService()
             mock_redis.assert_called_once_with("redis://localhost:6379", decode_responses=True)
 
     def test_cache_service_init_with_custom_url(self):
@@ -42,7 +42,7 @@ class TestCacheServiceEdgeCases:
             mock_redis.return_value = mock_client
             mock_client.ping.return_value = True
 
-            service = CacheService(redis_url="redis://custom:6380")
+            CacheService(redis_url="redis://custom:6380")
             mock_redis.assert_called_once_with("redis://custom:6380", decode_responses=True)
 
     def test_cache_service_init_connection_failure(self):
@@ -456,14 +456,14 @@ class TestEventServiceEdgeCases:
         service = EventService(mock_session)
 
         mock_event = Mock()
-        service.events.log = AsyncMock(return_value=mock_event)
+        service.events.log = AsyncMock(return_value=mock_event)  # type: ignore[assignment]
 
         result = await service.log_event(
             project_id="proj-1",
             event_type="item_created",
             event_data={"title": "Test"},
             agent_id="agent-1",
-            item_id="item-1"
+            item_id="item-1",
         )
 
         assert result is mock_event
@@ -473,7 +473,7 @@ class TestEventServiceEdgeCases:
             entity_type="item",
             entity_id="item-1",
             data={"title": "Test"},
-            agent_id="agent-1"
+            agent_id="agent-1",
         )
 
     @pytest.mark.asyncio
@@ -483,13 +483,10 @@ class TestEventServiceEdgeCases:
         service = EventService(mock_session)
 
         mock_event = Mock()
-        service.events.log = AsyncMock(return_value=mock_event)
+        service.events.log = AsyncMock(return_value=mock_event)  # type: ignore[assignment]
 
         result = await service.log_event(
-            project_id="proj-1",
-            event_type="project_created",
-            event_data={"name": "Test Project"},
-            agent_id="agent-1"
+            project_id="proj-1", event_type="project_created", event_data={"name": "Test Project"}, agent_id="agent-1"
         )
 
         assert result is mock_event
@@ -499,7 +496,7 @@ class TestEventServiceEdgeCases:
             entity_type="project",
             entity_id="proj-1",
             data={"name": "Test Project"},
-            agent_id="agent-1"
+            agent_id="agent-1",
         )
 
     @pytest.mark.asyncio
@@ -509,14 +506,9 @@ class TestEventServiceEdgeCases:
         service = EventService(mock_session)
 
         mock_event = Mock()
-        service.events.log = AsyncMock(return_value=mock_event)
+        service.events.log = AsyncMock(return_value=mock_event)  # type: ignore[assignment]
 
-        result = await service.log_event(
-            project_id="proj-1",
-            event_type="ping",
-            event_data={},
-            agent_id="agent-1"
-        )
+        result = await service.log_event(project_id="proj-1", event_type="ping", event_data={}, agent_id="agent-1")
 
         assert result is mock_event
 
@@ -527,14 +519,11 @@ class TestEventServiceEdgeCases:
         service = EventService(mock_session)
 
         mock_event = Mock()
-        service.events.log = AsyncMock(return_value=mock_event)
+        service.events.log = AsyncMock(return_value=mock_event)  # type: ignore[assignment]
 
         complex_data = {
-            "changes": [
-                {"field": "title", "old": "A", "new": "B"},
-                {"field": "status", "old": "todo", "new": "done"}
-            ],
-            "metadata": {"user": "test", "timestamp": 123456}
+            "changes": [{"field": "title", "old": "A", "new": "B"}, {"field": "status", "old": "todo", "new": "done"}],
+            "metadata": {"user": "test", "timestamp": 123456},
         }
 
         result = await service.log_event(
@@ -542,7 +531,7 @@ class TestEventServiceEdgeCases:
             event_type="item_updated",
             event_data=complex_data,
             agent_id="agent-1",
-            item_id="item-1"
+            item_id="item-1",
         )
 
         assert result is mock_event
@@ -554,7 +543,7 @@ class TestEventServiceEdgeCases:
         service = EventService(mock_session)
 
         mock_events = [Mock(), Mock(), Mock()]
-        service.events.get_by_entity = AsyncMock(return_value=mock_events)
+        service.events.get_by_entity = AsyncMock(return_value=mock_events)  # type: ignore[assignment]
 
         result = await service.get_item_history("item-1")
 
@@ -567,7 +556,7 @@ class TestEventServiceEdgeCases:
         mock_session = AsyncMock()
         service = EventService(mock_session)
 
-        service.events.get_by_entity = AsyncMock(return_value=[])
+        service.events.get_by_entity = AsyncMock(return_value=[])  # type: ignore[assignment]
 
         result = await service.get_item_history("item-1")
 
@@ -580,7 +569,7 @@ class TestEventServiceEdgeCases:
         service = EventService(mock_session)
 
         mock_state = {"id": "item-1", "title": "Historical State"}
-        service.events.get_entity_at_time = AsyncMock(return_value=mock_state)
+        service.events.get_entity_at_time = AsyncMock(return_value=mock_state)  # type: ignore[assignment]
 
         at_time = datetime.now() - timedelta(days=1)
         result = await service.get_item_at_time("item-1", at_time)
@@ -594,7 +583,7 @@ class TestEventServiceEdgeCases:
         mock_session = AsyncMock()
         service = EventService(mock_session)
 
-        service.events.get_entity_at_time = AsyncMock(return_value=None)
+        service.events.get_entity_at_time = AsyncMock(return_value=None)  # type: ignore[assignment]
 
         at_time = datetime.now() - timedelta(days=365)
         result = await service.get_item_at_time("item-1", at_time)
@@ -607,7 +596,7 @@ class TestEventServiceEdgeCases:
         mock_session = AsyncMock()
         service = EventService(mock_session)
 
-        service.events.get_entity_at_time = AsyncMock(return_value={"id": "item-1"})
+        service.events.get_entity_at_time = AsyncMock(return_value={"id": "item-1"})  # type: ignore[assignment]
 
         future_time = datetime.now() + timedelta(days=1)
         result = await service.get_item_at_time("item-1", future_time)
@@ -620,13 +609,7 @@ class TestCacheStatsDataclass:
 
     def test_cache_stats_creation(self):
         """Test creating CacheStats instance."""
-        stats = CacheStats(
-            hits=10,
-            misses=5,
-            hit_rate=66.67,
-            total_size_bytes=1024,
-            evictions=2
-        )
+        stats = CacheStats(hits=10, misses=5, hit_rate=66.67, total_size_bytes=1024, evictions=2)
 
         assert stats.hits == 10
         assert stats.misses == 5
@@ -636,13 +619,7 @@ class TestCacheStatsDataclass:
 
     def test_cache_stats_zero_values(self):
         """Test CacheStats with all zero values."""
-        stats = CacheStats(
-            hits=0,
-            misses=0,
-            hit_rate=0.0,
-            total_size_bytes=0,
-            evictions=0
-        )
+        stats = CacheStats(hits=0, misses=0, hit_rate=0.0, total_size_bytes=0, evictions=0)
 
         assert stats.hits == 0
         assert stats.hit_rate == 0.0
@@ -654,7 +631,7 @@ class TestCacheStatsDataclass:
             misses=500000,
             hit_rate=66.67,
             total_size_bytes=1073741824,  # 1GB
-            evictions=10000
+            evictions=10000,
         )
 
         assert stats.hits == 1000000

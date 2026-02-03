@@ -923,4 +923,4 @@ export interface GraphQLInputField {
 }
 export declare function isRequiredInputField(field: GraphQLInputField): boolean;
 export declare type GraphQLInputFieldMap = ObjMap<GraphQLInputField>;
-export {};
+

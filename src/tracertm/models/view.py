@@ -2,9 +2,9 @@
 View model for TraceRTM.
 """
 
-from sqlalchemy import ForeignKey, Index, String, Text
 import uuid
 
+from sqlalchemy import ForeignKey, Index, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -30,9 +30,7 @@ class View(Base, TimestampMixin):
         {"extend_existing": True},
     )
 
-    id: Mapped[str] = mapped_column(
-        String(255), primary_key=True, default=generate_view_uuid
-    )
+    id: Mapped[str] = mapped_column(String(255), primary_key=True, default=generate_view_uuid)
     project_id: Mapped[str] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("projects.id", ondelete="CASCADE"),

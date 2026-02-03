@@ -87,4 +87,4 @@ export declare function toJSONSchema(registry: $ZodRegistry<{
 }>, _params?: RegistryToJSONSchemaParams): {
     schemas: Record<string, JSONSchema.BaseSchema>;
 };
-export {};
+

@@ -46,5 +46,5 @@ export declare function decodeOriginalScopes(input: string): OriginalScope[];
 export declare function encodeOriginalScopes(scopes: OriginalScope[]): string;
 export declare function decodeGeneratedRanges(input: string): GeneratedRange[];
 export declare function encodeGeneratedRanges(ranges: GeneratedRange[]): string;
-export {};
+
 //# sourceMappingURL=scopes.d.ts.map

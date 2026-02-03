@@ -44,5 +44,5 @@ Prism.languages.uorazor = {
 		},
 		/[=<>]=?|!=|\*\*?|\/\/?|\?:?|[-+~%|]/
 	],
-	'punctuation': /[()\[\]{}:.,]/
+	'punctuation': /[()[\]{}:.,]/
 };

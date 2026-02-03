@@ -253,7 +253,7 @@ class StandaloneThemeService extends Disposable {
         };
     }
     defineTheme(themeName, themeData) {
-        if (!/^[a-z0-9\-]+$/i.test(themeName)) {
+        if (!/^[a-z0-9-]+$/i.test(themeName)) {
             throw new Error('Illegal theme name!');
         }
         if (!isBuiltinTheme(themeData.base) && !isBuiltinTheme(themeName)) {

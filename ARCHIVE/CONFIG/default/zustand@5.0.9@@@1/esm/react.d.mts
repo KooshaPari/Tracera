@@ -11,4 +11,4 @@ type Create = {
     <T>(): <Mos extends [StoreMutatorIdentifier, unknown][] = []>(initializer: StateCreator<T, [], Mos>) => UseBoundStore<Mutate<StoreApi<T>, Mos>>;
 };
 export declare const create: Create;
-export {};
+

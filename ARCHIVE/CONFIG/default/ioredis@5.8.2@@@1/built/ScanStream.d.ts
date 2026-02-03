@@ -20,4 +20,4 @@ export default class ScanStream extends Readable {
     _read(): void;
     close(): void;
 }
-export {};
+

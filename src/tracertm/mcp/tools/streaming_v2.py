@@ -6,11 +6,10 @@ reducing token usage and improving response times.
 
 from __future__ import annotations
 
-from typing import Any, AsyncIterator
+from collections.abc import Callable, Iterator
+from typing import Any
 
 from fastmcp.exceptions import ToolError
-from sqlalchemy import func
-from sqlalchemy.orm import Session
 
 from tracertm.mcp.core import mcp
 from tracertm.mcp.tools.base import get_session, require_project
@@ -22,11 +21,11 @@ from tracertm.models.item import Item
 from tracertm.models.link import Link
 
 
-async def stream_query_results(
+def stream_query_results(
     query: Any,
     batch_size: int = 50,
-    optimizer_func: callable | None = None,
-) -> AsyncIterator[dict[str, Any]]:
+    optimizer_func: Callable[..., Any] | None = None,
+) -> Iterator[dict[str, Any]]:
     """Stream query results in batches.
 
     Args:
@@ -57,7 +56,7 @@ async def stream_query_results(
 
 
 @mcp.tool(description="Stream items query with batching")
-async def stream_items(
+def stream_items(
     view: str | None = None,
     item_type: str | None = None,
     status: str | None = None,
@@ -110,12 +109,12 @@ async def stream_items(
             "batch_size": batch_size,
             "has_more": total > batch_size,
             "filters": {"view": view, "item_type": item_type, "status": status},
-            "next_batch_hint": f"Call get_items_batch(batch=2, ...) to get next batch",
+            "next_batch_hint": "Call get_items_batch(batch=2, ...) to get next batch",
         }
 
 
 @mcp.tool(description="Get a specific batch of items")
-async def get_items_batch(
+def get_items_batch(
     batch: int,
     view: str | None = None,
     item_type: str | None = None,
@@ -173,7 +172,7 @@ async def get_items_batch(
 
 
 @mcp.tool(description="Stream links query with batching")
-async def stream_links(
+def stream_links(
     link_type: str | None = None,
     source_id: str | None = None,
     target_id: str | None = None,
@@ -196,17 +195,14 @@ async def stream_links(
     batch_size = min(max(batch_size, 10), 100)
 
     with get_session() as session:
-        query = session.query(Link).filter(
-            Link.project_id == project_id,
-            Link.deleted_at.is_(None),
-        )
+        query = session.query(Link).filter(Link.project_id == project_id)
 
         if link_type:
             query = query.filter(Link.link_type == link_type)
         if source_id:
-            query = query.filter(Link.source_id.like(f"{source_id}%"))
+            query = query.filter(Link.source_item_id.like(f"{source_id}%"))
         if target_id:
-            query = query.filter(Link.target_id.like(f"{target_id}%"))
+            query = query.filter(Link.target_item_id.like(f"{target_id}%"))
 
         total = query.count()
         total_batches = (total + batch_size - 1) // batch_size
@@ -227,12 +223,12 @@ async def stream_links(
                 "source_id": source_id,
                 "target_id": target_id,
             },
-            "next_batch_hint": f"Call get_links_batch(batch=2, ...) to get next batch",
+            "next_batch_hint": "Call get_links_batch(batch=2, ...) to get next batch",
         }
 
 
 @mcp.tool(description="Get a specific batch of links")
-async def get_links_batch(
+def get_links_batch(
     batch: int,
     link_type: str | None = None,
     source_id: str | None = None,
@@ -258,17 +254,14 @@ async def get_links_batch(
     offset = (batch - 1) * batch_size
 
     with get_session() as session:
-        query = session.query(Link).filter(
-            Link.project_id == project_id,
-            Link.deleted_at.is_(None),
-        )
+        query = session.query(Link).filter(Link.project_id == project_id)
 
         if link_type:
             query = query.filter(Link.link_type == link_type)
         if source_id:
-            query = query.filter(Link.source_id.like(f"{source_id}%"))
+            query = query.filter(Link.source_item_id.like(f"{source_id}%"))
         if target_id:
-            query = query.filter(Link.target_id.like(f"{target_id}%"))
+            query = query.filter(Link.target_item_id.like(f"{target_id}%"))
 
         total = query.count()
         total_batches = (total + batch_size - 1) // batch_size
@@ -290,7 +283,7 @@ async def get_links_batch(
 
 
 @mcp.tool(description="Stream traceability matrix with batching")
-async def stream_matrix(
+def stream_matrix(
     source_view: str | None = None,
     target_view: str | None = None,
     batch_size: int = 50,
@@ -327,11 +320,9 @@ async def stream_matrix(
 
         # Get links
         links = (
-            session.query(Link)
-            .filter(
-                Link.project_id == project_id,
-                Link.deleted_at.is_(None),
-            )
+            session
+            .query(Link)
+            .filter(Link.project_id == project_id)
             .all()
         )
 
@@ -339,16 +330,14 @@ async def stream_matrix(
         rows = []
         for item in items:
             item_id = str(item.id)
-            outgoing_links = [link for link in links if str(link.source_id) == item_id]
+            outgoing_links = [link for link in links if str(link.source_item_id) == item_id]
 
             for link in outgoing_links:
-                target = item_lookup.get(str(link.target_id))
-                if target and (
-                    not target_view or target.view == target_view.upper()
-                ):
+                target = item_lookup.get(str(link.target_item_id))
+                if target and (not target_view or target.view == target_view.upper()):
                     rows.append({
                         "source": str(item.id)[:8],
-                        "target": str(link.target_id)[:8],
+                        "target": str(link.target_item_id)[:8],
                         "type": link.link_type,
                     })
 
@@ -364,12 +353,12 @@ async def stream_matrix(
             "batch_size": batch_size,
             "has_more": total_rows > batch_size,
             "filters": {"source_view": source_view, "target_view": target_view},
-            "next_batch_hint": f"Call get_matrix_batch(batch=2, ...) to get next batch",
+            "next_batch_hint": "Call get_matrix_batch(batch=2, ...) to get next batch",
         }
 
 
 @mcp.tool(description="Get a specific batch of matrix rows")
-async def get_matrix_batch(
+def get_matrix_batch(
     batch: int,
     source_view: str | None = None,
     target_view: str | None = None,
@@ -406,11 +395,9 @@ async def get_matrix_batch(
 
         # Get links
         links = (
-            session.query(Link)
-            .filter(
-                Link.project_id == project_id,
-                Link.deleted_at.is_(None),
-            )
+            session
+            .query(Link)
+            .filter(Link.project_id == project_id)
             .all()
         )
 
@@ -418,16 +405,14 @@ async def get_matrix_batch(
         rows = []
         for item in items:
             item_id = str(item.id)
-            outgoing_links = [link for link in links if str(link.source_id) == item_id]
+            outgoing_links = [link for link in links if str(link.source_item_id) == item_id]
 
             for link in outgoing_links:
-                target = item_lookup.get(str(link.target_id))
-                if target and (
-                    not target_view or target.view == target_view.upper()
-                ):
+                target = item_lookup.get(str(link.target_item_id))
+                if target and (not target_view or target.view == target_view.upper()):
                     rows.append({
                         "source": str(item.id)[:8],
-                        "target": str(link.target_id)[:8],
+                        "target": str(link.target_item_id)[:8],
                         "type": link.link_type,
                     })
 
@@ -450,11 +435,11 @@ async def get_matrix_batch(
 
 
 __all__ = [
-    "stream_query_results",
-    "stream_items",
     "get_items_batch",
-    "stream_links",
     "get_links_batch",
-    "stream_matrix",
     "get_matrix_batch",
+    "stream_items",
+    "stream_links",
+    "stream_matrix",
+    "stream_query_results",
 ]

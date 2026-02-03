@@ -264,4 +264,4 @@ export type CollapseLiterals<T> = {} extends T
 		? U
 		: T;
 
-export {};
+

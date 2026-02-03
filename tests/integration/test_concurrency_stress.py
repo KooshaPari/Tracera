@@ -12,30 +12,23 @@ Tests concurrent operations, race conditions, deadlock scenarios, and stress con
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Any, Callable
-from unittest.mock import MagicMock, patch
 
 import pytest
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from tracertm.models.base import Base
 from tracertm.models.agent import Agent
-from tracertm.models.agent_lock import AgentLock
-from tracertm.models.event import Event
+from tracertm.models.base import Base
 from tracertm.models.item import Item
 from tracertm.models.link import Link
 from tracertm.models.project import Project
-from tracertm.repositories.item_repository import ItemRepository
-from tracertm.repositories.project_repository import ProjectRepository
+from tracertm.services.bulk_operation_service import BulkOperationService
 from tracertm.services.concurrent_operations_service import (
-    ConcurrentOperationsService,
     ConcurrencyError,
+    ConcurrentOperationsService,
     retry_with_backoff,
 )
-from tracertm.services.bulk_operation_service import BulkOperationService
-
 
 # ============================================================================
 # Fixtures
@@ -133,17 +126,13 @@ class TestBaselineStability:
 
     def test_single_item_update(self, concurrent_session_from_initialized):
         """Test basic item update stability."""
-        item = concurrent_session_from_initialized.query(Item).filter(
-            Item.id == "item-0"
-        ).first()
+        item = concurrent_session_from_initialized.query(Item).filter(Item.id == "item-0").first()
         assert item is not None
 
         item.status = "in_progress"
         concurrent_session_from_initialized.commit()
 
-        retrieved = concurrent_session_from_initialized.query(Item).filter(
-            Item.id == "item-0"
-        ).first()
+        retrieved = concurrent_session_from_initialized.query(Item).filter(Item.id == "item-0").first()
         assert retrieved.status == "in_progress"
 
     def test_single_link_creation(self, concurrent_session_from_initialized):
@@ -158,9 +147,7 @@ class TestBaselineStability:
         concurrent_session_from_initialized.add(link)
         concurrent_session_from_initialized.commit()
 
-        retrieved = concurrent_session_from_initialized.query(Link).filter(
-            Link.id == "link-1"
-        ).first()
+        retrieved = concurrent_session_from_initialized.query(Link).filter(Link.id == "link-1").first()
         assert retrieved is not None
         assert retrieved.link_type == "depends_on"
 
@@ -183,9 +170,7 @@ class TestBaselineStability:
         concurrent_session.commit()
 
         # Verify item was created
-        retrieved = concurrent_session.query(Item).filter(
-            Item.id == "item-rollback"
-        ).first()
+        retrieved = concurrent_session.query(Item).filter(Item.id == "item-rollback").first()
         assert retrieved is not None
         assert retrieved.title == "Test"
 
@@ -195,9 +180,7 @@ class TestBaselineStability:
 
         # After rollback, title should revert
         concurrent_session.expire(item)
-        retrieved = concurrent_session.query(Item).filter(
-            Item.id == "item-rollback"
-        ).first()
+        retrieved = concurrent_session.query(Item).filter(Item.id == "item-rollback").first()
         assert retrieved.title == "Test"
 
 
@@ -245,9 +228,7 @@ class TestConcurrentWrites:
 
         # Verify most items exist
         session = SessionLocal()
-        count = session.query(Item).filter(
-            Item.id.like("concurrent-item-%")
-        ).count()
+        count = session.query(Item).filter(Item.id.like("concurrent-item-%")).count()
         assert count >= 15, f"Expected at least 15 items, got {count}"
         session.close()
 
@@ -260,9 +241,7 @@ class TestConcurrentWrites:
         def update_item(item_num: int, update_num: int):
             session = SessionLocal()
             try:
-                item = session.query(Item).filter(
-                    Item.id == f"item-{item_num}"
-                ).first()
+                item = session.query(Item).filter(Item.id == f"item-{item_num}").first()
                 if item:
                     item.status = f"status-{update_num % 3}"
                     session.commit()
@@ -276,10 +255,7 @@ class TestConcurrentWrites:
             futures = []
             # Each of 5 items gets updated 5 times concurrently
             for item_num in range(5):
-                for update_num in range(5):
-                    futures.append(
-                        executor.submit(update_item, item_num, update_num)
-                    )
+                futures.extend(executor.submit(update_item, item_num, update_num) for update_num in range(5))
             for future in as_completed(futures):
                 future.result()
 
@@ -340,15 +316,11 @@ class TestConcurrentWrites:
                     )
                     session.add(item)
                 elif op_type == "update":
-                    item = session.query(Item).filter(
-                        Item.id == f"item-{op_id % 10}"
-                    ).first()
+                    item = session.query(Item).filter(Item.id == f"item-{op_id % 10}").first()
                     if item:
                         item.title = f"Updated {op_id}"
                 elif op_type == "read":
-                    session.query(Item).filter(
-                        Item.project_id == "test-project"
-                    ).all()
+                    session.query(Item).filter(Item.project_id == "test-project").all()
 
                 session.commit()
                 results.append(True)
@@ -451,10 +423,7 @@ class TestRaceConditions:
                 session.close()
 
         with ThreadPoolExecutor(max_workers=5) as executor:
-            futures = [
-                executor.submit(read_modify_write, label)
-                for label in ["a", "b", "c", "d", "e"]
-            ]
+            futures = [executor.submit(read_modify_write, label) for label in ["a", "b", "c", "d", "e"]]
             for future in as_completed(futures):
                 future.result()
 
@@ -477,9 +446,7 @@ class TestRaceConditions:
         def count_items():
             session = SessionLocal()
             try:
-                count = session.query(Item).filter(
-                    Item.project_id == "test-project"
-                ).count()
+                count = session.query(Item).filter(Item.project_id == "test-project").count()
                 read_counts.append(count)
                 time.sleep(0.01)  # Simulate processing
             except Exception as e:
@@ -576,19 +543,11 @@ class TestDeadlockScenarios:
             try:
                 # Always acquire locks in same order: item-0 then item-1
                 if direction == "forward":
-                    item1 = session.query(Item).filter(
-                        Item.id == "item-0"
-                    ).first()
-                    item2 = session.query(Item).filter(
-                        Item.id == "item-1"
-                    ).first()
+                    item1 = session.query(Item).filter(Item.id == "item-0").first()
+                    item2 = session.query(Item).filter(Item.id == "item-1").first()
                 else:
-                    item2 = session.query(Item).filter(
-                        Item.id == "item-1"
-                    ).first()
-                    item1 = session.query(Item).filter(
-                        Item.id == "item-0"
-                    ).first()
+                    item2 = session.query(Item).filter(Item.id == "item-1").first()
+                    item1 = session.query(Item).filter(Item.id == "item-0").first()
 
                 if item1 and item2:
                     item1.status = f"status-{thread_id}"
@@ -866,9 +825,7 @@ class TestRetryAndBackoff:
         call_count = 0
         call_times = []
 
-        @retry_with_backoff(
-            max_retries=3, initial_delay=0.01, exponential_base=2.0
-        )
+        @retry_with_backoff(max_retries=3, initial_delay=0.01, exponential_base=2.0)
         def tracked_flaky():
             nonlocal call_count
             call_times.append(time.time())
@@ -891,9 +848,7 @@ class TestRetryAndBackoff:
         call_count = 0
         timings = []
 
-        @retry_with_backoff(
-            max_retries=2, initial_delay=0.05, jitter=True
-        )
+        @retry_with_backoff(max_retries=2, initial_delay=0.05, jitter=True)
         def jittered_operation():
             nonlocal call_count
             call_count += 1
@@ -926,17 +881,13 @@ class TestRetryAndBackoff:
                 return f"result-{op_id}"
 
             try:
-                result = concurrent_ops_service.execute_with_retry(
-                    operation, max_retries=2
-                )
+                result = concurrent_ops_service.execute_with_retry(operation, max_retries=2)
                 results.append(result)
             except Exception as e:
                 errors.append(str(e))
 
         with ThreadPoolExecutor(max_workers=10) as executor:
-            futures = [
-                executor.submit(retryable_operation, i) for i in range(20)
-            ]
+            futures = [executor.submit(retryable_operation, i) for i in range(20)]
             for future in as_completed(futures):
                 future.result()
 
@@ -959,9 +910,7 @@ class TestBulkOperationConcurrency:
         def bulk_update_status(new_status: str):
             session = SessionLocal()
             try:
-                items = session.query(Item).filter(
-                    Item.project_id == "test-project"
-                ).all()
+                items = session.query(Item).filter(Item.project_id == "test-project").all()
                 for item in items:
                     item.status = new_status
                 session.commit()
@@ -971,17 +920,13 @@ class TestBulkOperationConcurrency:
                 session.close()
 
         with ThreadPoolExecutor(max_workers=5) as executor:
-            futures = [
-                executor.submit(bulk_update_status, f"status-{i}") for i in range(5)
-            ]
+            futures = [executor.submit(bulk_update_status, f"status-{i}") for i in range(5)]
             for future in as_completed(futures):
                 future.result()
 
         # Check final state
         session = SessionLocal()
-        items = session.query(Item).filter(
-            Item.project_id == "test-project"
-        ).all()
+        items = session.query(Item).filter(Item.project_id == "test-project").all()
         statuses = {item.status for item in items}
         session.close()
 
@@ -1013,9 +958,7 @@ class TestBulkOperationConcurrency:
                 session.close()
 
         with ThreadPoolExecutor(max_workers=5) as executor:
-            futures = [
-                executor.submit(preview_and_execute, i) for i in range(10)
-            ]
+            futures = [executor.submit(preview_and_execute, i) for i in range(10)]
             for future in as_completed(futures):
                 future.result()
 
@@ -1078,9 +1021,7 @@ class TestStressConditions:
             session = SessionLocal()
             try:
                 # Read and update existing items to avoid database state issues
-                item = session.query(Item).filter(
-                    Item.id == f"item-{op_id % 10}"
-                ).first()
+                item = session.query(Item).filter(Item.id == f"item-{op_id % 10}").first()
                 if item:
                     item.title = f"Updated {op_id}"
                     session.commit()
@@ -1109,9 +1050,7 @@ class TestStressConditions:
                 for _ in range(5):
                     session = SessionLocal()
                     try:
-                        count = session.query(Item).filter(
-                            Item.project_id == "test-project"
-                        ).count()
+                        count = session.query(Item).filter(Item.project_id == "test-project").count()
                         results.append(count)
                     finally:
                         session.close()
@@ -1151,13 +1090,11 @@ class TestConcurrencyIntegration:
             session = SessionLocal()
             try:
                 for _ in range(5):
-                    items = session.query(Item).filter(
-                        Item.project_id == "test-project"
-                    ).all()
+                    items = session.query(Item).filter(Item.project_id == "test-project").all()
                     with metrics_lock:
                         metrics["reads"] += len(items)
                     time.sleep(0.001)
-            except Exception as e:
+            except Exception:
                 with metrics_lock:
                     metrics["errors"] += 1
             finally:
@@ -1167,27 +1104,22 @@ class TestConcurrencyIntegration:
             session = SessionLocal()
             try:
                 for i in range(5):
-                    item = session.query(Item).filter(
-                        Item.id == f"item-{i}"
-                    ).first()
+                    item = session.query(Item).filter(Item.id == f"item-{i}").first()
                     if item:
                         item.status = f"updated-{time.time()}"
                         session.commit()
                         with metrics_lock:
                             metrics["updates"] += 1
                     time.sleep(0.001)
-            except Exception as e:
+            except Exception:
                 with metrics_lock:
                     metrics["errors"] += 1
             finally:
                 session.close()
 
         with ThreadPoolExecutor(max_workers=10) as executor:
-            futures = []
-            for _ in range(5):
-                futures.append(executor.submit(reader))
-            for _ in range(5):
-                futures.append(executor.submit(updater))
+            futures = [executor.submit(reader) for _ in range(5)]
+            futures.extend(executor.submit(updater) for _ in range(5))
 
             for future in as_completed(futures):
                 future.result()
@@ -1221,15 +1153,11 @@ class TestConcurrencyIntegration:
         def agent_operation(agent_id: str):
             session = SessionLocal()
             try:
-                agent = session.query(Agent).filter(
-                    Agent.id == agent_id
-                ).first()
+                agent = session.query(Agent).filter(Agent.id == agent_id).first()
                 if agent:
                     # Simulate agent work - update item instead of creating
                     # to avoid duplicate ID issues
-                    item = session.query(Item).filter(
-                        Item.id == "item-0"
-                    ).first()
+                    item = session.query(Item).filter(Item.id == "item-0").first()
                     if item:
                         item.title = f"Processed by {agent_id}"
                         session.commit()
@@ -1240,10 +1168,7 @@ class TestConcurrencyIntegration:
                 session.close()
 
         with ThreadPoolExecutor(max_workers=10) as executor:
-            futures = [
-                executor.submit(agent_operation, f"agent-{i}") for i in range(5)
-                for _ in range(3)
-            ]
+            futures = [executor.submit(agent_operation, f"agent-{i}") for i in range(5) for _ in range(3)]
             for future in as_completed(futures):
                 future.result()
 
@@ -1260,16 +1185,14 @@ class TestConcurrencyReport:
     """Generate execution report with baseline measurements."""
 
     @pytest.mark.parametrize(
-        "num_threads,operations",
+        ("num_threads", "operations"),
         [
             (5, 10),
             (10, 20),
             (20, 50),
         ],
     )
-    def test_throughput_measurement(
-        self, concurrent_initialized_db, num_threads, operations
-    ):
+    def test_throughput_measurement(self, concurrent_initialized_db, num_threads, operations):
         """Measure throughput at various concurrency levels."""
         SessionLocal = sessionmaker(bind=concurrent_initialized_db)
         results = []
@@ -1288,10 +1211,7 @@ class TestConcurrencyReport:
                 session.close()
 
         with ThreadPoolExecutor(max_workers=num_threads) as executor:
-            futures = [
-                executor.submit(operation, i)
-                for i in range(operations * num_threads)
-            ]
+            futures = [executor.submit(operation, i) for i in range(operations * num_threads)]
             for future in as_completed(futures):
                 try:
                     future.result()

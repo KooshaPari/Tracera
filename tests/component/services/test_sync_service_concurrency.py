@@ -13,8 +13,10 @@ Target: 90%+ coverage for sync_service.py
 """
 
 import asyncio
+from unittest.mock import AsyncMock
+
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
+
 from tracertm.services.sync_service import SyncService
 
 
@@ -156,12 +158,9 @@ class TestSyncServiceRecovery:
     async def test_sync_timeout_handling(self, service):
         """Test sync behavior with timeout."""
         try:
-            result = await asyncio.wait_for(
-                service.sync(),
-                timeout=2.0
-            )
+            result = await asyncio.wait_for(service.sync(), timeout=2.0)
             assert result["synced"] is True
-        except asyncio.TimeoutError:
+        except TimeoutError:
             pytest.fail("Sync timed out unexpectedly")
 
 
@@ -219,7 +218,7 @@ class TestSyncServiceConflictResolution:
         """Test different conflict resolution strategies."""
         strategies = ["local_wins", "remote_wins", "merge", "manual"]
 
-        for strategy in strategies:
+        for _strategy in strategies:
             result = await service.sync()
             assert result["synced"] is True
 

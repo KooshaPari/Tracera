@@ -6,7 +6,7 @@ Quick reference for the TraceRTM development CLI.
 
 ```bash
 # Install dev CLI dependencies
-./scripts/install-dev-cli.sh
+./scripts/shell/install-dev-cli.sh
 
 # Or manually
 pip install -r scripts/dev-requirements.txt
@@ -202,4 +202,4 @@ GATEWAY_PORT=4000
 
 ## Full Documentation
 
-See [scripts/README_DEV_CLI.md](../../../scripts/README_DEV_CLI.md) for complete documentation.
+See [scripts/docs/README_DEV_CLI.md](../../../scripts/docs/README_DEV_CLI.md) for complete documentation.

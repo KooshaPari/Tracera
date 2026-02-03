@@ -33,7 +33,7 @@ const language = {
       // sections
       [/^\[[^\]]*\]/, "metatag"],
       // keys
-      [/(^\w+)(\s*)(\=)/, ["key", "", "delimiter"]],
+      [/(^\w+)(\s*)(=)/, ["key", "", "delimiter"]],
       // whitespace
       { include: "@whitespace" },
       // numbers

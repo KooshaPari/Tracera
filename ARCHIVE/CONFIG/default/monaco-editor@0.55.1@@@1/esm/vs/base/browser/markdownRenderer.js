@@ -407,7 +407,7 @@ function postProcessCodeBlockLanguageId(lang) {
     if (!lang) {
         return '';
     }
-    const parts = lang.split(/[\s+|:|,|\{|\?]/, 1);
+    const parts = lang.split(/[\s+|:|,|{|?]/, 1);
     if (parts.length) {
         return parts[0];
     }
@@ -467,7 +467,7 @@ const allowedMarkdownHtmlAttributes = Object.freeze([
         shouldKeep: (element, data) => {
             if (element.tagName === 'SPAN') {
                 if (data.attrName === 'style') {
-                    return /^(color\:(#[0-9a-fA-F]+|var\(--vscode(-[a-zA-Z0-9]+)+\));)?(background-color\:(#[0-9a-fA-F]+|var\(--vscode(-[a-zA-Z0-9]+)+\));)?(border-radius:[0-9]+px;)?$/.test(data.attrValue);
+                    return /^(color:(#[0-9a-fA-F]+|var\(--vscode(-[a-zA-Z0-9]+)+\));)?(background-color:(#[0-9a-fA-F]+|var\(--vscode(-[a-zA-Z0-9]+)+\));)?(border-radius:[0-9]+px;)?$/.test(data.attrValue);
                 }
             }
             return false;
@@ -479,7 +479,7 @@ const allowedMarkdownHtmlAttributes = Object.freeze([
         shouldKeep: (element, data) => {
             if (element.tagName === 'SPAN') {
                 if (data.attrName === 'class') {
-                    return /^codicon codicon-[a-z\-]+( codicon-modifier-[a-z\-]+)?$/.test(data.attrValue);
+                    return /^codicon codicon-[a-z-]+( codicon-modifier-[a-z-]+)?$/.test(data.attrValue);
                 }
             }
             return false;
@@ -693,7 +693,7 @@ function hasLinkTextAndStartOfLinkTarget(str) {
     return !!str.match(/(^|\s)\[.*\]\(\w*/);
 }
 function hasStartOfLinkTargetAndNoLinkText(str) {
-    return !!str.match(/^[^\[]*\]\([^\)]*$/);
+    return !!str.match(/^[^[]*\]\([^)]*$/);
 }
 function completeListItemPattern(list) {
     // Patch up this one list item
@@ -868,7 +868,7 @@ function completeTable(tokens) {
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i].trim();
         if (typeof numCols === 'undefined' && line.match(/^\s*\|/)) {
-            const line1Matches = line.match(/(\|[^\|]+)(?=\||$)/g);
+            const line1Matches = line.match(/(\|[^|]+)(?=\||$)/g);
             if (line1Matches) {
                 numCols = line1Matches.length;
             }

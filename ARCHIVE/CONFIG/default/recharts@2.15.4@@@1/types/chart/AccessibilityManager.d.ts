@@ -23,4 +23,4 @@ export declare class AccessibilityManager {
     setIndex(newIndex: number): void;
     private spoofMouse;
 }
-export {};
+

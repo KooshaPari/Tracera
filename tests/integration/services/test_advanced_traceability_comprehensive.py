@@ -15,17 +15,16 @@ Features:
 """
 
 import asyncio
+
 import pytest
-import pytest_asyncio
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
 from tracertm.models.base import Base
-from tracertm.models.project import Project
 from tracertm.models.item import Item
 from tracertm.models.link import Link
+from tracertm.models.project import Project
 from tracertm.services.advanced_traceability_service import AdvancedTraceabilityService
-
 
 pytestmark = pytest.mark.integration
 
@@ -48,9 +47,7 @@ class AsyncDatabaseSetup:
     @staticmethod
     async def get_session(engine):
         """Get database session."""
-        async_session = sessionmaker(
-            engine, class_=AsyncSession, expire_on_commit=False
-        )
+        async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
         return async_session()
 
 
@@ -73,9 +70,7 @@ def async_db_engine(event_loop):
 @pytest.fixture(scope="function")
 def async_db_session(async_db_engine, event_loop):
     """Create an async database session."""
-    session = event_loop.run_until_complete(
-        AsyncDatabaseSetup.get_session(async_db_engine)
-    )
+    session = event_loop.run_until_complete(AsyncDatabaseSetup.get_session(async_db_engine))
     yield session
     event_loop.run_until_complete(session.close())
 
@@ -832,7 +827,7 @@ class TestComplexScenarios:
                 id=f"link-{i}",
                 project_id="deep-proj",
                 source_item_id=f"item-{i}",
-                target_item_id=f"item-{i+1}",
+                target_item_id=f"item-{i + 1}",
                 link_type="depends_on",
             )
             async_db_session.add(link)
@@ -981,12 +976,10 @@ class TestMetricsCalculation:
 
 # Test execution summary
 if __name__ == "__main__":
-    pytest.main(
-        [
-            __file__,
-            "-v",
-            "--tb=short",
-            "--cov=src/tracertm/services/advanced_traceability_service",
-            "--cov-report=term-missing",
-        ]
-    )
+    pytest.main([
+        __file__,
+        "-v",
+        "--tb=short",
+        "--cov=src/tracertm/services/advanced_traceability_service",
+        "--cov-report=term-missing",
+    ])

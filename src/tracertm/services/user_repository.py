@@ -5,8 +5,10 @@ This service handles CRUD operations for the User model, providing
 methods to sync user data from WorkOS into the local database cache.
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from tracertm.models.user import User
 
 
@@ -18,10 +20,7 @@ class UserRepository:
     """
 
     @staticmethod
-    async def get_or_create_from_workos(
-        db: AsyncSession,
-        workos_user: dict
-    ) -> User:
+    async def get_or_create_from_workos(db: AsyncSession, workos_user: dict) -> User:
         """Get user from database or create from WorkOS data.
 
         If user exists, updates cached data. If not, creates new user.
@@ -56,19 +55,17 @@ class UserRepository:
             if updated_at_str:
                 # Handle both ISO format strings and datetime objects
                 if isinstance(updated_at_str, str):
-                    user.updated_at = datetime.fromisoformat(
-                        updated_at_str.replace('Z', '+00:00')
-                    )
+                    user.updated_at = datetime.fromisoformat(updated_at_str.replace("Z", "+00:00"))
                 elif isinstance(updated_at_str, datetime):
                     user.updated_at = updated_at_str
                 else:
                     # Fallback to current time if format unexpected
-                    user.updated_at = datetime.now(timezone.utc)
+                    user.updated_at = datetime.now(UTC)
             else:
-                user.updated_at = datetime.now(timezone.utc)
+                user.updated_at = datetime.now(UTC)
 
             # Mark cache as fresh
-            user.synced_at = datetime.now(timezone.utc)
+            user.synced_at = datetime.now(UTC)
         else:
             # Create new user from WorkOS data
             created_at_str = workos_user.get("created_at")
@@ -76,22 +73,18 @@ class UserRepository:
 
             # Parse timestamps - handle both string and datetime formats
             if isinstance(created_at_str, str):
-                created_at = datetime.fromisoformat(
-                    created_at_str.replace('Z', '+00:00')
-                )
+                created_at = datetime.fromisoformat(created_at_str.replace("Z", "+00:00"))
             elif isinstance(created_at_str, datetime):
                 created_at = created_at_str
             else:
-                created_at = datetime.now(timezone.utc)
+                created_at = datetime.now(UTC)
 
             if isinstance(updated_at_str, str):
-                updated_at = datetime.fromisoformat(
-                    updated_at_str.replace('Z', '+00:00')
-                )
+                updated_at = datetime.fromisoformat(updated_at_str.replace("Z", "+00:00"))
             elif isinstance(updated_at_str, datetime):
                 updated_at = updated_at_str
             else:
-                updated_at = datetime.now(timezone.utc)
+                updated_at = datetime.now(UTC)
 
             user = User(
                 id=user_id,
@@ -102,7 +95,7 @@ class UserRepository:
                 profile_picture_url=workos_user.get("profile_picture_url"),
                 created_at=created_at,
                 updated_at=updated_at,
-                synced_at=datetime.now(timezone.utc),
+                synced_at=datetime.now(UTC),
             )
             db.add(user)
 
@@ -131,5 +124,5 @@ class UserRepository:
                 user = await UserRepository.get_or_create_from_workos(db, workos_user)
             ```
         """
-        age = datetime.now(timezone.utc) - synced_at
+        age = datetime.now(UTC) - synced_at
         return age.total_seconds() < (max_age_minutes * 60)

@@ -9,15 +9,9 @@ This module provides 50+ tests for:
 - Error handling and edge cases
 """
 
-import json
-import sys
-import tempfile
-from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
-
 import pytest
-from hypothesis import given, strategies as st
-from loguru import logger
+from hypothesis import given
+from hypothesis import strategies as st
 
 from tracertm.utils.figma import (
     FigmaAPIError,
@@ -180,23 +174,20 @@ class TestParseFigmaUrlEdgeCases:
     @pytest.mark.unit
     def test_parse_url_invalid_domain(self):
         """Test parsing URL with invalid domain."""
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(ValueError, match=r"Not a Figma URL"):
             parse_figma_url("https://example.com/file/abc123")
-        assert "Not a Figma URL" in str(exc_info.value)
 
     @pytest.mark.unit
     def test_parse_url_invalid_path(self):
         """Test parsing URL with invalid path."""
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(ValueError, match=r"Invalid Figma URL format"):
             parse_figma_url("https://www.figma.com/invalid/abc123")
-        assert "Invalid Figma URL format" in str(exc_info.value)
 
     @pytest.mark.unit
     def test_parse_url_missing_file_key(self):
         """Test parsing URL with missing file key."""
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(ValueError, match=r"Invalid Figma URL format"):
             parse_figma_url("https://www.figma.com/file/")
-        assert "Invalid Figma URL format" in str(exc_info.value)
 
     @pytest.mark.unit
     def test_parse_url_with_fragment(self):
@@ -540,7 +531,7 @@ class TestPropertyBasedFigmaHypothesis:
     @pytest.mark.property
     @given(
         file_key=st.text(alphabet=st.characters(whitelist_categories=("Lu", "Ll", "Nd")), min_size=1, max_size=50),
-        file_name=st.text(min_size=1, max_size=100)
+        file_name=st.text(min_size=1, max_size=100),
     )
     def test_build_url_with_arbitrary_file_names(self, file_key, file_name):
         """Test build_figma_url with arbitrary file names."""
@@ -552,7 +543,7 @@ class TestPropertyBasedFigmaHypothesis:
     @pytest.mark.property
     @given(
         file_key=st.text(alphabet=st.characters(whitelist_categories=("Lu", "Ll", "Nd")), min_size=1, max_size=50),
-        node_parts=st.tuples(st.integers(min_value=1, max_value=9999), st.integers(min_value=1, max_value=9999))
+        node_parts=st.tuples(st.integers(min_value=1, max_value=9999), st.integers(min_value=1, max_value=9999)),
     )
     def test_build_url_with_generated_node_ids(self, file_key, node_parts):
         """Test build_figma_url with generated node IDs."""
@@ -562,9 +553,7 @@ class TestPropertyBasedFigmaHypothesis:
 
     @pytest.mark.unit
     @pytest.mark.property
-    @given(
-        text=st.text(min_size=0, max_size=500)
-    )
+    @given(text=st.text(min_size=0, max_size=500))
     def test_extract_protocol_url_never_crashes(self, text):
         """Test extract_figma_protocol_url never crashes."""
         result = extract_figma_protocol_url(text)
@@ -572,9 +561,7 @@ class TestPropertyBasedFigmaHypothesis:
 
     @pytest.mark.unit
     @pytest.mark.property
-    @given(
-        text=st.text(min_size=0, max_size=500)
-    )
+    @given(text=st.text(min_size=0, max_size=500))
     def test_convert_protocol_url_never_crashes(self, text):
         """Test convert_figma_protocol_to_url never crashes."""
         result = convert_figma_protocol_to_url(text)
@@ -582,9 +569,7 @@ class TestPropertyBasedFigmaHypothesis:
 
     @pytest.mark.unit
     @pytest.mark.property
-    @given(
-        url=st.text(min_size=0, max_size=200)
-    )
+    @given(url=st.text(min_size=0, max_size=200))
     def test_is_figma_url_never_crashes(self, url):
         """Test is_figma_url never crashes."""
         result = is_figma_url(url)
@@ -598,6 +583,7 @@ class TestLoggingConfiguration:
     def test_logger_import(self):
         """Test logger can be imported."""
         from loguru import logger as test_logger
+
         assert test_logger is not None
 
     @pytest.mark.unit

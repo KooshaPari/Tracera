@@ -7,12 +7,10 @@ for the local-to-remote synchronization system.
 
 import json
 import sqlite3
-from datetime import datetime, timedelta
-from unittest.mock import AsyncMock, MagicMock, patch
+from datetime import UTC, datetime, timedelta
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-
-
 
 # ============================================================================
 # FIXTURES
@@ -57,7 +55,7 @@ def sync_db(tmp_path):
     conn.commit()
     conn.close()
 
-    yield db_path
+    return db_path
 
 
 @pytest.fixture
@@ -65,7 +63,7 @@ def mock_api_client():
     """Mock API client for testing sync operations"""
     client = MagicMock()
     client.upload_changes = AsyncMock(return_value={"success": True, "conflicts": []})
-    client.download_changes = AsyncMock(return_value={"changes": [], "server_time": datetime.utcnow().isoformat()})
+    client.download_changes = AsyncMock(return_value={"changes": [], "server_time": datetime.now(UTC).isoformat()})
     client.is_online = MagicMock(return_value=True)
     return client
 
@@ -77,14 +75,10 @@ def sample_queue_entry():
         "entity_type": "item",
         "entity_id": "item-001",
         "operation": "create",
-        "payload": json.dumps({
-            "title": "New Item",
-            "status": "todo",
-            "type": "story"
-        }),
-        "created_at": datetime.utcnow().isoformat(),
+        "payload": json.dumps({"title": "New Item", "status": "todo", "type": "story"}),
+        "created_at": datetime.now(UTC).isoformat(),
         "retry_count": 0,
-        "last_error": None
+        "last_error": None,
     }
 
 
@@ -114,17 +108,20 @@ class TestSyncEngineQueueManagement:
         cursor = conn.cursor()
 
         # Act
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO sync_queue (entity_type, entity_id, operation, payload, created_at, retry_count)
             VALUES (?, ?, ?, ?, ?, ?)
-        """, (
-            sample_queue_entry["entity_type"],
-            sample_queue_entry["entity_id"],
-            sample_queue_entry["operation"],
-            sample_queue_entry["payload"],
-            sample_queue_entry["created_at"],
-            sample_queue_entry["retry_count"]
-        ))
+        """,
+            (
+                sample_queue_entry["entity_type"],
+                sample_queue_entry["entity_id"],
+                sample_queue_entry["operation"],
+                sample_queue_entry["payload"],
+                sample_queue_entry["created_at"],
+                sample_queue_entry["retry_count"],
+            ),
+        )
         conn.commit()
 
         # Assert
@@ -151,16 +148,13 @@ class TestSyncEngineQueueManagement:
 
         # Add multiple items
         for i in range(3):
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT INTO sync_queue (entity_type, entity_id, operation, payload, created_at)
                 VALUES (?, ?, ?, ?, ?)
-            """, (
-                "item",
-                f"item-{i:03d}",
-                "create",
-                json.dumps({"id": i}),
-                datetime.utcnow().isoformat()
-            ))
+            """,
+                ("item", f"item-{i:03d}", "create", json.dumps({"id": i}), datetime.now(UTC).isoformat()),
+            )
         conn.commit()
 
         # Act
@@ -186,16 +180,19 @@ class TestSyncEngineQueueManagement:
         conn = sqlite3.connect(sync_db)
         cursor = conn.cursor()
 
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO sync_queue (entity_type, entity_id, operation, payload, created_at)
             VALUES (?, ?, ?, ?, ?)
-        """, (
-            sample_queue_entry["entity_type"],
-            sample_queue_entry["entity_id"],
-            sample_queue_entry["operation"],
-            sample_queue_entry["payload"],
-            sample_queue_entry["created_at"]
-        ))
+        """,
+            (
+                sample_queue_entry["entity_type"],
+                sample_queue_entry["entity_id"],
+                sample_queue_entry["operation"],
+                sample_queue_entry["payload"],
+                sample_queue_entry["created_at"],
+            ),
+        )
         conn.commit()
 
         # Act
@@ -222,30 +219,37 @@ class TestSyncEngineQueueManagement:
         conn = sqlite3.connect(sync_db)
         cursor = conn.cursor()
 
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO sync_queue (entity_type, entity_id, operation, payload, created_at, retry_count)
             VALUES (?, ?, ?, ?, ?, ?)
-        """, (
-            sample_queue_entry["entity_type"],
-            sample_queue_entry["entity_id"],
-            sample_queue_entry["operation"],
-            sample_queue_entry["payload"],
-            sample_queue_entry["created_at"],
-            0
-        ))
+        """,
+            (
+                sample_queue_entry["entity_type"],
+                sample_queue_entry["entity_id"],
+                sample_queue_entry["operation"],
+                sample_queue_entry["payload"],
+                sample_queue_entry["created_at"],
+                0,
+            ),
+        )
         conn.commit()
 
         # Act
-        cursor.execute("""
+        cursor.execute(
+            """
             UPDATE sync_queue
             SET retry_count = retry_count + 1, last_error = ?
             WHERE entity_id = ?
-        """, ("Network error", sample_queue_entry["entity_id"]))
+        """,
+            ("Network error", sample_queue_entry["entity_id"]),
+        )
         conn.commit()
 
         # Assert
-        cursor.execute("SELECT retry_count, last_error FROM sync_queue WHERE entity_id = ?",
-                      (sample_queue_entry["entity_id"],))
+        cursor.execute(
+            "SELECT retry_count, last_error FROM sync_queue WHERE entity_id = ?", (sample_queue_entry["entity_id"],)
+        )
         result = cursor.fetchone()
         conn.close()
 
@@ -268,24 +272,23 @@ class TestSyncEngineQueueManagement:
         # Add items with different retry counts
         retry_counts = [0, 1, 2, 3, 5]  # Max retries = 3
         for i, count in enumerate(retry_counts):
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT INTO sync_queue (entity_type, entity_id, operation, payload, created_at, retry_count)
                 VALUES (?, ?, ?, ?, ?, ?)
-            """, (
-                "item",
-                f"item-{i:03d}",
-                "create",
-                json.dumps({"id": i}),
-                datetime.utcnow().isoformat(),
-                count
-            ))
+            """,
+                ("item", f"item-{i:03d}", "create", json.dumps({"id": i}), datetime.now(UTC).isoformat(), count),
+            )
         conn.commit()
 
         # Act
         max_retries = 3
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT * FROM sync_queue WHERE retry_count <= ?
-        """, (max_retries,))
+        """,
+            (max_retries,),
+        )
         results = cursor.fetchall()
         conn.close()
 
@@ -320,16 +323,19 @@ class TestSyncEngineSyncFlow:
         conn = sqlite3.connect(sync_db)
         cursor = conn.cursor()
 
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO sync_queue (entity_type, entity_id, operation, payload, created_at)
             VALUES (?, ?, ?, ?, ?)
-        """, (
-            sample_queue_entry["entity_type"],
-            sample_queue_entry["entity_id"],
-            sample_queue_entry["operation"],
-            sample_queue_entry["payload"],
-            sample_queue_entry["created_at"]
-        ))
+        """,
+            (
+                sample_queue_entry["entity_type"],
+                sample_queue_entry["entity_id"],
+                sample_queue_entry["operation"],
+                sample_queue_entry["payload"],
+                sample_queue_entry["created_at"],
+            ),
+        )
         conn.commit()
 
         # Act
@@ -338,12 +344,7 @@ class TestSyncEngineSyncFlow:
 
         # Simulate upload
         changes = [
-            {
-                "entity_type": row[1],
-                "entity_id": row[2],
-                "operation": row[3],
-                "payload": json.loads(row[4])
-            }
+            {"entity_type": row[1], "entity_id": row[2], "operation": row[3], "payload": json.loads(row[4])}
             for row in pending
         ]
 
@@ -378,16 +379,19 @@ class TestSyncEngineSyncFlow:
         conn = sqlite3.connect(sync_db)
         cursor = conn.cursor()
 
-        last_sync = (datetime.utcnow() - timedelta(hours=1)).isoformat()
+        last_sync = (datetime.now(UTC) - timedelta(hours=1)).isoformat()
 
         # Act
         result = await mock_api_client.download_changes(since=last_sync)
 
         # Update last sync time
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT OR REPLACE INTO sync_state (key, value, updated_at)
             VALUES (?, ?, ?)
-        """, ("last_sync", result["server_time"], datetime.utcnow().isoformat()))
+        """,
+            ("last_sync", result["server_time"], datetime.now(UTC).isoformat()),
+        )
         conn.commit()
 
         # Assert
@@ -413,16 +417,19 @@ class TestSyncEngineSyncFlow:
         conn = sqlite3.connect(sync_db)
         cursor = conn.cursor()
 
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO sync_queue (entity_type, entity_id, operation, payload, created_at)
             VALUES (?, ?, ?, ?, ?)
-        """, (
-            sample_queue_entry["entity_type"],
-            sample_queue_entry["entity_id"],
-            sample_queue_entry["operation"],
-            sample_queue_entry["payload"],
-            sample_queue_entry["created_at"]
-        ))
+        """,
+            (
+                sample_queue_entry["entity_type"],
+                sample_queue_entry["entity_id"],
+                sample_queue_entry["operation"],
+                sample_queue_entry["payload"],
+                sample_queue_entry["created_at"],
+            ),
+        )
         conn.commit()
 
         # Act - Upload phase
@@ -437,7 +444,7 @@ class TestSyncEngineSyncFlow:
             conn.commit()
 
         # Download phase
-        download_result = await mock_api_client.download_changes()
+        await mock_api_client.download_changes()
 
         # Assert
         cursor.execute("SELECT * FROM sync_queue")
@@ -464,16 +471,19 @@ class TestSyncEngineSyncFlow:
         cursor = conn.cursor()
 
         # Act - Add to queue while offline
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO sync_queue (entity_type, entity_id, operation, payload, created_at)
             VALUES (?, ?, ?, ?, ?)
-        """, (
-            sample_queue_entry["entity_type"],
-            sample_queue_entry["entity_id"],
-            sample_queue_entry["operation"],
-            sample_queue_entry["payload"],
-            sample_queue_entry["created_at"]
-        ))
+        """,
+            (
+                sample_queue_entry["entity_type"],
+                sample_queue_entry["entity_id"],
+                sample_queue_entry["operation"],
+                sample_queue_entry["payload"],
+                sample_queue_entry["created_at"],
+            ),
+        )
         conn.commit()
         conn.close()
 
@@ -517,31 +527,38 @@ class TestSyncEngineErrorHandling:
         conn = sqlite3.connect(sync_db)
         cursor = conn.cursor()
 
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO sync_queue (entity_type, entity_id, operation, payload, created_at, retry_count)
             VALUES (?, ?, ?, ?, ?, ?)
-        """, (
-            sample_queue_entry["entity_type"],
-            sample_queue_entry["entity_id"],
-            sample_queue_entry["operation"],
-            sample_queue_entry["payload"],
-            sample_queue_entry["created_at"],
-            0
-        ))
+        """,
+            (
+                sample_queue_entry["entity_type"],
+                sample_queue_entry["entity_id"],
+                sample_queue_entry["operation"],
+                sample_queue_entry["payload"],
+                sample_queue_entry["created_at"],
+                0,
+            ),
+        )
         conn.commit()
 
         # Act - Simulate network error
         error_message = "Connection timeout"
-        cursor.execute("""
+        cursor.execute(
+            """
             UPDATE sync_queue
             SET retry_count = retry_count + 1, last_error = ?
             WHERE entity_id = ?
-        """, (error_message, sample_queue_entry["entity_id"]))
+        """,
+            (error_message, sample_queue_entry["entity_id"]),
+        )
         conn.commit()
 
         # Assert
-        cursor.execute("SELECT retry_count, last_error FROM sync_queue WHERE entity_id = ?",
-                      (sample_queue_entry["entity_id"],))
+        cursor.execute(
+            "SELECT retry_count, last_error FROM sync_queue WHERE entity_id = ?", (sample_queue_entry["entity_id"],)
+        )
         result = cursor.fetchone()
         conn.close()
 
@@ -563,18 +580,21 @@ class TestSyncEngineErrorHandling:
         cursor = conn.cursor()
 
         max_retries = 3
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO sync_queue (entity_type, entity_id, operation, payload, created_at, retry_count, last_error)
             VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (
-            sample_queue_entry["entity_type"],
-            sample_queue_entry["entity_id"],
-            sample_queue_entry["operation"],
-            sample_queue_entry["payload"],
-            sample_queue_entry["created_at"],
-            max_retries + 1,  # Exceeded max
-            "Multiple failures"
-        ))
+        """,
+            (
+                sample_queue_entry["entity_type"],
+                sample_queue_entry["entity_id"],
+                sample_queue_entry["operation"],
+                sample_queue_entry["payload"],
+                sample_queue_entry["created_at"],
+                max_retries + 1,  # Exceeded max
+                "Multiple failures",
+            ),
+        )
         conn.commit()
 
         # Act - Filter items eligible for retry
@@ -597,15 +617,14 @@ class TestSyncEngineErrorHandling:
         And: Conflict resolution is triggered
         """
         # Arrange
-        mock_api_client.upload_changes = AsyncMock(return_value={
-            "success": False,
-            "conflicts": [{
-                "entity_id": "item-001",
-                "local_version": 2,
-                "remote_version": 3,
-                "reason": "version_mismatch"
-            }]
-        })
+        mock_api_client.upload_changes = AsyncMock(
+            return_value={
+                "success": False,
+                "conflicts": [
+                    {"entity_id": "item-001", "local_version": 2, "remote_version": 3, "reason": "version_mismatch"}
+                ],
+            }
+        )
 
         changes = [{"entity_id": "item-001", "version": 2}]
 
@@ -633,14 +652,14 @@ class TestSyncEngineErrorHandling:
         # Act
         delays = []
         for retry_count in range(5):
-            delay = min(base_delay * (2 ** retry_count), max_delay)
+            delay = min(base_delay * (2**retry_count), max_delay)
             delays.append(delay)
 
         # Assert
-        assert delays[0] == 1.0   # 2^0 = 1
-        assert delays[1] == 2.0   # 2^1 = 2
-        assert delays[2] == 4.0   # 2^2 = 4
-        assert delays[3] == 8.0   # 2^3 = 8
+        assert delays[0] == 1.0  # 2^0 = 1
+        assert delays[1] == 2.0  # 2^1 = 2
+        assert delays[2] == 4.0  # 2^2 = 4
+        assert delays[3] == 8.0  # 2^3 = 8
         assert delays[4] == 16.0  # 2^4 = 16
 
     @pytest.mark.unit
@@ -660,16 +679,13 @@ class TestSyncEngineErrorHandling:
 
         # Add multiple items
         for i in range(3):
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT INTO sync_queue (entity_type, entity_id, operation, payload, created_at)
                 VALUES (?, ?, ?, ?, ?)
-            """, (
-                "item",
-                f"item-{i:03d}",
-                "create",
-                json.dumps({"id": i}),
-                datetime.utcnow().isoformat()
-            ))
+            """,
+                ("item", f"item-{i:03d}", "create", json.dumps({"id": i}), datetime.now(UTC).isoformat()),
+            )
         conn.commit()
 
         # Simulate partial success (item-000 and item-001 succeed, item-002 fails)
@@ -681,11 +697,14 @@ class TestSyncEngineErrorHandling:
             cursor.execute("DELETE FROM sync_queue WHERE entity_id = ?", (entity_id,))
 
         # Increment retry for failed item
-        cursor.execute("""
+        cursor.execute(
+            """
             UPDATE sync_queue
             SET retry_count = retry_count + 1, last_error = ?
             WHERE entity_id = ?
-        """, ("Server error", failed_id))
+        """,
+            ("Server error", failed_id),
+        )
         conn.commit()
 
         # Assert
@@ -723,13 +742,16 @@ class TestSyncEngineSyncState:
         conn = sqlite3.connect(sync_db)
         cursor = conn.cursor()
 
-        sync_time = datetime.utcnow().isoformat()
+        sync_time = datetime.now(UTC).isoformat()
 
         # Act
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT OR REPLACE INTO sync_state (key, value, updated_at)
             VALUES (?, ?, ?)
-        """, ("last_sync", sync_time, datetime.utcnow().isoformat()))
+        """,
+            ("last_sync", sync_time, datetime.now(UTC).isoformat()),
+        )
         conn.commit()
 
         # Assert
@@ -753,11 +775,14 @@ class TestSyncEngineSyncState:
         conn = sqlite3.connect(sync_db)
         cursor = conn.cursor()
 
-        sync_time = datetime.utcnow().isoformat()
-        cursor.execute("""
+        sync_time = datetime.now(UTC).isoformat()
+        cursor.execute(
+            """
             INSERT INTO sync_state (key, value, updated_at)
             VALUES (?, ?, ?)
-        """, ("last_sync", sync_time, datetime.utcnow().isoformat()))
+        """,
+            ("last_sync", sync_time, datetime.now(UTC).isoformat()),
+        )
         conn.commit()
 
         # Act
@@ -805,10 +830,13 @@ class TestSyncEngineSyncState:
         # Act
         statuses = ["syncing", "complete", "error"]
         for status in statuses:
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT OR REPLACE INTO sync_state (key, value, updated_at)
                 VALUES (?, ?, ?)
-            """, ("sync_status", status, datetime.utcnow().isoformat()))
+            """,
+                ("sync_status", status, datetime.now(UTC).isoformat()),
+            )
             conn.commit()
 
         # Assert

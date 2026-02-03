@@ -16,10 +16,9 @@ Implements:
 
 import re
 from datetime import UTC, datetime
-from typing import Any, Optional
-from uuid import uuid4
+from typing import Any, ClassVar
 
-from sqlalchemy import and_, func, select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.models.item import Item
@@ -46,7 +45,7 @@ class RequirementQualityAnalyzer:
     """
 
     # Ambiguity indicators (words that make requirements vague)
-    AMBIGUOUS_WORDS = {
+    AMBIGUOUS_WORDS: ClassVar[set[str]] = {
         "appropriate",
         "adequate",
         "efficient",
@@ -72,11 +71,10 @@ class RequirementQualityAnalyzer:
         "pretty",
         "nice",
         "clean",
-        "efficient",
     }
 
     # Incomplete indicators (regex patterns)
-    INCOMPLETE_PATTERNS = [
+    INCOMPLETE_PATTERNS: ClassVar[list[str]] = [
         r"\bTBD\b",
         r"\bTBC\b",
         r"\bTODO\b",
@@ -90,7 +88,7 @@ class RequirementQualityAnalyzer:
     ]
 
     # Untestable indicators (absolute/universal quantifiers)
-    UNTESTABLE_WORDS = {
+    UNTESTABLE_WORDS: ClassVar[set[str]] = {
         "all",
         "always",
         "never",
@@ -101,7 +99,7 @@ class RequirementQualityAnalyzer:
     }
 
     # Weak requirement verbs
-    WEAK_VERBS = {
+    WEAK_VERBS: ClassVar[set[str]] = {
         "may",
         "might",
         "could",
@@ -118,7 +116,7 @@ class RequirementQualityAnalyzer:
     }
 
     # Strong requirement verbs (preferred)
-    STRONG_VERBS = {
+    STRONG_VERBS: ClassVar[set[str]] = {
         "shall",
         "must",
         "will",
@@ -165,45 +163,35 @@ class RequirementQualityAnalyzer:
         scores = {}
 
         # 1. Analyze unambiguity (absence of vague terms)
-        ambiguous_found = [
-            w for w in self.AMBIGUOUS_WORDS if re.search(r"\b" + w + r"\b", full_text)
-        ]
+        ambiguous_found = [w for w in self.AMBIGUOUS_WORDS if re.search(r"\b" + w + r"\b", full_text)]
         ambiguity_score = max(0, 1 - len(ambiguous_found) * 0.1)
         scores["unambiguity"] = ambiguity_score
 
-        for word in ambiguous_found:
-            issues.append(
-                {
-                    "dimension": "unambiguity",
-                    "severity": "warning",
-                    "message": f"Ambiguous term found: '{word}'",
-                    "suggestion": f"Replace '{word}' with specific, measurable criteria",
-                }
-            )
+        issues.extend([
+            {
+                "dimension": "unambiguity",
+                "severity": "warning",
+                "message": f"Ambiguous term found: '{word}'",
+                "suggestion": f"Replace '{word}' with specific, measurable criteria",
+            }
+            for word in ambiguous_found
+        ])
 
         # 2. Analyze completeness (no TBD/TODO markers)
-        incomplete_count = sum(
-            1
-            for p in self.INCOMPLETE_PATTERNS
-            if re.search(p, full_text, re.IGNORECASE)
-        )
+        incomplete_count = sum(1 for p in self.INCOMPLETE_PATTERNS if re.search(p, full_text, re.IGNORECASE))
         completeness_score = max(0, 1 - incomplete_count * 0.25)
         scores["completeness"] = completeness_score
 
         if incomplete_count > 0:
-            issues.append(
-                {
-                    "dimension": "completeness",
-                    "severity": "error",
-                    "message": "Requirement contains incomplete markers (TBD, TODO, etc.)",
-                    "suggestion": "Complete all placeholder content before finalizing",
-                }
-            )
+            issues.append({
+                "dimension": "completeness",
+                "severity": "error",
+                "message": "Requirement contains incomplete markers (TBD, TODO, etc.)",
+                "suggestion": "Complete all placeholder content before finalizing",
+            })
 
         # 3. Analyze verifiability (testability)
-        untestable_count = sum(
-            1 for w in self.UNTESTABLE_WORDS if re.search(r"\b" + w + r"\b", full_text)
-        )
+        untestable_count = sum(1 for w in self.UNTESTABLE_WORDS if re.search(r"\b" + w + r"\b", full_text))
         verifiability_score = max(0, 1 - untestable_count * 0.15)
 
         # Boost score if quantifiable criteria present
@@ -229,34 +217,28 @@ class RequirementQualityAnalyzer:
         scores["verifiability"] = verifiability_score
 
         if untestable_count > 0:
-            issues.append(
-                {
-                    "dimension": "verifiability",
-                    "severity": "warning",
-                    "message": f"Absolute quantifiers found: may be difficult to test",
-                    "suggestion": "Use measurable acceptance criteria instead of universal quantifiers",
-                }
-            )
+            issues.append({
+                "dimension": "verifiability",
+                "severity": "warning",
+                "message": "Absolute quantifiers found: may be difficult to test",
+                "suggestion": "Use measurable acceptance criteria instead of universal quantifiers",
+            })
 
         # 4. Analyze necessity (strong requirement language)
         weak_found = [v for v in self.WEAK_VERBS if re.search(r"\b" + v + r"\b", full_text)]
-        strong_found = [
-            v for v in self.STRONG_VERBS if re.search(r"\b" + v + r"\b", full_text)
-        ]
+        strong_found = [v for v in self.STRONG_VERBS if re.search(r"\b" + v + r"\b", full_text)]
 
         necessity_score = 1.0 if strong_found else 0.5
         necessity_score = max(0, necessity_score - len(weak_found) * 0.1)
         scores["necessity"] = necessity_score
 
         if weak_found and not strong_found:
-            issues.append(
-                {
-                    "dimension": "necessity",
-                    "severity": "warning",
-                    "message": f"Weak requirement verbs: {', '.join(weak_found)}",
-                    "suggestion": "Use 'shall' for mandatory, 'will' for design decisions, 'is' for constraints",
-                }
-            )
+            issues.append({
+                "dimension": "necessity",
+                "severity": "warning",
+                "message": f"Weak requirement verbs: {', '.join(weak_found)}",
+                "suggestion": "Use 'shall' for mandatory, 'will' for design decisions, 'is' for constraints",
+            })
 
         # 5. Analyze singularity (one requirement per statement)
         and_count = len(re.findall(r"\band\b", full_text, re.IGNORECASE))
@@ -267,14 +249,12 @@ class RequirementQualityAnalyzer:
         scores["singularity"] = singularity_score
 
         if conjunction_count > 2:
-            issues.append(
-                {
-                    "dimension": "singularity",
-                    "severity": "warning",
-                    "message": f"Requirement may contain multiple sub-requirements ({conjunction_count} conjunctions)",
-                    "suggestion": "Split into separate, atomic requirements",
-                }
-            )
+            issues.append({
+                "dimension": "singularity",
+                "severity": "warning",
+                "message": f"Requirement may contain multiple sub-requirements ({conjunction_count} conjunctions)",
+                "suggestion": "Split into separate, atomic requirements",
+            })
 
         # Calculate weighted overall score (ISO 29148 weighting)
         weights = {
@@ -335,9 +315,7 @@ class ImpactAnalyzer:
         """
         # Query direct downstream links (outgoing)
         downstream_result = await self.session.execute(
-            select(Link.target_item_id).where(
-                Link.source_item_id == item_id, Link.project_id == project_id
-            )
+            select(Link.target_item_id).where(Link.source_item_id == item_id, Link.project_id == project_id)
         )
         direct_downstream = [row[0] for row in downstream_result.fetchall()]
 
@@ -356,9 +334,7 @@ class ImpactAnalyzer:
 
         # Query upstream links (incoming)
         upstream_result = await self.session.execute(
-            select(Link.source_item_id).where(
-                Link.target_item_id == item_id, Link.project_id == project_id
-            )
+            select(Link.source_item_id).where(Link.target_item_id == item_id, Link.project_id == project_id)
         )
         upstream = [row[0] for row in upstream_result.fetchall()]
 
@@ -417,7 +393,7 @@ class VolatilityTracker:
         self,
         change_count: int,
         days_since_creation: int,
-        change_history: Optional[list[dict]] = None,
+        change_history: list[dict] | None = None,
     ) -> float:
         """
         Calculate Requirements Volatility Index.
@@ -453,14 +429,13 @@ class VolatilityTracker:
         """Categorize volatility into levels."""
         if volatility_score > 0.7:
             return "critical"
-        elif volatility_score > 0.4:
+        if volatility_score > 0.4:
             return "high"
-        elif volatility_score > 0.2:
+        if volatility_score > 0.2:
             return "medium"
-        elif volatility_score > 0.05:
+        if volatility_score > 0.05:
             return "low"
-        else:
-            return "stable"
+        return "stable"
 
 
 class WSJFCalculator:
@@ -505,9 +480,7 @@ class WSJFCalculator:
             job_size = 0.01
 
         # Standard WSJF formula with weights
-        numerator = (business_value * 0.4) + (time_sensitivity * 0.3) + (
-            risk_reduction * 0.3
-        )
+        numerator = (business_value * 0.4) + (time_sensitivity * 0.3) + (risk_reduction * 0.3)
         wsjf = numerator / job_size
 
         # Normalize to 0-1 range
@@ -538,10 +511,10 @@ class RequirementSpecService:
     async def create_spec(
         self,
         item_id: str,
-        business_value: Optional[float] = None,
-        time_sensitivity: Optional[float] = None,
-        risk_reduction: Optional[float] = None,
-        job_size: Optional[float] = None,
+        business_value: float | None = None,
+        time_sensitivity: float | None = None,
+        risk_reduction: float | None = None,
+        job_size: float | None = None,
         **kwargs: Any,
     ) -> RequirementQuality:
         """
@@ -564,26 +537,25 @@ class RequirementSpecService:
             raise ValueError(f"Item {item_id} not found")
 
         # Analyze quality
-        quality = self.quality_analyzer.analyze(
-            item.description or "", item.title
-        )
+        quality = self.quality_analyzer.analyze(item.description or "", item.title)
 
         # Calculate impact
-        impact = await self.impact_analyzer.calculate_impact(
-            item_id, item.project_id
-        )
+        impact = await self.impact_analyzer.calculate_impact(item_id, str(item.project_id))
 
         # Calculate WSJF if components provided
         wsjf_score = None
         if all(x is not None for x in [business_value, time_sensitivity, risk_reduction, job_size]):
             wsjf_score = self.wsjf_calculator.calculate_wsjf(
-                business_value, time_sensitivity, risk_reduction, job_size
+                float(business_value),
+                float(time_sensitivity),
+                float(risk_reduction),
+                float(job_size),
             )
 
         # Create spec with all derived properties
-        spec = await self.quality_repo.create(
+        return await self.quality_repo.create(
             item_id=item_id,
-            project_id=item.project_id,
+            project_id=str(item.project_id),
             quality_scores=quality["scores"],
             overall_quality_score=quality["overall_score"],
             quality_issues=quality["issues"],
@@ -594,8 +566,6 @@ class RequirementSpecService:
             wsjf_score=wsjf_score,
             **kwargs,
         )
-
-        return spec
 
     async def refresh_quality_analysis(self, item_id: str) -> RequirementQuality:
         """
@@ -613,9 +583,7 @@ class RequirementSpecService:
             raise ValueError(f"Item {item_id} not found")
 
         # Analyze quality
-        quality = self.quality_analyzer.analyze(
-            item.description or "", item.title
-        )
+        quality = self.quality_analyzer.analyze(item.description or "", item.title)
 
         # Get or create spec
         existing_spec = await self.quality_repo.get_by_item_id(item_id)
@@ -651,9 +619,7 @@ class RequirementSpecService:
             raise ValueError(f"Item {item_id} not found")
 
         # Calculate impact
-        impact = await self.impact_analyzer.calculate_impact(
-            item_id, item.project_id
-        )
+        impact = await self.impact_analyzer.calculate_impact(item_id, str(item.project_id))
 
         # Get or create spec
         existing_spec = await self.quality_repo.get_by_item_id(item_id)
@@ -677,8 +643,8 @@ class RequirementSpecService:
         changed_by: str,
         change_type: str,
         summary: str,
-        previous_values: Optional[dict] = None,
-        new_values: Optional[dict] = None,
+        previous_values: dict | None = None,
+        new_values: dict | None = None,
     ) -> RequirementQuality:
         """
         Record a change and update volatility metrics.
@@ -718,9 +684,7 @@ class RequirementSpecService:
 
         # Update volatility
         new_count = spec.change_count + 1
-        volatility = self.volatility_tracker.calculate_volatility(
-            new_count, max(1, days_since), history
-        )
+        volatility = self.volatility_tracker.calculate_volatility(new_count, max(1, days_since), history)
 
         return await self.quality_repo.update(
             spec.id,
@@ -755,9 +719,7 @@ class RequirementSpecService:
         if not spec:
             raise ValueError(f"RequirementQuality for item {item_id} not found")
 
-        wsjf_score = self.wsjf_calculator.calculate_wsjf(
-            business_value, time_sensitivity, risk_reduction, job_size
-        )
+        wsjf_score = self.wsjf_calculator.calculate_wsjf(business_value, time_sensitivity, risk_reduction, job_size)
 
         return await self.quality_repo.update(
             spec.id,
@@ -826,9 +788,7 @@ class RequirementSpecService:
             Health metrics and issue summary
         """
         # Get all specs for project
-        all_specs = await self.quality_repo.list_by_project(
-            project_id, limit=1000
-        )
+        all_specs = await self.quality_repo.list_by_project(project_id, limit=1000)
 
         if not all_specs:
             return {
@@ -847,20 +807,12 @@ class RequirementSpecService:
         unverified = [s for s in all_specs if not s.is_verified]
 
         # Calculate average scores
-        avg_quality = sum(s.overall_quality_score for s in all_specs) / len(
-            all_specs
-        )
-        avg_volatility = sum(s.volatility_index or 0 for s in all_specs) / len(
-            all_specs
-        )
-        avg_cpi = sum(s.change_propagation_index or 0 for s in all_specs) / len(
-            all_specs
-        )
+        avg_quality = sum(s.overall_quality_score for s in all_specs) / len(all_specs)
+        avg_volatility = sum(s.volatility_index or 0 for s in all_specs) / len(all_specs)
+        avg_cpi = sum(s.change_propagation_index or 0 for s in all_specs) / len(all_specs)
 
         # Health score (weighted)
-        health_score = (
-            avg_quality * 0.5 + (1 - avg_volatility) * 0.3 + (1 - avg_cpi) * 0.2
-        )
+        health_score = avg_quality * 0.5 + (1 - avg_volatility) * 0.3 + (1 - avg_cpi) * 0.2
 
         return {
             "total_requirements": len(all_specs),
@@ -873,9 +825,9 @@ class RequirementSpecService:
             "average_impact_index": avg_cpi,
             "verification_rate": (len(all_specs) - len(unverified)) / len(all_specs),
             "health_score": health_score,
-            "issues_by_severity": self._categorize_issues(
-                [issue for spec in all_specs for issue in (spec.quality_issues or [])]
-            ),
+            "issues_by_severity": self._categorize_issues([
+                issue for spec in all_specs for issue in (spec.quality_issues or [])
+            ]),
         }
 
     def _categorize_issues(self, issues: list[dict]) -> dict[str, int]:
@@ -950,14 +902,13 @@ class TestSpecFlakinessDector:
         """Categorize flakiness level."""
         if score > 0.7:
             return "critical"
-        elif score > 0.4:
+        if score > 0.4:
             return "high"
-        elif score > 0.2:
+        if score > 0.2:
             return "medium"
-        elif score > 0.05:
+        if score > 0.05:
             return "low"
-        else:
-            return "stable"
+        return "stable"
 
 
 class AIPropertyPlaceholder:
@@ -975,7 +926,7 @@ class AIPropertyPlaceholder:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def calculate_embeddings(self, item_id: str) -> Optional[list[float]]:
+    async def calculate_embeddings(self, item_id: str) -> list[float] | None:
         """
         Calculate semantic embeddings for requirement text.
 

@@ -4,9 +4,8 @@ Tests for logging initialization and configuration.
 Target: +1% coverage on logging initialization paths
 """
 
-import sys
 from pathlib import Path
-from unittest.mock import MagicMock, patch, call
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -20,7 +19,7 @@ class TestGetLogger:
     def test_get_logger_returns_bound_logger(self):
         """Test get_logger returns bound logger."""
         result = get_logger("test_module")
-        
+
         # Result should be a logger-like object
         assert result is not None
 
@@ -40,7 +39,7 @@ class TestGetLogger:
     def test_get_logger_module_name(self):
         """Test get_logger preserves module name."""
         logger = get_logger("tracertm.api.client")
-        
+
         # Should return a logger instance
         assert logger is not None
 
@@ -48,14 +47,14 @@ class TestGetLogger:
     def test_get_logger_nested_module(self):
         """Test get_logger with nested module names."""
         logger = get_logger("tracertm.core.database")
-        
+
         assert logger is not None
 
     @pytest.mark.unit
     def test_get_logger_simple_name(self):
         """Test get_logger with simple module name."""
         logger = get_logger("api")
-        
+
         assert logger is not None
 
 
@@ -118,8 +117,8 @@ class TestLoggingConfiguration:
     @patch("tracertm.logging_config.get_settings")
     def test_logging_file_handlers(self, mock_get_settings, mock_logger):
         """Test logging file handlers are created."""
+
         from tracertm.config.settings import TraceSettings, reset_settings
-        from pathlib import Path
 
         reset_settings()
         settings = TraceSettings(log_level="INFO")
@@ -144,7 +143,7 @@ class TestLoggingIntegration:
     def test_get_logger_integration(self):
         """Test get_logger in actual use."""
         logger = get_logger("test.module")
-        
+
         # Should be usable
         assert logger is not None
         assert hasattr(logger, "__module__") or hasattr(logger, "bind")
@@ -185,8 +184,9 @@ class TestLoggingErrorHandling:
     @patch("tracertm.logging_config.get_settings")
     def test_logging_with_invalid_directory(self, mock_get_settings, mock_logger):
         """Test logging handles invalid directory gracefully."""
-        from tracertm.config.settings import TraceSettings, reset_settings
         from pathlib import Path
+
+        from tracertm.config.settings import TraceSettings, reset_settings
 
         reset_settings()
         # Use a valid temp directory

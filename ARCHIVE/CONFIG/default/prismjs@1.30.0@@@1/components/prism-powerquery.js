@@ -47,8 +47,8 @@ Prism.languages.powerquery = {
 		pattern: /\b0x[\da-f]+\b|(?:[+-]?(?:\b\d+\.)?\b\d+|[+-]\.\d+|(^|[^.])\B\.\d+)(?:e[+-]?\d+)?\b/i,
 		lookbehind: true
 	},
-	'operator': /[-+*\/&?@^]|<(?:=>?|>)?|>=?|=>?|\.\.\.?/,
-	'punctuation': /[,;\[\](){}]/
+	'operator': /[-+*/&?@^]|<(?:=>?|>)?|>=?|=>?|\.\.\.?/,
+	'punctuation': /[,;[\](){}]/
 };
 
 Prism.languages.pq = Prism.languages['powerquery'];

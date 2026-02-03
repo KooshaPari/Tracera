@@ -4,14 +4,16 @@ Account model for TraceRTM.
 Accounts represent workspaces/organizations that can have multiple users.
 """
 
-import uuid
-from typing import Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from tracertm.models.base import Base, TimestampMixin, generate_uuid
 from tracertm.models.types import JSONType
+
+if TYPE_CHECKING:
+    from tracertm.models.account_user import AccountUser
 
 
 class AccountType(str):
@@ -29,21 +31,15 @@ class Account(Base, TimestampMixin):
     """
 
     __tablename__ = "accounts"
-    __table_args__: dict[str, Any] = {"extend_existing": True}
+    __table_args__: ClassVar[dict[str, Any]] = {"extend_existing": True}
 
-    id: Mapped[str] = mapped_column(
-        String(36), primary_key=True, default=generate_uuid
-    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
     name: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     slug: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, index=True)
-    account_type: Mapped[str] = mapped_column(
-        String(50), nullable=False, default=AccountType.PERSONAL
-    )
-    
+    account_type: Mapped[str] = mapped_column(String(50), nullable=False, default=AccountType.PERSONAL)
+
     # Metadata
-    account_metadata: Mapped[dict[str, object]] = mapped_column(
-        "metadata", JSONType, nullable=False, default=dict
-    )
+    account_metadata: Mapped[dict[str, object]] = mapped_column("metadata", JSONType, nullable=False, default=dict)
 
     # Relationships
     account_users: Mapped[list["AccountUser"]] = relationship(

@@ -75,4 +75,4 @@ export declare function normalizeAngle(angle: number): number;
  * @return {number} The width of the largest horizontal line that fits inside a rectangle that is displayed at an angle.
  */
 export declare const getAngledRectangleWidth: ({ width, height }: Size, angle?: number | undefined) => number;
-export {};
+

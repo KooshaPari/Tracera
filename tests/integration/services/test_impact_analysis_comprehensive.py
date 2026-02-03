@@ -14,24 +14,20 @@ Coverage target: 90%+
 Tests: 35+
 """
 
+import time
+from unittest.mock import AsyncMock, Mock
+
 import pytest
 import pytest_asyncio
-import time
-from unittest.mock import AsyncMock, Mock, patch
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
-from tracertm.models.item import Item
-from tracertm.models.link import Link
-from tracertm.models.project import Project
 from tracertm.models.base import Base
 from tracertm.services.impact_analysis_service import (
+    ImpactAnalysisResult,
     ImpactAnalysisService,
     ImpactNode,
-    ImpactAnalysisResult,
 )
-from tracertm.repositories.item_repository import ItemRepository
-from tracertm.repositories.link_repository import LinkRepository
 
 
 @pytest_asyncio.fixture
@@ -50,9 +46,7 @@ async def async_test_db():
 @pytest_asyncio.fixture
 async def async_session(async_test_db):
     """Create an async database session."""
-    async_session_factory = sessionmaker(
-        async_test_db, class_=AsyncSession, expire_on_commit=False
-    )
+    async_session_factory = sessionmaker(async_test_db, class_=AsyncSession, expire_on_commit=False)
 
     async with async_session_factory() as session:
         yield session
@@ -322,12 +316,8 @@ class TestAnalyzeImpactBasic:
         link.target_item_id = "child"
         link.link_type = "traces_to"
 
-        service.items.get_by_id = AsyncMock(
-            side_effect=lambda id: root if id == "root" else child
-        )
-        service.links.get_by_source = AsyncMock(
-            side_effect=lambda id: [link] if id == "root" else []
-        )
+        service.items.get_by_id = AsyncMock(side_effect=lambda id: root if id == "root" else child)
+        service.links.get_by_source = AsyncMock(side_effect=lambda id: [link] if id == "root" else [])
 
         result = await service.analyze_impact("root")
 
@@ -372,16 +362,16 @@ class TestAnalyzeImpactBasic:
         def get_by_id_side_effect(id):
             if id == "root":
                 return root
-            elif id == "level1":
+            if id == "level1":
                 return level1
-            elif id == "level2":
+            if id == "level2":
                 return level2
             return None
 
         def get_by_source_side_effect(id):
             if id == "root":
                 return [link1]
-            elif id == "level1":
+            if id == "level1":
                 return [link2]
             return []
 
@@ -428,9 +418,9 @@ class TestAnalyzeImpactBasic:
         def get_by_id_side_effect(id):
             if id == "root":
                 return root
-            elif id == "child1":
+            if id == "child1":
                 return child1
-            elif id == "child2":
+            if id == "child2":
                 return child2
             return None
 
@@ -506,17 +496,11 @@ class TestAnalyzeImpactDepth:
             if i == 0:
                 items[id] = Mock(id=id, title=f"Item {i}")
             else:
-                items[id] = Mock(
-                    id=id,
-                    title=f"Item {i}",
-                    view="REQ",
-                    item_type="requirement",
-                    status="active"
-                )
+                items[id] = Mock(id=id, title=f"Item {i}", view="REQ", item_type="requirement", status="active")
 
         links = {}
         for i in range(5):
-            links[f"item{i}"] = [Mock(target_item_id=f"item{i+1}", link_type="traces_to")]
+            links[f"item{i}"] = [Mock(target_item_id=f"item{i + 1}", link_type="traces_to")]
         links["item5"] = []
 
         service.items.get_by_id = AsyncMock(side_effect=lambda id: items.get(id))
@@ -557,9 +541,9 @@ class TestAnalyzeImpactFiltering:
         def get_by_id_side_effect(id):
             if id == "root":
                 return root
-            elif id == "item1":
+            if id == "item1":
                 return item1
-            elif id == "item2":
+            if id == "item2":
                 return item2
             return None
 
@@ -606,7 +590,7 @@ class TestAnalyzeImpactFiltering:
         result = await service.analyze_impact("root", link_types=["traces_to", "depends_on"])
 
         assert result.total_affected == 2
-        assert set(item["id"] for item in result.affected_items) == {"item1", "item2"}
+        assert {item["id"] for item in result.affected_items} == {"item1", "item2"}
 
     @pytest.mark.asyncio
     async def test_filter_no_matching_types(self, service):
@@ -658,12 +642,8 @@ class TestAnalyzeReverseImpact:
         link.source_item_id = "parent"
         link.link_type = "traces_to"
 
-        service.items.get_by_id = AsyncMock(
-            side_effect=lambda id: parent if id == "parent" else child
-        )
-        service.links.get_by_target = AsyncMock(
-            side_effect=lambda id: [link] if id == "child" else []
-        )
+        service.items.get_by_id = AsyncMock(side_effect=lambda id: parent if id == "parent" else child)
+        service.links.get_by_target = AsyncMock(side_effect=lambda id: [link] if id == "child" else [])
 
         result = await service.analyze_reverse_impact("child")
 
@@ -686,9 +666,9 @@ class TestAnalyzeReverseImpact:
         def get_by_id_side_effect(id):
             if id == "child":
                 return child
-            elif id == "p1":
+            if id == "p1":
                 return parent1
-            elif id == "p2":
+            if id == "p2":
                 return parent2
             return None
 
@@ -723,7 +703,7 @@ class TestAnalyzeReverseImpact:
         def get_by_target_side_effect(id):
             if id == "item3":
                 return [link1]
-            elif id == "item2":
+            if id == "item2":
                 return [link2]
             return []
 
@@ -756,15 +736,14 @@ class TestAnalyzeImpactAccuracy:
                 items[f"item{i}"] = Mock(id=f"item{i}", title=f"Item {i}")
             else:
                 items[f"item{i}"] = Mock(
-                    id=f"item{i}",
-                    title=f"Item {i}",
-                    view="REQ",
-                    item_type="requirement",
-                    status="active"
+                    id=f"item{i}", title=f"Item {i}", view="REQ", item_type="requirement", status="active"
                 )
 
         links = {
-            "item0": [Mock(target_item_id="item1", link_type="traces_to"), Mock(target_item_id="item2", link_type="traces_to")],
+            "item0": [
+                Mock(target_item_id="item1", link_type="traces_to"),
+                Mock(target_item_id="item2", link_type="traces_to"),
+            ],
             "item1": [Mock(target_item_id="item3", link_type="traces_to")],
             "item2": [Mock(target_item_id="item4", link_type="traces_to")],
             "item3": [],
@@ -833,12 +812,8 @@ class TestAnalyzeImpactAccuracy:
         # Note: In BFS with visited set, diamond patterns shouldn't create duplicates
         link = Mock(target_item_id="child", link_type="traces_to")
 
-        service.items.get_by_id = AsyncMock(
-            side_effect=lambda id: root if id == "root" else child
-        )
-        service.links.get_by_source = AsyncMock(
-            side_effect=lambda id: [link] if id == "root" else []
-        )
+        service.items.get_by_id = AsyncMock(side_effect=lambda id: root if id == "root" else child)
+        service.links.get_by_source = AsyncMock(side_effect=lambda id: [link] if id == "root" else [])
 
         result = await service.analyze_impact("root")
 
@@ -861,9 +836,7 @@ class TestAnalyzeImpactAccuracy:
             "leaf": [],
         }
 
-        service.items.get_by_id = AsyncMock(
-            side_effect=lambda id: {"root": root, "mid": mid, "leaf": leaf}.get(id)
-        )
+        service.items.get_by_id = AsyncMock(side_effect=lambda id: {"root": root, "mid": mid, "leaf": leaf}.get(id))
         service.links.get_by_source = AsyncMock(side_effect=lambda id: links.get(id, []))
 
         result = await service.analyze_impact("root")
@@ -895,16 +868,12 @@ class TestAnalyzeImpactPerformance:
                 items[f"item{i}"] = Mock(id=f"item{i}", title=f"Item {i}")
             else:
                 items[f"item{i}"] = Mock(
-                    id=f"item{i}",
-                    title=f"Item {i}",
-                    view="REQ",
-                    item_type="requirement",
-                    status="active"
+                    id=f"item{i}", title=f"Item {i}", view="REQ", item_type="requirement", status="active"
                 )
 
         links = {}
         for i in range(19):
-            links[f"item{i}"] = [Mock(target_item_id=f"item{i+1}", link_type="traces_to")]
+            links[f"item{i}"] = [Mock(target_item_id=f"item{i + 1}", link_type="traces_to")]
         links["item19"] = []
 
         service.items.get_by_id = AsyncMock(side_effect=lambda id: items.get(id))
@@ -937,11 +906,7 @@ class TestAnalyzeImpactPerformance:
         items = {"root": root}
         for i in range(num_children):
             items[f"child{i}"] = Mock(
-                id=f"child{i}",
-                title=f"Child {i}",
-                view="REQ",
-                item_type="requirement",
-                status="active"
+                id=f"child{i}", title=f"Child {i}", view="REQ", item_type="requirement", status="active"
             )
 
         links = {}
@@ -977,9 +942,7 @@ class TestAnalyzeImpactPerformance:
         level1_links = []
         for i in range(3):
             id = f"l1_{i}"
-            items[id] = Mock(
-                id=id, title=f"L1_{i}", view="REQ", item_type="requirement", status="active"
-            )
+            items[id] = Mock(id=id, title=f"L1_{i}", view="REQ", item_type="requirement", status="active")
             level1_links.append(Mock(target_item_id=id, link_type="traces_to"))
         links["root"] = level1_links
 
@@ -989,9 +952,7 @@ class TestAnalyzeImpactPerformance:
             level2_links = []
             for j in range(3):
                 id = f"l2_{i}_{j}"
-                items[id] = Mock(
-                    id=id, title=f"L2_{i}_{j}", view="REQ", item_type="requirement", status="active"
-                )
+                items[id] = Mock(id=id, title=f"L2_{i}_{j}", view="REQ", item_type="requirement", status="active")
                 level2_links.append(Mock(target_item_id=id, link_type="traces_to"))
             links[l1_id] = level2_links
 
@@ -1091,12 +1052,8 @@ class TestEdgeCases:
 
         link = Mock(target_item_id="item1", link_type="traces_to")
 
-        service.items.get_by_id = AsyncMock(
-            side_effect=lambda id: root if id == "root" else item1
-        )
-        service.links.get_by_source = AsyncMock(
-            side_effect=lambda id: [link] if id == "root" else []
-        )
+        service.items.get_by_id = AsyncMock(side_effect=lambda id: root if id == "root" else item1)
+        service.links.get_by_source = AsyncMock(side_effect=lambda id: [link] if id == "root" else [])
 
         # Empty list should match no link types (link_types=[] filters ALL)
         # The implementation checks: if link_types and link.link_type not in link_types

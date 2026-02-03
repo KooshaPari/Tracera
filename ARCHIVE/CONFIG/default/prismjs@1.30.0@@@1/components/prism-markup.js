@@ -13,7 +13,7 @@ Prism.languages.markup = {
 		greedy: true,
 		inside: {
 			'internal-subset': {
-				pattern: /(^[^\[]*\[)[\s\S]+(?=\]>$)/,
+				pattern: /(^[^[]*\[)[\s\S]+(?=\]>$)/,
 				lookbehind: true,
 				greedy: true,
 				inside: null // see below
@@ -32,14 +32,14 @@ Prism.languages.markup = {
 		greedy: true
 	},
 	'tag': {
-		pattern: /<\/?(?!\d)[^\s>\/=$<%]+(?:\s(?:\s*[^\s>\/=]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s'">=]+(?=[\s>]))|(?=[\s/>])))+)?\s*\/?>/,
+		pattern: /<\/?(?!\d)[^\s>/=$<%]+(?:\s(?:\s*[^\s>/=]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s'">=]+(?=[\s>]))|(?=[\s/>])))+)?\s*\/?>/,
 		greedy: true,
 		inside: {
 			'tag': {
-				pattern: /^<\/?[^\s>\/]+/,
+				pattern: /^<\/?[^\s>/]+/,
 				inside: {
 					'punctuation': /^<\/?/,
-					'namespace': /^[^\s>\/:]+:/
+					'namespace': /^[^\s>/:]+:/
 				}
 			},
 			'special-attr': [],
@@ -60,9 +60,9 @@ Prism.languages.markup = {
 			},
 			'punctuation': /\/?>/,
 			'attr-name': {
-				pattern: /[^\s>\/]+/,
+				pattern: /[^\s>/]+/,
 				inside: {
-					'namespace': /^[^\s>\/:]+:/
+					'namespace': /^[^\s>/:]+:/
 				}
 			}
 

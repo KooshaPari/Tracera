@@ -35,9 +35,7 @@ class Item(Base, TimestampMixin):
         {"extend_existing": True},  # Allow re-definition if table exists
     )
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=generate_item_uuid
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=generate_item_uuid)
     project_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("projects.id", ondelete="CASCADE"),
@@ -47,12 +45,11 @@ class Item(Base, TimestampMixin):
 
     title: Mapped[str] = mapped_column(String(500), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    external_id: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
 
     view: Mapped[str] = mapped_column("type", String(50), nullable=False, index=True)
     item_type: Mapped[str] = synonym("view")
-    status: Mapped[str] = mapped_column(
-        String(50), nullable=False, default="todo", index=True
-    )
+    status: Mapped[str] = mapped_column(String(50), nullable=False, default="todo", index=True)
 
     priority: Mapped[int | None] = mapped_column(Integer, nullable=True, default=0)
 
@@ -63,19 +60,15 @@ class Item(Base, TimestampMixin):
         index=True,
     )
 
-    item_metadata: Mapped[dict[str, object]] = mapped_column(
-        "metadata", JSONType, nullable=False, default=dict
-    )
+    item_metadata: Mapped[dict[str, object]] = mapped_column("metadata", JSONType, nullable=False, default=dict)
 
     # Optimistic locking
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
 
     # Soft delete
-    deleted_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True, index=True
-    )
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
 
-    __mapper_args__: dict[str, Any] = {
+    __mapper_args__: ClassVar[dict[str, Any]] = {
         "version_id_col": version,  # Enable optimistic locking
     }
 

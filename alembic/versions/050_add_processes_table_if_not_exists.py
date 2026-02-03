@@ -9,15 +9,15 @@ Revises: 049_add_problems_if_not_exists
 Create Date: 2026-01-31
 
 """
-from typing import Sequence, Union
+
+from collections.abc import Sequence
 
 from alembic import op
 
-
 revision: str = "050_add_processes_if_not_exists"
-down_revision: Union[str, None] = "049_add_problems_if_not_exists"
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | None = "049_add_problems_if_not_exists"
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:

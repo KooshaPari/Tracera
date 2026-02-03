@@ -9514,7 +9514,7 @@
         'addEventListener("submit",function(a){if(!a.defaultPrevented){var c=a.target,d=a.submitter,e=c.action,b=d;if(d){var f=d.getAttribute("formAction");null!=f&&(e=f,b=null)}"javascript:throw new Error(\'React form unexpectedly submitted.\')"===e&&(a.preventDefault(),b?(a=document.createElement("input"),a.name=b.name,a.value=b.value,b.parentNode.insertBefore(a,b),b=new FormData(c),a.parentNode.removeChild(a)):b=new FormData(c),a=c.ownerDocument||c,(a.$$reactFormReplay=a.$$reactFormReplay||[]).push(c,d,b))}});',
       styleRegex = /(<\/|<)(s)(tyle)/gi,
       leadingNewline = "\n",
-      VALID_TAG_REGEX = /^[a-zA-Z][a-zA-Z:_\.\-\d]*$/,
+      VALID_TAG_REGEX = /^[a-zA-Z][a-zA-Z:_.\-\d]*$/,
       validatedTagCache = new Map(),
       endTagCache = new Map(),
       shellTimeRuntimeScript =

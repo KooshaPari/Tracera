@@ -352,10 +352,7 @@ class TestConfigProjectSettings:
     @pytest.mark.unit
     def test_both_project_settings(self):
         """Test both project settings together."""
-        config = Config(
-            current_project_id="proj-123",
-            current_project_name="Test Project"
-        )
+        config = Config(current_project_id="proj-123", current_project_name="Test Project")
         assert config.current_project_id == "proj-123"
         assert config.current_project_name == "Test Project"
 

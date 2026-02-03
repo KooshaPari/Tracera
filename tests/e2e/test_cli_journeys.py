@@ -94,9 +94,7 @@ class TestFeatureDevelopmentJourney:
     @patch("tracertm.cli.commands.item.ConfigManager")
     @patch("tracertm.database.connection.DatabaseConnection")
     @patch("tracertm.database.connection.DatabaseConnection")
-    def test_feature_to_code_to_test_journey(
-        self, mock_link_db, mock_item_db, mock_config_class
-    ):
+    def test_feature_to_code_to_test_journey(self, mock_link_db, mock_item_db, mock_config_class):
         """Test journey: create feature → create code → create test → link them."""
         mock_config = MagicMock()
         mock_config.get.return_value = "sqlite:///test.db"
@@ -200,9 +198,7 @@ class TestMultiViewTraceabilityJourney:
     @patch("tracertm.database.connection.DatabaseConnection")
     @patch("tracertm.cli.commands.search._get_storage_manager")
     @patch("tracertm.database.connection.DatabaseConnection")
-    def test_view_switch_search_drill_journey(
-        self, mock_drill_db, mock_storage_mgr, mock_view_db, mock_config_class
-    ):
+    def test_view_switch_search_drill_journey(self, mock_drill_db, mock_storage_mgr, mock_view_db, mock_config_class):
         """Test journey: switch views → search → drill down."""
         mock_config = MagicMock()
         mock_config.get.return_value = "sqlite:///test.db"
@@ -225,9 +221,7 @@ class TestMultiViewTraceabilityJourney:
 
             def all(self):
                 return [
-                    SimpleNamespace(
-                        id="item-1", title="Login flow", view="FEATURE", item_type="feature", status="todo"
-                    )
+                    SimpleNamespace(id="item-1", title="Login flow", view="FEATURE", item_type="feature", status="todo")
                 ]
 
         @contextlib.contextmanager
@@ -242,19 +236,13 @@ class TestMultiViewTraceabilityJourney:
         result1 = runner.invoke(app, ["view", "list"], catch_exceptions=False)
 
         # Step 2: Switch to feature view
-        result2 = runner.invoke(
-            app, ["view", "switch", "FEATURE"], catch_exceptions=False
-        )
+        result2 = runner.invoke(app, ["view", "switch", "FEATURE"], catch_exceptions=False)
 
         # Step 3: Search for items
-        result3 = runner.invoke(
-            app, ["search", "login", "--view", "FEATURE"], catch_exceptions=False
-        )
+        result3 = runner.invoke(app, ["search", "login", "--view", "FEATURE"], catch_exceptions=False)
 
         # Step 4: Drill down into item
-        result4 = runner.invoke(
-            app, ["drill", "test-id", "--depth", "3"], catch_exceptions=False
-        )
+        result4 = runner.invoke(app, ["drill", "test-id", "--depth", "3"], catch_exceptions=False)
 
         # Step 5: View state
         result5 = runner.invoke(app, ["state", "--view", "FEATURE"], catch_exceptions=False)
@@ -335,9 +323,7 @@ class TestIngestionJourney:
     @patch("tracertm.cli.commands.ingest.ConfigManager")
     @patch("tracertm.database.connection.DatabaseConnection")
     @patch("tracertm.cli.commands.ingest.StatelessIngestionService")
-    def test_markdown_ingestion_journey(
-        self, mock_service_class, mock_db_class, mock_config_class
-    ):
+    def test_markdown_ingestion_journey(self, mock_service_class, mock_db_class, mock_config_class):
         """Test journey: ingest markdown → view items."""
         mock_config = MagicMock()
         mock_config.get.return_value = "sqlite:///test.db"
@@ -368,9 +354,7 @@ class TestIngestionJourney:
             )
 
             # Step 2: List items
-            result2 = runner.invoke(
-                app, ["item", "list", "--view", "FEATURE"], catch_exceptions=False
-            )
+            result2 = runner.invoke(app, ["item", "list", "--view", "FEATURE"], catch_exceptions=False)
 
             assert result1.exit_code in [0, 1, 2]
             assert result2.exit_code in [0, 1, 2]

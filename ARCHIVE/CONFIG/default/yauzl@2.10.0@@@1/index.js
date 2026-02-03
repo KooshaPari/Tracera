@@ -608,7 +608,7 @@ function validateFileName(fileName) {
   if (fileName.indexOf("\\") !== -1) {
     return "invalid characters in fileName: " + fileName;
   }
-  if (/^[a-zA-Z]:/.test(fileName) || /^\//.test(fileName)) {
+  if (/^[a-zA-Z]:/.test(fileName) || fileName.startsWith('/')) {
     return "absolute path: " + fileName;
   }
   if (fileName.split("/").indexOf("..") !== -1) {

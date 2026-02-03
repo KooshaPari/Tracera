@@ -10,19 +10,13 @@ class LinkFactory:
         self.session = session
         self.created_links = []
 
-    def create(
-        self,
-        source_item_id: str,
-        target_item_id: str,
-        link_type: str = "implements",
-        **kwargs
-    ):
+    def create(self, source_item_id: str, target_item_id: str, link_type: str = "implements", **kwargs):
         """Create a single test link."""
         link_data = {
             "source_item_id": source_item_id,
             "target_item_id": target_item_id,
             "link_type": link_type,
-            **kwargs
+            **kwargs,
         }
 
         if self.session:

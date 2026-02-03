@@ -42,7 +42,7 @@ export default function cshtml(Prism) {
         .replace(/<comment>/g, '(?:' + commentLike + ')')
     }
     var round = nested(/\((?:[^()'"@/]|<str>|<comment>|<self>)*\)/.source, 2)
-    var square = nested(/\[(?:[^\[\]'"@/]|<str>|<comment>|<self>)*\]/.source, 1)
+    var square = nested(/\[(?:[^[\]'"@/]|<str>|<comment>|<self>)*\]/.source, 1)
     var curly = nested(/\{(?:[^{}'"@/]|<str>|<comment>|<self>)*\}/.source, 2)
     var angle = nested(/<(?:[^<>'"@/]|<comment>|<self>)*>/.source, 1)
     var inlineCs =
@@ -63,7 +63,7 @@ export default function cshtml(Prism) {
       '|' +
       square +
       ')*' +
-      /(?![?!\.(\[]|<(?!\/))/.source
+      /(?![?!.([]|<(?!\/))/.source
 
     // Note about the above bracket patterns:
     // They all ignore HTML expressions that might be in the C# code. This is a problem because HTML (like strings and
@@ -87,11 +87,11 @@ export default function cshtml(Prism) {
       ')[^"\'@]*)+["\']' +
       ')'
     var tagAttrs =
-      /(?:\s(?:\s*[^\s>\/=]+(?:\s*=\s*<tagAttrValue>|(?=[\s/>])))+)?/.source.replace(
+      /(?:\s(?:\s*[^\s>/=]+(?:\s*=\s*<tagAttrValue>|(?=[\s/>])))+)?/.source.replace(
         /<tagAttrValue>/,
         tagAttrValue
       )
-    var tagContent = /(?!\d)[^\s>\/=$<%]+/.source + tagAttrs + /\s*\/?>/.source
+    var tagContent = /(?!\d)[^\s>/=$<%]+/.source + tagAttrs + /\s*\/?>/.source
     var tagRegion =
       /\B@?/.source +
       '(?:' +

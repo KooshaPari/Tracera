@@ -31,8 +31,8 @@ vi.mock("@tanstack/react-router", async () => {
 
 vi.mock("../../hooks/useItems", () => ({
 	useCreateItem: vi.fn(() => ({
-		mutateAsync: vi.fn(),
 		isPending: false,
+		mutateAsync: vi.fn(),
 	})),
 	useDeleteItem: vi.fn(),
 	useItems: vi.fn(),

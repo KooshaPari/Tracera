@@ -68,4 +68,4 @@ export declare class DigestTransform extends Transform {
 export declare function safeGetHeader(response: any, headerKey: string): any;
 export declare function configureRequestOptions(options: RequestOptions, token?: string | null, method?: "GET" | "DELETE" | "PUT" | "POST"): RequestOptions;
 export declare function safeStringifyJson(data: any, skippedNames?: Set<string>): string;
-export {};
+

@@ -8510,7 +8510,7 @@ type MergedExpect<List> = Expect<MergedExpectMatchers<List>>;
 export function mergeExpects<List extends any[]>(...expects: List): MergedExpect<List>;
 
 // This is required to not export everything by default. See https://github.com/Microsoft/TypeScript/issues/19545#issuecomment-340490459
-export { };
+
 
 
 

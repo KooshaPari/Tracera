@@ -86,4 +86,4 @@ export type FixedLengthArray<Element, Length extends number> =
 	& {readonly length: Length}
 	& (number extends Length ? {[n: number]: Element} : {}); // Add `number` index signature only for non-tuple arrays.
 
-export {};
+

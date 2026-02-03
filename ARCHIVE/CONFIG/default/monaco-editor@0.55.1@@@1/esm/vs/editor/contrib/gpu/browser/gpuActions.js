@@ -69,10 +69,8 @@ class DebugEditorGpuRendererAction extends EditorAction {
                         const atlas = ViewGpuContext.atlas;
                         const promises = [];
                         for (const [layerIndex, page] of atlas.pages.entries()) {
-                            promises.push(...[
-                                fileService.writeFile(URI.joinPath(folders[0].uri, `textureAtlasPage${layerIndex}_actual.png`), VSBuffer.wrap(new Uint8Array(await (await page.source.convertToBlob()).arrayBuffer()))),
-                                fileService.writeFile(URI.joinPath(folders[0].uri, `textureAtlasPage${layerIndex}_usage.png`), VSBuffer.wrap(new Uint8Array(await (await page.getUsagePreview()).arrayBuffer()))),
-                            ]);
+                            promises.push(fileService.writeFile(URI.joinPath(folders[0].uri, `textureAtlasPage${layerIndex}_actual.png`), VSBuffer.wrap(new Uint8Array(await (await page.source.convertToBlob()).arrayBuffer()))),
+                                fileService.writeFile(URI.joinPath(folders[0].uri, `textureAtlasPage${layerIndex}_usage.png`), VSBuffer.wrap(new Uint8Array(await (await page.getUsagePreview()).arrayBuffer()))));
                         }
                         await Promise.all(promises);
                     }
@@ -116,7 +114,7 @@ class DebugEditorGpuRendererAction extends EditorAction {
                     const ctx = ensureNonNullable(canvas.getContext('2d'));
                     ctx.putImageData(imageData, 0, 0);
                     const blob = await canvas.convertToBlob({ type: 'image/png' });
-                    const resource = URI.joinPath(folders[0].uri, `glyph_${chars}_${tokenMetadata}_${fontSize}px_${fontFamily.replaceAll(/[,\\\/\.'\s]/g, '_')}.png`);
+                    const resource = URI.joinPath(folders[0].uri, `glyph_${chars}_${tokenMetadata}_${fontSize}px_${fontFamily.replaceAll(/[,\\/.'\s]/g, '_')}.png`);
                     await fileService.writeFile(resource, VSBuffer.wrap(new Uint8Array(await blob.arrayBuffer())));
                 });
                 break;

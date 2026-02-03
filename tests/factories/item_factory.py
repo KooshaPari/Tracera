@@ -4,7 +4,6 @@ Item factory for generating test items with realistic data.
 Uses faker for data generation and provides automatic cleanup.
 """
 
-
 from faker import Faker
 
 fake = Faker()
@@ -37,7 +36,7 @@ class ItemFactory:
         view: str = "FEATURE",
         item_type: str = "feature",
         status: str = "todo",
-        **kwargs
+        **kwargs,
     ):
         """
         Create a single test item.
@@ -68,12 +67,13 @@ class ItemFactory:
             "item_type": item_type,
             "status": status,
             "version": 1,
-            **kwargs
+            **kwargs,
         }
 
         # If session provided, create in database
         if self.session:
             from tracertm.models import Item
+
             item = Item(**item_data)
             self.session.add(item)
             self.session.commit()
@@ -107,16 +107,14 @@ class ItemFactory:
         Returns:
             Root item with nested children
         """
+
         def create_level(parent_id=None, current_depth=0):
             if current_depth >= depth:
                 return []
 
             items = []
             for i in range(children_per_level):
-                item = self.create(
-                    title=f"Level {current_depth} Item {i}",
-                    parent_id=parent_id
-                )
+                item = self.create(title=f"Level {current_depth} Item {i}", parent_id=parent_id)
                 items.append(item)
 
                 # Recursively create children
@@ -137,6 +135,7 @@ class ItemFactory:
         """
         if self.session and self.created_items:
             from tracertm.models import Item
+
             self.session.query(Item).filter(Item.id.in_(self.created_items)).delete(synchronize_session=False)
             self.session.commit()
             self.created_items = []

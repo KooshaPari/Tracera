@@ -1,7 +1,7 @@
 // System status API stub
 /* eslint-disable oxc/no-async-await */
-import { getMcpConfig } from "./mcp-config";
 import client from "./client";
+import { getMcpConfig } from "./mcp-config";
 
 const { apiClient } = client;
 

@@ -46,4 +46,4 @@ export declare type _Take<L extends List, N extends number, way extends Way = '-
  * ```
  */
 export declare type Take<L extends List, N extends number, way extends Way = '->'> = L extends unknown ? N extends unknown ? _Take<L, N, way> : never : never;
-export {};
+

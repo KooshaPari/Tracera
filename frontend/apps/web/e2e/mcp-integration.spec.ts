@@ -87,10 +87,10 @@ test.describe("MCP Client Operations", () => {
 		// Make direct API request to test MCP tools/list
 		const response = await request.post(`${MCP_BASE_URL}/messages`, {
 			data: {
+				id: 1,
 				jsonrpc: "2.0",
 				method: "tools/list",
 				params: {},
-				id: 1,
 			},
 			headers: {
 				Authorization: `Bearer ${TEST_TOKEN}`,

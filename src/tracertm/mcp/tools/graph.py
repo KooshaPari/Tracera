@@ -11,12 +11,12 @@ from typing import Any
 
 from fastmcp.exceptions import ToolError
 
+from tracertm.core.database import get_session as get_async_session
 from tracertm.mcp.core import mcp
 from tracertm.mcp.tools.base import (
     require_project,
     wrap_success,
 )
-from tracertm.core.database import get_session as get_async_session
 from tracertm.services.cycle_detection_service import CycleDetectionService
 from tracertm.services.shortest_path_service import ShortestPathService
 
@@ -93,13 +93,21 @@ async def shortest_path(
                 ctx,
             )
 
+        to_dict = getattr(path, "to_dict", None)
+        path_val = to_dict() if callable(to_dict) else path
+        path_len: int | None = None
+        if hasattr(path, "__len__"):
+            try:
+                path_len = len(path)  # type: ignore[arg-type]
+            except TypeError:
+                pass
         return wrap_success(
             {
                 "source_id": source_id,
                 "target_id": target_id,
                 "path_exists": True,
-                "path": path.to_dict() if hasattr(path, "to_dict") else path,
-                "length": len(path) if hasattr(path, "__len__") else None,
+                "path": path_val,
+                "length": path_len,
             },
             "shortest_path",
             ctx,

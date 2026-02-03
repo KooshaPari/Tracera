@@ -7,11 +7,14 @@ from typing import Any
 try:
     from tracertm.mcp.core import mcp
 except Exception:  # pragma: no cover
+
     class _StubMCP:
         def tool(self, *args: Any, **kwargs: Any):
             def decorator(fn):
                 return fn
+
             return decorator
+
     mcp = _StubMCP()  # type: ignore[assignment]
 
 
@@ -24,6 +27,7 @@ async def agent_manage(
 ) -> dict[str, Any]:
     """Agent management - imports implementation only when called."""
     from tracertm.mcp.tools.param import agents_manage
+
     return await agents_manage(action, payload, ctx)
 
 
@@ -35,6 +39,7 @@ async def progress_manage(
 ) -> dict[str, Any]:
     """Progress management - imports implementation only when called."""
     from tracertm.mcp.tools.param import progress_manage as impl
+
     return await impl(action, payload, ctx)
 
 

@@ -13,13 +13,15 @@ Tests cover:
 import pytest
 
 try:
-    from textual.widgets import DataTable
+    from textual.widgets import DataTable  # type: ignore[import-untyped]
+
     TEXTUAL_AVAILABLE = True
 except ImportError:
     TEXTUAL_AVAILABLE = False
     DataTable = None
 
-from tracertm.tui.widgets.item_list import ItemListWidget, TEXTUAL_AVAILABLE as WIDGET_TEXTUAL
+from tracertm.tui.widgets.item_list import TEXTUAL_AVAILABLE as WIDGET_TEXTUAL
+from tracertm.tui.widgets.item_list import ItemListWidget
 
 
 @pytest.mark.skipif(not TEXTUAL_AVAILABLE, reason="Textual not installed")
@@ -83,7 +85,7 @@ class TestItemListWidgetColumns:
 
     def test_column_order(self):
         """Test columns are in correct order."""
-        widget = ItemListWidget()
+        ItemListWidget()
         # Columns should be: ID, Title, Type, Status
         expected_order = ["ID", "Title", "Type", "Status"]
         # Verify order if column data accessible
@@ -166,7 +168,7 @@ class TestItemListWidgetEdgeCases:
         """Test adding row with special characters."""
         widget = ItemListWidget()
         if hasattr(widget, "add_row"):
-            widget.add_row("id-1", "Item: <test> & \"quotes\"", "type/feature", "to-do")
+            widget.add_row("id-1", 'Item: <test> & "quotes"', "type/feature", "to-do")
             if hasattr(widget, "row_count"):
                 assert widget.row_count == 1
 
@@ -311,12 +313,7 @@ class TestItemListWidgetDataTypes:
         """Test widget with UUID IDs."""
         widget = ItemListWidget()
         if hasattr(widget, "add_row"):
-            widget.add_row(
-                "550e8400-e29b-41d4-a716-446655440000",
-                "Item",
-                "feature",
-                "todo"
-            )
+            widget.add_row("550e8400-e29b-41d4-a716-446655440000", "Item", "feature", "todo")
             if hasattr(widget, "row_count"):
                 assert widget.row_count == 1
 

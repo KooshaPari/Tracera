@@ -149,8 +149,8 @@ export const Route = createRootRoute({
 	head: () => ({
 		links: [
 			{
-				rel: "icon",
 				href: "/favicon.svg",
+				rel: "icon",
 				type: "image/svg+xml",
 			},
 		],
@@ -159,16 +159,16 @@ export const Route = createRootRoute({
 				charSet: "utf-8",
 			},
 			{
-				name: "viewport",
 				content: "width=device-width, initial-scale=1",
+				name: "viewport",
 			},
 			{
 				title: "TraceRTM - Multi-View Requirements Traceability System",
 			},
 			{
-				name: "description",
 				content:
 					"Enterprise-grade requirements traceability and project management system with 16 professional views and intelligent CRUD operations.",
+				name: "description",
 			},
 		],
 	}),

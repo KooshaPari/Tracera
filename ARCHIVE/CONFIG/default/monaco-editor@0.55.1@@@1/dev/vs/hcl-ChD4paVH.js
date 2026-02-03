@@ -65,7 +65,7 @@ define("vs/hcl-ChD4paVH", ["exports"], (function(exports) {
       "...",
       ":"
     ],
-    symbols: /[=><!~?:&|+\-*\/\^%]+/,
+    symbols: /[=><!~?:&|+\-*/^%]+/,
     escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
     terraformFunctions: /(abs|ceil|floor|log|max|min|pow|signum|chomp|format|formatlist|indent|join|lower|regex|regexall|replace|split|strrev|substr|title|trimspace|upper|chunklist|coalesce|coalescelist|compact|concat|contains|distinct|element|flatten|index|keys|length|list|lookup|map|matchkeys|merge|range|reverse|setintersection|setproduct|setunion|slice|sort|transpose|values|zipmap|base64decode|base64encode|base64gzip|csvdecode|jsondecode|jsonencode|urlencode|yamldecode|yamlencode|abspath|dirname|pathexpand|basename|file|fileexists|fileset|filebase64|templatefile|formatdate|timeadd|timestamp|base64sha256|base64sha512|bcrypt|filebase64sha256|filebase64sha512|filemd5|filemd1|filesha256|filesha512|md5|rsadecrypt|sha1|sha256|sha512|uuid|uuidv5|cidrhost|cidrnetmask|cidrsubnet|tobool|tolist|tomap|tonumber|toset|tostring)/,
     terraformMainBlocks: /(module|data|terraform|resource|provider|variable|output|locals)/,
@@ -106,7 +106,7 @@ define("vs/hcl-ChD4paVH", ["exports"], (function(exports) {
         { include: "@whitespace" },
         { include: "@heredoc" },
         // delimiters and operators
-        [/[{}()\[\]]/, "@brackets"],
+        [/[{}()[\]]/, "@brackets"],
         [/[<>](?!@symbols)/, "@brackets"],
         [
           /@symbols/,
@@ -118,8 +118,8 @@ define("vs/hcl-ChD4paVH", ["exports"], (function(exports) {
           }
         ],
         // numbers
-        [/\d*\d+[eE]([\-+]?\d+)?/, "number.float"],
-        [/\d*\.\d+([eE][\-+]?\d+)?/, "number.float"],
+        [/\d*\d+[eE]([-+]?\d+)?/, "number.float"],
+        [/\d*\.\d+([eE][-+]?\d+)?/, "number.float"],
         [/\d[\d']*/, "number"],
         [/\d/, "number"],
         [/[;,.]/, "delimiter"],
@@ -130,11 +130,11 @@ define("vs/hcl-ChD4paVH", ["exports"], (function(exports) {
         [/'/, "invalid"]
       ],
       heredoc: [
-        [/<<[-]*\s*["]?([\w\-]+)["]?/, { token: "string.heredoc.delimiter", next: "@heredocBody.$1" }]
+        [/<<[-]*\s*["]?([\w-]+)["]?/, { token: "string.heredoc.delimiter", next: "@heredocBody.$1" }]
       ],
       heredocBody: [
         [
-          /([\w\-]+)$/,
+          /([\w-]+)$/,
           {
             cases: {
               "$1==$S2": [
@@ -156,13 +156,13 @@ define("vs/hcl-ChD4paVH", ["exports"], (function(exports) {
         [/#.*$/, "comment"]
       ],
       comment: [
-        [/[^\/*]+/, "comment"],
+        [/[^/*]+/, "comment"],
         [/\*\//, "comment", "@pop"],
-        [/[\/*]/, "comment"]
+        [/[/*]/, "comment"]
       ],
       string: [
         [/\$\{/, { token: "delimiter", next: "@stringExpression" }],
-        [/[^\\"\$]+/, "string"],
+        [/[^\\"$]+/, "string"],
         [/@escapes/, "string.escape"],
         [/\\./, "string.escape.invalid"],
         [/"/, "string", "@popall"]

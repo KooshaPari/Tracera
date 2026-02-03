@@ -5,12 +5,12 @@ Represents individual test cases with steps, expected results, and automation st
 Supports lifecycle management from draft through approval to deprecation.
 """
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Index, Integer, String, Text
 import uuid
 from datetime import datetime
-from enum import Enum
-from typing import Any
+from enum import StrEnum
+from typing import Any, ClassVar
 
+from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -23,8 +23,9 @@ def generate_test_case_uuid() -> str:
     return str(uuid.uuid4())
 
 
-class TestCaseStatus(str, Enum):
+class TestCaseStatus(StrEnum):
     """Valid test case statuses following QA lifecycle."""
+
     DRAFT = "draft"
     REVIEW = "review"
     APPROVED = "approved"
@@ -32,8 +33,9 @@ class TestCaseStatus(str, Enum):
     ARCHIVED = "archived"
 
 
-class TestCaseType(str, Enum):
+class TestCaseType(StrEnum):
     """Types of test cases."""
+
     FUNCTIONAL = "functional"
     INTEGRATION = "integration"
     UNIT = "unit"
@@ -46,16 +48,18 @@ class TestCaseType(str, Enum):
     EXPLORATORY = "exploratory"
 
 
-class TestCasePriority(str, Enum):
+class TestCasePriority(StrEnum):
     """Priority levels for test case execution order."""
+
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
 
 
-class AutomationStatus(str, Enum):
+class AutomationStatus(StrEnum):
     """Automation implementation status."""
+
     NOT_AUTOMATED = "not_automated"
     IN_PROGRESS = "in_progress"
     AUTOMATED = "automated"
@@ -83,12 +87,8 @@ class TestCase(Base, TimestampMixin):
     )
 
     # Core Identification
-    id: Mapped[str] = mapped_column(
-        String(255), primary_key=True, default=generate_test_case_uuid
-    )
-    test_case_number: Mapped[str] = mapped_column(
-        String(50), unique=True, nullable=False, index=True
-    )
+    id: Mapped[str] = mapped_column(String(255), primary_key=True, default=generate_test_case_uuid)
+    test_case_number: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
     project_id: Mapped[str] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("projects.id", ondelete="CASCADE"),
@@ -102,17 +102,13 @@ class TestCase(Base, TimestampMixin):
     objective: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Lifecycle Status
-    status: Mapped[str] = mapped_column(
-        String(50), nullable=False, default=TestCaseStatus.DRAFT.value, index=True
-    )
+    status: Mapped[str] = mapped_column(String(50), nullable=False, default=TestCaseStatus.DRAFT.value, index=True)
 
     # Classification
     test_type: Mapped[str] = mapped_column(
         String(50), nullable=False, default=TestCaseType.FUNCTIONAL.value, index=True
     )
-    priority: Mapped[str] = mapped_column(
-        String(20), nullable=False, default=TestCasePriority.MEDIUM.value, index=True
-    )
+    priority: Mapped[str] = mapped_column(String(20), nullable=False, default=TestCasePriority.MEDIUM.value, index=True)
     category: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
     tags: Mapped[list[str] | None] = mapped_column(JSONType, nullable=True)
 
@@ -142,48 +138,32 @@ class TestCase(Base, TimestampMixin):
     approved_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     # Review & Approval Dates
-    reviewed_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
-    approved_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
-    deprecated_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
+    reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    approved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    deprecated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     deprecation_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Execution History Summary
-    last_executed_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
+    last_executed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     last_execution_result: Mapped[str | None] = mapped_column(String(50), nullable=True)
     total_executions: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     pass_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     fail_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
     # Flexible metadata
-    test_case_metadata: Mapped[dict[str, object]] = mapped_column(
-        JSONType, nullable=False, default=dict
-    )
+    test_case_metadata: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
 
     # Optimistic locking
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
 
     # Soft delete
-    deleted_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True, index=True
-    )
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
 
     # Relationships (lazy-loaded to avoid circular imports)
-    suite_associations = relationship(
-        "TestSuiteTestCase", back_populates="test_case", cascade="all, delete-orphan"
-    )
-    results = relationship(
-        "TestResult", back_populates="test_case", cascade="all, delete-orphan"
-    )
+    suite_associations = relationship("TestSuiteTestCase", back_populates="test_case", cascade="all, delete-orphan")
+    results = relationship("TestResult", back_populates="test_case", cascade="all, delete-orphan")
 
-    __mapper_args__: dict[str, Any] = {
+    __mapper_args__: ClassVar[dict[str, Any]] = {
         "version_id_col": version,
     }
 
@@ -221,9 +201,7 @@ class TestCaseActivity(Base, TimestampMixin):
         {"extend_existing": True},
     )
 
-    id: Mapped[str] = mapped_column(
-        String(255), primary_key=True, default=generate_test_case_uuid
-    )
+    id: Mapped[str] = mapped_column(String(255), primary_key=True, default=generate_test_case_uuid)
     test_case_id: Mapped[str] = mapped_column(
         String(255),
         ForeignKey("test_cases.id", ondelete="CASCADE"),
@@ -236,9 +214,7 @@ class TestCaseActivity(Base, TimestampMixin):
     to_value: Mapped[str | None] = mapped_column(String(255), nullable=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     performed_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    activity_metadata: Mapped[dict[str, object]] = mapped_column(
-        JSONType, nullable=False, default=dict
-    )
+    activity_metadata: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
 
     def __repr__(self) -> str:
         return f"<TestCaseActivity(id={self.id!r}, type={self.activity_type!r})>"

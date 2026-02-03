@@ -989,7 +989,7 @@ describe("API Endpoints - Comprehensive Tests", () => {
 				expect(apiClient.POST).toHaveBeenCalledWith(
 					"/api/v1/projects/{project_id}/import",
 					{
-						body: { format: "json", data: '{"data": "test"}' },
+						body: { data: '{"data": "test"}', format: "json" },
 						params: { path: { project_id: "proj-1" } },
 					},
 				);

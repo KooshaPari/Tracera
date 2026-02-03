@@ -53,3 +53,9 @@
 ## Ready for Integration
 
 ✅ All code is ready for integration with Agent 1's work and final system testing.
+
+
+## Opinionated Quality Enforcement
+- We want opinionated rules that enforce opinionated styling to a strict degree.
+- This is an exclusively agent/vibecoded project; programmatic enforcement must guard against bad quality and antipatterns.
+- Rather than disables or ignores, fix code properly.

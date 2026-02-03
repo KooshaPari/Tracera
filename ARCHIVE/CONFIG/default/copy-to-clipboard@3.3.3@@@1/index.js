@@ -55,8 +55,8 @@ function copy(text, options) {
       if (options.format) {
         e.preventDefault();
         if (typeof e.clipboardData === "undefined") { // IE 11
-          debug && console.warn("unable to use e.clipboardData");
-          debug && console.warn("trying IE specific stuff");
+          if (debug) console.warn("unable to use e.clipboardData");
+          if (debug) console.warn("trying IE specific stuff");
           window.clipboardData.clearData();
           var format = clipboardToIE11Formatting[options.format] || clipboardToIE11Formatting["default"]
           window.clipboardData.setData(format, text);
@@ -82,8 +82,8 @@ function copy(text, options) {
     }
     success = true;
   } catch (err) {
-    debug && console.error("unable to copy using execCommand: ", err);
-    debug && console.warn("trying IE specific stuff");
+    if (debug) console.error("unable to copy using execCommand: ", err);
+    if (debug) console.warn("trying IE specific stuff");
     try {
       window.clipboardData.setData(options.format || "text", text);
       options.onCopy && options.onCopy(window.clipboardData);

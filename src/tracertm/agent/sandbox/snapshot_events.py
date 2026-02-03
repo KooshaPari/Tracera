@@ -4,9 +4,10 @@ This module wraps snapshot operations with event publishing to NATS,
 enabling real-time tracking of sandbox snapshot creation and restoration.
 """
 
+import asyncio
 import logging
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +33,7 @@ class SnapshotEventPublisher:
         snapshot_id: str,
         s3_key: str,
         sandbox_path: str,
-        project_id: Optional[str] = None,
+        project_id: str | None = None,
     ) -> None:
         """Publish snapshot created event with file statistics.
 
@@ -46,13 +47,18 @@ class SnapshotEventPublisher:
         if not self._event_publisher:
             return
 
-        # Calculate snapshot statistics
-        try:
+        # Calculate snapshot statistics (run in thread to avoid blocking; ASYNC240)
+        def _compute_stats() -> tuple[int, int]:
             sandbox_dir = Path(sandbox_path)
-            file_count = len(list(sandbox_dir.rglob("*"))) if sandbox_dir.exists() else 0
-            size_bytes = sum(
-                f.stat().st_size for f in sandbox_dir.rglob("*") if f.is_file()
-            ) if sandbox_dir.exists() else 0
+            if not sandbox_dir.exists():
+                return 0, 0
+            files = list(sandbox_dir.rglob("*"))
+            file_count = len(files)
+            size_bytes = sum(f.stat().st_size for f in files if f.is_file())
+            return file_count, size_bytes
+
+        try:
+            file_count, size_bytes = await asyncio.to_thread(_compute_stats)
         except Exception as e:
             logger.warning(f"Failed to calculate snapshot stats: {e}")
             file_count = 0
@@ -73,7 +79,7 @@ class SnapshotEventPublisher:
         snapshot_id: str,
         s3_key: str,
         restored_to: str,
-        project_id: Optional[str] = None,
+        project_id: str | None = None,
     ) -> None:
         """Publish snapshot restored event.
 
@@ -103,7 +109,7 @@ async def create_snapshot_with_events(
     s3_key: str,
     snapshot_service: Any,
     event_publisher: Any,
-    project_id: Optional[str] = None,
+    project_id: str | None = None,
 ) -> dict[str, Any]:
     """Create snapshot and publish event.
 
@@ -170,7 +176,7 @@ async def restore_snapshot_with_events(
     restore_to: str,
     snapshot_service: Any,
     event_publisher: Any,
-    project_id: Optional[str] = None,
+    project_id: str | None = None,
 ) -> dict[str, Any]:
     """Restore snapshot and publish event.
 

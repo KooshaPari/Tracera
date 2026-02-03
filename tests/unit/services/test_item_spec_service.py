@@ -1,13 +1,12 @@
 """Tests for item_spec_service module."""
 
 import pytest
-from datetime import datetime, UTC
 
 from tracertm.services.item_spec_service import (
     RequirementQualityAnalyzer,
+    TestSpecFlakinessDector,
     VolatilityTracker,
     WSJFCalculator,
-    TestSpecFlakinessDector,
 )
 
 
@@ -153,9 +152,7 @@ class TestVolatilityTracker:
 
     def test_volatility_normalization(self, tracker):
         """Test that volatility is normalized to 0-1."""
-        score = tracker.calculate_volatility(
-            change_count=100, days_since_creation=1
-        )
+        score = tracker.calculate_volatility(change_count=100, days_since_creation=1)
 
         assert 0 <= score <= 1.0
 
@@ -295,12 +292,8 @@ class TestTestSpecFlakinessDector:
             {"status": "fail", "error": "ValueError"},
         ]
 
-        score_same = detector.calculate_flakiness_score(
-            3, 3, 6, failures_same_error
-        )
-        score_diff = detector.calculate_flakiness_score(
-            3, 3, 6, failures_different_errors
-        )
+        score_same = detector.calculate_flakiness_score(3, 3, 6, failures_same_error)
+        score_diff = detector.calculate_flakiness_score(3, 3, 6, failures_different_errors)
 
         # Different errors indicate more flakiness
         assert score_diff > score_same

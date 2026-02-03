@@ -73,8 +73,9 @@ def _storage_with_items():
 
 @pytest.mark.e2e
 def test_search_no_results_shows_message():
-    with patch("tracertm.cli.commands.search.ConfigManager") as cfg, patch(
-        "tracertm.cli.commands.search._get_storage_manager", return_value=_storage_with_no_results()
+    with (
+        patch("tracertm.cli.commands.search.ConfigManager") as cfg,
+        patch("tracertm.cli.commands.search._get_storage_manager", return_value=_storage_with_no_results()),
     ):
         cfg_inst = MagicMock()
         cfg_inst.get.return_value = "proj-1"
@@ -88,8 +89,9 @@ def test_search_no_results_shows_message():
 
 @pytest.mark.e2e
 def test_search_fuzzy_invalid_date_handling():
-    with patch("tracertm.cli.commands.search.ConfigManager") as cfg, patch(
-        "tracertm.cli.commands.search._get_storage_manager", return_value=_storage_with_items()
+    with (
+        patch("tracertm.cli.commands.search.ConfigManager") as cfg,
+        patch("tracertm.cli.commands.search._get_storage_manager", return_value=_storage_with_items()),
     ):
         cfg_inst = MagicMock()
         cfg_inst.get.return_value = "proj-1"
@@ -107,8 +109,9 @@ def test_search_fuzzy_invalid_date_handling():
 
 @pytest.mark.e2e
 def test_search_with_date_filters_parses_iso():
-    with patch("tracertm.cli.commands.search.ConfigManager") as cfg, patch(
-        "tracertm.cli.commands.search._get_storage_manager", return_value=_storage_with_items()
+    with (
+        patch("tracertm.cli.commands.search.ConfigManager") as cfg,
+        patch("tracertm.cli.commands.search._get_storage_manager", return_value=_storage_with_items()),
     ):
         cfg_inst = MagicMock()
         cfg_inst.get.return_value = "proj-1"

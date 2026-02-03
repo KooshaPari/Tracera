@@ -5,12 +5,12 @@ Represents high-level processes that define workflows, procedures,
 and operational patterns. Supports versioning and BPMN visualization.
 """
 
-from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Index, Integer, String, Text
 import uuid
 from datetime import datetime
-from enum import Enum
-from typing import Any
+from enum import StrEnum
+from typing import Any, ClassVar
 
+from sqlalchemy import Boolean, DateTime, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -23,8 +23,9 @@ def generate_process_uuid() -> str:
     return str(uuid.uuid4())
 
 
-class ProcessStatus(str, Enum):
+class ProcessStatus(StrEnum):
     """Valid process lifecycle statuses."""
+
     DRAFT = "draft"
     ACTIVE = "active"
     DEPRECATED = "deprecated"
@@ -32,8 +33,9 @@ class ProcessStatus(str, Enum):
     ARCHIVED = "archived"
 
 
-class ProcessCategory(str, Enum):
+class ProcessCategory(StrEnum):
     """Categories of processes."""
+
     OPERATIONAL = "operational"
     SUPPORT = "support"
     MANAGEMENT = "management"
@@ -67,12 +69,8 @@ class Process(Base, TimestampMixin):
     )
 
     # Core Identification
-    id: Mapped[str] = mapped_column(
-        String(255), primary_key=True, default=generate_process_uuid
-    )
-    process_number: Mapped[str] = mapped_column(
-        String(50), unique=True, nullable=False, index=True
-    )
+    id: Mapped[str] = mapped_column(String(255), primary_key=True, default=generate_process_uuid)
+    process_number: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
     project_id: Mapped[str] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("projects.id", ondelete="CASCADE"),
@@ -85,9 +83,7 @@ class Process(Base, TimestampMixin):
     purpose: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Lifecycle Status
-    status: Mapped[str] = mapped_column(
-        String(50), nullable=False, default=ProcessStatus.DRAFT.value, index=True
-    )
+    status: Mapped[str] = mapped_column(String(50), nullable=False, default=ProcessStatus.DRAFT.value, index=True)
 
     # Classification
     category: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
@@ -95,9 +91,7 @@ class Process(Base, TimestampMixin):
 
     # Versioning
     version_number: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
-    is_active_version: Mapped[bool] = mapped_column(
-        Boolean, nullable=False, default=True, index=True
-    )
+    is_active_version: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, index=True)
     parent_version_id: Mapped[str | None] = mapped_column(
         String(255),
         ForeignKey("processes.id", ondelete="SET NULL"),
@@ -165,13 +159,9 @@ class Process(Base, TimestampMixin):
     sla_hours: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     # Activation/Deactivation
-    activated_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
+    activated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     activated_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    deprecated_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
+    deprecated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     deprecated_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
     deprecation_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
 
@@ -180,19 +170,15 @@ class Process(Base, TimestampMixin):
     """IDs of related/dependent processes."""
 
     # Flexible metadata
-    process_metadata: Mapped[dict[str, object]] = mapped_column(
-        JSONType, nullable=False, default=dict
-    )
+    process_metadata: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
 
     # Optimistic locking
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
 
     # Soft delete
-    deleted_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True, index=True
-    )
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
 
-    __mapper_args__: dict[str, Any] = {
+    __mapper_args__: ClassVar[dict[str, Any]] = {
         "version_id_col": version,
     }
 
@@ -232,18 +218,14 @@ class ProcessExecution(Base, TimestampMixin):
         {"extend_existing": True},
     )
 
-    id: Mapped[str] = mapped_column(
-        String(255), primary_key=True, default=generate_process_uuid
-    )
+    id: Mapped[str] = mapped_column(String(255), primary_key=True, default=generate_process_uuid)
     process_id: Mapped[str] = mapped_column(
         String(255),
         ForeignKey("processes.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
-    execution_number: Mapped[str] = mapped_column(
-        String(50), unique=True, nullable=False, index=True
-    )
+    execution_number: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
 
     # Status
     status: Mapped[str] = mapped_column(
@@ -255,12 +237,8 @@ class ProcessExecution(Base, TimestampMixin):
     completed_stages: Mapped[list[str] | None] = mapped_column(JSONType, nullable=True)
 
     # Timing
-    started_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
-    completed_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     # Actors
     initiated_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
@@ -270,9 +248,7 @@ class ProcessExecution(Base, TimestampMixin):
     trigger_item_id: Mapped[str | None] = mapped_column(UUID(as_uuid=True), nullable=True)
     """ID of the item that triggered this execution."""
 
-    context_data: Mapped[dict[str, object]] = mapped_column(
-        JSONType, nullable=False, default=dict
-    )
+    context_data: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
     """Execution-specific context and data."""
 
     # Output

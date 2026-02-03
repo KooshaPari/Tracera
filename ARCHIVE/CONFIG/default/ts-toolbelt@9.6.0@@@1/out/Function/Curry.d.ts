@@ -75,4 +75,4 @@ declare type Gaps<L extends List> = Cast<NonNullableFlat<{
  * ```
  */
 export declare type Curry<F extends Function> = <P extends Gaps<Parameters<F>>, G extends List = GapsOf<P, Parameters<F>>, R extends any = Return<F>>(...p: Gaps<Parameters<F>> | P) => RequiredKeys<G> extends never ? R : Curry<(...p: G) => R>;
-export {};
+

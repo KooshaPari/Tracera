@@ -1,11 +1,10 @@
 import asyncio
-from datetime import datetime, timedelta
-from types import SimpleNamespace
+from datetime import UTC, datetime, timezone
 
 import httpx
 import pytest
 
-from tracertm.api.sync_client import ApiConfig, SyncClient, ApiError, AuthenticationError, RateLimitError
+from tracertm.api.sync_client import ApiConfig, ApiError, AuthenticationError, SyncClient
 
 pytestmark = pytest.mark.integration
 
@@ -29,7 +28,9 @@ def _client_with(handler):
 async def test_upload_changes_success():
     async def handler(request):
         assert request.url.path == "/api/sync/upload"
-        return httpx.Response(200, json={"applied": ["1"], "conflicts": [], "server_time": datetime.utcnow().isoformat(), "errors": []})
+        return httpx.Response(
+            200, json={"applied": ["1"], "conflicts": [], "server_time": datetime.now(UTC).isoformat(), "errors": []}
+        )
 
     client = _client_with(handler)
     result = await client.upload_changes([])
@@ -39,7 +40,7 @@ async def test_upload_changes_success():
 
 @pytest.mark.asyncio
 async def test_upload_changes_rate_limit_retry_then_fail(monkeypatch):
-    calls = dict(count=0)
+    calls = {"count": 0}
 
     async def handler(request):
         calls["count"] += 1
@@ -48,6 +49,7 @@ async def test_upload_changes_rate_limit_retry_then_fail(monkeypatch):
     # Avoid real sleeping
     async def _noop(*args, **kwargs):
         return None
+
     monkeypatch.setattr(asyncio, "sleep", _noop)
 
     cfg = ApiConfig(base_url="https://example.test", max_retries=1)
@@ -71,15 +73,19 @@ async def test_upload_changes_auth_error():
 
 @pytest.mark.asyncio
 async def test_get_status_success():
-    now = datetime.utcnow()
+    now = datetime.now(UTC)
+
     async def handler(request):
-        return httpx.Response(200, json={
-            "last_sync": now.isoformat(),
-            "pending_changes": 2,
-            "online": True,
-            "server_time": now.isoformat(),
-            "conflicts_pending": 1,
-        })
+        return httpx.Response(
+            200,
+            json={
+                "last_sync": now.isoformat(),
+                "pending_changes": 2,
+                "online": True,
+                "server_time": now.isoformat(),
+                "conflicts_pending": 1,
+            },
+        )
 
     client = _client_with(handler)
     status = await client.get_sync_status()
@@ -97,6 +103,7 @@ async def test_get_status_network_error(monkeypatch):
 
     async def _noop(*args, **kwargs):
         return None
+
     monkeypatch.setattr(asyncio, "sleep", _noop)
 
     cfg = ApiConfig(base_url="https://example.test", max_retries=1)

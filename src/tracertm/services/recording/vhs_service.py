@@ -6,22 +6,22 @@ Executes VHS recordings using TapeFileGenerator and stores output artifacts.
 from __future__ import annotations
 
 import asyncio
+import logging
 import os
+import subprocess  # noqa: S404
 import tempfile
 from pathlib import Path
 from typing import Any
-
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.models.execution_config import ExecutionEnvironmentConfig
 from tracertm.services.execution import ExecutionService
 from tracertm.services.recording.tape_generator import TapeFileGenerator
 
+logger = logging.getLogger(__name__)
+
 
 class VHSExecutionError(Exception):
     """Raised when VHS execution fails."""
-
-    pass
 
 
 class VHSExecutionService:
@@ -70,9 +70,7 @@ class VHSExecutionService:
         if not execution:
             raise VHSExecutionError(f"Execution {execution_id} not found")
         if execution.status != "pending":
-            raise VHSExecutionError(
-                f"Execution {execution_id} is {execution.status}, expected pending"
-            )
+            raise VHSExecutionError(f"Execution {execution_id} is {execution.status}, expected pending")
 
         config = await self._exec_service.get_config(execution.project_id)
         if config and not config.vhs_enabled:
@@ -80,9 +78,7 @@ class VHSExecutionService:
 
         # Build tape file
         if tape_generator is None:
-            tape_generator = self._build_tape_generator(
-                execution_id, commands or [], config
-            )
+            tape_generator = self._build_tape_generator(execution_id, commands or [], config)
         if not output_filename:
             output_filename = f"{execution_id}.gif"
 
@@ -92,19 +88,14 @@ class VHSExecutionService:
             tape_generator.output(output_filename).write(str(tape_path))
 
             # Execute VHS - default to native subprocess, fall back to Docker if requested
+            workdir = Path(tmpdir)
             if use_docker and execution.container_id:
-                result = await self._execute_in_container(
-                    execution_id, tape_path, output_filename, tmpdir
-                )
+                result = await self._execute_in_container(execution_id, tape_path, output_filename, workdir)
                 # Fall back to native execution if container fails
                 if not result["success"]:
-                    result = await self._execute_subprocess(
-                        tape_path, output_filename, tmpdir
-                    )
+                    result = await self._execute_subprocess(tape_path, output_filename, workdir)
             else:
-                result = await self._execute_subprocess(
-                    tape_path, output_filename, tmpdir
-                )
+                result = await self._execute_subprocess(tape_path, output_filename, workdir)
 
             if not result["success"]:
                 await self._exec_service.complete(
@@ -115,18 +106,16 @@ class VHSExecutionService:
                 return result
 
             # Store output artifact
-            output_path = Path(tmpdir) / output_filename
+            output_path = workdir / output_filename
             if not output_path.exists():
                 # Try common VHS output locations
                 for ext in [".gif", ".mp4", ".webm"]:
-                    alt_path = Path(tmpdir) / f"{execution_id}{ext}"
+                    alt_path = workdir / f"{execution_id}{ext}"
                     if alt_path.exists():
                         output_path = alt_path
                         break
                 else:
-                    raise VHSExecutionError(
-                        f"VHS output not found: {output_filename} in {tmpdir}"
-                    )
+                    raise VHSExecutionError(f"VHS output not found: {output_filename} in {tmpdir}")
 
             artifact = await self._exec_service.store_artifact(
                 execution_id,
@@ -160,7 +149,8 @@ class VHSExecutionService:
         tape = TapeFileGenerator()
         if config:
             tape = (
-                tape.set_shell("bash")
+                tape
+                .set_shell("bash")
                 .set_font_size(config.vhs_font_size)
                 .set_width(config.vhs_width)
                 .set_height(config.vhs_height)
@@ -176,26 +166,24 @@ class VHSExecutionService:
 
         return tape
 
-    async def _execute_subprocess(
-        self, tape_path: Path, output_filename: str, workdir: Path
-    ) -> dict[str, Any]:
+    async def _execute_subprocess(self, tape_path: Path, output_filename: str, workdir: Path) -> dict[str, Any]:
         """Execute VHS via subprocess."""
         cmd = [self._vhs_cmd, str(tape_path)]
         try:
             proc = await asyncio.create_subprocess_exec(
                 *cmd,
                 cwd=str(workdir),
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
             )
-            stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=300)
+            _stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=300)
             if proc.returncode != 0:
                 return {
                     "success": False,
                     "error_message": f"VHS failed: {stderr.decode()[:500]}",
                 }
             return {"success": True}
-        except asyncio.TimeoutError:
+        except TimeoutError:
             return {
                 "success": False,
                 "error_message": "VHS execution timed out after 300s",
@@ -216,11 +204,11 @@ class VHSExecutionService:
         """Execute VHS inside Docker container."""
         docker = self._exec_service.docker()
         execution = await self._exec_service.get(execution_id)
-        if not execution or not execution.container_id:
+        if not execution or not execution.container_id or docker is None:
             return await self._execute_subprocess(tape_path, output_filename, workdir)
 
         # Copy tape file into container (docker cp host_path container_id:container_path)
-        container_tape = f"/tmp/{tape_path.name}"
+        container_tape = f"/tmp/{tape_path.name}"  # noqa: S108
         try:
             # Docker cp: docker cp host_path container_id:container_path
             code, _, stderr = await docker._run(
@@ -238,7 +226,7 @@ class VHSExecutionService:
             }
 
         # Run vhs inside container
-        code, stdout, stderr = await docker.exec(
+        code, _stdout, stderr = await docker.exec(
             execution.container_id,
             [self._vhs_cmd, container_tape],
             timeout=300,
@@ -250,7 +238,7 @@ class VHSExecutionService:
             }
 
         # Copy output back from container (docker cp container_id:container_path host_path)
-        container_output = f"/tmp/{output_filename}"
+        container_output = f"/tmp/{output_filename}"  # noqa: S108
         try:
             code, _, stderr = await docker._run(
                 "cp",
@@ -259,8 +247,8 @@ class VHSExecutionService:
                 timeout=30,
             )
             if code != 0:
-                # Output might be in different location or format - try common locations
-                for alt in ["/tmp/output.gif", "/tmp/output.mp4", f"/tmp/{execution_id}.gif"]:
+                # Output might be in different location or format - try common locations (container paths; noqa: S108)
+                for alt in ["/tmp/output.gif", "/tmp/output.mp4", f"/tmp/{execution_id}.gif"]:  # noqa: S108
                     code2, _, _ = await docker._run(
                         "cp",
                         f"{execution.container_id}:{alt}",
@@ -269,9 +257,9 @@ class VHSExecutionService:
                     )
                     if code2 == 0:
                         break
-        except Exception:
+        except Exception as e:
             # Output might be in different location or format
-            pass
+            logger.debug("Copy from container failed (trying next path): %s", e)
 
         return {"success": True}
 

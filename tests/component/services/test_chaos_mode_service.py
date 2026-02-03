@@ -1,6 +1,7 @@
-import pytest
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta, timezone
 from types import SimpleNamespace
+
+import pytest
 
 from tracertm.services.chaos_mode_service import ChaosModeService
 
@@ -21,16 +22,17 @@ async def test_detect_zombies_finds_orphan_stale(monkeypatch, async_session):
         id="i1",
         title="Stale",
         status="todo",
-        updated_at=datetime.utcnow() - timedelta(days=40),
+        updated_at=datetime.now(UTC) - timedelta(days=40),
     )
     fresh_item = _FakeItem(
         id="i2",
         title="Fresh",
         status="todo",
-        updated_at=datetime.utcnow(),
+        updated_at=datetime.now(UTC),
     )
 
     svc = ChaosModeService(async_session)
+
     async def fake_items(project_id, filters):
         return [stale_item, fresh_item]
 
@@ -50,6 +52,7 @@ async def test_detect_zombies_finds_orphan_stale(monkeypatch, async_session):
 @pytest.mark.asyncio
 async def test_analyze_impact_returns_error_when_missing(monkeypatch, async_session):
     svc = ChaosModeService(async_session)
+
     async def get_none(item_id):
         return None
 
@@ -66,6 +69,7 @@ async def test_analyze_impact_counts_links(monkeypatch, async_session):
     deps = [_FakeLink(source_item_id="i3", target_item_id="i1", link_type="blocks")]
 
     svc = ChaosModeService(async_session)
+
     async def get_item(item_id):
         return item
 

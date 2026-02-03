@@ -152,12 +152,12 @@ let DiffEditorEditors = class DiffEditorEditors extends Disposable {
         clonedOptions.allowVariableFonts = false;
         clonedOptions.allowVariableFontsInAccessibilityMode = false;
         // Clone scrollbar options before changing them
-        clonedOptions.scrollbar = { ...(clonedOptions.scrollbar || {}) };
+        clonedOptions.scrollbar = { ...clonedOptions.scrollbar };
         clonedOptions.folding = false;
         clonedOptions.codeLens = this._options.diffCodeLens.get();
         clonedOptions.fixedOverflowWidgets = true;
         // Clone minimap options before changing them
-        clonedOptions.minimap = { ...(clonedOptions.minimap || {}) };
+        clonedOptions.minimap = { ...clonedOptions.minimap };
         clonedOptions.minimap.enabled = false;
         if (this._options.hideUnchangedRegions.get()) {
             clonedOptions.stickyScroll = { enabled: false };

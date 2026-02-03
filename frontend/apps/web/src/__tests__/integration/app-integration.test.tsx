@@ -108,26 +108,26 @@ const createMockGraphData = (): GraphData => ({
 	edges: [
 		{
 			id: "link-1",
+			metadata: {},
 			source: "item-1",
 			target: "item-2",
 			type: "implements" as any,
-			metadata: {},
 		},
 	],
 	nodes: [
 		{
 			id: "item-1",
-			type: "requirement" as any,
-			title: "Requirement 1",
-			status: "pending" as any,
 			metadata: {},
+			status: "pending" as any,
+			title: "Requirement 1",
+			type: "requirement" as any,
 		},
 		{
 			id: "item-2",
-			type: "feature" as any,
-			title: "Feature 1",
-			status: "in_progress" as any,
 			metadata: {},
+			status: "in_progress" as any,
+			title: "Feature 1",
+			type: "feature" as any,
 		},
 	],
 });

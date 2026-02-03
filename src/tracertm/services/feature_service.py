@@ -1,13 +1,14 @@
 """Feature Service for TraceRTM."""
 
-from typing import Any, List, Optional
+from typing import Any
 
-from sqlalchemy import select, delete
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from tracertm.models.specification import Feature
 from tracertm.core.concurrency import update_with_retry
+from tracertm.models.specification import Feature
 from tracertm.repositories.event_repository import EventRepository
+
 
 class FeatureService:
     """Service for BDD Features."""
@@ -40,8 +41,8 @@ class FeatureService:
         i_want: str | None = None,
         so_that: str | None = None,
         status: str = "draft",
-        tags: List[str] | None = None,
-        related_requirements: List[str] | None = None,
+        tags: list[str] | None = None,
+        related_requirements: list[str] | None = None,
     ) -> Feature:
         """Create a new Feature."""
         # Simple numbering
@@ -49,7 +50,7 @@ class FeatureService:
             select(Feature).where(Feature.project_id == project_id).order_by(Feature.created_at.desc()).limit(1)
         )
         last = result.scalar_one_or_none()
-        
+
         if last:
             try:
                 last_num = int(last.feature_number.replace("FEAT-", ""))
@@ -58,7 +59,7 @@ class FeatureService:
                 next_num = 1
         else:
             next_num = 1
-            
+
         feature_number = f"FEAT-{next_num:04d}"
 
         feature = Feature(
@@ -73,7 +74,7 @@ class FeatureService:
             tags=tags or [],
             related_requirements=related_requirements or [],
         )
-        
+
         self.session.add(feature)
         await self.session.flush()
         await self._log_event(
@@ -90,33 +91,34 @@ class FeatureService:
         await self.session.refresh(feature)
         return feature
 
-    async def get_feature(self, feature_id: str) -> Optional[Feature]:
+    async def get_feature(self, feature_id: str) -> Feature | None:
         """Get Feature by ID."""
         result = await self.session.execute(select(Feature).where(Feature.id == feature_id))
         return result.scalar_one_or_none()
 
-    async def list_features(self, project_id: str, status: Optional[str] = None) -> List[Feature]:
+    async def list_features(self, project_id: str, status: str | None = None) -> list[Feature]:
         """List Features for a project."""
         query = select(Feature).where(Feature.project_id == project_id)
-        
+
         if status:
             query = query.where(Feature.status == status)
-            
+
         result = await self.session.execute(query)
         return list(result.scalars().all())
 
-    async def update_feature(self, feature_id: str, **updates: Any) -> Optional[Feature]:
+    async def update_feature(self, feature_id: str, **updates: Any) -> Feature | None:
         """Update a Feature."""
+
         async def do_update() -> Feature:
             feature = await self.get_feature(feature_id)
             if not feature:
                 raise ValueError(f"Feature {feature_id} not found")
-            
-            before = {key: getattr(feature, key, None) for key in updates.keys()}
+
+            before = {key: getattr(feature, key, None) for key in updates}
             for key, value in updates.items():
                 if hasattr(feature, key):
                     setattr(feature, key, value)
-            
+
             feature.version += 1
             self.session.add(feature)
             await self._log_event(
@@ -125,10 +127,7 @@ class FeatureService:
                 event_type="updated",
                 data={
                     "description": "Feature updated",
-                    "changes": {
-                        key: {"from": before.get(key), "to": updates.get(key)}
-                        for key in updates.keys()
-                    },
+                    "changes": {key: {"from": before.get(key), "to": updates.get(key)} for key in updates},
                     "from_value": before.get("status"),
                     "to_value": updates.get("status"),
                 },
@@ -159,4 +158,4 @@ class FeatureService:
         )
         result = await self.session.execute(delete(Feature).where(Feature.id == feature_id))
         await self.session.commit()
-        return result.rowcount > 0
+        return getattr(result, "rowcount", 0) > 0

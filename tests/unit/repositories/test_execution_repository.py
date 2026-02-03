@@ -4,20 +4,19 @@ Tests for ExecutionRepository, ExecutionArtifactRepository, and ExecutionEnviron
 Comprehensive tests covering execution tracking, artifacts, and environment configuration.
 """
 
-import pytest
-import pytest_asyncio
-from datetime import datetime, UTC, timedelta
+from datetime import UTC, datetime
 from uuid import uuid4
 
+import pytest
+import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.repositories.execution_repository import (
-    ExecutionRepository,
     ExecutionArtifactRepository,
     ExecutionEnvironmentConfigRepository,
+    ExecutionRepository,
 )
 from tracertm.repositories.project_repository import ProjectRepository
-
 
 # ==================== Fixtures ====================
 
@@ -182,7 +181,7 @@ class TestExecutionListByProject:
         repo = ExecutionRepository(session)
 
         # Create multiple executions
-        for i in range(5):
+        for _i in range(5):
             await repo.create(
                 project_id=project.id,
                 execution_type="vhs",
@@ -201,12 +200,8 @@ class TestExecutionListByProject:
         repo = ExecutionRepository(session)
 
         # Create executions with different statuses
-        exec1 = await repo.create(
-            project_id=project.id, execution_type="vhs", trigger_source="manual"
-        )
-        exec2 = await repo.create(
-            project_id=project.id, execution_type="vhs", trigger_source="manual"
-        )
+        exec1 = await repo.create(project_id=project.id, execution_type="vhs", trigger_source="manual")
+        exec2 = await repo.create(project_id=project.id, execution_type="vhs", trigger_source="manual")
 
         # Update one to running
         await repo.update_status(exec2.id, "running")
@@ -223,15 +218,9 @@ class TestExecutionListByProject:
         project = project_setup["project"]
         repo = ExecutionRepository(session)
 
-        await repo.create(
-            project_id=project.id, execution_type="vhs", trigger_source="manual"
-        )
-        await repo.create(
-            project_id=project.id, execution_type="playwright", trigger_source="manual"
-        )
-        await repo.create(
-            project_id=project.id, execution_type="vhs", trigger_source="manual"
-        )
+        await repo.create(project_id=project.id, execution_type="vhs", trigger_source="manual")
+        await repo.create(project_id=project.id, execution_type="playwright", trigger_source="manual")
+        await repo.create(project_id=project.id, execution_type="vhs", trigger_source="manual")
 
         executions = await repo.list_by_project(project.id, execution_type="vhs")
 
@@ -245,10 +234,8 @@ class TestExecutionListByProject:
         repo = ExecutionRepository(session)
 
         # Create 10 executions
-        for i in range(10):
-            await repo.create(
-                project_id=project.id, execution_type="vhs", trigger_source="manual"
-            )
+        for _i in range(10):
+            await repo.create(project_id=project.id, execution_type="vhs", trigger_source="manual")
 
         # Get first page
         page1 = await repo.list_by_project(project.id, limit=3, offset=0)
@@ -528,9 +515,7 @@ class TestArtifactListByExecution:
             captured_at=now,
         )
 
-        artifacts = await repo.list_by_execution(
-            execution.id, artifact_type="screenshot"
-        )
+        artifacts = await repo.list_by_execution(execution.id, artifact_type="screenshot")
 
         assert len(artifacts) == 2
 

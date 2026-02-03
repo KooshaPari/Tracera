@@ -116,4 +116,4 @@ export interface MDXModule {
 }
 
 // This marks the file as a module, meaning not all types are implicitly exported.
-export {};
+

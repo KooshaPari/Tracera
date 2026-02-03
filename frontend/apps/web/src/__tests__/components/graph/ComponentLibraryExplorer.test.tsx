@@ -38,13 +38,13 @@ const mockComponentVariants: ComponentVariant[] = [
 		description: "Primary button style",
 		id: "variant-primary",
 		name: "Primary",
-		props: { variant: "primary", size: "md" },
+		props: { size: "md", variant: "primary" },
 	} as any,
 	{
 		description: "Secondary button style",
 		id: "variant-secondary",
 		name: "Secondary",
-		props: { variant: "secondary", size: "md" },
+		props: { size: "md", variant: "secondary" },
 	} as any,
 ];
 

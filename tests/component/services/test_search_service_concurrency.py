@@ -13,8 +13,10 @@ Target: 90%+ coverage for search_service.py
 """
 
 import asyncio
+from unittest.mock import AsyncMock
+
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
+
 from tracertm.services.search_service import SearchService
 
 
@@ -39,10 +41,7 @@ class TestSearchServiceConcurrency:
     async def test_concurrent_index_updates(self, service):
         """Test concurrent index updates."""
         # Simulate 10 concurrent updates
-        tasks = [
-            service.search(f"update_{i}", {"action": "index"})
-            for i in range(10)
-        ]
+        tasks = [service.search(f"update_{i}", {"action": "index"}) for i in range(10)]
         results = await asyncio.gather(*tasks)
 
         # Verify all complete successfully
@@ -72,14 +71,8 @@ class TestSearchServiceConcurrency:
     async def test_concurrent_search_and_index(self, service):
         """Test concurrent search while indexing."""
         # Mix search and index operations
-        search_tasks = [
-            service.search(f"query_{i}", {})
-            for i in range(5)
-        ]
-        index_tasks = [
-            service.search(f"index_{i}", {"action": "index"})
-            for i in range(5)
-        ]
+        search_tasks = [service.search(f"query_{i}", {}) for i in range(5)]
+        index_tasks = [service.search(f"index_{i}", {"action": "index"}) for i in range(5)]
 
         all_tasks = search_tasks + index_tasks
         results = await asyncio.gather(*all_tasks)
@@ -257,12 +250,9 @@ class TestSearchServiceErrorHandling:
         service = SearchService(AsyncMock())
 
         try:
-            result = await asyncio.wait_for(
-                service.search("test", {}),
-                timeout=1.0
-            )
+            result = await asyncio.wait_for(service.search("test", {}), timeout=1.0)
             assert isinstance(result, list)
-        except asyncio.TimeoutError:
+        except TimeoutError:
             pytest.fail("Search timed out unexpectedly")
 
 

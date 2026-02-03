@@ -26,24 +26,18 @@ Advanced scenarios for comprehensive coverage:
 Total: 50+ advanced integration scenario tests
 """
 
-import pytest
-import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime
 from uuid import uuid4
-from typing import List, Dict, Any
-from unittest.mock import Mock, patch, MagicMock
 
+import pytest
+from sqlalchemy import select
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError
 
-from tracertm.models.project import Project
 from tracertm.models.item import Item
 from tracertm.models.link import Link
-from tracertm.models.event import Event
+from tracertm.models.project import Project
 from tracertm.repositories.item_repository import ItemRepository
 from tracertm.repositories.link_repository import LinkRepository
-from tracertm.repositories.project_repository import ProjectRepository
-from tracertm.repositories.event_repository import EventRepository
 
 pytestmark = pytest.mark.integration
 
@@ -65,66 +59,33 @@ class TestComplexDependencyWorkflows:
         - Prevention of circular dependencies
         - Error reporting
         """
-        item_repo = ItemRepository(sync_db_session)
-        link_repo = LinkRepository(sync_db_session)
+        item_repo = ItemRepository(sync_db_session)  # type: ignore[arg-type]
+        link_repo = LinkRepository(sync_db_session)  # type: ignore[arg-type]
 
         project = Project(id=str(uuid4()), name="Cycle Detection Test")
         sync_db_session.add(project)
         sync_db_session.commit()
 
         # Create items
-        item_a = Item(
-            id="CYCLE-A",
-            project_id=project.id,
-            title="Item A",
-            view="TASK",
-            item_type="task",
-            status="todo"
-        )
-        item_b = Item(
-            id="CYCLE-B",
-            project_id=project.id,
-            title="Item B",
-            view="TASK",
-            item_type="task",
-            status="todo"
-        )
-        item_c = Item(
-            id="CYCLE-C",
-            project_id=project.id,
-            title="Item C",
-            view="TASK",
-            item_type="task",
-            status="todo"
-        )
+        item_a = Item(id="CYCLE-A", project_id=project.id, title="Item A", view="TASK", item_type="task", status="todo")
+        item_b = Item(id="CYCLE-B", project_id=project.id, title="Item B", view="TASK", item_type="task", status="todo")
+        item_c = Item(id="CYCLE-C", project_id=project.id, title="Item C", view="TASK", item_type="task", status="todo")
         sync_db_session.add_all([item_a, item_b, item_c])
         sync_db_session.commit()
 
         # Create chain A → B → C
         link_ab = Link(
-            id=str(uuid4()),
-            source_id=item_a.id,
-            target_id=item_b.id,
-            link_type="depends_on",
-            project_id=project.id
+            id=str(uuid4()), source_id=item_a.id, target_id=item_b.id, link_type="depends_on", project_id=project.id
         )
         link_bc = Link(
-            id=str(uuid4()),
-            source_id=item_b.id,
-            target_id=item_c.id,
-            link_type="depends_on",
-            project_id=project.id
+            id=str(uuid4()), source_id=item_b.id, target_id=item_c.id, link_type="depends_on", project_id=project.id
         )
         sync_db_session.add_all([link_ab, link_bc])
         sync_db_session.commit()
 
         # Try to create cycle C → A
         link_ca = Link(
-            id=str(uuid4()),
-            source_id=item_c.id,
-            target_id=item_a.id,
-            link_type="depends_on",
-            project_id=project.id
+            id=str(uuid4()), source_id=item_c.id, target_id=item_a.id, link_type="depends_on", project_id=project.id
         )
         sync_db_session.add(link_ca)
 
@@ -133,7 +94,7 @@ class TestComplexDependencyWorkflows:
         sync_db_session.commit()
 
         # Verify cycle exists (detection would be in service layer)
-        all_links = link_repo.get_by_project(project.id)
+        all_links = sync_db_session.execute(select(Link).where(Link.project_id == str(project.id))).scalars().all()
         assert len(all_links) == 3
 
     def test_transitive_dependency_updates(self, sync_db_session: Session):
@@ -145,8 +106,8 @@ class TestComplexDependencyWorkflows:
         - Cascade changes
         - Notification propagation
         """
-        item_repo = ItemRepository(sync_db_session)
-        link_repo = LinkRepository(sync_db_session)
+        item_repo = ItemRepository(sync_db_session)  # type: ignore[arg-type]
+        link_repo = LinkRepository(sync_db_session)  # type: ignore[arg-type]
 
         project = Project(id=str(uuid4()), name="Transitive Updates")
         sync_db_session.add(project)
@@ -154,46 +115,23 @@ class TestComplexDependencyWorkflows:
 
         # Create dependency chain
         item_a = Item(
-            id="TRANS-A",
-            project_id=project.id,
-            title="Item A",
-            view="FEATURE",
-            item_type="feature",
-            status="todo"
+            id="TRANS-A", project_id=project.id, title="Item A", view="FEATURE", item_type="feature", status="todo"
         )
         item_b = Item(
-            id="TRANS-B",
-            project_id=project.id,
-            title="Item B",
-            view="FEATURE",
-            item_type="feature",
-            status="todo"
+            id="TRANS-B", project_id=project.id, title="Item B", view="FEATURE", item_type="feature", status="todo"
         )
         item_c = Item(
-            id="TRANS-C",
-            project_id=project.id,
-            title="Item C",
-            view="FEATURE",
-            item_type="feature",
-            status="todo"
+            id="TRANS-C", project_id=project.id, title="Item C", view="FEATURE", item_type="feature", status="todo"
         )
         sync_db_session.add_all([item_a, item_b, item_c])
         sync_db_session.commit()
 
         # Create chain A → B → C
         link_ab = Link(
-            id=str(uuid4()),
-            source_id=item_a.id,
-            target_id=item_b.id,
-            link_type="depends_on",
-            project_id=project.id
+            id=str(uuid4()), source_id=item_a.id, target_id=item_b.id, link_type="depends_on", project_id=project.id
         )
         link_bc = Link(
-            id=str(uuid4()),
-            source_id=item_b.id,
-            target_id=item_c.id,
-            link_type="depends_on",
-            project_id=project.id
+            id=str(uuid4()), source_id=item_b.id, target_id=item_c.id, link_type="depends_on", project_id=project.id
         )
         sync_db_session.add_all([link_ab, link_bc])
         sync_db_session.commit()
@@ -204,13 +142,13 @@ class TestComplexDependencyWorkflows:
         sync_db_session.commit()
 
         # Verify update propagation
-        final_c = item_repo.get_by_id(item_c.id)
-        assert final_c.status == "in_progress"
+        final_c = sync_db_session.get(Item, item_c.id)
+        assert final_c is not None and final_c.status == "in_progress"
         assert final_c.item_metadata["updated"] == True
 
         # A depends on B which depends on C
-        final_a = item_repo.get_by_id(item_a.id)
-        assert final_a.status == "todo"  # Direct status unchanged, but dependency updated
+        final_a = sync_db_session.get(Item, item_a.id)
+        assert final_a is not None and final_a.status == "todo"  # Direct status unchanged, but dependency updated
 
     def test_deep_hierarchy_navigation(self, sync_db_session: Session):
         """
@@ -221,8 +159,8 @@ class TestComplexDependencyWorkflows:
         - Query performance
         - Memory efficiency
         """
-        item_repo = ItemRepository(sync_db_session)
-        link_repo = LinkRepository(sync_db_session)
+        item_repo = ItemRepository(sync_db_session)  # type: ignore[arg-type]
+        link_repo = LinkRepository(sync_db_session)  # type: ignore[arg-type]
 
         project = Project(id=str(uuid4()), name="Deep Hierarchy Test")
         sync_db_session.add(project)
@@ -238,7 +176,7 @@ class TestComplexDependencyWorkflows:
                 view="TASK",
                 item_type="task",
                 status="todo",
-                item_metadata={"level": i}
+                item_metadata={"level": i},
             )
             items.append(item)
         sync_db_session.add_all(items)
@@ -251,7 +189,7 @@ class TestComplexDependencyWorkflows:
                 source_id=items[i].id,
                 target_id=items[i + 1].id,
                 link_type="depends_on",
-                project_id=project.id
+                project_id=project.id,
             )
             sync_db_session.add(link)
         sync_db_session.commit()
@@ -261,9 +199,12 @@ class TestComplexDependencyWorkflows:
         depth = 0
 
         while depth < 9:
-            outgoing = link_repo.get_by_source(current_item.id)
+            outgoing = sync_db_session.execute(
+                select(Link).where(Link.source_item_id == current_item.id)
+            ).scalars().all()
             if outgoing:
-                current_item = item_repo.get_by_id(outgoing[0].target_id)
+                current_item = sync_db_session.get(Item, outgoing[0].target_item_id)
+                assert current_item is not None
                 depth += 1
             else:
                 break
@@ -280,8 +221,8 @@ class TestComplexDependencyWorkflows:
         - Graph structure
         - Path analysis
         """
-        item_repo = ItemRepository(sync_db_session)
-        link_repo = LinkRepository(sync_db_session)
+        item_repo = ItemRepository(sync_db_session)  # type: ignore[arg-type]
+        link_repo = LinkRepository(sync_db_session)  # type: ignore[arg-type]
 
         project = Project(id=str(uuid4()), name="Diamond Graph Test")
         sync_db_session.add(project)
@@ -296,33 +237,33 @@ class TestComplexDependencyWorkflows:
                 title=f"Node {letter}",
                 view="TASK",
                 item_type="task",
-                status="todo"
+                status="todo",
             )
             items[letter] = item
         sync_db_session.add_all(items.values())
         sync_db_session.commit()
 
         # Create diamond links
-        links_config = [
-            ("A", "B"), ("A", "C"), ("B", "D"), ("C", "D")
-        ]
+        links_config = [("A", "B"), ("A", "C"), ("B", "D"), ("C", "D")]
         for source_letter, target_letter in links_config:
             link = Link(
                 id=str(uuid4()),
                 source_id=items[source_letter].id,
                 target_id=items[target_letter].id,
                 link_type="depends_on",
-                project_id=project.id
+                project_id=project.id,
             )
             sync_db_session.add(link)
         sync_db_session.commit()
 
         # Verify diamond structure
-        all_links = link_repo.get_by_project(project.id)
+        all_links = sync_db_session.execute(select(Link).where(Link.project_id == str(project.id))).scalars().all()
         assert len(all_links) == 4
 
         # Verify node D has 2 incoming
-        d_incoming = link_repo.get_by_target(items["D"].id)
+        d_incoming = sync_db_session.execute(
+            select(Link).where(Link.target_item_id == items["D"].id)
+        ).scalars().all()
         assert len(d_incoming) == 2
 
 
@@ -343,7 +284,7 @@ class TestConcurrentAccessAndLocking:
         - Update ordering
         - Conflict markers
         """
-        item_repo = ItemRepository(sync_db_session)
+        item_repo = ItemRepository(sync_db_session)  # type: ignore[arg-type]
 
         project = Project(id=str(uuid4()), name="Concurrent Modification")
         sync_db_session.add(project)
@@ -357,7 +298,7 @@ class TestConcurrentAccessAndLocking:
             view="TASK",
             item_type="task",
             status="todo",
-            item_metadata={"version": 1, "edited_by": None}
+            item_metadata={"version": 1, "edited_by": None},
         )
         sync_db_session.add(item)
         sync_db_session.commit()
@@ -375,7 +316,8 @@ class TestConcurrentAccessAndLocking:
         sync_db_session.commit()
 
         # Verify merged state
-        final_item = item_repo.get_by_id(item.id)
+        final_item = sync_db_session.get(Item, item.id)
+        assert final_item is not None
         assert final_item.item_metadata["version"] == 3
         assert final_item.item_metadata["edited_by"] == "user_b"
         assert final_item.item_metadata["description"] == "Added by User B"
@@ -390,7 +332,7 @@ class TestConcurrentAccessAndLocking:
         - Lock release
         - Lock timeout handling
         """
-        item_repo = ItemRepository(sync_db_session)
+        item_repo = ItemRepository(sync_db_session)  # type: ignore[arg-type]
 
         project = Project(id=str(uuid4()), name="Lock Test")
         sync_db_session.add(project)
@@ -404,7 +346,7 @@ class TestConcurrentAccessAndLocking:
             view="TASK",
             item_type="task",
             status="todo",
-            item_metadata={"locked": False, "locked_by": None, "lock_acquired_at": None}
+            item_metadata={"locked": False, "locked_by": None, "lock_acquired_at": None},
         )
         sync_db_session.add(item)
         sync_db_session.commit()
@@ -416,7 +358,8 @@ class TestConcurrentAccessAndLocking:
         sync_db_session.commit()
 
         # Verify lock state
-        locked_item = item_repo.get_by_id(item.id)
+        locked_item = sync_db_session.get(Item, item.id)
+        assert locked_item is not None
         assert locked_item.item_metadata["locked"] == True
         assert locked_item.item_metadata["locked_by"] == "user_a"
 
@@ -426,8 +369,8 @@ class TestConcurrentAccessAndLocking:
         sync_db_session.commit()
 
         # Verify lock released
-        unlocked_item = item_repo.get_by_id(item.id)
-        assert unlocked_item.item_metadata["locked"] == False
+        unlocked_item = sync_db_session.get(Item, item.id)
+        assert unlocked_item is not None and unlocked_item.item_metadata["locked"] == False
 
     def test_deadlock_prevention(self, sync_db_session: Session):
         """
@@ -438,7 +381,7 @@ class TestConcurrentAccessAndLocking:
         - Lock ordering
         - Recovery mechanism
         """
-        item_repo = ItemRepository(sync_db_session)
+        item_repo = ItemRepository(sync_db_session)  # type: ignore[arg-type]
 
         project = Project(id=str(uuid4()), name="Deadlock Prevention Test")
         sync_db_session.add(project)
@@ -452,7 +395,7 @@ class TestConcurrentAccessAndLocking:
             view="TASK",
             item_type="task",
             status="todo",
-            item_metadata={"lock_order": 1}
+            item_metadata={"lock_order": 1},
         )
         item2 = Item(
             id="DEADLOCK-002",
@@ -461,7 +404,7 @@ class TestConcurrentAccessAndLocking:
             view="TASK",
             item_type="task",
             status="todo",
-            item_metadata={"lock_order": 2}
+            item_metadata={"lock_order": 2},
         )
         sync_db_session.add_all([item1, item2])
         sync_db_session.commit()
@@ -481,10 +424,10 @@ class TestConcurrentAccessAndLocking:
         sync_db_session.commit()
 
         # Verify no deadlock
-        final1 = item_repo.get_by_id(item1.id)
-        final2 = item_repo.get_by_id(item2.id)
-        assert final1.item_metadata["locked"] == False
-        assert final2.item_metadata["locked"] == False
+        final1 = sync_db_session.get(Item, item1.id)
+        final2 = sync_db_session.get(Item, item2.id)
+        assert final1 is not None and final1.item_metadata["locked"] == False
+        assert final2 is not None and final2.item_metadata["locked"] == False
 
 
 # ============================================================================
@@ -505,7 +448,7 @@ class TestDataMigrationAndTransformation:
         - Error collection
         - Rollback on critical errors
         """
-        item_repo = ItemRepository(sync_db_session)
+        item_repo = ItemRepository(sync_db_session)  # type: ignore[arg-type]
 
         project = Project(id=str(uuid4()), name="Import Validation Test")
         sync_db_session.add(project)
@@ -523,8 +466,8 @@ class TestDataMigrationAndTransformation:
                 "metadata": {
                     "source": "migration",
                     "index": i,
-                    "valid": i % 5 != 0  # Every 5th item has validation issue
-                }
+                    "valid": i % 5 != 0,  # Every 5th item has validation issue
+                },
             }
             import_data.append(item_dict)
 
@@ -541,7 +484,7 @@ class TestDataMigrationAndTransformation:
                     view=item_dict["view"],
                     item_type=item_dict["item_type"],
                     status=item_dict["status"],
-                    item_metadata=item_dict["metadata"]
+                    item_metadata=item_dict["metadata"],
                 )
                 sync_db_session.add(item)
                 valid_count += 1
@@ -551,7 +494,9 @@ class TestDataMigrationAndTransformation:
         sync_db_session.commit()
 
         # Verify import results
-        imported_items = item_repo.get_all_by_project(project.id)
+        imported_items = sync_db_session.execute(
+            select(Item).where(Item.project_id == str(project.id))
+        ).scalars().all()
         assert len(imported_items) == valid_count
         assert valid_count == 24  # 30 - 6 invalid
         assert invalid_count == 6
@@ -566,7 +511,7 @@ class TestDataMigrationAndTransformation:
         - Default value assignment
         - Compatibility handling
         """
-        item_repo = ItemRepository(sync_db_session)
+        item_repo = ItemRepository(sync_db_session)  # type: ignore[arg-type]
 
         project = Project(id=str(uuid4()), name="Format Conversion Test")
         sync_db_session.add(project)
@@ -579,15 +524,15 @@ class TestDataMigrationAndTransformation:
                 "name": "Legacy Item 1",  # Old: "name", new: "title"
                 "type": "STORY",  # Old: "type", new: "item_type"
                 "status_code": "0",  # Old: numeric, new: string
-                "custom_props": {"priority": "P1"}
+                "custom_props": {"priority": "P1"},
             },
             {
                 "id": "LEGACY-002",
                 "name": "Legacy Item 2",
                 "type": "FEATURE",
                 "status_code": "1",
-                "custom_props": {"priority": "P2"}
-            }
+                "custom_props": {"priority": "P2"},
+            },
         ]
 
         # Convert and import
@@ -598,20 +543,22 @@ class TestDataMigrationAndTransformation:
                 id=legacy_item["id"],
                 project_id=project.id,
                 title=legacy_item["name"],  # Map name → title
-                view=legacy_item["type"].upper(),
-                item_type=legacy_item["type"].lower(),
+                view=str(legacy_item.get("type", "")).upper(),
+                item_type=str(legacy_item.get("type", "")).lower(),
                 status=status_map[legacy_item["status_code"]],
-                item_metadata=legacy_item["custom_props"]
+                item_metadata=legacy_item["custom_props"],
             )
             sync_db_session.add(item)
         sync_db_session.commit()
 
         # Verify conversion
-        imported_items = item_repo.get_all_by_project(project.id)
+        imported_items = sync_db_session.execute(
+            select(Item).where(Item.project_id == str(project.id))
+        ).scalars().all()
         assert len(imported_items) == 2
 
-        item1 = item_repo.get_by_id("LEGACY-001")
-        assert item1.title == "Legacy Item 1"
+        item1 = sync_db_session.get(Item, "LEGACY-001")
+        assert item1 is not None and item1.title == "Legacy Item 1"
         assert item1.status == "todo"
         assert item1.item_metadata["priority"] == "P1"
 
@@ -624,7 +571,7 @@ class TestDataMigrationAndTransformation:
         - Mismatch detection
         - Reconciliation reporting
         """
-        item_repo = ItemRepository(sync_db_session)
+        item_repo = ItemRepository(sync_db_session)  # type: ignore[arg-type]
 
         project = Project(id=str(uuid4()), name="Reconciliation Test")
         sync_db_session.add(project)
@@ -640,7 +587,7 @@ class TestDataMigrationAndTransformation:
                 view="TASK",
                 item_type="task",
                 status="todo",
-                item_metadata={"reconciled": False}
+                item_metadata={"reconciled": False},
             )
             original_items.append(item)
         sync_db_session.add_all(original_items)
@@ -652,7 +599,9 @@ class TestDataMigrationAndTransformation:
         sync_db_session.commit()
 
         # Verify all reconciled
-        all_items = item_repo.get_all_by_project(project.id)
+        all_items = sync_db_session.execute(
+            select(Item).where(Item.project_id == str(project.id))
+        ).scalars().all()
         reconciled_count = sum(1 for i in all_items if i.item_metadata.get("reconciled", False))
         assert reconciled_count == 5
 
@@ -674,14 +623,10 @@ class TestExportImportCycles:
         - Import accuracy
         - Data preservation
         """
-        item_repo = ItemRepository(sync_db_session)
-        link_repo = LinkRepository(sync_db_session)
+        item_repo = ItemRepository(sync_db_session)  # type: ignore[arg-type]
+        link_repo = LinkRepository(sync_db_session)  # type: ignore[arg-type]
 
-        project = Project(
-            id=str(uuid4()),
-            name="Round-Trip Test",
-            item_metadata={"exported": False}
-        )
+        project = Project(id=str(uuid4()), name="Round-Trip Test", item_metadata={"exported": False})
         sync_db_session.add(project)
         sync_db_session.commit()
 
@@ -695,7 +640,7 @@ class TestExportImportCycles:
                 view="FEATURE",
                 item_type="feature",
                 status="todo",
-                item_metadata={"original": True, "index": i}
+                item_metadata={"original": True, "index": i},
             )
             items.append(item)
         sync_db_session.add_all(items)
@@ -708,23 +653,31 @@ class TestExportImportCycles:
                 source_id=items[i].id,
                 target_id=items[i + 1].id,
                 link_type="depends_on",
-                project_id=project.id
+                project_id=project.id,
             )
             sync_db_session.add(link)
         sync_db_session.commit()
 
         # Export state
-        exported_items = item_repo.get_all_by_project(project.id)
+        exported_items = sync_db_session.execute(
+            select(Item).where(Item.project_id == str(project.id))
+        ).scalars().all()
         exported_count = len(exported_items)
 
-        exported_links = link_repo.get_by_project(project.id)
+        exported_links = sync_db_session.execute(
+            select(Link).where(Link.project_id == str(project.id))
+        ).scalars().all()
         exported_links_count = len(exported_links)
 
         # Reimport (verify counts)
-        reimported_items = item_repo.get_all_by_project(project.id)
+        reimported_items = sync_db_session.execute(
+            select(Item).where(Item.project_id == str(project.id))
+        ).scalars().all()
         assert len(reimported_items) == exported_count
 
-        reimported_links = link_repo.get_by_project(project.id)
+        reimported_links = sync_db_session.execute(
+            select(Link).where(Link.project_id == str(project.id))
+        ).scalars().all()
         assert len(reimported_links) == exported_links_count
 
     def test_metadata_preservation_through_export(self, sync_db_session: Session):
@@ -736,7 +689,7 @@ class TestExportImportCycles:
         - Complex type handling
         - Special character preservation
         """
-        item_repo = ItemRepository(sync_db_session)
+        item_repo = ItemRepository(sync_db_session)  # type: ignore[arg-type]
 
         project = Project(id=str(uuid4()), name="Metadata Preservation Test")
         sync_db_session.add(project)
@@ -746,18 +699,9 @@ class TestExportImportCycles:
         complex_metadata = {
             "tags": ["urgent", "backend", "security"],
             "priority": 1,
-            "dates": {
-                "created": "2024-01-01",
-                "due": "2024-12-31"
-            },
+            "dates": {"created": "2024-01-01", "due": "2024-12-31"},
             "special_chars": "Test with 中文 and emojis",
-            "nested": {
-                "level1": {
-                    "level2": {
-                        "value": "deep"
-                    }
-                }
-            }
+            "nested": {"level1": {"level2": {"value": "deep"}}},
         }
 
         item = Item(
@@ -767,13 +711,14 @@ class TestExportImportCycles:
             view="FEATURE",
             item_type="feature",
             status="todo",
-            item_metadata=complex_metadata
+            item_metadata=complex_metadata,
         )
         sync_db_session.add(item)
         sync_db_session.commit()
 
         # Export and verify metadata
-        exported_item = item_repo.get_by_id(item.id)
+        exported_item = sync_db_session.get(Item, str(item.id))
+        assert exported_item is not None
         assert exported_item.item_metadata["tags"] == ["urgent", "backend", "security"]
         assert exported_item.item_metadata["special_chars"] == "Test with 中文 and emojis"
         assert exported_item.item_metadata["nested"]["level1"]["level2"]["value"] == "deep"
@@ -787,8 +732,8 @@ class TestExportImportCycles:
         - Link type preservation
         - Bidirectional link handling
         """
-        item_repo = ItemRepository(sync_db_session)
-        link_repo = LinkRepository(sync_db_session)
+        item_repo = ItemRepository(sync_db_session)  # type: ignore[arg-type]
+        link_repo = LinkRepository(sync_db_session)  # type: ignore[arg-type]
 
         project = Project(id=str(uuid4()), name="Link Preservation Test")
         sync_db_session.add(project)
@@ -796,44 +741,28 @@ class TestExportImportCycles:
 
         # Create items
         item_a = Item(
-            id="LINKPRES-A",
-            project_id=project.id,
-            title="Item A",
-            view="FEATURE",
-            item_type="feature",
-            status="todo"
+            id="LINKPRES-A", project_id=project.id, title="Item A", view="FEATURE", item_type="feature", status="todo"
         )
         item_b = Item(
-            id="LINKPRES-B",
-            project_id=project.id,
-            title="Item B",
-            view="FEATURE",
-            item_type="feature",
-            status="todo"
+            id="LINKPRES-B", project_id=project.id, title="Item B", view="FEATURE", item_type="feature", status="todo"
         )
         sync_db_session.add_all([item_a, item_b])
         sync_db_session.commit()
 
         # Create links with metadata
         link1 = Link(
-            id=str(uuid4()),
-            source_id=item_a.id,
-            target_id=item_b.id,
-            link_type="depends_on",
-            project_id=project.id
+            id=str(uuid4()), source_id=item_a.id, target_id=item_b.id, link_type="depends_on", project_id=project.id
         )
         link2 = Link(
-            id=str(uuid4()),
-            source_id=item_b.id,
-            target_id=item_a.id,
-            link_type="relates_to",
-            project_id=project.id
+            id=str(uuid4()), source_id=item_b.id, target_id=item_a.id, link_type="relates_to", project_id=project.id
         )
         sync_db_session.add_all([link1, link2])
         sync_db_session.commit()
 
         # Verify export
-        exported_links = link_repo.get_by_project(project.id)
+        exported_links = sync_db_session.execute(
+            select(Link).where(Link.project_id == str(project.id))
+        ).scalars().all()
         assert len(exported_links) == 2
 
         # Verify link types
@@ -861,7 +790,7 @@ class TestErrorRecoveryAndResilience:
         - Retry mechanisms
         - Cleanup procedures
         """
-        item_repo = ItemRepository(sync_db_session)
+        item_repo = ItemRepository(sync_db_session)  # type: ignore[arg-type]
 
         project = Project(id=str(uuid4()), name="Import Failure Recovery")
         sync_db_session.add(project)
@@ -882,7 +811,7 @@ class TestErrorRecoveryAndResilience:
                     title=f"Item {i}",
                     view="TASK",
                     item_type="task",
-                    status="todo"
+                    status="todo",
                 )
                 sync_db_session.add(item)
             sync_db_session.commit()
@@ -890,7 +819,9 @@ class TestErrorRecoveryAndResilience:
             sync_db_session.rollback()
 
         # Verify rollback
-        items_after_failed_import = item_repo.get_all_by_project(project.id)
+        items_after_failed_import = sync_db_session.execute(
+            select(Item).where(Item.project_id == str(project.id))
+        ).scalars().all()
         assert len(items_after_failed_import) == 0
 
         # Retry with corrected logic (skip problematic item)
@@ -904,13 +835,15 @@ class TestErrorRecoveryAndResilience:
                 title=f"Item {i}",
                 view="TASK",
                 item_type="task",
-                status="todo"
+                status="todo",
             )
             sync_db_session.add(item)
         sync_db_session.commit()
 
         # Verify successful retry
-        final_items = item_repo.get_all_by_project(project.id)
+        final_items = sync_db_session.execute(
+            select(Item).where(Item.project_id == str(project.id))
+        ).scalars().all()
         assert len(final_items) == items_to_import - 1
 
     def test_handling_corrupted_metadata(self, sync_db_session: Session):
@@ -922,7 +855,7 @@ class TestErrorRecoveryAndResilience:
         - Corruption detection
         - Recovery procedures
         """
-        item_repo = ItemRepository(sync_db_session)
+        item_repo = ItemRepository(sync_db_session)  # type: ignore[arg-type]
 
         project = Project(id=str(uuid4()), name="Corruption Recovery Test")
         sync_db_session.add(project)
@@ -941,14 +874,15 @@ class TestErrorRecoveryAndResilience:
                 "null_field": None,
                 "empty_field": "",
                 "large_field": "x" * 10000,
-                "invalid_chars": "\x00\x01\x02"
-            }
+                "invalid_chars": "\x00\x01\x02",
+            },
         )
         sync_db_session.add(item)
         sync_db_session.commit()
 
         # Retrieve and verify corruption handling
-        retrieved_item = item_repo.get_by_id(item.id)
+        retrieved_item = sync_db_session.get(Item, str(item.id))
+        assert retrieved_item is not None
         assert retrieved_item.item_metadata["valid_field"] == "good"
         # System should have handled or preserved problematic fields
 

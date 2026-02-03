@@ -22,35 +22,25 @@ class GraphValidationService:
         self.session = session
 
     async def validate_graph(self, project_id: str, graph_id: str) -> dict[str, Any]:
-        graph = await self.session.execute(
-            select(Graph).where(Graph.id == graph_id, Graph.project_id == project_id)
-        )
+        graph = await self.session.execute(select(Graph).where(Graph.id == graph_id, Graph.project_id == project_id))
         graph_obj = graph.scalar_one_or_none()
         if not graph_obj:
             return {"errors": ["graph_not_found"], "warnings": []}
 
         nodes_result = await self.session.execute(
-            select(Item)
-            .join(GraphNode, GraphNode.item_id == Item.id)
-            .where(GraphNode.graph_id == graph_id)
+            select(Item).join(GraphNode, GraphNode.item_id == Item.id).where(GraphNode.graph_id == graph_id)
         )
         nodes = list(nodes_result.scalars().all())
         node_ids = {n.id for n in nodes}
         node_kind_by_id = {n.id: n.node_kind_id for n in nodes}
 
-        links_result = await self.session.execute(
-            select(Link).where(Link.graph_id == graph_id)
-        )
+        links_result = await self.session.execute(select(Link).where(Link.graph_id == graph_id))
         links = list(links_result.scalars().all())
 
-        edge_types_result = await self.session.execute(
-            select(EdgeType).where(EdgeType.project_id == project_id)
-        )
+        edge_types_result = await self.session.execute(select(EdgeType).where(EdgeType.project_id == project_id))
         edge_types = {e.name for e in edge_types_result.scalars().all()}
 
-        rules_result = await self.session.execute(
-            select(NodeKindRule).where(NodeKindRule.project_id == project_id)
-        )
+        rules_result = await self.session.execute(select(NodeKindRule).where(NodeKindRule.project_id == project_id))
         rules = list(rules_result.scalars().all())
         rule_map = {r.node_kind_id: r.rule_metadata for r in rules}
 
@@ -59,36 +49,30 @@ class GraphValidationService:
 
         for link in links:
             if link.link_type not in edge_types:
-                errors.append(
-                    {
-                        "type": "unknown_edge_type",
-                        "link_id": link.id,
-                        "link_type": link.link_type,
-                    }
-                )
+                errors.append({
+                    "type": "unknown_edge_type",
+                    "link_id": link.id,
+                    "link_type": link.link_type,
+                })
 
             if link.source_item_id not in node_ids or link.target_item_id not in node_ids:
-                errors.append(
-                    {
-                        "type": "link_to_missing_node",
-                        "link_id": link.id,
-                        "source": link.source_item_id,
-                        "target": link.target_item_id,
-                    }
-                )
+                errors.append({
+                    "type": "link_to_missing_node",
+                    "link_id": link.id,
+                    "source": link.source_item_id,
+                    "target": link.target_item_id,
+                })
                 continue
 
             source_kind = node_kind_by_id.get(link.source_item_id)
             allowed_edges = rule_map.get(source_kind, {}).get("allowed_edges", ["*"])
             if "*" not in allowed_edges and link.link_type not in allowed_edges:
-                warnings.append(
-                    {
-                        "type": "edge_not_allowed_for_source_kind",
-                        "link_id": link.id,
-                        "link_type": link.link_type,
-                        "source_kind_id": source_kind,
-                    }
-                )
+                warnings.append({
+                    "type": "edge_not_allowed_for_source_kind",
+                    "link_id": link.id,
+                    "link_type": link.link_type,
+                    "source_kind_id": source_kind,
+                })
 
         return {
             "graph_id": graph_id,

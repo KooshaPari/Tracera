@@ -14,27 +14,20 @@ Targets +3% coverage by testing error scenarios and exception flows:
 import asyncio
 import json
 import tempfile
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-import pytest_asyncio
-from sqlalchemy import create_engine
-from sqlalchemy.exc import SQLAlchemyError, OperationalError
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.exc import OperationalError, SQLAlchemyError
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import Session
 
 from tracertm.api.client import TraceRTMClient
 from tracertm.core.concurrency import ConcurrencyError
 from tracertm.database.connection import DatabaseConnection
-from tracertm.models.agent import Agent
 from tracertm.models.item import Item
-from tracertm.models.project import Project
 from tracertm.repositories.item_repository import ItemRepository
-from tracertm.repositories.project_repository import ProjectRepository
-
 
 # ============================================================================
 # DATABASE CONNECTION ERROR TESTS
@@ -46,17 +39,23 @@ class TestDatabaseConnectionErrors:
 
     def test_invalid_database_url(self):
         """Test connection with invalid database URL."""
-        with pytest.raises(Exception):
+
+        def connect_invalid():
             db = DatabaseConnection("invalid://malformed:url")
             db.connect()
+
+        with pytest.raises((ValueError, OSError), match=r"invalid|malformed|url"):
+            connect_invalid()
 
     def test_database_not_configured_error(self):
         """Test client behavior when database is not configured."""
         with patch.dict("os.environ", {"DATABASE_URL": ""}):
             client = TraceRTMClient()
-            with patch.object(client.config_manager, "get", return_value=None):
-                with pytest.raises(ValueError, match="Database not configured"):
-                    client._get_session()
+            with (
+                patch.object(client.config_manager, "get", return_value=None),
+                pytest.raises(ValueError, match="Database not configured"),
+            ):
+                client._get_session()
 
     def test_database_connection_timeout(self):
         """Test handling of connection timeout."""
@@ -72,7 +71,7 @@ class TestDatabaseConnectionErrors:
         """Test handling of unavailable database."""
         with patch(
             "tracertm.database.connection.DatabaseConnection.connect",
-            side_effect=OperationalError("server is down", None, None),
+            side_effect=OperationalError("server is down", None, Exception("server is down")),
         ):
             db = DatabaseConnection("postgresql://invalid")
             with pytest.raises(OperationalError):
@@ -89,12 +88,14 @@ class TestDatabaseConnectionErrors:
             mock_get.side_effect = ["sqlite:///:memory:", None]
 
             # First attempt fails
-            with patch(
-                "tracertm.database.connection.DatabaseConnection.connect",
-                side_effect=Exception("Temporary error"),
+            with (
+                patch(
+                    "tracertm.database.connection.DatabaseConnection.connect",
+                    side_effect=RuntimeError("Temporary error"),
+                ),
+                pytest.raises(RuntimeError, match="Temporary error"),
             ):
-                with pytest.raises(Exception):
-                    client._get_session()
+                client._get_session()
 
             # Session should be cleanable
             if client._session:
@@ -117,7 +118,7 @@ class TestRepositoryErrorPaths:
         """Test item creation fails with invalid parent ID."""
         repo = ItemRepository(db_session)
 
-        with pytest.raises(ValueError, match="Parent item .* not found"):
+        with pytest.raises(ValueError, match=r"Parent item .* not found"):
             await repo.create(
                 project_id="project-1",
                 title="Test Item",
@@ -141,7 +142,7 @@ class TestRepositoryErrorPaths:
         db_session.add(parent)
         await db_session.flush()
 
-        with pytest.raises(ValueError, match="Parent item .* not in same project"):
+        with pytest.raises(ValueError, match=r"Parent item .* not in same project"):
             await repo.create(
                 project_id="project-1",
                 title="Test Item",
@@ -205,14 +206,19 @@ class TestRepositoryErrorPaths:
         )
 
         # Simulate concurrency error by mocking session
-        with patch.object(
-            db_session,
-            "flush",
-            side_effect=ConcurrencyError("Version mismatch"),
+        async def do_flush():
+            item.title = "Updated"
+            await db_session.flush()
+
+        with (
+            patch.object(
+                db_session,
+                "flush",
+                side_effect=ConcurrencyError("Version mismatch"),
+            ),
+            pytest.raises(ConcurrencyError, match="Version mismatch"),
         ):
-            with pytest.raises(ConcurrencyError):
-                item.title = "Updated"
-                await db_session.flush()
+            await do_flush()
 
     async def test_large_metadata_handling(self, db_session: AsyncSession):
         """Test handling of large metadata objects."""
@@ -245,9 +251,11 @@ class TestPermissionErrors:
         """Test error when no project is selected."""
         client = TraceRTMClient()
 
-        with patch.object(client.config_manager, "get", return_value=None):
-            with pytest.raises(ValueError, match="No project selected"):
-                client._get_project_id()
+        with (
+            patch.object(client.config_manager, "get", return_value=None),
+            pytest.raises(ValueError, match="No project selected"),
+        ):
+            client._get_project_id()
 
     def test_log_operation_without_agent_id(self):
         """Test operation logging skips gracefully without agent."""
@@ -280,18 +288,20 @@ class TestPermissionErrors:
         mock_session = MagicMock(spec=Session)
         mock_session.add.side_effect = Exception("Add failed")
 
-        with patch.object(client, "_get_session", return_value=mock_session):
-            with patch.object(client, "_get_project_id", return_value="proj-1"):
-                # Should not raise
-                client._log_operation(
-                    event_type="create",
-                    entity_type="item",
-                    entity_id="item-1",
-                    data={"title": "test"},
-                )
+        with (
+            patch.object(client, "_get_session", return_value=mock_session),
+            patch.object(client, "_get_project_id", return_value="proj-1"),
+        ):
+            # Should not raise
+            client._log_operation(
+                event_type="create",
+                entity_type="item",
+                entity_id="item-1",
+                data={"title": "test"},
+            )
 
-                # Rollback should be called
-                mock_session.rollback.assert_called()
+            # Rollback should be called
+            mock_session.rollback.assert_called()
 
 
 # ============================================================================
@@ -359,7 +369,7 @@ class TestInvalidInputHandling:
     def test_malformed_json_metadata(self):
         """Test handling of malformed JSON in metadata."""
         # Should use valid JSON structure
-        item = Item(
+        Item(
             id="item-1",
             project_id="project-1",
             title="Test",
@@ -438,9 +448,10 @@ class TestTimeoutAndRetry:
         attempt_count = 0
 
         async def failing_operation():
+            await asyncio.sleep(0)
             nonlocal attempt_count
             attempt_count += 1
-            raise Exception("Operation failed")
+            raise RuntimeError("Operation failed")
 
         # Simulate retry logic
         for attempt in range(max_retries):
@@ -457,9 +468,9 @@ class TestTimeoutAndRetry:
 
         async def operation_with_backoff():
             for attempt in range(3):
-                start_times.append(datetime.now(timezone.utc))
+                start_times.append(datetime.now(UTC))
                 if attempt < 2:
-                    await asyncio.sleep(2 ** attempt * 0.01)
+                    await asyncio.sleep(2**attempt * 0.01)
                 else:
                     break
 
@@ -529,7 +540,7 @@ class TestResourceCleanup:
     @pytest.mark.asyncio
     async def test_session_cleanup_on_error(self):
         """Test async session cleanup on error."""
-        from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+        from sqlalchemy.ext.asyncio import AsyncSession
 
         engine = create_async_engine("sqlite+aiosqlite:///:memory:")
         session = AsyncSession(engine)
@@ -559,10 +570,8 @@ class TestResourceCleanup:
                 cleanup_order.append(self.name)
 
         try:
-            with Resource("first"):
-                with Resource("second"):
-                    with Resource("third"):
-                        raise Exception("Error")
+            with Resource("first"), Resource("second"), Resource("third"):
+                raise Exception("Error")
         except Exception:
             pass
 
@@ -589,7 +598,7 @@ class TestConflictResolutionErrors:
         if "version" not in item1 or "version" not in item2:
             # Should raise error when version is missing
             with pytest.raises((ValueError, KeyError, AttributeError)):
-                version1 = item1["version"]
+                _ = item1["version"]  # KeyError: missing "version"
 
     async def test_conflicting_deletes(self, db_session: AsyncSession):
         """Test handling of conflicting deletes."""
@@ -632,11 +641,12 @@ class TestSyncEngineErrors:
         attempts = []
 
         async def failing_sync():
+            await asyncio.sleep(0)
             attempts.append("attempt")
             if len(attempts) < 2:
-                raise Exception("Partial failure")
+                raise RuntimeError("Partial failure")
 
-        with pytest.raises(Exception):
+        with pytest.raises(RuntimeError, match="Partial failure"):
             await failing_sync()
 
     async def test_sync_cleanup_on_error(self):
@@ -644,13 +654,14 @@ class TestSyncEngineErrors:
         cleanup_called = False
 
         async def operation_with_cleanup():
+            await asyncio.sleep(0)
             nonlocal cleanup_called
             try:
-                raise Exception("Operation failed")
+                raise RuntimeError("Operation failed")
             finally:
                 cleanup_called = True
 
-        with pytest.raises(Exception):
+        with pytest.raises(RuntimeError, match="Operation failed"):
             await operation_with_cleanup()
 
         assert cleanup_called
@@ -702,14 +713,16 @@ class TestLocalStorageErrors:
 
     async def test_disk_full_on_write(self):
         """Test handling of disk full error."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            with patch(
+        with (
+            tempfile.TemporaryDirectory() as tmpdir,
+            patch(
                 "pathlib.Path.write_text",
                 side_effect=OSError("No space left on device"),
-            ):
-                file_path = Path(tmpdir) / "file.txt"
-                with pytest.raises(OSError):
-                    file_path.write_text("content")
+            ),
+        ):
+            file_path = Path(tmpdir) / "file.txt"
+            with pytest.raises(OSError, match="No space left on device"):
+                file_path.write_text("content")
 
 
 # ============================================================================
@@ -726,14 +739,16 @@ class TestIntegrationErrorScenarios:
         repo = ItemRepository(db_session)
 
         # First operation fails
-        with patch.object(repo.session, "flush", side_effect=Exception("DB Error")):
-            with pytest.raises(Exception):
-                await repo.create(
-                    project_id="project-1",
-                    title="Test",
-                    view="board",
-                    item_type="requirement",
-                )
+        with (
+            patch.object(repo.session, "flush", side_effect=RuntimeError("DB Error")),
+            pytest.raises(RuntimeError, match="DB Error"),
+        ):
+            await repo.create(
+                project_id="project-1",
+                title="Test",
+                view="board",
+                item_type="requirement",
+            )
 
         # System should still be usable
         repo2 = ItemRepository(db_session)
@@ -743,13 +758,15 @@ class TestIntegrationErrorScenarios:
         """Test that errors propagate correctly up the stack."""
         repo = ItemRepository(db_session)
 
-        with patch.object(
-            repo.session,
-            "execute",
-            side_effect=SQLAlchemyError("Connection error"),
+        with (
+            patch.object(
+                repo.session,
+                "execute",
+                side_effect=SQLAlchemyError("Connection error"),
+            ),
+            pytest.raises(SQLAlchemyError),
         ):
-            with pytest.raises(SQLAlchemyError):
-                await repo.get_by_id("item-1")
+            await repo.get_by_id("item-1")
 
     async def test_partial_state_on_error(self, db_session: AsyncSession):
         """Test handling of partial state after error."""
@@ -765,7 +782,7 @@ class TestIntegrationErrorScenarios:
         item_id = item.id
 
         # Item should exist
-        retrieved = await repo.get_by_id(item_id)
+        retrieved = await repo.get_by_id(str(item_id))
         assert retrieved is not None
         assert retrieved.title == "Test"
 
@@ -781,19 +798,19 @@ class TestEdgeCaseErrors:
     def test_unicode_in_error_messages(self):
         """Test Unicode characters in error messages."""
         error_message = "Error: 🚨 ñoño ñáéíóú"
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Error:"):
             raise ValueError(error_message)
 
     def test_very_long_error_message(self):
         """Test handling of very long error messages."""
         long_message = "error: " + "x" * 10000
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=r"^error:"):
             raise ValueError(long_message)
 
     def test_error_with_null_bytes(self):
         """Test handling of error with null bytes."""
         error_msg = "Error\x00with\x00nulls"
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Error"):
             raise ValueError(error_msg)
 
     def test_circular_exception_reference(self):
@@ -805,17 +822,20 @@ class TestEdgeCaseErrors:
                 self.context = self  # Circular reference
 
         with pytest.raises(CustomError):
-            raise CustomError()
+            raise CustomError
 
     def test_nested_exception_chains(self):
         """Test handling of nested exception chains."""
-        try:
+
+        def raise_wrapped():
             try:
                 raise ValueError("Original error")
             except ValueError as e:
                 raise RuntimeError("Wrapped error") from e
-        except RuntimeError as e:
-            assert isinstance(e.__cause__, ValueError)
+
+        with pytest.raises(RuntimeError, match="Wrapped error") as exc_info:
+            raise_wrapped()
+        assert isinstance(exc_info.value.__cause__, ValueError)
 
 
 # ============================================================================
@@ -831,17 +851,15 @@ class TestMockAndStubErrors:
         mock_obj = MagicMock()
         mock_obj.method.side_effect = ValueError("Mock error")
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Mock error"):
             mock_obj.method()
 
     def test_async_mock_raises_error(self):
         """Test async mock that raises error."""
         mock_obj = AsyncMock()
-        mock_obj.async_method.side_effect = Exception("Async error")
+        mock_obj.async_method.side_effect = RuntimeError("Async error")
 
-        with pytest.raises(Exception):
-            import asyncio
-
+        with pytest.raises(RuntimeError, match="Async error"):
             asyncio.run(mock_obj.async_method())
 
     def test_mock_property_raises_error(self):
@@ -870,7 +888,7 @@ class TestErrorMessageValidation:
     def test_error_message_contains_context(self):
         """Test that error messages include context."""
         try:
-            repo = ItemRepository(None)
+            ItemRepository(None)  # type: ignore[arg-type]
             # This should raise with helpful message
         except (TypeError, AttributeError, ValueError) as e:
             # Error message should be informative
@@ -893,7 +911,7 @@ class TestErrorMessageValidation:
     def test_error_includes_actual_vs_expected(self):
         """Test that errors include actual vs expected values."""
         try:
-            item = Item(
+            Item(
                 id="item-1",
                 project_id="project-1",
                 title="Test",

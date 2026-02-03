@@ -49,7 +49,7 @@
 	});
 
 	Prism.hooks.add('wrap', function (env) {
-		if (/-link$/.test(env.type)) {
+		if (env.type.endsWith('-link')) {
 			env.tag = 'a';
 
 			var href = env.content;

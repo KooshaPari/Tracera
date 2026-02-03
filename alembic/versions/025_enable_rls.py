@@ -4,8 +4,8 @@ Revision ID: 025_enable_rls
 Revises: 024_linear_app_installations
 Create Date: 2026-01-29 00:00:00.000000
 """
+
 from alembic import op
-import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "025_enable_rls"
@@ -23,7 +23,7 @@ def upgrade() -> None:
     op.execute("ALTER TABLE links ENABLE ROW LEVEL SECURITY")
 
     # 2. Create Policies
-    
+
     # account_users: Users can see rows where they are the user
     op.execute("""
         CREATE POLICY account_users_isolation_policy ON account_users

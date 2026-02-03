@@ -8,9 +8,10 @@ Revises: 040_add_design_token_refs
 Create Date: 2026-01-30
 """
 
-from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
+
+from alembic import op
 
 # revision identifiers, used by Alembic
 revision = "041_add_figma_sync_state"
@@ -130,9 +131,7 @@ def upgrade() -> None:
     op.create_index("ix_figma_sync_state_node_id", "figma_sync_state", ["node_id"])
     op.create_index("ix_figma_sync_state_sync_status", "figma_sync_state", ["sync_status"])
     op.create_index("ix_figma_sync_state_has_conflict", "figma_sync_state", ["has_conflict"])
-    op.create_index(
-        "ix_figma_sync_state_last_synced", "figma_sync_state", ["last_synced_at"]
-    )
+    op.create_index("ix_figma_sync_state_last_synced", "figma_sync_state", ["last_synced_at"])
     # Composite indexes
     op.create_index(
         "ix_figma_sync_state_project_status",
@@ -149,12 +148,8 @@ def upgrade() -> None:
 def downgrade() -> None:
     """Drop figma_sync_state table."""
     op.drop_index("ix_figma_sync_state_file_page", table_name="figma_sync_state")
-    op.drop_index(
-        "ix_figma_sync_state_project_status", table_name="figma_sync_state"
-    )
-    op.drop_index(
-        "ix_figma_sync_state_last_synced", table_name="figma_sync_state"
-    )
+    op.drop_index("ix_figma_sync_state_project_status", table_name="figma_sync_state")
+    op.drop_index("ix_figma_sync_state_last_synced", table_name="figma_sync_state")
     op.drop_index("ix_figma_sync_state_has_conflict", table_name="figma_sync_state")
     op.drop_index("ix_figma_sync_state_sync_status", table_name="figma_sync_state")
     op.drop_index("ix_figma_sync_state_node_id", table_name="figma_sync_state")

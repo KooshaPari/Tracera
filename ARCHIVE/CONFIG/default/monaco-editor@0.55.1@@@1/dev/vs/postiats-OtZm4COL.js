@@ -608,7 +608,7 @@ define("vs/postiats-OtZm4COL", ["exports"], (function(exports) {
       { open: "<", close: ">", token: "delimiter.angle" }
     ],
     // we include these common regular expressions
-    symbols: /[=><!~?:&|+\-*\/\^%]+/,
+    symbols: /[=><!~?:&|+\-*/^%]+/,
     IDENTFST: /[a-zA-Z_]/,
     IDENTRST: /[a-zA-Z0-9_'$]/,
     symbolic: /[%&+-./:=@~`^|*!$#?<>]/,
@@ -622,8 +622,8 @@ define("vs/postiats-OtZm4COL", ["exports"], (function(exports) {
     fexponent_bin: /[pP][+-]?[0-9]+/,
     deciexp: /\.[0-9]*@fexponent?/,
     hexiexp: /\.[0-9a-zA-Z]*@fexponent_bin?/,
-    irregular_keywords: /val[+-]?|case[+-]?|addr\@?|fold\@|free\@|fix\@?|lam\@?|llam\@?|prop[+-]?|type[+-]?|view[+-@]?|viewt@?ype[+-]?|t@?ype[+-]?|v(iew)?t@?ype[+-]?|abst@?ype|absv(iew)?t@?ype|for\*?|while\*?/,
-    ESCHAR: /[ntvbrfa\\\?'"\(\[\{]/,
+    irregular_keywords: /val[+-]?|case[+-]?|addr@?|fold@|free@|fix@?|lam@?|llam@?|prop[+-]?|type[+-]?|view[+-@]?|viewt@?ype[+-]?|t@?ype[+-]?|v(iew)?t@?ype[+-]?|abst@?ype|absv(iew)?t@?ype|for\*?|while\*?/,
+    ESCHAR: /[ntvbrfa\\?'"([{]/,
     start: "root",
     // The main tokenizer for ATS/Postiats
     // reference: https://github.com/githwxi/ATS-Postiats/blob/master/src/pats_lexing.dats
@@ -728,7 +728,7 @@ define("vs/postiats-OtZm4COL", ["exports"], (function(exports) {
         // lexing_SHARP:
         // '#' IDENTFST IDENTRST* => lexing_ident_srp, _ => lexing_IDENT_sym
         {
-          regex: /\#@IDENTFST@IDENTRST*/,
+          regex: /#@IDENTFST@IDENTRST*/,
           action: {
             cases: {
               "@keywords_srp": { token: "keyword.srp" },
@@ -772,7 +772,7 @@ define("vs/postiats-OtZm4COL", ["exports"], (function(exports) {
           action: { token: "keyword" }
         },
         {
-          regex: /@IDENTFST@IDENTRST*[<!\[]?/,
+          regex: /@IDENTFST@IDENTRST*[<![]?/,
           action: {
             cases: {
               // TODO: dynload and staload should be specially parsed
@@ -845,18 +845,18 @@ define("vs/postiats-OtZm4COL", ["exports"], (function(exports) {
         { regex: /@digit+@INTSP*/, action: { token: "number" } }
       ],
       lexing_COMMENT_block_ml: [
-        [/[^\(\*]+/, "comment"],
+        [/[^(*]+/, "comment"],
         [/\(\*/, "comment", "@push"],
         [/\(\*/, "comment.invalid"],
         [/\*\)/, "comment", "@pop"],
         [/\*/, "comment"]
       ],
       lexing_COMMENT_block_c: [
-        [/[^\/*]+/, "comment"],
+        [/[^/*]+/, "comment"],
         // [/\/\*/, 'comment', '@push' ],    // nested C-style block comments not allowed
         // [/\/\*/,    'comment.invalid' ],	// NOTE: this breaks block comments in the shape of /* //*/
         [/\*\//, "comment", "@pop"],
-        [/[\/*]/, "comment"]
+        [/[/*]/, "comment"]
       ],
       lexing_COMMENT_rest: [
         [/$/, "comment", "@pop"],

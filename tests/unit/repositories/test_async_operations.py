@@ -10,8 +10,7 @@ Tests for:
 """
 
 import asyncio
-from unittest.mock import AsyncMock, MagicMock, patch
-from typing import Any
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -24,16 +23,16 @@ class TestAsyncDatabaseOperations:
     async def test_concurrent_async_reads(self):
         """Test concurrent async database reads."""
         session_mock = AsyncMock(spec=AsyncSession)
-        session_mock.execute = AsyncMock(return_value=MagicMock(scalars=MagicMock(return_value=MagicMock(all=MagicMock(return_value=[])))))
+        session_mock.execute = AsyncMock(
+            return_value=MagicMock(scalars=MagicMock(return_value=MagicMock(all=MagicMock(return_value=[]))))
+        )
 
         async def read_items(item_id: int) -> dict:
             # Simulate async read
             await asyncio.sleep(0.01)
             return {"id": item_id, "name": f"Item {item_id}"}
 
-        results = await asyncio.gather(*[
-            read_items(i) for i in range(5)
-        ])
+        results = await asyncio.gather(*[read_items(i) for i in range(5)])
 
         assert len(results) == 5
         assert all(r["name"].startswith("Item") for r in results)
@@ -52,9 +51,7 @@ class TestAsyncDatabaseOperations:
             await session_mock.refresh(MagicMock())
             return {"id": item_id, "status": "created"}
 
-        results = await asyncio.gather(*[
-            write_item(i) for i in range(3)
-        ])
+        results = await asyncio.gather(*[write_item(i) for i in range(3)])
 
         assert len(results) == 3
         assert all(r["status"] == "created" for r in results)
@@ -100,6 +97,7 @@ class TestAsyncDatabaseOperations:
     @pytest.mark.asyncio
     async def test_async_context_manager_session(self):
         """Test async context manager for session handling."""
+
         class AsyncSessionContext:
             def __init__(self):
                 self.entered = False
@@ -125,6 +123,7 @@ class TestAsyncDatabaseOperations:
     @pytest.mark.asyncio
     async def test_concurrent_async_contexts(self):
         """Test concurrent async context manager usage."""
+
         class AsyncResource:
             def __init__(self, resource_id: int):
                 self.resource_id = resource_id
@@ -140,18 +139,14 @@ class TestAsyncDatabaseOperations:
                 self.released = True
                 return False
 
-        resources = [
-            AsyncResource(i) for i in range(3)
-        ]
+        resources = [AsyncResource(i) for i in range(3)]
 
         async def use_resource(resource: AsyncResource) -> bool:
             async with resource:
                 await asyncio.sleep(0.01)
             return resource.released
 
-        results = await asyncio.gather(*[
-            use_resource(r) for r in resources
-        ])
+        results = await asyncio.gather(*[use_resource(r) for r in resources])
 
         assert all(results)
         assert all(r.acquired for r in resources)
@@ -163,6 +158,7 @@ class TestAsyncOptimisticLocking:
     @pytest.mark.asyncio
     async def test_version_check_during_concurrent_updates(self):
         """Test version checking in concurrent updates."""
+
         class VersionedItem:
             def __init__(self, item_id: int, version: int = 1):
                 self.item_id = item_id
@@ -171,11 +167,7 @@ class TestAsyncOptimisticLocking:
 
         items = {1: VersionedItem(1)}
 
-        async def update_item(
-            item_id: int,
-            expected_version: int,
-            new_value: str
-        ) -> bool:
+        async def update_item(item_id: int, expected_version: int, new_value: str) -> bool:
             item = items[item_id]
             await asyncio.sleep(0.01)  # Simulate network latency
 
@@ -198,17 +190,14 @@ class TestAsyncOptimisticLocking:
     @pytest.mark.asyncio
     async def test_concurrent_updates_with_version_conflict(self):
         """Test concurrent updates detecting version conflicts."""
+
         class VersionedData:
             def __init__(self):
                 self.version = 1
                 self.value = "initial"
                 self.lock = asyncio.Lock()
 
-            async def update_async(
-                self,
-                expected_version: int,
-                new_value: str
-            ) -> bool:
+            async def update_async(self, expected_version: int, new_value: str) -> bool:
                 async with self.lock:
                     await asyncio.sleep(0.001)
                     if self.version != expected_version:
@@ -236,17 +225,14 @@ class TestAsyncOptimisticLocking:
     @pytest.mark.asyncio
     async def test_retry_on_version_conflict(self):
         """Test retry logic on version conflict."""
+
         class RetryableItem:
             def __init__(self):
                 self.version = 1
                 self.value = "initial"
 
-            async def update_with_retry(
-                self,
-                new_value: str,
-                max_retries: int = 3
-            ) -> bool:
-                for attempt in range(max_retries):
+            async def update_with_retry(self, new_value: str, max_retries: int = 3) -> bool:
+                for _attempt in range(max_retries):
                     current_version = self.version
                     await asyncio.sleep(0.001)
 
@@ -271,6 +257,7 @@ class TestAsyncConnectionPool:
     @pytest.mark.asyncio
     async def test_concurrent_connection_usage(self):
         """Test using multiple connections from pool."""
+
         class ConnectionPool:
             def __init__(self, max_size: int = 3):
                 self.max_size = max_size
@@ -295,36 +282,33 @@ class TestAsyncConnectionPool:
             await asyncio.sleep(duration)
             await pool.release_connection(conn)
 
-        await asyncio.gather(*[
-            use_connection(0.02) for _ in range(4)
-        ])
+        await asyncio.gather(*[use_connection(0.02) for _ in range(4)])
 
         assert pool.peak_usage == 2
 
     @pytest.mark.asyncio
     async def test_connection_pool_exhaustion(self):
         """Test behavior when connection pool is exhausted."""
+
         class LimitedPool:
             def __init__(self, max_size: int = 1):
                 self.semaphore = asyncio.Semaphore(max_size)
                 self.acquired = 0
 
-            async def acquire_with_timeout(self, timeout: float) -> bool:
+            async def acquire_with_timeout(self, timeout_sec: float) -> bool:
                 try:
-                    async with asyncio.timeout(timeout):
+                    async with asyncio.timeout(timeout_sec):
                         async with self.semaphore:
                             self.acquired += 1
                             await asyncio.sleep(0.05)
                             self.acquired -= 1
                             return True
-                except asyncio.TimeoutError:
+                except TimeoutError:
                     return False
 
         pool = LimitedPool(max_size=1)
 
-        results = await asyncio.gather(*[
-            pool.acquire_with_timeout(0.01) for _ in range(3)
-        ], return_exceptions=True)
+        results = await asyncio.gather(*[pool.acquire_with_timeout(0.01) for _ in range(3)], return_exceptions=True)
 
         # Some will succeed, some will timeout
         assert any(isinstance(r, bool) for r in results)
@@ -369,12 +353,9 @@ class TestAsyncBatchOperations:
     @pytest.mark.asyncio
     async def test_async_batch_with_partial_failure(self):
         """Test batch operation with partial failure."""
+
         async def process_batch(items: list[int]) -> dict:
-            results = {
-                "success": [],
-                "failed": [],
-                "errors": []
-            }
+            results = {"success": [], "failed": [], "errors": []}
 
             for item_id in items:
                 await asyncio.sleep(0.001)
@@ -409,8 +390,7 @@ class TestAsyncQueryOperations:
 
         async def query_items() -> list:
             result = await session_mock.execute(MagicMock())
-            items = result.scalars().all()
-            return items
+            return result.scalars().all()
 
         items = await query_items()
         assert items == []
@@ -418,6 +398,7 @@ class TestAsyncQueryOperations:
     @pytest.mark.asyncio
     async def test_async_query_with_pagination(self):
         """Test async paginated queries."""
+
         async def fetch_page(page: int, page_size: int) -> dict:
             # Simulate async database query
             await asyncio.sleep(0.01)
@@ -425,17 +406,10 @@ class TestAsyncQueryOperations:
             total = 100
 
             items = list(range(offset, min(offset + page_size, total)))
-            return {
-                "items": items,
-                "page": page,
-                "total": total,
-                "has_next": offset + page_size < total
-            }
+            return {"items": items, "page": page, "total": total, "has_next": offset + page_size < total}
 
         # Fetch multiple pages concurrently
-        pages = await asyncio.gather(*[
-            fetch_page(page, 10) for page in range(1, 4)
-        ])
+        pages = await asyncio.gather(*[fetch_page(page, 10) for page in range(1, 4)])
 
         assert len(pages) == 3
         assert all(p["total"] == 100 for p in pages)
@@ -443,6 +417,7 @@ class TestAsyncQueryOperations:
     @pytest.mark.asyncio
     async def test_async_query_timeout(self):
         """Test timeout on async query."""
+
         async def slow_query() -> list:
             await asyncio.sleep(1)
             return [1, 2, 3]
@@ -457,6 +432,7 @@ class TestAsyncTransactionPatterns:
     @pytest.mark.asyncio
     async def test_nested_async_transactions(self):
         """Test nested transaction behavior."""
+
         class AsyncTransaction:
             def __init__(self):
                 self.transaction_stack = []
@@ -485,6 +461,7 @@ class TestAsyncTransactionPatterns:
     @pytest.mark.asyncio
     async def test_transaction_savepoint(self):
         """Test transaction savepoint."""
+
         class TransactionWithSavepoint:
             def __init__(self):
                 self.state = []
@@ -509,6 +486,7 @@ class TestAsyncTransactionPatterns:
     @pytest.mark.asyncio
     async def test_concurrent_transaction_isolation(self):
         """Test isolation in concurrent transactions."""
+
         class Database:
             def __init__(self):
                 self.data = {"counter": 0}
@@ -524,9 +502,7 @@ class TestAsyncTransactionPatterns:
 
         db = Database()
 
-        results = await asyncio.gather(*[
-            db.increment_in_transaction() for _ in range(5)
-        ])
+        results = await asyncio.gather(*[db.increment_in_transaction() for _ in range(5)])
 
         assert results == [1, 2, 3, 4, 5]
         assert db.data["counter"] == 5
@@ -538,6 +514,7 @@ class TestAsyncRepositoryPatterns:
     @pytest.mark.asyncio
     async def test_async_crud_operations(self):
         """Test async CRUD operations."""
+
         class AsyncRepository:
             def __init__(self):
                 self.data = {}
@@ -576,6 +553,7 @@ class TestAsyncRepositoryPatterns:
 
         # Read
         item = await repo.read(item_id)
+        assert item is not None
         assert item["name"] == "Test Item"
 
         # Update
@@ -593,6 +571,7 @@ class TestAsyncRepositoryPatterns:
     @pytest.mark.asyncio
     async def test_async_repository_concurrent_operations(self):
         """Test concurrent operations on async repository."""
+
         class ConcurrentRepository:
             def __init__(self):
                 self.items = {}
@@ -609,9 +588,7 @@ class TestAsyncRepositoryPatterns:
         repo = ConcurrentRepository()
 
         # Create items concurrently
-        results = await asyncio.gather(*[
-            repo.batch_create([{"id": i}]) for i in range(3)
-        ])
+        results = await asyncio.gather(*[repo.batch_create([{"id": i}]) for i in range(3)])
 
         assert len(results) == 3
         assert all(isinstance(r, list) for r in results)

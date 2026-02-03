@@ -6,7 +6,7 @@ Compatible with Pydantic v2 (no pydantic-factories dependency).
 """
 
 import uuid
-from datetime import datetime
+from datetime import UTC, datetime
 
 from tracertm.models import Item, Link, Project
 
@@ -31,8 +31,8 @@ def create_item(
         status=status,
         priority=priority,
         description=description,
-        created_at=datetime.now(),
-        updated_at=datetime.now(),
+        created_at=datetime.now(UTC),
+        updated_at=datetime.now(UTC),
     )
 
 
@@ -50,8 +50,8 @@ def create_link(
         target_item_id=target_item_id,
         link_type=link_type,
         project_id=project_id,
-        created_at=datetime.now(),
-        updated_at=datetime.now(),
+        created_at=datetime.now(UTC),
+        updated_at=datetime.now(UTC),
     )
 
 
@@ -65,6 +65,6 @@ def create_project(
         id=id or str(uuid.uuid4()),
         name=name,
         description=description,
-        created_at=datetime.now(),
-        updated_at=datetime.now(),
+        created_at=datetime.now(UTC),
+        updated_at=datetime.now(UTC),
     )

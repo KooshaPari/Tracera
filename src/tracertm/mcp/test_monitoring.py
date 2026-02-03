@@ -11,7 +11,7 @@ This script demonstrates and tests:
 
 import asyncio
 import time
-from typing import Any
+from typing import ClassVar, cast
 
 from fastmcp.server.middleware import MiddlewareContext
 
@@ -21,10 +21,8 @@ async def test_metrics():
     print("\n=== Testing Metrics Collection ===")
 
     from tracertm.mcp.metrics import (
-        MetricsMiddleware,
         MetricsExporter,
-        tool_calls_total,
-        tool_duration_seconds,
+        MetricsMiddleware,
     )
 
     # Create middleware
@@ -37,8 +35,8 @@ async def test_metrics():
 
     ctx = MockContext()
 
-    # Test successful call
-    await middleware.on_tool_call(ctx, "test_tool", {"arg1": "value1"})
+    # Test successful call (cast: mock context satisfies MiddlewareContext protocol)
+    await middleware.on_tool_call(cast(MiddlewareContext, ctx), "test_tool", {"arg1": "value1"})
 
     # Test failed call
     class FailContext:
@@ -48,7 +46,7 @@ async def test_metrics():
     fail_ctx = FailContext()
 
     try:
-        await middleware.on_tool_call(fail_ctx, "test_tool", {"arg1": "value1"})
+        await middleware.on_tool_call(cast(MiddlewareContext, fail_ctx), "test_tool", {"arg1": "value1"})
     except ValueError:
         pass  # Expected
 
@@ -66,22 +64,22 @@ async def test_telemetry():
     """Test OpenTelemetry tracing."""
     print("\n=== Testing Telemetry/Tracing ===")
 
-    from tracertm.mcp.telemetry import TelemetryMiddleware, get_tracer
+    from tracertm.mcp.telemetry import TelemetryMiddleware
 
     # Create middleware
     middleware = TelemetryMiddleware()
 
     # Simulate tool call
     class MockContext:
-        auth = {"claims": {"sub": "test-user", "client_id": "test-client"}}
+        auth: ClassVar[dict] = {"claims": {"sub": "test-user", "client_id": "test-client"}}
 
         async def next(self):
             await asyncio.sleep(0.05)
 
     ctx = MockContext()
 
-    # Test successful trace
-    await middleware.on_tool_call(ctx, "create_project", {"name": "TestProject"})
+    # Test successful trace (cast: mock context satisfies MiddlewareContext protocol)
+    await middleware.on_tool_call(cast(MiddlewareContext, ctx), "create_project", {"name": "TestProject"})
 
     # Test failed trace
     class FailContext(MockContext):
@@ -91,7 +89,7 @@ async def test_telemetry():
     fail_ctx = FailContext()
 
     try:
-        await middleware.on_tool_call(fail_ctx, "query_items", {"query": "test"})
+        await middleware.on_tool_call(cast(MiddlewareContext, fail_ctx), "query_items", {"query": "test"})
     except RuntimeError:
         pass  # Expected
 
@@ -116,25 +114,25 @@ async def test_performance_monitoring():
         async def next(self):
             await asyncio.sleep(0.01)
 
-    await middleware.on_tool_call(FastContext(), "fast_tool", {})
+    await middleware.on_tool_call(cast(MiddlewareContext, FastContext()), "fast_tool", {})
 
     # Test slow call
     class SlowContext:
         async def next(self):
             await asyncio.sleep(0.08)
 
-    await middleware.on_tool_call(SlowContext(), "slow_tool", {})
+    await middleware.on_tool_call(cast(MiddlewareContext, SlowContext()), "slow_tool", {})
 
     # Test very slow call
     class VerySlowContext:
         async def next(self):
             await asyncio.sleep(0.2)
 
-    await middleware.on_tool_call(VerySlowContext(), "very_slow_tool", {})
+    await middleware.on_tool_call(cast(MiddlewareContext, VerySlowContext()), "very_slow_tool", {})
 
     # Get statistics
     stats = middleware.get_statistics()
-    print(f"\nPerformance statistics:")
+    print("\nPerformance statistics:")
     print(f"  Total calls: {stats['total_calls']}")
     print(f"  Avg duration: {stats['avg_duration_seconds']:.3f}s")
     print(f"  Slow calls: {stats['slow_calls']}")
@@ -148,11 +146,10 @@ def test_error_enhancement():
     print("\n=== Testing Error Enhancement ===")
 
     from tracertm.mcp.error_handlers import (
-        ProjectNotSelectedError,
-        ItemNotFoundError,
         DatabaseError,
+        ItemNotFoundError,
+        ProjectNotSelectedError,
         ValidationError,
-        LLMFriendlyError,
     )
 
     # Test various error types
@@ -168,7 +165,7 @@ def test_error_enhancement():
         print(f"\n{error.__class__.__name__}:")
         print(f"  Message: {error_dict['error']}")
         print(f"  Hint: {error_dict.get('recovery_hint', 'N/A')}")
-        if error_dict.get('context'):
+        if error_dict.get("context"):
             print(f"  Context: {error_dict['context']}")
 
     print("\n✓ Error enhancement working")
@@ -221,8 +218,9 @@ def test_metrics_endpoint():
     """Test metrics HTTP endpoint."""
     print("\n=== Testing Metrics Endpoint ===")
 
-    from tracertm.mcp.metrics_endpoint import MetricsServer
     import requests
+
+    from tracertm.mcp.metrics_endpoint import MetricsServer
 
     # Start server
     server = MetricsServer(host="127.0.0.1", port=19090)

@@ -1,0 +1,121 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tracertm-canary-config
+  labels:
+    app: tracertm
+data:
+  # Canary deployment configuration
+  canary.yaml: |
+    # Traffic split stages
+    stages:
+      - name: initial
+        weight: 10
+        duration: 5m
+        metrics_threshold:
+          error_rate: 0.01      # 1%
+          latency_p95: 500      # 500ms
+          latency_p99: 1000     # 1000ms
+          success_rate: 0.99    # 99%
+
+      - name: intermediate
+        weight: 50
+        duration: 5m
+        metrics_threshold:
+          error_rate: 0.01
+          latency_p95: 500
+          latency_p99: 1000
+          success_rate: 0.99
+
+      - name: full
+        weight: 100
+        duration: 0m
+        metrics_threshold:
+          error_rate: 0.01
+          latency_p95: 500
+          latency_p99: 1000
+          success_rate: 0.99
+
+    # Health check configuration
+    health_checks:
+      interval: 60s
+      timeout: 10s
+      failure_threshold: 3
+      success_threshold: 1
+
+    # Rollback triggers
+    rollback:
+      auto: true
+      conditions:
+        - metric: error_rate
+          operator: greater_than
+          value: 0.01
+          duration: 2m
+
+        - metric: latency_p95
+          operator: greater_than
+          value: 0.5
+          duration: 2m
+
+        - metric: pod_restarts
+          operator: greater_than
+          value: 2
+          duration: 1m
+
+        - metric: pod_ready_ratio
+          operator: less_than
+          value: 1.0
+          duration: 2m
+
+    # Prometheus queries
+    prometheus_queries:
+      error_rate: |
+        sum(rate(http_requests_total{version="canary",status=~"5.."}[5m]))
+        /
+        sum(rate(http_requests_total{version="canary"}[5m]))
+
+      latency_p95: |
+        histogram_quantile(0.95,
+          sum(rate(http_request_duration_seconds_bucket{version="canary"}[5m])) by (le)
+        )
+
+      latency_p99: |
+        histogram_quantile(0.99,
+          sum(rate(http_request_duration_seconds_bucket{version="canary"}[5m])) by (le)
+        )
+
+      success_rate: |
+        sum(rate(http_requests_total{version="canary",status!~"5.."}[5m]))
+        /
+        sum(rate(http_requests_total{version="canary"}[5m]))
+
+      request_rate: |
+        sum(rate(http_requests_total{version="canary"}[5m]))
+
+  # Nginx configuration for canary
+  nginx.conf: |
+    # Canary deployment configuration
+    upstream stable_backend {
+        server tracertm-backend-stable:8080 max_fails=3 fail_timeout=30s;
+    }
+
+    upstream canary_backend {
+        server tracertm-backend-canary:8080 max_fails=3 fail_timeout=30s;
+    }
+
+    split_clients "${remote_addr}${http_x_forwarded_for}" $backend {
+        10%     canary;
+        *       stable;
+    }
+
+    server {
+        listen 80;
+        server_name _;
+
+        location / {
+            if ($backend = "canary") {
+                proxy_pass http://canary_backend;
+            }
+            proxy_pass http://stable_backend;
+        }
+    }

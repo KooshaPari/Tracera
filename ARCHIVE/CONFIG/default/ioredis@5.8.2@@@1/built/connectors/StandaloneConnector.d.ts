@@ -14,4 +14,4 @@ export default class StandaloneConnector extends AbstractConnector {
     constructor(options: StandaloneConnectionOptions);
     connect(_: ErrorEmitter): Promise<NetStream>;
 }
-export {};
+

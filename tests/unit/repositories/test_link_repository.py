@@ -7,10 +7,8 @@ from tracertm.repositories.item_repository import ItemRepository
 from tracertm.repositories.link_repository import LinkRepository
 from tracertm.repositories.project_repository import ProjectRepository
 
-
 # Use link_test_setup fixture to auto-create graphs when projects are created
 pytestmark = pytest.mark.usefixtures("link_test_setup")
-
 
 
 @pytest.mark.unit
@@ -23,14 +21,14 @@ async def test_create_link(db_session: AsyncSession):
 
     item_repo = ItemRepository(db_session)
     source = await item_repo.create(
-        project_id=project.id,
+        project_id=str(project.id),
         title="Source Item",
         view="FEATURE",
         item_type="feature",
         status="todo",
     )
     target = await item_repo.create(
-        project_id=project.id,
+        project_id=str(project.id),
         title="Target Item",
         view="CODE",
         item_type="file",
@@ -40,9 +38,9 @@ async def test_create_link(db_session: AsyncSession):
     # Test: Create link
     link_repo = LinkRepository(db_session)
     link = await link_repo.create(
-        project_id=project.id,
-        source_item_id=source.id,
-        target_item_id=target.id,
+        project_id=str(project.id),
+        source_item_id=str(source.id),
+        target_item_id=str(target.id),
         link_type="implements",
     )
 
@@ -61,21 +59,19 @@ async def test_get_by_id(db_session: AsyncSession):
 
     item_repo = ItemRepository(db_session)
     source = await item_repo.create(
-        project_id=project.id, title="Source", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
     )
-    target = await item_repo.create(
-        project_id=project.id, title="Target", view="CODE", item_type="file", status="todo"
-    )
+    target = await item_repo.create(project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo")
 
     link_repo = LinkRepository(db_session)
     created = await link_repo.create(
-        project_id=project.id,
-        source_item_id=source.id,
-        target_item_id=target.id,
+        project_id=str(project.id),
+        source_item_id=str(source.id),
+        target_item_id=str(target.id),
         link_type="implements",
     )
 
-    retrieved = await link_repo.get_by_id(created.id)
+    retrieved = await link_repo.get_by_id(str(created.id))
     assert retrieved is not None
     assert retrieved.id == created.id
 
@@ -89,30 +85,26 @@ async def test_get_links_for_item(db_session: AsyncSession):
 
     item_repo = ItemRepository(db_session)
     feature = await item_repo.create(
-        project_id=project.id, title="Feature", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Feature", view="FEATURE", item_type="feature", status="todo"
     )
-    code1 = await item_repo.create(
-        project_id=project.id, title="Code 1", view="CODE", item_type="file", status="todo"
-    )
-    code2 = await item_repo.create(
-        project_id=project.id, title="Code 2", view="CODE", item_type="file", status="todo"
-    )
+    code1 = await item_repo.create(project_id=str(project.id), title="Code 1", view="CODE", item_type="file", status="todo")
+    code2 = await item_repo.create(project_id=str(project.id), title="Code 2", view="CODE", item_type="file", status="todo")
 
     link_repo = LinkRepository(db_session)
     await link_repo.create(
-        project_id=project.id,
-        source_item_id=feature.id,
-        target_item_id=code1.id,
+        project_id=str(project.id),
+        source_item_id=str(feature.id),
+        target_item_id=str(code1.id),
         link_type="implements",
     )
     await link_repo.create(
-        project_id=project.id,
-        source_item_id=feature.id,
-        target_item_id=code2.id,
+        project_id=str(project.id),
+        source_item_id=str(feature.id),
+        target_item_id=str(code2.id),
         link_type="implements",
     )
 
-    links = await link_repo.get_by_item(feature.id)
+    links = await link_repo.get_by_item(str(feature.id))
     assert len(links) == 2
 
 
@@ -125,23 +117,21 @@ async def test_delete_link(db_session: AsyncSession):
 
     item_repo = ItemRepository(db_session)
     source = await item_repo.create(
-        project_id=project.id, title="Source", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
     )
-    target = await item_repo.create(
-        project_id=project.id, title="Target", view="CODE", item_type="file", status="todo"
-    )
+    target = await item_repo.create(project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo")
 
     link_repo = LinkRepository(db_session)
     link = await link_repo.create(
-        project_id=project.id,
-        source_item_id=source.id,
-        target_item_id=target.id,
+        project_id=str(project.id),
+        source_item_id=str(source.id),
+        target_item_id=str(target.id),
         link_type="implements",
     )
 
-    await link_repo.delete(link.id)
+    await link_repo.delete(str(link.id))
 
-    deleted = await link_repo.get_by_id(link.id)
+    deleted = await link_repo.get_by_id(str(link.id))
     assert deleted is None
 
 
@@ -154,30 +144,30 @@ async def test_get_by_source(db_session: AsyncSession):
 
     item_repo = ItemRepository(db_session)
     source = await item_repo.create(
-        project_id=project.id, title="Source", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
     )
     target1 = await item_repo.create(
-        project_id=project.id, title="Target 1", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Target 1", view="CODE", item_type="file", status="todo"
     )
     target2 = await item_repo.create(
-        project_id=project.id, title="Target 2", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Target 2", view="CODE", item_type="file", status="todo"
     )
 
     link_repo = LinkRepository(db_session)
     await link_repo.create(
-        project_id=project.id,
-        source_item_id=source.id,
-        target_item_id=target1.id,
+        project_id=str(project.id),
+        source_item_id=str(source.id),
+        target_item_id=str(target1.id),
         link_type="implements",
     )
     await link_repo.create(
-        project_id=project.id,
-        source_item_id=source.id,
-        target_item_id=target2.id,
+        project_id=str(project.id),
+        source_item_id=str(source.id),
+        target_item_id=str(target2.id),
         link_type="implements",
     )
 
-    links = await link_repo.get_by_source(source.id)
+    links = await link_repo.get_by_source(str(source.id))
     assert len(links) == 2
 
 
@@ -190,30 +180,28 @@ async def test_get_by_target(db_session: AsyncSession):
 
     item_repo = ItemRepository(db_session)
     source1 = await item_repo.create(
-        project_id=project.id, title="Source 1", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source 1", view="FEATURE", item_type="feature", status="todo"
     )
     source2 = await item_repo.create(
-        project_id=project.id, title="Source 2", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source 2", view="FEATURE", item_type="feature", status="todo"
     )
-    target = await item_repo.create(
-        project_id=project.id, title="Target", view="CODE", item_type="file", status="todo"
-    )
+    target = await item_repo.create(project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo")
 
     link_repo = LinkRepository(db_session)
     await link_repo.create(
-        project_id=project.id,
-        source_item_id=source1.id,
-        target_item_id=target.id,
+        project_id=str(project.id),
+        source_item_id=str(source1.id),
+        target_item_id=str(target.id),
         link_type="implements",
     )
     await link_repo.create(
-        project_id=project.id,
-        source_item_id=source2.id,
-        target_item_id=target.id,
+        project_id=str(project.id),
+        source_item_id=str(source2.id),
+        target_item_id=str(target.id),
         link_type="implements",
     )
 
-    links = await link_repo.get_by_target(target.id)
+    links = await link_repo.get_by_target(str(target.id))
     assert len(links) == 2
 
 
@@ -226,23 +214,22 @@ async def test_link_with_metadata(db_session: AsyncSession):
 
     item_repo = ItemRepository(db_session)
     source = await item_repo.create(
-        project_id=project.id, title="Source", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
     )
-    target = await item_repo.create(
-        project_id=project.id, title="Target", view="CODE", item_type="file", status="todo"
-    )
+    target = await item_repo.create(project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo")
 
     link_repo = LinkRepository(db_session)
     link = await link_repo.create(
-        project_id=project.id,
-        source_item_id=source.id,
-        target_item_id=target.id,
+        project_id=str(project.id),
+        source_item_id=str(source.id),
+        target_item_id=str(target.id),
         link_type="implements",
         metadata={"priority": "high", "verified": True},
     )
 
-    assert link.metadata["priority"] == "high"
-    assert link.metadata["verified"] is True
+    meta = getattr(link, "link_metadata", None) or {}
+    assert meta.get("priority") == "high"
+    assert meta.get("verified") is True
 
 
 # =============================================================================
@@ -255,6 +242,7 @@ async def test_link_with_metadata(db_session: AsyncSession):
 async def test_create_link_with_explicit_graph_id(db_session: AsyncSession):
     """Test creating a link with an explicit graph_id (skips resolution logic)."""
     from uuid import uuid4
+
     from tracertm.models.graph import Graph
 
     project_repo = ProjectRepository(db_session)
@@ -263,7 +251,7 @@ async def test_create_link_with_explicit_graph_id(db_session: AsyncSession):
     # Create a custom graph (not default)
     custom_graph = Graph(
         id=str(uuid4()),
-        project_id=project.id,
+        project_id=str(project.id),
         name="custom-graph",
         graph_type="custom",
         description="Custom graph for testing",
@@ -273,19 +261,17 @@ async def test_create_link_with_explicit_graph_id(db_session: AsyncSession):
 
     item_repo = ItemRepository(db_session)
     source = await item_repo.create(
-        project_id=project.id, title="Source", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
     )
-    target = await item_repo.create(
-        project_id=project.id, title="Target", view="CODE", item_type="file", status="todo"
-    )
+    target = await item_repo.create(project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo")
 
     link_repo = LinkRepository(db_session)
     link = await link_repo.create(
-        project_id=project.id,
-        source_item_id=source.id,
-        target_item_id=target.id,
+        project_id=str(project.id),
+        source_item_id=str(source.id),
+        target_item_id=str(target.id),
         link_type="implements",
-        graph_id=custom_graph.id,  # Explicit graph_id
+        graph_id=str(custom_graph.id),  # Explicit graph_id
     )
 
     assert link.graph_id == custom_graph.id
@@ -296,6 +282,7 @@ async def test_create_link_with_explicit_graph_id(db_session: AsyncSession):
 async def test_create_link_resolves_graph_from_source_item_view(db_session: AsyncSession):
     """Test that graph_id is resolved from source item's primary view."""
     from uuid import uuid4
+
     from tracertm.models.graph import Graph
     from tracertm.models.view import View
 
@@ -306,7 +293,7 @@ async def test_create_link_resolves_graph_from_source_item_view(db_session: Asyn
     # when creating an item with view="FEATURE"
     view = View(
         id=str(uuid4()),
-        project_id=project.id,
+        project_id=str(project.id),
         name="FEATURE",
         description="Feature view",
     )
@@ -316,7 +303,7 @@ async def test_create_link_resolves_graph_from_source_item_view(db_session: Asyn
     # Create a Graph with graph_type matching the view name
     feature_graph = Graph(
         id=str(uuid4()),
-        project_id=project.id,
+        project_id=str(project.id),
         name="feature-graph",
         graph_type="FEATURE",  # Matches view name
         description="Feature graph",
@@ -328,18 +315,16 @@ async def test_create_link_resolves_graph_from_source_item_view(db_session: Asyn
     # ItemRepository.create will automatically create ItemView with is_primary=True
     # linking source item to the "FEATURE" view we created above
     source = await item_repo.create(
-        project_id=project.id, title="Source", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
     )
-    target = await item_repo.create(
-        project_id=project.id, title="Target", view="CODE", item_type="file", status="todo"
-    )
+    target = await item_repo.create(project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo")
 
     # Now create link without graph_id - should resolve from source item's view
     link_repo = LinkRepository(db_session)
     link = await link_repo.create(
-        project_id=project.id,
-        source_item_id=source.id,
-        target_item_id=target.id,
+        project_id=str(project.id),
+        source_item_id=str(source.id),
+        target_item_id=str(target.id),
         link_type="implements",
         # No graph_id - should be resolved
     )
@@ -352,13 +337,13 @@ async def test_create_link_resolves_graph_from_source_item_view(db_session: Asyn
 async def test_create_link_falls_back_to_default_graph(db_session: AsyncSession):
     """Test that link creation falls back to 'default' graph when source view lookup fails."""
     from uuid import uuid4
-    from tracertm.models.graph import Graph
 
-    # Create project WITHOUT auto-creating default graph (don't use link_test_setup)
-    from tracertm.repositories.project_repository import ProjectRepository as RealProjectRepo
+    from tracertm.models.graph import Graph
 
     # Manually create project
     from tracertm.models.project import Project
+
+    # Create project WITHOUT auto-creating default graph (don't use link_test_setup)
     project = Project(
         id=str(uuid4()),
         name="Test Project",
@@ -370,7 +355,7 @@ async def test_create_link_falls_back_to_default_graph(db_session: AsyncSession)
     # Create ONLY a default graph (no view-based graph)
     default_graph = Graph(
         id=str(uuid4()),
-        project_id=project.id,
+        project_id=str(project.id),
         name="default",
         graph_type="default",
         description="Default graph",
@@ -380,19 +365,17 @@ async def test_create_link_falls_back_to_default_graph(db_session: AsyncSession)
 
     item_repo = ItemRepository(db_session)
     source = await item_repo.create(
-        project_id=project.id, title="Source", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
     )
-    target = await item_repo.create(
-        project_id=project.id, title="Target", view="CODE", item_type="file", status="todo"
-    )
+    target = await item_repo.create(project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo")
 
     # No ItemView exists for source, so view-based lookup will fail
     # Should fall back to default graph
     link_repo = LinkRepository(db_session)
     link = await link_repo.create(
-        project_id=project.id,
-        source_item_id=source.id,
-        target_item_id=target.id,
+        project_id=str(project.id),
+        source_item_id=str(source.id),
+        target_item_id=str(target.id),
         link_type="implements",
     )
 
@@ -404,6 +387,7 @@ async def test_create_link_falls_back_to_default_graph(db_session: AsyncSession)
 async def test_create_link_raises_error_when_no_graph_found(db_session: AsyncSession):
     """Test that link creation raises ValueError when no graph can be resolved."""
     from uuid import uuid4
+
     from tracertm.models.project import Project
 
     # Create project without any graphs
@@ -417,19 +401,17 @@ async def test_create_link_raises_error_when_no_graph_found(db_session: AsyncSes
 
     item_repo = ItemRepository(db_session)
     source = await item_repo.create(
-        project_id=project.id, title="Source", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
     )
-    target = await item_repo.create(
-        project_id=project.id, title="Target", view="CODE", item_type="file", status="todo"
-    )
+    target = await item_repo.create(project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo")
 
     link_repo = LinkRepository(db_session)
 
     with pytest.raises(ValueError, match="graph_id is required and could not be resolved"):
         await link_repo.create(
-            project_id=project.id,
-            source_item_id=source.id,
-            target_item_id=target.id,
+            project_id=str(project.id),
+            source_item_id=str(source.id),
+            target_item_id=str(target.id),
             link_type="implements",
         )
 
@@ -444,6 +426,7 @@ async def test_create_link_raises_error_when_no_graph_found(db_session: AsyncSes
 async def test_get_by_project_with_graph_id_filter(db_session: AsyncSession):
     """Test get_by_project with graph_id filter."""
     from uuid import uuid4
+
     from tracertm.models.graph import Graph
 
     project_repo = ProjectRepository(db_session)
@@ -452,13 +435,13 @@ async def test_get_by_project_with_graph_id_filter(db_session: AsyncSession):
     # Create two graphs
     graph1 = Graph(
         id=str(uuid4()),
-        project_id=project.id,
+        project_id=str(project.id),
         name="graph1",
         graph_type="type1",
     )
     graph2 = Graph(
         id=str(uuid4()),
-        project_id=project.id,
+        project_id=str(project.id),
         name="graph2",
         graph_type="type2",
     )
@@ -468,40 +451,38 @@ async def test_get_by_project_with_graph_id_filter(db_session: AsyncSession):
 
     item_repo = ItemRepository(db_session)
     source = await item_repo.create(
-        project_id=project.id, title="Source", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
     )
-    target = await item_repo.create(
-        project_id=project.id, title="Target", view="CODE", item_type="file", status="todo"
-    )
+    target = await item_repo.create(project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo")
 
     link_repo = LinkRepository(db_session)
 
     # Create links in different graphs
     link1 = await link_repo.create(
-        project_id=project.id,
-        source_item_id=source.id,
-        target_item_id=target.id,
+        project_id=str(project.id),
+        source_item_id=str(source.id),
+        target_item_id=str(target.id),
         link_type="implements",
-        graph_id=graph1.id,
+        graph_id=str(graph1.id),
     )
     link2 = await link_repo.create(
-        project_id=project.id,
-        source_item_id=source.id,
-        target_item_id=target.id,
+        project_id=str(project.id),
+        source_item_id=str(source.id),
+        target_item_id=str(target.id),
         link_type="references",
-        graph_id=graph2.id,
+        graph_id=str(graph2.id),
     )
 
     # Test: get_by_project without filter returns all links
-    all_links = await link_repo.get_by_project(project.id)
+    all_links = await link_repo.get_by_project(str(project.id))
     assert len(all_links) == 2
 
     # Test: get_by_project with graph_id filter returns only matching links
-    graph1_links = await link_repo.get_by_project(project.id, graph_id=graph1.id)
+    graph1_links = await link_repo.get_by_project(str(project.id), graph_id=str(graph1.id))
     assert len(graph1_links) == 1
     assert graph1_links[0].id == link1.id
 
-    graph2_links = await link_repo.get_by_project(project.id, graph_id=graph2.id)
+    graph2_links = await link_repo.get_by_project(str(project.id), graph_id=str(graph2.id))
     assert len(graph2_links) == 1
     assert graph2_links[0].id == link2.id
 
@@ -511,6 +492,7 @@ async def test_get_by_project_with_graph_id_filter(db_session: AsyncSession):
 async def test_get_by_source_with_graph_id_filter(db_session: AsyncSession):
     """Test get_by_source with graph_id filter."""
     from uuid import uuid4
+
     from tracertm.models.graph import Graph
 
     project_repo = ProjectRepository(db_session)
@@ -519,13 +501,13 @@ async def test_get_by_source_with_graph_id_filter(db_session: AsyncSession):
     # Create two graphs
     graph1 = Graph(
         id=str(uuid4()),
-        project_id=project.id,
+        project_id=str(project.id),
         name="graph1",
         graph_type="type1",
     )
     graph2 = Graph(
         id=str(uuid4()),
-        project_id=project.id,
+        project_id=str(project.id),
         name="graph2",
         graph_type="type2",
     )
@@ -535,43 +517,43 @@ async def test_get_by_source_with_graph_id_filter(db_session: AsyncSession):
 
     item_repo = ItemRepository(db_session)
     source = await item_repo.create(
-        project_id=project.id, title="Source", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
     )
     target1 = await item_repo.create(
-        project_id=project.id, title="Target 1", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Target 1", view="CODE", item_type="file", status="todo"
     )
     target2 = await item_repo.create(
-        project_id=project.id, title="Target 2", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Target 2", view="CODE", item_type="file", status="todo"
     )
 
     link_repo = LinkRepository(db_session)
 
     # Create links from same source in different graphs
     link1 = await link_repo.create(
-        project_id=project.id,
-        source_item_id=source.id,
-        target_item_id=target1.id,
+        project_id=str(project.id),
+        source_item_id=str(source.id),
+        target_item_id=str(target1.id),
         link_type="implements",
-        graph_id=graph1.id,
+        graph_id=str(graph1.id),
     )
     link2 = await link_repo.create(
-        project_id=project.id,
-        source_item_id=source.id,
-        target_item_id=target2.id,
+        project_id=str(project.id),
+        source_item_id=str(source.id),
+        target_item_id=str(target2.id),
         link_type="references",
-        graph_id=graph2.id,
+        graph_id=str(graph2.id),
     )
 
     # Test: get_by_source without filter returns all links from source
-    all_links = await link_repo.get_by_source(source.id)
+    all_links = await link_repo.get_by_source(str(source.id))
     assert len(all_links) == 2
 
     # Test: get_by_source with graph_id filter
-    graph1_links = await link_repo.get_by_source(source.id, graph_id=graph1.id)
+    graph1_links = await link_repo.get_by_source(str(source.id), graph_id=str(graph1.id))
     assert len(graph1_links) == 1
     assert graph1_links[0].id == link1.id
 
-    graph2_links = await link_repo.get_by_source(source.id, graph_id=graph2.id)
+    graph2_links = await link_repo.get_by_source(str(source.id), graph_id=str(graph2.id))
     assert len(graph2_links) == 1
     assert graph2_links[0].id == link2.id
 
@@ -581,6 +563,7 @@ async def test_get_by_source_with_graph_id_filter(db_session: AsyncSession):
 async def test_get_by_target_with_graph_id_filter(db_session: AsyncSession):
     """Test get_by_target with graph_id filter."""
     from uuid import uuid4
+
     from tracertm.models.graph import Graph
 
     project_repo = ProjectRepository(db_session)
@@ -589,13 +572,13 @@ async def test_get_by_target_with_graph_id_filter(db_session: AsyncSession):
     # Create two graphs
     graph1 = Graph(
         id=str(uuid4()),
-        project_id=project.id,
+        project_id=str(project.id),
         name="graph1",
         graph_type="type1",
     )
     graph2 = Graph(
         id=str(uuid4()),
-        project_id=project.id,
+        project_id=str(project.id),
         name="graph2",
         graph_type="type2",
     )
@@ -605,43 +588,41 @@ async def test_get_by_target_with_graph_id_filter(db_session: AsyncSession):
 
     item_repo = ItemRepository(db_session)
     source1 = await item_repo.create(
-        project_id=project.id, title="Source 1", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source 1", view="FEATURE", item_type="feature", status="todo"
     )
     source2 = await item_repo.create(
-        project_id=project.id, title="Source 2", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source 2", view="FEATURE", item_type="feature", status="todo"
     )
-    target = await item_repo.create(
-        project_id=project.id, title="Target", view="CODE", item_type="file", status="todo"
-    )
+    target = await item_repo.create(project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo")
 
     link_repo = LinkRepository(db_session)
 
     # Create links to same target in different graphs
     link1 = await link_repo.create(
-        project_id=project.id,
-        source_item_id=source1.id,
-        target_item_id=target.id,
+        project_id=str(project.id),
+        source_item_id=str(source1.id),
+        target_item_id=str(target.id),
         link_type="implements",
-        graph_id=graph1.id,
+        graph_id=str(graph1.id),
     )
     link2 = await link_repo.create(
-        project_id=project.id,
-        source_item_id=source2.id,
-        target_item_id=target.id,
+        project_id=str(project.id),
+        source_item_id=str(source2.id),
+        target_item_id=str(target.id),
         link_type="references",
-        graph_id=graph2.id,
+        graph_id=str(graph2.id),
     )
 
     # Test: get_by_target without filter returns all links to target
-    all_links = await link_repo.get_by_target(target.id)
+    all_links = await link_repo.get_by_target(str(target.id))
     assert len(all_links) == 2
 
     # Test: get_by_target with graph_id filter
-    graph1_links = await link_repo.get_by_target(target.id, graph_id=graph1.id)
+    graph1_links = await link_repo.get_by_target(str(target.id), graph_id=str(graph1.id))
     assert len(graph1_links) == 1
     assert graph1_links[0].id == link1.id
 
-    graph2_links = await link_repo.get_by_target(target.id, graph_id=graph2.id)
+    graph2_links = await link_repo.get_by_target(str(target.id), graph_id=str(graph2.id))
     assert len(graph2_links) == 1
     assert graph2_links[0].id == link2.id
 
@@ -651,6 +632,7 @@ async def test_get_by_target_with_graph_id_filter(db_session: AsyncSession):
 async def test_get_by_item_with_graph_id_filter(db_session: AsyncSession):
     """Test get_by_item with graph_id filter."""
     from uuid import uuid4
+
     from tracertm.models.graph import Graph
 
     project_repo = ProjectRepository(db_session)
@@ -659,13 +641,13 @@ async def test_get_by_item_with_graph_id_filter(db_session: AsyncSession):
     # Create two graphs
     graph1 = Graph(
         id=str(uuid4()),
-        project_id=project.id,
+        project_id=str(project.id),
         name="graph1",
         graph_type="type1",
     )
     graph2 = Graph(
         id=str(uuid4()),
-        project_id=project.id,
+        project_id=str(project.id),
         name="graph2",
         graph_type="type2",
     )
@@ -675,43 +657,43 @@ async def test_get_by_item_with_graph_id_filter(db_session: AsyncSession):
 
     item_repo = ItemRepository(db_session)
     item = await item_repo.create(
-        project_id=project.id, title="Central Item", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Central Item", view="FEATURE", item_type="feature", status="todo"
     )
     other1 = await item_repo.create(
-        project_id=project.id, title="Other 1", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Other 1", view="CODE", item_type="file", status="todo"
     )
     other2 = await item_repo.create(
-        project_id=project.id, title="Other 2", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Other 2", view="CODE", item_type="file", status="todo"
     )
 
     link_repo = LinkRepository(db_session)
 
     # Create links where item is source (graph1) and target (graph2)
     link1 = await link_repo.create(
-        project_id=project.id,
-        source_item_id=item.id,
-        target_item_id=other1.id,
+        project_id=str(project.id),
+        source_item_id=str(item.id),
+        target_item_id=str(other1.id),
         link_type="implements",
-        graph_id=graph1.id,
+        graph_id=str(graph1.id),
     )
     link2 = await link_repo.create(
-        project_id=project.id,
-        source_item_id=other2.id,
-        target_item_id=item.id,
+        project_id=str(project.id),
+        source_item_id=str(other2.id),
+        target_item_id=str(item.id),
         link_type="references",
-        graph_id=graph2.id,
+        graph_id=str(graph2.id),
     )
 
     # Test: get_by_item without filter returns all links connected to item
-    all_links = await link_repo.get_by_item(item.id)
+    all_links = await link_repo.get_by_item(str(item.id))
     assert len(all_links) == 2
 
     # Test: get_by_item with graph_id filter
-    graph1_links = await link_repo.get_by_item(item.id, graph_id=graph1.id)
+    graph1_links = await link_repo.get_by_item(str(item.id), graph_id=str(graph1.id))
     assert len(graph1_links) == 1
     assert graph1_links[0].id == link1.id
 
-    graph2_links = await link_repo.get_by_item(item.id, graph_id=graph2.id)
+    graph2_links = await link_repo.get_by_item(str(item.id), graph_id=str(graph2.id))
     assert len(graph2_links) == 1
     assert graph2_links[0].id == link2.id
 
@@ -730,22 +712,20 @@ async def test_get_by_project_with_none_graph_id(db_session: AsyncSession):
 
     item_repo = ItemRepository(db_session)
     source = await item_repo.create(
-        project_id=project.id, title="Source", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
     )
-    target = await item_repo.create(
-        project_id=project.id, title="Target", view="CODE", item_type="file", status="todo"
-    )
+    target = await item_repo.create(project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo")
 
     link_repo = LinkRepository(db_session)
     await link_repo.create(
-        project_id=project.id,
-        source_item_id=source.id,
-        target_item_id=target.id,
+        project_id=str(project.id),
+        source_item_id=str(source.id),
+        target_item_id=str(target.id),
         link_type="implements",
     )
 
     # Explicitly pass graph_id=None
-    links = await link_repo.get_by_project(project.id, graph_id=None)
+    links = await link_repo.get_by_project(str(project.id), graph_id=None)
     assert len(links) == 1
 
 
@@ -758,22 +738,20 @@ async def test_get_by_source_with_none_graph_id(db_session: AsyncSession):
 
     item_repo = ItemRepository(db_session)
     source = await item_repo.create(
-        project_id=project.id, title="Source", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
     )
-    target = await item_repo.create(
-        project_id=project.id, title="Target", view="CODE", item_type="file", status="todo"
-    )
+    target = await item_repo.create(project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo")
 
     link_repo = LinkRepository(db_session)
     await link_repo.create(
-        project_id=project.id,
-        source_item_id=source.id,
-        target_item_id=target.id,
+        project_id=str(project.id),
+        source_item_id=str(source.id),
+        target_item_id=str(target.id),
         link_type="implements",
     )
 
     # Explicitly pass graph_id=None
-    links = await link_repo.get_by_source(source.id, graph_id=None)
+    links = await link_repo.get_by_source(str(source.id), graph_id=None)
     assert len(links) == 1
 
 
@@ -786,22 +764,20 @@ async def test_get_by_target_with_none_graph_id(db_session: AsyncSession):
 
     item_repo = ItemRepository(db_session)
     source = await item_repo.create(
-        project_id=project.id, title="Source", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
     )
-    target = await item_repo.create(
-        project_id=project.id, title="Target", view="CODE", item_type="file", status="todo"
-    )
+    target = await item_repo.create(project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo")
 
     link_repo = LinkRepository(db_session)
     await link_repo.create(
-        project_id=project.id,
-        source_item_id=source.id,
-        target_item_id=target.id,
+        project_id=str(project.id),
+        source_item_id=str(source.id),
+        target_item_id=str(target.id),
         link_type="implements",
     )
 
     # Explicitly pass graph_id=None
-    links = await link_repo.get_by_target(target.id, graph_id=None)
+    links = await link_repo.get_by_target(str(target.id), graph_id=None)
     assert len(links) == 1
 
 
@@ -814,22 +790,20 @@ async def test_get_by_item_with_none_graph_id(db_session: AsyncSession):
 
     item_repo = ItemRepository(db_session)
     source = await item_repo.create(
-        project_id=project.id, title="Source", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
     )
-    target = await item_repo.create(
-        project_id=project.id, title="Target", view="CODE", item_type="file", status="todo"
-    )
+    target = await item_repo.create(project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo")
 
     link_repo = LinkRepository(db_session)
     await link_repo.create(
-        project_id=project.id,
-        source_item_id=source.id,
-        target_item_id=target.id,
+        project_id=str(project.id),
+        source_item_id=str(source.id),
+        target_item_id=str(target.id),
         link_type="implements",
     )
 
     # Explicitly pass graph_id=None
-    links = await link_repo.get_by_item(source.id, graph_id=None)
+    links = await link_repo.get_by_item(str(source.id), graph_id=None)
     assert len(links) == 1
 
 
@@ -842,41 +816,41 @@ async def test_delete_by_item(db_session: AsyncSession):
 
     item_repo = ItemRepository(db_session)
     item = await item_repo.create(
-        project_id=project.id, title="Central Item", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Central Item", view="FEATURE", item_type="feature", status="todo"
     )
     other1 = await item_repo.create(
-        project_id=project.id, title="Other 1", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Other 1", view="CODE", item_type="file", status="todo"
     )
     other2 = await item_repo.create(
-        project_id=project.id, title="Other 2", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Other 2", view="CODE", item_type="file", status="todo"
     )
 
     link_repo = LinkRepository(db_session)
 
     # Create links where item is both source and target
     await link_repo.create(
-        project_id=project.id,
-        source_item_id=item.id,
-        target_item_id=other1.id,
+        project_id=str(project.id),
+        source_item_id=str(item.id),
+        target_item_id=str(other1.id),
         link_type="implements",
     )
     await link_repo.create(
-        project_id=project.id,
-        source_item_id=other2.id,
-        target_item_id=item.id,
+        project_id=str(project.id),
+        source_item_id=str(other2.id),
+        target_item_id=str(item.id),
         link_type="references",
     )
 
     # Verify links exist
-    links_before = await link_repo.get_by_item(item.id)
+    links_before = await link_repo.get_by_item(str(item.id))
     assert len(links_before) == 2
 
     # Delete all links connected to item
-    deleted_count = await link_repo.delete_by_item(item.id)
+    deleted_count = await link_repo.delete_by_item(str(item.id))
     assert deleted_count == 2
 
     # Verify links are deleted
-    links_after = await link_repo.get_by_item(item.id)
+    links_after = await link_repo.get_by_item(str(item.id))
     assert len(links_after) == 0
 
 
@@ -889,26 +863,26 @@ async def test_get_all(db_session: AsyncSession):
 
     item_repo = ItemRepository(db_session)
     source = await item_repo.create(
-        project_id=project.id, title="Source", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
     )
     target1 = await item_repo.create(
-        project_id=project.id, title="Target 1", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Target 1", view="CODE", item_type="file", status="todo"
     )
     target2 = await item_repo.create(
-        project_id=project.id, title="Target 2", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Target 2", view="CODE", item_type="file", status="todo"
     )
 
     link_repo = LinkRepository(db_session)
     await link_repo.create(
-        project_id=project.id,
-        source_item_id=source.id,
-        target_item_id=target1.id,
+        project_id=str(project.id),
+        source_item_id=str(source.id),
+        target_item_id=str(target1.id),
         link_type="implements",
     )
     await link_repo.create(
-        project_id=project.id,
-        source_item_id=source.id,
-        target_item_id=target2.id,
+        project_id=str(project.id),
+        source_item_id=str(source.id),
+        target_item_id=str(target2.id),
         link_type="references",
     )
 
@@ -925,26 +899,26 @@ async def test_get_by_type(db_session: AsyncSession):
 
     item_repo = ItemRepository(db_session)
     source = await item_repo.create(
-        project_id=project.id, title="Source", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
     )
     target1 = await item_repo.create(
-        project_id=project.id, title="Target 1", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Target 1", view="CODE", item_type="file", status="todo"
     )
     target2 = await item_repo.create(
-        project_id=project.id, title="Target 2", view="CODE", item_type="file", status="todo"
+        project_id=str(project.id), title="Target 2", view="CODE", item_type="file", status="todo"
     )
 
     link_repo = LinkRepository(db_session)
     await link_repo.create(
-        project_id=project.id,
-        source_item_id=source.id,
-        target_item_id=target1.id,
+        project_id=str(project.id),
+        source_item_id=str(source.id),
+        target_item_id=str(target1.id),
         link_type="implements",
     )
     await link_repo.create(
-        project_id=project.id,
-        source_item_id=source.id,
-        target_item_id=target2.id,
+        project_id=str(project.id),
+        source_item_id=str(source.id),
+        target_item_id=str(target2.id),
         link_type="references",
     )
 
@@ -967,17 +941,15 @@ async def test_create_link_with_link_metadata_parameter(db_session: AsyncSession
 
     item_repo = ItemRepository(db_session)
     source = await item_repo.create(
-        project_id=project.id, title="Source", view="FEATURE", item_type="feature", status="todo"
+        project_id=str(project.id), title="Source", view="FEATURE", item_type="feature", status="todo"
     )
-    target = await item_repo.create(
-        project_id=project.id, title="Target", view="CODE", item_type="file", status="todo"
-    )
+    target = await item_repo.create(project_id=str(project.id), title="Target", view="CODE", item_type="file", status="todo")
 
     link_repo = LinkRepository(db_session)
     link = await link_repo.create(
-        project_id=project.id,
-        source_item_id=source.id,
-        target_item_id=target.id,
+        project_id=str(project.id),
+        source_item_id=str(source.id),
+        target_item_id=str(target.id),
         link_type="implements",
         link_metadata={"confidence": 0.95, "automated": True},  # Using link_metadata
     )

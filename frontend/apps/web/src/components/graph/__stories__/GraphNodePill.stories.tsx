@@ -56,8 +56,8 @@ const meta: Meta<typeof GraphNodePill> = {
 		chromatic: {
 			delay: 200,
 			modes: {
-				light: { query: "[data-theme='light']" },
 				dark: { query: "[data-theme='dark']" },
+				light: { query: "[data-theme='light']" },
 			},
 		},
 	},

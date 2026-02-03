@@ -16,7 +16,7 @@
 		// keywords that have to be followed by an identifier
 		/\b(?:asserts|infer|interface|module|namespace|type)\b(?=\s*(?:[{_$a-zA-Z\xA0-\uFFFF]|$))/,
 		// This is for `import type *, {}`
-		/\btype\b(?=\s*(?:[\{*]|$))/
+		/\btype\b(?=\s*(?:[{*]|$))/
 	);
 
 	// doesn't work with TS because TS is too complex

@@ -1,12 +1,12 @@
 """Integration tests for NATS event publishing across backends."""
 
 import asyncio
-import pytest
-from datetime import datetime
-from typing import List
+from datetime import UTC, datetime, timezone
 
-from tracertm.infrastructure.nats_client import NATSClient
+import pytest
+
 from tracertm.infrastructure.event_bus import EventBus
+from tracertm.infrastructure.nats_client import NATSClient
 
 
 @pytest.fixture
@@ -28,7 +28,7 @@ class EventCollector:
     """Helper class to collect events from subscriptions."""
 
     def __init__(self):
-        self.events: List[dict] = []
+        self.events: list[dict] = []
 
     async def handler(self, event: dict):
         """Event handler callback."""
@@ -40,6 +40,7 @@ class EventCollector:
 
     def wait_for_events(self, count: int = 1, timeout: float = 5.0):
         """Wait for a specific number of events."""
+
         async def _wait():
             start = asyncio.get_event_loop().time()
             while len(self.events) < count:
@@ -275,7 +276,7 @@ async def test_ai_analysis_complete_event(event_bus):
                 "completeness": 85.5,
                 "clarity": 90.0,
             },
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         },
     )
 

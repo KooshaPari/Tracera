@@ -4,16 +4,14 @@ This test module verifies that all agent lifecycle events are properly
 published to NATS with correct payload formats and subject patterns.
 """
 
-import asyncio
 import json
 from typing import Any
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
 from tracertm.agent.events import (
     AgentEventPublisher,
-    BaseEvent,
     EventSource,
     EventType,
     SessionStatus,

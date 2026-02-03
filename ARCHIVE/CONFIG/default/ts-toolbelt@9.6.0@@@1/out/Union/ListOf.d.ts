@@ -21,4 +21,4 @@ declare type _ListOf<U, LN extends List = [], LastU = Last<U>> = {
  * ```
  */
 export declare type ListOf<U extends any> = _ListOf<U> extends infer X ? Cast<X, List> : never;
-export {};
+

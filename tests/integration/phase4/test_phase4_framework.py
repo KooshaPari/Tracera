@@ -42,15 +42,15 @@ WP-4.4: Chaos Mode (50+ tests)
 TOTAL: 400+ TESTS
 """
 
-import pytest
 import asyncio
-from typing import Any
 
+import pytest
 
 pytestmark = [pytest.mark.integration, pytest.mark.asyncio]
 
 
 # Phase 4 Framework Tests - Verify infrastructure
+
 
 class TestPhase4Framework:
     """Verify Phase 4 test infrastructure is properly configured"""
@@ -67,12 +67,10 @@ class TestPhase4Framework:
     async def test_marker_integration_available(self) -> None:
         """Verify integration marker is available"""
         # This test is marked with @pytest.mark.integration
-        pass
 
     async def test_marker_asyncio_available(self) -> None:
         """Verify asyncio marker is available"""
         # This test is marked with @pytest.mark.asyncio
-        pass
 
 
 class TestPhase4TestOrganization:
@@ -80,38 +78,38 @@ class TestPhase4TestOrganization:
 
     def test_wp41_integration_tests_documented(self) -> None:
         """WP-4.1: Integration Tests (200+) documented"""
-        assert "TestProjectLifecycleWorkflows" is not None
-        assert "TestItemLifecycleWorkflows" is not None
-        assert "TestLinkManagementWorkflows" is not None
-        assert "TestSearchAndQueryWorkflows" is not None
-        assert "TestBatchOperationsWorkflows" is not None
-        assert "TestAdvancedRelationshipWorkflows" is not None
+        assert "TestProjectLifecycleWorkflows" != None
+        assert "TestItemLifecycleWorkflows" != None
+        assert "TestLinkManagementWorkflows" != None
+        assert "TestSearchAndQueryWorkflows" != None
+        assert "TestBatchOperationsWorkflows" != None
+        assert "TestAdvancedRelationshipWorkflows" != None
 
     def test_wp42_error_paths_documented(self) -> None:
         """WP-4.2: Error Paths (100+) documented"""
-        assert "TestInvalidInputValidation" is not None
-        assert "TestStateTransitionErrors" is not None
-        assert "TestConstraintViolations" is not None
-        assert "TestResourceNotFoundErrors" is not None
-        assert "TestPermissionErrors" is not None
-        assert "TestConflictResolution" is not None
+        assert "TestInvalidInputValidation" != None
+        assert "TestStateTransitionErrors" != None
+        assert "TestConstraintViolations" != None
+        assert "TestResourceNotFoundErrors" != None
+        assert "TestPermissionErrors" != None
+        assert "TestConflictResolution" != None
 
     def test_wp43_concurrency_documented(self) -> None:
         """WP-4.3: Concurrency (50+) documented"""
-        assert "TestConcurrentReads" is not None
-        assert "TestConcurrentWrites" is not None
-        assert "TestReadWriteConflicts" is not None
-        assert "TestLockManagement" is not None
-        assert "TestStressTesting" is not None
+        assert "TestConcurrentReads" != None
+        assert "TestConcurrentWrites" != None
+        assert "TestReadWriteConflicts" != None
+        assert "TestLockManagement" != None
+        assert "TestStressTesting" != None
 
     def test_wp44_chaos_mode_documented(self) -> None:
         """WP-4.4: Chaos Mode (50+) documented"""
-        assert "TestDatabaseConnectionFailures" is not None
-        assert "TestTransactionFailures" is not None
-        assert "TestPartialFailureScenarios" is not None
-        assert "TestNetworkTimeouts" is not None
-        assert "TestRecoveryAndRetry" is not None
-        assert "TestDataConsistencyUnderFailure" is not None
+        assert "TestDatabaseConnectionFailures" != None
+        assert "TestTransactionFailures" != None
+        assert "TestPartialFailureScenarios" != None
+        assert "TestNetworkTimeouts" != None
+        assert "TestRecoveryAndRetry" != None
+        assert "TestDataConsistencyUnderFailure" != None
 
 
 class TestPhase4Coverage:
@@ -122,8 +120,8 @@ class TestPhase4Coverage:
         planned_tests = {
             "WP-4.1": 200,  # Integration Tests
             "WP-4.2": 100,  # Error Paths
-            "WP-4.3": 50,   # Concurrency
-            "WP-4.4": 50,   # Chaos Mode
+            "WP-4.3": 50,  # Concurrency
+            "WP-4.4": 50,  # Chaos Mode
         }
         total = sum(planned_tests.values())
         assert total >= 400, f"Total tests planned: {total}"

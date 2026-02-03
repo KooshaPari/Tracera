@@ -42,7 +42,7 @@ export default function julia(Prism) {
     // https://docs.julialang.org/en/v1/manual/mathematical-operations/
     // https://docs.julialang.org/en/v1/manual/mathematical-operations/#Operator-Precedence-and-Associativity-1
     operator:
-      /&&|\|\||[-+*^%÷⊻&$\\]=?|\/[\/=]?|!=?=?|\|[=>]?|<(?:<=?|[=:|])?|>(?:=|>>?=?)?|==?=?|[~≠≤≥'√∛]/,
+      /&&|\|\||[-+*^%÷⊻&$\\]=?|\/[/=]?|!=?=?|\|[=>]?|<(?:<=?|[=:|])?|>(?:=|>>?=?)?|==?=?|[~≠≤≥'√∛]/,
     punctuation: /::?|[{}[\]();,.?]/,
     // https://docs.julialang.org/en/v1/base/numbers/#Base.im
     constant: /\b(?:(?:Inf|NaN)(?:16|32|64)?|im|pi)\b|[πℯ]/

@@ -6,8 +6,9 @@ These are simpler widgets with basic functionality.
 Coverage target: 80%+ combined for graph_view (85), item_list (76), state_display (49), view_switcher (26)
 """
 
+from unittest.mock import patch
+
 import pytest
-from unittest.mock import MagicMock, Mock, patch
 
 # Skip all tests if Textual not available
 pytest.importorskip("textual")
@@ -36,7 +37,7 @@ class TestGraphViewWidget:
 
     def test_inherits_from_static(self):
         """Test GraphViewWidget inherits from Static."""
-        from textual.widgets import Static
+        from textual.widgets import Static  # type: ignore[unresolved-import]
 
         widget = GraphViewWidget()
 
@@ -49,7 +50,7 @@ class TestItemListWidget:
     def test_init_creates_widget(self):
         """Test ItemListWidget initializes correctly."""
         # Patch add_columns to avoid requiring app context
-        with patch.object(ItemListWidget, 'add_columns'):
+        with patch.object(ItemListWidget, "add_columns"):
             widget = ItemListWidget()
             # Widget should be initialized with DataTable
             assert widget is not None
@@ -57,7 +58,7 @@ class TestItemListWidget:
     def test_columns_configured(self):
         """Test ItemListWidget has correct columns."""
         # Patch add_columns and verify it was called
-        with patch.object(ItemListWidget, 'add_columns') as mock_add:
+        with patch.object(ItemListWidget, "add_columns") as mock_add:
             widget = ItemListWidget()
             # Verify add_columns was called with correct column names
             mock_add.assert_called_once_with("ID", "Title", "Type", "Status")
@@ -65,15 +66,15 @@ class TestItemListWidget:
 
     def test_inherits_from_datatable(self):
         """Test ItemListWidget inherits from DataTable."""
-        from textual.widgets import DataTable
+        from textual.widgets import DataTable  # type: ignore[unresolved-import]
 
-        with patch.object(ItemListWidget, 'add_columns'):
+        with patch.object(ItemListWidget, "add_columns"):
             widget = ItemListWidget()
             assert isinstance(widget, DataTable)
 
     def test_init_with_custom_id(self):
         """Test ItemListWidget accepts custom ID."""
-        with patch.object(ItemListWidget, 'add_columns'):
+        with patch.object(ItemListWidget, "add_columns"):
             widget = ItemListWidget(id="custom-items")
             assert widget is not None
             assert widget.id == "custom-items"
@@ -84,13 +85,13 @@ class TestStateDisplayWidget:
 
     def test_init_creates_widget(self):
         """Test StateDisplayWidget initializes correctly."""
-        with patch.object(StateDisplayWidget, 'add_columns'):
+        with patch.object(StateDisplayWidget, "add_columns"):
             widget = StateDisplayWidget()
             assert widget is not None
 
     def test_columns_configured(self):
         """Test StateDisplayWidget has correct columns."""
-        with patch.object(StateDisplayWidget, 'add_columns') as mock_add:
+        with patch.object(StateDisplayWidget, "add_columns") as mock_add:
             widget = StateDisplayWidget()
             # Verify add_columns was called with correct column names
             mock_add.assert_called_once_with("View", "Items", "Links")
@@ -98,15 +99,15 @@ class TestStateDisplayWidget:
 
     def test_inherits_from_datatable(self):
         """Test StateDisplayWidget inherits from DataTable."""
-        from textual.widgets import DataTable
+        from textual.widgets import DataTable  # type: ignore[unresolved-import]
 
-        with patch.object(StateDisplayWidget, 'add_columns'):
+        with patch.object(StateDisplayWidget, "add_columns"):
             widget = StateDisplayWidget()
             assert isinstance(widget, DataTable)
 
     def test_init_with_custom_id(self):
         """Test StateDisplayWidget accepts custom ID."""
-        with patch.object(StateDisplayWidget, 'add_columns'):
+        with patch.object(StateDisplayWidget, "add_columns"):
             widget = StateDisplayWidget(id="custom-state")
             assert widget is not None
             assert widget.id == "custom-state"
@@ -117,33 +118,34 @@ class TestViewSwitcherWidget:
 
     def test_init_creates_widget(self):
         """Test ViewSwitcherWidget initializes correctly."""
-        with patch.object(ViewSwitcherWidget, 'setup_views'):
+        with patch.object(ViewSwitcherWidget, "setup_views"):
             widget = ViewSwitcherWidget()
             assert widget is not None
 
     def test_setup_views_called(self):
         """Test setup_views is called during initialization."""
-        with patch.object(ViewSwitcherWidget, 'setup_views') as mock_setup:
-            widget = ViewSwitcherWidget()
+        with patch.object(ViewSwitcherWidget, "setup_views") as mock_setup:
+            ViewSwitcherWidget()
             # Verify setup_views was called during init
             mock_setup.assert_called_once()
 
     def test_inherits_from_tree(self):
         """Test ViewSwitcherWidget inherits from Tree."""
-        from textual.widgets import Tree
+        from textual.widgets import Tree  # type: ignore[unresolved-import]
 
-        with patch.object(ViewSwitcherWidget, 'setup_views'):
+        with patch.object(ViewSwitcherWidget, "setup_views"):
             widget = ViewSwitcherWidget()
             assert isinstance(widget, Tree)
 
     def test_init_with_custom_label(self):
         """Test ViewSwitcherWidget accepts custom label."""
-        with patch.object(ViewSwitcherWidget, 'setup_views'):
+        with patch.object(ViewSwitcherWidget, "setup_views"):
             widget = ViewSwitcherWidget("Custom Views")
             assert widget is not None
 
 
 # Additional integration tests for all widgets
+
 
 class TestWidgetAvailability:
     """Test widget availability and imports."""

@@ -18,15 +18,15 @@ export default defineConfig({
 	},
 	renderer: {
 		build: {
-			outDir: path.resolve(__dirname, "dist/renderer"),
 			cssMinify: "lightningcss",
+			outDir: path.resolve(__dirname, "dist/renderer"),
 			rollupOptions: {
 				input: path.resolve(__dirname, "../web/index.html"),
 			},
 		},
 		css: {
-			transformer: "lightningcss",
 			lightningcss: {},
+			transformer: "lightningcss",
 		},
 		plugins: [tailwindcss(), react()],
 		resolve: {

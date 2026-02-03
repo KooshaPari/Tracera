@@ -3,6 +3,7 @@ Integration tests for Epic 2: Bulk Operations (Story 2.8, FR14).
 """
 
 import pytest
+
 pytestmark = pytest.mark.integration
 from sqlalchemy.orm import Session
 
@@ -99,11 +100,7 @@ def test_bulk_update_atomicity(temp_project_with_items):
         assert result["items_updated"] == 5
 
         # Verify all items were updated
-        updated_items = (
-            session.query(Item)
-            .filter(Item.project_id == project_id, Item.status == "in_progress")
-            .count()
-        )
+        updated_items = session.query(Item).filter(Item.project_id == project_id, Item.status == "in_progress").count()
         assert updated_items == 10  # All 10 items should now be in_progress
 
 
@@ -127,7 +124,8 @@ def test_bulk_delete_atomicity(temp_project_with_items):
 
         # Verify items are soft-deleted
         active_items = (
-            session.query(Item)
+            session
+            .query(Item)
             .filter(
                 Item.project_id == project_id,
                 Item.deleted_at.is_(None),
@@ -229,7 +227,8 @@ New Task 1,FEATURE,task,todo,low,First new task
 
         # Verify specific items
         item1 = (
-            session.query(Item)
+            session
+            .query(Item)
             .filter(
                 Item.project_id == project_id,
                 Item.title == "New Feature 1",
@@ -265,7 +264,8 @@ Feature with Metadata,FEATURE,feature,todo,"{""tags"": [""auth"", ""security""],
 
         # Verify item with metadata
         item = (
-            session.query(Item)
+            session
+            .query(Item)
             .filter(
                 Item.project_id == project_id,
                 Item.title == "Feature with Metadata",

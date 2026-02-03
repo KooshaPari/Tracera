@@ -4,8 +4,8 @@ Integration tests for Epic 6: Multi-Project Management (FR46-FR53).
 Tests multi-project support, switching, cross-project queries, and dashboard.
 """
 
-
 import pytest
+
 pytestmark = pytest.mark.integration
 from typer.testing import CliRunner
 
@@ -239,4 +239,4 @@ def test_agent_multi_project_assignment():
 
     # This would test the API client's multi-project assignment
     # Note: Would need proper project setup
-    pass  # Placeholder - would need full setup
+    # Placeholder - would need full setup

@@ -9,11 +9,10 @@ from __future__ import annotations
 
 import uuid
 
-from alembic import op
-from alembic import context
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
+from alembic import context, op
 from tracertm.models.types import JSONType
 
 # revision identifiers, used by Alembic.
@@ -31,11 +30,19 @@ def upgrade() -> None:
     op.create_table(
         "graphs",
         sa.Column("id", sa.String(length=255), primary_key=True),
-        sa.Column("project_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True),
+        sa.Column(
+            "project_id",
+            postgresql.UUID(as_uuid=True),
+            sa.ForeignKey("projects.id", ondelete="CASCADE"),
+            nullable=False,
+            index=True,
+        ),
         sa.Column("name", sa.String(length=200), nullable=False),
         sa.Column("graph_type", sa.String(length=100), nullable=False),
         sa.Column("description", sa.Text(), nullable=True),
-        sa.Column("root_item_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("items.id", ondelete="SET NULL"), nullable=True),
+        sa.Column(
+            "root_item_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("items.id", ondelete="SET NULL"), nullable=True
+        ),
         sa.Column("graph_metadata", JSONType, nullable=False, server_default=sa.text("'{}'")),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
         sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
@@ -46,8 +53,16 @@ def upgrade() -> None:
     op.create_table(
         "graph_nodes",
         sa.Column("graph_id", sa.String(length=255), sa.ForeignKey("graphs.id", ondelete="CASCADE"), primary_key=True),
-        sa.Column("item_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("items.id", ondelete="CASCADE"), primary_key=True),
-        sa.Column("project_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True),
+        sa.Column(
+            "item_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("items.id", ondelete="CASCADE"), primary_key=True
+        ),
+        sa.Column(
+            "project_id",
+            postgresql.UUID(as_uuid=True),
+            sa.ForeignKey("projects.id", ondelete="CASCADE"),
+            nullable=False,
+            index=True,
+        ),
         sa.Column("is_primary", sa.Boolean(), nullable=False, server_default=sa.false()),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
         sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
@@ -93,8 +108,8 @@ def upgrade() -> None:
 
     for view_id, project_id, view_name in view_rows:
         graph_id = _uuid()
-        graph_ids[(project_id, view_name)] = graph_id
-        view_map[(project_id, view_name)] = view_id
+        graph_ids[project_id, view_name] = graph_id
+        view_map[project_id, view_name] = view_id
         conn.execute(
             graphs_table.insert().values(
                 id=graph_id,
@@ -108,9 +123,7 @@ def upgrade() -> None:
         )
 
     # Backfill graph_nodes using existing item_views -> default graph per view
-    item_view_rows = conn.execute(
-        sa.text("select item_id, project_id, view_id, is_primary from item_views")
-    ).fetchall()
+    item_view_rows = conn.execute(sa.text("select item_id, project_id, view_id, is_primary from item_views")).fetchall()
 
     graph_node_inserts = []
     for item_id, project_id, view_id, is_primary in item_view_rows:
@@ -124,14 +137,12 @@ def upgrade() -> None:
         graph_id = graph_ids.get((project_id, view_name))
         if not graph_id:
             continue
-        graph_node_inserts.append(
-            {
-                "graph_id": graph_id,
-                "item_id": item_id,
-                "project_id": project_id,
-                "is_primary": is_primary,
-            }
-        )
+        graph_node_inserts.append({
+            "graph_id": graph_id,
+            "item_id": item_id,
+            "project_id": project_id,
+            "is_primary": is_primary,
+        })
 
     if graph_node_inserts:
         conn.execute(graph_nodes_table.insert(), graph_node_inserts)

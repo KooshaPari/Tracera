@@ -45,12 +45,12 @@ export default function textile(Prism) {
         alias: 'attr-value'
       },
       lang: {
-        pattern: /(\[)[^\[\]]+(?=\])/,
+        pattern: /(\[)[^[\]]+(?=\])/,
         lookbehind: true,
         alias: 'attr-value'
       },
       // Anything else is punctuation (the first pattern is for row/col spans inside tables)
-      punctuation: /[\\\/]\d+|\S/
+      punctuation: /[\\/]\d+|\S/
     }
     var textile = (Prism.languages.textile = Prism.languages.extend('markup', {
       phrase: {
@@ -184,7 +184,7 @@ export default function textile(Prism) {
                 pattern: /(^\])\S+$/,
                 lookbehind: true
               },
-              punctuation: /[\[\]]/
+              punctuation: /[[\]]/
             }
           },
           // "text":http://example.com
@@ -282,7 +282,7 @@ export default function textile(Prism) {
 
     // Only allow alpha-numeric HTML tags, not XML tags
     textile.tag.pattern =
-      /<\/?(?!\d)[a-z0-9]+(?:\s+[^\s>\/=]+(?:=(?:("|')(?:\\[\s\S]|(?!\1)[^\\])*\1|[^\s'">=]+))?)*\s*\/?>/i
+      /<\/?(?!\d)[a-z0-9]+(?:\s+[^\s>/=]+(?:=(?:("|')(?:\\[\s\S]|(?!\1)[^\\])*\1|[^\s'">=]+))?)*\s*\/?>/i
 
     // Allow some nesting
     var phraseInlineInside = phraseInside['inline'].inside

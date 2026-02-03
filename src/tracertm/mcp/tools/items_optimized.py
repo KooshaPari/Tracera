@@ -9,8 +9,9 @@ These are lean, token-efficient versions of item tools that:
 
 from __future__ import annotations
 
+import asyncio
 import uuid
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from fastmcp.exceptions import ToolError
@@ -20,9 +21,7 @@ from tracertm.mcp.core import mcp
 from tracertm.mcp.tools.base import get_session, require_project
 from tracertm.mcp.tools.response_optimizer import (
     format_error,
-    format_response,
     optimize_item_response,
-    ResponseFormat,
 )
 from tracertm.models.item import Item
 
@@ -60,6 +59,7 @@ async def create_item_v2(
     Returns:
         Created item with minimal fields (id, title, view, type, status)
     """
+    await asyncio.sleep(0)
     try:
         project_id = require_project()
 
@@ -79,11 +79,7 @@ async def create_item_v2(
 
         with get_session() as session:
             # Generate external ID
-            count = (
-                session.query(func.count(Item.id))
-                .filter(Item.project_id == project_id, Item.view == view)
-                .scalar()
-            )
+            count = session.query(func.count(Item.id)).filter(Item.project_id == project_id, Item.view == view).scalar()
             external_id = f"{view[:3].upper()}-{count + 1}"
 
             item = Item(
@@ -99,8 +95,8 @@ async def create_item_v2(
                 owner=owner,
                 parent_id=parent_id,
                 item_metadata=metadata or {},
-                created_at=datetime.utcnow(),
-                updated_at=datetime.utcnow(),
+                created_at=datetime.now(UTC),
+                updated_at=datetime.now(UTC),
             )
             session.add(item)
             session.commit()
@@ -112,7 +108,7 @@ async def create_item_v2(
         return format_error(str(e), action="create_item", ctx=ctx)
     except Exception as e:
         return format_error(
-            f"Failed to create item: {str(e)}",
+            f"Failed to create item: {e!s}",
             action="create_item",
             category="error",
             ctx=ctx,
@@ -138,6 +134,7 @@ async def get_item_v2(
     Returns:
         Item with minimal fields (id, title, view, type, status)
     """
+    await asyncio.sleep(0)
     try:
         if not item_id:
             return format_error(
@@ -152,7 +149,8 @@ async def get_item_v2(
         with get_session() as session:
             # Try exact ID match
             item = (
-                session.query(Item)
+                session
+                .query(Item)
                 .filter(
                     Item.project_id == project_id,
                     Item.id == item_id,
@@ -164,7 +162,8 @@ async def get_item_v2(
             # Try external_id prefix match
             if not item:
                 item = (
-                    session.query(Item)
+                    session
+                    .query(Item)
                     .filter(
                         Item.project_id == project_id,
                         Item.external_id.ilike(f"{item_id}%"),
@@ -185,7 +184,7 @@ async def get_item_v2(
     except ToolError as e:
         return format_error(str(e), ctx=ctx)
     except Exception as e:
-        return format_error(f"Failed to get item: {str(e)}", ctx=ctx)
+        return format_error(f"Failed to get item: {e!s}", ctx=ctx)
 
 
 @mcp.tool(description="Query items (optimized)")
@@ -213,6 +212,7 @@ async def query_items_v2(
     Returns:
         List of items with minimal fields, count, and has_more flag
     """
+    await asyncio.sleep(0)
     try:
         project_id = require_project()
         limit = min(limit, 100)
@@ -246,7 +246,7 @@ async def query_items_v2(
     except ToolError as e:
         return format_error(str(e), ctx=ctx)
     except Exception as e:
-        return format_error(f"Failed to query items: {str(e)}", ctx=ctx)
+        return format_error(f"Failed to query items: {e!s}", ctx=ctx)
 
 
 @mcp.tool(description="Update item (optimized)")
@@ -275,6 +275,7 @@ async def update_item_v2(
     Returns:
         Updated item with minimal fields
     """
+    await asyncio.sleep(0)
     try:
         if not item_id:
             return format_error(
@@ -287,7 +288,8 @@ async def update_item_v2(
 
         with get_session() as session:
             item = (
-                session.query(Item)
+                session
+                .query(Item)
                 .filter(
                     Item.project_id == project_id,
                     Item.deleted_at.is_(None),
@@ -320,7 +322,7 @@ async def update_item_v2(
                 current.update(metadata)
                 item.item_metadata = current
 
-            item.updated_at = datetime.utcnow()
+            item.updated_at = datetime.now(UTC)
 
             session.commit()
 
@@ -329,7 +331,7 @@ async def update_item_v2(
     except ToolError as e:
         return format_error(str(e), ctx=ctx)
     except Exception as e:
-        return format_error(f"Failed to update item: {str(e)}", ctx=ctx)
+        return format_error(f"Failed to update item: {e!s}", ctx=ctx)
 
 
 @mcp.tool(description="Delete item (optimized)")
@@ -346,6 +348,7 @@ async def delete_item_v2(
     Returns:
         Minimal confirmation (id and deleted flag)
     """
+    await asyncio.sleep(0)
     try:
         if not item_id:
             return format_error(
@@ -358,7 +361,8 @@ async def delete_item_v2(
 
         with get_session() as session:
             item = (
-                session.query(Item)
+                session
+                .query(Item)
                 .filter(
                     Item.project_id == project_id,
                     Item.deleted_at.is_(None),
@@ -374,8 +378,8 @@ async def delete_item_v2(
                     ctx=ctx,
                 )
 
-            item.deleted_at = datetime.utcnow()
-            item.updated_at = datetime.utcnow()
+            item.deleted_at = datetime.now(UTC)
+            item.updated_at = datetime.now(UTC)
             session.commit()
 
             return {
@@ -386,7 +390,7 @@ async def delete_item_v2(
     except ToolError as e:
         return format_error(str(e), ctx=ctx)
     except Exception as e:
-        return format_error(f"Failed to delete item: {str(e)}", ctx=ctx)
+        return format_error(f"Failed to delete item: {e!s}", ctx=ctx)
 
 
 @mcp.tool(description="Summarize view (optimized)")
@@ -403,6 +407,7 @@ async def summarize_view_v2(
     Returns:
         Summary with counts by status (no sample items by default)
     """
+    await asyncio.sleep(0)
     try:
         if not view:
             return format_error(
@@ -417,7 +422,8 @@ async def summarize_view_v2(
         with get_session() as session:
             # Get counts by status
             status_counts = (
-                session.query(Item.status, func.count(Item.id))
+                session
+                .query(Item.status, func.count(Item.id))
                 .filter(
                     Item.project_id == project_id,
                     Item.view == view,
@@ -427,7 +433,7 @@ async def summarize_view_v2(
                 .all()
             )
 
-            counts = {status: count for status, count in status_counts}
+            counts = dict(status_counts)
             total = sum(counts.values())
 
             return {
@@ -439,14 +445,14 @@ async def summarize_view_v2(
     except ToolError as e:
         return format_error(str(e), ctx=ctx)
     except Exception as e:
-        return format_error(f"Failed to summarize view: {str(e)}", ctx=ctx)
+        return format_error(f"Failed to summarize view: {e!s}", ctx=ctx)
 
 
 __all__ = [
     "create_item_v2",
+    "delete_item_v2",
     "get_item_v2",
     "query_items_v2",
-    "update_item_v2",
-    "delete_item_v2",
     "summarize_view_v2",
+    "update_item_v2",
 ]

@@ -44,6 +44,6 @@ export default function psl(Prism) {
     function: /\b[_a-z]\w*\b(?=\s*\()/i,
     number: /\b(?:0x[0-9a-f]+|\d+(?:\.\d+)?)\b/i,
     operator: /--|\+\+|&&=?|\|\|=?|<<=?|>>=?|[=!]~|[-+*/%&|^!=<>]=?|\.|[:?]/,
-    punctuation: /[(){}\[\];,]/
+    punctuation: /[(){}[\];,]/
   }
 }

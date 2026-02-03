@@ -36,9 +36,7 @@ class TestConcurrencyError:
 
     def test_concurrency_error_with_details(self):
         """Test ConcurrencyError with detailed message."""
-        error = ConcurrencyError(
-            "Version mismatch: expected 5, got 7"
-        )
+        error = ConcurrencyError("Version mismatch: expected 5, got 7")
         assert "Version mismatch" in str(error)
         assert "expected 5" in str(error)
 
@@ -52,6 +50,7 @@ class TestUpdateWithRetrySuccess:
         call_count = 0
 
         async def update_fn():
+            await asyncio.sleep(0)
             nonlocal call_count
             call_count += 1
             return "success"
@@ -66,6 +65,7 @@ class TestUpdateWithRetrySuccess:
         call_count = 0
 
         async def update_fn():
+            await asyncio.sleep(0)
             nonlocal call_count
             call_count += 1
             if call_count < 3:
@@ -79,14 +79,18 @@ class TestUpdateWithRetrySuccess:
     @pytest.mark.asyncio
     async def test_returns_different_types(self):
         """Test that update_with_retry can return different types."""
+
         async def return_int():
+            await asyncio.sleep(0)
             return 42
 
         async def return_dict():
+            await asyncio.sleep(0)
             return {"key": "value"}
 
         async def return_none():
-            return None
+            await asyncio.sleep(0)
+            return
 
         assert await update_with_retry(return_int) == 42
         assert await update_with_retry(return_dict) == {"key": "value"}
@@ -95,7 +99,9 @@ class TestUpdateWithRetrySuccess:
     @pytest.mark.asyncio
     async def test_zero_retries_needed(self):
         """Test when no retries are needed."""
+
         async def always_succeed():
+            await asyncio.sleep(0)
             return "immediate_success"
 
         result = await update_with_retry(always_succeed, max_retries=10)
@@ -111,6 +117,7 @@ class TestUpdateWithRetryFailure:
         call_count = 0
 
         async def always_fail():
+            await asyncio.sleep(0)
             nonlocal call_count
             call_count += 1
             raise ConcurrencyError("Always fails")
@@ -127,6 +134,7 @@ class TestUpdateWithRetryFailure:
         call_count = 0
 
         async def always_fail():
+            await asyncio.sleep(0)
             nonlocal call_count
             call_count += 1
             raise ConcurrencyError("Fail")
@@ -140,7 +148,9 @@ class TestUpdateWithRetryFailure:
     @pytest.mark.asyncio
     async def test_original_error_message_preserved(self):
         """Test that original error message is preserved in final error."""
+
         async def fail_with_message():
+            await asyncio.sleep(0)
             raise ConcurrencyError("Original error: version mismatch")
 
         with pytest.raises(ConcurrencyError) as exc_info:
@@ -156,6 +166,7 @@ class TestUpdateWithRetryFailure:
         call_count = 0
 
         async def raise_other_error():
+            await asyncio.sleep(0)
             nonlocal call_count
             call_count += 1
             raise ValueError("Different error")
@@ -176,12 +187,13 @@ class TestUpdateWithRetryBackoff:
         call_times = []
 
         async def track_calls():
+            await asyncio.sleep(0)
             call_times.append(asyncio.get_event_loop().time())
             if len(call_times) < 3:
                 raise ConcurrencyError("Retry")
             return "done"
 
-        start = asyncio.get_event_loop().time()
+        _ = asyncio.get_event_loop().time()
         await update_with_retry(track_calls, max_retries=3, base_delay=0.01)
 
         # Verify calls happened
@@ -200,6 +212,7 @@ class TestUpdateWithRetryBackoff:
         call_times = []
 
         async def track_calls():
+            await asyncio.sleep(0)
             call_times.append(asyncio.get_event_loop().time())
             if len(call_times) < 2:
                 raise ConcurrencyError("Retry")
@@ -221,9 +234,10 @@ class TestUpdateWithRetryBackoff:
         for _ in range(5):
             call_times = []
 
-            async def track_calls():
-                call_times.append(asyncio.get_event_loop().time())
-                if len(call_times) < 2:
+            async def track_calls(_ct=call_times):
+                await asyncio.sleep(0)
+                _ct.append(asyncio.get_event_loop().time())
+                if len(_ct) < 2:
                     raise ConcurrencyError("Retry")
                 return "done"
 
@@ -248,6 +262,7 @@ class TestUpdateWithRetryEdgeCases:
         call_count = 0
 
         async def count_calls():
+            await asyncio.sleep(0)
             nonlocal call_count
             call_count += 1
             raise ConcurrencyError("Fail")
@@ -263,6 +278,7 @@ class TestUpdateWithRetryEdgeCases:
         call_times = []
 
         async def track_calls():
+            await asyncio.sleep(0)
             call_times.append(asyncio.get_event_loop().time())
             if len(call_times) < 2:
                 raise ConcurrencyError("Retry")
@@ -281,6 +297,7 @@ class TestUpdateWithRetryEdgeCases:
         call_count = 0
 
         async def fail_then_succeed():
+            await asyncio.sleep(0)
             nonlocal call_count
             call_count += 1
             if call_count < 10:
@@ -297,6 +314,7 @@ class TestUpdateWithRetryEdgeCases:
         call_count = 0
 
         async def count_retries():
+            await asyncio.sleep(0)
             nonlocal call_count
             call_count += 1
             if call_count < 3:
@@ -315,8 +333,10 @@ class TestUpdateWithRetryEdgeCases:
     @pytest.mark.asyncio
     async def test_async_function_required(self):
         """Test that function must be async."""
+
         # This test verifies the type signature works with async functions
         async def valid_async_fn():
+            await asyncio.sleep(0)
             return "async_result"
 
         result = await update_with_retry(valid_async_fn)
@@ -325,7 +345,9 @@ class TestUpdateWithRetryEdgeCases:
     @pytest.mark.asyncio
     async def test_complex_return_value(self):
         """Test with complex return values."""
+
         async def return_complex():
+            await asyncio.sleep(0)
             return {
                 "items": [1, 2, 3],
                 "metadata": {"count": 3, "status": "ok"},
@@ -348,6 +370,7 @@ class TestUpdateWithRetryEdgeCases:
         ]
 
         async def different_errors():
+            await asyncio.sleep(0)
             nonlocal call_count
             if call_count < len(errors):
                 error_msg = errors[call_count]

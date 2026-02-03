@@ -8,19 +8,14 @@ Target: +3-4% coverage (40-55 tests)
 """
 
 import pytest
-import asyncio
-from datetime import datetime, timedelta
-from sqlalchemy import text
-from sqlalchemy.exc import SQLAlchemyError, IntegrityError, OperationalError
-from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError, OperationalError
 
-from tracertm.models.project import Project
+from tracertm.models.event import Event
 from tracertm.models.item import Item
 from tracertm.models.link import Link
-from tracertm.models.event import Event
-from tracertm.repositories.project_repository import ProjectRepository
+from tracertm.models.project import Project
 from tracertm.repositories.item_repository import ItemRepository
-from tracertm.repositories.link_repository import LinkRepository
+from tracertm.repositories.project_repository import ProjectRepository
 
 
 class TestDatabaseConnectionFailures:
@@ -49,7 +44,7 @@ class TestDatabaseConnectionFailures:
             title="Duplicate",
             view="STORY",
             item_type="story",
-            status="todo"
+            status="todo",
         )
 
         initialized_db.add(item)
@@ -64,7 +59,7 @@ class TestDatabaseConnectionFailures:
             project_id="test-project",
             source_item_id="STORY-123",
             target_item_id="FEATURE-456",
-            link_type="depends_on"
+            link_type="depends_on",
         )
 
         initialized_db.add(link)
@@ -87,7 +82,7 @@ class TestDatabaseConnectionFailures:
             title="Test Item",
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         sync_db_session.add(item)
 
@@ -99,7 +94,7 @@ class TestDatabaseConnectionFailures:
                 title="Duplicate",
                 view="FEATURE",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             sync_db_session.add(duplicate_item)
             sync_db_session.flush()
@@ -124,7 +119,7 @@ class TestPermissionAndAccessErrors:
             title="Normal Item",
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         initialized_db.add(item)
         initialized_db.commit()
@@ -136,10 +131,7 @@ class TestPermissionAndAccessErrors:
     @pytest.mark.integration
     def test_unauthorized_project_access(self, initialized_db):
         """Test accessing project without permission."""
-        other_project = Project(
-            id="restricted-project",
-            name="Restricted Project"
-        )
+        other_project = Project(id="restricted-project", name="Restricted Project")
         initialized_db.add(other_project)
         initialized_db.commit()
 
@@ -161,7 +153,7 @@ class TestPermissionAndAccessErrors:
             title="Item 1",
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         sync_db_session.add(item1)
         sync_db_session.commit()
@@ -173,7 +165,7 @@ class TestPermissionAndAccessErrors:
             title="Item 1 Modified",
             view="FEATURE",
             item_type="feature",
-            status="in_progress"
+            status="in_progress",
         )
         sync_db_session.add(item2)
         with pytest.raises(IntegrityError):
@@ -192,7 +184,7 @@ class TestInvalidInputHandling:
             title=None,  # Required field
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
 
         initialized_db.add(item)
@@ -213,7 +205,7 @@ class TestInvalidInputHandling:
             title="Test",
             view="FEATURE",
             item_type="feature",
-            status="invalid_status"  # May or may not be validated
+            status="invalid_status",  # May or may not be validated
         )
 
         initialized_db.add(item)
@@ -232,7 +224,7 @@ class TestInvalidInputHandling:
             project_id="test-project",
             source_item_id="item-1",
             target_item_id="item-2",
-            link_type="unknown_type"  # May not be validated
+            link_type="unknown_type",  # May not be validated
         )
 
         db_with_sample_data.add(link)
@@ -265,7 +257,7 @@ class TestInvalidInputHandling:
             view="FEATURE",
             item_type="feature",
             status="todo",
-            item_metadata={"invalid": None}  # None values might be invalid
+            item_metadata={"invalid": None},  # None values might be invalid
         )
 
         initialized_db.add(item)
@@ -351,7 +343,7 @@ class TestConflictResolutionFailures:
             project_id="test-project",
             source_item_id="item-2",
             target_item_id="item-1",
-            link_type="depends_on"
+            link_type="depends_on",
         )
 
         db_with_sample_data.add(circular_link)
@@ -370,14 +362,14 @@ class TestConflictResolutionFailures:
             project_id="test-project",
             source_item_id="item-1",
             target_item_id="item-2",
-            link_type="implements"
+            link_type="implements",
         )
         link2 = Link(
             id="bidirectional-2",
             project_id="test-project",
             source_item_id="item-2",
             target_item_id="item-1",
-            link_type="implemented_by"
+            link_type="implemented_by",
         )
 
         db_with_sample_data.add(link1)
@@ -398,7 +390,7 @@ class TestConflictResolutionFailures:
             title="Orphan Test",
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         initialized_db.add(item)
         initialized_db.commit()
@@ -408,7 +400,7 @@ class TestConflictResolutionFailures:
             project_id="test-project",
             source_item_id="STORY-123",
             target_item_id="ORPHAN-TEST",
-            link_type="depends_on"
+            link_type="depends_on",
         )
         initialized_db.add(link)
         initialized_db.commit()
@@ -446,7 +438,7 @@ class TestTimeoutAndRetryExhaustion:
         def failing_operation():
             retry_count[0] += 1
             if retry_count[0] <= max_retries:
-                raise OperationalError("Temporary failure", None, None)
+                raise OperationalError("Temporary failure", None, Exception("cause"))
             return True
 
         # Verify retry logic works
@@ -468,7 +460,7 @@ class TestTimeoutAndRetryExhaustion:
                 title=f"Batch Item {i}",
                 view="FEATURE",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             for i in range(5)
         ]
@@ -479,9 +471,7 @@ class TestTimeoutAndRetryExhaustion:
         initialized_db.commit()
 
         # Verify all created
-        count = initialized_db.query(Item).filter(
-            Item.id.startswith("BATCH-NEW-")
-        ).count()
+        count = initialized_db.query(Item).filter(Item.id.startswith("BATCH-NEW-")).count()
         assert count == 5
 
 
@@ -503,7 +493,7 @@ class TestTransactionRollbackScenarios:
             title="Nested Item",
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         sync_db_session.add(item)
         savepoint.rollback()
@@ -528,7 +518,7 @@ class TestTransactionRollbackScenarios:
                 title=f"Bulk {i}",
                 view="FEATURE",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             for i in range(5)
         ]
@@ -554,7 +544,7 @@ class TestTransactionRollbackScenarios:
             title="Cascade Item",
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         db_with_sample_data.add(new_item)
 
@@ -563,7 +553,7 @@ class TestTransactionRollbackScenarios:
             project_id="test-project",
             source_item_id="item-1",
             target_item_id="CASCADE-001",
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_with_sample_data.add(cascade_link)
 
@@ -585,7 +575,7 @@ class TestTransactionRollbackScenarios:
             entity_type="item",
             entity_id="item-1",
             agent_id="test-agent",
-            data={"field": "status", "new_value": "done"}
+            data={"field": "status", "new_value": "done"},
         )
         db_with_sample_data.add(event)
 
@@ -593,10 +583,9 @@ class TestTransactionRollbackScenarios:
         db_with_sample_data.commit()
 
         # Verify event was rolled back
-        result = db_with_sample_data.query(Event).filter(
-            Event.entity_id == "item-1",
-            Event.data.contains("done")
-        ).first()
+        result = (
+            db_with_sample_data.query(Event).filter(Event.entity_id == "item-1", Event.data.contains("done")).first()
+        )
         assert result is None
 
 
@@ -638,7 +627,7 @@ class TestCascadingErrorHandling:
                 title=f"Item {i}",
                 view="FEATURE",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             for i in range(3)
         ]
@@ -661,7 +650,7 @@ class TestCascadingErrorHandling:
             title="Test",
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         initialized_db.add(item)
         initialized_db.commit()
@@ -672,7 +661,7 @@ class TestCascadingErrorHandling:
             project_id="test-project",
             source_item_id="CASCADE-CONSTRAINT",
             target_item_id="STORY-123",
-            link_type="depends_on"
+            link_type="depends_on",
         )
         initialized_db.add(link)
         initialized_db.commit()
@@ -710,7 +699,7 @@ class TestErrorRecoveryAndLogging:
             title="Item",
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         sync_db_session.add(item)
         sync_db_session.commit()
@@ -722,7 +711,7 @@ class TestErrorRecoveryAndLogging:
             title="Duplicate",
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         sync_db_session.add(duplicate)
 
@@ -738,7 +727,7 @@ class TestErrorRecoveryAndLogging:
             title="New Item",
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         sync_db_session.add(new_item)
         sync_db_session.commit()
@@ -761,7 +750,7 @@ class TestErrorRecoveryAndLogging:
                 title="Context Item",
                 view="FEATURE",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             sync_db_session.add(item)
             sync_db_session.commit()
@@ -783,12 +772,7 @@ class TestErrorRecoveryAndLogging:
         sync_db_session.commit()
 
         item = Item(
-            id="FLUSH-001",
-            project_id="flush-error",
-            title="Item",
-            view="FEATURE",
-            item_type="feature",
-            status="todo"
+            id="FLUSH-001", project_id="flush-error", title="Item", view="FEATURE", item_type="feature", status="todo"
         )
         sync_db_session.add(item)
         sync_db_session.flush()
@@ -808,12 +792,7 @@ class TestErrorRecoveryAndLogging:
         # Cause error
         try:
             invalid_item = Item(
-                id=None,
-                project_id="cleanup-test",
-                title="Invalid",
-                view="FEATURE",
-                item_type="feature",
-                status="todo"
+                id=None, project_id="cleanup-test", title="Invalid", view="FEATURE", item_type="feature", status="todo"
             )
             sync_db_session.add(invalid_item)
             sync_db_session.flush()

@@ -34,7 +34,7 @@ overmind ps
 | **Gateway** | 80 | http://localhost |
 | **Go Backend** | 8080 | http://localhost:8080 |
 | **Python Backend** | 8000 | http://localhost:4000 |
-| **Frontend** | 5173 | http://localhost:5173 |
+| **Frontend** | 5173 (internal) | Use gateway **http://localhost:4000** only |
 | **Temporal UI** | 8233 | http://localhost:8233 |
 | **PostgreSQL** | 5432 | postgresql://localhost:5432 |
 | **Redis** | 6379 | redis://localhost:6379 |
@@ -568,7 +568,7 @@ make docker-push DOCKER_REGISTRY=registry.example.com
 make k8s-deploy NAMESPACE=tracertm IMAGE_TAG=v1.0.0
 
 # Using kubectl directly
-kubectl apply -f k8s/
+kubectl apply -f deploy/k8s/
 ```
 
 ---
@@ -577,7 +577,7 @@ kubectl apply -f k8s/
 
 | Service | URL | Description |
 |---------|-----|-------------|
-| **Frontend** | http://localhost:5173 | Web application |
+| **Frontend** | http://localhost:4000 | Web application (gateway only; 5173 internal) |
 | **Gateway** | http://localhost | Unified API entry |
 | **Go API** | http://localhost:8080 | Go backend API |
 | **Python API** | http://localhost:4000 | Python backend API |

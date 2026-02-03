@@ -47,4 +47,4 @@ Simplify<
 	& SimpleMerge<OmitIndexSignature<Destination>, OmitIndexSignature<Source>>
 >;
 
-export {};
+

@@ -5,12 +5,12 @@ Provides structured logging with both Loguru (for backwards compatibility)
 and structlog (for structured log aggregation with Loki).
 """
 
-import sys
 import logging
-from pathlib import Path
+import sys
+from typing import Any
 
-from loguru import logger
 import structlog
+from loguru import logger
 
 from tracertm.config import get_settings
 
@@ -34,7 +34,7 @@ def setup_logging() -> None:
             structlog.processors.StackInfoRenderer(),
             structlog.dev.set_exc_info,
             structlog.processors.TimeStamper(fmt="iso"),
-            structlog.processors.JSONRenderer()
+            structlog.processors.JSONRenderer(),
         ],
         wrapper_class=structlog.make_filtering_bound_logger(logging.NOTSET),
         context_class=dict,
@@ -95,12 +95,12 @@ def setup_logging() -> None:
     logger.info(f"Logging configured: level={settings.log_level}, dir={log_dir}")
 
 
-def get_logger(name: str) -> "logger":
+def get_logger(name: str) -> Any:
     """Get a Loguru logger instance for a module."""
     return logger.bind(module=name)
 
 
-def get_structlog_logger(name: str = None):
+def get_structlog_logger(name: str | None = None):
     """
     Get a structlog logger instance for structured logging.
 

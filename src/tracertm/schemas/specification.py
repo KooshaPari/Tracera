@@ -3,19 +3,19 @@
 Comprehensive schemas for ADRs, Contracts, Features, Scenarios, and Step Definitions.
 """
 
-from datetime import date as date_type, datetime
-from enum import Enum
+from datetime import date as date_type
+from datetime import datetime
+from enum import StrEnum
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
-
 
 # =============================================================================
 # ADR Enums & Schemas
 # =============================================================================
 
 
-class ADRStatus(str, Enum):
+class ADRStatus(StrEnum):
     """Valid ADR statuses following MADR 4.0 standard."""
 
     PROPOSED = "proposed"
@@ -170,7 +170,7 @@ class ADRActivityListResponse(BaseModel):
 # =============================================================================
 
 
-class ContractStatus(str, Enum):
+class ContractStatus(StrEnum):
     """Valid contract statuses."""
 
     DRAFT = "draft"
@@ -181,7 +181,7 @@ class ContractStatus(str, Enum):
     ARCHIVED = "archived"
 
 
-class ContractType(str, Enum):
+class ContractType(StrEnum):
     """Types of contracts."""
 
     API = "api"
@@ -347,7 +347,7 @@ ContractRead = ContractResponse
 # =============================================================================
 
 
-class FeatureStatus(str, Enum):
+class FeatureStatus(StrEnum):
     """Valid feature statuses."""
 
     DRAFT = "draft"
@@ -359,7 +359,7 @@ class FeatureStatus(str, Enum):
     DEPRECATED = "deprecated"
 
 
-class ScenarioStatus(str, Enum):
+class ScenarioStatus(StrEnum):
     """Valid scenario statuses."""
 
     DRAFT = "draft"
@@ -640,7 +640,7 @@ class ScenarioActivityListResponse(BaseModel):
 # =============================================================================
 
 
-class StepDefinitionType(str, Enum):
+class StepDefinitionType(StrEnum):
     """Types of step definitions."""
 
     GIVEN = "given"
@@ -650,7 +650,7 @@ class StepDefinitionType(str, Enum):
     BUT = "but"
 
 
-class StepDefinitionLanguage(str, Enum):
+class StepDefinitionLanguage(StrEnum):
     """Programming languages for step definitions."""
 
     PYTHON = "python"

@@ -29,4 +29,4 @@ export declare type _Reverse<L extends List, LO extends List = []> = __Reverse<N
  * ```
  */
 export declare type Reverse<L extends List> = L extends unknown ? _Reverse<L> : never;
-export {};
+

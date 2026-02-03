@@ -18,7 +18,7 @@ export default function systemd(Prism) {
     Prism.languages.systemd = {
       comment: comment,
       section: {
-        pattern: /^\[[^\n\r\[\]]*\](?=[ \t]*$)/m,
+        pattern: /^\[[^\n\r[\]]*\](?=[ \t]*$)/m,
         greedy: true,
         inside: {
           punctuation: /^\[|\]$/,

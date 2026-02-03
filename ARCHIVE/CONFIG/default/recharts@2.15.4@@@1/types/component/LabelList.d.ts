@@ -29,4 +29,4 @@ export declare namespace LabelList {
         label?: unknown;
     }, data: T[], checkPropsLabel?: boolean) => React.JSX.Element[];
 }
-export {};
+

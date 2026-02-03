@@ -6,8 +6,8 @@ const preview: Preview = {
 		a11y: {
 			config: {
 				rules: [
-					{ id: "color-contrast", enabled: true },
-					{ id: "label", enabled: true },
+					{ enabled: true, id: "color-contrast" },
+					{ enabled: true, id: "label" },
 				],
 			},
 		},
@@ -20,11 +20,11 @@ const preview: Preview = {
 			],
 		},
 		controls: {
+			expanded: true,
 			matchers: {
 				color: /(background|color)$/i,
 				date: /Date$/i,
 			},
-			expanded: true,
 			sort: "requiredFirst",
 		},
 		docs: {

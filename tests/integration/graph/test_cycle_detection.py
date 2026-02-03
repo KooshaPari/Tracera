@@ -4,8 +4,8 @@ Integration tests for Epic 4: Cycle detection (FR22).
 Tests cycle prevention for depends_on relationships.
 """
 
-
 import pytest
+
 pytestmark = pytest.mark.integration
 from sqlalchemy.orm import Session
 from typer.testing import CliRunner
@@ -138,6 +138,7 @@ def test_cycle_detection_service(runner, temp_project, tmp_path, monkeypatch):
         if not project_id:
             # Create a test project
             from tracertm.models.project import Project
+
             project = Project(name="test", description="test")
             session.add(project)
             session.commit()

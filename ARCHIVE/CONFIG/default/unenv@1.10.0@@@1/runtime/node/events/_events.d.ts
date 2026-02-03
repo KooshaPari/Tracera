@@ -28,4 +28,4 @@ export declare class EventEmitter implements nodeEvents.EventEmitter {
     eventNames(): string[];
 }
 export declare function once(emitter: EventEmitter, name: string): Promise<unknown>;
-export {};
+

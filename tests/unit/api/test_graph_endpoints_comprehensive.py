@@ -5,9 +5,10 @@ Tests:
 - GET /api/v1/projects/{project_id}/graph/neighbors
 """
 
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import AsyncMock, MagicMock, patch
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -37,6 +38,7 @@ def mock_db_connection():
 def client(mock_config_manager, mock_db_connection):
     """Create test client with mocked dependencies."""
     from tracertm.api.main import app
+
     return TestClient(app)
 
 
@@ -75,9 +77,7 @@ class TestGraphNeighborsEndpoint:
             repo_instance.get_by_target = AsyncMock(return_value=in_links)
             mock_repo.return_value = repo_instance
 
-            response = client.get(
-                "/api/v1/projects/proj-123/graph/neighbors?item_id=item-1&direction=both"
-            )
+            response = client.get("/api/v1/projects/proj-123/graph/neighbors?item_id=item-1&direction=both")
 
             assert response.status_code == 200
             data = response.json()
@@ -112,9 +112,7 @@ class TestGraphNeighborsEndpoint:
             repo_instance.get_by_source = AsyncMock(return_value=out_links)
             mock_repo.return_value = repo_instance
 
-            response = client.get(
-                "/api/v1/projects/proj-123/graph/neighbors?item_id=item-1&direction=out"
-            )
+            response = client.get("/api/v1/projects/proj-123/graph/neighbors?item_id=item-1&direction=out")
 
             assert response.status_code == 200
             data = response.json()
@@ -139,9 +137,7 @@ class TestGraphNeighborsEndpoint:
             repo_instance.get_by_target = AsyncMock(return_value=in_links)
             mock_repo.return_value = repo_instance
 
-            response = client.get(
-                "/api/v1/projects/proj-123/graph/neighbors?item_id=item-1&direction=in"
-            )
+            response = client.get("/api/v1/projects/proj-123/graph/neighbors?item_id=item-1&direction=in")
 
             assert response.status_code == 200
             data = response.json()
@@ -245,9 +241,7 @@ class TestGraphNeighborsEndpoint:
             mock_repo.return_value = repo_instance
 
             # Invalid direction should default to "both"
-            response = client.get(
-                "/api/v1/projects/proj-123/graph/neighbors?item_id=item-1&direction=invalid"
-            )
+            response = client.get("/api/v1/projects/proj-123/graph/neighbors?item_id=item-1&direction=invalid")
 
             assert response.status_code == 200
             data = response.json()

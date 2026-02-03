@@ -6,7 +6,7 @@ import { textContent } from 'domutils';
 import {
   type InternalOptions,
   type CheerioOptions,
-  flattenOptions as flattenOptions,
+  flattenOptions,
 } from './options.js';
 import type { ExtractedMap, ExtractMap } from './api/extract.js';
 

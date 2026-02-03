@@ -13,9 +13,10 @@ Revises: 036_add_component_libraries
 Create Date: 2026-01-30
 """
 
-from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
+
+from alembic import op
 
 # revision identifiers, used by Alembic
 revision = "037_add_blockchain_ml_tables"
@@ -76,9 +77,7 @@ def upgrade() -> None:
             ["version_blocks.block_id"],
             name="fk_version_blocks_previous",
         ),
-        sa.UniqueConstraint(
-            "spec_id", "spec_type", "version_number", name="uq_spec_version"
-        ),
+        sa.UniqueConstraint("spec_id", "spec_type", "version_number", name="uq_spec_version"),
     )
     op.create_index("ix_version_blocks_block_id", "version_blocks", ["block_id"])
     op.create_index("ix_version_blocks_spec", "version_blocks", ["spec_id", "spec_type"])
@@ -210,9 +209,7 @@ def upgrade() -> None:
         sa.UniqueConstraint("baseline_id", "item_id", name="uq_baseline_item"),
     )
     op.create_index("ix_baseline_items_baseline", "baseline_items", ["baseline_id"])
-    op.create_index(
-        "ix_baseline_items_item", "baseline_items", ["item_id", "item_type"]
-    )
+    op.create_index("ix_baseline_items_item", "baseline_items", ["item_id", "item_type"])
 
     # ==========================================================================
     # Merkle Proofs Table (Cached proofs)
@@ -284,17 +281,11 @@ def upgrade() -> None:
             nullable=False,
         ),
         # Constraints
-        sa.UniqueConstraint(
-            "spec_id", "spec_type", "embedding_model", name="uq_spec_embedding"
-        ),
+        sa.UniqueConstraint("spec_id", "spec_type", "embedding_model", name="uq_spec_embedding"),
     )
-    op.create_index(
-        "ix_spec_embeddings_spec", "spec_embeddings", ["spec_id", "spec_type"]
-    )
+    op.create_index("ix_spec_embeddings_spec", "spec_embeddings", ["spec_id", "spec_type"])
     op.create_index("ix_spec_embeddings_project", "spec_embeddings", ["project_id"])
-    op.create_index(
-        "ix_spec_embeddings_content_hash", "spec_embeddings", ["content_hash"]
-    )
+    op.create_index("ix_spec_embeddings_content_hash", "spec_embeddings", ["content_hash"])
 
 
 def downgrade() -> None:

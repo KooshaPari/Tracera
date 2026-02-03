@@ -12,20 +12,18 @@ Target Coverage: 85%+
 Test Count: 40+ tests
 """
 
-import asyncio
-from datetime import datetime, timedelta, timezone
-from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, Mock, patch, call
+from datetime import UTC, datetime, timedelta
+from unittest.mock import patch
 
 import pytest
 
 try:
-    from textual.widgets import DataTable, Static, Input, TextArea
-    from textual.containers import Container, Horizontal, Vertical
-    from textual.app import ComposeResult
-    from textual.message import Message
-    from textual.events import Key, MouseDown, MouseUp, MouseMove
-    from textual.pilot import Pilot
+    from textual.app import ComposeResult  # type: ignore[unresolved-import]
+    from textual.containers import Container, Horizontal, Vertical  # type: ignore[unresolved-import]
+    from textual.events import Key, MouseDown, MouseMove, MouseUp  # type: ignore[unresolved-import]
+    from textual.message import Message  # type: ignore[unresolved-import]
+    from textual.pilot import Pilot  # type: ignore[unresolved-import]
+    from textual.widgets import DataTable, Input, Static, TextArea  # type: ignore[unresolved-import]
 
     TEXTUAL_AVAILABLE = True
 except ImportError:
@@ -39,13 +37,11 @@ pytestmark = [
 
 
 if TEXTUAL_AVAILABLE:
+    from tracertm.tui.widgets.conflict_panel import ConflictPanel  # type: ignore[possibly-missing-import]
     from tracertm.tui.widgets.item_list import ItemListWidget
     from tracertm.tui.widgets.state_display import StateDisplayWidget
-    from tracertm.tui.widgets.sync_status import SyncStatusWidget, CompactSyncStatus
+    from tracertm.tui.widgets.sync_status import SyncStatusWidget  # type: ignore[possibly-missing-import]
     from tracertm.tui.widgets.view_switcher import ViewSwitcherWidget
-    from tracertm.tui.widgets.conflict_panel import ConflictPanel
-    from tracertm.tui.apps.browser import BrowserApp
-    from tracertm.tui.apps.dashboard import DashboardApp
 
 
 # ============================================================================
@@ -130,7 +126,7 @@ class TestStateTransitions:
         assert widget.last_sync is None
 
         # Set first sync
-        now = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=UTC)
         widget.last_sync = now
         assert widget.last_sync == now
 
@@ -173,7 +169,7 @@ class TestStateTransitions:
         widget.is_syncing = False
         widget.last_error = None
         widget.pending_changes = 0
-        widget.last_sync = datetime.now(tz=timezone.utc)
+        widget.last_sync = datetime.now(tz=UTC)
         assert widget.is_online is True
         assert widget.is_syncing is False
         assert widget.last_error is None
@@ -436,7 +432,7 @@ class TestDisplayLimits:
     def test_sync_status_timestamp_precision(self):
         """Test timestamp precision under high-frequency updates."""
         widget = SyncStatusWidget()
-        start_time = datetime.now(tz=timezone.utc)
+        start_time = datetime.now(tz=UTC)
 
         for i in range(100):
             widget.last_sync = start_time + timedelta(milliseconds=i)
@@ -492,7 +488,7 @@ class TestErrorRecovery:
         # Recover
         widget.last_error = None
         widget.is_online = True
-        widget.last_sync = datetime.now(tz=timezone.utc)
+        widget.last_sync = datetime.now(tz=UTC)
         assert widget.last_error is None
         assert widget.is_online is True
 
@@ -528,7 +524,7 @@ class TestErrorRecovery:
         """Test offline/online cycling."""
         widget = SyncStatusWidget()
 
-        for cycle in range(5):
+        for _cycle in range(5):
             widget.is_online = False
             assert widget.is_online is False
 
@@ -548,7 +544,7 @@ class TestErrorRecovery:
         # Complete sync
         widget.is_syncing = False
         widget.pending_changes = 0
-        widget.last_sync = datetime.now(tz=timezone.utc)
+        widget.last_sync = datetime.now(tz=UTC)
         assert widget.is_syncing is False
         assert widget.pending_changes == 0
 
@@ -592,7 +588,7 @@ class TestErrorRecovery:
         widget.is_online = True
         widget.is_syncing = True
         widget.pending_changes = 100
-        widget.last_sync = datetime.now(tz=timezone.utc)
+        widget.last_sync = datetime.now(tz=UTC)
         widget.conflicts_count = 10
         widget.last_error = "Some error"
 
@@ -645,7 +641,7 @@ class TestBoundaryEdgeCases:
         widget = SyncStatusWidget()
 
         # UTC timezone
-        utc_time = datetime.now(tz=timezone.utc)
+        utc_time = datetime.now(tz=UTC)
         widget.last_sync = utc_time
         assert widget.last_sync == utc_time
 
@@ -657,14 +653,14 @@ class TestBoundaryEdgeCases:
     def test_very_old_timestamp(self):
         """Test very old timestamp."""
         widget = SyncStatusWidget()
-        old_time = datetime(1970, 1, 1, tzinfo=timezone.utc)
+        old_time = datetime(1970, 1, 1, tzinfo=UTC)
         widget.last_sync = old_time
         assert widget.last_sync == old_time
 
     def test_future_timestamp(self):
         """Test future timestamp."""
         widget = SyncStatusWidget()
-        future_time = datetime(2099, 12, 31, tzinfo=timezone.utc)
+        future_time = datetime(2099, 12, 31, tzinfo=UTC)
         widget.last_sync = future_time
         assert widget.last_sync == future_time
 
@@ -715,7 +711,7 @@ class TestComprehensiveIntegration:
         # Step 5: Sync completes
         widget.is_syncing = False
         widget.pending_changes = 0
-        widget.last_sync = datetime.now(tz=timezone.utc)
+        widget.last_sync = datetime.now(tz=UTC)
         assert widget.is_syncing is False
         assert widget.pending_changes == 0
         assert widget.last_sync is not None

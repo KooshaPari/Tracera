@@ -2,7 +2,6 @@
 Integration tests for database operations
 """
 
-
 import pytest
 from services import DatabaseService
 from services.database import DatabaseConfig

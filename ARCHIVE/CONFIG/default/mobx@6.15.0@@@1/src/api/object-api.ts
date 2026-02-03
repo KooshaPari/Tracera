@@ -17,7 +17,7 @@ import {
 export function keys<K>(map: ObservableMap<K, any>): ReadonlyArray<K>
 export function keys<T>(ar: IObservableArray<T>): ReadonlyArray<number>
 export function keys<T>(set: ObservableSet<T>): ReadonlyArray<T>
-export function keys<T extends Object>(obj: T): ReadonlyArray<PropertyKey>
+export function keys<T extends object>(obj: T): ReadonlyArray<PropertyKey>
 export function keys(obj: any): any {
     if (isObservableObject(obj)) {
         return (
@@ -79,8 +79,8 @@ export function set<V>(obj: ObservableMap<PropertyKey, V>, values: { [key: strin
 export function set<K, V>(obj: ObservableMap<K, V>, key: K, value: V)
 export function set<T>(obj: ObservableSet<T>, value: T)
 export function set<T>(obj: IObservableArray<T>, index: number, value: T)
-export function set<T extends Object>(obj: T, values: { [key: string]: any })
-export function set<T extends Object>(obj: T, key: PropertyKey, value: any)
+export function set<T extends object>(obj: T, values: { [key: string]: any })
+export function set<T extends object>(obj: T, key: PropertyKey, value: any)
 export function set(obj: any, key: any, value?: any): void {
     if (arguments.length === 2 && !isObservableSet(obj)) {
         startBatch()
@@ -121,7 +121,7 @@ export function set(obj: any, key: any, value?: any): void {
 export function remove<K, V>(obj: ObservableMap<K, V>, key: K)
 export function remove<T>(obj: ObservableSet<T>, key: T)
 export function remove<T>(obj: IObservableArray<T>, index: number)
-export function remove<T extends Object>(obj: T, key: string)
+export function remove<T extends object>(obj: T, key: string)
 export function remove(obj: any, key: any): void {
     if (isObservableObject(obj)) {
         ;(obj as any as IIsObservableObject)[$mobx].delete_(key)
@@ -142,7 +142,7 @@ export function remove(obj: any, key: any): void {
 export function has<K>(obj: ObservableMap<K, any>, key: K): boolean
 export function has<T>(obj: ObservableSet<T>, key: T): boolean
 export function has<T>(obj: IObservableArray<T>, index: number): boolean
-export function has<T extends Object>(obj: T, key: string): boolean
+export function has<T extends object>(obj: T, key: string): boolean
 export function has(obj: any, key: any): boolean {
     if (isObservableObject(obj)) {
         return (obj as any as IIsObservableObject)[$mobx].has_(key)
@@ -158,7 +158,7 @@ export function has(obj: any, key: any): boolean {
 
 export function get<K, V>(obj: ObservableMap<K, V>, key: K): V | undefined
 export function get<T>(obj: IObservableArray<T>, index: number): T | undefined
-export function get<T extends Object>(obj: T, key: string): any
+export function get<T extends object>(obj: T, key: string): any
 export function get(obj: any, key: any): any {
     if (!has(obj, key)) {
         return undefined
@@ -173,14 +173,14 @@ export function get(obj: any, key: any): any {
     die(11)
 }
 
-export function apiDefineProperty(obj: Object, key: PropertyKey, descriptor: PropertyDescriptor) {
+export function apiDefineProperty(obj: object, key: PropertyKey, descriptor: PropertyDescriptor) {
     if (isObservableObject(obj)) {
         return (obj as any as IIsObservableObject)[$mobx].defineProperty_(key, descriptor)
     }
     die(39)
 }
 
-export function apiOwnKeys(obj: Object) {
+export function apiOwnKeys(obj: object) {
     if (isObservableObject(obj)) {
         return (obj as any as IIsObservableObject)[$mobx].ownKeys_()
     }

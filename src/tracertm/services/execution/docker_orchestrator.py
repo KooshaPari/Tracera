@@ -8,15 +8,13 @@ from __future__ import annotations
 
 import asyncio
 import os
-import shlex
+import subprocess  # noqa: S404
 from pathlib import Path
 from typing import Any
 
 
 class DockerOrchestratorError(Exception):
     """Raised when Docker operations fail."""
-
-    pass
 
 
 class DockerOrchestrator:
@@ -38,23 +36,19 @@ class DockerOrchestrator:
 
     async def _run(self, *args: str, timeout: int = 120) -> tuple[int, str, str]:
         """Run docker CLI; returns (returncode, stdout, stderr)."""
-        cmd = ["docker"] + list(args)
+        cmd = ["docker", *list(args)]
         proc = await asyncio.create_subprocess_exec(
             *cmd,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             env=self._env(),
         )
         try:
-            stdout, stderr = await asyncio.wait_for(
-                proc.communicate(), timeout=timeout
-            )
-        except asyncio.TimeoutError:
+            stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=timeout)
+        except TimeoutError as e:
             proc.kill()
             await proc.wait()
-            raise DockerOrchestratorError(
-                f"Docker command timed out after {timeout}s: {' '.join(cmd)}"
-            )
+            raise DockerOrchestratorError(f"Docker command timed out after {timeout}s: {' '.join(cmd)}") from e
         return proc.returncode or 0, stdout.decode(), stderr.decode()
 
     async def is_available(self) -> bool:
@@ -104,9 +98,12 @@ class DockerOrchestrator:
             "run",
             "-d",
             "--rm",
-            "--label", f"tracertm.project={project_id}",
-            "--label", f"tracertm.execution={execution_id}",
-            "--network", network_mode,
+            "--label",
+            f"tracertm.project={project_id}",
+            "--label",
+            f"tracertm.execution={execution_id}",
+            "--network",
+            network_mode,
         ]
         if mount_source:
             path = Path(mount_source).resolve()
@@ -129,17 +126,12 @@ class DockerOrchestrator:
 
         code, stdout, stderr = await self._run(*args, timeout=timeout)
         if code != 0:
-            raise DockerOrchestratorError(
-                f"Docker run failed: {stderr.strip() or stdout.strip()}"
-            )
-        container_id = stdout.strip()[:12]
-        return container_id
+            raise DockerOrchestratorError(f"Docker run failed: {stderr.strip() or stdout.strip()}")
+        return stdout.strip()[:12]
 
     async def stop(self, container_id: str, timeout: int = 30) -> None:
         """Stop a running container (SIGTERM then SIGKILL)."""
-        code, _, stderr = await self._run(
-            "stop", "-t", str(timeout), container_id, timeout=timeout + 5
-        )
+        code, _, stderr = await self._run("stop", "-t", str(timeout), container_id, timeout=timeout + 5)
         if code != 0 and "No such container" not in stderr:
             raise DockerOrchestratorError(f"Docker stop failed: {stderr.strip()}")
 
@@ -151,7 +143,7 @@ class DockerOrchestrator:
         timeout: int = 300,
     ) -> tuple[int, str, str]:
         """Run a command inside a running container. Returns (exit_code, stdout, stderr)."""
-        args = ["exec", container_id] + cmd
+        args = ["exec", container_id, *cmd]
         code, stdout, stderr = await self._run(*args, timeout=timeout)
         return code, stdout, stderr
 
@@ -165,8 +157,6 @@ class DockerOrchestrator:
         """Copy a file/dir from container to host (docker cp)."""
         host_path = Path(host_path).resolve()
         host_path.parent.mkdir(parents=True, exist_ok=True)
-        code, _, stderr = await self._run(
-            "cp", f"{container_id}:{container_path}", str(host_path), timeout=timeout
-        )
+        code, _, stderr = await self._run("cp", f"{container_id}:{container_path}", str(host_path), timeout=timeout)
         if code != 0:
             raise DockerOrchestratorError(f"Docker cp failed: {stderr.strip()}")

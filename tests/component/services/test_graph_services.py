@@ -3,10 +3,8 @@ import pytest
 from tracertm.models.item import Item
 from tracertm.models.link import Link
 from tracertm.models.project import Project
-from tracertm.repositories.item_repository import ItemRepository
-from tracertm.repositories.link_repository import LinkRepository
-from tracertm.services.impact_analysis_service import ImpactAnalysisService
 from tracertm.services.cycle_detection_service import CycleDetectionService
+from tracertm.services.impact_analysis_service import ImpactAnalysisService
 from tracertm.services.shortest_path_service import ShortestPathService
 
 pytestmark = pytest.mark.integration
@@ -15,6 +13,7 @@ pytestmark = pytest.mark.integration
 async def _seed_items_and_links(session, edges, project_id="proj-1"):
     # CRITICAL: Create project first to satisfy foreign key constraint
     from sqlalchemy import select
+
     result = await session.execute(select(Project).where(Project.id == project_id))
     existing_project = result.scalar_one_or_none()
     if not existing_project:
@@ -30,7 +29,16 @@ async def _seed_items_and_links(session, edges, project_id="proj-1"):
     await session.commit()
 
     for src, tgt, ltype in edges:
-        session.add(Link(id=f"{src}->{tgt}", project_id=project_id, source_item_id=src, target_item_id=tgt, link_type=ltype, metadata={}))
+        session.add(
+            Link(
+                id=f"{src}->{tgt}",
+                project_id=project_id,
+                source_item_id=src,
+                target_item_id=tgt,
+                link_type=ltype,
+                metadata={},
+            )
+        )
     await session.commit()
     return items
 
@@ -57,8 +65,8 @@ async def test_cycle_detection_async_detects_cycle(async_session):
     svc = CycleDetectionService(async_session)
     result = await svc.detect_cycles_async("proj-1")
 
-    assert result.has_cycles is True
-    assert result.total_cycles >= 1
+    assert result["has_cycles"] is True
+    assert result["total_cycles"] >= 1
 
 
 @pytest.mark.asyncio
@@ -69,7 +77,7 @@ async def test_cycle_detection_async_respects_link_types(async_session):
     svc = CycleDetectionService(async_session)
     result = await svc.detect_cycles_async("proj-1", link_types=["depends_on"])
 
-    assert result.has_cycles is False
+    assert result["has_cycles"] is False
 
 
 @pytest.mark.asyncio

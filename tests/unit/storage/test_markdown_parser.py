@@ -5,13 +5,10 @@ Tests parsing and writing markdown files with YAML frontmatter
 for various item types (epics, stories, tests, tasks).
 """
 
-from datetime import datetime
-from pathlib import Path
+from datetime import UTC, datetime
 
 import pytest
 import yaml
-
-
 
 # ============================================================================
 # FIXTURES
@@ -351,9 +348,9 @@ class TestMarkdownParserWriting:
             "status": "todo",
             "priority": "high",
             "version": 1,
-            "created": datetime.utcnow().isoformat(),
-            "updated": datetime.utcnow().isoformat(),
-            "tags": ["auth", "security"]
+            "created": datetime.now(UTC).isoformat(),
+            "updated": datetime.now(UTC).isoformat(),
+            "tags": ["auth", "security"],
         }
         body = "# Epic Title\n\nDescription here."
 
@@ -386,7 +383,7 @@ class TestMarkdownParserWriting:
             "type": "story",
             "parent": "EPIC-001",
             "status": "in_progress",
-            "version": 1
+            "version": 1,
         }
         body = "# Story Title\n\n## Details"
 
@@ -656,11 +653,7 @@ type: story
         Then: Tags are formatted as YAML list
         """
         # Arrange
-        metadata = {
-            "id": "item-001",
-            "type": "epic",
-            "tags": ["tag1", "tag2", "tag3"]
-        }
+        metadata = {"id": "item-001", "type": "epic", "tags": ["tag1", "tag2", "tag3"]}
         body = "# Content"
 
         # Act

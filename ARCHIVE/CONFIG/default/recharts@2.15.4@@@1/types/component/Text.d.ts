@@ -12,4 +12,4 @@ interface TextProps {
 }
 export type Props = Omit<SVGProps<SVGTextElement>, 'textAnchor' | 'verticalAnchor'> & TextProps;
 export declare const Text: ({ x: propsX, y: propsY, lineHeight, capHeight, scaleToFit, textAnchor, verticalAnchor, fill, ...props }: Props) => React.JSX.Element;
-export {};
+

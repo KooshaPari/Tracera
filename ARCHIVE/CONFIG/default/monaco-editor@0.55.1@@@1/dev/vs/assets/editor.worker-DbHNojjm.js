@@ -100,7 +100,7 @@
   }
   function assertFn(condition) {
     if (!condition()) {
-      debugger;
+      
       condition();
       onUnexpectedError(new BugIndicatingError("Assertion Failed"));
     }
@@ -1446,7 +1446,7 @@
     }
   }
   function escapeRegExpCharacters(value) {
-    return value.replace(/[\\\{\}\*\+\?\|\^\$\.\[\]\(\)]/g, "\\$&");
+    return value.replace(/[\\{}*+?|^$.[\]()]/g, "\\$&");
   }
   function regExpLeadsToEndlessLoop(regexp) {
     if (regexp.source === "^" || regexp.source === "^$" || regexp.source === "$" || regexp.source === "^\\s*$") {
@@ -1600,7 +1600,7 @@
     }
     static getData() {
       if (!this._data) {
-        this._data = new Set([...Object.values(_InvisibleCharacters.getRawData())].flat());
+        this._data = new Set(Object.values(_InvisibleCharacters.getRawData()).flat());
       }
       return this._data;
     }
@@ -1818,7 +1818,7 @@
     return name[0] === "o" && name[1] === "n" && isUpperAsciiLetter(name.charCodeAt(2));
   }
   function propertyIsDynamicEvent(name) {
-    return /^onDynamic/.test(name) && isUpperAsciiLetter(name.charCodeAt(9));
+    return name.startsWith('onDynamic') && isUpperAsciiLetter(name.charCodeAt(9));
   }
   class WebWorkerServer {
     constructor(postMessage, requestHandlerFactory) {

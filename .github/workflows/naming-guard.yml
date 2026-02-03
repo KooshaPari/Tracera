@@ -1,0 +1,101 @@
+name: Naming Explosion Guard
+
+on:
+  pull_request:
+    paths:
+      - 'frontend/**/*.ts'
+      - 'frontend/**/*.tsx'
+      - 'frontend/**/*.js'
+      - 'frontend/**/*.jsx'
+  push:
+    branches:
+      - main
+    paths:
+      - 'frontend/**/*.ts'
+      - 'frontend/**/*.tsx'
+      - 'frontend/**/*.js'
+      - 'frontend/**/*.jsx'
+
+jobs:
+  check-naming:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Check for naming explosion patterns
+        id: naming-check
+        run: |
+          echo "🔍 Scanning for naming explosion patterns..."
+
+          # Check versioned naming
+          VERSIONED=$(find apps packages -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" \) | grep -E '(_v|_V|V)[0-9]+\.(ts|tsx|js|jsx)$' || true)
+
+          # Check prefixed naming
+          PREFIXED=$(find apps packages -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" \) | grep -E '(New|Improved|Enhanced|Updated|Fixed|Refactored|Modified|Revised)[A-Z].*\.(ts|tsx|js|jsx)$' || true)
+
+          # Check suffixed naming
+          SUFFIXED=$(find apps packages -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" \) | grep -E '_(new|improved|enhanced|updated|fixed|refactored|modified|revised)\.(ts|tsx|js|jsx)$' || true)
+
+          # Check numbered suffixes
+          NUMBERED=$(find apps packages -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" \) | grep -E '_[0-9]+\.(ts|tsx|js|jsx)$' || true)
+
+          # Combine all violations
+          ALL_VIOLATIONS=""
+          if [ -n "$VERSIONED" ]; then
+            ALL_VIOLATIONS="$ALL_VIOLATIONS$VERSIONED\n"
+          fi
+          if [ -n "$PREFIXED" ]; then
+            ALL_VIOLATIONS="$ALL_VIOLATIONS$PREFIXED\n"
+          fi
+          if [ -n "$SUFFIXED" ]; then
+            ALL_VIOLATIONS="$ALL_VIOLATIONS$SUFFIXED\n"
+          fi
+          if [ -n "$NUMBERED" ]; then
+            ALL_VIOLATIONS="$ALL_VIOLATIONS$NUMBERED\n"
+          fi
+
+          if [ -n "$ALL_VIOLATIONS" ]; then
+            echo "violations_found=true" >> $GITHUB_OUTPUT
+            echo "violations<<EOF" >> $GITHUB_OUTPUT
+            echo -e "$ALL_VIOLATIONS" | sort | uniq >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "violations_found=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Report violations
+        if: steps.naming-check.outputs.violations_found == 'true'
+        run: |
+          echo "❌ NAMING EXPLOSION DETECTED"
+          echo ""
+          echo "The following files use forbidden naming patterns:"
+          echo ""
+          echo "${{ steps.naming-check.outputs.violations }}"
+          echo ""
+          echo "Forbidden patterns:"
+          echo "  • Versioned: *_v2.tsx, *V2.tsx"
+          echo "  • Prefixed: NewDashboard.tsx, ImprovedComponent.tsx"
+          echo "  • Suffixed: Dashboard_new.tsx, Component_improved.tsx"
+          echo "  • Numbered: Dashboard_2.tsx, Component_3.tsx"
+          echo ""
+          echo "Action required:"
+          echo "  1. Identify the canonical (active) file"
+          echo "  2. Edit the canonical file in place"
+          echo "  3. Delete versioned/prefixed variants"
+          echo "  4. Update imports"
+          echo ""
+          echo "See: frontend/docs/reports/AI_NAMING_EXPLOSION_PREVENTION.md"
+          exit 1
+
+      - name: Success
+        if: steps.naming-check.outputs.violations_found == 'false'
+        run: |
+          echo "✅ No naming explosion detected"
+          echo "All file names follow canonical naming conventions"

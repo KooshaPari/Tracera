@@ -1,12 +1,12 @@
 """GitHub API client with rate limiting, error handling, and wait+retry."""
 
 import asyncio
-from datetime import datetime
-from typing import Any, Optional
+import time
+from datetime import UTC, datetime
+from typing import Any
 
 import httpx
 import jwt
-import time
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from tenacity import (
     retry,
@@ -18,8 +18,6 @@ from tenacity import (
 
 class GitHubClientError(Exception):
     """Base exception for GitHub client errors."""
-
-    pass
 
 
 class GitHubRateLimitError(GitHubClientError):
@@ -33,13 +31,9 @@ class GitHubRateLimitError(GitHubClientError):
 class GitHubAuthError(GitHubClientError):
     """Authentication error."""
 
-    pass
-
 
 class GitHubNotFoundError(GitHubClientError):
     """Resource not found."""
-
-    pass
 
 
 class GitHubClient:
@@ -66,7 +60,7 @@ class GitHubClient:
         self.token = token
         self.timeout = timeout
         self.is_app_token = is_app_token
-        self._client: Optional[httpx.AsyncClient] = None
+        self._client: httpx.AsyncClient | None = None
 
     @classmethod
     async def from_app_installation(
@@ -74,7 +68,6 @@ class GitHubClient:
         app_id: str,
         private_key: str,
         installation_id: int,
-        timeout: float = 30.0,
     ) -> "GitHubClient":
         """Create a GitHub client from a GitHub App installation.
 
@@ -82,15 +75,10 @@ class GitHubClient:
             app_id: GitHub App ID.
             private_key: GitHub App private key (PEM format).
             installation_id: GitHub App installation ID.
-            timeout: Request timeout in seconds.
 
         Returns:
             GitHubClient instance authenticated with installation token.
         """
-        import jwt
-        import time
-        from cryptography.hazmat.primitives import serialization
-        from cryptography.hazmat.primitives.serialization import load_pem_private_key
 
         # Generate JWT for app authentication
         try:
@@ -111,23 +99,24 @@ class GitHubClient:
         app_jwt = jwt.encode(jwt_payload, private_key_obj, algorithm="RS256")
 
         # Exchange JWT for installation token
-        async with httpx.AsyncClient(timeout=timeout) as client:
-            response = await client.post(
-                f"{cls.BASE_URL}/app/installations/{installation_id}/access_tokens",
-                headers={
-                    "Authorization": f"Bearer {app_jwt}",
-                    "Accept": "application/vnd.github+json",
-                    "X-GitHub-Api-Version": "2022-11-28",
-                },
-            )
+        async with asyncio.timeout(30.0):
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    f"{cls.BASE_URL}/app/installations/{installation_id}/access_tokens",
+                    headers={
+                        "Authorization": f"Bearer {app_jwt}",
+                        "Accept": "application/vnd.github+json",
+                        "X-GitHub-Api-Version": "2022-11-28",
+                    },
+                )
 
-            if response.status_code != 201:
-                raise GitHubAuthError(f"Failed to get installation token: {response.text}")
+                if response.status_code != 201:
+                    raise GitHubAuthError(f"Failed to get installation token: {response.text}")
 
-            token_data = response.json()
-            installation_token = token_data.get("token")
+                token_data = response.json()
+                installation_token = token_data.get("token")
 
-        return cls(installation_token, timeout=timeout, is_app_token=True)
+        return cls(installation_token, is_app_token=True)
 
     async def _get_client(self) -> httpx.AsyncClient:
         """Get or create HTTP client."""
@@ -153,10 +142,9 @@ class GitHubClient:
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, min=1, max=10),
         retry=retry_if_exception(
-            lambda e: isinstance(e, (httpx.NetworkError, httpx.TimeoutException))
-            or (
-                isinstance(e, httpx.HTTPStatusError)
-                and e.response.status_code >= 500
+            lambda e: (
+                isinstance(e, (httpx.NetworkError, httpx.TimeoutException))
+                or (isinstance(e, httpx.HTTPStatusError) and e.response.status_code >= 500)
             )
         ),
         reraise=True,
@@ -186,13 +174,12 @@ class GitHubClient:
         response = await self._request_once(method, path, params=params, json=json)
 
         # Handle rate limiting
-        if response.status_code == 403:
-            if "X-RateLimit-Remaining" in response.headers:
-                remaining = int(response.headers.get("X-RateLimit-Remaining", 0))
-                if remaining == 0:
-                    reset_timestamp = int(response.headers.get("X-RateLimit-Reset", 0))
-                    reset_at = datetime.fromtimestamp(reset_timestamp)
-                    raise GitHubRateLimitError(reset_at)
+        if response.status_code == 403 and "X-RateLimit-Remaining" in response.headers:
+            remaining = int(response.headers.get("X-RateLimit-Remaining", 0))
+            if remaining == 0:
+                reset_timestamp = int(response.headers.get("X-RateLimit-Reset", 0))
+                reset_at = datetime.fromtimestamp(reset_timestamp, tz=UTC)
+                raise GitHubRateLimitError(reset_at)
 
         # Handle auth errors
         if response.status_code == 401:
@@ -281,12 +268,12 @@ class GitHubClient:
     async def create_repo(
         self,
         name: str,
-        description: Optional[str] = None,
+        description: str | None = None,
         private: bool = False,
         auto_init: bool = False,
-        gitignore_template: Optional[str] = None,
-        license_template: Optional[str] = None,
-        org: Optional[str] = None,
+        gitignore_template: str | None = None,
+        license_template: str | None = None,
+        org: str | None = None,
     ) -> dict:
         """Create a new repository.
 
@@ -314,10 +301,7 @@ class GitHubClient:
         if license_template:
             data["license_template"] = license_template
 
-        if org:
-            path = f"/orgs/{org}/repos"
-        else:
-            path = "/user/repos"
+        path = f"/orgs/{org}/repos" if org else "/user/repos"
 
         return await self._request("POST", path, json=data)
 
@@ -355,7 +339,7 @@ class GitHubClient:
 
     async def list_installation_repos(
         self,
-        installation_id: Optional[int] = None,
+        installation_id: int | None = None,
         per_page: int = 30,
         page: int = 1,
     ) -> dict:
@@ -380,11 +364,11 @@ class GitHubClient:
                 },
             )
             # This endpoint returns { repositories: [...], total_count: ... }
-            return result
-        else:
-            # Fallback to user repos if not using app token
-            repos = await self.list_user_repos(per_page=per_page, page=page)
+            repos = result.get("repositories", [])
             return {"repositories": repos, "total_count": len(repos)}
+        # Fallback to user repos if not using app token
+        repos = await self.list_user_repos(per_page=per_page, page=page)
+        return {"repositories": repos, "total_count": len(repos)}
 
     # ==================== ISSUES ====================
 
@@ -466,9 +450,7 @@ class GitHubClient:
         if milestone is not None:
             data["milestone"] = milestone
 
-        return await self._request(
-            "PATCH", f"/repos/{owner}/{repo}/issues/{issue_number}", json=data
-        )
+        return await self._request("PATCH", f"/repos/{owner}/{repo}/issues/{issue_number}", json=data)
 
     async def add_issue_comment(
         self,
@@ -534,9 +516,7 @@ class GitHubClient:
         if base is not None:
             data["base"] = base
 
-        return await self._request(
-            "PATCH", f"/repos/{owner}/{repo}/pulls/{pull_number}", json=data
-        )
+        return await self._request("PATCH", f"/repos/{owner}/{repo}/pulls/{pull_number}", json=data)
 
     # ==================== WEBHOOKS ====================
 
@@ -588,27 +568,6 @@ class GitHubClient:
         return await self._request(
             "GET",
             "/search/issues",
-            params={
-                "q": query,
-                "sort": sort,
-                "order": order,
-                "per_page": per_page,
-                "page": page,
-            },
-        )
-
-    async def search_repos(
-        self,
-        query: str,
-        sort: str = "updated",
-        order: str = "desc",
-        per_page: int = 30,
-        page: int = 1,
-    ) -> dict:
-        """Search repositories."""
-        return await self._request(
-            "GET",
-            "/search/repositories",
             params={
                 "q": query,
                 "sort": sort,

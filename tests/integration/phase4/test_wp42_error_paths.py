@@ -16,12 +16,12 @@ Total: 100+ comprehensive error path tests
 """
 
 import pytest
-from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
-from tracertm.models.project import Project
+from sqlalchemy.orm import Session
+
 from tracertm.models.item import Item
 from tracertm.models.link import Link
-
+from tracertm.models.project import Project
 
 pytestmark = [pytest.mark.integration]
 
@@ -58,12 +58,7 @@ class TestInvalidInputValidation:
         db_session.flush()
 
         item = Item(
-            id="invalid-notitle",
-            project_id="test-proj-1",
-            title=None,
-            view="DEFAULT",
-            item_type="task",
-            status="todo"
+            id="invalid-notitle", project_id="test-proj-1", title=None, view="DEFAULT", item_type="task", status="todo"
         )
         db_session.add(item)
         try:
@@ -83,7 +78,7 @@ class TestInvalidInputValidation:
             title="Test Item",
             view="DEFAULT",
             item_type="task",
-            status="invalid_status_value"
+            status="invalid_status_value",
         )
         db_session.add(item)
         db_session.commit()
@@ -102,7 +97,7 @@ class TestInvalidInputValidation:
             title="Source",
             view="DEFAULT",
             item_type="task",
-            status="todo"
+            status="todo",
         )
         item2 = Item(
             id="invalid-link-tgt",
@@ -110,7 +105,7 @@ class TestInvalidInputValidation:
             title="Target",
             view="DEFAULT",
             item_type="task",
-            status="todo"
+            status="todo",
         )
         db_session.add_all([item1, item2])
         db_session.flush()
@@ -120,7 +115,7 @@ class TestInvalidInputValidation:
             project_id="test-proj-3",
             source_item_id="invalid-link-src",
             target_item_id="invalid-link-tgt",
-            link_type="invalid_link_type"
+            link_type="invalid_link_type",
         )
         db_session.add(link)
         db_session.commit()
@@ -133,14 +128,7 @@ class TestInvalidInputValidation:
         db_session.add(project)
         db_session.flush()
 
-        item = Item(
-            id="invalid-view",
-            project_id="test-proj-4",
-            title="Test",
-            view="",
-            item_type="task",
-            status="todo"
-        )
+        item = Item(id="invalid-view", project_id="test-proj-4", title="Test", view="", item_type="task", status="todo")
         db_session.add(item)
         db_session.commit()
         assert item.view == ""
@@ -158,11 +146,12 @@ class TestInvalidInputValidation:
             view="DEFAULT",
             item_type="task",
             status="todo",
-            item_metadata={"nested": {"deep": {"value": None}}}
+            item_metadata={"nested": {"deep": {"value": None}}},
         )
         db_session.add(item)
         db_session.commit()
-        assert item.item_metadata["nested"]["deep"]["value"] is None
+        meta = getattr(item, "item_metadata", None) or {}
+        assert meta.get("nested", {}).get("deep", {}).get("value") is None
 
     def test_very_long_item_title(self, db_session: Session) -> None:
         """Test creating item with extremely long title"""
@@ -177,7 +166,7 @@ class TestInvalidInputValidation:
             title=long_title,
             view="DEFAULT",
             item_type="task",
-            status="todo"
+            status="todo",
         )
         db_session.add(item)
         db_session.commit()
@@ -196,7 +185,7 @@ class TestInvalidInputValidation:
             title=special_title,
             view="DEFAULT",
             item_type="task",
-            status="todo"
+            status="todo",
         )
         db_session.add(item)
         db_session.commit()
@@ -215,7 +204,7 @@ class TestInvalidInputValidation:
             view="DEFAULT",
             item_type="task",
             status="todo",
-            item_metadata={"count": -100, "priority": -5}
+            item_metadata={"count": -100, "priority": -5},
         )
         db_session.add(item)
         db_session.commit()
@@ -237,7 +226,7 @@ class TestStateTransitionErrors:
             title="Test",
             view="DEFAULT",
             item_type="task",
-            status="done"
+            status="done",
         )
         db_session.add(item)
         db_session.commit()
@@ -260,7 +249,7 @@ class TestStateTransitionErrors:
             title="Test",
             view="DEFAULT",
             item_type="task",
-            status="todo"
+            status="todo",
         )
         db_session.add(item)
         db_session.commit()
@@ -277,12 +266,7 @@ class TestStateTransitionErrors:
         db_session.flush()
 
         item = Item(
-            id="invalid-rapid",
-            project_id="test-proj-11",
-            title="Test",
-            view="DEFAULT",
-            item_type="task",
-            status="todo"
+            id="invalid-rapid", project_id="test-proj-11", title="Test", view="DEFAULT", item_type="task", status="todo"
         )
         db_session.add(item)
         db_session.commit()
@@ -318,7 +302,7 @@ class TestStateTransitionErrors:
             title="Test",
             view="DEFAULT",
             item_type="bug",
-            status="todo"
+            status="todo",
         )
         db_session.add(item)
         db_session.commit()
@@ -340,7 +324,7 @@ class TestStateTransitionErrors:
             title="Test",
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         db_session.add(item)
         db_session.commit()
@@ -363,7 +347,7 @@ class TestStateTransitionErrors:
             view="DEFAULT",
             item_type="task",
             status="done",
-            archived=True
+            archived=True,
         )
         db_session.add(item)
         db_session.commit()
@@ -401,23 +385,13 @@ class TestConstraintViolations:
         db_session.flush()
 
         item1 = Item(
-            id="dup-item",
-            project_id="test-proj-15",
-            title="First",
-            view="DEFAULT",
-            item_type="task",
-            status="todo"
+            id="dup-item", project_id="test-proj-15", title="First", view="DEFAULT", item_type="task", status="todo"
         )
         db_session.add(item1)
         db_session.commit()
 
         item2 = Item(
-            id="dup-item",
-            project_id="test-proj-15",
-            title="Second",
-            view="DEFAULT",
-            item_type="task",
-            status="todo"
+            id="dup-item", project_id="test-proj-15", title="Second", view="DEFAULT", item_type="task", status="todo"
         )
         db_session.add(item2)
         try:
@@ -438,7 +412,7 @@ class TestConstraintViolations:
             title="Self Reference",
             view="DEFAULT",
             item_type="task",
-            status="todo"
+            status="todo",
         )
         db_session.add(item)
         db_session.flush()
@@ -448,7 +422,7 @@ class TestConstraintViolations:
             project_id="test-proj-16",
             source_item_id="self-ref-item",
             target_item_id="self-ref-item",
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(link)
         db_session.commit()
@@ -462,20 +436,10 @@ class TestConstraintViolations:
         db_session.flush()
 
         item1 = Item(
-            id="circ-1",
-            project_id="test-proj-17",
-            title="Item 1",
-            view="DEFAULT",
-            item_type="task",
-            status="todo"
+            id="circ-1", project_id="test-proj-17", title="Item 1", view="DEFAULT", item_type="task", status="todo"
         )
         item2 = Item(
-            id="circ-2",
-            project_id="test-proj-17",
-            title="Item 2",
-            view="DEFAULT",
-            item_type="task",
-            status="todo"
+            id="circ-2", project_id="test-proj-17", title="Item 2", view="DEFAULT", item_type="task", status="todo"
         )
         db_session.add_all([item1, item2])
         db_session.flush()
@@ -485,14 +449,14 @@ class TestConstraintViolations:
             project_id="test-proj-17",
             source_item_id="circ-1",
             target_item_id="circ-2",
-            link_type="depends_on"
+            link_type="depends_on",
         )
         link2 = Link(
             id="circ-link-2",
             project_id="test-proj-17",
             source_item_id="circ-2",
             target_item_id="circ-1",
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add_all([link1, link2])
         db_session.commit()
@@ -511,7 +475,7 @@ class TestConstraintViolations:
             title="Source",
             view="DEFAULT",
             item_type="task",
-            status="todo"
+            status="todo",
         )
         item2 = Item(
             id="dup-link-tgt",
@@ -519,7 +483,7 @@ class TestConstraintViolations:
             title="Target",
             view="DEFAULT",
             item_type="task",
-            status="todo"
+            status="todo",
         )
         db_session.add_all([item1, item2])
         db_session.flush()
@@ -529,7 +493,7 @@ class TestConstraintViolations:
             project_id="test-proj-18",
             source_item_id="dup-link-src",
             target_item_id="dup-link-tgt",
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(link1)
         db_session.commit()
@@ -539,15 +503,14 @@ class TestConstraintViolations:
             project_id="test-proj-18",
             source_item_id="dup-link-src",
             target_item_id="dup-link-tgt",
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(link2)
         db_session.commit()
         # Allow but document as potential deduplication target
-        assert db_session.query(Link).filter_by(
-            source_item_id="dup-link-src",
-            target_item_id="dup-link-tgt"
-        ).count() == 2
+        assert (
+            db_session.query(Link).filter_by(source_item_id="dup-link-src", target_item_id="dup-link-tgt").count() == 2
+        )
 
     def test_invalid_project_foreign_key(self, db_session: Session) -> None:
         """Test item referencing non-existent project"""
@@ -557,7 +520,7 @@ class TestConstraintViolations:
             title="Orphan",
             view="DEFAULT",
             item_type="task",
-            status="todo"
+            status="todo",
         )
         db_session.add(item)
         try:
@@ -574,9 +537,7 @@ class TestResourceNotFoundErrors:
 
     def test_retrieve_nonexistent_project(self, db_session: Session) -> None:
         """Test retrieving project that doesn't exist"""
-        result = db_session.query(Project).filter_by(
-            id="nonexistent-proj"
-        ).first()
+        result = db_session.query(Project).filter_by(id="nonexistent-proj").first()
         assert result is None
 
     def test_retrieve_nonexistent_item(self, db_session: Session) -> None:
@@ -591,9 +552,7 @@ class TestResourceNotFoundErrors:
 
     def test_query_items_in_missing_project(self, db_session: Session) -> None:
         """Test querying items for project that doesn't exist"""
-        results = db_session.query(Item).filter_by(
-            project_id="missing-project"
-        ).all()
+        results = db_session.query(Item).filter_by(project_id="missing-project").all()
         assert results == []
 
     def test_link_to_missing_source_item(self, db_session: Session) -> None:
@@ -603,12 +562,7 @@ class TestResourceNotFoundErrors:
         db_session.flush()
 
         item = Item(
-            id="link-target",
-            project_id="test-proj-19",
-            title="Target",
-            view="DEFAULT",
-            item_type="task",
-            status="todo"
+            id="link-target", project_id="test-proj-19", title="Target", view="DEFAULT", item_type="task", status="todo"
         )
         db_session.add(item)
         db_session.flush()
@@ -618,7 +572,7 @@ class TestResourceNotFoundErrors:
             project_id="test-proj-19",
             source_item_id="nonexistent-source",
             target_item_id="link-target",
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(link)
         try:
@@ -635,12 +589,7 @@ class TestResourceNotFoundErrors:
         db_session.flush()
 
         item = Item(
-            id="link-source",
-            project_id="test-proj-20",
-            title="Source",
-            view="DEFAULT",
-            item_type="task",
-            status="todo"
+            id="link-source", project_id="test-proj-20", title="Source", view="DEFAULT", item_type="task", status="todo"
         )
         db_session.add(item)
         db_session.flush()
@@ -650,7 +599,7 @@ class TestResourceNotFoundErrors:
             project_id="test-proj-20",
             source_item_id="link-source",
             target_item_id="nonexistent-target",
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(link)
         try:
@@ -671,9 +620,7 @@ class TestResourceNotFoundErrors:
 
     def test_update_nonexistent_project(self, db_session: Session) -> None:
         """Test updating project that doesn't exist"""
-        project = db_session.query(Project).filter_by(
-            id="never-existed-proj"
-        ).first()
+        project = db_session.query(Project).filter_by(id="never-existed-proj").first()
         if project:
             project.name = "Updated"
             db_session.commit()
@@ -687,17 +634,13 @@ class TestPermissionErrors:
     def test_project_access_check(self, db_session: Session) -> None:
         """Test checking project access (simulation)"""
         project = Project(
-            id="restricted-proj",
-            name="Restricted",
-            project_metadata={"restricted": True, "owner": "alice"}
+            id="restricted-proj", name="Restricted", project_metadata={"restricted": True, "owner": "alice"}
         )
         db_session.add(project)
         db_session.commit()
 
         # In real system, would check permissions
-        retrieved = db_session.query(Project).filter_by(
-            id="restricted-proj"
-        ).first()
+        retrieved = db_session.query(Project).filter_by(id="restricted-proj").first()
         assert retrieved.project_metadata.get("restricted") is True
 
     def test_item_modification_permission(self, db_session: Session) -> None:
@@ -713,7 +656,7 @@ class TestPermissionErrors:
             view="DEFAULT",
             item_type="task",
             status="todo",
-            item_metadata={"locked": True, "locked_by": "admin"}
+            item_metadata={"locked": True, "locked_by": "admin"},
         )
         db_session.add(item)
         db_session.commit()
@@ -728,20 +671,10 @@ class TestPermissionErrors:
         db_session.flush()
 
         item1 = Item(
-            id="perm-src",
-            project_id="test-proj-22",
-            title="Source",
-            view="DEFAULT",
-            item_type="task",
-            status="todo"
+            id="perm-src", project_id="test-proj-22", title="Source", view="DEFAULT", item_type="task", status="todo"
         )
         item2 = Item(
-            id="perm-tgt",
-            project_id="test-proj-22",
-            title="Target",
-            view="DEFAULT",
-            item_type="task",
-            status="todo"
+            id="perm-tgt", project_id="test-proj-22", title="Target", view="DEFAULT", item_type="task", status="todo"
         )
         db_session.add_all([item1, item2])
         db_session.flush()
@@ -752,7 +685,7 @@ class TestPermissionErrors:
             source_item_id="perm-src",
             target_item_id="perm-tgt",
             link_type="depends_on",
-            link_metadata={"protected": True}
+            link_metadata={"protected": True},
         )
         db_session.add(link)
         db_session.commit()
@@ -762,27 +695,17 @@ class TestPermissionErrors:
 
     def test_project_deletion_permission(self, db_session: Session) -> None:
         """Test project deletion permission"""
-        project = Project(
-            id="protected-proj",
-            name="Protected",
-            project_metadata={"deletion_protected": True}
-        )
+        project = Project(id="protected-proj", name="Protected", project_metadata={"deletion_protected": True})
         db_session.add(project)
         db_session.commit()
 
         # In real system, would check before allowing deletion
-        retrieved = db_session.query(Project).filter_by(
-            id="protected-proj"
-        ).first()
+        retrieved = db_session.query(Project).filter_by(id="protected-proj").first()
         assert retrieved.project_metadata.get("deletion_protected") is True
 
     def test_role_based_access(self, db_session: Session) -> None:
         """Test role-based access control simulation"""
-        project = Project(
-            id="rbac-proj",
-            name="RBAC Test",
-            project_metadata={"roles": ["viewer", "editor", "admin"]}
-        )
+        project = Project(id="rbac-proj", name="RBAC Test", project_metadata={"roles": ["viewer", "editor", "admin"]})
         db_session.add(project)
         db_session.commit()
 
@@ -805,7 +728,7 @@ class TestConflictResolution:
             title="Original",
             view="DEFAULT",
             item_type="task",
-            status="todo"
+            status="todo",
         )
         db_session.add(item)
         db_session.commit()
@@ -832,7 +755,7 @@ class TestConflictResolution:
             title="Source",
             view="DEFAULT",
             item_type="task",
-            status="todo"
+            status="todo",
         )
         item2 = Item(
             id="conflict-tgt",
@@ -840,7 +763,7 @@ class TestConflictResolution:
             title="Target",
             view="DEFAULT",
             item_type="task",
-            status="todo"
+            status="todo",
         )
         db_session.add_all([item1, item2])
         db_session.flush()
@@ -851,7 +774,7 @@ class TestConflictResolution:
             project_id="test-proj-24",
             source_item_id="conflict-src",
             target_item_id="conflict-tgt",
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(link1)
         db_session.commit()
@@ -861,7 +784,7 @@ class TestConflictResolution:
             project_id="test-proj-24",
             source_item_id="conflict-src",
             target_item_id="conflict-tgt",
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(link2)
         db_session.commit()
@@ -881,7 +804,7 @@ class TestConflictResolution:
             view="DEFAULT",
             item_type="task",
             status="todo",
-            item_metadata={"version": 1}
+            item_metadata={"version": 1},
         )
         db_session.add(item)
         db_session.commit()

@@ -4,16 +4,15 @@ Tests for GitHubProjectRepository.
 Comprehensive tests covering GitHub Project link CRUD operations.
 """
 
-import pytest
-import pytest_asyncio
+import asyncio
 from uuid import uuid4
 
+import pytest
+import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.repositories.github_project_repository import GitHubProjectRepository
 from tracertm.repositories.project_repository import ProjectRepository
-from tracertm.models.github_project import GitHubProject
-
 
 # ==================== Fixtures ====================
 
@@ -21,6 +20,7 @@ from tracertm.models.github_project import GitHubProject
 @pytest_asyncio.fixture
 async def github_project_repo(db_session: AsyncSession):
     """Create a GitHubProjectRepository instance."""
+    await asyncio.sleep(0)
     return GitHubProjectRepository(db_session)
 
 
@@ -28,11 +28,10 @@ async def github_project_repo(db_session: AsyncSession):
 async def project(db_session: AsyncSession):
     """Create a TraceRTM project for foreign key requirements."""
     project_repo = ProjectRepository(db_session)
-    project = await project_repo.create(
+    return await project_repo.create(
         name="Test Project",
         description="Test project for GitHub Project tests",
     )
-    return project
 
 
 @pytest_asyncio.fixture
@@ -196,9 +195,7 @@ class TestGetByProjectId:
         assert result == []
 
     @pytest.mark.asyncio
-    async def test_get_by_project_id_multiple_results(
-        self, github_project_repo: GitHubProjectRepository, project
-    ):
+    async def test_get_by_project_id_multiple_results(self, github_project_repo: GitHubProjectRepository, project):
         """Test getting multiple GitHub Projects for a single TraceRTM project."""
         # Create multiple GitHub project links for the same project
         for i in range(3):

@@ -9,9 +9,7 @@ Measures:
 
 from __future__ import annotations
 
-import asyncio
 import json
-import time
 from typing import Any
 
 # Mock data for testing
@@ -89,7 +87,7 @@ def benchmark_single_item():
     original_tokens = measure_token_usage(original)
     original_size = len(json.dumps(original))
 
-    print(f"\n📊 Original Format (v1):")
+    print("\n📊 Original Format (v1):")
     print(f"  - Size: {original_size:,} bytes")
     print(f"  - Estimated tokens: {original_tokens:,}")
 
@@ -98,7 +96,7 @@ def benchmark_single_item():
     optimized_tokens = measure_token_usage(optimized)
     optimized_size = len(json.dumps(optimized))
 
-    print(f"\n✨ Optimized Format (v2):")
+    print("\n✨ Optimized Format (v2):")
     print(f"  - Size: {optimized_size:,} bytes")
     print(f"  - Estimated tokens: {optimized_tokens:,}")
 
@@ -106,10 +104,10 @@ def benchmark_single_item():
     size_reduction = ((original_size - optimized_size) / original_size) * 100
     token_reduction = ((original_tokens - optimized_tokens) / original_tokens) * 100
 
-    print(f"\n📉 Reduction:")
+    print("\n📉 Reduction:")
     print(f"  - Size: {size_reduction:.1f}%")
     print(f"  - Tokens: {token_reduction:.1f}%")
-    print(f"  - Target: 50%")
+    print("  - Target: 50%")
     print(f"  - Status: {'✅ ACHIEVED' if token_reduction >= 50 else '⚠️  SHORT'}")
 
     return {
@@ -144,7 +142,7 @@ def benchmark_list_response(item_count: int = 50):
     original_tokens = measure_token_usage(original)
     original_size = len(json.dumps(original))
 
-    print(f"\n📊 Original Format (v1):")
+    print("\n📊 Original Format (v1):")
     print(f"  - Size: {original_size:,} bytes")
     print(f"  - Estimated tokens: {original_tokens:,}")
 
@@ -158,7 +156,7 @@ def benchmark_list_response(item_count: int = 50):
     optimized_tokens = measure_token_usage(optimized)
     optimized_size = len(json.dumps(optimized))
 
-    print(f"\n✨ Optimized Format (v2):")
+    print("\n✨ Optimized Format (v2):")
     print(f"  - Size: {optimized_size:,} bytes")
     print(f"  - Estimated tokens: {optimized_tokens:,}")
 
@@ -166,10 +164,10 @@ def benchmark_list_response(item_count: int = 50):
     size_reduction = ((original_size - optimized_size) / original_size) * 100
     token_reduction = ((original_tokens - optimized_tokens) / original_tokens) * 100
 
-    print(f"\n📉 Reduction:")
+    print("\n📉 Reduction:")
     print(f"  - Size: {size_reduction:.1f}%")
     print(f"  - Tokens: {token_reduction:.1f}%")
-    print(f"  - Target: 50%")
+    print("  - Target: 50%")
     print(f"  - Status: {'✅ ACHIEVED' if token_reduction >= 50 else '⚠️  SHORT'}")
 
     return {
@@ -196,7 +194,7 @@ def benchmark_compression():
     uncompressed_size = len(uncompressed)
     uncompressed_tokens = uncompressed_size // 4
 
-    print(f"\n📊 Uncompressed:")
+    print("\n📊 Uncompressed:")
     print(f"  - Size: {uncompressed_size:,} bytes")
     print(f"  - Estimated tokens: {uncompressed_tokens:,}")
 
@@ -206,7 +204,7 @@ def benchmark_compression():
     compressed_size = len(compressed_b64)
     compressed_tokens = compressed_size // 4
 
-    print(f"\n✨ Compressed (gzip + base64):")
+    print("\n✨ Compressed (gzip + base64):")
     print(f"  - Size: {compressed_size:,} bytes")
     print(f"  - Estimated tokens: {compressed_tokens:,}")
 
@@ -214,7 +212,7 @@ def benchmark_compression():
     size_reduction = ((uncompressed_size - compressed_size) / uncompressed_size) * 100
     token_reduction = ((uncompressed_tokens - compressed_tokens) / uncompressed_tokens) * 100
 
-    print(f"\n📉 Reduction:")
+    print("\n📉 Reduction:")
     print(f"  - Size: {size_reduction:.1f}%")
     print(f"  - Tokens: {token_reduction:.1f}%")
 
@@ -248,10 +246,7 @@ def benchmark_streaming():
 
     # Streaming response (first batch only)
     batch_response = {
-        "items": [
-            format_optimized_response(item)
-            for item in items[:batch_size]
-        ],
+        "items": [format_optimized_response(item) for item in items[:batch_size]],
         "batch": 1,
         "total": total_items,
         "batch_size": batch_size,
@@ -265,10 +260,10 @@ def benchmark_streaming():
     # Calculate savings for initial response
     token_reduction = ((full_tokens - batch_tokens) / full_tokens) * 100
 
-    print(f"\n📉 Initial Response Reduction:")
+    print("\n📉 Initial Response Reduction:")
     print(f"  - Tokens saved: {token_reduction:.1f}%")
     print(f"  - Benefit: User gets first {batch_size} items immediately")
-    print(f"  - Benefit: Can request more batches only if needed")
+    print("  - Benefit: Can request more batches only if needed")
 
     return {
         "full_tokens": full_tokens,
@@ -300,7 +295,7 @@ def benchmark_error_messages():
     }
     original_tokens = measure_token_usage(original_error)
 
-    print(f"\n📊 Original Error Format:")
+    print("\n📊 Original Error Format:")
     print(f"  - Estimated tokens: {original_tokens:,}")
 
     # Optimized error format
@@ -315,16 +310,16 @@ def benchmark_error_messages():
     }
     optimized_tokens = measure_token_usage(optimized_error)
 
-    print(f"\n✨ Optimized Error Format:")
+    print("\n✨ Optimized Error Format:")
     print(f"  - Estimated tokens: {optimized_tokens:,}")
-    print(f"  - Includes helpful suggestions")
-    print(f"  - Categorized for better LLM understanding")
+    print("  - Includes helpful suggestions")
+    print("  - Categorized for better LLM understanding")
 
     token_reduction = ((original_tokens - optimized_tokens) / original_tokens) * 100
 
-    print(f"\n📉 Reduction:")
+    print("\n📉 Reduction:")
     print(f"  - Tokens: {token_reduction:.1f}%")
-    print(f"  - Benefit: More helpful while using fewer tokens")
+    print("  - Benefit: More helpful while using fewer tokens")
 
     return {
         "original_tokens": original_tokens,
@@ -356,12 +351,12 @@ def main():
     print("Summary")
     print("=" * 80)
 
-    avg_reduction = sum(
-        r["reduction_pct"] for r in results.values() if "reduction_pct" in r
-    ) / len([r for r in results.values() if "reduction_pct" in r])
+    avg_reduction = sum(r["reduction_pct"] for r in results.values() if "reduction_pct" in r) / len([
+        r for r in results.values() if "reduction_pct" in r
+    ])
 
     print(f"\n📊 Average Token Reduction: {avg_reduction:.1f}%")
-    print(f"🎯 Target: 50%")
+    print("🎯 Target: 50%")
     print(f"📈 Status: {'✅ ACHIEVED' if avg_reduction >= 50 else '⚠️  SHORT'}")
 
     print("\n📋 Breakdown:")

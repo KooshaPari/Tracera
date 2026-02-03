@@ -1,19 +1,18 @@
-from typing import List, Optional
-
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from tracertm.api.deps import get_db, auth_guard
+from tracertm.api.deps import auth_guard, get_db
+from tracertm.repositories.event_repository import EventRepository
 from tracertm.schemas.specification import (
+    ADRActivityListResponse,
     ADRCreate,
     ADRResponse,
     ADRUpdate,
-    ADRActivityListResponse,
 )
 from tracertm.services.adr_service import ADRService
-from tracertm.repositories.event_repository import EventRepository
 
 router = APIRouter(prefix="/adrs", tags=["ADRs"])
+
 
 @router.post("/", response_model=ADRResponse, status_code=201)
 async def create_adr(
@@ -35,6 +34,7 @@ async def create_adr(
         related_adrs=adr.related_adrs,
         tags=adr.tags,
     )
+
 
 @router.get("/{adr_id}", response_model=ADRResponse)
 async def get_adr(
@@ -75,6 +75,7 @@ async def get_adr_activities(
     ]
     return {"activities": activities}
 
+
 @router.put("/{adr_id}", response_model=ADRResponse)
 async def update_adr(
     adr_id: str,
@@ -90,6 +91,7 @@ async def update_adr(
         raise HTTPException(status_code=404, detail="ADR not found")
     return updated_adr
 
+
 @router.delete("/{adr_id}", status_code=204)
 async def delete_adr(
     adr_id: str,
@@ -100,12 +102,12 @@ async def delete_adr(
     success = await service.delete_adr(adr_id)
     if not success:
         raise HTTPException(status_code=404, detail="ADR not found")
-    return None
 
-@router.get("/", response_model=List[ADRResponse])
+
+@router.get("/", response_model=list[ADRResponse])
 async def list_adrs(
     project_id: str = Query(..., description="Project ID"),
-    status: Optional[str] = Query(None, description="Filter by status"),
+    status: str | None = Query(None, description="Filter by status"),
     claims: dict = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):

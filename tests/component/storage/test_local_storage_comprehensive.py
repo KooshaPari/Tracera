@@ -20,9 +20,7 @@ import pytest
 import yaml
 from sqlalchemy import text
 
-from tracertm.models import Item, Link, Project
 from tracertm.storage.local_storage import (
-    ItemStorage,
     LocalStorageManager,
     ProjectStorage,
 )
@@ -78,7 +76,9 @@ class TestLocalStorageManagerInit:
         session = storage_manager.get_session()
         try:
             # Check project_registry table
-            result = session.execute(text("SELECT name FROM sqlite_master WHERE type='table' AND name='project_registry'"))
+            result = session.execute(
+                text("SELECT name FROM sqlite_master WHERE type='table' AND name='project_registry'")
+            )
             assert result.fetchone() is not None
 
             # Check sync_queue table
@@ -120,9 +120,7 @@ class TestProjectInitialization:
     def test_init_project_creates_project_yaml(self, storage_manager, temp_project_dir):
         """Test project.yaml creation."""
         trace_dir, project_id = storage_manager.init_project(
-            temp_project_dir,
-            project_name="TestProject",
-            description="Test description"
+            temp_project_dir, project_name="TestProject", description="Test description"
         )
 
         project_yaml = trace_dir / "project.yaml"
@@ -195,10 +193,7 @@ class TestProjectInitialization:
 
         session = storage_manager.get_session()
         try:
-            result = session.execute(
-                text("SELECT * FROM project_registry WHERE id = :id"),
-                {"id": project_id}
-            )
+            result = session.execute(text("SELECT * FROM project_registry WHERE id = :id"), {"id": project_id})
             row = result.fetchone()
             assert row is not None
             # Use realpath to handle /var vs /private/var symlinks on macOS
@@ -209,10 +204,7 @@ class TestProjectInitialization:
     def test_init_project_with_metadata(self, storage_manager, temp_project_dir):
         """Test project initialization with custom metadata."""
         metadata = {"team": "Engineering", "tags": ["backend", "api"]}
-        trace_dir, _ = storage_manager.init_project(
-            temp_project_dir,
-            metadata=metadata
-        )
+        trace_dir, _ = storage_manager.init_project(temp_project_dir, metadata=metadata)
 
         project_yaml = trace_dir / "project.yaml"
         config = yaml.safe_load(project_yaml.read_text())
@@ -432,8 +424,7 @@ Implement user authentication system with OAuth2 support.
         session = storage_manager.get_session()
         try:
             result = session.execute(
-                text("SELECT last_indexed FROM project_registry WHERE id = :id"),
-                {"id": project_id}
+                text("SELECT last_indexed FROM project_registry WHERE id = :id"), {"id": project_id}
             )
             row = result.fetchone()
             assert row is not None
@@ -506,12 +497,7 @@ class TestSyncQueueOperations:
 
     def test_queue_sync(self, storage_manager):
         """Test queueing sync operation."""
-        storage_manager.queue_sync(
-            "item",
-            "item-123",
-            "create",
-            {"title": "Test Item"}
-        )
+        storage_manager.queue_sync("item", "item-123", "create", {"title": "Test Item"})
 
         queue = storage_manager.get_sync_queue()
         assert len(queue) == 1
@@ -523,12 +509,7 @@ class TestSyncQueueOperations:
         """Test queue limit."""
         # Queue multiple items
         for i in range(10):
-            storage_manager.queue_sync(
-                "item",
-                f"item-{i}",
-                "create",
-                {"title": f"Item {i}"}
-            )
+            storage_manager.queue_sync("item", f"item-{i}", "create", {"title": f"Item {i}"})
 
         queue = storage_manager.get_sync_queue(limit=5)
         assert len(queue) == 5

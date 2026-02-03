@@ -52,8 +52,8 @@
 				pattern: /\$\{[^}]+\}/,
 				greedy: true,
 				inside: {
-					'operator': /:[-=?+]?|[!\/]|##?|%%?|\^\^?|,,?/,
-					'punctuation': /[\[\]]/,
+					'operator': /:[-=?+]?|[!/]|##?|%%?|\^\^?|,,?/,
+					'punctuation': /[[\]]/,
 					'environment': {
 						pattern: RegExp('(\\{)' + envVars),
 						lookbehind: true,

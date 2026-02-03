@@ -27,7 +27,7 @@ export default function openqasm(Prism) {
       lookbehind: true
     },
     operator: /->|>>=?|<<=?|&&|\|\||\+\+|--|[!=<>&|~^+\-*/%]=?|@/,
-    punctuation: /[(){}\[\];,:.]/
+    punctuation: /[(){}[\];,:.]/
   }
   Prism.languages.qasm = Prism.languages.openqasm
 }

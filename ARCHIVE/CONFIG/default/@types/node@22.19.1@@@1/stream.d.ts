@@ -1082,7 +1082,7 @@ declare module "stream" {
                     | AsyncIterable<any>
                     | AsyncGeneratorFunction
                     | Promise<any>
-                    | Object,
+                    | object,
             ): Duplex;
             /**
              * A utility method for creating a web `ReadableStream` and `WritableStream` from a `Duplex`.

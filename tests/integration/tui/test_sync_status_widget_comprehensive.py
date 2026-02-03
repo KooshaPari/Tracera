@@ -9,22 +9,20 @@ Coverage target: 85%+
 Test count: 30+ tests across all functionality
 """
 
-import asyncio
+from datetime import UTC, datetime, timedelta
+from unittest.mock import MagicMock, patch
+
 import pytest
-from datetime import datetime, timedelta
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 # Skip all tests if Textual not available
 pytest.importorskip("textual")
 
-from textual.app import ComposeResult
-from textual.containers import Horizontal, Vertical
-from textual.widgets import Static
+from textual.containers import Horizontal  # type: ignore[unresolved-import]
 
-from tracertm.tui.widgets.sync_status import (
+from tracertm.tui.widgets.sync_status import (  # type: ignore[possibly-missing-import]
+    TEXTUAL_AVAILABLE,
     CompactSyncStatus,
     SyncStatusWidget,
-    TEXTUAL_AVAILABLE,
 )
 
 
@@ -106,10 +104,11 @@ class TestStatusDisplay:
         def query_side_effect(selector, widget_type=None):
             if selector == "#connection-status":
                 return mock_connection
-            elif selector == "#sync-info":
+            if selector == "#sync-info":
                 return mock_sync_info
-            elif selector == "#conflict-info":
+            if selector == "#conflict-info":
                 return mock_conflict_info
+            return None
 
         mock_query.side_effect = query_side_effect
 
@@ -134,10 +133,11 @@ class TestStatusDisplay:
         def query_side_effect(selector, widget_type=None):
             if selector == "#connection-status":
                 return mock_connection
-            elif selector == "#sync-info":
+            if selector == "#sync-info":
                 return mock_sync_info
-            elif selector == "#conflict-info":
+            if selector == "#conflict-info":
                 return mock_conflict_info
+            return None
 
         mock_query.side_effect = query_side_effect
 
@@ -162,10 +162,11 @@ class TestStatusDisplay:
         def query_side_effect(selector, widget_type=None):
             if selector == "#connection-status":
                 return mock_connection
-            elif selector == "#sync-info":
+            if selector == "#sync-info":
                 return mock_sync_info
-            elif selector == "#conflict-info":
+            if selector == "#conflict-info":
                 return mock_conflict_info
+            return None
 
         mock_query.side_effect = query_side_effect
 
@@ -193,10 +194,11 @@ class TestProgressUpdates:
         def query_side_effect(selector, widget_type=None):
             if selector == "#connection-status":
                 return mock_connection
-            elif selector == "#sync-info":
+            if selector == "#sync-info":
                 return mock_sync_info
-            elif selector == "#conflict-info":
+            if selector == "#conflict-info":
                 return mock_conflict_info
+            return None
 
         mock_query.side_effect = query_side_effect
 
@@ -220,10 +222,11 @@ class TestProgressUpdates:
         def query_side_effect(selector, widget_type=None):
             if selector == "#connection-status":
                 return mock_connection
-            elif selector == "#sync-info":
+            if selector == "#sync-info":
                 return mock_sync_info
-            elif selector == "#conflict-info":
+            if selector == "#conflict-info":
                 return mock_conflict_info
+            return None
 
         mock_query.side_effect = query_side_effect
 
@@ -246,10 +249,11 @@ class TestProgressUpdates:
         def query_side_effect(selector, widget_type=None):
             if selector == "#connection-status":
                 return mock_connection
-            elif selector == "#sync-info":
+            if selector == "#sync-info":
                 return mock_sync_info
-            elif selector == "#conflict-info":
+            if selector == "#conflict-info":
                 return mock_conflict_info
+            return None
 
         mock_query.side_effect = query_side_effect
 
@@ -274,10 +278,11 @@ class TestProgressUpdates:
         def query_side_effect(selector, widget_type=None):
             if selector == "#connection-status":
                 return mock_connection
-            elif selector == "#sync-info":
+            if selector == "#sync-info":
                 return mock_sync_info
-            elif selector == "#conflict-info":
+            if selector == "#conflict-info":
                 return mock_conflict_info
+            return None
 
         mock_query.side_effect = query_side_effect
 
@@ -305,10 +310,11 @@ class TestErrorRendering:
         def query_side_effect(selector, widget_type=None):
             if selector == "#connection-status":
                 return mock_connection
-            elif selector == "#sync-info":
+            if selector == "#sync-info":
                 return mock_sync_info
-            elif selector == "#conflict-info":
+            if selector == "#conflict-info":
                 return mock_conflict_info
+            return None
 
         mock_query.side_effect = query_side_effect
 
@@ -334,10 +340,11 @@ class TestErrorRendering:
         def query_side_effect(selector, widget_type=None):
             if selector == "#connection-status":
                 return mock_connection
-            elif selector == "#sync-info":
+            if selector == "#sync-info":
                 return mock_sync_info
-            elif selector == "#conflict-info":
+            if selector == "#conflict-info":
                 return mock_conflict_info
+            return None
 
         mock_query.side_effect = query_side_effect
 
@@ -360,10 +367,11 @@ class TestErrorRendering:
         def query_side_effect(selector, widget_type=None):
             if selector == "#connection-status":
                 return mock_connection
-            elif selector == "#sync-info":
+            if selector == "#sync-info":
                 return mock_sync_info
-            elif selector == "#conflict-info":
+            if selector == "#conflict-info":
                 return mock_conflict_info
+            return None
 
         mock_query.side_effect = query_side_effect
 
@@ -391,10 +399,11 @@ class TestAnimationStates:
         def query_side_effect(selector, widget_type=None):
             if selector == "#connection-status":
                 return mock_connection
-            elif selector == "#sync-info":
+            if selector == "#sync-info":
                 return mock_sync_info
-            elif selector == "#conflict-info":
+            if selector == "#conflict-info":
                 return mock_conflict_info
+            return None
 
         mock_query.side_effect = query_side_effect
 
@@ -417,10 +426,11 @@ class TestAnimationStates:
         def query_side_effect(selector, widget_type=None):
             if selector == "#connection-status":
                 return mock_connection
-            elif selector == "#sync-info":
+            if selector == "#sync-info":
                 return mock_sync_info
-            elif selector == "#conflict-info":
+            if selector == "#conflict-info":
                 return mock_conflict_info
+            return None
 
         mock_query.side_effect = query_side_effect
 
@@ -443,10 +453,11 @@ class TestAnimationStates:
         def query_side_effect(selector, widget_type=None):
             if selector == "#connection-status":
                 return mock_connection
-            elif selector == "#sync-info":
+            if selector == "#sync-info":
                 return mock_sync_info
-            elif selector == "#conflict-info":
+            if selector == "#conflict-info":
                 return mock_conflict_info
+            return None
 
         mock_query.side_effect = query_side_effect
 
@@ -473,10 +484,11 @@ class TestAnimationStates:
         def query_side_effect(selector, widget_type=None):
             if selector == "#connection-status":
                 return mock_connection
-            elif selector == "#sync-info":
+            if selector == "#sync-info":
                 return mock_sync_info
-            elif selector == "#conflict-info":
+            if selector == "#conflict-info":
                 return mock_conflict_info
+            return None
 
         mock_query.side_effect = query_side_effect
 
@@ -507,10 +519,11 @@ class TestConflictDisplay:
         def query_side_effect(selector, widget_type=None):
             if selector == "#connection-status":
                 return mock_connection
-            elif selector == "#sync-info":
+            if selector == "#sync-info":
                 return mock_sync_info
-            elif selector == "#conflict-info":
+            if selector == "#conflict-info":
                 return mock_conflict_info
+            return None
 
         mock_query.side_effect = query_side_effect
 
@@ -535,10 +548,11 @@ class TestConflictDisplay:
         def query_side_effect(selector, widget_type=None):
             if selector == "#connection-status":
                 return mock_connection
-            elif selector == "#sync-info":
+            if selector == "#sync-info":
                 return mock_sync_info
-            elif selector == "#conflict-info":
+            if selector == "#conflict-info":
                 return mock_conflict_info
+            return None
 
         mock_query.side_effect = query_side_effect
 
@@ -561,10 +575,11 @@ class TestConflictDisplay:
         def query_side_effect(selector, widget_type=None):
             if selector == "#connection-status":
                 return mock_connection
-            elif selector == "#sync-info":
+            if selector == "#sync-info":
                 return mock_sync_info
-            elif selector == "#conflict-info":
+            if selector == "#conflict-info":
                 return mock_conflict_info
+            return None
 
         mock_query.side_effect = query_side_effect
 
@@ -886,10 +901,11 @@ class TestComplexScenarios:
         def query_side_effect(selector, widget_type=None):
             if selector == "#connection-status":
                 return mock_connection
-            elif selector == "#sync-info":
+            if selector == "#sync-info":
                 return mock_sync_info
-            elif selector == "#conflict-info":
+            if selector == "#conflict-info":
                 return mock_conflict_info
+            return None
 
         mock_query.side_effect = query_side_effect
 
@@ -912,10 +928,11 @@ class TestComplexScenarios:
         def query_side_effect(selector, widget_type=None):
             if selector == "#connection-status":
                 return mock_connection
-            elif selector == "#sync-info":
+            if selector == "#sync-info":
                 return mock_sync_info
-            elif selector == "#conflict-info":
+            if selector == "#conflict-info":
                 return mock_conflict_info
+            return None
 
         mock_query.side_effect = query_side_effect
 
@@ -939,10 +956,11 @@ class TestComplexScenarios:
         def query_side_effect(selector, widget_type=None):
             if selector == "#connection-status":
                 return mock_connection
-            elif selector == "#sync-info":
+            if selector == "#sync-info":
                 return mock_sync_info
-            elif selector == "#conflict-info":
+            if selector == "#conflict-info":
                 return mock_conflict_info
+            return None
 
         mock_query.side_effect = query_side_effect
 
@@ -965,10 +983,11 @@ class TestComplexScenarios:
         def query_side_effect(selector, widget_type=None):
             if selector == "#connection-status":
                 return mock_connection
-            elif selector == "#sync-info":
+            if selector == "#sync-info":
                 return mock_sync_info
-            elif selector == "#conflict-info":
+            if selector == "#conflict-info":
                 return mock_conflict_info
+            return None
 
         mock_query.side_effect = query_side_effect
 
@@ -1084,9 +1103,8 @@ class TestEdgeCases:
     def test_format_time_ago_with_timezone(self):
         """Test time formatting with timezone-aware datetime."""
         widget = SyncStatusWidget()
-        from datetime import timezone
 
-        now_tz = datetime.now(timezone.utc)
+        now_tz = datetime.now(UTC)
         past_tz = now_tz - timedelta(minutes=5)
 
         result = widget._format_time_ago(past_tz)
@@ -1162,10 +1180,7 @@ class TestCoverageAndCompletion:
             TestCSSAndStyling,
         ]
 
-        total_test_methods = sum(
-            len([m for m in dir(cls) if m.startswith("test_")])
-            for cls in test_classes
-        )
+        total_test_methods = sum(len([m for m in dir(cls) if m.startswith("test_")]) for cls in test_classes)
 
         # Should have at least 30 test methods
         assert total_test_methods >= 30, f"Only found {total_test_methods} tests, need 30+"

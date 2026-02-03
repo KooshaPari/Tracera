@@ -5,6 +5,7 @@ This demonstrates the hybrid SQLite + Markdown storage system.
 """
 
 from pathlib import Path
+
 from tracertm.storage import LocalStorageManager
 
 
@@ -122,7 +123,7 @@ def main():
     epic_file = project_dir / "epics" / "EPIC-001.md"
     if epic_file.exists():
         print(f"  ✓ {epic_file.relative_to(storage_dir)}")
-        print(f"    First lines:")
+        print("    First lines:")
         lines = epic_file.read_text().split("\n")[:10]
         for line in lines:
             print(f"    {line}")
@@ -130,7 +131,7 @@ def main():
     links_file = project_dir / ".meta" / "links.yaml"
     if links_file.exists():
         print(f"\n  ✓ {links_file.relative_to(storage_dir)}")
-        print(f"    Content:")
+        print("    Content:")
         for line in links_file.read_text().split("\n")[:20]:
             print(f"    {line}")
 
@@ -139,7 +140,9 @@ def main():
     sync_queue = manager.get_sync_queue()
     print(f"  {len(sync_queue)} items pending sync")
     for entry in sync_queue[:3]:
-        print(f"  - {entry['operation']} {entry['entity_type']}: {entry['payload'].get('title', entry['payload'].get('name', 'N/A'))}")
+        print(
+            f"  - {entry['operation']} {entry['entity_type']}: {entry['payload'].get('title', entry['payload'].get('name', 'N/A'))}"
+        )
 
     # Update sync state
     manager.update_sync_state("last_sync", "2024-01-20T14:30:00Z")

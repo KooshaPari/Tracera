@@ -2620,7 +2620,7 @@ var LspDiagnosticsFeature = class extends Disposable {
         relatedDocumentSupport: true
       }
     } }));
-    debugger;
+    
     this._register(this._connection.connection.registerNotificationHandler(api.client.textDocumentPublishDiagnostics, (params) => this._handlePublishDiagnostics(params)));
     this._register(this._connection.capabilities.registerCapabilityHandler(capabilities.textDocumentDiagnostic, true, (capability) => {
       const disposables = new DisposableStore();
@@ -2832,7 +2832,7 @@ var CapabilityRegistration = class {
     this.isFromStatic = isFromStatic;
   }
 };
-const capabilitiesByMethod = new Map([...Object.values(capabilities)].map((c) => [c.method, c]));
+const capabilitiesByMethod = new Map(Object.values(capabilities).map((c) => [c.method, c]));
 function getCapabilityByMethod(method) {
   const c = capabilitiesByMethod.get(method);
   if (!c) throw new Error(`No capability found for method ${method}`);

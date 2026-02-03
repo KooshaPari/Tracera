@@ -34,8 +34,8 @@ type ApiResponse<
 > = paths[P][M] extends { responses: infer R }
 	? Status extends keyof R
 		? R[Status] extends { content: { "application/json": infer Body } }
-			? Body
-			: never
+				? Body
+				: never
 		: never
 	: never;
 
@@ -192,6 +192,7 @@ interface ApiError {
 	message: string;
 }
 
+// Grouped type exports
 export type {
 	ApiAllParams,
 	ApiError,

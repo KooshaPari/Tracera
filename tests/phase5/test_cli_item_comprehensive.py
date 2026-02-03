@@ -5,19 +5,18 @@ Target: 400+ tests covering 95%+ of src/tracertm/cli/commands/item.py (845 LOC @
 Focus lines: 63-71, 87-102, 115-126, 137-139, 153-171, 181-182, 214-345, 377-483, 505-649, 677-743, 762-825, 838-887, 920-1021, 1047-1087, 1099-1139, 1155-1222, 1239-1305, 1322-1379, 1401-1513, 1531-1554, 1570-1588, 1598-1630, 1643-1661, 1675-1691, 1705-1720
 """
 
+import datetime
 import json
 import tempfile
+from collections.abc import Generator
 from pathlib import Path
-from typing import Any, Generator
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
-from typer.testing import CliRunner
 from sqlalchemy.orm import Session
+from typer.testing import CliRunner
 
 from tracertm.cli.commands.item import app as item_app
-from tracertm.cli.errors import ProjectNotFoundError, TraceRTMError
-from tracertm.config.manager import ConfigManager
 from tracertm.models.item import Item
 from tracertm.models.project import Project
 from tracertm.storage import LocalStorageManager
@@ -42,9 +41,7 @@ def temp_project_dir() -> Generator[Path, None, None]:
 
 
 @pytest.fixture
-def temp_project_dir_with_db(
-    temp_project_dir: Path, db_session: Session
-) -> Generator[Path, None, None]:
+def temp_project_dir_with_db(temp_project_dir: Path, db_session: Session) -> Path:
     """Create temporary project directory with database setup."""
     # Initialize project in database
     project = Project(
@@ -55,15 +52,13 @@ def temp_project_dir_with_db(
     )
     db_session.add(project)
     db_session.commit()
-    yield temp_project_dir
+    return temp_project_dir
 
 
 @pytest.fixture
-def storage_manager(
-    temp_project_dir: Path, db_session: Session
-) -> LocalStorageManager:
+def storage_manager(temp_project_dir: Path, db_session: Session) -> LocalStorageManager:
     """Create storage manager for testing."""
-    return LocalStorageManager(project_path=temp_project_dir, session=db_session)
+    return LocalStorageManager(base_dir=temp_project_dir)
 
 
 class TestBasicCRUDOperations:
@@ -81,10 +76,13 @@ class TestBasicCRUDOperations:
                     [
                         "create",
                         "Test Item",
-                        "--view", "FEATURE", 
-                        "--type", "feature",
-                        "--description", "Test description"
-                    ]
+                        "--view",
+                        "FEATURE",
+                        "--type",
+                        "feature",
+                        "--description",
+                        "Test description",
+                    ],
                 )
                 assert result.exit_code == 0
                 assert "Test Item" in result.stdout
@@ -94,19 +92,25 @@ class TestBasicCRUDOperations:
     ) -> None:
         """Test item creation with all valid views."""
         valid_views = ["FEATURE", "CODE", "WIREFRAME", "API", "TEST", "DATABASE", "ROADMAP", "PROGRESS"]
-        
+
         for view in valid_views:
             with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
-                with patch("tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db):
+                with patch(
+                    "tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db
+                ):
                     result = cli_runner.invoke(
                         item_app,
                         [
                             "create",
-                            "--title", f"Test {view}",
-                            "--view", view,
-                            "--type", "task",  # Common type across views
-                            "--description", f"Test {view} item"
-                        ]
+                            "--title",
+                            f"Test {view}",
+                            "--view",
+                            view,
+                            "--type",
+                            "task",  # Common type across views
+                            "--description",
+                            f"Test {view} item",
+                        ],
                     )
                     assert result.exit_code == 0, f"Failed for view: {view}"
                     assert f"Test {view}" in result.stdout
@@ -116,19 +120,25 @@ class TestBasicCRUDOperations:
     ) -> None:
         """Test item creation with all FEATURE view types."""
         feature_types = ["epic", "feature", "story", "task", "bug"]
-        
+
         for item_type in feature_types:
             with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
-                with patch("tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db):
+                with patch(
+                    "tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db
+                ):
                     result = cli_runner.invoke(
                         item_app,
                         [
                             "create",
-                            "--title", f"Test {item_type}",
-                            "--view", "FEATURE",
-                            "--type", item_type,
-                            "--description", f"Test {item_type} item"
-                        ]
+                            "--title",
+                            f"Test {item_type}",
+                            "--view",
+                            "FEATURE",
+                            "--type",
+                            item_type,
+                            "--description",
+                            f"Test {item_type} item",
+                        ],
                     )
                     assert result.exit_code == 0, f"Failed for type: {item_type}"
                     assert f"Test {item_type}" in result.stdout
@@ -138,19 +148,25 @@ class TestBasicCRUDOperations:
     ) -> None:
         """Test item creation with all CODE view types."""
         code_types = ["file", "class", "function", "module"]
-        
+
         for item_type in code_types:
             with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
-                with patch("tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db):
+                with patch(
+                    "tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db
+                ):
                     result = cli_runner.invoke(
                         item_app,
                         [
                             "create",
-                            "--title", f"Test {item_type}",
-                            "--view", "CODE",
-                            "--type", item_type,
-                            "--description", f"Test {item_type} item"
-                        ]
+                            "--title",
+                            f"Test {item_type}",
+                            "--view",
+                            "CODE",
+                            "--type",
+                            item_type,
+                            "--description",
+                            f"Test {item_type} item",
+                        ],
                     )
                     assert result.exit_code == 0, f"Failed for type: {item_type}"
 
@@ -159,19 +175,24 @@ class TestBasicCRUDOperations:
     ) -> None:
         """Test item creation with metadata."""
         metadata = {"priority": "high", "assignee": "user@example.com", "tags": ["urgent", "backend"]}
-        
+
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
             with patch("tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db):
                 result = cli_runner.invoke(
                     item_app,
                     [
                         "create",
-                        "--title", "Test Item with Metadata",
-                        "--view", "FEATURE",
-                        "--type", "feature",
-                        "--description", "Test with metadata",
-                        "--metadata", json.dumps(metadata)
-                    ]
+                        "--title",
+                        "Test Item with Metadata",
+                        "--view",
+                        "FEATURE",
+                        "--type",
+                        "feature",
+                        "--description",
+                        "Test with metadata",
+                        "--metadata",
+                        json.dumps(metadata),
+                    ],
                 )
                 assert result.exit_code == 0
                 assert "Test Item with Metadata" in result.stdout
@@ -186,11 +207,15 @@ class TestBasicCRUDOperations:
                     item_app,
                     [
                         "create",
-                        "--title", "Test Item",
-                        "--view", "INVALID_VIEW",
-                        "--type", "feature",
-                        "--description", "Test description"
-                    ]
+                        "--title",
+                        "Test Item",
+                        "--view",
+                        "INVALID_VIEW",
+                        "--type",
+                        "feature",
+                        "--description",
+                        "Test description",
+                    ],
                 )
                 assert result.exit_code != 0
                 assert "Invalid view" in result.stdout
@@ -205,11 +230,15 @@ class TestBasicCRUDOperations:
                     item_app,
                     [
                         "create",
-                        "--title", "Test Item",
-                        "--view", "FEATURE",
-                        "--type", "invalid_type",
-                        "--description", "Test description"
-                    ]
+                        "--title",
+                        "Test Item",
+                        "--view",
+                        "FEATURE",
+                        "--type",
+                        "invalid_type",
+                        "--description",
+                        "Test description",
+                    ],
                 )
                 assert result.exit_code != 0
                 assert "Invalid type" in result.stdout
@@ -222,13 +251,7 @@ class TestBasicCRUDOperations:
             with patch("tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db):
                 # Missing title
                 result = cli_runner.invoke(
-                    item_app,
-                    [
-                        "create",
-                        "--view", "FEATURE",
-                        "--type", "feature",
-                        "--description", "Test description"
-                    ]
+                    item_app, ["create", "--view", "FEATURE", "--type", "feature", "--description", "Test description"]
                 )
                 assert result.exit_code != 0
 
@@ -243,30 +266,33 @@ class TestBasicCRUDOperations:
             type="epic",
             description="Parent item",
             metadata={},
-            project_id="test-project"
+            project_id="test-project",
         )
         db_session.add(parent)
         db_session.commit()
-        
+
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
             with patch("tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db):
                 result = cli_runner.invoke(
                     item_app,
                     [
                         "create",
-                        "--title", "Child Item",
-                        "--view", "FEATURE",
-                        "--type", "feature",
-                        "--description", "Child item",
-                        "--parent", parent.id
-                    ]
+                        "--title",
+                        "Child Item",
+                        "--view",
+                        "FEATURE",
+                        "--type",
+                        "feature",
+                        "--description",
+                        "Child item",
+                        "--parent",
+                        str(parent.id),
+                    ],
                 )
                 assert result.exit_code == 0
                 assert "Child Item" in result.stdout
 
-    def test_list_items_basic(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
-    ) -> None:
+    def test_list_items_basic(self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session) -> None:
         """Test basic item listing."""
         # Create test items
         for i in range(5):
@@ -276,11 +302,11 @@ class TestBasicCRUDOperations:
                 type="task",
                 description=f"Test item {i}",
                 metadata={},
-                project_id="test-project"
+                project_id="test-project",
             )
             db_session.add(item)
         db_session.commit()
-        
+
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
             with patch("tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db):
                 result = cli_runner.invoke(item_app, ["list"])
@@ -293,18 +319,18 @@ class TestBasicCRUDOperations:
         """Test item listing filtered by view."""
         # Create items in different views
         views = ["FEATURE", "CODE", "API"]
-        for i, view in enumerate(views):
+        for _i, view in enumerate(views):
             item = Item(
                 title=f"Test {view} Item",
                 view=view,
                 type="task",
                 description=f"Test {view} item",
                 metadata={},
-                project_id="test-project"
+                project_id="test-project",
             )
             db_session.add(item)
         db_session.commit()
-        
+
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
             with patch("tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db):
                 result = cli_runner.invoke(item_app, ["list", "--view", "FEATURE"])
@@ -318,18 +344,18 @@ class TestBasicCRUDOperations:
         """Test item listing filtered by type."""
         # Create items with different types
         types = ["feature", "task", "bug"]
-        for i, item_type in enumerate(types):
+        for _i, item_type in enumerate(types):
             item = Item(
                 title=f"Test {item_type}",
                 view="FEATURE",
                 type=item_type,
                 description=f"Test {item_type} item",
                 metadata={},
-                project_id="test-project"
+                project_id="test-project",
             )
             db_session.add(item)
         db_session.commit()
-        
+
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
             with patch("tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db):
                 result = cli_runner.invoke(item_app, ["list", "--type", "feature"])
@@ -349,11 +375,11 @@ class TestBasicCRUDOperations:
                 type="task",
                 description=f"Test item {i}",
                 metadata={},
-                project_id="test-project"
+                project_id="test-project",
             )
             db_session.add(item)
         db_session.commit()
-        
+
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
             with patch("tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db):
                 result = cli_runner.invoke(item_app, ["list", "--limit", "5"])
@@ -373,11 +399,11 @@ class TestBasicCRUDOperations:
                 type="task",
                 description=f"Test item {i}",
                 metadata={},
-                project_id="test-project"
+                project_id="test-project",
             )
             db_session.add(item)
         db_session.commit()
-        
+
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
             with patch("tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db):
                 result = cli_runner.invoke(item_app, ["list", "--offset", "5", "--limit", "3"])
@@ -397,14 +423,14 @@ class TestBasicCRUDOperations:
             type="feature",
             description="Test description",
             metadata={"priority": "high"},
-            project_id="test-project"
+            project_id="test-project",
         )
         db_session.add(item)
         db_session.commit()
-        
+
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
             with patch("tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db):
-                result = cli_runner.invoke(item_app, ["show", item.id])
+                result = cli_runner.invoke(item_app, ["show", str(item.id)])
                 assert result.exit_code == 0
                 assert "Test Item" in result.stdout
                 assert "Test description" in result.stdout
@@ -431,21 +457,15 @@ class TestBasicCRUDOperations:
             type="task",
             description="Original description",
             metadata={},
-            project_id="test-project"
+            project_id="test-project",
         )
         db_session.add(item)
         db_session.commit()
-        
+
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
             with patch("tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db):
                 result = cli_runner.invoke(
-                    item_app,
-                    [
-                        "update",
-                        item.id,
-                        "--title", "Updated Title",
-                        "--description", "Updated description"
-                    ]
+                    item_app, ["update", str(item.id), "--title", "Updated Title", "--description", "Updated description"]
                 )
                 assert result.exit_code == 0
                 assert "Updated Title" in result.stdout
@@ -461,22 +481,15 @@ class TestBasicCRUDOperations:
             type="task",
             description="Test description",
             metadata={},
-            project_id="test-project"
+            project_id="test-project",
         )
         db_session.add(item)
         db_session.commit()
-        
+
         new_metadata = {"priority": "urgent", "status": "in-progress"}
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
             with patch("tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db):
-                result = cli_runner.invoke(
-                    item_app,
-                    [
-                        "update",
-                        item.id,
-                        "--metadata", json.dumps(new_metadata)
-                    ]
-                )
+                result = cli_runner.invoke(item_app, ["update", str(item.id), "--metadata", json.dumps(new_metadata)])
                 assert result.exit_code == 0
 
     def test_delete_item_success(
@@ -490,15 +503,15 @@ class TestBasicCRUDOperations:
             type="task",
             description="Test description",
             metadata={},
-            project_id="test-project"
+            project_id="test-project",
         )
         db_session.add(item)
         db_session.commit()
         item_id = item.id
-        
+
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
             with patch("tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db):
-                result = cli_runner.invoke(item_app, ["delete", item_id])
+                result = cli_runner.invoke(item_app, ["delete", str(item_id)])
                 assert result.exit_code == 0
                 assert "deleted" in result.stdout.lower()
 
@@ -524,15 +537,15 @@ class TestBasicCRUDOperations:
             description="Test description",
             metadata={},
             project_id="test-project",
-            deleted_at=""
+            deleted_at="",
         )
         db_session.add(item)
         db_session.commit()
         item_id = item.id
-        
+
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
             with patch("tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db):
-                result = cli_runner.invoke(item_app, ["undelete", item_id])
+                result = cli_runner.invoke(item_app, ["undelete", str(item_id)])
                 assert result.exit_code == 0
                 assert "restored" in result.stdout.lower()
 
@@ -543,18 +556,12 @@ class TestBasicCRUDOperations:
         items_data = [
             {"title": "Item 1", "view": "FEATURE", "type": "task"},
             {"title": "Item 2", "view": "CODE", "type": "function"},
-            {"title": "Item 3", "view": "API", "type": "endpoint"}
+            {"title": "Item 3", "view": "API", "type": "endpoint"},
         ]
-        
+
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
             with patch("tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db):
-                result = cli_runner.invoke(
-                    item_app,
-                    [
-                        "bulk-create",
-                        "--data", json.dumps(items_data)
-                    ]
-                )
+                result = cli_runner.invoke(item_app, ["bulk-create", "--data", json.dumps(items_data)])
                 assert result.exit_code == 0
                 assert "Item 1" in result.stdout
                 assert "Item 2" in result.stdout
@@ -573,29 +580,23 @@ class TestBasicCRUDOperations:
                 type="task",
                 description=f"Original description {i}",
                 metadata={},
-                project_id="test-project"
+                project_id="test-project",
             )
             db_session.add(item)
             db_session.commit()
-            item_ids.append(item.id)
-        
+            item_ids.append(str(item.id))
+
         update_data = {
             "updates": [
                 {"id": item_ids[0], "title": "Updated Item 0"},
                 {"id": item_ids[1], "title": "Updated Item 1"},
-                {"id": item_ids[2], "description": "New description 2"}
+                {"id": item_ids[2], "description": "New description 2"},
             ]
         }
-        
+
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
             with patch("tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db):
-                result = cli_runner.invoke(
-                    item_app,
-                    [
-                        "bulk-update",
-                        "--data", json.dumps(update_data)
-                    ]
-                )
+                result = cli_runner.invoke(item_app, ["bulk-update", "--data", json.dumps(update_data)])
                 assert result.exit_code == 0
                 assert "Updated Item" in result.stdout
 
@@ -611,11 +612,11 @@ class TestBasicCRUDOperations:
                 type="task",
                 description=f"Test item {i}",
                 metadata={},
-                project_id="test-project"
+                project_id="test-project",
             )
             db_session.add(item)
         db_session.commit()
-        
+
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
             result = cli_runner.invoke(item_app, ["shell-completion", "item-ids"])
             assert result.exit_code == 0
@@ -623,9 +624,7 @@ class TestBasicCRUDOperations:
                 # Should contain at least some item IDs
                 assert len(result.stdout.strip()) > 0
 
-    def test_shell_completion_views(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_shell_completion_views(self, cli_runner: CliRunner) -> None:
         """Test shell completion for views."""
         result = cli_runner.invoke(item_app, ["shell-completion", "views"])
         assert result.exit_code == 0
@@ -633,9 +632,7 @@ class TestBasicCRUDOperations:
         for view in expected_views:
             assert view in result.stdout
 
-    def test_shell_completion_types_feature(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_shell_completion_types_feature(self, cli_runner: CliRunner) -> None:
         """Test shell completion for FEATURE view types."""
         result = cli_runner.invoke(item_app, ["shell-completion", "types", "--view", "FEATURE"])
         assert result.exit_code == 0
@@ -643,9 +640,7 @@ class TestBasicCRUDOperations:
         for type_name in expected_types:
             assert type_name in result.stdout
 
-    def test_shell_completion_types_code(
-        self, cli_runner: CliRunner
-    ) -> None:
+    def test_shell_completion_types_code(self, cli_runner: CliRunner) -> None:
         """Test shell completion for CODE view types."""
         result = cli_runner.invoke(item_app, ["shell-completion", "types", "--view", "CODE"])
         assert result.exit_code == 0
@@ -668,21 +663,16 @@ class TestAdvancedWorkflowOperations:
             type="story",
             description="Test workflow",
             metadata={"status": "todo"},
-            project_id="test-project"
+            project_id="test-project",
         )
         db_session.add(item)
         db_session.commit()
-        
+
         # Update status through workflow
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
             with patch("tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db):
                 result = cli_runner.invoke(
-                    item_app,
-                    [
-                        "update",
-                        item.id,
-                        "--metadata", json.dumps({"status": "in-progress"})
-                    ]
+                    item_app, ["update", str(item.id), "--metadata", json.dumps({"status": "in-progress"})]
                 )
                 assert result.exit_code == 0
 
@@ -697,11 +687,11 @@ class TestAdvancedWorkflowOperations:
             type="epic",
             description="Parent epic",
             metadata={},
-            project_id="test-project"
+            project_id="test-project",
         )
         db_session.add(epic)
         db_session.commit()
-        
+
         feature = Item(
             title="Child Feature",
             view="FEATURE",
@@ -709,11 +699,11 @@ class TestAdvancedWorkflowOperations:
             description="Child feature",
             metadata={},
             parent_id=epic.id,
-            project_id="test-project"
+            project_id="test-project",
         )
         db_session.add(feature)
         db_session.commit()
-        
+
         # Create story under feature
         story = Item(
             title="Child Story",
@@ -722,11 +712,11 @@ class TestAdvancedWorkflowOperations:
             description="Child story",
             metadata={},
             parent_id=feature.id,
-            project_id="test-project"
+            project_id="test-project",
         )
         db_session.add(story)
         db_session.commit()
-        
+
         # Test hierarchy listing
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
             with patch("tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db):
@@ -747,11 +737,11 @@ class TestAdvancedWorkflowOperations:
             type="feature",
             description="Parent item",
             metadata={},
-            project_id="test-project"
+            project_id="test-project",
         )
         db_session.add(parent_item)
         db_session.commit()
-        
+
         child_items = []
         for i in range(3):
             child = Item(
@@ -761,20 +751,20 @@ class TestAdvancedWorkflowOperations:
                 description=f"Child task {i}",
                 metadata={},
                 parent_id=parent_item.id,
-                project_id="test-project"
+                project_id="test-project",
             )
             db_session.add(child)
             db_session.commit()
             child_items.append(child)
-        
+
         # Test bulk delete
         item_ids_to_delete = [child.id for child in child_items]
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
             with patch("tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db):
                 result = cli_runner.invoke(
                     item_app,
-                    ["bulk-delete", "--ids"] + item_ids_to_delete,
-                    input="y"  # Confirm deletion
+                    ["bulk-delete", "--ids", *item_ids_to_delete],
+                    input="y",  # Confirm deletion
                 )
                 assert result.exit_code == 0
                 assert "deleted" in result.stdout.lower()
@@ -785,12 +775,17 @@ class TestAdvancedWorkflowOperations:
         """Test advanced item search operations."""
         # Create diverse items
         items_data = [
-            {"title": "Backend API Feature", "view": "FEATURE", "type": "feature", "description": "API backend implementation"},
+            {
+                "title": "Backend API Feature",
+                "view": "FEATURE",
+                "type": "feature",
+                "description": "API backend implementation",
+            },
             {"title": "Frontend UI Component", "view": "CODE", "type": "component", "description": "React component"},
             {"title": "Database Migration", "view": "DATABASE", "type": "migration", "description": "Schema migration"},
             {"title": "Integration Test", "view": "TEST", "type": "test_suite", "description": "Integration testing"},
         ]
-        
+
         for item_data in items_data:
             item = Item(
                 title=item_data["title"],
@@ -798,11 +793,11 @@ class TestAdvancedWorkflowOperations:
                 type=item_data["type"],
                 description=item_data["description"],
                 metadata={},
-                project_id="test-project"
+                project_id="test-project",
             )
             db_session.add(item)
         db_session.commit()
-        
+
         # Test search by title
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
             with patch("tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db):
@@ -822,7 +817,7 @@ class TestAdvancedWorkflowOperations:
             {"title": "Assigned Item", "assignee": "user@example.com"},
             {"title": "Tagged Item", "tags": ["frontend", "urgent"]},
         ]
-        
+
         for item_meta in items_metadata:
             item = Item(
                 title=item_meta["title"],
@@ -830,11 +825,11 @@ class TestAdvancedWorkflowOperations:
                 type="task",
                 description=f"Item with metadata {item_meta['title']}",
                 metadata=item_meta,
-                project_id="test-project"
+                project_id="test-project",
             )
             db_session.add(item)
         db_session.commit()
-        
+
         # Test filter by priority
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
             with patch("tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db):
@@ -850,7 +845,7 @@ class TestAdvancedWorkflowOperations:
         # Create items with different creation times
         import datetime
         import time
-        
+
         items = []
         for i in range(5):
             time.sleep(0.01)  # Ensure different timestamps
@@ -861,20 +856,20 @@ class TestAdvancedWorkflowOperations:
                 description=f"Test item {i}",
                 metadata={},
                 project_id="test-project",
-                created_at=datetime.datetime.utcnow().isoformat()
+                created_at=datetime.datetime.now(datetime.UTC).isoformat(),
             )
             db_session.add(item)
             db_session.commit()
             items.append(item)
-        
+
         # Test sorting by title
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
             with patch("tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db):
                 result = cli_runner.invoke(item_app, ["list", "--sort", "title"])
                 assert result.exit_code == 0
                 # Should be sorted alphabetically
-                lines = result.stdout.split('\n')
-                title_lines = [line for line in lines if 'Item ' in line]
+                lines = result.stdout.split("\n")
+                title_lines = [line for line in lines if "Item " in line]
                 # Basic check that some ordering is applied
                 assert len(title_lines) > 0
 
@@ -890,11 +885,11 @@ class TestAdvancedWorkflowOperations:
                 type="task",
                 description=f"Item for export {i}",
                 metadata={"export_id": i},
-                project_id="test-project"
+                project_id="test-project",
             )
             db_session.add(item)
         db_session.commit()
-        
+
         # Test JSON export
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
             with patch("tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db):
@@ -902,7 +897,7 @@ class TestAdvancedWorkflowOperations:
                 assert result.exit_code == 0
                 assert "Export Item" in result.stdout
                 # Should be valid JSON
-                assert result.stdout.strip().startswith('[') or result.stdout.strip().startswith('{')
+                assert result.stdout.strip().startswith("[") or result.stdout.strip().startswith("{")
 
     def test_item_import_operations(
         self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
@@ -915,21 +910,21 @@ class TestAdvancedWorkflowOperations:
                 "view": "FEATURE",
                 "type": "feature",
                 "description": "Imported via CLI",
-                "metadata": {"imported": True}
+                "metadata": {"imported": True},
             },
             {
-                "title": "Imported Item 2", 
+                "title": "Imported Item 2",
                 "view": "CODE",
                 "type": "function",
                 "description": "Another imported item",
-                "metadata": {"imported": True}
-            }
+                "metadata": {"imported": True},
+            },
         ]
-        
+
         # Create temporary file with import data
         import_file = temp_project_dir_with_db / "import_data.json"
         import_file.write_text(json.dumps(import_data))
-        
+
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
             with patch("tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db):
                 result = cli_runner.invoke(item_app, ["import", "--file", str(import_file)])
@@ -937,9 +932,7 @@ class TestAdvancedWorkflowOperations:
                 assert "Imported Item 1" in result.stdout
                 assert "Imported Item 2" in result.stdout
 
-    def test_item_statistics(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
-    ) -> None:
+    def test_item_statistics(self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session) -> None:
         """Test item statistics and reporting."""
         # Create diverse items
         items_data = [
@@ -949,7 +942,7 @@ class TestAdvancedWorkflowOperations:
             ("API", "endpoint", 4),
             ("TEST", "test_case", 6),
         ]
-        
+
         for view, item_type, count in items_data:
             for i in range(count):
                 item = Item(
@@ -958,11 +951,11 @@ class TestAdvancedWorkflowOperations:
                     type=item_type,
                     description=f"{view} {item_type} item {i}",
                     metadata={},
-                    project_id="test-project"
+                    project_id="test-project",
                 )
                 db_session.add(item)
         db_session.commit()
-        
+
         # Test statistics command
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
             with patch("tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db):
@@ -978,19 +971,24 @@ class TestAdvancedWorkflowOperations:
         """Test item validation rules and constraints."""
         # Test creating item with invalid metadata
         invalid_metadata = "not valid json"
-        
+
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
             with patch("tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db):
                 result = cli_runner.invoke(
                     item_app,
                     [
                         "create",
-                        "--title", "Invalid Item",
-                        "--view", "FEATURE",
-                        "--type", "feature",
-                        "--description", "Test invalid metadata",
-                        "--metadata", invalid_metadata
-                    ]
+                        "--title",
+                        "Invalid Item",
+                        "--view",
+                        "FEATURE",
+                        "--type",
+                        "feature",
+                        "--description",
+                        "Test invalid metadata",
+                        "--metadata",
+                        invalid_metadata,
+                    ],
                 )
                 assert result.exit_code != 0
 
@@ -1000,14 +998,11 @@ class TestAdvancedWorkflowOperations:
         """Test item operations across multiple projects."""
         # Create additional project
         project2 = Project(
-            id="test-project-2",
-            name="Test Project 2",
-            description="Second test project",
-            config={"test": True}
+            id="test-project-2", name="Test Project 2", description="Second test project", config={"test": True}
         )
         db_session.add(project2)
         db_session.commit()
-        
+
         # Create item in first project
         item1 = Item(
             title="Project 1 Item",
@@ -1015,10 +1010,10 @@ class TestAdvancedWorkflowOperations:
             type="feature",
             description="Item in project 1",
             metadata={},
-            project_id="test-project"
+            project_id="test-project",
         )
         db_session.add(item1)
-        
+
         # Create item in second project
         item2 = Item(
             title="Project 2 Item",
@@ -1026,11 +1021,11 @@ class TestAdvancedWorkflowOperations:
             type="feature",
             description="Item in project 2",
             metadata={},
-            project_id="test-project-2"
+            project_id="test-project-2",
         )
         db_session.add(item2)
         db_session.commit()
-        
+
         # List items should only show current project items
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
             with patch("tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db):
@@ -1039,9 +1034,7 @@ class TestAdvancedWorkflowOperations:
                 assert "Project 1 Item" in result.stdout
                 assert "Project 2 Item" not in result.stdout
 
-    def test_item_templates(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
-    ) -> None:
+    def test_item_templates(self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session) -> None:
         """Test creating items from templates."""
         # Create template data
         template_data = {
@@ -1049,18 +1042,14 @@ class TestAdvancedWorkflowOperations:
             "view": "FEATURE",
             "type": "feature",
             "description": "Template description",
-            "metadata": {"template": True, "priority": "medium"}
+            "metadata": {"template": True, "priority": "medium"},
         }
-        
+
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
             with patch("tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db):
                 result = cli_runner.invoke(
                     item_app,
-                    [
-                        "create-from-template",
-                        "--title", "Actual Item",
-                        "--template", json.dumps(template_data)
-                    ]
+                    ["create-from-template", "--title", "Actual Item", "--template", json.dumps(template_data)],
                 )
                 assert result.exit_code == 0
                 assert "Actual Item" in result.stdout
@@ -1076,11 +1065,11 @@ class TestAdvancedWorkflowOperations:
             type="feature",
             description="Parent item",
             metadata={},
-            project_id="test-project"
+            project_id="test-project",
         )
         db_session.add(parent)
         db_session.commit()
-        
+
         child1 = Item(
             title="Child Item 1",
             view="FEATURE",
@@ -1088,10 +1077,10 @@ class TestAdvancedWorkflowOperations:
             description="Child task 1",
             metadata={},
             parent_id=parent.id,
-            project_id="test-project"
+            project_id="test-project",
         )
         db_session.add(child1)
-        
+
         child2 = Item(
             title="Child Item 2",
             view="FEATURE",
@@ -1099,15 +1088,15 @@ class TestAdvancedWorkflowOperations:
             description="Child task 2",
             metadata={},
             parent_id=parent.id,
-            project_id="test-project"
+            project_id="test-project",
         )
         db_session.add(child2)
         db_session.commit()
-        
+
         # Test dependency visualization
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
             with patch("tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db):
-                result = cli_runner.invoke(item_app, ["deps", parent.id])
+                result = cli_runner.invoke(item_app, ["deps", str(parent.id)])
                 assert result.exit_code == 0
                 assert "Parent Item" in result.stdout
                 assert "Child Item 1" in result.stdout
@@ -1122,33 +1111,27 @@ class TestAdvancedWorkflowOperations:
         for i in range(5):
             item = Item(
                 title=f"Item {i}",
-                view="FEATURE", 
+                view="FEATURE",
                 type="task",
                 description=f"Task item {i}",
                 metadata={"status": "todo"},
-                project_id="test-project"
+                project_id="test-project",
             )
             db_session.add(item)
             db_session.commit()
-            item_ids.append(item.id)
-        
+            item_ids.append(str(item.id))
+
         # Batch update status
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
             with patch("tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db):
                 result = cli_runner.invoke(
                     item_app,
-                    [
-                        "batch-update",
-                        "--ids"] + item_ids + [
-                        "--metadata", json.dumps({"status": "in-progress"})
-                    ]
+                    ["batch-update", "--ids", *item_ids, "--metadata", json.dumps({"status": "in-progress"})],
                 )
                 assert result.exit_code == 0
                 assert "in-progress" in result.stdout
 
-    def test_item_versioning(
-        self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session
-    ) -> None:
+    def test_item_versioning(self, cli_runner: CliRunner, temp_project_dir_with_db: Path, db_session: Session) -> None:
         """Test item versioning and history tracking."""
         # Create item
         item = Item(
@@ -1157,32 +1140,34 @@ class TestAdvancedWorkflowOperations:
             type="feature",
             description="Initial version",
             metadata={"version": 1},
-            project_id="test-project"
+            project_id="test-project",
         )
         db_session.add(item)
         db_session.commit()
-        
+
         # Update item multiple times
         updates = [
             {"title": "Versioned Item v2", "description": "Second version", "metadata": {"version": 2}},
             {"title": "Versioned Item v3", "description": "Third version", "metadata": {"version": 3}},
         ]
-        
+
         for update in updates:
             with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
-                with patch("tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db):
+                with patch(
+                    "tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db
+                ):
                     result = cli_runner.invoke(
                         item_app,
-                        ["update", item.id] + 
-                        [f"--{k}" for k in update.keys() if k != "metadata"] +
-                        ([f"--metadata", json.dumps(update["metadata"])] if "metadata" in update else [])
+                        ["update", str(item.id)]
+                        + [f"--{k}" for k in update if k != "metadata"]
+                        + (["--metadata", json.dumps(update["metadata"])] if "metadata" in update else []),
                     )
                     assert result.exit_code == 0
-        
+
         # View item history
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
             with patch("tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db):
-                result = cli_runner.invoke(item_app, ["history", item.id])
+                result = cli_runner.invoke(item_app, ["history", str(item.id)])
                 assert result.exit_code == 0
                 assert "version" in result.stdout.lower()
 
@@ -1197,23 +1182,20 @@ class TestAdvancedWorkflowOperations:
             type="story",
             description="Item with workflow",
             metadata={"status": "todo", "workflow": "standard"},
-            project_id="test-project"
+            project_id="test-project",
         )
         db_session.add(item)
         db_session.commit()
-        
+
         # Test valid status transition
         valid_transitions = ["todo", "in-progress", "review", "done"]
         for status in valid_transitions:
             with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
-                with patch("tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db):
+                with patch(
+                    "tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db
+                ):
                     result = cli_runner.invoke(
-                        item_app,
-                        [
-                            "update",
-                            item.id,
-                            "--metadata", json.dumps({"status": status})
-                        ]
+                        item_app, ["update", str(item.id), "--metadata", json.dumps({"status": status})]
                     )
                     # Most status transitions should be valid
                     if status in ["todo", "in-progress", "done"]:  # Simplified validation
@@ -1232,25 +1214,17 @@ class TestAdvancedWorkflowOperations:
                 type="task",
                 description=f"Item {i} for tagging",
                 metadata={"tags": []},
-                project_id="test-project"
+                project_id="test-project",
             )
             db_session.add(item)
             db_session.commit()
-            item_ids.append(item.id)
-        
+            item_ids.append(str(item.id))
+
         # Add tags to items
         tags_to_add = ["urgent", "backend", "api"]
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
             with patch("tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db):
-                result = cli_runner.invoke(
-                    item_app,
-                    [
-                        "bulk-tag",
-                        "--ids"
-                    ] + item_ids + [
-                        "--tags"
-                    ] + tags_to_add
-                )
+                result = cli_runner.invoke(item_app, ["bulk-tag", "--ids", *item_ids, "--tags", *tags_to_add])
                 assert result.exit_code == 0
                 assert "tagged" in result.stdout.lower()
 
@@ -1265,20 +1239,16 @@ class TestAdvancedWorkflowOperations:
             type="feature",
             description="Item with workflow automation",
             metadata={"status": "todo", "auto_move": True},
-            project_id="test-project"
+            project_id="test-project",
         )
         db_session.add(item)
         db_session.commit()
-        
+
         # Test automation triggers
         with patch("tracertm.cli.commands.item.DatabaseConnection") as mock_db:
             with patch("tracertm.cli.commands.item._get_project_storage_path", return_value=temp_project_dir_with_db):
                 result = cli_runner.invoke(
                     item_app,
-                    [
-                        "update",
-                        item.id,
-                        "--metadata", json.dumps({"status": "in-progress", "priority": "high"})
-                    ]
+                    ["update", str(item.id), "--metadata", json.dumps({"status": "in-progress", "priority": "high"})],
                 )
                 assert result.exit_code == 0

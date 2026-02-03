@@ -4,8 +4,8 @@ Integration tests for Epic 4: Auto-linking from commit messages (FR18).
 Tests automatic linking of code commits to stories via commit message parsing.
 """
 
-
 import pytest
+
 pytestmark = pytest.mark.integration
 from typer.testing import CliRunner
 

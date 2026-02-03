@@ -44,4 +44,4 @@ export type ExcludeStrict<
 		: never,
 > = Exclude<T, U>;
 
-export {};
+

@@ -10,21 +10,20 @@ Coverage Goal: 80%+ for each file
 - sync_client.py: 35.07% -> 80%+
 """
 
-import asyncio
 import json
 import tempfile
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 import httpx
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import sessionmaker
 
-from tracertm.api.client import TraceRTMClient
+from tracertm.api.client import BatchResult, TraceRTMClient
 from tracertm.api.main import app, get_db
 from tracertm.api.sync_client import (
     ApiClient,
@@ -122,12 +121,12 @@ def fastapi_test_client(test_db_engine, test_project):
 
     async def override_get_db():
         # Create async session from async engine for testing
-        from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
-        
+        from sqlalchemy.ext.asyncio import async_sessionmaker
+
         # Convert sync DB URL to async
         sync_url = str(test_db_engine.url)
         async_url = sync_url.replace("sqlite:///", "sqlite+aiosqlite:///")
-        
+
         async_engine = create_async_engine(async_url, echo=False)
         async_session = async_sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
         async with async_session() as session:
@@ -434,6 +433,7 @@ class TestTraceRTMClientItemOperations:
         )
 
         retrieved = client.get_item(item["id"])
+        assert retrieved is not None
         assert retrieved["description"] == "Detailed description"
         assert retrieved["status"] == "in_progress"
         assert retrieved["priority"] == "high"
@@ -589,6 +589,7 @@ class TestTraceRTMClientItemOperations:
         )
 
         item = client.get_item(created["id"])
+        assert item is not None
         assert item["title"] == "New Title"
         assert item["description"] == "New Description"
         assert item["status"] == "in_progress"
@@ -648,6 +649,7 @@ class TestTraceRTMClientBatchOperations:
         ]
 
         result = client.batch_create_items(items_data)
+        assert isinstance(result, BatchResult)
         assert result["items_created"] == 3
 
         # Verify items exist
@@ -674,6 +676,7 @@ class TestTraceRTMClientBatchOperations:
         ]
 
         result = client.batch_create_items(items_data)
+        assert isinstance(result, BatchResult)
         assert result["items_created"] == 1
 
         items = client.query_items()
@@ -696,13 +699,16 @@ class TestTraceRTMClientBatchOperations:
         ]
 
         result = client.batch_update_items(updates)
+        assert isinstance(result, BatchResult)
         assert result["items_updated"] == 2
 
         # Verify updates
         updated1 = client.get_item(item1["id"])
+        assert updated1 is not None
         assert updated1["status"] == "done"
 
         updated2 = client.get_item(item2["id"])
+        assert updated2 is not None
         assert updated2["status"] == "in_progress"
         assert updated2["priority"] == "high"
         client.close()
@@ -720,6 +726,7 @@ class TestTraceRTMClientBatchOperations:
         ]
 
         result = client.batch_update_items(updates)
+        assert isinstance(result, BatchResult)
         assert result["items_updated"] == 1
         client.close()
 
@@ -733,6 +740,7 @@ class TestTraceRTMClientBatchOperations:
         item3 = client.create_item("Item 3", "FEATURE", "feature")
 
         result = client.batch_delete_items([item1["id"], item2["id"]])
+        assert isinstance(result, BatchResult)
         assert result["items_deleted"] == 2
 
         # Verify deletions
@@ -749,6 +757,7 @@ class TestTraceRTMClientBatchOperations:
         item1 = client.create_item("Item 1", "FEATURE", "feature")
 
         result = client.batch_delete_items([item1["id"], "nonexistent"])
+        assert isinstance(result, BatchResult)
         assert result["items_deleted"] == 1
         client.close()
 
@@ -817,9 +826,7 @@ class TestTraceRTMClientExportImport:
 
         data = {
             "items": [],
-            "links": [
-                {"source_id": item1["id"], "target_id": item2["id"], "type": "depends_on"}
-            ],
+            "links": [{"source_id": item1["id"], "target_id": item2["id"], "type": "depends_on"}],
         }
 
         result = client.import_data(data)
@@ -980,9 +987,7 @@ class TestFastAPIItemEndpoints:
 
     def test_list_items_pagination(self, fastapi_test_client, test_project, sample_items):
         """Test listing items with pagination."""
-        response = fastapi_test_client.get(
-            f"/api/v1/items?project_id={test_project.id}&skip=1&limit=2"
-        )
+        response = fastapi_test_client.get(f"/api/v1/items?project_id={test_project.id}&skip=1&limit=2")
         assert response.status_code == 200
         data = response.json()
         assert len(data["items"]) == 2
@@ -1021,9 +1026,7 @@ class TestFastAPILinkEndpoints:
 
     def test_list_links_pagination(self, fastapi_test_client, test_project, sample_links):
         """Test listing links with pagination."""
-        response = fastapi_test_client.get(
-            f"/api/v1/links?project_id={test_project.id}&skip=1&limit=1"
-        )
+        response = fastapi_test_client.get(f"/api/v1/links?project_id={test_project.id}&skip=1&limit=1")
         assert response.status_code == 200
         data = response.json()
         assert len(data["links"]) == 1
@@ -1041,9 +1044,7 @@ class TestFastAPILinkEndpoints:
 
     def test_update_link_not_found(self, fastapi_test_client):
         """Test updating non-existent link."""
-        response = fastapi_test_client.put(
-            "/api/v1/links/nonexistent", json={"link_type": "new"}
-        )
+        response = fastapi_test_client.put("/api/v1/links/nonexistent", json={"link_type": "new"})
         assert response.status_code == 404
 
 
@@ -1089,18 +1090,14 @@ class TestFastAPIProjectEndpoints:
         """Test updating project."""
         update_data = {"name": "Updated Name", "description": "Updated Description"}
 
-        response = fastapi_test_client.put(
-            f"/api/v1/projects/{test_project.id}", json=update_data
-        )
+        response = fastapi_test_client.put(f"/api/v1/projects/{test_project.id}", json=update_data)
         assert response.status_code == 200
         data = response.json()
         assert data["name"] == "Updated Name"
 
     def test_update_project_not_found(self, fastapi_test_client):
         """Test updating non-existent project."""
-        response = fastapi_test_client.put(
-            "/api/v1/projects/nonexistent", json={"name": "New"}
-        )
+        response = fastapi_test_client.put("/api/v1/projects/nonexistent", json={"name": "New"})
         assert response.status_code == 404
 
     def test_delete_project(self, fastapi_test_client, test_session):
@@ -1126,9 +1123,7 @@ class TestFastAPIAnalysisEndpoints:
     def test_get_impact_analysis(self, fastapi_test_client, test_project, sample_items):
         """Test impact analysis endpoint."""
         # Note: This requires ImpactAnalysisService implementation
-        response = fastapi_test_client.get(
-            f"/api/v1/analysis/impact/{sample_items[0].id}?project_id={test_project.id}"
-        )
+        response = fastapi_test_client.get(f"/api/v1/analysis/impact/{sample_items[0].id}?project_id={test_project.id}")
         # May return error if service not fully implemented
         assert response.status_code in [200, 500]
 
@@ -1153,17 +1148,13 @@ class TestFastAPIExportImportEndpoints:
 
     def test_export_project_json(self, fastapi_test_client, test_project, sample_items):
         """Test exporting project as JSON."""
-        response = fastapi_test_client.get(
-            f"/api/v1/projects/{test_project.id}/export?format=json"
-        )
+        response = fastapi_test_client.get(f"/api/v1/projects/{test_project.id}/export?format=json")
         # May return error if service not fully implemented
         assert response.status_code in [200, 404, 500]
 
     def test_export_project_unsupported_format(self, fastapi_test_client, test_project):
         """Test exporting with unsupported format."""
-        response = fastapi_test_client.get(
-            f"/api/v1/projects/{test_project.id}/export?format=xml"
-        )
+        response = fastapi_test_client.get(f"/api/v1/projects/{test_project.id}/export?format=xml")
         assert response.status_code == 400
 
     def test_import_project_json(self, fastapi_test_client, test_project):
@@ -1173,9 +1164,7 @@ class TestFastAPIExportImportEndpoints:
             "data": json.dumps({"items": [], "links": []}),
         }
 
-        response = fastapi_test_client.post(
-            f"/api/v1/projects/{test_project.id}/import", json=import_data
-        )
+        response = fastapi_test_client.post(f"/api/v1/projects/{test_project.id}/import", json=import_data)
         # May return error if service not fully implemented
         assert response.status_code in [200, 400, 500]
 
@@ -1183,9 +1172,7 @@ class TestFastAPIExportImportEndpoints:
         """Test importing with unsupported format."""
         import_data = {"format": "xml", "data": "<xml></xml>"}
 
-        response = fastapi_test_client.post(
-            f"/api/v1/projects/{test_project.id}/import", json=import_data
-        )
+        response = fastapi_test_client.post(f"/api/v1/projects/{test_project.id}/import", json=import_data)
         assert response.status_code == 400
 
 
@@ -1194,9 +1181,7 @@ class TestFastAPISyncEndpoints:
 
     def test_get_sync_status(self, fastapi_test_client, test_project):
         """Test getting sync status."""
-        response = fastapi_test_client.get(
-            f"/api/v1/projects/{test_project.id}/sync/status"
-        )
+        response = fastapi_test_client.get(f"/api/v1/projects/{test_project.id}/sync/status")
         assert response.status_code == 200
         data = response.json()
         assert "project_id" in data
@@ -1217,9 +1202,7 @@ class TestFastAPISearchEndpoints:
         """Test advanced search endpoint."""
         search_data = {"query": "Feature", "filters": {"status": "todo"}}
 
-        response = fastapi_test_client.post(
-            f"/api/v1/projects/{test_project.id}/search/advanced", json=search_data
-        )
+        response = fastapi_test_client.post(f"/api/v1/projects/{test_project.id}/search/advanced", json=search_data)
         # May return error if service not fully implemented
         assert response.status_code in [200, 500]
 
@@ -1240,8 +1223,7 @@ class TestFastAPIGraphEndpoints:
     def test_get_graph_neighbors_out(self, fastapi_test_client, test_project, sample_links):
         """Test getting outgoing neighbors."""
         response = fastapi_test_client.get(
-            f"/api/v1/projects/{test_project.id}/graph/neighbors"
-            f"?item_id={sample_links[0].source_item_id}&direction=out"
+            f"/api/v1/projects/{test_project.id}/graph/neighbors?item_id={sample_links[0].source_item_id}&direction=out"
         )
         assert response.status_code == 200
         data = response.json()
@@ -1250,8 +1232,7 @@ class TestFastAPIGraphEndpoints:
     def test_get_graph_neighbors_in(self, fastapi_test_client, test_project, sample_links):
         """Test getting incoming neighbors."""
         response = fastapi_test_client.get(
-            f"/api/v1/projects/{test_project.id}/graph/neighbors"
-            f"?item_id={sample_links[0].target_item_id}&direction=in"
+            f"/api/v1/projects/{test_project.id}/graph/neighbors?item_id={sample_links[0].target_item_id}&direction=in"
         )
         assert response.status_code == 200
         data = response.json()
@@ -1321,7 +1302,7 @@ class TestChangeClass:
 
     def test_change_to_dict(self):
         """Test converting Change to dictionary."""
-        timestamp = datetime.utcnow()
+        timestamp = datetime.now(UTC)
         change = Change(
             entity_type="item",
             entity_id="item-123",
@@ -1621,7 +1602,7 @@ class TestApiClientSyncOperations:
             mock_response.json.return_value = {
                 "applied": ["item-1"],
                 "conflicts": [],
-                "server_time": datetime.utcnow().isoformat(),
+                "server_time": datetime.now(UTC).isoformat(),
             }
             mock_request.return_value = mock_response
 
@@ -1654,14 +1635,14 @@ class TestApiClientSyncOperations:
                     }
                 ]
             }
-            mock_request.side_effect = httpx.HTTPStatusError(
-                "Conflict", request=MagicMock(), response=mock_response
-            )
+            mock_request.side_effect = httpx.HTTPStatusError("Conflict", request=MagicMock(), response=mock_response)
 
             with pytest.raises(ConflictError) as exc_info:
                 await client.upload_changes(changes)
 
-            assert len(exc_info.value.conflicts) == 1
+            err = exc_info.value
+            assert isinstance(err, ConflictError)
+            assert len(err.conflicts) == 1
 
         await client.close()
 
@@ -1670,7 +1651,7 @@ class TestApiClientSyncOperations:
         """Test downloading changes."""
         client = ApiClient()
 
-        since = datetime.utcnow() - timedelta(hours=1)
+        since = datetime.now(UTC) - timedelta(hours=1)
 
         with patch.object(client, "_retry_request") as mock_request:
             mock_response = MagicMock()
@@ -1682,7 +1663,7 @@ class TestApiClientSyncOperations:
                         "operation": "create",
                         "data": {"title": "Remote Item"},
                         "version": 1,
-                        "timestamp": datetime.utcnow().isoformat(),
+                        "timestamp": datetime.now(UTC).isoformat(),
                     }
                 ]
             }
@@ -1704,9 +1685,7 @@ class TestApiClientSyncOperations:
             mock_response.json.return_value = {"resolved": True}
             mock_request.return_value = mock_response
 
-            result = await client.resolve_conflict(
-                "conflict-1", ConflictStrategy.LOCAL_WINS, {"status": "done"}
-            )
+            result = await client.resolve_conflict("conflict-1", ConflictStrategy.LOCAL_WINS, {"status": "done"})
             assert result is True
 
         await client.close()
@@ -1719,7 +1698,7 @@ class TestApiClientSyncOperations:
         with patch.object(client, "_retry_request") as mock_request:
             mock_response = MagicMock()
             mock_response.json.return_value = {
-                "last_sync": datetime.utcnow().isoformat(),
+                "last_sync": datetime.now(UTC).isoformat(),
                 "pending_changes": 3,
                 "online": True,
             }
@@ -1738,13 +1717,14 @@ class TestApiClientSyncOperations:
 
         local_changes = [Change("item", "item-1", SyncOperation.CREATE, {"title": "Local"})]
 
-        with patch.object(client, "upload_changes") as mock_upload, patch.object(
-            client, "download_changes"
-        ) as mock_download:
+        with (
+            patch.object(client, "upload_changes") as mock_upload,
+            patch.object(client, "download_changes") as mock_download,
+        ):
             mock_upload.return_value = UploadResult(
                 applied=["item-1"],
                 conflicts=[],
-                server_time=datetime.utcnow(),
+                server_time=datetime.now(UTC),
             )
             mock_download.return_value = []
 
@@ -1772,13 +1752,15 @@ class TestApiClientSyncOperations:
             remote_data={"status": "in_progress"},
         )
 
-        with patch.object(client, "upload_changes") as mock_upload, patch.object(
-            client, "resolve_conflict"
-        ) as mock_resolve, patch.object(client, "download_changes") as mock_download:
+        with (
+            patch.object(client, "upload_changes") as mock_upload,
+            patch.object(client, "resolve_conflict") as mock_resolve,
+            patch.object(client, "download_changes") as mock_download,
+        ):
             # First upload raises conflict
             mock_upload.side_effect = [
                 ConflictError("Conflict", [conflict]),
-                UploadResult(applied=["item-1"], conflicts=[], server_time=datetime.utcnow()),
+                UploadResult(applied=["item-1"], conflicts=[], server_time=datetime.now(UTC)),
             ]
             mock_resolve.return_value = True
             mock_download.return_value = []

@@ -25,4 +25,4 @@ export type IfNull<T, TypeIfNull = true, TypeIfNotNull = false> = (
 	IsNull<T> extends true ? TypeIfNull : TypeIfNotNull
 );
 
-export {};
+

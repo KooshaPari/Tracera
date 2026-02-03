@@ -2,8 +2,9 @@
 
 import csv
 import json
-from datetime import datetime
+from datetime import UTC, datetime
 from io import StringIO
+from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -24,9 +25,11 @@ class ExportService:
     async def export_to_json(self, project_id: str) -> str:
         """Export project to JSON format."""
         project = await self.projects.get_by_id(project_id)
+        if not project:
+            raise ValueError("Project not found")
         items = await self.items.query(project_id, {})
 
-        data = {
+        data: dict[str, Any] = {
             "project": {
                 "id": project.id,
                 "name": project.name,
@@ -43,29 +46,25 @@ class ExportService:
 
         # Add items
         for item in items:
-            data["items"].append(
-                {
-                    "id": item.id,
-                    "title": item.title,
-                    "view": item.view,
-                    "type": item.item_type,
-                    "status": item.status,
-                    "description": item.description,
-                    "version": item.version,
-                }
-            )
+            data["items"].append({
+                "id": item.id,
+                "title": item.title,
+                "view": item.view,
+                "type": item.item_type,
+                "status": item.status,
+                "description": item.description,
+                "version": item.version,
+            })
 
         # Add links
         for item in items:
-            links = await self.links.get_by_source(item.id)
+            links = await self.links.get_by_source(str(item.id))
             for link in links:
-                data["links"].append(
-                    {
-                        "source_id": link.source_item_id,
-                        "target_id": link.target_item_id,
-                        "type": link.link_type,
-                    }
-                )
+                data["links"].append({
+                    "source_id": link.source_item_id,
+                    "target_id": link.target_item_id,
+                    "type": link.link_type,
+                })
 
         return json.dumps(data, indent=2)
 
@@ -81,27 +80,27 @@ class ExportService:
 
         writer.writeheader()
         for item in items:
-            writer.writerow(
-                {
-                    "ID": item.id,
-                    "Title": item.title,
-                    "View": item.view,
-                    "Type": item.item_type,
-                    "Status": item.status,
-                    "Description": item.description or "",
-                }
-            )
+            writer.writerow({
+                "ID": item.id,
+                "Title": item.title,
+                "View": item.view,
+                "Type": item.item_type,
+                "Status": item.status,
+                "Description": item.description or "",
+            })
 
         return output.getvalue()
 
     async def export_to_markdown(self, project_id: str) -> str:
         """Export project to Markdown format."""
         project = await self.projects.get_by_id(project_id)
+        if not project:
+            raise ValueError("Project not found")
         items = await self.items.query(project_id, {})
 
         md = f"# {project.name}\n\n"
         md += f"{project.description}\n\n"
-        md += f"**Generated:** {datetime.utcnow().isoformat()}\n\n"
+        md += f"**Generated:** {datetime.now(UTC).isoformat()}\n\n"
 
         # Group items by view
         by_view: dict[str, list] = {}
@@ -144,11 +143,10 @@ class ExportService:
         # Data rows
         for source in source_items:
             row = [source.title]
-            links = await self.links.get_by_source(source.id)
+            links = await self.links.get_by_source(str(source.id))
             link_targets = {link.target_item_id for link in links}
 
-            for target in target_items:
-                row.append("X" if target.id in link_targets else "")
+            row.extend("X" if target.id in link_targets else "" for target in target_items)
 
             writer.writerow(row)
 
@@ -191,20 +189,18 @@ class ExportService:
         # Build links list
         links_list = []
         for item in items:
-            links = await self.links.get_by_source(item.id)
-            for link in links:
-                links_list.append({
-                    "source_id": link.source_item_id,
-                    "target_id": link.target_item_id,
-                    "type": link.link_type,
-                })
+            links = await self.links.get_by_source(str(item.id))
+            links_list.extend([
+                {"source_id": link.source_item_id, "target_id": link.target_item_id, "type": link.link_type}
+                for link in links
+            ])
 
         data = {
             "project": {
                 "id": project.id if project else project_id,
                 "name": project.name if project else "Unknown",
                 "description": project.description if project else "",
-                "export_date": datetime.utcnow().isoformat(),
+                "export_date": datetime.now(UTC).isoformat(),
             },
             "items": items_list,
             "links": links_list,
@@ -230,7 +226,7 @@ class ExportService:
         yaml_lines.append(f"  id: {project.id if project else project_id}")
         yaml_lines.append(f"  name: {project.name if project else 'Unknown'}")
         yaml_lines.append(f"  description: {project.description if project else ''}")
-        yaml_lines.append(f"  export_date: {datetime.utcnow().isoformat()}")
+        yaml_lines.append(f"  export_date: {datetime.now(UTC).isoformat()}")
         yaml_lines.append("items:")
 
         for item in items:
@@ -244,7 +240,7 @@ class ExportService:
 
         yaml_lines.append("links:")
         for item in items:
-            links = await self.links.get_by_source(item.id)
+            links = await self.links.get_by_source(str(item.id))
             for link in links:
                 yaml_lines.append("  - source_id: " + str(link.source_item_id))
                 yaml_lines.append("    target_id: " + str(link.target_item_id))

@@ -93,4 +93,4 @@ export declare class ValidationContext extends ASTValidationContext {
   getEnumValue(): Maybe<GraphQLEnumValue>;
 }
 export declare type ValidationRule = (context: ValidationContext) => ASTVisitor;
-export {};
+

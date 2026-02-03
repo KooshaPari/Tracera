@@ -255,11 +255,11 @@ async function fetchTraceabilityMatrix(
 							typeof tcValue === "object" && tcValue !== null ? tcValue : {}
 						) as Record<string, unknown>;
 						return {
-							testCaseId: tc["test_case_id"],
-							coverageType: tc["coverage_type"],
 							coveragePercentage: tc["coverage_percentage"],
+							coverageType: tc["coverage_type"],
 							lastTestResult: tc["last_test_result"],
 							lastTestedAt: tc["last_tested_at"],
+							testCaseId: tc["test_case_id"],
 						};
 					},
 				),

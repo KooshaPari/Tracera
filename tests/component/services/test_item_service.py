@@ -1,8 +1,7 @@
 import pytest
 
 from tracertm.models.item import Item
-from tracertm.models.link import Link
-from tracertm.services.item_service import ItemService, STATUS_TRANSITIONS
+from tracertm.services.item_service import ItemService
 
 pytestmark = pytest.mark.integration
 
@@ -45,6 +44,7 @@ async def test_update_item_logs_event_and_links(async_session):
     assert updated.owner == "alice"
 
     from sqlalchemy import select
+
     from tracertm.models.event import Event
 
     events = (await async_session.execute(select(Event))).scalars().all()

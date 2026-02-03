@@ -17,7 +17,7 @@ Utf7Codec.prototype.bomAware = true;
 
 // -- Encoding
 
-var nonDirectChars = /[^A-Za-z0-9'\(\),-\.\/:\? \n\r\t]+/g;
+var nonDirectChars = /[^A-Za-z0-9'(),-./:? \n\r\t]+/g;
 
 function Utf7Encoder(options, codec) {
     this.iconv = codec.iconv;
@@ -45,7 +45,7 @@ function Utf7Decoder(options, codec) {
     this.base64Accum = '';
 }
 
-var base64Regex = /[A-Za-z0-9\/+]/;
+var base64Regex = /[A-Za-z0-9/+]/;
 var base64Chars = [];
 for (var i = 0; i < 256; i++)
     base64Chars[i] = base64Regex.test(String.fromCharCode(i));

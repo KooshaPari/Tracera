@@ -5,14 +5,11 @@ Tests HTTP request/response handling, retries, error handling,
 and mock HTTP interactions for sync operations.
 """
 
-import json
-from datetime import datetime
-from unittest.mock import AsyncMock, MagicMock, patch
+from datetime import UTC, datetime, timezone
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from httpx import AsyncClient, ConnectError, HTTPStatusError, Request, Response
-
-
+from httpx import AsyncClient, ConnectError, Request, Response
 
 # ============================================================================
 # FIXTURES
@@ -43,7 +40,7 @@ def api_config():
         "api_key": "test-api-key-123",
         "client_id": "cli-abc123",
         "timeout": 30.0,
-        "max_retries": 3
+        "max_retries": 3,
     }
 
 
@@ -52,19 +49,15 @@ def sample_upload_payload():
     """Sample upload sync payload"""
     return {
         "client_id": "cli-abc123",
-        "last_sync": datetime.utcnow().isoformat(),
+        "last_sync": datetime.now(UTC).isoformat(),
         "changes": [
             {
                 "entity_type": "item",
                 "entity_id": "item-001",
                 "operation": "create",
-                "payload": {
-                    "title": "New Item",
-                    "status": "todo",
-                    "type": "story"
-                }
+                "payload": {"title": "New Item", "status": "todo", "type": "story"},
             }
-        ]
+        ],
     }
 
 
@@ -77,13 +70,10 @@ def sample_download_response():
                 "entity_type": "item",
                 "entity_id": "item-002",
                 "operation": "update",
-                "payload": {
-                    "title": "Updated Item",
-                    "status": "done"
-                }
+                "payload": {"title": "Updated Item", "status": "done"},
             }
         ],
-        "server_time": datetime.utcnow().isoformat()
+        "server_time": datetime.now(UTC).isoformat(),
     }
 
 
@@ -113,14 +103,13 @@ class TestApiClientRequestResponse:
         mock_response = Response(
             status_code=200,
             json={"status": "ok", "data": []},
-            request=Request("GET", f"{api_config['base_url']}/api/sync/status")
+            request=Request("GET", f"{api_config['base_url']}/api/sync/status"),
         )
         mock_httpx_client.get.return_value = mock_response
 
         # Act
         response = await mock_httpx_client.get(
-            f"{api_config['base_url']}/api/sync/status",
-            headers={"Authorization": f"Bearer {api_config['api_key']}"}
+            f"{api_config['base_url']}/api/sync/status", headers={"Authorization": f"Bearer {api_config['api_key']}"}
         )
 
         # Assert
@@ -142,7 +131,7 @@ class TestApiClientRequestResponse:
         mock_response = Response(
             status_code=200,
             json={"success": True, "applied": 1, "conflicts": []},
-            request=Request("POST", f"{api_config['base_url']}/api/sync/upload")
+            request=Request("POST", f"{api_config['base_url']}/api/sync/upload"),
         )
         mock_httpx_client.post.return_value = mock_response
 
@@ -150,7 +139,7 @@ class TestApiClientRequestResponse:
         response = await mock_httpx_client.post(
             f"{api_config['base_url']}/api/sync/upload",
             json=sample_upload_payload,
-            headers={"Authorization": f"Bearer {api_config['api_key']}"}
+            headers={"Authorization": f"Bearer {api_config['api_key']}"},
         )
 
         # Assert
@@ -173,15 +162,15 @@ class TestApiClientRequestResponse:
         mock_response = Response(
             status_code=200,
             json=sample_download_response,
-            request=Request("GET", f"{api_config['base_url']}/api/sync/changes")
+            request=Request("GET", f"{api_config['base_url']}/api/sync/changes"),
         )
         mock_httpx_client.get.return_value = mock_response
 
         # Act
         response = await mock_httpx_client.get(
             f"{api_config['base_url']}/api/sync/changes",
-            params={"since": datetime.utcnow().isoformat()},
-            headers={"Authorization": f"Bearer {api_config['api_key']}"}
+            params={"since": datetime.now(UTC).isoformat()},
+            headers={"Authorization": f"Bearer {api_config['api_key']}"},
         )
 
         # Assert
@@ -203,14 +192,13 @@ class TestApiClientRequestResponse:
         mock_response = Response(
             status_code=200,
             json={"authenticated": True},
-            request=Request("GET", f"{api_config['base_url']}/api/sync/status")
+            request=Request("GET", f"{api_config['base_url']}/api/sync/status"),
         )
         mock_httpx_client.get.return_value = mock_response
 
         # Act
         await mock_httpx_client.get(
-            f"{api_config['base_url']}/api/sync/status",
-            headers={"Authorization": f"Bearer {api_config['api_key']}"}
+            f"{api_config['base_url']}/api/sync/status", headers={"Authorization": f"Bearer {api_config['api_key']}"}
         )
 
         # Assert
@@ -245,7 +233,7 @@ class TestApiClientErrorHandling:
         mock_response = Response(
             status_code=404,
             json={"error": "Not found"},
-            request=Request("GET", f"{api_config['base_url']}/api/invalid")
+            request=Request("GET", f"{api_config['base_url']}/api/invalid"),
         )
         mock_httpx_client.get.return_value = mock_response
 
@@ -270,14 +258,12 @@ class TestApiClientErrorHandling:
         mock_response = Response(
             status_code=401,
             json={"error": "Unauthorized"},
-            request=Request("GET", f"{api_config['base_url']}/api/sync/status")
+            request=Request("GET", f"{api_config['base_url']}/api/sync/status"),
         )
         mock_httpx_client.get.return_value = mock_response
 
         # Act
-        response = await mock_httpx_client.get(
-            f"{api_config['base_url']}/api/sync/status"
-        )
+        response = await mock_httpx_client.get(f"{api_config['base_url']}/api/sync/status")
 
         # Assert
         assert response.status_code == 401
@@ -297,7 +283,7 @@ class TestApiClientErrorHandling:
         mock_response = Response(
             status_code=500,
             json={"error": "Internal server error"},
-            request=Request("GET", f"{api_config['base_url']}/api/sync/status")
+            request=Request("GET", f"{api_config['base_url']}/api/sync/status"),
         )
         mock_httpx_client.get.return_value = mock_response
 
@@ -336,7 +322,8 @@ class TestApiClientErrorHandling:
         """
         # Arrange
         import asyncio
-        mock_httpx_client.get.side_effect = asyncio.TimeoutError("Request timeout")
+
+        mock_httpx_client.get.side_effect = TimeoutError("Request timeout")
 
         # Act & Assert
         with pytest.raises(asyncio.TimeoutError):
@@ -367,16 +354,11 @@ class TestApiClientRetryLogic:
         """
         # Arrange
         mock_response = Response(
-            status_code=200,
-            json={"status": "ok"},
-            request=Request("GET", f"{api_config['base_url']}/api/sync/status")
+            status_code=200, json={"status": "ok"}, request=Request("GET", f"{api_config['base_url']}/api/sync/status")
         )
 
         # First call fails, second succeeds
-        mock_httpx_client.get.side_effect = [
-            ConnectError("Connection failed"),
-            mock_response
-        ]
+        mock_httpx_client.get.side_effect = [ConnectError("Connection failed"), mock_response]
 
         # Act - Simulate retry logic
         max_retries = 3
@@ -407,19 +389,17 @@ class TestApiClientRetryLogic:
         error_response = Response(
             status_code=500,
             json={"error": "Server error"},
-            request=Request("GET", f"{api_config['base_url']}/api/sync/status")
+            request=Request("GET", f"{api_config['base_url']}/api/sync/status"),
         )
         success_response = Response(
-            status_code=200,
-            json={"status": "ok"},
-            request=Request("GET", f"{api_config['base_url']}/api/sync/status")
+            status_code=200, json={"status": "ok"}, request=Request("GET", f"{api_config['base_url']}/api/sync/status")
         )
 
         mock_httpx_client.get.side_effect = [error_response, success_response]
 
         # Act - Simulate retry on 5xx
         max_retries = 3
-        for attempt in range(max_retries):
+        for _attempt in range(max_retries):
             response = await mock_httpx_client.get(f"{api_config['base_url']}/api/sync/status")
             if response.status_code < 500:
                 break
@@ -468,15 +448,12 @@ class TestApiClientRetryLogic:
         mock_response = Response(
             status_code=400,
             json={"error": "Bad request"},
-            request=Request("POST", f"{api_config['base_url']}/api/sync/upload")
+            request=Request("POST", f"{api_config['base_url']}/api/sync/upload"),
         )
         mock_httpx_client.post.return_value = mock_response
 
         # Act
-        response = await mock_httpx_client.post(
-            f"{api_config['base_url']}/api/sync/upload",
-            json={}
-        )
+        response = await mock_httpx_client.post(f"{api_config['base_url']}/api/sync/upload", json={})
 
         # Assert - No retry on 4xx errors
         assert response.status_code == 400
@@ -498,7 +475,7 @@ class TestApiClientRetryLogic:
         # Act
         delays = []
         for retry_count in range(5):
-            delay = min(base_delay * (2 ** retry_count), max_delay)
+            delay = min(base_delay * (2**retry_count), max_delay)
             delays.append(delay)
 
         # Assert
@@ -537,23 +514,17 @@ class TestApiClientConflictHandling:
             json={
                 "success": False,
                 "applied": 0,
-                "conflicts": [{
-                    "entity_id": "item-001",
-                    "local_version": 2,
-                    "remote_version": 3,
-                    "reason": "version_mismatch"
-                }],
-                "server_time": datetime.utcnow().isoformat()
+                "conflicts": [
+                    {"entity_id": "item-001", "local_version": 2, "remote_version": 3, "reason": "version_mismatch"}
+                ],
+                "server_time": datetime.now(UTC).isoformat(),
             },
-            request=Request("POST", f"{api_config['base_url']}/api/sync/upload")
+            request=Request("POST", f"{api_config['base_url']}/api/sync/upload"),
         )
         mock_httpx_client.post.return_value = mock_response
 
         # Act
-        response = await mock_httpx_client.post(
-            f"{api_config['base_url']}/api/sync/upload",
-            json={"changes": []}
-        )
+        response = await mock_httpx_client.post(f"{api_config['base_url']}/api/sync/upload", json={"changes": []})
 
         # Assert
         result = response.json()
@@ -575,21 +546,14 @@ class TestApiClientConflictHandling:
         mock_response = Response(
             status_code=200,
             json={"resolved": True, "version": 4},
-            request=Request("POST", f"{api_config['base_url']}/api/sync/resolve")
+            request=Request("POST", f"{api_config['base_url']}/api/sync/resolve"),
         )
         mock_httpx_client.post.return_value = mock_response
 
-        resolution_payload = {
-            "conflict_id": "conflict-001",
-            "resolution": "local",
-            "merged_content": None
-        }
+        resolution_payload = {"conflict_id": "conflict-001", "resolution": "local", "merged_content": None}
 
         # Act
-        response = await mock_httpx_client.post(
-            f"{api_config['base_url']}/api/sync/resolve",
-            json=resolution_payload
-        )
+        response = await mock_httpx_client.post(f"{api_config['base_url']}/api/sync/resolve", json=resolution_payload)
 
         # Assert
         assert response.status_code == 200
@@ -621,12 +585,8 @@ class TestApiClientSyncStatus:
         # Arrange
         mock_response = Response(
             status_code=200,
-            json={
-                "last_sync": datetime.utcnow().isoformat(),
-                "pending_changes": 5,
-                "online": True
-            },
-            request=Request("GET", f"{api_config['base_url']}/api/sync/status")
+            json={"last_sync": datetime.now(UTC).isoformat(), "pending_changes": 5, "online": True},
+            request=Request("GET", f"{api_config['base_url']}/api/sync/status"),
         )
         mock_httpx_client.get.return_value = mock_response
 
@@ -651,9 +611,7 @@ class TestApiClientSyncStatus:
         """
         # Arrange
         mock_response = Response(
-            status_code=200,
-            json={"online": True},
-            request=Request("GET", f"{api_config['base_url']}/api/ping")
+            status_code=200, json={"online": True}, request=Request("GET", f"{api_config['base_url']}/api/ping")
         )
         mock_httpx_client.get.return_value = mock_response
 
@@ -691,11 +649,7 @@ class TestApiClientRequestValidation:
         Then: Required fields are present
         """
         # Arrange
-        payload = {
-            "client_id": api_config["client_id"],
-            "last_sync": datetime.utcnow().isoformat(),
-            "changes": []
-        }
+        payload = {"client_id": api_config["client_id"], "last_sync": datetime.now(UTC).isoformat(), "changes": []}
 
         # Act & Assert
         assert "client_id" in payload
@@ -717,7 +671,7 @@ class TestApiClientRequestValidation:
             "entity_type": "item",
             "entity_id": "item-001",
             "operation": "create",
-            "payload": {"title": "New Item"}
+            "payload": {"title": "New Item"},
         }
 
         # Act & Assert

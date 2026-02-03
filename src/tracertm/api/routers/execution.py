@@ -1,11 +1,9 @@
 """FastAPI routes for execution system (QA Integration executions, artifacts, config)."""
 
-from typing import Optional
-
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from tracertm.api.deps import get_db, auth_guard
+from tracertm.api.deps import auth_guard, get_db
 from tracertm.schemas.execution import (
     ExecutionArtifactCreate,
     ExecutionArtifactListResponse,
@@ -20,7 +18,6 @@ from tracertm.schemas.execution import (
 )
 from tracertm.services.execution.execution_service import ExecutionService
 from tracertm.services.recording.vhs_service import VHSExecutionService
-from tracertm.services.recording.tape_generator import TapeFileGenerator
 
 router = APIRouter(prefix="/projects/{project_id}/executions", tags=["Executions"])
 
@@ -60,8 +57,8 @@ async def create_execution(
 @router.get("", response_model=ExecutionListResponse)
 async def list_executions(
     project_id: str,
-    status: Optional[str] = Query(None, description="Filter by status"),
-    execution_type: Optional[str] = Query(None, description="Filter by type"),
+    status: str | None = Query(None, description="Filter by status"),
+    execution_type: str | None = Query(None, description="Filter by type"),
     limit: int = Query(100, ge=1, le=1000),
     offset: int = Query(0, ge=0),
     claims: dict = Depends(auth_guard),
@@ -202,7 +199,7 @@ async def complete_execution(
 async def list_artifacts(
     project_id: str,
     execution_id: str,
-    artifact_type: Optional[str] = Query(None, description="Filter by artifact type"),
+    artifact_type: str | None = Query(None, description="Filter by artifact type"),
     claims: dict = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
@@ -215,9 +212,7 @@ async def list_artifacts(
         raise HTTPException(status_code=403, detail="Forbidden")
 
     artifacts = await service.list_artifacts(execution_id, artifact_type=artifact_type)
-    response_artifacts = [
-        ExecutionArtifactResponse.model_validate(artifact) for artifact in artifacts
-    ]
+    response_artifacts = [ExecutionArtifactResponse.model_validate(artifact) for artifact in artifacts]
     return ExecutionArtifactListResponse(
         artifacts=response_artifacts,
         total=len(response_artifacts),
@@ -255,8 +250,7 @@ async def add_artifact(
     if not artifact:
         raise HTTPException(status_code=500, detail="Failed to store artifact")
 
-    response = ExecutionArtifactResponse.model_validate(artifact)
-    return response
+    return ExecutionArtifactResponse.model_validate(artifact)
 
 
 # =============================================================================
@@ -298,10 +292,9 @@ async def update_execution_config(
     service = ExecutionService(db)
 
     # Build update dict from non-None fields
-    update_data = {}
-    for field, value in config_update.model_dump(exclude_unset=True).items():
-        if value is not None:
-            update_data[field] = value
+    update_data = {
+        field: value for field, value in config_update.model_dump(exclude_unset=True).items() if value is not None
+    }
 
     config = await service.upsert_config(project_id, **update_data)
     return ExecutionEnvironmentConfigResponse.model_validate(config)
@@ -338,7 +331,7 @@ async def generate_vhs_tape(
 
     # Use VHS service to generate tape
     try:
-        vhs_service = VHSExecutionService()
+        VHSExecutionService(service)  # ensure service available; tape generation is placeholder
         config = await service.get_config(project_id)
 
         # Prepare tape generation parameters
@@ -357,4 +350,4 @@ async def generate_vhs_tape(
             "message": "VHS tape generation queued",
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to generate tape: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate tape: {e!s}") from e

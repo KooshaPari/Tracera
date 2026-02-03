@@ -57,7 +57,7 @@
 		'boolean': /\b(?:false|true)\b/,
 
 		'operator': /<-|\.[*/]=?|\|\|?|&&|[!=<>+\-*/]=?|['^%~?:]/,
-		'punctuation': /[()\[\]{},;]/
+		'punctuation': /[()[\]{},;]/
 	};
 
 	Prism.languages.stan.constraint.inside.expression.inside = Prism.languages.stan;

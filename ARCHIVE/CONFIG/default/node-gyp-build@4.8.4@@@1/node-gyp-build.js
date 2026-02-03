@@ -88,7 +88,7 @@ function getFirst (dir, filter) {
 }
 
 function matchBuild (name) {
-  return /\.node$/.test(name)
+  return name.endsWith('.node')
 }
 
 function parseTuple (name) {

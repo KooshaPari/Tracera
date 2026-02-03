@@ -45,4 +45,4 @@ export declare type Compute<A extends any, depth extends Depth = 'deep'> = {
     'flat': ComputeFlat<A>;
     'deep': ComputeDeep<A>;
 }[depth];
-export {};
+

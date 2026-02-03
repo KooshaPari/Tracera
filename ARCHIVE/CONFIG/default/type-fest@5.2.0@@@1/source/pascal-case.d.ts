@@ -48,4 +48,4 @@ type _PascalCase<Value, Options extends Required<CamelCaseOptions>> = CamelCase<
 	? Capitalize<CamelCase<Value, Options>>
 	: CamelCase<Value, Options>;
 
-export {};
+

@@ -748,7 +748,7 @@ export const serializeCalc = (value: string, opt: Options = {}): string => {
       return res;
     })
     .filter(v => v);
-  let startIndex = items.findLastIndex((item: string) => /\($/.test(item));
+  let startIndex = items.findLastIndex((item: string) => item.endsWith('('));
   while (startIndex) {
     const endIndex = items.findIndex((item: unknown, index: number) => {
       return item === ')' && index > startIndex;
@@ -761,7 +761,7 @@ export const serializeCalc = (value: string, opt: Options = {}): string => {
       });
     }
     items.splice(startIndex, endIndex - startIndex + 1, serializedValue);
-    startIndex = items.findLastIndex((item: string) => /\($/.test(item));
+    startIndex = items.findLastIndex((item: string) => item.endsWith('('));
   }
   const serializedCalc = sortCalcValues(items, true);
   setCache(cacheKey, serializedCalc);

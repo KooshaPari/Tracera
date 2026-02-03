@@ -15,4 +15,4 @@ type Formatter = (
 export declare const formatters: {
   [token: string]: Formatter;
 };
-export {};
+

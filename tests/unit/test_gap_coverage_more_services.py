@@ -5,9 +5,9 @@ Targets: query_optimization_service.py (22.58%), project_backup_service.py (11.9
          performance_tuning_service.py (59.77%), ingestion_service.py (75%)
 """
 
+from unittest.mock import AsyncMock, MagicMock
+
 import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
-from datetime import datetime
 
 
 class TestQueryOptimizationService:
@@ -16,6 +16,7 @@ class TestQueryOptimizationService:
     def test_query_optimization_service_import(self):
         """Test QueryOptimizationService can be imported."""
         from tracertm.services.query_optimization_service import QueryOptimizationService
+
         assert QueryOptimizationService is not None
 
     def test_query_optimization_service_init(self):
@@ -239,9 +240,7 @@ class TestQueryOptimizationService:
         service = QueryOptimizationService(mock_session)
 
         # More than 50% of queries filter by status
-        service.query_stats = [
-            {"query_filters": {"status": "todo"}} for _ in range(8)
-        ] + [
+        service.query_stats = [{"query_filters": {"status": "todo"}} for _ in range(8)] + [
             {"query_filters": {"type": "task"}} for _ in range(4)
         ]
 
@@ -257,9 +256,7 @@ class TestQueryOptimizationService:
         service = QueryOptimizationService(mock_session)
 
         # More than 50% of queries filter by view
-        service.query_stats = [
-            {"query_filters": {"view": "FEATURE"}} for _ in range(8)
-        ] + [
+        service.query_stats = [{"query_filters": {"view": "FEATURE"}} for _ in range(8)] + [
             {"query_filters": {"type": "task"}} for _ in range(4)
         ]
 
@@ -296,6 +293,7 @@ class TestProjectBackupService:
     def test_project_backup_service_import(self):
         """Test ProjectBackupService can be imported."""
         from tracertm.services.project_backup_service import ProjectBackupService
+
         assert ProjectBackupService is not None
 
     def test_project_backup_service_init(self):
@@ -314,6 +312,7 @@ class TestTraceabilityMatrixService:
     def test_traceability_matrix_service_import(self):
         """Test TraceabilityMatrixService can be imported."""
         from tracertm.services.traceability_matrix_service import TraceabilityMatrixService
+
         assert TraceabilityMatrixService is not None
 
 
@@ -323,6 +322,7 @@ class TestShortestPathService:
     def test_shortest_path_service_import(self):
         """Test ShortestPathService can be imported."""
         from tracertm.services.shortest_path_service import ShortestPathService
+
         assert ShortestPathService is not None
 
 
@@ -332,6 +332,7 @@ class TestPerformanceTuningService:
     def test_performance_tuning_service_import(self):
         """Test PerformanceTuningService can be imported."""
         from tracertm.services.performance_tuning_service import PerformanceTuningService
+
         assert PerformanceTuningService is not None
 
 
@@ -341,6 +342,7 @@ class TestIngestionService:
     def test_ingestion_service_import(self):
         """Test IngestionService can be imported."""
         from tracertm.services.ingestion_service import IngestionService
+
         assert IngestionService is not None
 
     def test_ingestion_service_init(self):
@@ -356,6 +358,6 @@ class TestIngestionService:
         from tracertm.services.ingestion_service import IngestionService
 
         service = IngestionService()
-        result = await service.ingest({"data": "test"})
+        result = await service.ingest([{"data": "test"}])
 
         assert isinstance(result, dict)

@@ -16,29 +16,22 @@ Coverage areas:
 - Recovery scenarios
 """
 
-import asyncio
-import hashlib
 import json
 import tempfile
 import time
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, Mock, PropertyMock, patch, mock_open
-from types import SimpleNamespace
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 import pytest_asyncio
 import yaml
 from sqlalchemy import create_engine, text
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
 # Import ALL models to ensure they're registered with Base.metadata
-from tracertm.models import Base, Item, Link, Project
-from tracertm.models.agent import Agent
-from tracertm.models.agent_event import AgentEvent
-from tracertm.models.agent_lock import AgentLock
-from tracertm.models.event import Event
+from tracertm.models import Base
 from tracertm.storage.conflict_resolver import (
     Conflict,
     ConflictBackup,
@@ -46,16 +39,9 @@ from tracertm.storage.conflict_resolver import (
     ConflictStatus,
     ConflictStrategy,
     EntityVersion,
-    ResolvedEntity,
     VectorClock,
     compare_versions,
     format_conflict_summary,
-)
-from tracertm.storage.file_watcher import TraceFileWatcher, _TraceEventHandler
-from tracertm.storage.local_storage import (
-    ItemStorage,
-    LocalStorageManager,
-    ProjectStorage,
 )
 from tracertm.storage.markdown_parser import (
     ItemData,
@@ -79,13 +65,11 @@ from tracertm.storage.sync_engine import (
     SyncEngine,
     SyncQueue,
     SyncResult,
-    SyncState,
     SyncStateManager,
     SyncStatus,
     create_sync_engine,
     exponential_backoff,
 )
-
 
 # ============================================================================
 # Fixtures
@@ -163,9 +147,7 @@ async def async_db_session(temp_dir):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-    AsyncSessionLocal = async_sessionmaker(
-        engine, class_=AsyncSession, expire_on_commit=False
-    )
+    AsyncSessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
     async with AsyncSessionLocal() as session:
         yield session
@@ -315,10 +297,7 @@ class TestChangeDetector:
         # Modify file
         md_file.write_text("# New Content")
 
-        changes = ChangeDetector.detect_changes_in_directory(
-            temp_dir,
-            {"test.md": old_hash}
-        )
+        changes = ChangeDetector.detect_changes_in_directory(temp_dir, {"test.md": old_hash})
 
         assert len(changes) == 1
         assert changes[0][0] == md_file
@@ -331,10 +310,7 @@ class TestChangeDetector:
         md_file.write_text(content)
         stored_hash = ChangeDetector.compute_hash(content)
 
-        changes = ChangeDetector.detect_changes_in_directory(
-            temp_dir,
-            {"test.md": stored_hash}
-        )
+        changes = ChangeDetector.detect_changes_in_directory(temp_dir, {"test.md": stored_hash})
 
         assert changes == []
 
@@ -358,12 +334,7 @@ class TestSyncQueue:
         """Test enqueueing a new change."""
         queue = SyncQueue(mock_db_connection)
 
-        queue_id = queue.enqueue(
-            EntityType.ITEM,
-            "item-123",
-            OperationType.CREATE,
-            {"title": "Test Item"}
-        )
+        queue_id = queue.enqueue(EntityType.ITEM, "item-123", OperationType.CREATE, {"title": "Test Item"})
 
         assert queue_id is not None
 
@@ -371,19 +342,9 @@ class TestSyncQueue:
         """Test enqueueing duplicate entry replaces existing."""
         queue = SyncQueue(mock_db_connection)
 
-        id1 = queue.enqueue(
-            EntityType.ITEM,
-            "item-123",
-            OperationType.CREATE,
-            {"title": "First"}
-        )
+        id1 = queue.enqueue(EntityType.ITEM, "item-123", OperationType.CREATE, {"title": "First"})
 
-        id2 = queue.enqueue(
-            EntityType.ITEM,
-            "item-123",
-            OperationType.CREATE,
-            {"title": "Second"}
-        )
+        id2 = queue.enqueue(EntityType.ITEM, "item-123", OperationType.CREATE, {"title": "Second"})
 
         # Should replace, not create new
         pending = queue.get_pending()
@@ -404,12 +365,7 @@ class TestSyncQueue:
 
         # Enqueue multiple items
         for i in range(5):
-            queue.enqueue(
-                EntityType.ITEM,
-                f"item-{i}",
-                OperationType.CREATE,
-                {"index": i}
-            )
+            queue.enqueue(EntityType.ITEM, f"item-{i}", OperationType.CREATE, {"index": i})
 
         pending = queue.get_pending(limit=3)
 
@@ -433,12 +389,7 @@ class TestSyncQueue:
         """Test removing item from queue."""
         queue = SyncQueue(mock_db_connection)
 
-        queue_id = queue.enqueue(
-            EntityType.ITEM,
-            "item-123",
-            OperationType.CREATE,
-            {"title": "Test"}
-        )
+        queue_id = queue.enqueue(EntityType.ITEM, "item-123", OperationType.CREATE, {"title": "Test"})
 
         queue.remove(queue_id)
 
@@ -455,12 +406,7 @@ class TestSyncQueue:
         """Test update_retry increments retry count."""
         queue = SyncQueue(mock_db_connection)
 
-        queue_id = queue.enqueue(
-            EntityType.ITEM,
-            "item-123",
-            OperationType.CREATE,
-            {"title": "Test"}
-        )
+        queue_id = queue.enqueue(EntityType.ITEM, "item-123", OperationType.CREATE, {"title": "Test"})
 
         queue.update_retry(queue_id, "Network error")
 
@@ -472,12 +418,7 @@ class TestSyncQueue:
         """Test update_retry can be called multiple times."""
         queue = SyncQueue(mock_db_connection)
 
-        queue_id = queue.enqueue(
-            EntityType.ITEM,
-            "item-123",
-            OperationType.CREATE,
-            {"title": "Test"}
-        )
+        queue_id = queue.enqueue(EntityType.ITEM, "item-123", OperationType.CREATE, {"title": "Test"})
 
         queue.update_retry(queue_id, "Error 1")
         queue.update_retry(queue_id, "Error 2")
@@ -492,12 +433,7 @@ class TestSyncQueue:
         queue = SyncQueue(mock_db_connection)
 
         for i in range(5):
-            queue.enqueue(
-                EntityType.ITEM,
-                f"item-{i}",
-                OperationType.CREATE,
-                {"index": i}
-            )
+            queue.enqueue(EntityType.ITEM, f"item-{i}", OperationType.CREATE, {"index": i})
 
         queue.clear()
 
@@ -544,9 +480,9 @@ class TestSyncStateManager:
         """Test update_last_sync uses current time by default."""
         manager = SyncStateManager(mock_db_connection)
 
-        before = datetime.utcnow()
+        before = datetime.now(UTC)
         manager.update_last_sync()
-        after = datetime.utcnow()
+        after = datetime.now(UTC)
 
         state = manager.get_state()
         assert state.last_sync >= before
@@ -590,16 +526,14 @@ class TestSyncEngine:
         api_client = Mock()
         storage_manager = Mock()
 
-        engine = SyncEngine(
+        return SyncEngine(
             db_connection=mock_db_connection,
             api_client=api_client,
             storage_manager=storage_manager,
             conflict_strategy=ConflictStrategy.LAST_WRITE_WINS,
             max_retries=3,
-            retry_delay=0.1
+            retry_delay=0.1,
         )
-
-        return engine
 
     def test_initialization(self, sync_engine):
         """Test SyncEngine initializes correctly."""
@@ -610,13 +544,8 @@ class TestSyncEngine:
 
     def test_queue_change(self, sync_engine):
         """Test queueing a change."""
-        with patch.object(sync_engine.queue, 'enqueue', return_value=123):
-            queue_id = sync_engine.queue_change(
-                EntityType.ITEM,
-                "item-123",
-                OperationType.CREATE,
-                {"title": "Test"}
-            )
+        with patch.object(sync_engine.queue, "enqueue", return_value=123):
+            queue_id = sync_engine.queue_change(EntityType.ITEM, "item-123", OperationType.CREATE, {"title": "Test"})
 
         assert queue_id == 123
 
@@ -643,9 +572,13 @@ class TestSyncEngine:
 
         sync_engine.state_manager.update_status = track_status
 
-        with patch.object(sync_engine, 'detect_and_queue_changes', new_callable=AsyncMock):
-            with patch.object(sync_engine, 'process_queue', new_callable=AsyncMock, return_value=SyncResult(success=True)):
-                with patch.object(sync_engine, 'pull_changes', new_callable=AsyncMock, return_value=SyncResult(success=True)):
+        with patch.object(sync_engine, "detect_and_queue_changes", new_callable=AsyncMock):
+            with patch.object(
+                sync_engine, "process_queue", new_callable=AsyncMock, return_value=SyncResult(success=True)
+            ):
+                with patch.object(
+                    sync_engine, "pull_changes", new_callable=AsyncMock, return_value=SyncResult(success=True)
+                ):
                     result = await sync_engine.sync()
 
         assert result.success is True
@@ -665,7 +598,9 @@ class TestSyncEngine:
 
         sync_engine.state_manager.update_status = track_status
 
-        with patch.object(sync_engine, 'detect_and_queue_changes', new_callable=AsyncMock, side_effect=RuntimeError("Test error")):
+        with patch.object(
+            sync_engine, "detect_and_queue_changes", new_callable=AsyncMock, side_effect=RuntimeError("Test error")
+        ):
             result = await sync_engine.sync()
 
         assert result.success is False
@@ -681,13 +616,13 @@ class TestSyncEngine:
             entity_id="item-123",
             operation=OperationType.CREATE,
             payload={"title": "Test"},
-            created_at=datetime.utcnow(),
-            retry_count=0
+            created_at=datetime.now(UTC),
+            retry_count=0,
         )
 
-        with patch.object(sync_engine.queue, 'get_pending', return_value=[change]):
-            with patch.object(sync_engine, '_upload_change', new_callable=AsyncMock, return_value=True):
-                with patch.object(sync_engine.queue, 'remove'):
+        with patch.object(sync_engine.queue, "get_pending", return_value=[change]):
+            with patch.object(sync_engine, "_upload_change", new_callable=AsyncMock, return_value=True):
+                with patch.object(sync_engine.queue, "remove"):
                     result = await sync_engine.process_queue()
 
         assert result.success is True
@@ -702,11 +637,11 @@ class TestSyncEngine:
             entity_id="item-123",
             operation=OperationType.CREATE,
             payload={"title": "Test"},
-            created_at=datetime.utcnow(),
-            retry_count=5  # > max_retries
+            created_at=datetime.now(UTC),
+            retry_count=5,  # > max_retries
         )
 
-        with patch.object(sync_engine.queue, 'get_pending', return_value=[change]):
+        with patch.object(sync_engine.queue, "get_pending", return_value=[change]):
             result = await sync_engine.process_queue()
 
         assert result.entities_synced == 0
@@ -722,13 +657,13 @@ class TestSyncEngine:
             entity_id="item-123",
             operation=OperationType.CREATE,
             payload={"title": "Test"},
-            created_at=datetime.utcnow(),
-            retry_count=0
+            created_at=datetime.now(UTC),
+            retry_count=0,
         )
 
-        with patch.object(sync_engine.queue, 'get_pending', return_value=[change]):
-            with patch.object(sync_engine, '_upload_change', new_callable=AsyncMock, return_value=False):
-                with patch('asyncio.sleep', new_callable=AsyncMock):
+        with patch.object(sync_engine.queue, "get_pending", return_value=[change]):
+            with patch.object(sync_engine, "_upload_change", new_callable=AsyncMock, return_value=False):
+                with patch("asyncio.sleep", new_callable=AsyncMock):
                     result = await sync_engine.process_queue()
 
         assert result.entities_synced == 0
@@ -742,8 +677,8 @@ class TestSyncEngine:
             entity_id="item-123",
             operation=OperationType.CREATE,
             payload={"title": "Test"},
-            created_at=datetime.utcnow(),
-            retry_count=0
+            created_at=datetime.now(UTC),
+            retry_count=0,
         )
 
         result = await sync_engine._upload_change(change)
@@ -760,8 +695,8 @@ class TestSyncEngine:
             entity_id="item-123",
             operation=OperationType.UPDATE,
             payload={"title": "Updated"},
-            created_at=datetime.utcnow(),
-            retry_count=0
+            created_at=datetime.now(UTC),
+            retry_count=0,
         )
 
         result = await sync_engine._upload_change(change)
@@ -777,8 +712,8 @@ class TestSyncEngine:
             entity_id="item-123",
             operation=OperationType.DELETE,
             payload={},
-            created_at=datetime.utcnow(),
-            retry_count=0
+            created_at=datetime.now(UTC),
+            retry_count=0,
         )
 
         result = await sync_engine._upload_change(change)
@@ -835,7 +770,7 @@ class TestSyncEngine:
     @pytest.mark.asyncio
     async def test_clear_queue(self, sync_engine):
         """Test clearing sync queue."""
-        with patch.object(sync_engine.queue, 'clear'):
+        with patch.object(sync_engine.queue, "clear"):
             await sync_engine.clear_queue()
 
     @pytest.mark.asyncio
@@ -897,13 +832,7 @@ class TestSyncEngineFactory:
         api_client = Mock()
         storage_manager = Mock()
 
-        engine = create_sync_engine(
-            mock_db_connection,
-            api_client,
-            storage_manager,
-            max_retries=5,
-            retry_delay=2.0
-        )
+        engine = create_sync_engine(mock_db_connection, api_client, storage_manager, max_retries=5, retry_delay=2.0)
 
         assert isinstance(engine, SyncEngine)
         assert engine.max_retries == 5
@@ -920,12 +849,7 @@ class TestVectorClock:
 
     def test_initialization(self):
         """Test vector clock initializes correctly."""
-        clock = VectorClock(
-            client_id="client-1",
-            version=5,
-            timestamp=datetime.now(UTC),
-            parent_version=4
-        )
+        clock = VectorClock(client_id="client-1", version=5, timestamp=datetime.now(UTC), parent_version=4)
 
         assert clock.client_id == "client-1"
         assert clock.version == 5
@@ -935,11 +859,7 @@ class TestVectorClock:
     def test_post_init_adds_timezone(self):
         """Test __post_init__ adds UTC timezone if missing."""
         naive_time = datetime(2024, 1, 1, 12, 0, 0)
-        clock = VectorClock(
-            client_id="client-1",
-            version=1,
-            timestamp=naive_time
-        )
+        clock = VectorClock(client_id="client-1", version=1, timestamp=naive_time)
 
         assert clock.timestamp.tzinfo is not None
 
@@ -980,10 +900,7 @@ class TestVectorClock:
     def test_to_dict(self):
         """Test vector clock serialization to dict."""
         clock = VectorClock(
-            client_id="client-1",
-            version=5,
-            timestamp=datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC),
-            parent_version=4
+            client_id="client-1", version=5, timestamp=datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC), parent_version=4
         )
 
         data = clock.to_dict()
@@ -995,12 +912,7 @@ class TestVectorClock:
 
     def test_from_dict(self):
         """Test vector clock deserialization from dict."""
-        data = {
-            "client_id": "client-1",
-            "version": 5,
-            "timestamp": "2024-01-01T12:00:00+00:00",
-            "parent_version": 4
-        }
+        data = {"client_id": "client-1", "version": 5, "timestamp": "2024-01-01T12:00:00+00:00", "parent_version": 4}
 
         clock = VectorClock.from_dict(data)
 
@@ -1016,11 +928,7 @@ class TestEntityVersion:
         """Test entity version serialization."""
         clock = VectorClock("client-1", 1, datetime.now(UTC))
         version = EntityVersion(
-            entity_id="item-123",
-            entity_type="item",
-            data={"title": "Test"},
-            vector_clock=clock,
-            content_hash="abc123"
+            entity_id="item-123", entity_type="item", data={"title": "Test"}, vector_clock=clock, content_hash="abc123"
         )
 
         data = version.to_dict()
@@ -1036,12 +944,8 @@ class TestEntityVersion:
             "entity_id": "item-123",
             "entity_type": "item",
             "data": {"title": "Test"},
-            "vector_clock": {
-                "client_id": "client-1",
-                "version": 1,
-                "timestamp": "2024-01-01T12:00:00+00:00"
-            },
-            "content_hash": "abc123"
+            "vector_clock": {"client_id": "client-1", "version": 1, "timestamp": "2024-01-01T12:00:00+00:00"},
+            "content_hash": "abc123",
         }
 
         version = EntityVersion.from_dict(data)
@@ -1058,12 +962,9 @@ class TestConflictResolver:
     def conflict_resolver(self, db_session, temp_dir):
         """Create conflict resolver for testing."""
         backup_dir = temp_dir / "conflicts"
-        resolver = ConflictResolver(
-            session=db_session,
-            backup_dir=backup_dir,
-            default_strategy=ConflictStrategy.LAST_WRITE_WINS
+        return ConflictResolver(
+            session=db_session, backup_dir=backup_dir, default_strategy=ConflictStrategy.LAST_WRITE_WINS
         )
-        return resolver
 
     def test_initialization(self, conflict_resolver):
         """Test conflict resolver initializes correctly."""
@@ -1126,11 +1027,7 @@ class TestConflictResolver:
         remote = EntityVersion("item-1", "item", {"title": "Remote"}, remote_clock)
 
         conflict = Conflict(
-            id="conflict-1",
-            entity_id="item-1",
-            entity_type="item",
-            local_version=local,
-            remote_version=remote
+            id="conflict-1", entity_id="item-1", entity_type="item", local_version=local, remote_version=remote
         )
 
         resolved = conflict_resolver.resolve(conflict)
@@ -1147,11 +1044,7 @@ class TestConflictResolver:
         remote = EntityVersion("item-1", "item", {"title": "Remote"}, remote_clock)
 
         conflict = Conflict(
-            id="conflict-1",
-            entity_id="item-1",
-            entity_type="item",
-            local_version=local,
-            remote_version=remote
+            id="conflict-1", entity_id="item-1", entity_type="item", local_version=local, remote_version=remote
         )
 
         resolved = conflict_resolver.resolve(conflict, ConflictStrategy.LOCAL_WINS)
@@ -1167,11 +1060,7 @@ class TestConflictResolver:
         remote = EntityVersion("item-1", "item", {"title": "Remote"}, remote_clock)
 
         conflict = Conflict(
-            id="conflict-1",
-            entity_id="item-1",
-            entity_type="item",
-            local_version=local,
-            remote_version=remote
+            id="conflict-1", entity_id="item-1", entity_type="item", local_version=local, remote_version=remote
         )
 
         resolved = conflict_resolver.resolve(conflict, ConflictStrategy.REMOTE_WINS)
@@ -1187,11 +1076,7 @@ class TestConflictResolver:
         remote = EntityVersion("item-1", "item", {"title": "Remote"}, remote_clock)
 
         conflict = Conflict(
-            id="conflict-1",
-            entity_id="item-1",
-            entity_type="item",
-            local_version=local,
-            remote_version=remote
+            id="conflict-1", entity_id="item-1", entity_type="item", local_version=local, remote_version=remote
         )
 
         with pytest.raises(ValueError, match="MANUAL strategy"):
@@ -1206,11 +1091,7 @@ class TestConflictResolver:
         remote = EntityVersion("item-1", "item", {"title": "Remote", "field2": "B"}, remote_clock)
 
         conflict = Conflict(
-            id="conflict-1",
-            entity_id="item-1",
-            entity_type="item",
-            local_version=local,
-            remote_version=remote
+            id="conflict-1", entity_id="item-1", entity_type="item", local_version=local, remote_version=remote
         )
 
         merged_data = {"title": "Merged", "field1": "A", "field2": "B"}
@@ -1229,11 +1110,7 @@ class TestConflictResolver:
         remote = EntityVersion("item-1", "item", {"title": "Remote"}, remote_clock)
 
         conflict = Conflict(
-            id="conflict-1",
-            entity_id="item-1",
-            entity_type="item",
-            local_version=local,
-            remote_version=remote
+            id="conflict-1", entity_id="item-1", entity_type="item", local_version=local, remote_version=remote
         )
 
         backup_path = conflict_resolver.create_backup(conflict)
@@ -1317,28 +1194,20 @@ class TestConflictBackup:
             "entity_id": "item-1",
             "entity_type": "item",
             "data": {"title": "Local"},
-            "vector_clock": {
-                "client_id": "client-1",
-                "version": 1,
-                "timestamp": "2024-01-01T12:00:00+00:00"
-            }
+            "vector_clock": {"client_id": "client-1", "version": 1, "timestamp": "2024-01-01T12:00:00+00:00"},
         }
 
         remote_data = {
             "entity_id": "item-1",
             "entity_type": "item",
             "data": {"title": "Remote"},
-            "vector_clock": {
-                "client_id": "client-2",
-                "version": 1,
-                "timestamp": "2024-01-01T12:00:00+00:00"
-            }
+            "vector_clock": {"client_id": "client-2", "version": 1, "timestamp": "2024-01-01T12:00:00+00:00"},
         }
 
-        with open(backup_dir / "local.json", "w") as f:
+        with Path(backup_dir / "local.json").open("w") as f:
             json.dump(local_data, f)
 
-        with open(backup_dir / "remote.json", "w") as f:
+        with Path(backup_dir / "remote.json").open("w") as f:
             json.dump(remote_data, f)
 
         backup = ConflictBackup(temp_dir / "backups")
@@ -1391,11 +1260,7 @@ class TestConflictUtilities:
         remote = EntityVersion("item-1", "item", {"title": "Remote"}, remote_clock)
 
         conflict = Conflict(
-            id="conflict-1",
-            entity_id="item-1",
-            entity_type="item",
-            local_version=local,
-            remote_version=remote
+            id="conflict-1", entity_id="item-1", entity_type="item", local_version=local, remote_version=remote
         )
 
         summary = format_conflict_summary(conflict)
@@ -1503,7 +1368,7 @@ class TestMarkdownParser:
             status="todo",
             priority="high",
             title="Test Epic",
-            description="Test description"
+            description="Test description",
         )
 
         md_path = temp_dir / "test.md"
@@ -1521,7 +1386,7 @@ class TestMarkdownParser:
             id="",  # Missing required field
             external_id="EPIC-001",
             item_type="epic",
-            status="todo"
+            status="todo",
         )
 
         md_path = temp_dir / "test.md"
@@ -1566,7 +1431,7 @@ class TestMarkdownParser:
                 source="EPIC-001",
                 target="STORY-001",
                 link_type="implements",
-                created=datetime(2024, 1, 1, 12, 0, 0)
+                created=datetime(2024, 1, 1, 12, 0, 0),
             )
         ]
 
@@ -1581,11 +1446,7 @@ class TestMarkdownParser:
     def test_parse_config_yaml(self, temp_dir):
         """Test parsing config.yaml file."""
         config_path = temp_dir / "config.yaml"
-        config_data = {
-            "project_name": "Test Project",
-            "version": "1.0.0",
-            "settings": {"auto_sync": True}
-        }
+        config_data = {"project_name": "Test Project", "version": "1.0.0", "settings": {"auto_sync": True}}
         config_path.write_text(yaml.dump(config_data))
 
         config = parse_config_yaml(config_path)
@@ -1603,10 +1464,7 @@ class TestMarkdownParser:
 
     def test_write_config_yaml(self, temp_dir):
         """Test writing config to YAML file."""
-        config = {
-            "project_name": "Test Project",
-            "settings": {"auto_sync": True}
-        }
+        config = {"project_name": "Test Project", "settings": {"auto_sync": True}}
 
         config_path = temp_dir / "config.yaml"
         write_config_yaml(config, config_path)

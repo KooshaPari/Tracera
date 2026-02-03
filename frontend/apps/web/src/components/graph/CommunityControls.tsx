@@ -56,11 +56,11 @@ export function CommunityControls({
 			return [];
 		}
 
-		return [...[...result.stats.communitySizes.entries()].map(([communityId, size]) => ({
+		return [...result.stats.communitySizes.entries()].map(([communityId, size]) => ({
 	color: result.colors.get(communityId) || '#64748B',
 	id: communityId,
 	size
-}))]
+}))
 			.toSorted((a, b) => b.size - a.size) // Largest first
 			.slice(0, 12); // Show top 12 communities
 	}, [result]);

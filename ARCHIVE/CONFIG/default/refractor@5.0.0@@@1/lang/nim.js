@@ -49,9 +49,9 @@ export default function nim(Prism) {
       // but allow the slice operator .. to take precedence over them
       // One can define his own operators in Nim so all combination of operators might be an operator.
       pattern:
-        /(^|[({\[](?=\.\.)|(?![({\[]\.).)(?:(?:[=+\-*\/<>@$~&%|!?^:\\]|\.\.|\.(?![)}\]]))+|\b(?:and|div|in|is|isnot|mod|not|notin|of|or|shl|shr|xor)\b)/m,
+        /(^|[({[](?=\.\.)|(?![({[]\.).)(?:(?:[=+\-*/<>@$~&%|!?^:\\]|\.\.|\.(?![)}\]]))+|\b(?:and|div|in|is|isnot|mod|not|notin|of|or|shl|shr|xor)\b)/m,
       lookbehind: true
     },
-    punctuation: /[({\[]\.|\.[)}\]]|[`(){}\[\],:]/
+    punctuation: /[({[]\.|\.[)}\]]|[`(){}[\],:]/
   }
 }

@@ -43,4 +43,4 @@ type _IsEqual<A, B> =
 		? true
 		: false;
 
-export {};
+

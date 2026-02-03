@@ -5,17 +5,17 @@ properties for Items with rich metadata (collected, written, derived/calculated)
 """
 
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
-from pydantic import BaseModel, Field, ConfigDict
-
+from pydantic import BaseModel, ConfigDict, Field
 
 # ===== Enums (mirror the model enums) =====
 
 
-class RequirementType(str, Enum):
+class RequirementType(StrEnum):
     """EARS requirement classification types."""
+
     UBIQUITOUS = "ubiquitous"
     EVENT_DRIVEN = "event_driven"
     STATE_DRIVEN = "state_driven"
@@ -24,15 +24,17 @@ class RequirementType(str, Enum):
     UNWANTED = "unwanted"
 
 
-class ConstraintType(str, Enum):
+class ConstraintType(StrEnum):
     """Types of constraints on requirements."""
+
     HARD = "hard"
     SOFT = "soft"
     OPTIMIZABLE = "optimizable"
 
 
-class QualityDimension(str, Enum):
+class QualityDimension(StrEnum):
     """Quality dimensions for requirement specification."""
+
     COMPLETENESS = "completeness"
     CONSISTENCY = "consistency"
     CORRECTNESS = "correctness"
@@ -44,8 +46,9 @@ class QualityDimension(str, Enum):
     SINGULARITY = "singularity"
 
 
-class TestType(str, Enum):
+class TestType(StrEnum):
     """Types of tests."""
+
     UNIT = "unit"
     INTEGRATION = "integration"
     E2E = "e2e"
@@ -58,8 +61,9 @@ class TestType(str, Enum):
     PROPERTY = "property"
 
 
-class TestResultStatus(str, Enum):
+class TestResultStatus(StrEnum):
     """Results/statuses of test execution."""
+
     PASSED = "passed"
     FAILED = "failed"
     SKIPPED = "skipped"
@@ -69,8 +73,9 @@ class TestResultStatus(str, Enum):
     ERROR = "error"
 
 
-class VerificationStatus(str, Enum):
+class VerificationStatus(StrEnum):
     """Status of requirement verification."""
+
     UNVERIFIED = "unverified"
     PENDING = "pending"
     VERIFIED = "verified"
@@ -78,8 +83,9 @@ class VerificationStatus(str, Enum):
     EXPIRED = "expired"
 
 
-class RiskLevel(str, Enum):
+class RiskLevel(StrEnum):
     """Risk level assessment."""
+
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"
@@ -92,6 +98,7 @@ class RiskLevel(str, Enum):
 
 class QualityIssue(BaseModel):
     """A detected quality issue/smell."""
+
     dimension: QualityDimension
     severity: str = Field(..., pattern="^(error|warning|info)$")
     message: str
@@ -101,6 +108,7 @@ class QualityIssue(BaseModel):
 
 class ChangeHistoryEntry(BaseModel):
     """A change history entry."""
+
     timestamp: datetime
     changed_by: str
     change_type: str  # created, updated, status_changed, etc.
@@ -111,6 +119,7 @@ class ChangeHistoryEntry(BaseModel):
 
 class VerificationEvidence(BaseModel):
     """Evidence for requirement verification."""
+
     type: str  # test, review, demo, document
     reference_id: str | None = None
     reference_url: str | None = None
@@ -121,6 +130,7 @@ class VerificationEvidence(BaseModel):
 
 class Invariant(BaseModel):
     """A formal invariant condition."""
+
     id: str
     description: str
     expression: str | None = None  # Formal expression
@@ -130,6 +140,7 @@ class Invariant(BaseModel):
 
 class TestRunSummary(BaseModel):
     """Summary of a test run."""
+
     run_id: str
     timestamp: datetime
     status: TestResultStatus
@@ -140,6 +151,7 @@ class TestRunSummary(BaseModel):
 
 class AcceptanceCriterion(BaseModel):
     """An acceptance criterion with verification status."""
+
     id: str
     description: str
     verification_status: VerificationStatus = VerificationStatus.UNVERIFIED
@@ -150,6 +162,7 @@ class AcceptanceCriterion(BaseModel):
 
 class SubtaskEntry(BaseModel):
     """A subtask within a user story."""
+
     id: str
     title: str
     status: str = Field(default="todo", pattern="^(todo|in_progress|done)$")
@@ -160,6 +173,7 @@ class SubtaskEntry(BaseModel):
 
 class TimeEntry(BaseModel):
     """A time tracking entry."""
+
     id: str
     user: str
     hours: float = Field(gt=0)
@@ -169,6 +183,7 @@ class TimeEntry(BaseModel):
 
 class BlockerEntry(BaseModel):
     """A blocker entry."""
+
     id: str
     description: str
     created_at: datetime
@@ -178,6 +193,7 @@ class BlockerEntry(BaseModel):
 
 class ChecklistItem(BaseModel):
     """A checklist item for definition of done."""
+
     id: str
     text: str
     checked: bool = False
@@ -185,6 +201,7 @@ class ChecklistItem(BaseModel):
 
 class ImpactAssessment(BaseModel):
     """Impact assessment for a requirement change."""
+
     affected_components: list[str] = Field(default_factory=list)
     affected_tests: list[str] = Field(default_factory=list)
     affected_documents: list[str] = Field(default_factory=list)
@@ -194,6 +211,7 @@ class ImpactAssessment(BaseModel):
 
 class SemanticSimilarity(BaseModel):
     """Semantic similarity information."""
+
     similar_item_id: str
     similarity_score: float = Field(..., ge=0, le=1)
     similarity_reason: str
@@ -205,6 +223,7 @@ class SemanticSimilarity(BaseModel):
 
 class RequirementSpecCreate(BaseModel):
     """Create a requirement specification."""
+
     item_id: str
 
     # EARS Classification
@@ -242,6 +261,7 @@ class RequirementSpecCreate(BaseModel):
 
 class RequirementSpecUpdate(BaseModel):
     """Update a requirement specification."""
+
     requirement_type: RequirementType | None = None
     ears_trigger: str | None = None
     ears_precondition: str | None = None
@@ -275,6 +295,7 @@ class RequirementSpecUpdate(BaseModel):
 
 class RequirementSpecResponse(BaseModel):
     """Response for a requirement specification."""
+
     id: str
     item_id: str
     project_id: str
@@ -350,6 +371,7 @@ class RequirementSpecResponse(BaseModel):
 
 class RequirementSpecListResponse(BaseModel):
     """Response for list of requirement specifications."""
+
     total: int
     requirement_specs: list[RequirementSpecResponse]
 
@@ -359,6 +381,7 @@ class RequirementSpecListResponse(BaseModel):
 
 class TestSpecCreate(BaseModel):
     """Create a test specification."""
+
     item_id: str
 
     test_type: TestType = TestType.UNIT
@@ -391,6 +414,7 @@ class TestSpecCreate(BaseModel):
 
 class TestSpecUpdate(BaseModel):
     """Update a test specification."""
+
     test_type: TestType | None = None
     test_framework: str | None = Field(None, max_length=100)
     test_file_path: str | None = None
@@ -424,6 +448,7 @@ class TestSpecUpdate(BaseModel):
 
 class TestSpecResponse(BaseModel):
     """Response for a test specification."""
+
     id: str
     item_id: str
     project_id: str
@@ -503,6 +528,7 @@ class TestSpecResponse(BaseModel):
 
 class TestSpecListResponse(BaseModel):
     """Response for list of test specifications."""
+
     total: int
     test_specs: list[TestSpecResponse]
 
@@ -512,6 +538,7 @@ class TestSpecListResponse(BaseModel):
 
 class EpicSpecCreate(BaseModel):
     """Create an epic specification."""
+
     item_id: str
 
     business_objective: str
@@ -541,6 +568,7 @@ class EpicSpecCreate(BaseModel):
 
 class EpicSpecUpdate(BaseModel):
     """Update an epic specification."""
+
     business_objective: str | None = None
     success_criteria: list[str] | None = None
     acceptance_criteria: list[AcceptanceCriterion] | None = None
@@ -568,6 +596,7 @@ class EpicSpecUpdate(BaseModel):
 
 class EpicSpecResponse(BaseModel):
     """Response for an epic specification."""
+
     id: str
     item_id: str
     project_id: str
@@ -622,6 +651,7 @@ class EpicSpecResponse(BaseModel):
 
 class EpicSpecListResponse(BaseModel):
     """Response for list of epic specifications."""
+
     total: int
     epic_specs: list[EpicSpecResponse]
 
@@ -631,6 +661,7 @@ class EpicSpecListResponse(BaseModel):
 
 class UserStorySpecCreate(BaseModel):
     """Create a user story specification."""
+
     item_id: str
 
     user_persona: str
@@ -659,6 +690,7 @@ class UserStorySpecCreate(BaseModel):
 
 class UserStorySpecUpdate(BaseModel):
     """Update a user story specification."""
+
     user_persona: str | None = None
     goal: str | None = None
     reason: str | None = None
@@ -685,6 +717,7 @@ class UserStorySpecUpdate(BaseModel):
 
 class UserStorySpecResponse(BaseModel):
     """Response for a user story specification."""
+
     id: str
     item_id: str
     project_id: str
@@ -739,6 +772,7 @@ class UserStorySpecResponse(BaseModel):
 
 class UserStorySpecListResponse(BaseModel):
     """Response for list of user story specifications."""
+
     total: int
     user_story_specs: list[UserStorySpecResponse]
 
@@ -748,6 +782,7 @@ class UserStorySpecListResponse(BaseModel):
 
 class TaskSpecCreate(BaseModel):
     """Create a task specification."""
+
     item_id: str
 
     description: str
@@ -772,6 +807,7 @@ class TaskSpecCreate(BaseModel):
 
 class TaskSpecUpdate(BaseModel):
     """Update a task specification."""
+
     description: str | None = None
     acceptance_criteria: list[AcceptanceCriterion] | None = None
 
@@ -794,6 +830,7 @@ class TaskSpecUpdate(BaseModel):
 
 class TaskSpecResponse(BaseModel):
     """Response for a task specification."""
+
     id: str
     item_id: str
     project_id: str
@@ -836,6 +873,7 @@ class TaskSpecResponse(BaseModel):
 
 class TaskSpecListResponse(BaseModel):
     """Response for list of task specifications."""
+
     total: int
     task_specs: list[TaskSpecResponse]
 
@@ -845,6 +883,7 @@ class TaskSpecListResponse(BaseModel):
 
 class DefectSpecCreate(BaseModel):
     """Create a defect specification."""
+
     item_id: str
 
     defect_title: str
@@ -878,6 +917,7 @@ class DefectSpecCreate(BaseModel):
 
 class DefectSpecUpdate(BaseModel):
     """Update a defect specification."""
+
     defect_title: str | None = None
     defect_description: str | None = None
     reproduction_steps: list[str] | None = None
@@ -909,6 +949,7 @@ class DefectSpecUpdate(BaseModel):
 
 class DefectSpecResponse(BaseModel):
     """Response for a defect specification."""
+
     id: str
     item_id: str
     project_id: str
@@ -966,6 +1007,7 @@ class DefectSpecResponse(BaseModel):
 
 class DefectSpecListResponse(BaseModel):
     """Response for list of defect specifications."""
+
     total: int
     defect_specs: list[DefectSpecResponse]
 
@@ -975,6 +1017,7 @@ class DefectSpecListResponse(BaseModel):
 
 class RequirementQualityStats(BaseModel):
     """Statistics for requirement specifications."""
+
     project_id: str
     total_requirements: int
 
@@ -999,6 +1042,7 @@ class RequirementQualityStats(BaseModel):
 
 class TestHealthStats(BaseModel):
     """Statistics for test specifications."""
+
     project_id: str
     total_tests: int
 
@@ -1026,6 +1070,7 @@ class TestHealthStats(BaseModel):
 
 class EpicProgressStats(BaseModel):
     """Statistics for epic specifications."""
+
     project_id: str
     total_epics: int
 
@@ -1050,6 +1095,7 @@ class EpicProgressStats(BaseModel):
 
 class UserStoryHealthStats(BaseModel):
     """Statistics for user story specifications."""
+
     project_id: str
     total_user_stories: int
 
@@ -1075,6 +1121,7 @@ class UserStoryHealthStats(BaseModel):
 
 class TaskProgressStats(BaseModel):
     """Statistics for task specifications."""
+
     project_id: str
     total_tasks: int
 
@@ -1098,6 +1145,7 @@ class TaskProgressStats(BaseModel):
 
 class DefectHealthStats(BaseModel):
     """Statistics for defect specifications."""
+
     project_id: str
     total_defects: int
 
@@ -1124,6 +1172,7 @@ class DefectHealthStats(BaseModel):
 
 class ItemSpecStats(BaseModel):
     """Aggregate statistics for all item specifications."""
+
     project_id: str
     generated_at: datetime
 
@@ -1147,16 +1196,26 @@ class ItemSpecStats(BaseModel):
 
 class ItemSpecBulkCreateRequest(BaseModel):
     """Request for bulk creating item specifications."""
-    item_specs: list[RequirementSpecCreate | TestSpecCreate | EpicSpecCreate | UserStorySpecCreate | TaskSpecCreate | DefectSpecCreate]
+
+    item_specs: list[
+        RequirementSpecCreate
+        | TestSpecCreate
+        | EpicSpecCreate
+        | UserStorySpecCreate
+        | TaskSpecCreate
+        | DefectSpecCreate
+    ]
 
 
 class ItemSpecBulkUpdateRequest(BaseModel):
     """Request for bulk updating item specifications."""
+
     item_specs: list[dict[str, Any]]  # id + update fields
 
 
 class ItemSpecBulkOperationResponse(BaseModel):
     """Response for bulk operations."""
+
     total_processed: int
     successful: int
     failed: int

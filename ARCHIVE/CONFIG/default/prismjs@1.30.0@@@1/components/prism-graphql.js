@@ -56,7 +56,7 @@ Prism.languages.graphql = {
 	'operator': /[!=|&]|\.{3}/,
 	'property-query': /\w+(?=\s*\()/,
 	'object': /\w+(?=\s*\{)/,
-	'punctuation': /[!(){}\[\]:=,]/,
+	'punctuation': /[!(){}[\]:=,]/,
 	'property': /\w+/
 };
 

@@ -21,33 +21,32 @@ Based on research from:
 import hashlib
 import re
 import statistics
-from collections import Counter
-from datetime import datetime, timezone
-from enum import Enum
-from typing import Any
-from uuid import uuid4
+from datetime import UTC, datetime
+from enum import StrEnum
+from typing import Any, ClassVar
 
 from pydantic import BaseModel, Field
-
 
 # =============================================================================
 # EARS Pattern Analysis (ISO 29148 + INCOSE)
 # =============================================================================
 
 
-class EARSPatternType(str, Enum):
+class EARSPatternType(StrEnum):
     """EARS requirement pattern types."""
-    UBIQUITOUS = "ubiquitous"      # "The system shall..."
-    EVENT_DRIVEN = "event_driven"   # "When <event>, the system shall..."
-    STATE_DRIVEN = "state_driven"   # "While <state>, the system shall..."
-    OPTIONAL = "optional"           # "Where <feature>, the system shall..."
-    COMPLEX = "complex"             # Multiple triggers
-    UNWANTED = "unwanted"           # "If <event>, then the system shall not..."
+
+    UBIQUITOUS = "ubiquitous"  # "The system shall..."
+    EVENT_DRIVEN = "event_driven"  # "When <event>, the system shall..."
+    STATE_DRIVEN = "state_driven"  # "While <state>, the system shall..."
+    OPTIONAL = "optional"  # "Where <feature>, the system shall..."
+    COMPLEX = "complex"  # Multiple triggers
+    UNWANTED = "unwanted"  # "If <event>, then the system shall not..."
     UNCLASSIFIED = "unclassified"
 
 
 class EARSComponents(BaseModel):
     """Extracted EARS components from a requirement."""
+
     trigger: str | None = None
     precondition: str | None = None
     postcondition: str | None = None
@@ -58,6 +57,7 @@ class EARSComponents(BaseModel):
 
 class EARSAnalysisResult(BaseModel):
     """Result of EARS pattern analysis."""
+
     pattern_type: EARSPatternType
     confidence: float = Field(ge=0, le=1)
     components: EARSComponents
@@ -80,42 +80,67 @@ class EARSPatternAnalyzer:
     """
 
     # Pattern regexes
-    PATTERNS = {
+    PATTERNS: ClassVar[dict[EARSPatternType, re.Pattern[str]]] = {
         EARSPatternType.EVENT_DRIVEN: re.compile(
-            r"^(?:when|upon|after|once|if)\s+(.+?),?\s+(?:the\s+)?(\w+)\s+shall\s+(.+)$",
-            re.IGNORECASE
+            r"^(?:when|upon|after|once|if)\s+(.+?),?\s+(?:the\s+)?(\w+)\s+shall\s+(.+)$", re.IGNORECASE
         ),
         EARSPatternType.STATE_DRIVEN: re.compile(
-            r"^(?:while|during|as long as)\s+(.+?),?\s+(?:the\s+)?(\w+)\s+shall\s+(.+)$",
-            re.IGNORECASE
+            r"^(?:while|during|as long as)\s+(.+?),?\s+(?:the\s+)?(\w+)\s+shall\s+(.+)$", re.IGNORECASE
         ),
         EARSPatternType.OPTIONAL: re.compile(
             r"^(?:where|if|in case)\s+(.+?)\s+(?:is\s+)?(?:enabled|configured|available),?\s+(?:the\s+)?(\w+)\s+shall\s+(.+)$",
-            re.IGNORECASE
+            re.IGNORECASE,
         ),
         EARSPatternType.UNWANTED: re.compile(
-            r"^(?:if|when)\s+(.+?),?\s+(?:then\s+)?(?:the\s+)?(\w+)\s+shall\s+(?:not|never)\s+(.+)$",
-            re.IGNORECASE
+            r"^(?:if|when)\s+(.+?),?\s+(?:then\s+)?(?:the\s+)?(\w+)\s+shall\s+(?:not|never)\s+(.+)$", re.IGNORECASE
         ),
-        EARSPatternType.UBIQUITOUS: re.compile(
-            r"^(?:the\s+)?(\w+)\s+shall\s+(.+)$",
-            re.IGNORECASE
-        ),
+        EARSPatternType.UBIQUITOUS: re.compile(r"^(?:the\s+)?(\w+)\s+shall\s+(.+)$", re.IGNORECASE),
     }
 
     # Ambiguous words to flag
-    AMBIGUOUS_WORDS = {
-        "appropriate", "adequate", "reasonable", "sufficient", "timely",
-        "easy", "simple", "fast", "quick", "efficient", "effective",
-        "user-friendly", "flexible", "scalable", "robust", "secure",
-        "good", "bad", "better", "best", "optimal", "minimal",
-        "some", "several", "many", "few", "various", "etc",
-        "normally", "usually", "typically", "generally", "often",
-        "may", "might", "could", "possibly", "perhaps"
+    AMBIGUOUS_WORDS: ClassVar[set[str]] = {
+        "appropriate",
+        "adequate",
+        "reasonable",
+        "sufficient",
+        "timely",
+        "easy",
+        "simple",
+        "fast",
+        "quick",
+        "efficient",
+        "effective",
+        "user-friendly",
+        "flexible",
+        "scalable",
+        "robust",
+        "secure",
+        "good",
+        "bad",
+        "better",
+        "best",
+        "optimal",
+        "minimal",
+        "some",
+        "several",
+        "many",
+        "few",
+        "various",
+        "etc",
+        "normally",
+        "usually",
+        "typically",
+        "generally",
+        "often",
+        "may",
+        "might",
+        "could",
+        "possibly",
+        "perhaps",
     }
 
     # Incomplete markers
-    INCOMPLETE_MARKERS = {"tbd", "todo", "fixme", "xxx", "tba", "placeholder"}
+    INCOMPLETE_MARKERS: ClassVar[set[str]] = {"tbd", "todo", "fixme", "xxx", "tba", "placeholder"}
 
     def analyze(self, requirement_text: str) -> EARSAnalysisResult:
         """Analyze a requirement against EARS patterns."""
@@ -143,7 +168,7 @@ class EARSPatternAnalyzer:
                     components=components,
                     is_valid=len(validation_issues) == 0,
                     validation_issues=issues,
-                    improvement_suggestions=suggestions
+                    improvement_suggestions=suggestions,
                 )
 
         # No pattern matched
@@ -155,46 +180,34 @@ class EARSPatternAnalyzer:
             validation_issues=["Requirement does not match any EARS pattern"],
             improvement_suggestions=[
                 "Consider restructuring as: 'The <system> shall <action>'",
-                "For conditional requirements, use: 'When <trigger>, the <system> shall <action>'"
-            ]
+                "For conditional requirements, use: 'When <trigger>, the <system> shall <action>'",
+            ],
         )
 
-    def _extract_components(
-        self, pattern_type: EARSPatternType, match: re.Match
-    ) -> EARSComponents:
+    def _extract_components(self, pattern_type: EARSPatternType, match: re.Match) -> EARSComponents:
         """Extract EARS components from a regex match."""
         groups = match.groups()
 
         if pattern_type == EARSPatternType.UBIQUITOUS:
             return EARSComponents(
-                actor=groups[0] if len(groups) > 0 else None,
-                system_response=groups[1] if len(groups) > 1 else None
+                actor=groups[0] if len(groups) > 0 else None, system_response=groups[1] if len(groups) > 1 else None
             )
-        elif pattern_type in (
-            EARSPatternType.EVENT_DRIVEN,
-            EARSPatternType.STATE_DRIVEN,
-            EARSPatternType.OPTIONAL
-        ):
+        if pattern_type in (EARSPatternType.EVENT_DRIVEN, EARSPatternType.STATE_DRIVEN, EARSPatternType.OPTIONAL):
             return EARSComponents(
                 trigger=groups[0] if len(groups) > 0 else None,
                 actor=groups[1] if len(groups) > 1 else None,
-                system_response=groups[2] if len(groups) > 2 else None
+                system_response=groups[2] if len(groups) > 2 else None,
             )
-        elif pattern_type == EARSPatternType.UNWANTED:
+        if pattern_type == EARSPatternType.UNWANTED:
             return EARSComponents(
                 precondition=groups[0] if len(groups) > 0 else None,
                 actor=groups[1] if len(groups) > 1 else None,
-                postcondition=f"NOT {groups[2]}" if len(groups) > 2 else None
+                postcondition=f"NOT {groups[2]}" if len(groups) > 2 else None,
             )
 
         return EARSComponents()
 
-    def _calculate_confidence(
-        self,
-        text: str,
-        pattern_type: EARSPatternType,
-        components: EARSComponents
-    ) -> float:
+    def _calculate_confidence(self, text: str, pattern_type: EARSPatternType, components: EARSComponents) -> float:
         """Calculate confidence score for the pattern match."""
         confidence = 0.5  # Base confidence for any match
 
@@ -221,9 +234,7 @@ class EARSPatternAnalyzer:
 
         return max(0.0, min(1.0, confidence))
 
-    def _validate_requirement(
-        self, text: str, components: EARSComponents
-    ) -> list[str]:
+    def _validate_requirement(self, text: str, components: EARSComponents) -> list[str]:
         """Validate the requirement for quality issues."""
         issues = []
         words = text.lower().split()
@@ -240,9 +251,10 @@ class EARSPatternAnalyzer:
             issues.append(f"Incomplete markers found: {', '.join(incomplete)}")
 
         # Check for missing quantification
-        if any(word in word_set for word in ["fast", "quick", "efficient"]):
-            if not any(char.isdigit() for char in text):
-                issues.append("Performance requirement lacks quantifiable metric")
+        if any(word in word_set for word in ["fast", "quick", "efficient"]) and not any(
+            char.isdigit() for char in text
+        ):
+            issues.append("Performance requirement lacks quantifiable metric")
 
         # Check for compound requirements
         if text.count(" and ") > 1 or text.count(" or ") > 1:
@@ -260,21 +272,13 @@ class EARSPatternAnalyzer:
 
         for issue in issues:
             if "ambiguous" in issue.lower():
-                suggestions.append(
-                    "Replace ambiguous terms with specific, measurable criteria"
-                )
+                suggestions.append("Replace ambiguous terms with specific, measurable criteria")
             elif "incomplete" in issue.lower():
-                suggestions.append(
-                    "Complete all placeholder sections before finalizing"
-                )
+                suggestions.append("Complete all placeholder sections before finalizing")
             elif "quantifiable" in issue.lower():
-                suggestions.append(
-                    "Add specific metrics (e.g., 'within 200ms' instead of 'fast')"
-                )
+                suggestions.append("Add specific metrics (e.g., 'within 200ms' instead of 'fast')")
             elif "compound" in issue.lower():
-                suggestions.append(
-                    "Split into separate requirements for better traceability"
-                )
+                suggestions.append("Split into separate requirements for better traceability")
 
         return suggestions
 
@@ -284,8 +288,9 @@ class EARSPatternAnalyzer:
 # =============================================================================
 
 
-class QualityDimension(str, Enum):
+class QualityDimension(StrEnum):
     """ISO 29148 quality dimensions."""
+
     COMPLETENESS = "completeness"
     CONSISTENCY = "consistency"
     CORRECTNESS = "correctness"
@@ -299,6 +304,7 @@ class QualityDimension(str, Enum):
 
 class QualityIssue(BaseModel):
     """A detected quality issue."""
+
     dimension: QualityDimension
     severity: str = Field(pattern="^(error|warning|info)$")
     message: str
@@ -308,6 +314,7 @@ class QualityIssue(BaseModel):
 
 class QualityScore(BaseModel):
     """Quality scoring result."""
+
     dimension_scores: dict[str, float]
     overall_score: float
     issues: list[QualityIssue]
@@ -329,7 +336,7 @@ class RequirementQualityAnalyzer:
     - Traceability: 5%
     """
 
-    DIMENSION_WEIGHTS = {
+    DIMENSION_WEIGHTS: ClassVar[dict[QualityDimension, float]] = {
         QualityDimension.UNAMBIGUITY: 0.20,
         QualityDimension.COMPLETENESS: 0.20,
         QualityDimension.VERIFIABILITY: 0.15,
@@ -344,44 +351,34 @@ class RequirementQualityAnalyzer:
         self,
         requirement_text: str,
         related_requirements: list[str] | None = None,
-        linked_tests: list[str] | None = None
+        linked_tests: list[str] | None = None,
     ) -> QualityScore:
         """Analyze requirement quality across all dimensions."""
         issues = []
         scores = {}
 
         # Unambiguity analysis
-        unambiguity_score, unambiguity_issues = self._analyze_unambiguity(
-            requirement_text
-        )
+        unambiguity_score, unambiguity_issues = self._analyze_unambiguity(requirement_text)
         scores[QualityDimension.UNAMBIGUITY.value] = unambiguity_score
         issues.extend(unambiguity_issues)
 
         # Completeness analysis
-        completeness_score, completeness_issues = self._analyze_completeness(
-            requirement_text
-        )
+        completeness_score, completeness_issues = self._analyze_completeness(requirement_text)
         scores[QualityDimension.COMPLETENESS.value] = completeness_score
         issues.extend(completeness_issues)
 
         # Verifiability analysis
-        verifiability_score, verifiability_issues = self._analyze_verifiability(
-            requirement_text
-        )
+        verifiability_score, verifiability_issues = self._analyze_verifiability(requirement_text)
         scores[QualityDimension.VERIFIABILITY.value] = verifiability_score
         issues.extend(verifiability_issues)
 
         # Singularity analysis
-        singularity_score, singularity_issues = self._analyze_singularity(
-            requirement_text
-        )
+        singularity_score, singularity_issues = self._analyze_singularity(requirement_text)
         scores[QualityDimension.SINGULARITY.value] = singularity_score
         issues.extend(singularity_issues)
 
         # Necessity analysis (verb strength)
-        necessity_score, necessity_issues = self._analyze_necessity(
-            requirement_text
-        )
+        necessity_score, necessity_issues = self._analyze_necessity(requirement_text)
         scores[QualityDimension.NECESSITY.value] = necessity_score
         issues.extend(necessity_issues)
 
@@ -389,12 +386,14 @@ class RequirementQualityAnalyzer:
         traceability_score = 1.0 if linked_tests and len(linked_tests) > 0 else 0.5
         scores[QualityDimension.TRACEABILITY.value] = traceability_score
         if traceability_score < 1.0:
-            issues.append(QualityIssue(
-                dimension=QualityDimension.TRACEABILITY,
-                severity="warning",
-                message="No linked test cases for verification",
-                suggestion="Link test cases to enable traceability"
-            ))
+            issues.append(
+                QualityIssue(
+                    dimension=QualityDimension.TRACEABILITY,
+                    severity="warning",
+                    message="No linked test cases for verification",
+                    suggestion="Link test cases to enable traceability",
+                )
+            )
 
         # Consistency (placeholder - would need full requirement set)
         scores[QualityDimension.CONSISTENCY.value] = 0.8
@@ -403,10 +402,7 @@ class RequirementQualityAnalyzer:
         scores[QualityDimension.FEASIBILITY.value] = 0.8
 
         # Calculate weighted overall score
-        overall = sum(
-            scores.get(dim.value, 0.8) * weight
-            for dim, weight in self.DIMENSION_WEIGHTS.items()
-        )
+        overall = sum(scores.get(dim.value, 0.8) * weight for dim, weight in self.DIMENSION_WEIGHTS.items())
 
         # Determine grade
         grade = self._score_to_grade(overall)
@@ -415,23 +411,43 @@ class RequirementQualityAnalyzer:
             dimension_scores=scores,
             overall_score=overall * 100,  # Convert to percentage
             issues=issues,
-            grade=grade
+            grade=grade,
         )
 
-    def _analyze_unambiguity(
-        self, text: str
-    ) -> tuple[float, list[QualityIssue]]:
+    def _analyze_unambiguity(self, text: str) -> tuple[float, list[QualityIssue]]:
         """Analyze unambiguity dimension."""
         issues = []
         score = 1.0
 
         # Check for ambiguous words
         ambiguous_words = {
-            "appropriate", "adequate", "reasonable", "sufficient", "timely",
-            "easy", "simple", "fast", "quick", "efficient", "effective",
-            "user-friendly", "flexible", "scalable", "robust", "good",
-            "some", "several", "many", "few", "various", "etc",
-            "normally", "usually", "typically", "generally", "often"
+            "appropriate",
+            "adequate",
+            "reasonable",
+            "sufficient",
+            "timely",
+            "easy",
+            "simple",
+            "fast",
+            "quick",
+            "efficient",
+            "effective",
+            "user-friendly",
+            "flexible",
+            "scalable",
+            "robust",
+            "good",
+            "some",
+            "several",
+            "many",
+            "few",
+            "various",
+            "etc",
+            "normally",
+            "usually",
+            "typically",
+            "generally",
+            "often",
         }
 
         words = set(text.lower().split())
@@ -441,13 +457,15 @@ class RequirementQualityAnalyzer:
             score -= 0.15
             # Find position
             pos = text.lower().find(word)
-            issues.append(QualityIssue(
-                dimension=QualityDimension.UNAMBIGUITY,
-                severity="warning",
-                message=f"Ambiguous term '{word}' detected",
-                suggestion=f"Replace '{word}' with specific, measurable criteria",
-                position=pos
-            ))
+            issues.append(
+                QualityIssue(
+                    dimension=QualityDimension.UNAMBIGUITY,
+                    severity="warning",
+                    message=f"Ambiguous term '{word}' detected",
+                    suggestion=f"Replace '{word}' with specific, measurable criteria",
+                    position=pos,
+                )
+            )
 
         # Check for weak modals
         weak_modals = {"may", "might", "could", "possibly", "perhaps", "should"}
@@ -455,18 +473,18 @@ class RequirementQualityAnalyzer:
 
         for word in found_weak:
             score -= 0.10
-            issues.append(QualityIssue(
-                dimension=QualityDimension.UNAMBIGUITY,
-                severity="info",
-                message=f"Weak modal '{word}' may indicate optional behavior",
-                suggestion="Use 'shall' for mandatory requirements"
-            ))
+            issues.append(
+                QualityIssue(
+                    dimension=QualityDimension.UNAMBIGUITY,
+                    severity="info",
+                    message=f"Weak modal '{word}' may indicate optional behavior",
+                    suggestion="Use 'shall' for mandatory requirements",
+                )
+            )
 
         return max(0.0, score), issues
 
-    def _analyze_completeness(
-        self, text: str
-    ) -> tuple[float, list[QualityIssue]]:
+    def _analyze_completeness(self, text: str) -> tuple[float, list[QualityIssue]]:
         """Analyze completeness dimension."""
         issues = []
         score = 1.0
@@ -478,28 +496,30 @@ class RequirementQualityAnalyzer:
         for marker in incomplete_markers:
             if marker in text_lower:
                 score -= 0.25
-                issues.append(QualityIssue(
-                    dimension=QualityDimension.COMPLETENESS,
-                    severity="error",
-                    message=f"Incomplete marker '{marker}' found",
-                    suggestion="Complete all placeholder sections"
-                ))
+                issues.append(
+                    QualityIssue(
+                        dimension=QualityDimension.COMPLETENESS,
+                        severity="error",
+                        message=f"Incomplete marker '{marker}' found",
+                        suggestion="Complete all placeholder sections",
+                    )
+                )
 
         # Check minimum length (heuristic)
         if len(text) < 30:
             score -= 0.20
-            issues.append(QualityIssue(
-                dimension=QualityDimension.COMPLETENESS,
-                severity="warning",
-                message="Requirement may be too brief",
-                suggestion="Ensure all necessary details are included"
-            ))
+            issues.append(
+                QualityIssue(
+                    dimension=QualityDimension.COMPLETENESS,
+                    severity="warning",
+                    message="Requirement may be too brief",
+                    suggestion="Ensure all necessary details are included",
+                )
+            )
 
         return max(0.0, score), issues
 
-    def _analyze_verifiability(
-        self, text: str
-    ) -> tuple[float, list[QualityIssue]]:
+    def _analyze_verifiability(self, text: str) -> tuple[float, list[QualityIssue]]:
         """Analyze verifiability dimension."""
         issues = []
         score = 1.0
@@ -508,8 +528,20 @@ class RequirementQualityAnalyzer:
         has_numbers = any(char.isdigit() for char in text)
         has_units = any(
             unit in text.lower()
-            for unit in ["ms", "seconds", "minutes", "hours", "bytes", "mb", "gb",
-                        "%", "percent", "users", "requests", "items"]
+            for unit in [
+                "ms",
+                "seconds",
+                "minutes",
+                "hours",
+                "bytes",
+                "mb",
+                "gb",
+                "%",
+                "percent",
+                "users",
+                "requests",
+                "items",
+            ]
         )
 
         # Performance requirements need numbers
@@ -518,28 +550,30 @@ class RequirementQualityAnalyzer:
 
         if is_performance_req and not has_numbers:
             score -= 0.30
-            issues.append(QualityIssue(
-                dimension=QualityDimension.VERIFIABILITY,
-                severity="error",
-                message="Performance requirement lacks quantifiable metric",
-                suggestion="Add specific targets (e.g., 'within 200ms', '99.9% uptime')"
-            ))
+            issues.append(
+                QualityIssue(
+                    dimension=QualityDimension.VERIFIABILITY,
+                    severity="error",
+                    message="Performance requirement lacks quantifiable metric",
+                    suggestion="Add specific targets (e.g., 'within 200ms', '99.9% uptime')",
+                )
+            )
 
         # Generic check for testability
         if not has_numbers and not has_units:
             score -= 0.10
-            issues.append(QualityIssue(
-                dimension=QualityDimension.VERIFIABILITY,
-                severity="info",
-                message="No quantifiable metrics found",
-                suggestion="Consider adding measurable acceptance criteria"
-            ))
+            issues.append(
+                QualityIssue(
+                    dimension=QualityDimension.VERIFIABILITY,
+                    severity="info",
+                    message="No quantifiable metrics found",
+                    suggestion="Consider adding measurable acceptance criteria",
+                )
+            )
 
         return max(0.0, score), issues
 
-    def _analyze_singularity(
-        self, text: str
-    ) -> tuple[float, list[QualityIssue]]:
+    def _analyze_singularity(self, text: str) -> tuple[float, list[QualityIssue]]:
         """Analyze singularity dimension (one requirement per statement)."""
         issues = []
         score = 1.0
@@ -550,27 +584,29 @@ class RequirementQualityAnalyzer:
 
         if and_count > 1:
             score -= 0.15 * (and_count - 1)
-            issues.append(QualityIssue(
-                dimension=QualityDimension.SINGULARITY,
-                severity="warning",
-                message=f"Multiple 'and' conjunctions ({and_count}) may indicate compound requirement",
-                suggestion="Consider splitting into separate requirements"
-            ))
+            issues.append(
+                QualityIssue(
+                    dimension=QualityDimension.SINGULARITY,
+                    severity="warning",
+                    message=f"Multiple 'and' conjunctions ({and_count}) may indicate compound requirement",
+                    suggestion="Consider splitting into separate requirements",
+                )
+            )
 
         if or_count > 0:
             score -= 0.20 * or_count
-            issues.append(QualityIssue(
-                dimension=QualityDimension.SINGULARITY,
-                severity="warning",
-                message=f"'Or' conjunction detected - may be ambiguous or compound",
-                suggestion="Split into separate requirements for each alternative"
-            ))
+            issues.append(
+                QualityIssue(
+                    dimension=QualityDimension.SINGULARITY,
+                    severity="warning",
+                    message="'Or' conjunction detected - may be ambiguous or compound",
+                    suggestion="Split into separate requirements for each alternative",
+                )
+            )
 
         return max(0.0, score), issues
 
-    def _analyze_necessity(
-        self, text: str
-    ) -> tuple[float, list[QualityIssue]]:
+    def _analyze_necessity(self, text: str) -> tuple[float, list[QualityIssue]]:
         """Analyze necessity dimension (proper requirement language)."""
         issues = []
         score = 1.0
@@ -581,28 +617,34 @@ class RequirementQualityAnalyzer:
             score = 1.0  # Best
         elif "will" in text_lower:
             score = 0.8
-            issues.append(QualityIssue(
-                dimension=QualityDimension.NECESSITY,
-                severity="info",
-                message="'Will' is weaker than 'shall' for requirements",
-                suggestion="Consider using 'shall' for mandatory requirements"
-            ))
+            issues.append(
+                QualityIssue(
+                    dimension=QualityDimension.NECESSITY,
+                    severity="info",
+                    message="'Will' is weaker than 'shall' for requirements",
+                    suggestion="Consider using 'shall' for mandatory requirements",
+                )
+            )
         elif "should" in text_lower:
             score = 0.6
-            issues.append(QualityIssue(
-                dimension=QualityDimension.NECESSITY,
-                severity="warning",
-                message="'Should' indicates optional behavior",
-                suggestion="Use 'shall' for mandatory, 'may' for optional"
-            ))
+            issues.append(
+                QualityIssue(
+                    dimension=QualityDimension.NECESSITY,
+                    severity="warning",
+                    message="'Should' indicates optional behavior",
+                    suggestion="Use 'shall' for mandatory, 'may' for optional",
+                )
+            )
         else:
             score = 0.5
-            issues.append(QualityIssue(
-                dimension=QualityDimension.NECESSITY,
-                severity="warning",
-                message="No requirement keyword (shall/will/should) found",
-                suggestion="Use 'The system shall...' format"
-            ))
+            issues.append(
+                QualityIssue(
+                    dimension=QualityDimension.NECESSITY,
+                    severity="warning",
+                    message="No requirement keyword (shall/will/should) found",
+                    suggestion="Use 'The system shall...' format",
+                )
+            )
 
         return score, issues
 
@@ -610,14 +652,13 @@ class RequirementQualityAnalyzer:
         """Convert numeric score to letter grade."""
         if score >= 0.90:
             return "A"
-        elif score >= 0.80:
+        if score >= 0.80:
             return "B"
-        elif score >= 0.70:
+        if score >= 0.70:
             return "C"
-        elif score >= 0.60:
+        if score >= 0.60:
             return "D"
-        else:
-            return "F"
+        return "F"
 
 
 # =============================================================================
@@ -627,6 +668,7 @@ class RequirementQualityAnalyzer:
 
 class VersionBlock(BaseModel):
     """Immutable version record with cryptographic linking."""
+
     block_id: str  # SHA-256 hash
     previous_block_id: str | None
     timestamp: datetime
@@ -649,9 +691,7 @@ class VersionChain:
 
     @staticmethod
     def create_genesis_block(
-        content: dict[str, Any],
-        author_id: str,
-        change_summary: str = "Initial creation"
+        content: dict[str, Any], author_id: str, change_summary: str = "Initial creation"
     ) -> VersionBlock:
         """Create the first block in a version chain."""
         content_hash = VersionChain._hash_content(content)
@@ -659,11 +699,11 @@ class VersionChain:
         # Genesis block has no previous
         block_data = {
             "previous_block_id": None,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "author_id": author_id,
             "change_type": "created",
             "change_summary": change_summary,
-            "content_hash": content_hash
+            "content_hash": content_hash,
         }
 
         block_id = VersionChain._hash_block(block_data)
@@ -671,31 +711,27 @@ class VersionChain:
         return VersionBlock(
             block_id=block_id,
             previous_block_id=None,
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             author_id=author_id,
             change_type="created",
             change_summary=change_summary,
-            content_hash=content_hash
+            content_hash=content_hash,
         )
 
     @staticmethod
     def add_block(
-        previous_block: VersionBlock,
-        content: dict[str, Any],
-        author_id: str,
-        change_type: str,
-        change_summary: str
+        previous_block: VersionBlock, content: dict[str, Any], author_id: str, change_type: str, change_summary: str
     ) -> VersionBlock:
         """Add a new block to the chain."""
         content_hash = VersionChain._hash_content(content)
 
         block_data = {
             "previous_block_id": previous_block.block_id,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "author_id": author_id,
             "change_type": change_type,
             "change_summary": change_summary,
-            "content_hash": content_hash
+            "content_hash": content_hash,
         }
 
         block_id = VersionChain._hash_block(block_data)
@@ -703,11 +739,11 @@ class VersionChain:
         return VersionBlock(
             block_id=block_id,
             previous_block_id=previous_block.block_id,
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             author_id=author_id,
             change_type=change_type,
             change_summary=change_summary,
-            content_hash=content_hash
+            content_hash=content_hash,
         )
 
     @staticmethod
@@ -733,15 +769,11 @@ class VersionChain:
             previous = blocks[i - 1]
 
             if current.previous_block_id != previous.block_id:
-                issues.append(
-                    f"Block {i} previous_block_id doesn't match block {i-1} block_id"
-                )
+                issues.append(f"Block {i} previous_block_id doesn't match block {i - 1} block_id")
 
             # Verify timestamps are sequential
             if current.timestamp < previous.timestamp:
-                issues.append(
-                    f"Block {i} timestamp is earlier than block {i-1}"
-                )
+                issues.append(f"Block {i} timestamp is earlier than block {i - 1}")
 
         return len(issues) == 0, issues
 
@@ -749,6 +781,7 @@ class VersionChain:
     def _hash_content(content: dict[str, Any]) -> str:
         """Create SHA-256 hash of content."""
         import json
+
         content_str = json.dumps(content, sort_keys=True, default=str)
         return hashlib.sha256(content_str.encode()).hexdigest()
 
@@ -756,6 +789,7 @@ class VersionChain:
     def _hash_block(block_data: dict[str, Any]) -> str:
         """Create SHA-256 hash of block data."""
         import json
+
         block_str = json.dumps(block_data, sort_keys=True)
         return hashlib.sha256(block_str.encode()).hexdigest()
 
@@ -765,17 +799,19 @@ class VersionChain:
 # =============================================================================
 
 
-class FlakinessSeverity(str, Enum):
+class FlakinessSeverity(StrEnum):
     """Flakiness severity levels."""
-    STABLE = "stable"        # < 1%
-    LOW = "low"              # 1-5%
-    MEDIUM = "medium"        # 5-15%
-    HIGH = "high"            # 15-30%
-    CRITICAL = "critical"    # > 30%
+
+    STABLE = "stable"  # < 1%
+    LOW = "low"  # 1-5%
+    MEDIUM = "medium"  # 5-15%
+    HIGH = "high"  # 15-30%
+    CRITICAL = "critical"  # > 30%
 
 
-class FlakinessPattern(str, Enum):
+class FlakinessPattern(StrEnum):
     """Detected flakiness patterns."""
+
     ORDER_DEPENDENT = "order_dependent"
     TIME_DEPENDENT = "time_dependent"
     RESOURCE_DEPENDENT = "resource_dependent"
@@ -788,6 +824,7 @@ class FlakinessPattern(str, Enum):
 
 class FlakinessAnalysis(BaseModel):
     """Result of flakiness analysis."""
+
     flakiness_score: float = Field(ge=0, le=1)
     severity: FlakinessSeverity
     detected_patterns: list[FlakinessPattern] = Field(default_factory=list)
@@ -814,11 +851,7 @@ class FlakinessDetector:
     - Pattern detection (order, time, resource dependency)
     """
 
-    def analyze(
-        self,
-        run_history: list[dict[str, Any]],
-        window_size: int = 20
-    ) -> FlakinessAnalysis:
+    def analyze(self, run_history: list[dict[str, Any]], window_size: int = 20) -> FlakinessAnalysis:
         """
         Analyze test flakiness from run history.
 
@@ -836,7 +869,7 @@ class FlakinessDetector:
                 consecutive_failures_max=0,
                 consecutive_passes_max=0,
                 quarantine_recommended=False,
-                confidence=0.0
+                confidence=0.0,
             )
 
         # Get recent runs
@@ -874,8 +907,7 @@ class FlakinessDetector:
 
         # Quarantine recommendation
         quarantine_recommended = (
-            severity in (FlakinessSeverity.HIGH, FlakinessSeverity.CRITICAL)
-            or max_consecutive_failures >= 3
+            severity in (FlakinessSeverity.HIGH, FlakinessSeverity.CRITICAL) or max_consecutive_failures >= 3
         )
 
         # Suggested fix
@@ -895,7 +927,7 @@ class FlakinessDetector:
             consecutive_passes_max=max_consecutive_passes,
             quarantine_recommended=quarantine_recommended,
             suggested_fix_category=suggested_fix,
-            confidence=confidence
+            confidence=confidence,
         )
 
     def _calculate_entropy(self, statuses: list[str]) -> float:
@@ -916,9 +948,7 @@ class FlakinessDetector:
 
         return transitions / max_transitions
 
-    def _max_consecutive(
-        self, statuses: list[str], target_statuses: set[str]
-    ) -> int:
+    def _max_consecutive(self, statuses: list[str], target_statuses: set[str]) -> int:
         """Find maximum consecutive occurrences of target statuses."""
         max_count = 0
         current_count = 0
@@ -933,9 +963,7 @@ class FlakinessDetector:
         return max_count
 
     def _detect_patterns(
-        self,
-        full_history: list[dict[str, Any]],
-        recent: list[dict[str, Any]]
+        self, full_history: list[dict[str, Any]], recent: list[dict[str, Any]]
     ) -> list[FlakinessPattern]:
         """Detect flakiness patterns from run history."""
         patterns = []
@@ -954,27 +982,20 @@ class FlakinessDetector:
         if durations and len(durations) > 5:
             variance = statistics.variance(durations) if len(durations) > 1 else 0
             mean = statistics.mean(durations)
-            cv = (variance ** 0.5) / mean if mean > 0 else 0
+            cv = (variance**0.5) / mean if mean > 0 else 0
             if cv > 0.5:  # High coefficient of variation
                 patterns.append(FlakinessPattern.RESOURCE_DEPENDENT)
 
         # Check for alternating pattern (pass-fail-pass-fail)
         statuses = [r.get("status", "unknown") for r in recent]
-        alternating_count = sum(
-            1 for i in range(1, len(statuses))
-            if statuses[i] != statuses[i - 1]
-        )
+        alternating_count = sum(1 for i in range(1, len(statuses)) if statuses[i] != statuses[i - 1])
         if len(statuses) > 5 and alternating_count > len(statuses) * 0.6:
             patterns.append(FlakinessPattern.RACE_CONDITION)
 
         return patterns
 
     def _calculate_flakiness_score(
-        self,
-        failure_rate: float,
-        entropy: float,
-        max_failures: int,
-        max_passes: int
+        self, failure_rate: float, entropy: float, max_failures: int, max_passes: int
     ) -> float:
         """
         Calculate overall flakiness score.
@@ -1008,26 +1029,25 @@ class FlakinessDetector:
         """Convert flakiness score to severity level."""
         if score < 0.01:
             return FlakinessSeverity.STABLE
-        elif score < 0.05:
+        if score < 0.05:
             return FlakinessSeverity.LOW
-        elif score < 0.15:
+        if score < 0.15:
             return FlakinessSeverity.MEDIUM
-        elif score < 0.30:
+        if score < 0.30:
             return FlakinessSeverity.HIGH
-        else:
-            return FlakinessSeverity.CRITICAL
+        return FlakinessSeverity.CRITICAL
 
     def _suggest_fix(self, patterns: list[FlakinessPattern]) -> str | None:
         """Suggest fix based on detected patterns."""
         if FlakinessPattern.RACE_CONDITION in patterns:
             return "Add synchronization or increase timeouts"
-        elif FlakinessPattern.RESOURCE_DEPENDENT in patterns:
+        if FlakinessPattern.RESOURCE_DEPENDENT in patterns:
             return "Reduce resource contention or add retry logic"
-        elif FlakinessPattern.TIME_DEPENDENT in patterns:
+        if FlakinessPattern.TIME_DEPENDENT in patterns:
             return "Mock time-dependent behavior"
-        elif FlakinessPattern.EXTERNAL_DEPENDENCY in patterns:
+        if FlakinessPattern.EXTERNAL_DEPENDENCY in patterns:
             return "Mock external services or add circuit breakers"
-        elif FlakinessPattern.ORDER_DEPENDENT in patterns:
+        if FlakinessPattern.ORDER_DEPENDENT in patterns:
             return "Ensure proper test isolation and cleanup"
         return None
 
@@ -1039,6 +1059,7 @@ class FlakinessDetector:
 
 class WSJFScore(BaseModel):
     """WSJF (Weighted Shortest Job First) scoring."""
+
     business_value: int = Field(ge=1, le=10)
     time_criticality: int = Field(ge=1, le=10)
     risk_reduction: int = Field(ge=1, le=10)
@@ -1052,6 +1073,7 @@ class WSJFScore(BaseModel):
 
 class RICEScore(BaseModel):
     """RICE scoring model."""
+
     reach: int  # Users/customers affected
     impact: float = Field(ge=0.25, le=3)  # 0.25 (minimal) to 3 (massive)
     confidence: float = Field(ge=0, le=1)
@@ -1071,16 +1093,11 @@ class PrioritizationCalculator:
     - WSJF = Cost of Delay / Job Size
 
     RICE (Intercom):
-    - RICE = (Reach × Impact × Confidence) / Effort
+    - RICE = (Reach x Impact x Confidence) / Effort
     """
 
     @staticmethod
-    def calculate_wsjf(
-        business_value: int,
-        time_criticality: int,
-        risk_reduction: int,
-        job_size: int
-    ) -> WSJFScore:
+    def calculate_wsjf(business_value: int, time_criticality: int, risk_reduction: int, job_size: int) -> WSJFScore:
         """Calculate WSJF score."""
         # Validate inputs
         business_value = max(1, min(10, business_value))
@@ -1100,16 +1117,11 @@ class PrioritizationCalculator:
             risk_reduction=risk_reduction,
             job_size=job_size,
             cost_of_delay=cost_of_delay,
-            wsjf_score=round(wsjf_score, 2)
+            wsjf_score=round(wsjf_score, 2),
         )
 
     @staticmethod
-    def calculate_rice(
-        reach: int,
-        impact: float,
-        confidence: float,
-        effort: int
-    ) -> RICEScore:
+    def calculate_rice(reach: int, impact: float, confidence: float, effort: int) -> RICEScore:
         """Calculate RICE score."""
         # Validate inputs
         reach = max(1, reach)
@@ -1117,15 +1129,11 @@ class PrioritizationCalculator:
         confidence = max(0.0, min(1.0, confidence))
         effort = max(1, effort)
 
-        # RICE = (R × I × C) / E
+        # RICE = (R x I x C) / E
         rice_score = (reach * impact * confidence) / effort
 
         return RICEScore(
-            reach=reach,
-            impact=impact,
-            confidence=confidence,
-            effort=effort,
-            rice_score=round(rice_score, 2)
+            reach=reach, impact=impact, confidence=confidence, effort=effort, rice_score=round(rice_score, 2)
         )
 
     @staticmethod
@@ -1177,7 +1185,7 @@ class SpecAnalyticsService:
         self,
         requirement_text: str,
         related_requirements: list[str] | None = None,
-        linked_tests: list[str] | None = None
+        linked_tests: list[str] | None = None,
     ) -> dict[str, Any]:
         """
         Perform comprehensive requirement analysis.
@@ -1187,11 +1195,7 @@ class SpecAnalyticsService:
             quality scores, and improvement suggestions.
         """
         ears_result = self.ears_analyzer.analyze(requirement_text)
-        quality_result = self.quality_analyzer.analyze(
-            requirement_text,
-            related_requirements,
-            linked_tests
-        )
+        quality_result = self.quality_analyzer.analyze(requirement_text, related_requirements, linked_tests)
 
         return {
             "ears_analysis": ears_result.model_dump(),
@@ -1201,18 +1205,11 @@ class SpecAnalyticsService:
                 "quality_grade": quality_result.grade,
                 "quality_score": quality_result.overall_score,
                 "total_issues": len(ears_result.validation_issues) + len(quality_result.issues),
-                "needs_attention": (
-                    not ears_result.is_valid or
-                    quality_result.grade in ("D", "F")
-                )
-            }
+                "needs_attention": (not ears_result.is_valid or quality_result.grade in ("D", "F")),
+            },
         }
 
-    def analyze_test_flakiness(
-        self,
-        run_history: list[dict[str, Any]],
-        window_size: int = 20
-    ) -> FlakinessAnalysis:
+    def analyze_test_flakiness(self, run_history: list[dict[str, Any]], window_size: int = 20) -> FlakinessAnalysis:
         """Analyze test flakiness from run history."""
         return self.flakiness_detector.analyze(run_history, window_size)
 
@@ -1222,43 +1219,23 @@ class SpecAnalyticsService:
         author_id: str,
         previous_block: VersionBlock | None = None,
         change_type: str = "updated",
-        change_summary: str = ""
+        change_summary: str = "",
     ) -> VersionBlock:
         """Create a new version block for audit trail."""
         if previous_block is None:
-            return VersionChain.create_genesis_block(
-                content, author_id, change_summary or "Initial creation"
-            )
-        return VersionChain.add_block(
-            previous_block, content, author_id, change_type, change_summary
-        )
+            return VersionChain.create_genesis_block(content, author_id, change_summary or "Initial creation")
+        return VersionChain.add_block(previous_block, content, author_id, change_type, change_summary)
 
-    def verify_version_chain(
-        self, blocks: list[VersionBlock]
-    ) -> tuple[bool, list[str]]:
+    def verify_version_chain(self, blocks: list[VersionBlock]) -> tuple[bool, list[str]]:
         """Verify integrity of version chain."""
         return VersionChain.verify_chain(blocks)
 
     def calculate_wsjf(
-        self,
-        business_value: int,
-        time_criticality: int,
-        risk_reduction: int,
-        job_size: int
+        self, business_value: int, time_criticality: int, risk_reduction: int, job_size: int
     ) -> WSJFScore:
         """Calculate WSJF prioritization score."""
-        return PrioritizationCalculator.calculate_wsjf(
-            business_value, time_criticality, risk_reduction, job_size
-        )
+        return PrioritizationCalculator.calculate_wsjf(business_value, time_criticality, risk_reduction, job_size)
 
-    def calculate_rice(
-        self,
-        reach: int,
-        impact: float,
-        confidence: float,
-        effort: int
-    ) -> RICEScore:
+    def calculate_rice(self, reach: int, impact: float, confidence: float, effort: int) -> RICEScore:
         """Calculate RICE prioritization score."""
-        return PrioritizationCalculator.calculate_rice(
-            reach, impact, confidence, effort
-        )
+        return PrioritizationCalculator.calculate_rice(reach, impact, confidence, effort)

@@ -1,14 +1,15 @@
 """Problem schemas for TraceRTM."""
 
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
-class ProblemStatus(str, Enum):
+class ProblemStatus(StrEnum):
     """Valid problem statuses."""
+
     OPEN = "open"
     IN_INVESTIGATION = "in_investigation"
     PENDING_WORKAROUND = "pending_workaround"
@@ -17,8 +18,9 @@ class ProblemStatus(str, Enum):
     CLOSED = "closed"
 
 
-class ResolutionType(str, Enum):
+class ResolutionType(StrEnum):
     """How the problem was resolved."""
+
     PERMANENT_FIX = "permanent_fix"
     WORKAROUND_ONLY = "workaround_only"
     CANNOT_REPRODUCE = "cannot_reproduce"
@@ -26,16 +28,18 @@ class ResolutionType(str, Enum):
     BY_DESIGN = "by_design"
 
 
-class ImpactLevel(str, Enum):
+class ImpactLevel(StrEnum):
     """Impact severity levels."""
+
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
 
 
-class RCAMethod(str, Enum):
+class RCAMethod(StrEnum):
     """Root Cause Analysis methodologies."""
+
     FIVE_WHYS = "five_whys"
     FISHBONE = "fishbone"
     KEPNER_TREGOE = "kepner_tregoe"
@@ -44,8 +48,9 @@ class RCAMethod(str, Enum):
     OTHER = "other"
 
 
-class RootCauseCategory(str, Enum):
+class RootCauseCategory(StrEnum):
     """Categories of root causes."""
+
     SYSTEMATIC = "systematic"
     HUMAN = "human"
     ENVIRONMENTAL = "environmental"
@@ -140,10 +145,7 @@ class FiveWhysAnalysis(BaseModel):
     """Schema for 5 Whys RCA method."""
 
     problem_statement: str
-    levels: list[dict[str, str]] = Field(
-        ...,
-        description="List of why levels: [{'question': '...', 'answer': '...'}]"
-    )
+    levels: list[dict[str, str]] = Field(..., description="List of why levels: [{'question': '...', 'answer': '...'}]")
     root_cause_conclusion: str
 
 
@@ -152,8 +154,7 @@ class FishboneAnalysis(BaseModel):
 
     problem_statement: str
     categories: list[dict[str, Any]] = Field(
-        ...,
-        description="List of categories with causes: [{'name': '...', 'causes': [...]}]"
+        ..., description="List of categories with causes: [{'name': '...', 'causes': [...]}]"
     )
     identified_root_causes: list[str]
 
@@ -163,9 +164,7 @@ class WorkaroundUpdate(BaseModel):
 
     workaround_available: bool
     workaround_description: str | None = None
-    workaround_effectiveness: str | None = Field(
-        None, pattern="^(permanent_fix|partial|temporary)$"
-    )
+    workaround_effectiveness: str | None = Field(None, pattern="^(permanent_fix|partial|temporary)$")
 
 
 class PermanentFixUpdate(BaseModel):
@@ -255,8 +254,7 @@ class ProblemResponse(BaseModel):
     updated_at: datetime
     deleted_at: datetime | None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ProblemListResponse(BaseModel):
@@ -277,8 +275,7 @@ class ProblemListResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ProblemActivityResponse(BaseModel):
@@ -294,5 +291,4 @@ class ProblemActivityResponse(BaseModel):
     metadata: dict[str, Any]
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

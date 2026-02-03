@@ -255,7 +255,7 @@ describe('e2e' , ()=>{
                         headers : {
                             'tesT-me' :'90'
                         }
-                    } , (res)=>{
+                    } , (_res)=>{
                         reject(new Error('Rejected request shouldn\'t respond'))
                     });
                     req.on('error' , (err)=>{
@@ -343,7 +343,7 @@ describe('e2e' , ()=>{
                         headers : {
                             'tesT-me' :'90'
                         }
-                    } , (res)=>{
+                    } , (_res)=>{
                         reject(new Error('Rejected request shouldn\'t respond'))
                     });
                     req.on('error' , (err)=>{
@@ -519,7 +519,7 @@ describe('e2e' , ()=>{
                         headers : {
                             'tesT-me' :'90'
                         }
-                    } , (res)=>{
+                    } , (_res)=>{
                         reject(new Error('Rejected request shouldn\'t respond'))
                     });
                     req.on('error' , (err)=>{
@@ -547,7 +547,7 @@ describe('e2e' , ()=>{
                         headers : {
                             'tesT-me' :'90'
                         }
-                    } , (res)=>{
+                    } , (_res)=>{
                         reject(new Error('Rejected request shouldn\'t respond'))
                     });
                     req.on('error' , (err)=>{
@@ -620,7 +620,7 @@ describe('e2e' , ()=>{
             });
             it('Should be able to make request with request options method lowercase' , ()=>{
                 return new Promise((resolve , reject)=>{
-                    const req = get({
+                    const _req = get({
                         path : '/test1',
                         host : SERVER_HOST,
                         port : HTTP_PORT,
@@ -642,7 +642,7 @@ describe('e2e' , ()=>{
             });
             it('Should be able to make request with request options and headers' , ()=>{
                 return new Promise((resolve , reject)=>{
-                    const req = get({
+                    const _req = get({
                         path : '/test1',
                         host : SERVER_HOST,
                         port : HTTP_PORT,
@@ -670,7 +670,7 @@ describe('e2e' , ()=>{
         describe('http2' , ()=>{
             it('Should be able to make request with request options and headers' , ()=>{
                 return new Promise((resolve , reject)=>{
-                    const req = get({
+                    const _req = get({
                         path : '/test1',
                         protocol : 'https:',
                         host : SERVER_HOST,
@@ -698,7 +698,7 @@ describe('e2e' , ()=>{
             
             it('Should be able to make request with request options and url as string' , ()=>{
                 return new Promise((resolve , reject)=>{
-                    const req = get(HTTP2_URL , {
+                    const _req = get(HTTP2_URL , {
                         path : '/test1',
                         host : SERVER_HOST,
                         method : 'POST',
@@ -725,7 +725,7 @@ describe('e2e' , ()=>{
             });
             it('Should be able to make request with request as string and body' , ()=>{
                 return new Promise((resolve , reject)=>{
-                    const req = get(`${HTTP2_URL}/test1`, (res)=>{
+                    const _req = get(`${HTTP2_URL}/test1`, (res)=>{
                         getBody(res)
                         .then((bodyRaw)=>{
                             const json = JSON.parse(bodyRaw);

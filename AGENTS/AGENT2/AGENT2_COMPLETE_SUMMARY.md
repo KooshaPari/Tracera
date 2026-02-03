@@ -71,3 +71,9 @@ All assigned work for Agent 2 has been **completed, tested, and verified**.
 **Agent 2 Work: COMPLETE ✅**
 
 All deliverables met. Ready for next phase.
+
+
+## Opinionated Quality Enforcement
+- We want opinionated rules that enforce opinionated styling to a strict degree.
+- This is an exclusively agent/vibecoded project; programmatic enforcement must guard against bad quality and antipatterns.
+- Rather than disables or ignores, fix code properly.

@@ -141,7 +141,8 @@ class StatusWorkflowService:
             List of status change events
         """
         events = (
-            self.session.query(Event)
+            self.session
+            .query(Event)
             .filter(
                 Event.entity_type == "item",
                 Event.entity_id == item_id,

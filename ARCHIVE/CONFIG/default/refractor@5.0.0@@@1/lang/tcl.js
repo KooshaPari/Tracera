@@ -53,7 +53,7 @@ export default function tcl(Prism) {
       lookbehind: true
     },
     operator:
-      /!=?|\*\*?|==|&&?|\|\|?|<[=<]?|>[=>]?|[-+~\/%?^]|\b(?:eq|in|ne|ni)\b/,
-    punctuation: /[{}()\[\]]/
+      /!=?|\*\*?|==|&&?|\|\|?|<[=<]?|>[=>]?|[-+~/%?^]|\b(?:eq|in|ne|ni)\b/,
+    punctuation: /[{}()[\]]/
   }
 }

@@ -69,7 +69,7 @@ class ItemService:
             for target_id in link_to:
                 await self.links.create(
                     project_id=project_id,
-                    source_item_id=item.id,
+                    source_item_id=str(item.id),
                     target_item_id=target_id,
                     link_type=link_type,
                 )
@@ -79,10 +79,10 @@ class ItemService:
             project_id=project_id,
             event_type="item_created",
             entity_type="item",
-            entity_id=item.id,
+            entity_id=str(item.id),
             data={
                 "item": {
-                    "id": item.id,
+                    "id": str(item.id),
                     "title": item.title,
                     "view": item.view,
                     "item_type": item.item_type,
@@ -113,8 +113,7 @@ class ItemService:
         """List items in a project, optionally filtered by view and status."""
         if view:
             return await self.items.get_by_view(project_id, view, status, limit=limit, offset=offset)
-        else:
-            return await self.items.get_by_project(project_id, status=status, limit=limit, offset=offset)
+        return await self.items.get_by_project(project_id, status=status, limit=limit, offset=offset)
 
     async def update_item(
         self,
@@ -138,7 +137,7 @@ class ItemService:
 
             # Log event
             await self.events.log(
-                project_id=updated_item.project_id,
+                project_id=str(updated_item.project_id),
                 event_type="item_updated",
                 entity_type="item",
                 entity_id=item_id,
@@ -200,7 +199,7 @@ class ItemService:
         if success:
             # Log event
             await self.events.log(
-                project_id=item.project_id if item else "unknown",  # Fallback if item not loaded
+                project_id=str(item.project_id) if item else "unknown",  # Fallback if item not loaded
                 event_type="item_deleted",
                 entity_type="item",
                 entity_id=item_id,
@@ -215,7 +214,7 @@ class ItemService:
         item = await self.items.restore(item_id)
         if item:
             await self.events.log(
-                project_id=item.project_id,
+                project_id=str(item.project_id),
                 event_type="item_restored",
                 entity_type="item",
                 entity_id=item_id,
@@ -255,7 +254,7 @@ class ItemService:
 
             # Log event
             await self.events.log(
-                project_id=updated_item.project_id,
+                project_id=str(updated_item.project_id),
                 event_type="item_metadata_updated",
                 entity_type="item",
                 entity_id=item_id,
@@ -277,9 +276,7 @@ class ItemService:
         """Update item status with validation and event logging."""
         # Validate new status
         if new_status not in VALID_STATUSES:
-            raise ValueError(
-                f"Invalid status: {new_status}. Valid statuses: {', '.join(VALID_STATUSES)}"
-            )
+            raise ValueError(f"Invalid status: {new_status}. Valid statuses: {', '.join(VALID_STATUSES)}")
 
         async def do_update() -> Item:
             item = await self.items.get_by_id(item_id, project_id)
@@ -334,7 +331,7 @@ class ItemService:
             raise ValueError(f"Item {item_id} not found")
 
         # Get all children
-        children = await self.items.get_children(item_id, project_id)
+        children = await self.items.get_children(item_id)
 
         if not children:
             # No children, return item's own status
@@ -375,10 +372,10 @@ class ItemService:
     ) -> dict[str, Any]:
         """Preview bulk update without applying changes."""
         # Get items matching filters
-        items = await self.items.list_by_filters(filters, project_id)
+        items = await self.items.list_by_filters(filters, project_id)  # type: ignore[union-attr]
 
         # Show what would be updated
-        preview = {
+        return {
             "total_items": len(items),
             "updates": updates,
             "affected_items": [
@@ -395,8 +392,6 @@ class ItemService:
             ],
         }
 
-        return preview
-
     async def bulk_update_items(
         self,
         filters: dict[str, Any],
@@ -406,7 +401,7 @@ class ItemService:
     ) -> dict[str, Any]:
         """Bulk update items matching filters."""
         # Get items matching filters
-        items = await self.items.list_by_filters(filters, project_id)
+        items = await self.items.list_by_filters(filters, project_id)  # type: ignore[union-attr]
 
         if not items:
             return {
@@ -424,7 +419,7 @@ class ItemService:
         for item in items:
             try:
                 await self.items.update(
-                    item_id=item.id,
+                    item_id=str(item.id),
                     expected_version=item.version,
                     **updates,
                 )
@@ -434,7 +429,7 @@ class ItemService:
                     project_id=project_id,
                     event_type="item_bulk_updated",
                     entity_type="item",
-                    entity_id=item.id,
+                    entity_id=str(item.id),
                     data={"updates": updates},
                     agent_id=agent_id,
                 )
@@ -463,7 +458,7 @@ class ItemService:
     ) -> dict[str, Any]:
         """Bulk delete items matching filters."""
         # Get items matching filters
-        items = await self.items.list_by_filters(filters, project_id)
+        items = await self.items.list_by_filters(filters, project_id)  # type: ignore[union-attr]
 
         if not items:
             return {
@@ -480,17 +475,14 @@ class ItemService:
         # Delete each item
         for item in items:
             try:
-                if soft_delete:
-                    await self.items.soft_delete(item.id, project_id)
-                else:
-                    await self.items.delete(item.id, project_id)
+                await self.items.delete(str(item.id), soft=soft_delete)
 
                 # Log event
                 await self.events.log(
                     project_id=project_id,
                     event_type="item_bulk_deleted",
                     entity_type="item",
-                    entity_id=item.id,
+                    entity_id=str(item.id),
                     data={"soft_delete": soft_delete},
                     agent_id=agent_id,
                 )
@@ -534,25 +526,25 @@ class ItemService:
         try:
             # Get outgoing links (item_id is source)
             if direction in ("outgoing", "both"):
-                outgoing_links = await self.link_repo.get_by_source(item_id)
+                outgoing_links = await self.links.get_by_source(item_id)
                 for link in outgoing_links:
                     # Filter by link type if provided
                     if link_type and link.link_type != link_type:
                         continue
                     # Get the target item
-                    target = await self.item_repo.get_by_id(link.target_item_id)
+                    target = await self.items.get_by_id(link.target_item_id)
                     if target and target.project_id == project_id:
                         related_items.append(target)
 
             # Get incoming links (item_id is target)
             if direction in ("incoming", "both"):
-                incoming_links = await self.link_repo.get_by_target(item_id)
+                incoming_links = await self.links.get_by_target(item_id)
                 for link in incoming_links:
                     # Filter by link type if provided
                     if link_type and link.link_type != link_type:
                         continue
                     # Get the source item
-                    source = await self.item_repo.get_by_id(link.source_item_id)
+                    source = await self.items.get_by_id(link.source_item_id)
                     if source and source.project_id == project_id:
                         related_items.append(source)
 

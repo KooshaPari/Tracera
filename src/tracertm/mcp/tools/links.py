@@ -7,8 +7,9 @@ Links represent relationships: satisfies, implements, tests, depends_on, etc.
 
 from __future__ import annotations
 
+import asyncio
 import uuid
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from fastmcp.exceptions import ToolError
@@ -27,26 +28,28 @@ def _link_to_dict(link: Link, include_items: bool = False) -> dict[str, Any]:
     """Convert a Link model to a dictionary."""
     result = {
         "id": link.id,
-        "source_id": link.source_id,
-        "target_id": link.target_id,
+        "source_id": link.source_item_id,
+        "target_id": link.target_item_id,
         "link_type": link.link_type,
         "metadata": link.link_metadata,
         "created_at": link.created_at.isoformat() if link.created_at else None,
     }
-    if include_items and hasattr(link, "source") and hasattr(link, "target"):
-        if link.source:
+    if include_items:
+        src = getattr(link, "source", None)
+        tgt = getattr(link, "target", None)
+        if src is not None:
             result["source"] = {
-                "id": link.source.id,
-                "external_id": link.source.external_id,
-                "title": link.source.title,
-                "view": link.source.view,
+                "id": getattr(src, "id", None),
+                "external_id": getattr(src, "external_id", None),
+                "title": getattr(src, "title", None),
+                "view": getattr(src, "view", None),
             }
-        if link.target:
+        if tgt is not None:
             result["target"] = {
-                "id": link.target.id,
-                "external_id": link.target.external_id,
-                "title": link.target.title,
-                "view": link.target.view,
+                "id": getattr(tgt, "id", None),
+                "external_id": getattr(tgt, "external_id", None),
+                "title": getattr(tgt, "title", None),
+                "view": getattr(tgt, "view", None),
             }
     return result
 
@@ -55,7 +58,8 @@ def _resolve_item_id(session, project_id: str, item_ref: str) -> str | None:
     """Resolve an item reference (ID or external_id prefix) to an actual ID."""
     # Try exact ID match
     item = (
-        session.query(Item.id)
+        session
+        .query(Item.id)
         .filter(
             Item.project_id == project_id,
             Item.id == item_ref,
@@ -68,7 +72,8 @@ def _resolve_item_id(session, project_id: str, item_ref: str) -> str | None:
 
     # Try external_id prefix match
     item = (
-        session.query(Item.id)
+        session
+        .query(Item.id)
         .filter(
             Item.project_id == project_id,
             Item.external_id.ilike(f"{item_ref}%"),
@@ -98,6 +103,7 @@ async def create_link(
     Returns:
         Created link details
     """
+    await asyncio.sleep(0)
     if not source_id or not target_id or not link_type:
         raise ToolError("source_id, target_id, and link_type are required.")
 
@@ -115,19 +121,18 @@ async def create_link(
 
         # Check for duplicate link
         existing = (
-            session.query(Link)
+            session
+            .query(Link)
             .filter(
                 Link.project_id == project_id,
-                Link.source_id == resolved_source,
-                Link.target_id == resolved_target,
+                Link.source_item_id == resolved_source,
+                Link.target_item_id == resolved_target,
                 Link.link_type == link_type,
             )
             .first()
         )
         if existing:
-            raise ToolError(
-                f"Link already exists: {source_id} -> {target_id} ({link_type})"
-            )
+            raise ToolError(f"Link already exists: {source_id} -> {target_id} ({link_type})")
 
         link = Link(
             id=str(uuid.uuid4()),
@@ -136,7 +141,7 @@ async def create_link(
             target_id=resolved_target,
             link_type=link_type,
             link_metadata=metadata or {},
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(UTC),
         )
         session.add(link)
         session.commit()
@@ -161,6 +166,7 @@ async def list_links(
     Returns:
         List of matching links
     """
+    await asyncio.sleep(0)
     project_id = require_project()
     limit = min(limit, 500)
 
@@ -170,9 +176,7 @@ async def list_links(
         if item_id:
             resolved_id = _resolve_item_id(session, project_id, item_id)
             if resolved_id:
-                query = query.filter(
-                    (Link.source_id == resolved_id) | (Link.target_id == resolved_id)
-                )
+                query = query.filter((Link.source_item_id == resolved_id) | (Link.target_item_id == resolved_id))
             else:
                 # No matches
                 return wrap_success({"links": [], "count": 0}, "list", ctx)
@@ -208,6 +212,7 @@ async def show_links(
     Returns:
         Links grouped by direction with item details
     """
+    await asyncio.sleep(0)
     if not item_id:
         raise ToolError("item_id is required.")
 
@@ -223,11 +228,12 @@ async def show_links(
 
         # Outgoing links (this item is source)
         outgoing_query = (
-            session.query(Link)
-            .join(Item, Link.target_id == Item.id)
+            session
+            .query(Link)
+            .join(Item, Link.target_item_id == Item.id)
             .filter(
                 Link.project_id == project_id,
-                Link.source_id == resolved_id,
+                Link.source_item_id == resolved_id,
                 Item.deleted_at.is_(None),
             )
         )
@@ -237,11 +243,12 @@ async def show_links(
 
         # Incoming links (this item is target)
         incoming_query = (
-            session.query(Link)
-            .join(Item, Link.source_id == Item.id)
+            session
+            .query(Link)
+            .join(Item, Link.source_item_id == Item.id)
             .filter(
                 Link.project_id == project_id,
-                Link.target_id == resolved_id,
+                Link.target_item_id == resolved_id,
                 Item.deleted_at.is_(None),
             )
         )
@@ -251,7 +258,7 @@ async def show_links(
 
         # Build result with item details
         def link_with_item(link: Link, direction: str) -> dict:
-            other_id = link.target_id if direction == "outgoing" else link.source_id
+            other_id = link.target_item_id if direction == "outgoing" else link.source_item_id
             other = session.query(Item).filter(Item.id == other_id).first()
             return {
                 "link_id": link.id,

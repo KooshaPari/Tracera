@@ -12,8 +12,7 @@ Test Categories:
 5. Edge Cases (10+ tests)
 """
 
-from datetime import datetime, timedelta, timezone
-from typing import Any
+from datetime import UTC, datetime
 
 import pytest
 import pytest_asyncio
@@ -22,11 +21,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from tracertm.models.item import Item
 from tracertm.models.link import Link
 from tracertm.models.project import Project
-from tracertm.repositories.agent_repository import AgentRepository
 from tracertm.repositories.item_repository import ItemRepository
 from tracertm.repositories.link_repository import LinkRepository
 from tracertm.repositories.project_repository import ProjectRepository
-
 
 # ============================================================================
 # FIXTURES
@@ -59,20 +56,20 @@ async def setup_items(db_session: AsyncSession, setup_projects: dict) -> dict[st
     project_id = setup_projects["proj1"].id
 
     items = {}
-    base_time = datetime.now(timezone.utc)
+    base_time = datetime.now(UTC)
 
     # Create items with different statuses
     for i, status in enumerate(["todo", "in_progress", "done", "todo", "done"]):
         item = await item_repo.create(
             project_id=project_id,
-            title=f"Item {i+1}",
+            title=f"Item {i + 1}",
             view="FEATURE",
             item_type="feature",
             status=status,
             priority=["high", "medium", "low", "high", "medium"][i],
-            description=f"Description for item {i+1}",
+            description=f"Description for item {i + 1}",
         )
-        items[f"item{i+1}"] = item
+        items[f"item{i + 1}"] = item
 
     # Create items with different views
     for i, view in enumerate(["BUG", "TASK", "EPIC"], start=6):
@@ -138,7 +135,7 @@ async def setup_links(db_session: AsyncSession, setup_items: dict) -> dict[str, 
             target_item_id=item2.id if idx == 0 else item3.id,
             link_type=link_type,
         )
-        links[f"link{idx+1}"] = link
+        links[f"link{idx + 1}"] = link
 
     return links
 
@@ -168,10 +165,7 @@ class TestComplexFilters:
         project_id = setup_items["item1"].project_id
 
         # Filter by status AND priority
-        items = await repo.query(
-            project_id,
-            {"status": "todo", "priority": "high"}
-        )
+        items = await repo.query(project_id, {"status": "todo", "priority": "high"})
         assert all(item.status == "todo" and item.priority == "high" for item in items)
 
     async def test_filter_by_view(self, db_session: AsyncSession, setup_items: dict):
@@ -557,7 +551,7 @@ class TestAggregations:
         assert "todo" in counts or "done" in counts or "in_progress" in counts
 
         # Verify counts are positive
-        for status, count in counts.items():
+        for count in counts.values():
             assert count > 0
 
     async def test_count_by_status_empty_project(self, db_session: AsyncSession):
@@ -659,8 +653,7 @@ class TestAggregations:
 
         # Count manually
         expected_count = len([
-            item for item in setup_items.values()
-            if item.status == "todo" and item.project_id == project_id
+            item for item in setup_items.values() if item.status == "todo" and item.project_id == project_id
         ])
         assert len(todo_items) == expected_count
 
@@ -871,7 +864,9 @@ class TestEdgeCases:
         item = await repo.get_by_id("nonexistent_id_12345")
         assert item is None
 
-    async def test_get_by_id_with_project_scope(self, db_session: AsyncSession, setup_items: dict, setup_projects: dict):
+    async def test_get_by_id_with_project_scope(
+        self, db_session: AsyncSession, setup_items: dict, setup_projects: dict
+    ):
         """Get by ID with project scoping."""
         repo = ItemRepository(db_session)
         item = setup_items["item1"]

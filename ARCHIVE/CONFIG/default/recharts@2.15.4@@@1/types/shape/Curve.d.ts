@@ -27,4 +27,4 @@ type GetPathProps = Pick<Props, 'type' | 'points' | 'baseLine' | 'layout' | 'con
  */
 export declare const getPath: ({ type, points, baseLine, layout, connectNulls, }: GetPathProps) => string | null;
 export declare const Curve: React.FC<Props>;
-export {};
+

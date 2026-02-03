@@ -70,8 +70,7 @@ def build_auth_provider(transport: str = "stdio") -> AuthProvider | None:
     if base_url and not base_url.rstrip("/").endswith("/api/v1/mcp"):
         base_url = f"{base_url.rstrip('/')}/api/v1/mcp"
     required_scopes = parse_scopes(
-        os.getenv("TRACERTM_MCP_REQUIRED_SCOPES")
-        or os.getenv("FASTMCP_SERVER_AUTH_AUTHKITPROVIDER_REQUIRED_SCOPES")
+        os.getenv("TRACERTM_MCP_REQUIRED_SCOPES") or os.getenv("FASTMCP_SERVER_AUTH_AUTHKITPROVIDER_REQUIRED_SCOPES")
     )
 
     logger.debug(f"Building auth provider. Mode: {mode or 'default'}, Scopes: {required_scopes}")

@@ -22,15 +22,15 @@ const pwaConfig = withPWA({
     disableDevLogs: true,
     runtimeCaching: [
       {
-        urlPattern: /^https?.*/,
         handler: 'NetworkFirst',
         options: {
           cacheName: 'offlineCache',
           expiration: {
-            maxEntries: 200,
-            maxAgeSeconds: 86_400, // 1 day
+            maxAgeSeconds: 86_400,
+            maxEntries: 200, // 1 day
           },
         },
+        urlPattern: /^https?.*/,
       },
     ],
   },
@@ -51,8 +51,8 @@ const nextConfig = {
     minimumCacheTTL: 60,
     remotePatterns: [
       {
-        protocol: 'https',
         hostname: 'api.tracertm.com',
+        protocol: 'https',
       },
     ],
     unoptimized: process.env.NODE_ENV === 'development',
@@ -92,38 +92,38 @@ const nextConfig = {
           cacheGroups: {
             // Separate React into its own chunk
             react: {
-              test: /[\\/]node_modules[\\/](react|react-dom|scheduler)[\\/]/,
               name: 'react',
               priority: 40,
               reuseExistingChunk: true,
+              test: /[\\/]node_modules[\\/](react|react-dom|scheduler)[\\/]/,
             },
             // Fumadocs libraries
             fumadocs: {
-              test: /[\\/]node_modules[\\/](fumadocs-ui|fumadocs-core|fumadocs-openapi|fumadocs-mdx)[\\/]/,
               name: 'fumadocs',
               priority: 35,
               reuseExistingChunk: true,
+              test: /[\\/]node_modules[\\/](fumadocs-ui|fumadocs-core|fumadocs-openapi|fumadocs-mdx)[\\/]/,
             },
             // Radix UI components
             radix: {
-              test: /[\\/]node_modules[\\/]@radix-ui[\\/]/,
               name: 'radix-ui',
               priority: 30,
               reuseExistingChunk: true,
+              test: /[\\/]node_modules[\\/]@radix-ui[\\/]/,
             },
             // Lucide icons
             lucide: {
-              test: /[\\/]node_modules[\\/]lucide-react[\\/]/,
               name: 'lucide-icons',
               priority: 25,
               reuseExistingChunk: true,
+              test: /[\\/]node_modules[\\/]lucide-react[\\/]/,
             },
             // Common vendor libraries
             vendor: {
-              test: /[\\/]node_modules[\\/]/,
               name: 'vendor',
               priority: 20,
               reuseExistingChunk: true,
+              test: /[\\/]node_modules[\\/]/,
             },
           },
           chunks: 'all',

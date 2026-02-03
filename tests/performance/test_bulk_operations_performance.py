@@ -9,8 +9,6 @@ Tests measure throughput and performance of:
 - Performance degradation with scale
 """
 
-import time
-from typing import List, Dict, Any
 import pytest
 from sqlalchemy.orm import Session
 
@@ -21,10 +19,12 @@ pytestmark = pytest.mark.performance
 # Bulk Item Creation Performance
 # ============================================================
 
+
 def test_bulk_create_100_items(benchmark, db_session: Session, perf_tracker):
     """Benchmark creation of 100 items."""
-    from tracertm.models.item import Item
     from uuid import uuid4
+
+    from tracertm.models.item import Item
 
     def create():
         for i in range(100):
@@ -46,8 +46,9 @@ def test_bulk_create_100_items(benchmark, db_session: Session, perf_tracker):
 
 def test_bulk_create_500_items(benchmark, db_session: Session, perf_tracker):
     """Benchmark creation of 500 items."""
-    from tracertm.models.item import Item
     from uuid import uuid4
+
+    from tracertm.models.item import Item
 
     def create():
         for i in range(500):
@@ -69,8 +70,9 @@ def test_bulk_create_500_items(benchmark, db_session: Session, perf_tracker):
 
 def test_bulk_create_1000_items(benchmark, db_session: Session, perf_tracker):
     """Benchmark creation of 1000 items."""
-    from tracertm.models.item import Item
     from uuid import uuid4
+
+    from tracertm.models.item import Item
 
     def create():
         for i in range(1000):
@@ -92,8 +94,9 @@ def test_bulk_create_1000_items(benchmark, db_session: Session, perf_tracker):
 
 def test_bulk_create_with_batch_insert(benchmark, db_session: Session):
     """Benchmark bulk insert using batch operation (optimized)."""
-    from tracertm.models.item import Item
     from uuid import uuid4
+
+    from tracertm.models.item import Item
 
     def create():
         items = [
@@ -119,10 +122,11 @@ def test_bulk_create_with_batch_insert(benchmark, db_session: Session):
 # Bulk Update Performance
 # ============================================================
 
+
 def test_bulk_update_100_items(benchmark, db_session: Session, perf_tracker):
     """Benchmark update of 100 items."""
     from tracertm.models.item import Item
-    
+
     # Create items first
     for i in range(100):
         item = Item(
@@ -136,25 +140,23 @@ def test_bulk_update_100_items(benchmark, db_session: Session, perf_tracker):
         )
         db_session.add(item)
     db_session.commit()
-    
+
     def update():
-        items = db_session.query(Item).filter(
-            Item.project_id == "bulk-update-proj"
-        ).all()
-        
+        items = db_session.query(Item).filter(Item.project_id == "bulk-update-proj").all()
+
         for i, item in enumerate(items):
             item.status = ["todo", "in_progress", "done"][i % 3]
             item.priority = ["low", "medium", "high"][i % 3]
-        
+
         db_session.commit()
-    
+
     benchmark(update)
 
 
 def test_bulk_update_500_items(benchmark, db_session: Session):
     """Benchmark update of 500 items."""
     from tracertm.models.item import Item
-    
+
     # Create items
     for i in range(500):
         item = Item(
@@ -168,24 +170,22 @@ def test_bulk_update_500_items(benchmark, db_session: Session):
         )
         db_session.add(item)
     db_session.commit()
-    
+
     def update():
-        items = db_session.query(Item).filter(
-            Item.project_id == "bulk-update-500-proj"
-        ).all()
-        
+        items = db_session.query(Item).filter(Item.project_id == "bulk-update-500-proj").all()
+
         for i, item in enumerate(items):
             item.status = ["todo", "in_progress", "done"][i % 3]
-        
+
         db_session.commit()
-    
+
     benchmark(update)
 
 
 def test_bulk_update_with_query_update(benchmark, db_session: Session):
     """Benchmark bulk update using query.update() (optimized)."""
     from tracertm.models.item import Item
-    
+
     # Create items
     for i in range(100):
         item = Item(
@@ -199,13 +199,11 @@ def test_bulk_update_with_query_update(benchmark, db_session: Session):
         )
         db_session.add(item)
     db_session.commit()
-    
+
     def update():
-        db_session.query(Item).filter(
-            Item.project_id == "query-update-proj"
-        ).update({"status": "done"})
+        db_session.query(Item).filter(Item.project_id == "query-update-proj").update({"status": "done"})
         db_session.commit()
-    
+
     benchmark(update)
 
 
@@ -213,10 +211,11 @@ def test_bulk_update_with_query_update(benchmark, db_session: Session):
 # Bulk Delete Performance
 # ============================================================
 
+
 def test_bulk_delete_100_items(benchmark, db_session: Session):
     """Benchmark deletion of 100 items."""
     from tracertm.models.item import Item
-    
+
     # Create items
     for i in range(100):
         item = Item(
@@ -230,20 +229,18 @@ def test_bulk_delete_100_items(benchmark, db_session: Session):
         )
         db_session.add(item)
     db_session.commit()
-    
+
     def delete():
-        db_session.query(Item).filter(
-            Item.project_id == "bulk-delete-100-proj"
-        ).delete()
+        db_session.query(Item).filter(Item.project_id == "bulk-delete-100-proj").delete()
         db_session.commit()
-    
+
     benchmark(delete)
 
 
 def test_bulk_delete_500_items(benchmark, db_session: Session):
     """Benchmark deletion of 500 items."""
     from tracertm.models.item import Item
-    
+
     # Create items
     for i in range(500):
         item = Item(
@@ -257,13 +254,11 @@ def test_bulk_delete_500_items(benchmark, db_session: Session):
         )
         db_session.add(item)
     db_session.commit()
-    
+
     def delete():
-        db_session.query(Item).filter(
-            Item.project_id == "bulk-delete-500-proj"
-        ).delete()
+        db_session.query(Item).filter(Item.project_id == "bulk-delete-500-proj").delete()
         db_session.commit()
-    
+
     benchmark(delete)
 
 
@@ -271,11 +266,13 @@ def test_bulk_delete_500_items(benchmark, db_session: Session):
 # Bulk Link Creation Performance
 # ============================================================
 
+
 def test_bulk_create_links_100(benchmark, db_session: Session):
     """Benchmark creation of 100 links."""
+    from uuid import uuid4
+
     from tracertm.models.item import Item
     from tracertm.models.link import Link
-    from uuid import uuid4
 
     # Create source and target items with stable IDs
     source_ids = []
@@ -326,9 +323,10 @@ def test_bulk_create_links_100(benchmark, db_session: Session):
 
 def test_bulk_create_links_500(benchmark, db_session: Session):
     """Benchmark creation of 500 links."""
+    from uuid import uuid4
+
     from tracertm.models.item import Item
     from tracertm.models.link import Link
-    from uuid import uuid4
 
     # Create source and target items with stable IDs
     source_ids = []
@@ -381,10 +379,12 @@ def test_bulk_create_links_500(benchmark, db_session: Session):
 # Performance Degradation Analysis
 # ============================================================
 
+
 def test_memory_efficiency_large_batch(benchmark, db_session: Session):
     """Test memory efficiency with large batch operation."""
-    from tracertm.models.item import Item
     from uuid import uuid4
+
+    from tracertm.models.item import Item
 
     def create_large_batch():
         # Create 1000 items in a single session

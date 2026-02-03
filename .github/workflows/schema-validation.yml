@@ -89,8 +89,8 @@ jobs:
           DB_SCHEMA: public
           KEEP_TEST_DB: false
         run: |
-          chmod +x scripts/validate_schema_alignment.sh
-          ./scripts/validate_schema_alignment.sh
+          chmod +x scripts/shell/validate_schema_alignment.sh
+          ./scripts/shell/validate_schema_alignment.sh
 
       - name: Upload validation report
         if: always()

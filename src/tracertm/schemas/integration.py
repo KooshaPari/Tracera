@@ -1,16 +1,15 @@
 """Pydantic schemas for external integrations."""
 
 from datetime import datetime
-from enum import Enum
-from typing import Any, Optional
+from enum import StrEnum
+from typing import Any
 
-from pydantic import BaseModel, Field, HttpUrl
-
+from pydantic import BaseModel, Field
 
 # ==================== ENUMS ====================
 
 
-class IntegrationProvider(str, Enum):
+class IntegrationProvider(StrEnum):
     """Supported external integration providers."""
 
     GITHUB = "github"
@@ -18,15 +17,15 @@ class IntegrationProvider(str, Enum):
     LINEAR = "linear"
 
 
-class CredentialType(str, Enum):
+class CredentialType(StrEnum):
     """Type of credential stored."""
 
-    OAUTH_TOKEN = "oauth_token"
+    OAUTH_TOKEN = "oauth_token"  # noqa: S105
     PAT = "personal_access_token"
     GITHUB_APP = "github_app"
 
 
-class CredentialStatus(str, Enum):
+class CredentialStatus(StrEnum):
     """Status of a credential."""
 
     ACTIVE = "active"
@@ -35,7 +34,7 @@ class CredentialStatus(str, Enum):
     INVALID = "invalid"
 
 
-class MappingDirection(str, Enum):
+class MappingDirection(StrEnum):
     """Sync direction for mappings."""
 
     BIDIRECTIONAL = "bidirectional"
@@ -43,7 +42,7 @@ class MappingDirection(str, Enum):
     EXTERNAL_TO_TRACERTM = "external_to_tracertm"
 
 
-class MappingStatus(str, Enum):
+class MappingStatus(StrEnum):
     """Status of a mapping."""
 
     ACTIVE = "active"
@@ -51,7 +50,7 @@ class MappingStatus(str, Enum):
     SYNC_ERROR = "sync_error"
 
 
-class ConflictResolutionStrategy(str, Enum):
+class ConflictResolutionStrategy(StrEnum):
     """Conflict resolution strategy."""
 
     MANUAL = "manual"
@@ -60,7 +59,7 @@ class ConflictResolutionStrategy(str, Enum):
     LAST_WRITE_WINS = "last_write_wins"
 
 
-class SyncEventType(str, Enum):
+class SyncEventType(StrEnum):
     """Types of sync events."""
 
     ITEM_CREATED = "item_created"
@@ -71,14 +70,14 @@ class SyncEventType(str, Enum):
     UNLINKED = "unlinked"
 
 
-class SyncDirection(str, Enum):
+class SyncDirection(StrEnum):
     """Direction of sync."""
 
     PUSH = "push"
     PULL = "pull"
 
 
-class SyncQueueStatus(str, Enum):
+class SyncQueueStatus(StrEnum):
     """Status of sync queue item."""
 
     PENDING = "pending"
@@ -88,7 +87,7 @@ class SyncQueueStatus(str, Enum):
     RETRIED = "retried"
 
 
-class ConflictResolutionStatus(str, Enum):
+class ConflictResolutionStatus(StrEnum):
     """Status of conflict resolution."""
 
     PENDING = "pending"
@@ -103,7 +102,7 @@ class OAuthStartRequest(BaseModel):
     """Request to start OAuth flow."""
 
     provider: IntegrationProvider
-    scopes: Optional[list[str]] = None
+    scopes: list[str] | None = None
 
 
 class OAuthStartResponse(BaseModel):
@@ -118,8 +117,8 @@ class OAuthCallbackRequest(BaseModel):
 
     code: str
     state: str
-    error: Optional[str] = None
-    error_description: Optional[str] = None
+    error: str | None = None
+    error_description: str | None = None
 
 
 # ==================== CREDENTIAL SCHEMAS ====================
@@ -132,38 +131,38 @@ class IntegrationCredentialCreate(BaseModel):
     credential_type: CredentialType = CredentialType.OAUTH_TOKEN
 
     # For OAuth flow
-    oauth_code: Optional[str] = None
-    oauth_state: Optional[str] = None
+    oauth_code: str | None = None
+    oauth_state: str | None = None
 
     # For PAT
-    token: Optional[str] = None
-    scopes: Optional[list[str]] = None
+    token: str | None = None
+    scopes: list[str] | None = None
 
     # Metadata
-    provider_metadata: Optional[dict[str, Any]] = None
+    provider_metadata: dict[str, Any] | None = None
 
 
 class IntegrationCredentialUpdate(BaseModel):
     """Update credential."""
 
-    scopes: Optional[list[str]] = None
-    provider_metadata: Optional[dict[str, Any]] = None
+    scopes: list[str] | None = None
+    provider_metadata: dict[str, Any] | None = None
 
 
 class IntegrationCredentialResponse(BaseModel):
     """Credential response (no token included)."""
 
     id: str
-    project_id: Optional[str] = None
+    project_id: str | None = None
     provider: IntegrationProvider
     credential_type: CredentialType
     status: CredentialStatus
     scopes: list[str]
     provider_metadata: dict[str, Any]
-    provider_user_id: Optional[str] = None
-    last_validated_at: Optional[datetime] = None
-    validation_error: Optional[str] = None
-    token_expires_at: Optional[datetime] = None
+    provider_user_id: str | None = None
+    last_validated_at: datetime | None = None
+    validation_error: str | None = None
+    token_expires_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -181,9 +180,9 @@ class CredentialValidationResult(BaseModel):
     """Result of credential validation."""
 
     valid: bool
-    message: Optional[str] = None
-    user_info: Optional[dict[str, Any]] = None
-    scopes: Optional[list[str]] = None
+    message: str | None = None
+    user_info: dict[str, Any] | None = None
+    scopes: list[str] | None = None
 
 
 # ==================== MAPPING SCHEMAS ====================
@@ -194,27 +193,25 @@ class IntegrationMappingCreate(BaseModel):
 
     credential_id: str
     tracertm_item_id: str
-    external_system: str = Field(
-        description="Type of external item: github_issue, github_pr, linear_issue, etc."
-    )
+    external_system: str = Field(description="Type of external item: github_issue, github_pr, linear_issue, etc.")
     external_id: str = Field(description="External system ID like 'owner/repo#42' or 'LINEAR-123'")
-    external_url: Optional[str] = None
-    mapping_metadata: Optional[dict[str, Any]] = None
+    external_url: str | None = None
+    mapping_metadata: dict[str, Any] | None = None
     direction: MappingDirection = MappingDirection.BIDIRECTIONAL
     auto_sync: bool = True
     conflict_resolution_strategy: ConflictResolutionStrategy = ConflictResolutionStrategy.MANUAL
-    field_resolution_rules: Optional[dict[str, str]] = None
+    field_resolution_rules: dict[str, str] | None = None
 
 
 class IntegrationMappingUpdate(BaseModel):
     """Update mapping."""
 
-    direction: Optional[MappingDirection] = None
-    auto_sync: Optional[bool] = None
-    status: Optional[MappingStatus] = None
-    conflict_resolution_strategy: Optional[ConflictResolutionStrategy] = None
-    field_resolution_rules: Optional[dict[str, str]] = None
-    mapping_metadata: Optional[dict[str, Any]] = None
+    direction: MappingDirection | None = None
+    auto_sync: bool | None = None
+    status: MappingStatus | None = None
+    conflict_resolution_strategy: ConflictResolutionStrategy | None = None
+    field_resolution_rules: dict[str, str] | None = None
+    mapping_metadata: dict[str, Any] | None = None
 
 
 class IntegrationMappingResponse(BaseModel):
@@ -233,11 +230,11 @@ class IntegrationMappingResponse(BaseModel):
     status: MappingStatus
     auto_sync: bool
     conflict_resolution_strategy: ConflictResolutionStrategy
-    last_sync_at: Optional[datetime] = None
-    last_sync_direction: Optional[str] = None
-    sync_error_message: Optional[str] = None
+    last_sync_at: datetime | None = None
+    last_sync_direction: str | None = None
+    sync_error_message: str | None = None
     consecutive_failures: int = 0
-    last_conflict_at: Optional[datetime] = None
+    last_conflict_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -265,12 +262,12 @@ class SyncQueueItemResponse(BaseModel):
     status: SyncQueueStatus
     attempts: int
     max_attempts: int
-    error_message: Optional[str] = None
-    error_code: Optional[str] = None
-    next_retry_at: Optional[datetime] = None
-    started_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
-    processing_time_ms: Optional[int] = None
+    error_message: str | None = None
+    error_code: str | None = None
+    next_retry_at: datetime | None = None
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
+    processing_time_ms: int | None = None
     created_at: datetime
 
     model_config = {"from_attributes": True}
@@ -286,7 +283,7 @@ class SyncQueueList(BaseModel):
 class TriggerSyncRequest(BaseModel):
     """Request to trigger manual sync."""
 
-    direction: Optional[SyncDirection] = None
+    direction: SyncDirection | None = None
     force: bool = False
 
 
@@ -312,8 +309,8 @@ class SyncStatusSummary(BaseModel):
     pending_syncs: int
     processing_syncs: int
     failed_syncs: int
-    last_sync_at: Optional[datetime] = None
-    last_poll_at: Optional[datetime] = None
+    last_sync_at: datetime | None = None
+    last_poll_at: datetime | None = None
 
 
 class SyncStatusResponse(BaseModel):
@@ -332,7 +329,7 @@ class SyncLogResponse(BaseModel):
 
     id: str
     mapping_id: str
-    sync_queue_id: Optional[str] = None
+    sync_queue_id: str | None = None
     operation: str
     direction: SyncDirection
     source_system: str
@@ -341,7 +338,7 @@ class SyncLogResponse(BaseModel):
     target_id: str
     changes: dict[str, Any]
     success: bool
-    error_message: Optional[str] = None
+    error_message: str | None = None
     sync_metadata: dict[str, Any]
     created_at: datetime
 
@@ -364,13 +361,13 @@ class SyncConflictResponse(BaseModel):
     id: str
     mapping_id: str
     field: str
-    tracertm_value: Optional[str] = None
-    external_value: Optional[str] = None
+    tracertm_value: str | None = None
+    external_value: str | None = None
     resolution_status: ConflictResolutionStatus
-    resolved_value: Optional[str] = None
-    resolution_strategy_used: Optional[str] = None
+    resolved_value: str | None = None
+    resolution_strategy_used: str | None = None
     detected_at: datetime
-    resolved_at: Optional[datetime] = None
+    resolved_at: datetime | None = None
 
     model_config = {"from_attributes": True}
 
@@ -386,7 +383,7 @@ class ConflictResolutionRequest(BaseModel):
     """Resolve conflict."""
 
     resolution: str = Field(description="Value to use: 'tracertm' or 'external' or actual value")
-    notes: Optional[str] = None
+    notes: str | None = None
 
 
 class ConflictResolutionResponse(BaseModel):
@@ -406,7 +403,7 @@ class ExternalItemSearchRequest(BaseModel):
 
     credential_id: str
     query: str
-    system: Optional[str] = None  # github_issues, github_prs, linear_issues
+    system: str | None = None  # github_issues, github_prs, linear_issues
     limit: int = 20
 
 
@@ -416,7 +413,7 @@ class GitHubRepo(BaseModel):
     id: int
     name: str
     full_name: str
-    description: Optional[str] = None
+    description: str | None = None
     html_url: str
     private: bool
     default_branch: str
@@ -428,7 +425,7 @@ class GitHubIssue(BaseModel):
     id: int
     number: int
     title: str
-    body: Optional[str] = None
+    body: str | None = None
     state: str
     html_url: str
     labels: list[str]
@@ -443,7 +440,7 @@ class GitHubPullRequest(BaseModel):
     id: int
     number: int
     title: str
-    body: Optional[str] = None
+    body: str | None = None
     state: str
     html_url: str
     head_ref: str
@@ -460,11 +457,11 @@ class LinearIssue(BaseModel):
     id: str
     identifier: str  # e.g., "LINEAR-123"
     title: str
-    description: Optional[str] = None
+    description: str | None = None
     state: str
     url: str
     priority: int
-    assignee: Optional[str] = None
+    assignee: str | None = None
     team_key: str
     created_at: datetime
     updated_at: datetime
@@ -476,7 +473,7 @@ class LinearTeam(BaseModel):
     id: str
     name: str
     key: str
-    description: Optional[str] = None
+    description: str | None = None
 
 
 class ExternalItemSearchResponse(BaseModel):

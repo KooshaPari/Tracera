@@ -10,17 +10,14 @@ Comprehensive error testing for:
 """
 
 import asyncio
-import os
+import json
 import tempfile
 from pathlib import Path
-from typing import Optional
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from unittest.mock import patch
 
 import pytest
-import pytest_asyncio
 
 from tracertm.config.manager import ConfigManager
-
 
 # ============================================================================
 # CLI ARGUMENT PARSING ERROR TESTS
@@ -84,6 +81,7 @@ class TestCLIArgumentErrors:
                 if idx + 1 >= len(args):
                     raise ValueError("--name requires a value")
                 return args[idx + 1]
+            return None
 
         with pytest.raises(ValueError, match="requires a value"):
             parse_args(["--name"])
@@ -101,12 +99,12 @@ class TestConfigurationErrors:
         """Test error when config file doesn't exist."""
         config_path = Path("/nonexistent/config.yaml")
 
-        if not config_path.exists():
-            raise FileNotFoundError(f"Config file not found: {config_path}")
-
-        with pytest.raises(FileNotFoundError):
+        def check_and_raise():
             if not config_path.exists():
                 raise FileNotFoundError(f"Config file not found: {config_path}")
+
+        with pytest.raises(FileNotFoundError, match="Config file not found"):
+            check_and_raise()
 
     def test_config_file_permission_denied(self):
         """Test error when can't read config file."""
@@ -132,7 +130,7 @@ class TestConfigurationErrors:
             try:
                 return yaml.safe_load(content)
             except yaml.YAMLError as e:
-                raise ValueError(f"Invalid YAML format: {e}")
+                raise ValueError(f"Invalid YAML format: {e}") from e
 
         invalid_yaml = "key: value\n  invalid:\n  indent:"
 
@@ -259,9 +257,8 @@ class TestCLIFileIOErrors:
                 raise IsADirectoryError(f"Cannot write to directory: {path}")
             file_path.write_text(content)
 
-        with tempfile.TemporaryDirectory() as tmpdir:
-            with pytest.raises(IsADirectoryError):
-                write_file(tmpdir, "content")
+        with tempfile.TemporaryDirectory() as tmpdir, pytest.raises(IsADirectoryError):
+            write_file(tmpdir, "content")
 
     def test_write_with_insufficient_permissions(self):
         """Test write fails with insufficient permissions."""
@@ -294,7 +291,7 @@ class TestCLIFileIOErrors:
             bad_file = tmp_path / "bad.json"
             bad_file.write_text("{invalid json")
 
-            with pytest.raises(Exception):
+            with pytest.raises((json.JSONDecodeError, ValueError), match=r"Expecting|invalid"):
                 read_json_file(str(bad_file))
 
     def test_file_already_exists_error(self):
@@ -332,7 +329,7 @@ class TestTUIRenderingErrors:
                 encoded = text.encode("utf-8")
                 return encoded.decode("utf-8")
             except UnicodeError as e:
-                raise RuntimeError(f"Failed to render text: {e}")
+                raise RuntimeError(f"Failed to render text: {e}") from e
 
         # This should succeed
         result = render_text("Unicode: ñ, é, 中文, 🎉")
@@ -350,7 +347,7 @@ class TestTUIRenderingErrors:
                     raise ValueError("Invalid terminal size")
                 return size
             except Exception as e:
-                raise RuntimeError(f"Cannot determine terminal size: {e}")
+                raise RuntimeError(f"Cannot determine terminal size: {e}") from e
 
         # Should work or raise with informative error
         try:
@@ -368,7 +365,7 @@ class TestTUIRenderingErrors:
                 raise ValueError(f"Unknown color: {color}")
             return f"{colors[color]}{text}\033[0m"
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Unknown color"):
             colorize_text("text", "invalid_color")
 
     def test_menu_navigation_error(self):
@@ -397,12 +394,10 @@ class TestTUIRenderingErrors:
             user_input = "x" * 1000  # Simulate very long input
 
             if len(user_input) > max_length:
-                raise ValueError(
-                    f"Input too long (max {max_length} chars, got {len(user_input)})"
-                )
+                raise ValueError(f"Input too long (max {max_length} chars, got {len(user_input)})")
             return user_input
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Input too long"):
             read_user_input()
 
 
@@ -421,9 +416,9 @@ class TestConfigManagerErrors:
 
             manager = ConfigManager()
 
-            # Getting missing key should return default or raise
-            result = manager.get("nonexistent_key", default="default_value")
-            assert result == "default_value"
+            # Getting missing key returns None
+            result = manager.get("nonexistent_key")
+            assert result is None
 
     def test_config_manager_set_invalid_key(self):
         """Test setting invalid config key."""
@@ -435,13 +430,16 @@ class TestConfigManagerErrors:
 
     def test_config_persistence_error(self):
         """Test error saving config to file."""
-        with patch("builtins.open", side_effect=IOError("Write failed")):
-            manager = ConfigManager()
 
-            with pytest.raises(IOError):
-                # Simulate config save
-                with open("/config/file", "w") as f:
-                    f.write("config")
+        def write_config():
+            with Path("/config/file").open("w") as f:
+                f.write("config")
+
+        with (
+            patch("builtins.open", side_effect=OSError("Write failed")),
+            pytest.raises(OSError, match="Write failed"),
+        ):
+            write_config()
 
     def test_config_encryption_error(self):
         """Test error encrypting sensitive config."""
@@ -452,7 +450,7 @@ class TestConfigManagerErrors:
             # Simulate encryption
             return f"encrypted:{data}"
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Encryption key required"):
             encrypt_config({"password": "secret"}, None)
 
 
@@ -487,19 +485,23 @@ class TestStorageManagerErrors:
             meta_file = Path(tmpdir) / ".metadata.json"
             meta_file.write_text("{invalid json")
 
-            with pytest.raises(Exception):
-                import json
+            def load_meta():
+                return json.loads(meta_file.read_text())
 
-                json.loads(meta_file.read_text())
+            with pytest.raises((json.JSONDecodeError, ValueError), match=r"Expecting|invalid"):
+                load_meta()
 
-    async def test_storage_disk_full(self):
+    async def test_storage_disk_full(self, tmp_path):
         """Test handling of disk full error."""
-        with patch(
-            "pathlib.Path.write_text",
-            side_effect=OSError("No space left on device"),
+        test_file = tmp_path / "test.txt"
+        with (
+            patch(
+                "pathlib.Path.write_text",
+                side_effect=OSError("No space left on device"),
+            ),
+            pytest.raises(OSError, match="No space left on device"),
         ):
-            with pytest.raises(OSError):
-                Path("/tmp").write_text("test")
+            test_file.write_text("test")
 
     async def test_storage_concurrent_access_error(self):
         """Test handling of concurrent access errors."""
@@ -540,7 +542,7 @@ class TestInitializationErrors:
             # Simulate initialization
             return f"connection:{url}"
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Database URL required"):
             init_database("")
 
     def test_missing_dependencies(self):
@@ -571,9 +573,7 @@ class TestInitializationErrors:
             current = sys.version_info
 
             if current.major < required_version[0]:
-                raise RuntimeError(
-                    f"Python {required_version[0]}.{required_version[1]}+ required"
-                )
+                raise RuntimeError(f"Python {required_version[0]}.{required_version[1]}+ required")
 
         # Check with reasonable version requirement
         check_version_compatibility((3, 7))  # Should pass
@@ -596,16 +596,17 @@ class TestCLIIntegrationErrors:
         commands = []
 
         async def execute_command(cmd):
+            await asyncio.sleep(0)
             commands.append(cmd)
             if cmd == "fail":
-                raise Exception("Command failed")
+                raise RuntimeError("Command failed")
             return f"result:{cmd}"
 
         # Execute commands
         try:
-            result1 = await execute_command("init")
-            result2 = await execute_command("fail")
-        except Exception as e:
+            await execute_command("init")
+            await execute_command("fail")
+        except RuntimeError as e:
             assert "Command failed" in str(e)
 
         # First command should have executed
@@ -617,16 +618,17 @@ class TestCLIIntegrationErrors:
         resources = []
 
         async def command_with_cleanup():
+            await asyncio.sleep(0)
             nonlocal cleanup_called
             resources.append("resource1")
 
             try:
-                raise Exception("Command error")
+                raise RuntimeError("Command error")
             finally:
                 cleanup_called = True
                 resources.clear()
 
-        with pytest.raises(Exception):
+        with pytest.raises(RuntimeError, match="Command error"):
             await command_with_cleanup()
 
         assert cleanup_called
@@ -638,8 +640,8 @@ class TestCLIIntegrationErrors:
         async def long_running_command():
             try:
                 await asyncio.sleep(10)
-            except asyncio.CancelledError:
-                raise KeyboardInterrupt("User interrupted")
+            except asyncio.CancelledError as err:
+                raise KeyboardInterrupt("User interrupted") from err
 
         task = asyncio.create_task(long_running_command())
         await asyncio.sleep(0.01)

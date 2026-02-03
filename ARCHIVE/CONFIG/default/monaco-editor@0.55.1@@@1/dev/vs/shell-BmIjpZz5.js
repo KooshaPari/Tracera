@@ -124,10 +124,10 @@ define("vs/shell-BmIjpZz5", ["exports"], (function(exports) {
       "yes",
       "zsh"
     ],
-    startingWithDash: /\-+\w+/,
+    startingWithDash: /-+\w+/,
     identifiersWithDashes: /[a-zA-Z]\w+(?:@startingWithDash)+/,
     // we include these common regular expressions
-    symbols: /[=><!~?&|+\-*\/\^;\.,]+/,
+    symbols: /[=><!~?&|+\-*/^;.,]+/,
     // The main tokenizer for our languages
     tokenizer: {
       root: [
@@ -147,7 +147,7 @@ define("vs/shell-BmIjpZz5", ["exports"], (function(exports) {
         { include: "@strings" },
         { include: "@parameters" },
         { include: "@heredoc" },
-        [/[{}\[\]()]/, "@brackets"],
+        [/[{}[\]()]/, "@brackets"],
         [/@symbols/, "delimiter"],
         { include: "@numbers" },
         [/[,;]/, "delimiter"]
@@ -158,7 +158,7 @@ define("vs/shell-BmIjpZz5", ["exports"], (function(exports) {
         [/(^#.*$)/, "comment"]
       ],
       numbers: [
-        [/\d*\.\d+([eE][\-+]?\d+)?/, "number.float"],
+        [/\d*\.\d+([eE][-+]?\d+)?/, "number.float"],
         [/0[xX][0-9a-fA-F_]*[0-9a-fA-F]/, "number.hex"],
         [/\d+/, "number"]
       ],
@@ -177,7 +177,7 @@ define("vs/shell-BmIjpZz5", ["exports"], (function(exports) {
       ],
       heredoc: [
         [
-          /(<<[-<]?)(\s*)(['"`]?)([\w\-]+)(['"`]?)/,
+          /(<<[-<]?)(\s*)(['"`]?)([\w-]+)(['"`]?)/,
           [
             "constants",
             "white",

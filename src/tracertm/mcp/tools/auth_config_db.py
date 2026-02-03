@@ -10,14 +10,13 @@ All responses follow the standard MCP format with ok, action, data, and actor fi
 
 from __future__ import annotations
 
+import asyncio
 import time
-from typing import Any, Dict
+from typing import Any, cast
 
-from fastmcp.exceptions import ToolError
-
-from tracertm.mcp.core import mcp
 from tracertm.config.manager import ConfigManager
 from tracertm.database.connection import DatabaseConnection
+from tracertm.mcp.core import mcp
 
 
 def _actor_from_context(ctx: Any | None) -> dict[str, Any] | None:
@@ -68,13 +67,13 @@ def _error(message: str, action: str, code: str = "ERROR") -> dict[str, Any]:
 
 
 @mcp.tool()
-async def auth_login(
+def auth_login(
     ctx: Any,
     authkit_domain: str,
     client_id: str,
     scopes: str | None = None,
     connect_endpoint: bool = False,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Authenticate via WorkOS AuthKit device flow.
 
     Args:
@@ -116,7 +115,6 @@ async def auth_login(
             device_code = data.get("device_code")
             user_code = data.get("user_code")
             verification_uri = data.get("verification_uri")
-            verification_uri_complete = data.get("verification_uri_complete")
             interval = int(data.get("interval", 5))
             expires_in = int(data.get("expires_in", 600))
 
@@ -201,11 +199,11 @@ async def auth_login(
             )
 
     except Exception as e:
-        return _error(f"Authentication failed: {str(e)}", "auth_login", "AUTH_ERROR")
+        return _error(f"Authentication failed: {e!s}", "auth_login", "AUTH_ERROR")
 
 
 @mcp.tool()
-async def auth_status(ctx: Any) -> Dict[str, Any]:
+def auth_status(ctx: Any) -> dict[str, Any]:
     """Check authentication token status.
 
     Returns:
@@ -225,11 +223,11 @@ async def auth_status(ctx: Any) -> Dict[str, Any]:
             "auth_status",
         )
     except Exception as e:
-        return _error(f"Failed to check auth status: {str(e)}", "auth_status", "STATUS_ERROR")
+        return _error(f"Failed to check auth status: {e!s}", "auth_status", "STATUS_ERROR")
 
 
 @mcp.tool()
-async def auth_logout(ctx: Any) -> Dict[str, Any]:
+def auth_logout(ctx: Any) -> dict[str, Any]:
     """Clear stored authentication token.
 
     Returns:
@@ -248,7 +246,7 @@ async def auth_logout(ctx: Any) -> Dict[str, Any]:
             "auth_logout",
         )
     except Exception as e:
-        return _error(f"Failed to logout: {str(e)}", "auth_logout", "LOGOUT_ERROR")
+        return _error(f"Failed to logout: {e!s}", "auth_logout", "LOGOUT_ERROR")
 
 
 # ==========================================================================
@@ -257,7 +255,7 @@ async def auth_logout(ctx: Any) -> Dict[str, Any]:
 
 
 @mcp.tool()
-async def config_init(ctx: Any, database_url: str) -> Dict[str, Any]:
+def config_init(ctx: Any, database_url: str) -> dict[str, Any]:
     """Initialize TraceRTM configuration.
 
     Args:
@@ -281,11 +279,11 @@ async def config_init(ctx: Any, database_url: str) -> Dict[str, Any]:
             "config_init",
         )
     except Exception as e:
-        return _error(f"Configuration initialization failed: {str(e)}", "config_init")
+        return _error(f"Configuration initialization failed: {e!s}", "config_init")
 
 
 @mcp.tool()
-async def config_show(ctx: Any) -> Dict[str, Any]:
+def config_show(ctx: Any) -> dict[str, Any]:
     """Show current configuration.
 
     Returns:
@@ -296,8 +294,8 @@ async def config_show(ctx: Any) -> Dict[str, Any]:
         config = config_manager.load()
 
         # Mask sensitive values
-        config_dict = config.dict()
-        if "database_url" in config_dict and config_dict["database_url"]:
+        config_dict = config.model_dump()
+        if config_dict.get("database_url"):
             # Mask password in database URL
             url = config_dict["database_url"]
             if "@" in url:
@@ -315,11 +313,11 @@ async def config_show(ctx: Any) -> Dict[str, Any]:
             "config_show",
         )
     except Exception as e:
-        return _error(f"Failed to load configuration: {str(e)}", "config_show")
+        return _error(f"Failed to load configuration: {e!s}", "config_show")
 
 
 @mcp.tool()
-async def config_set(ctx: Any, key: str, value: str | None) -> Dict[str, Any]:
+def config_set(ctx: Any, key: str, value: str | None) -> dict[str, Any]:
     """Set a configuration value.
 
     Args:
@@ -344,11 +342,11 @@ async def config_set(ctx: Any, key: str, value: str | None) -> Dict[str, Any]:
             "config_set",
         )
     except Exception as e:
-        return _error(f"Failed to set configuration: {str(e)}", "config_set")
+        return _error(f"Failed to set configuration: {e!s}", "config_set")
 
 
 @mcp.tool()
-async def config_get(ctx: Any, key: str) -> Dict[str, Any]:
+def config_get(ctx: Any, key: str) -> dict[str, Any]:
     """Get a configuration value.
 
     Args:
@@ -371,11 +369,11 @@ async def config_get(ctx: Any, key: str) -> Dict[str, Any]:
             "config_get",
         )
     except Exception as e:
-        return _error(f"Failed to get configuration: {str(e)}", "config_get")
+        return _error(f"Failed to get configuration: {e!s}", "config_get")
 
 
 @mcp.tool()
-async def config_unset(ctx: Any, key: str) -> Dict[str, Any]:
+def config_unset(ctx: Any, key: str) -> dict[str, Any]:
     """Unset a configuration value.
 
     Args:
@@ -398,27 +396,29 @@ async def config_unset(ctx: Any, key: str) -> Dict[str, Any]:
             "config_unset",
         )
     except Exception as e:
-        return _error(f"Failed to unset configuration: {str(e)}", "config_unset")
+        return _error(f"Failed to unset configuration: {e!s}", "config_unset")
 
 
 @mcp.tool()
-async def config_list(ctx: Any) -> Dict[str, Any]:
+async def config_list(ctx: Any) -> dict[str, Any]:
     """List all configuration values.
 
     Returns:
         MCP response with all configuration key-value pairs
     """
+    await asyncio.sleep(0)
     try:
         config_manager = ConfigManager()
 
-        # Try get_all method first, fall back to load().dict()
+        # Try get_all method first, fall back to load().model_dump()
         if hasattr(config_manager, "get_all") and callable(config_manager.get_all):
-            config_dict = config_manager.get_all()
+            raw = config_manager.get_all()
         else:
-            config_dict = config_manager.load().dict()
+            raw = config_manager.load().model_dump()
+        config_dict: dict[str, Any] = cast(dict[str, Any], raw) if isinstance(raw, dict) else {}
 
         # Mask sensitive values
-        display_config = {}
+        display_config: dict[str, Any] = {}
         for key, value in config_dict.items():
             if key == "database_url" and value and "@" in value:
                 display_config[key] = value.split("@")[-1]
@@ -436,7 +436,7 @@ async def config_list(ctx: Any) -> Dict[str, Any]:
             "config_list",
         )
     except Exception as e:
-        return _error(f"Failed to list configuration: {str(e)}", "config_list")
+        return _error(f"Failed to list configuration: {e!s}", "config_list")
 
 
 # ==========================================================================
@@ -445,7 +445,7 @@ async def config_list(ctx: Any) -> Dict[str, Any]:
 
 
 @mcp.tool()
-async def db_init(ctx: Any, database_url: str | None = None) -> Dict[str, Any]:
+async def db_init(ctx: Any, database_url: str | None = None) -> dict[str, Any]:
     """Initialize database configuration and prepare schema.
 
     Args:
@@ -455,6 +455,7 @@ async def db_init(ctx: Any, database_url: str | None = None) -> Dict[str, Any]:
     Returns:
         MCP response with initialization status
     """
+    await asyncio.sleep(0)
     try:
         config_manager = ConfigManager()
 
@@ -471,16 +472,17 @@ async def db_init(ctx: Any, database_url: str | None = None) -> Dict[str, Any]:
             "db_init",
         )
     except Exception as e:
-        return _error(f"Database init failed: {str(e)}", "db_init")
+        return _error(f"Database init failed: {e!s}", "db_init")
 
 
 @mcp.tool()
-async def db_status(ctx: Any) -> Dict[str, Any]:
+async def db_status(ctx: Any) -> dict[str, Any]:
     """Check database health status.
 
     Returns:
         MCP response with database health information
     """
+    await asyncio.sleep(0)
     try:
         config_manager = ConfigManager()
         config = config_manager.load()
@@ -509,26 +511,26 @@ async def db_status(ctx: Any) -> Dict[str, Any]:
                 ctx,
                 "db_status",
             )
-        else:
-            return _error(
-                f"Database error: {health.get('error')}",
-                "db_status",
-                "DATABASE_ERROR",
-            )
+        return _error(
+            f"Database error: {health.get('error')}",
+            "db_status",
+            "DATABASE_ERROR",
+        )
 
     except FileNotFoundError as e:
         return _error(str(e), "db_status", "FILE_NOT_FOUND")
     except Exception as e:
-        return _error(f"Database check failed: {str(e)}", "db_status", "CHECK_FAILED")
+        return _error(f"Database check failed: {e!s}", "db_status", "CHECK_FAILED")
 
 
 @mcp.tool()
-async def db_migrate(ctx: Any) -> Dict[str, Any]:
+async def db_migrate(ctx: Any) -> dict[str, Any]:
     """Run database migrations (create tables).
 
     Returns:
         MCP response with migration status
     """
+    await asyncio.sleep(0)
     try:
         config_manager = ConfigManager()
         config = config_manager.load()
@@ -557,11 +559,11 @@ async def db_migrate(ctx: Any) -> Dict[str, Any]:
             "db_migrate",
         )
     except Exception as e:
-        return _error(f"Migration failed: {str(e)}", "db_migrate", "MIGRATION_FAILED")
+        return _error(f"Migration failed: {e!s}", "db_migrate", "MIGRATION_FAILED")
 
 
 @mcp.tool()
-async def db_rollback(ctx: Any, confirm: bool = False) -> Dict[str, Any]:
+async def db_rollback(ctx: Any, confirm: bool = False) -> dict[str, Any]:
     """Rollback database (drop all tables).
 
     WARNING: This will delete all data!
@@ -573,6 +575,7 @@ async def db_rollback(ctx: Any, confirm: bool = False) -> Dict[str, Any]:
     Returns:
         MCP response with rollback status
     """
+    await asyncio.sleep(0)
     try:
         if not confirm:
             return _error(
@@ -604,11 +607,11 @@ async def db_rollback(ctx: Any, confirm: bool = False) -> Dict[str, Any]:
             "db_rollback",
         )
     except Exception as e:
-        return _error(f"Rollback failed: {str(e)}", "db_rollback", "ROLLBACK_FAILED")
+        return _error(f"Rollback failed: {e!s}", "db_rollback", "ROLLBACK_FAILED")
 
 
 @mcp.tool()
-async def db_reset(ctx: Any, confirm: bool = False) -> Dict[str, Any]:
+async def db_reset(ctx: Any, confirm: bool = False) -> dict[str, Any]:
     """Reset database by dropping and recreating tables.
 
     WARNING: This will delete all data!
@@ -620,6 +623,7 @@ async def db_reset(ctx: Any, confirm: bool = False) -> Dict[str, Any]:
     Returns:
         MCP response with reset status
     """
+    await asyncio.sleep(0)
     try:
         if not confirm:
             return _error(
@@ -652,4 +656,4 @@ async def db_reset(ctx: Any, confirm: bool = False) -> Dict[str, Any]:
             "db_reset",
         )
     except Exception as e:
-        return _error(f"Reset failed: {str(e)}", "db_reset", "RESET_FAILED")
+        return _error(f"Reset failed: {e!s}", "db_reset", "RESET_FAILED")

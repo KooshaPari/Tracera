@@ -2,7 +2,6 @@
 Pydantic schemas for Account API.
 """
 
-from typing import Optional
 from pydantic import BaseModel, Field
 
 
@@ -10,16 +9,16 @@ class AccountCreate(BaseModel):
     """Schema for creating an account."""
 
     name: str = Field(..., min_length=1, max_length=255)
-    slug: Optional[str] = Field(None, min_length=1, max_length=255)
+    slug: str | None = Field(None, min_length=1, max_length=255)
     account_type: str = Field(default="personal", pattern="^(personal|organization)$")
 
 
 class AccountUpdate(BaseModel):
     """Schema for updating an account."""
 
-    name: Optional[str] = Field(None, min_length=1, max_length=255)
-    slug: Optional[str] = Field(None, min_length=1, max_length=255)
-    metadata: Optional[dict] = None
+    name: str | None = Field(None, min_length=1, max_length=255)
+    slug: str | None = Field(None, min_length=1, max_length=255)
+    metadata: dict | None = None
 
 
 class AccountResponse(BaseModel):

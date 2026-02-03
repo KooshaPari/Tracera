@@ -1,7 +1,7 @@
 define("vs/php-DK3ktPH8", ["exports"], (function(exports) {
   "use strict";
   const conf = {
-    wordPattern: /(-?\d*\.\d\w*)|([^\`\~\!\@\#\%\^\&\*\(\)\-\=\+\[\{\]\}\\\|\;\:\'\"\,\.\<\>\/\?\s]+)/g,
+    wordPattern: /(-?\d*\.\d\w*)|([^`~!@#%^&*()\-=+[{\]}\\|;:'",.<>/?\s]+)/g,
     comments: {
       lineComment: "//",
       blockComment: ["/*", "*/"]
@@ -60,7 +60,7 @@ define("vs/php-DK3ktPH8", ["exports"], (function(exports) {
         [/\/?>/, "delimiter.html", "@pop"],
         [/"([^"]*)"/, "attribute.value"],
         [/'([^']*)'/, "attribute.value"],
-        [/[\w\-]+/, "attribute.name"],
+        [/[\w-]+/, "attribute.name"],
         [/=/, "delimiter"],
         [/[ \t\r\n]+/]
         // whitespace
@@ -72,7 +72,7 @@ define("vs/php-DK3ktPH8", ["exports"], (function(exports) {
         [/type/, "attribute.name", "@scriptAfterType"],
         [/"([^"]*)"/, "attribute.value"],
         [/'([^']*)'/, "attribute.value"],
-        [/[\w\-]+/, "attribute.name"],
+        [/[\w-]+/, "attribute.name"],
         [/=/, "delimiter"],
         [
           />/,
@@ -167,7 +167,7 @@ define("vs/php-DK3ktPH8", ["exports"], (function(exports) {
         ],
         [/"([^"]*)"/, "attribute.value"],
         [/'([^']*)'/, "attribute.value"],
-        [/[\w\-]+/, "attribute.name"],
+        [/[\w-]+/, "attribute.name"],
         [/=/, "delimiter"],
         [/[ \t\r\n]+/],
         // whitespace
@@ -192,7 +192,7 @@ define("vs/php-DK3ktPH8", ["exports"], (function(exports) {
         [/type/, "attribute.name", "@styleAfterType"],
         [/"([^"]*)"/, "attribute.value"],
         [/'([^']*)'/, "attribute.value"],
-        [/[\w\-]+/, "attribute.name"],
+        [/[\w-]+/, "attribute.name"],
         [/=/, "delimiter"],
         [
           />/,
@@ -287,7 +287,7 @@ define("vs/php-DK3ktPH8", ["exports"], (function(exports) {
         ],
         [/"([^"]*)"/, "attribute.value"],
         [/'([^']*)'/, "attribute.value"],
-        [/[\w\-]+/, "attribute.name"],
+        [/[\w-]+/, "attribute.name"],
         [/=/, "delimiter"],
         [/[ \t\r\n]+/],
         // whitespace
@@ -346,7 +346,7 @@ define("vs/php-DK3ktPH8", ["exports"], (function(exports) {
         ],
         // brackets
         [/[{}]/, "delimiter.bracket.php"],
-        [/[\[\]]/, "delimiter.array.php"],
+        [/[[\]]/, "delimiter.array.php"],
         [/[()]/, "delimiter.parenthesis.php"],
         // whitespace
         [/[ \t\r\n]+/],
@@ -359,10 +359,10 @@ define("vs/php-DK3ktPH8", ["exports"], (function(exports) {
         [/"/, "string.php", "@phpDoubleQuoteString"],
         [/'/, "string.php", "@phpSingleQuoteString"],
         // delimiters
-        [/[\+\-\*\%\&\|\^\~\!\=\<\>\/\?\;\:\.\,\@]/, "delimiter.php"],
+        [/[+\-*%&|^~!=<>/?;:.,@]/, "delimiter.php"],
         // numbers
-        [/\d*\d+[eE]([\-+]?\d+)?/, "number.float.php"],
-        [/\d*\.\d+([eE][\-+]?\d+)?/, "number.float.php"],
+        [/\d*\d+[eE]([-+]?\d+)?/, "number.float.php"],
+        [/\d*\.\d+([eE][-+]?\d+)?/, "number.float.php"],
         [/0[xX][0-9a-fA-F']*[0-9a-fA-F]/, "number.hex.php"],
         [/0[0-7']*[0-7]/, "number.octal.php"],
         [/0[bB][0-1']*[0-1]/, "number.binary.php"],

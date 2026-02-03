@@ -28,4 +28,4 @@ declare type _Paths<O, P extends List = []> = UnionOf<{
  * ```
  */
 export declare type Paths<O, P extends List = []> = _Paths<O, P> extends infer X ? Cast<X, List<Key>> : never;
-export {};
+

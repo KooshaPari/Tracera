@@ -1,18 +1,19 @@
 .PHONY: help dev dev-tui dev-down dev-logs dev-restart dev-status install-native \
 	quality quality-backend quality-frontend quality-pc quality-report quality-report-watch quality-watch quality-last quality-rerun check lint type-check format test \
-	type-check-ty type-check-basedpyright type-check-pyright test-python-parallel test-python-uv
+	type-check-ty type-check-basedpyright type-check-pyright test-python-parallel test-python-uv \
+	load-test-smoke load-test-load load-test-stress load-test-spike load-test-soak load-test-websocket load-test-database load-test-all load-test-compare load-test-report
 
 # Platform detection
 PLATFORM := $(shell uname -s | tr '[:upper:]' '[:lower:]')
 ARCH := $(shell uname -m)
 
-# Process Compose config selection
+# Process Compose config selection (all under config/)
 ifeq ($(PLATFORM),linux)
-    PC_CONFIG := -f process-compose.linux.yaml
+    PC_CONFIG := -f config/process-compose.linux.yaml
 else ifeq ($(findstring mingw,$(PLATFORM)),mingw)
-    PC_CONFIG := -f process-compose.windows.yaml
+    PC_CONFIG := -f config/process-compose.windows.yaml
 else
-    PC_CONFIG :=
+    PC_CONFIG := -f config/process-compose.yaml
 endif
 
 # Variables
@@ -46,7 +47,7 @@ help: ## Show this help
 
 install-native: ## Install all native dependencies (one-time setup)
 	@echo '$(GREEN)Installing native development dependencies...$(NC)'
-	@bash scripts/setup-native-dev.sh
+	@bash scripts/shell/setup-native-dev.sh
 
 verify-install: ## Verify installation
 	@echo '$(GREEN)Verifying installation...$(NC)'
@@ -61,14 +62,16 @@ verify-install: ## Verify installation
 # Development
 #############################################################################
 
-dev: ## Start all services (detached). Logs: .process-compose/logs/<service>.log (truncated on start).
+dev: ## Start all services (detached). Preflight auto-starts infra if needed; failures show details (no rtm dev check).
 	@echo '$(GREEN)Starting TraceRTM development environment...$(NC)'
-	@process-compose $(PC_CONFIG) up -d --logs-truncate
+	@PYTHONPATH="$(shell pwd)/src" PC_CONFIG="$(PC_CONFIG)" $(if $(wildcard .venv/bin/python),.venv/bin/python,python3) scripts/python/dev-start-with-preflight.py up -d --logs-truncate
 	@echo ''
 	@echo '$(GREEN)Services available at:$(NC)'
 	@echo '  Gateway:    http://localhost:4000'
 	@echo '  Go API:     http://localhost:8080'
 	@echo '  Python API: http://localhost:8000'
+	@echo '  Doc site:   http://localhost:3001  (or http://localhost:4000/documentation)'
+	@echo '  Storybook:  http://localhost:6006  (or http://localhost:4000/storybook)'
 	@echo '  Grafana:    http://localhost:3000'
 	@echo '  Prometheus: http://localhost:9090'
 	@echo '  Neo4j:      http://localhost:7474'
@@ -76,8 +79,8 @@ dev: ## Start all services (detached). Logs: .process-compose/logs/<service>.log
 	@echo 'View dashboard: make dev-tui'
 	@echo 'View logs:      make dev-logs'
 
-dev-tui: ## Start with interactive TUI dashboard. Logs: .process-compose/logs/<service>.log (truncated on start).
-	@process-compose $(PC_CONFIG) up --logs-truncate
+dev-tui: ## Start with interactive TUI dashboard. Preflight auto-starts infra if needed; failures show details (no rtm dev check).
+	@PYTHONPATH="$(shell pwd)/src" PC_CONFIG="$(PC_CONFIG)" $(if $(wildcard .venv/bin/python),.venv/bin/python,python3) scripts/python/dev-start-with-preflight.py up --logs-truncate
 
 dev-down: ## Stop all services
 	@echo '$(GREEN)Stopping all services...$(NC)'
@@ -151,25 +154,25 @@ dev-cli: ## Show dev CLI help
 #############################################################################
 
 quality: ## Per-step parallel quality (lint/type/build/test) + report. REFRESH_INTERVAL=2 to refresh report as logs arrive.
-	@bash scripts/run-quality-split.sh
+	@bash scripts/shell/run-quality-split.sh
 
 quality-pc: ## Run quality in process-compose TUI (port 18080). Failed suites auto-rerun. Stop with ^C.
-	@process-compose -f process-compose.quality.yaml -p 18080 up
+	@process-compose -f config/process-compose.quality.yaml -p 18080 up
 
 quality-report: ## Parse .quality/logs and print action plan (run after quality or on demand)
-	@bash scripts/quality-report.sh
+	@bash scripts/shell/quality-report.sh
 
 quality-report-watch: ## File-watched report: re-run report when .quality/logs or source changes (watchexec). Stop with ^C.
-	@bash scripts/run-quality-report-watch.sh
+	@bash scripts/shell/run-quality-report-watch.sh
 
 quality-watch: ## Real-time: re-run quality on file change (watchexec). Fallback: poll every QUALITY_WATCH_INTERVAL s. Stop with ^C.
-	@bash scripts/run-quality-watch.sh
+	@bash scripts/shell/run-quality-watch.sh
 
 quality-last: ## Show last quality run state (timestamp, steps or suites, failed)
 	@if [ -f .quality/last-run.json ]; then jq -r 'if .steps then "Last run: \(.timestamp)\n  steps: \(.steps | keys | join(", "))\n  ok: \(.ok)\n  failed_steps: \(.failed_steps)" else "Last run: \(.timestamp)\n  go=\(.exit_go) python=\(.exit_python) frontend=\(.exit_frontend)\n  ok=\(.ok)\n  failed_suites: \(.failed_suites)" end' .quality/last-run.json 2>/dev/null || cat .quality/last-run.json; else echo "No last run (run make quality first)"; fi
 
 quality-rerun: ## Re-run last quality (same as make quality; use after quality-last to re-check)
-	@bash scripts/run-quality-split.sh
+	@bash scripts/shell/run-quality-split.sh
 
 check: quality ## Alias for quality
 
@@ -195,8 +198,8 @@ quality-python: ## Python only: lint (ruff), architecture (tach), type-check (my
 	@echo '$(GREEN)[Python] Tests (pytest)...$(NC)'
 	@$(MAKE) test-python
 
-quality-frontend: ## Frontend only: lint, typecheck, build, test (turbo)
-	@echo '$(GREEN)[frontend] Quality (lint, typecheck, build, test)...$(NC)'
+quality-frontend: ## Frontend only: lint (oxlint), typecheck (oxlint --type-aware), build, test. See docs/checklists/OXC_IMPLEMENTATION_CHECKLIST.md
+	@echo '$(GREEN)[frontend] Quality (oxlint lint + typecheck, build, test)...$(NC)'
 	@cd frontend && bun run quality
 
 # Per-step targets for parallel quality (make quality-split)
@@ -245,19 +248,130 @@ test-e2e: ## Run end-to-end tests
 	PYTHONPATH="$(shell pwd)/src" $(PYTEST) tests/ -v -m e2e
 
 #############################################################################
+# Load Testing
+#############################################################################
+
+load-test-smoke: ## Run smoke test (1-5 users, 1 minute)
+	@echo '$(GREEN)Running smoke test...$(NC)'
+	k6 run tests/load/k6/scenarios/smoke.js
+
+load-test-load: ## Run load test (100 users, 18 minutes)
+	@echo '$(GREEN)Running load test...$(NC)'
+	k6 run tests/load/k6/scenarios/load.js
+
+load-test-stress: ## Run stress test (1000 users, 25 minutes)
+	@echo '$(GREEN)Running stress test...$(NC)'
+	k6 run tests/load/k6/scenarios/stress.js
+
+load-test-spike: ## Run spike test (10→500 users, 7.5 minutes)
+	@echo '$(GREEN)Running spike test...$(NC)'
+	k6 run tests/load/k6/scenarios/spike.js
+
+load-test-soak: ## Run soak test (50 users, 2+ hours)
+	@echo '$(GREEN)Running soak test (endurance)...$(NC)'
+	@echo '$(YELLOW)⚠️  This test takes 2+ hours to complete$(NC)'
+	k6 run tests/load/k6/scenarios/soak.js
+
+load-test-websocket: ## Run WebSocket load test (5000+ connections)
+	@echo '$(GREEN)Running WebSocket load test...$(NC)'
+	k6 run tests/load/websocket/ws-load-test.js
+
+load-test-database: ## Run database connection pool stress test
+	@echo '$(GREEN)Running database stress test...$(NC)'
+	@echo '$(YELLOW)⚠️  Requires PostgreSQL running$(NC)'
+	pgbench -c 1000 -j 100 -T 600 \
+		-f tests/load/database/connection-pool-test.sql \
+		-U tracertm tracertm
+
+load-test-all: ## Run all load tests (sequential)
+	@echo '$(GREEN)Running all load tests...$(NC)'
+	@$(MAKE) load-test-smoke
+	@$(MAKE) load-test-load
+	@$(MAKE) load-test-stress
+	@$(MAKE) load-test-spike
+	@$(MAKE) load-test-websocket
+
+load-test-compare: ## Compare current results with baseline
+	@echo '$(GREEN)Comparing performance with baseline...$(NC)'
+	python tests/load/scripts/compare-performance.py \
+		--baseline tests/load/.baseline/load-baseline.json \
+		--current load-test-summary.json \
+		--threshold 10
+
+load-test-report: ## Generate HTML performance report
+	@echo '$(GREEN)Generating performance report...$(NC)'
+	python tests/load/scripts/generate-report.py \
+		--results-dir results \
+		--output performance-report.html
+	@echo '$(GREEN)Report saved to: performance-report.html$(NC)'
+
+#############################################################################
+# Chaos Engineering
+#############################################################################
+
+chaos-setup: ## Install and start Toxiproxy for chaos testing
+	@bash scripts/shell/toxiproxy-setup.sh install
+	@bash scripts/shell/toxiproxy-setup.sh start
+
+chaos-start: ## Start Toxiproxy server
+	@bash scripts/shell/toxiproxy-setup.sh start
+
+chaos-stop: ## Stop Toxiproxy server
+	@bash scripts/shell/toxiproxy-setup.sh stop
+
+chaos-status: ## Check Toxiproxy status
+	@bash scripts/shell/toxiproxy-setup.sh status
+
+chaos-test: ## Run all chaos engineering tests
+	@bash scripts/shell/run-chaos-tests.sh
+
+chaos-test-latency: ## Run network latency chaos tests
+	PYTHONPATH="$(shell pwd)/src" $(PYTEST) tests/chaos/test_network_latency.py -v
+
+chaos-test-failures: ## Run connection failure chaos tests
+	PYTHONPATH="$(shell pwd)/src" $(PYTEST) tests/chaos/test_connection_failures.py -v
+
+chaos-test-resources: ## Run resource exhaustion chaos tests
+	PYTHONPATH="$(shell pwd)/src" $(PYTEST) tests/chaos/test_resource_exhaustion.py -v
+
+chaos-test-e2e: ## Run end-to-end resilience chaos tests
+	PYTHONPATH="$(shell pwd)/src" $(PYTEST) tests/chaos/test_end_to_end_resilience.py -v
+
+chaos-report: ## Open chaos test HTML report
+	@open chaos-reports/chaos-report.html || xdg-open chaos-reports/chaos-report.html
+
+#############################################################################
 # Code Quality (see also: quality, quality-go, quality-python, quality-frontend)
 #############################################################################
 
-lint: lint-go lint-python ## Run both Go and Python linters
+lint: lint-go lint-python lint-frontend ## Run Go, Python, and frontend linters
 
-lint-go: ## Go linters only (vet + gofmt check)
+lint-frontend: ## Frontend linters only (oxlint via bun). See docs/checklists/OXC_IMPLEMENTATION_CHECKLIST.md
+	@echo '$(GREEN)Running frontend linters (oxlint)...$(NC)'
+	@cd frontend && bun run lint
+
+lint-frontend-fix: ## Frontend lint auto-fix (oxlint --fix)
+	@echo '$(GREEN)Fixing frontend lint (oxlint --fix)...$(NC)'
+	@cd frontend && bun run lint:fix
+
+typecheck-frontend: ## Frontend typecheck (oxlint --type-check --type-aware)
+	@echo '$(GREEN)Running frontend typecheck (oxlint --type-aware)...$(NC)'
+	@cd frontend && bun run typecheck
+
+lint-go: ## Go linters only (gofumpt check + vet + golangci-lint)
 	@echo '$(GREEN)Running Go linters...$(NC)'
-	cd backend && go vet ./... && gofmt -s -l .
+	@cd backend && OUT=$$(gofumpt -l .); \
+	if [ -n "$$OUT" ]; then echo '$(YELLOW)Go format: run make go-format$(NC)'; echo "$$OUT"; exit 1; fi; \
+	go vet ./... && golangci-lint run --timeout=5m
 
 lint-python: ## Python linters only (ruff check + format check)
 	@echo '$(GREEN)Running Python linters...$(NC)'
 	$(RUFF) check src/ tests/
 	$(RUFF) format --check src/ tests/
+
+lint-python-fix: ## Python lint auto-fix (ruff check --fix; does not format)
+	@echo '$(GREEN)Fixing Python lint (ruff check --fix)...$(NC)'
+	$(RUFF) check src/ tests/ --fix
 
 tach-check: ## Python module boundaries (tach); requires tach.toml and tach installed
 	@command -v tach >/dev/null 2>&1 || (echo 'tach not found (pip install tach or uv sync)' >&2; exit 1)
@@ -267,7 +381,22 @@ format: ## Format code
 	@echo '$(GREEN)Formatting Python code...$(NC)'
 	$(RUFF) format src/ tests/
 	@echo '$(GREEN)Formatting Go code...$(NC)'
-	cd backend && gofmt -s -w .
+	cd backend && gofumpt -w .
+
+# Py/Go DX aliases (atoms-mcp-prod / atomsbot style; use - not : to avoid Make pattern rules)
+py-lint: ; @$(MAKE) lint-python
+py-lint-fix: ; @$(MAKE) lint-python-fix
+py-format: ## Python format only
+	@echo '$(GREEN)Formatting Python...$(NC)'
+	$(RUFF) format src/ tests/
+py-type-check: ; @$(MAKE) type-check
+py-test: ; @$(MAKE) test-python
+py-test-parallel: ; @$(MAKE) test-python-parallel
+go-lint: ; @$(MAKE) lint-go
+go-format: ## Go format only (gofumpt)
+	@echo '$(GREEN)Formatting Go...$(NC)'
+	cd backend && gofumpt -w .
+go-test: ; @$(MAKE) test-go
 
 type-check: ## Run type checking (mypy; default for quality)
 	@echo '$(GREEN)Running mypy...$(NC)'
@@ -285,10 +414,16 @@ type-check-pyright: ## Run type checking with pyright. Requires: pip install pyr
 	@echo '$(GREEN)Running pyright...$(NC)'
 	PYTHONPATH="$(shell pwd)/src" $(PYRIGHT) src/
 
-security-scan: ## Run security scans
+security-scan: ## Run security scans (semgrep, bandit, pip-audit, govulncheck)
 	@echo '$(GREEN)Running security scans...$(NC)'
+	@echo '$(GREEN)[Python] Semgrep...$(NC)'
 	semgrep --config=p/security-audit src/
-	cd backend && go install golang.org/x/vuln/cmd/govulncheck@latest
+	@echo '$(GREEN)[Python] Bandit...$(NC)'
+	$(if $(wildcard .venv/bin/bandit),.venv/bin/bandit,bandit) -r src/
+	@echo '$(GREEN)[Python] pip-audit (dependency vulns)...$(NC)'
+	$(if $(wildcard .venv/bin/pip-audit),.venv/bin/pip-audit,pip-audit)
+	@echo '$(GREEN)[Go] govulncheck...$(NC)'
+	cd backend && go install golang.org/x/vuln/cmd/govulncheck@latest 2>/dev/null || true
 	cd backend && govulncheck ./...
 
 # Database
@@ -325,15 +460,15 @@ metrics: ## Show quick metrics summary
 # Kubernetes
 k8s-deploy: ## Deploy to Kubernetes
 	@echo '$(GREEN)Deploying to Kubernetes...$(NC)'
-	NAMESPACE=$(NAMESPACE) IMAGE_TAG=$(IMAGE_TAG) DOCKER_REGISTRY=$(DOCKER_REGISTRY) KUBE_CONTEXT=$(KUBE_CONTEXT) ./scripts/deploy.sh all
+	NAMESPACE=$(NAMESPACE) IMAGE_TAG=$(IMAGE_TAG) DOCKER_REGISTRY=$(DOCKER_REGISTRY) KUBE_CONTEXT=$(KUBE_CONTEXT) ./scripts/shell/deploy.sh all
 
 k8s-deploy-infra: ## Deploy infrastructure only
 	@echo '$(GREEN)Deploying infrastructure to Kubernetes...$(NC)'
-	NAMESPACE=$(NAMESPACE) ./scripts/deploy.sh infra
+	NAMESPACE=$(NAMESPACE) ./scripts/shell/deploy.sh infra
 
 k8s-deploy-app: ## Deploy application only
 	@echo '$(GREEN)Deploying application to Kubernetes...$(NC)'
-	NAMESPACE=$(NAMESPACE) IMAGE_TAG=$(IMAGE_TAG) DOCKER_REGISTRY=$(DOCKER_REGISTRY) ./scripts/deploy.sh app
+	NAMESPACE=$(NAMESPACE) IMAGE_TAG=$(IMAGE_TAG) DOCKER_REGISTRY=$(DOCKER_REGISTRY) ./scripts/shell/deploy.sh app
 
 k8s-status: ## Show Kubernetes deployment status
 	@echo '$(GREEN)Kubernetes deployment status:$(NC)'
@@ -370,19 +505,19 @@ docs: ## Generate documentation
 # gRPC Code Generation
 proto-gen: ## Generate gRPC code from protobuf definitions
 	@echo '$(GREEN)Generating gRPC code...$(NC)'
-	@bash scripts/generate-grpc.sh
+	@bash scripts/shell/generate-grpc.sh
 
 proto-gen-ts: ## Generate gRPC code including TypeScript
 	@echo '$(GREEN)Generating gRPC code with TypeScript...$(NC)'
-	@bash scripts/generate-grpc.sh --typescript
+	@bash scripts/shell/generate-grpc.sh --typescript
 
 proto-watch: ## Watch proto files and regenerate on changes
 	@echo '$(GREEN)Watching proto files...$(NC)'
-	@bash scripts/generate-grpc.sh --watch
+	@bash scripts/shell/generate-grpc.sh --watch
 
 proto-test: ## Test gRPC connection and services
 	@echo '$(GREEN)Testing gRPC services...$(NC)'
-	@python scripts/test-grpc.py
+	@python scripts/python/test_grpc.py
 
 proto-lint: ## Lint proto files (requires buf)
 	@if command -v buf &> /dev/null; then \
@@ -414,6 +549,8 @@ install-tools: ## Install development tools
 	go install golang.org/x/vuln/cmd/govulncheck@latest
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+	go install mvdan.cc/gofumpt@latest
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 	@echo '$(GREEN)gRPC tools installed. For buf: brew install bufbuild/buf/buf$(NC)'
 
 #############################################################################

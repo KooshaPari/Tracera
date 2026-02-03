@@ -10,7 +10,7 @@ Tests core/database.py:
 - Global state management
 """
 
-from pathlib import Path
+import logging
 from unittest.mock import patch
 
 import pytest
@@ -29,7 +29,7 @@ from tracertm.core.database import (
 @pytest.fixture
 def mock_config(tmp_path):
     """Create a mock config for testing."""
-    config = Config(
+    return Config(
         database=DatabaseConfig(
             host="localhost",
             port=5432,
@@ -41,19 +41,19 @@ def mock_config(tmp_path):
         ),
         data_dir=tmp_path / ".tracertm",
     )
-    return config
 
 
 @pytest.fixture
 def mock_config_sqlite(tmp_path):
     """Create a mock config for SQLite testing."""
+
     # Create a custom DatabaseConfig that returns SQLite URL
     class SQLiteDatabaseConfig(DatabaseConfig):
         @property
         def url(self) -> str:
             return "sqlite+aiosqlite:///:memory:"
-    
-    config = Config(
+
+    return Config(
         database=SQLiteDatabaseConfig(
             host="localhost",
             port=5432,
@@ -65,18 +65,18 @@ def mock_config_sqlite(tmp_path):
         ),
         data_dir=tmp_path / ".tracertm",
     )
-    return config
 
 
 @pytest.fixture(autouse=True)
 def reset_db_module():
     """Reset database module global state before each test."""
     import tracertm.core.database as db_module
+
     original_engine = db_module._engine
     original_factory = db_module._session_factory
-    
+
     yield
-    
+
     # Restore original state after test
     db_module._engine = original_engine
     db_module._session_factory = original_factory
@@ -91,9 +91,10 @@ class TestGetEngine:
         mock_get_config.return_value = mock_config
         # Reset global state
         import tracertm.core.database as db_module
+
         db_module._engine = None
         db_module._session_factory = None
-        
+
         engine = get_engine()
         assert isinstance(engine, AsyncEngine)
 
@@ -103,9 +104,10 @@ class TestGetEngine:
         mock_get_config.return_value = mock_config
         # Reset global state
         import tracertm.core.database as db_module
+
         db_module._engine = None
         db_module._session_factory = None
-        
+
         engine1 = get_engine()
         engine2 = get_engine()
         assert engine1 is engine2
@@ -116,9 +118,10 @@ class TestGetEngine:
         mock_get_config.return_value = mock_config
         # Reset global state
         import tracertm.core.database as db_module
+
         db_module._engine = None
         db_module._session_factory = None
-        
+
         engine = get_engine()
         # URL should use asyncpg driver
         assert "asyncpg" in str(engine.url)
@@ -129,9 +132,10 @@ class TestGetEngine:
         mock_get_config.return_value = mock_config
         # Reset global state
         import tracertm.core.database as db_module
+
         db_module._engine = None
         db_module._session_factory = None
-        
+
         engine = get_engine()
         # Check pool settings exist
         assert engine.pool is not None
@@ -146,9 +150,10 @@ class TestGetSessionFactory:
         mock_get_config.return_value = mock_config
         # Reset global state
         import tracertm.core.database as db_module
+
         db_module._engine = None
         db_module._session_factory = None
-        
+
         factory = get_session_factory()
         assert isinstance(factory, async_sessionmaker)
 
@@ -158,9 +163,10 @@ class TestGetSessionFactory:
         mock_get_config.return_value = mock_config
         # Reset global state
         import tracertm.core.database as db_module
+
         db_module._engine = None
         db_module._session_factory = None
-        
+
         factory1 = get_session_factory()
         factory2 = get_session_factory()
         assert factory1 is factory2
@@ -171,9 +177,10 @@ class TestGetSessionFactory:
         mock_get_config.return_value = mock_config
         # Reset global state
         import tracertm.core.database as db_module
+
         db_module._engine = None
         db_module._session_factory = None
-        
+
         factory = get_session_factory()
         # Check that it's configured for AsyncSession
         assert factory.class_ == AsyncSession
@@ -184,9 +191,10 @@ class TestGetSessionFactory:
         mock_get_config.return_value = mock_config
         # Reset global state
         import tracertm.core.database as db_module
+
         db_module._engine = None
         db_module._session_factory = None
-        
+
         factory = get_session_factory()
         assert factory.kw.get("expire_on_commit") is False
 
@@ -201,9 +209,10 @@ class TestGetSession:
         mock_get_config.return_value = mock_config_sqlite
         # Reset global state
         import tracertm.core.database as db_module
+
         db_module._engine = None
         db_module._session_factory = None
-        
+
         async with get_session() as session:
             assert isinstance(session, AsyncSession)
 
@@ -213,9 +222,10 @@ class TestGetSession:
         """Test that session commits on successful exit."""
         mock_get_config.return_value = mock_config_sqlite
         import tracertm.core.database as db_module
+
         db_module._engine = None
         db_module._session_factory = None
-        
+
         # This test verifies the context manager structure
         session_used = False
         async with get_session() as session:
@@ -229,10 +239,11 @@ class TestGetSession:
         """Test that session rolls back on exception."""
         mock_get_config.return_value = mock_config_sqlite
         import tracertm.core.database as db_module
+
         db_module._engine = None
         db_module._session_factory = None
-        
-        with pytest.raises(ValueError):
+
+        with pytest.raises(ValueError, match="Test error"):
             async with get_session() as session:
                 assert session is not None
                 # Raise error to trigger rollback
@@ -244,12 +255,12 @@ class TestGetSession:
         """Test that session is closed after context exit."""
         mock_get_config.return_value = mock_config_sqlite
         import tracertm.core.database as db_module
+
         db_module._engine = None
         db_module._session_factory = None
-        
-        session_ref = None
-        async with get_session() as session:
-            session_ref = session
+
+        async with get_session() as _session:
+            pass
 
         # Session should be closed after context exit
         # We can't directly check if closed, but we verified the pattern
@@ -260,9 +271,10 @@ class TestGetSession:
         """Test creating multiple session contexts."""
         mock_get_config.return_value = mock_config_sqlite
         import tracertm.core.database as db_module
+
         db_module._engine = None
         db_module._session_factory = None
-        
+
         sessions = []
 
         async with get_session() as session1:
@@ -281,9 +293,10 @@ class TestGetSession:
         """Test that nested sessions are separate instances."""
         mock_get_config.return_value = mock_config_sqlite
         import tracertm.core.database as db_module
+
         db_module._engine = None
         db_module._session_factory = None
-        
+
         outer_session = None
         inner_session = None
 
@@ -311,9 +324,10 @@ class TestInitDb:
         """Test that init_db executes without error."""
         mock_get_config.return_value = mock_config_sqlite
         import tracertm.core.database as db_module
+
         db_module._engine = None
         db_module._session_factory = None
-        
+
         try:
             await init_db()
             # Success if no exception
@@ -329,14 +343,15 @@ class TestInitDb:
         """Test that init_db uses the global engine."""
         mock_get_config.return_value = mock_config_sqlite
         import tracertm.core.database as db_module
+
         db_module._engine = None
         db_module._session_factory = None
-        
+
         engine_before = get_engine()
         try:
             await init_db()
-        except Exception:
-            pass  # Ignore connection errors
+        except Exception as e:
+            logging.getLogger(__name__).debug("init_db in test: %s", e)
         engine_after = get_engine()
 
         # Should use same engine instance
@@ -357,9 +372,10 @@ class TestDropDb:
         """Test that drop_db executes without error."""
         mock_get_config.return_value = mock_config_sqlite
         import tracertm.core.database as db_module
+
         db_module._engine = None
         db_module._session_factory = None
-        
+
         try:
             await drop_db()
             # Success if no exception
@@ -375,14 +391,15 @@ class TestDropDb:
         """Test that drop_db uses the global engine."""
         mock_get_config.return_value = mock_config_sqlite
         import tracertm.core.database as db_module
+
         db_module._engine = None
         db_module._session_factory = None
-        
+
         engine_before = get_engine()
         try:
             await drop_db()
-        except Exception:
-            pass  # Ignore connection errors
+        except Exception as e:
+            logging.getLogger(__name__).debug("drop_db in test: %s", e)
         engine_after = get_engine()
 
         # Should use same engine instance
@@ -407,9 +424,10 @@ class TestDatabaseModuleIntegration:
         """Test that engine pool has expected settings."""
         mock_get_config.return_value = mock_config
         import tracertm.core.database as db_module
+
         db_module._engine = None
         db_module._session_factory = None
-        
+
         engine = get_engine()
 
         # Verify pool configuration
@@ -423,9 +441,10 @@ class TestDatabaseModuleIntegration:
         """Test that sessions support transactions."""
         mock_get_config.return_value = mock_config_sqlite
         import tracertm.core.database as db_module
+
         db_module._engine = None
         db_module._session_factory = None
-        
+
         async with get_session() as session:
             # Should be able to begin transaction
             assert hasattr(session, "begin")
@@ -437,8 +456,10 @@ class TestDatabaseModuleIntegration:
     async def test_multiple_concurrent_sessions(self, mock_get_config, mock_config_sqlite):
         """Test creating multiple concurrent sessions."""
         import asyncio
+
         mock_get_config.return_value = mock_config_sqlite
         import tracertm.core.database as db_module
+
         db_module._engine = None
         db_module._session_factory = None
 
@@ -468,6 +489,7 @@ class TestDatabaseConfiguration:
         """Test that engine uses configuration settings."""
         mock_get_config.return_value = mock_config
         import tracertm.core.database as db_module
+
         db_module._engine = None
         db_module._session_factory = None
 
@@ -483,6 +505,7 @@ class TestDatabaseConfiguration:
         """Test that engine respects pool_size config."""
         mock_get_config.return_value = mock_config
         import tracertm.core.database as db_module
+
         db_module._engine = None
         db_module._session_factory = None
 
@@ -498,10 +521,11 @@ class TestDatabaseConfiguration:
         """Test that engine has proper connection options."""
         mock_get_config.return_value = mock_config
         import tracertm.core.database as db_module
+
         db_module._engine = None
         db_module._session_factory = None
-        
-        engine = get_engine()
+
+        _engine = get_engine()
 
         # Should have pool pre-ping enabled for health checks
         # Should have pool recycle for connection refresh
@@ -517,13 +541,14 @@ class TestDatabaseErrorHandling:
         """Test that exceptions trigger rollback."""
         mock_get_config.return_value = mock_config_sqlite
         import tracertm.core.database as db_module
+
         db_module._engine = None
         db_module._session_factory = None
-        
+
         exception_raised = False
 
         try:
-            async with get_session() as session:
+            async with get_session() as _session:
                 # Simulate error during transaction
                 raise RuntimeError("Simulated error")
         except RuntimeError:
@@ -537,13 +562,14 @@ class TestDatabaseErrorHandling:
         """Test that session closes even after exception."""
         mock_get_config.return_value = mock_config_sqlite
         import tracertm.core.database as db_module
+
         db_module._engine = None
         db_module._session_factory = None
-        
+
         session_created = False
 
         try:
-            async with get_session() as session:
+            async with get_session() as _session:
                 session_created = True
                 raise RuntimeError("Test error")
         except RuntimeError:
@@ -559,14 +585,15 @@ class TestDatabaseErrorHandling:
         """Test handling multiple errors in sequence."""
         mock_get_config.return_value = mock_config_sqlite
         import tracertm.core.database as db_module
+
         db_module._engine = None
         db_module._session_factory = None
-        
+
         errors = []
 
         for i in range(3):
             try:
-                async with get_session() as session:
+                async with get_session() as _session:
                     raise RuntimeError(f"Error {i}")
             except RuntimeError as e:
                 errors.append(str(e))
@@ -583,9 +610,10 @@ class TestDatabaseGlobalState:
         """Test that engine is stored in global state."""
         mock_get_config.return_value = mock_config
         import tracertm.core.database as db_module
+
         db_module._engine = None
         db_module._session_factory = None
-        
+
         engine1 = get_engine()
         engine2 = get_engine()
 
@@ -597,9 +625,10 @@ class TestDatabaseGlobalState:
         """Test that session factory is stored in global state."""
         mock_get_config.return_value = mock_config
         import tracertm.core.database as db_module
+
         db_module._engine = None
         db_module._session_factory = None
-        
+
         factory1 = get_session_factory()
         factory2 = get_session_factory()
 
@@ -611,9 +640,10 @@ class TestDatabaseGlobalState:
         """Test that global state initializes in correct order."""
         mock_get_config.return_value = mock_config
         import tracertm.core.database as db_module
+
         db_module._engine = None
         db_module._session_factory = None
-        
+
         # Engine should initialize before session factory
         engine = get_engine()
         factory = get_session_factory()

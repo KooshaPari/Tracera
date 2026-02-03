@@ -80,16 +80,12 @@ class IntegrationSyncProcessor:
 
     async def process_pending(self, limit: int = 50) -> dict[str, Any]:
         pending = await self.queue.get_pending(limit=limit)
-        results = []
-        for item in pending:
-            results.append(await self.process_queue_item(item))
+        results = [await self.process_queue_item(item) for item in pending]
         return {"processed": len(results), "results": results}
 
     async def process_retryable(self, limit: int = 50) -> dict[str, Any]:
         retryable = await self.queue.get_retryable()
-        results = []
-        for item in retryable[:limit]:
-            results.append(await self.process_queue_item(item))
+        results = [await self.process_queue_item(item) for item in retryable[:limit]]
         return {"processed": len(results), "results": results}
 
     async def _sync_provider(
@@ -220,7 +216,7 @@ class IntegrationSyncProcessor:
                 item = await items_repo.get_by_id(existing.tracertm_item_id, mapping.project_id)
                 if item:
                     await items_repo.update(
-                        item.id,
+                        str(item.id),
                         item.version,
                         title=title,
                         description=description,
@@ -246,7 +242,7 @@ class IntegrationSyncProcessor:
             await mapping_repo.create(
                 project_id=mapping.project_id,
                 credential_id=mapping.integration_credential_id,
-                tracertm_item_id=new_item.id,
+                tracertm_item_id=str(new_item.id),
                 tracertm_item_type="issue",
                 external_system="github",
                 external_id=external_id,
@@ -295,7 +291,7 @@ class IntegrationSyncProcessor:
                 item_row = await items_repo.get_by_id(existing.tracertm_item_id, mapping.project_id)
                 if item_row:
                     await items_repo.update(
-                        item_row.id,
+                        str(item_row.id),
                         item_row.version,
                         title=title,
                         description=description,
@@ -319,7 +315,7 @@ class IntegrationSyncProcessor:
             await mapping_repo.create(
                 project_id=mapping.project_id,
                 credential_id=mapping.integration_credential_id,
-                tracertm_item_id=new_item.id,
+                tracertm_item_id=str(new_item.id),
                 tracertm_item_type="issue",
                 external_system="github_projects",
                 external_id=external_id,
@@ -368,7 +364,7 @@ class IntegrationSyncProcessor:
                 item_row = await items_repo.get_by_id(existing.tracertm_item_id, mapping.project_id)
                 if item_row:
                     await items_repo.update(
-                        item_row.id,
+                        str(item_row.id),
                         item_row.version,
                         title=title,
                         description=description,
@@ -394,7 +390,7 @@ class IntegrationSyncProcessor:
             await mapping_repo.create(
                 project_id=mapping.project_id,
                 credential_id=mapping.integration_credential_id,
-                tracertm_item_id=new_item.id,
+                tracertm_item_id=str(new_item.id),
                 tracertm_item_type="issue",
                 external_system="linear",
                 external_id=external_id,
@@ -440,7 +436,7 @@ class IntegrationSyncProcessor:
                 item_row = await items_repo.get_by_id(existing.tracertm_item_id, mapping.project_id)
                 if item_row:
                     await items_repo.update(
-                        item_row.id,
+                        str(item_row.id),
                         item_row.version,
                         title=title,
                         status=status,
@@ -463,7 +459,7 @@ class IntegrationSyncProcessor:
             await mapping_repo.create(
                 project_id=mapping.project_id,
                 credential_id=mapping.integration_credential_id,
-                tracertm_item_id=new_item.id,
+                tracertm_item_id=str(new_item.id),
                 tracertm_item_type="issue",
                 external_system="linear",
                 external_id=external_id,

@@ -15,4 +15,4 @@ export declare class MediaTypeSamples extends React.Component<PayloadSamplesProp
     switchMedia: ({ idx }: DropdownOption) => void;
     render(): React.JSX.Element;
 }
-export {};
+

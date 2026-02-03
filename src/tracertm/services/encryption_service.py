@@ -3,7 +3,6 @@
 import base64
 import os
 import secrets
-from typing import Optional
 
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
@@ -18,7 +17,7 @@ class EncryptionService:
     # IV size recommended for GCM mode
     IV_SIZE = 12  # 96 bits
 
-    def __init__(self, master_key: Optional[str] = None):
+    def __init__(self, master_key: str | None = None):
         """Initialize encryption service.
 
         Args:
@@ -36,13 +35,11 @@ class EncryptionService:
         try:
             self._key = base64.b64decode(key_source)
         except Exception as e:
-            raise ValueError(f"Invalid master key format (must be base64): {e}")
+            raise ValueError(f"Invalid master key format (must be base64): {e}") from e
 
         # Validate key size (must be 256 bits = 32 bytes)
         if len(self._key) != 32:
-            raise ValueError(
-                f"Master key must be 256 bits (32 bytes), got {len(self._key)} bytes"
-            )
+            raise ValueError(f"Master key must be 256 bits (32 bytes), got {len(self._key)} bytes")
 
         self._cipher = AESGCM(self._key)
 
@@ -122,7 +119,7 @@ class EncryptionService:
             return plaintext.decode("utf-8")
 
         except Exception as e:
-            raise ValueError(f"Decryption failed: {e}")
+            raise ValueError(f"Decryption failed: {e}") from e
 
     def rotate_encryption(self, encrypted: str, new_service: "EncryptionService") -> str:
         """Re-encrypt data with a new key.
@@ -142,7 +139,7 @@ class EncryptionService:
 
 
 # Singleton instance for application use
-_encryption_service: Optional[EncryptionService] = None
+_encryption_service: EncryptionService | None = None
 
 
 def get_encryption_service() -> EncryptionService:

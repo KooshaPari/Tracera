@@ -3,7 +3,7 @@ Pydantic schemas for Test Coverage.
 """
 
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -17,26 +17,26 @@ class TestCoverageCreate(BaseModel):
         default="direct",
         description="Type of coverage: direct, partial, indirect, regression",
     )
-    coverage_percentage: Optional[int] = Field(
+    coverage_percentage: int | None = Field(
         default=None,
         ge=0,
         le=100,
         description="Coverage percentage for partial coverage",
     )
-    rationale: Optional[str] = Field(default=None, description="Rationale for the mapping")
-    notes: Optional[str] = Field(default=None, description="Additional notes")
-    metadata: Optional[dict[str, Any]] = Field(default=None, description="Extensible metadata")
+    rationale: str | None = Field(default=None, description="Rationale for the mapping")
+    notes: str | None = Field(default=None, description="Additional notes")
+    metadata: dict[str, Any] | None = Field(default=None, description="Extensible metadata")
 
 
 class TestCoverageUpdate(BaseModel):
     """Schema for updating a test coverage mapping."""
 
-    coverage_type: Optional[str] = None
-    status: Optional[str] = None
-    coverage_percentage: Optional[int] = Field(default=None, ge=0, le=100)
-    rationale: Optional[str] = None
-    notes: Optional[str] = None
-    metadata: Optional[dict[str, Any]] = None
+    coverage_type: str | None = None
+    status: str | None = None
+    coverage_percentage: int | None = Field(default=None, ge=0, le=100)
+    rationale: str | None = None
+    notes: str | None = None
+    metadata: dict[str, Any] | None = None
 
 
 class TestCoverageResponse(BaseModel):
@@ -48,15 +48,15 @@ class TestCoverageResponse(BaseModel):
     requirement_id: str
     coverage_type: str
     status: str
-    coverage_percentage: Optional[int] = None
-    rationale: Optional[str] = None
-    notes: Optional[str] = None
-    last_verified_at: Optional[datetime] = None
-    verified_by: Optional[str] = None
-    last_test_result: Optional[str] = None
-    last_tested_at: Optional[datetime] = None
-    created_by: Optional[str] = None
-    coverage_metadata: Optional[dict[str, Any]] = None
+    coverage_percentage: int | None = None
+    rationale: str | None = None
+    notes: str | None = None
+    last_verified_at: datetime | None = None
+    verified_by: str | None = None
+    last_test_result: str | None = None
+    last_tested_at: datetime | None = None
+    created_by: str | None = None
+    coverage_metadata: dict[str, Any] | None = None
     version: int
     created_at: datetime
     updated_at: datetime
@@ -76,7 +76,7 @@ class TestCoverageListResponse(BaseModel):
 class TestCoverageVerify(BaseModel):
     """Schema for verifying a coverage mapping."""
 
-    notes: Optional[str] = None
+    notes: str | None = None
 
 
 class CoverageActivityResponse(BaseModel):
@@ -85,11 +85,11 @@ class CoverageActivityResponse(BaseModel):
     id: str
     coverage_id: str
     activity_type: str
-    from_value: Optional[str] = None
-    to_value: Optional[str] = None
-    description: Optional[str] = None
-    performed_by: Optional[str] = None
-    activity_metadata: Optional[dict[str, Any]] = None
+    from_value: str | None = None
+    to_value: str | None = None
+    description: str | None = None
+    performed_by: str | None = None
+    activity_metadata: dict[str, Any] | None = None
     created_at: datetime
 
     model_config = {"from_attributes": True}
@@ -126,7 +126,7 @@ class CoverageGapItem(BaseModel):
     requirement_title: str
     requirement_view: str
     requirement_status: str
-    priority: Optional[str] = None
+    priority: str | None = None
 
 
 class CoverageGapsResponse(BaseModel):

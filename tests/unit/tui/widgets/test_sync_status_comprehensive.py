@@ -6,14 +6,18 @@ time formatting, and all state combinations.
 Coverage target: 80%+ (313 lines total)
 """
 
-import pytest
 from datetime import datetime, timedelta
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 # Skip all tests if Textual not available
 pytest.importorskip("textual")
 
-from tracertm.tui.widgets.sync_status import CompactSyncStatus, SyncStatusWidget
+from tracertm.tui.widgets.sync_status import (  # type: ignore[possibly-missing-import]
+    CompactSyncStatus,
+    SyncStatusWidget,
+)
 
 
 class TestSyncStatusWidgetInitialization:
@@ -116,7 +120,7 @@ class TestSyncStatusWidgetReactiveUpdates:
 class TestSyncStatusWidgetDisplay:
     """Test display update logic."""
 
-    @patch.object(SyncStatusWidget, 'query_one')
+    @patch.object(SyncStatusWidget, "query_one")
     def test_update_display_syncing_state(self, mock_query_one):
         """Test update_display shows syncing state correctly."""
         widget = SyncStatusWidget()
@@ -126,12 +130,11 @@ class TestSyncStatusWidgetDisplay:
         mock_conflict_info = MagicMock()
 
         def query_side_effect(selector, widget_type=None):
-            if selector == "#connection-status":
-                return mock_connection
-            elif selector == "#sync-info":
-                return mock_sync_info
-            elif selector == "#conflict-info":
-                return mock_conflict_info
+            return {
+                "#connection-status": mock_connection,
+                "#sync-info": mock_sync_info,
+                "#conflict-info": mock_conflict_info,
+            }.get(selector)
 
         mock_query_one.side_effect = query_side_effect
 
@@ -143,7 +146,7 @@ class TestSyncStatusWidgetDisplay:
         mock_connection.add_class.assert_called_with("syncing")
         assert mock_connection.update.called
 
-    @patch.object(SyncStatusWidget, 'query_one')
+    @patch.object(SyncStatusWidget, "query_one")
     def test_update_display_error_state(self, mock_query_one):
         """Test update_display shows error state correctly."""
         widget = SyncStatusWidget()
@@ -153,12 +156,11 @@ class TestSyncStatusWidgetDisplay:
         mock_conflict_info = MagicMock()
 
         def query_side_effect(selector, widget_type=None):
-            if selector == "#connection-status":
-                return mock_connection
-            elif selector == "#sync-info":
-                return mock_sync_info
-            elif selector == "#conflict-info":
-                return mock_conflict_info
+            return {
+                "#connection-status": mock_connection,
+                "#sync-info": mock_sync_info,
+                "#conflict-info": mock_conflict_info,
+            }.get(selector)
 
         mock_query_one.side_effect = query_side_effect
 
@@ -171,7 +173,7 @@ class TestSyncStatusWidgetDisplay:
         mock_connection.add_class.assert_called_with("error")
         assert "Error:" in str(mock_connection.update.call_args)
 
-    @patch.object(SyncStatusWidget, 'query_one')
+    @patch.object(SyncStatusWidget, "query_one")
     def test_update_display_online_state(self, mock_query_one):
         """Test update_display shows online state correctly."""
         widget = SyncStatusWidget()
@@ -181,12 +183,11 @@ class TestSyncStatusWidgetDisplay:
         mock_conflict_info = MagicMock()
 
         def query_side_effect(selector, widget_type=None):
-            if selector == "#connection-status":
-                return mock_connection
-            elif selector == "#sync-info":
-                return mock_sync_info
-            elif selector == "#conflict-info":
-                return mock_conflict_info
+            return {
+                "#connection-status": mock_connection,
+                "#sync-info": mock_sync_info,
+                "#conflict-info": mock_conflict_info,
+            }.get(selector)
 
         mock_query_one.side_effect = query_side_effect
 
@@ -199,7 +200,7 @@ class TestSyncStatusWidgetDisplay:
         mock_connection.add_class.assert_called_with("online")
         assert "Online" in str(mock_connection.update.call_args)
 
-    @patch.object(SyncStatusWidget, 'query_one')
+    @patch.object(SyncStatusWidget, "query_one")
     def test_update_display_offline_state(self, mock_query_one):
         """Test update_display shows offline state correctly."""
         widget = SyncStatusWidget()
@@ -209,12 +210,11 @@ class TestSyncStatusWidgetDisplay:
         mock_conflict_info = MagicMock()
 
         def query_side_effect(selector, widget_type=None):
-            if selector == "#connection-status":
-                return mock_connection
-            elif selector == "#sync-info":
-                return mock_sync_info
-            elif selector == "#conflict-info":
-                return mock_conflict_info
+            return {
+                "#connection-status": mock_connection,
+                "#sync-info": mock_sync_info,
+                "#conflict-info": mock_conflict_info,
+            }.get(selector)
 
         mock_query_one.side_effect = query_side_effect
 
@@ -227,7 +227,7 @@ class TestSyncStatusWidgetDisplay:
         mock_connection.add_class.assert_called_with("offline")
         assert "Offline" in str(mock_connection.update.call_args)
 
-    @patch.object(SyncStatusWidget, 'query_one')
+    @patch.object(SyncStatusWidget, "query_one")
     def test_update_display_pending_changes(self, mock_query_one):
         """Test update_display shows pending changes."""
         widget = SyncStatusWidget()
@@ -237,12 +237,11 @@ class TestSyncStatusWidgetDisplay:
         mock_conflict_info = MagicMock()
 
         def query_side_effect(selector, widget_type=None):
-            if selector == "#connection-status":
-                return mock_connection
-            elif selector == "#sync-info":
-                return mock_sync_info
-            elif selector == "#conflict-info":
-                return mock_conflict_info
+            return {
+                "#connection-status": mock_connection,
+                "#sync-info": mock_sync_info,
+                "#conflict-info": mock_conflict_info,
+            }.get(selector)
 
         mock_query_one.side_effect = query_side_effect
 
@@ -253,7 +252,7 @@ class TestSyncStatusWidgetDisplay:
         assert "pending" in str(mock_sync_info.update.call_args)
         assert "5" in str(mock_sync_info.update.call_args)
 
-    @patch.object(SyncStatusWidget, 'query_one')
+    @patch.object(SyncStatusWidget, "query_one")
     def test_update_display_singular_pending_change(self, mock_query_one):
         """Test update_display uses singular form for 1 change."""
         widget = SyncStatusWidget()
@@ -263,12 +262,11 @@ class TestSyncStatusWidgetDisplay:
         mock_conflict_info = MagicMock()
 
         def query_side_effect(selector, widget_type=None):
-            if selector == "#connection-status":
-                return mock_connection
-            elif selector == "#sync-info":
-                return mock_sync_info
-            elif selector == "#conflict-info":
-                return mock_conflict_info
+            return {
+                "#connection-status": mock_connection,
+                "#sync-info": mock_sync_info,
+                "#conflict-info": mock_conflict_info,
+            }.get(selector)
 
         mock_query_one.side_effect = query_side_effect
 
@@ -279,7 +277,7 @@ class TestSyncStatusWidgetDisplay:
         call_str = str(mock_sync_info.update.call_args)
         assert "pending change" in call_str or "1" in call_str
 
-    @patch.object(SyncStatusWidget, 'query_one')
+    @patch.object(SyncStatusWidget, "query_one")
     def test_update_display_with_conflicts(self, mock_query_one):
         """Test update_display shows conflicts."""
         widget = SyncStatusWidget()
@@ -289,12 +287,11 @@ class TestSyncStatusWidgetDisplay:
         mock_conflict_info = MagicMock()
 
         def query_side_effect(selector, widget_type=None):
-            if selector == "#connection-status":
-                return mock_connection
-            elif selector == "#sync-info":
-                return mock_sync_info
-            elif selector == "#conflict-info":
-                return mock_conflict_info
+            return {
+                "#connection-status": mock_connection,
+                "#sync-info": mock_sync_info,
+                "#conflict-info": mock_conflict_info,
+            }.get(selector)
 
         mock_query_one.side_effect = query_side_effect
 
@@ -305,7 +302,7 @@ class TestSyncStatusWidgetDisplay:
         mock_conflict_info.add_class.assert_called_with("conflict")
         assert "conflict" in str(mock_conflict_info.update.call_args)
 
-    @patch.object(SyncStatusWidget, 'query_one')
+    @patch.object(SyncStatusWidget, "query_one")
     def test_update_display_no_conflicts(self, mock_query_one):
         """Test update_display hides conflicts when count is zero."""
         widget = SyncStatusWidget()
@@ -315,12 +312,11 @@ class TestSyncStatusWidgetDisplay:
         mock_conflict_info = MagicMock()
 
         def query_side_effect(selector, widget_type=None):
-            if selector == "#connection-status":
-                return mock_connection
-            elif selector == "#sync-info":
-                return mock_sync_info
-            elif selector == "#conflict-info":
-                return mock_conflict_info
+            return {
+                "#connection-status": mock_connection,
+                "#sync-info": mock_sync_info,
+                "#conflict-info": mock_conflict_info,
+            }.get(selector)
 
         mock_query_one.side_effect = query_side_effect
 

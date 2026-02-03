@@ -16,7 +16,7 @@ export default function lisp(Prism) {
      * @returns {RegExp}
      */
     function simple_form(name) {
-      return RegExp(/(\()/.source + '(?:' + name + ')' + /(?=[\s\)])/.source)
+      return RegExp(/(\()/.source + '(?:' + name + ')' + /(?=[\s)])/.source)
     }
     /**
      * booleans and numbers
@@ -165,7 +165,7 @@ export default function lisp(Prism) {
       },
       punctuation: [
         // open paren, brackets, and close paren
-        /(?:['`,]?\(|[)\[\]])/,
+        /(?:['`,]?\(|[)[\]])/,
         // cons
         {
           pattern: /(\s)\.(?=\s)/,

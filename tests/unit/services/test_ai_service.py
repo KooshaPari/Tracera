@@ -5,6 +5,10 @@ Tests SSE streaming, agentic tool loops, and provider routing.
 
 import asyncio
 import json
+import os
+import pathlib
+import tempfile
+from typing import ClassVar
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -28,8 +32,7 @@ pytestmark = pytest.mark.unit
 @pytest.fixture
 def mock_anthropic_client():
     """Create a mock Anthropic client."""
-    client = AsyncMock()
-    return client
+    return AsyncMock()
 
 
 @pytest.fixture
@@ -96,10 +99,13 @@ class TestFormatSSE:
 
     def test_format_sse_tool_use_start(self):
         """format_sse creates proper format for tool_use_start."""
-        result = format_sse(SSEEvent.TOOL_USE_START, {
-            "tool_name": "read_file",
-            "tool_use_id": "tool_123",
-        })
+        result = format_sse(
+            SSEEvent.TOOL_USE_START,
+            {
+                "tool_name": "read_file",
+                "tool_use_id": "tool_123",
+            },
+        )
 
         data = json.loads(result[6:-2])
         assert data["type"] == "tool_use_start"
@@ -140,10 +146,12 @@ class TestAIServiceInitialization:
         """Accessing anthropic_client without API key raises error."""
         service = AIService()
 
-        with patch.dict("os.environ", {}, clear=True):
-            with patch("os.getenv", return_value=None):
-                with pytest.raises(AIServiceError) as exc_info:
-                    _ = service.anthropic_client
+        with (
+            patch.dict("os.environ", {}, clear=True),
+            patch("os.getenv", return_value=None),
+            pytest.raises(AIServiceError) as exc_info,
+        ):
+            _ = service.anthropic_client
 
         assert "ANTHROPIC_API_KEY" in str(exc_info.value)
 
@@ -151,6 +159,7 @@ class TestAIServiceInitialization:
         """get_ai_service returns the same instance."""
         # Reset the global instance for testing
         import tracertm.services.ai_service as ai_module
+
         ai_module._ai_service = None
 
         service1 = get_ai_service()
@@ -217,17 +226,16 @@ class TestStreamChatWithTools:
         """stream_chat handles text-only responses without tool use."""
         # Mock a simple text response
         mock_response = MagicMock()
-        mock_response.content = [
-            MagicMock(type="text", text="Hello! I'm doing well, thank you for asking.")
-        ]
+        mock_response.content = [MagicMock(type="text", text="Hello! I'm doing well, thank you for asking.")]
         mock_anthropic_client.messages.create = AsyncMock(return_value=mock_response)
 
-        events = []
-        async for event in ai_service.stream_chat_with_tools(
-            messages=sample_messages,
-            model="claude-sonnet-4-20250514",
-        ):
-            events.append(event)
+        events = [
+            e
+            async for e in ai_service.stream_chat_with_tools(
+                messages=sample_messages,
+                model="claude-sonnet-4-20250514",
+            )
+        ]
 
         # Should have text event and done event
         assert len(events) >= 2
@@ -243,12 +251,13 @@ class TestStreamChatWithTools:
     @pytest.mark.asyncio
     async def test_stream_chat_with_tool_use(self, ai_service, mock_anthropic_client, sample_messages, mock_db_session):
         """stream_chat handles tool use and continues after tool result."""
+
         # First response with tool use - use real values, not MagicMock
         class ToolUseBlock:
             type = "tool_use"
             id = "tool_123"
             name = "read_file"
-            input = {"path": "/test/file.txt"}
+            input: ClassVar[dict] = {"path": "/test/file.txt"}
 
         class TextBlock:
             type = "text"
@@ -261,21 +270,20 @@ class TestStreamChatWithTools:
         text_response = MagicMock()
         text_response.content = [TextBlock()]
 
-        mock_anthropic_client.messages.create = AsyncMock(
-            side_effect=[tool_use_response, text_response]
-        )
+        mock_anthropic_client.messages.create = AsyncMock(side_effect=[tool_use_response, text_response])
 
         # Mock tool execution
         with patch("tracertm.services.ai_service.execute_tool") as mock_execute:
             mock_execute.return_value = {"success": True, "result": {"content": "test content"}}
 
-            events = []
-            async for event in ai_service.stream_chat_with_tools(
-                messages=sample_messages,
-                model="claude-sonnet-4-20250514",
-                db_session=mock_db_session,
-            ):
-                events.append(event)
+            events = [
+                e
+                async for e in ai_service.stream_chat_with_tools(
+                    messages=sample_messages,
+                    model="claude-sonnet-4-20250514",
+                    db_session=mock_db_session,
+                )
+            ]
 
         # Should have tool_use_start, tool_use_input, tool_result events
         event_types = [json.loads(e[6:-2])["type"] for e in events if e.startswith("data: ")]
@@ -286,7 +294,9 @@ class TestStreamChatWithTools:
         assert SSEEvent.DONE in event_types
 
     @pytest.mark.asyncio
-    async def test_stream_chat_max_iterations(self, ai_service, mock_anthropic_client, sample_messages, mock_db_session):
+    async def test_stream_chat_max_iterations(
+        self, ai_service, mock_anthropic_client, sample_messages, mock_db_session
+    ):
         """stream_chat respects max_tool_iterations limit."""
         # Always return tool use (infinite loop scenario)
         tool_use_response = MagicMock()
@@ -303,14 +313,15 @@ class TestStreamChatWithTools:
         with patch("tracertm.services.ai_service.execute_tool") as mock_execute:
             mock_execute.return_value = {"success": True, "result": {}}
 
-            events = []
-            async for event in ai_service.stream_chat_with_tools(
-                messages=sample_messages,
-                model="claude-sonnet-4-20250514",
-                max_tool_iterations=3,
-                db_session=mock_db_session,
-            ):
-                events.append(event)
+            events = [
+                e
+                async for e in ai_service.stream_chat_with_tools(
+                    messages=sample_messages,
+                    model="claude-sonnet-4-20250514",
+                    max_tool_iterations=3,
+                    db_session=mock_db_session,
+                )
+            ]
 
         # Should stop after max iterations
         # Count tool use starts
@@ -320,16 +331,15 @@ class TestStreamChatWithTools:
     @pytest.mark.asyncio
     async def test_stream_chat_handles_api_error(self, ai_service, mock_anthropic_client, sample_messages):
         """stream_chat handles API errors gracefully."""
-        mock_anthropic_client.messages.create = AsyncMock(
-            side_effect=Exception("API Error: Rate limit exceeded")
-        )
+        mock_anthropic_client.messages.create = AsyncMock(side_effect=Exception("API Error: Rate limit exceeded"))
 
-        events = []
-        async for event in ai_service.stream_chat_with_tools(
-            messages=sample_messages,
-            model="claude-sonnet-4-20250514",
-        ):
-            events.append(event)
+        events = [
+            e
+            async for e in ai_service.stream_chat_with_tools(
+                messages=sample_messages,
+                model="claude-sonnet-4-20250514",
+            )
+        ]
 
         # Should have error event and done event
         error_events = [e for e in events if SSEEvent.ERROR in e]
@@ -355,6 +365,7 @@ class TestStreamChatWithToolsStreaming:
 
         # Create async iterator for stream events
         async def mock_stream_events():
+            await asyncio.sleep(0)
             # Text content block
             yield MagicMock(type="content_block_start", content_block=MagicMock(type="text"))
             yield MagicMock(type="content_block_delta", delta=MagicMock(type="text_delta", text="Hello"))
@@ -375,12 +386,13 @@ class TestStreamChatWithToolsStreaming:
 
         mock_anthropic_client.messages.stream = MagicMock(return_value=async_cm)
 
-        events = []
-        async for event in ai_service.stream_chat_with_tools_streaming(
-            messages=sample_messages,
-            model="claude-sonnet-4-20250514",
-        ):
-            events.append(event)
+        events = [
+            e
+            async for e in ai_service.stream_chat_with_tools_streaming(
+                messages=sample_messages,
+                model="claude-sonnet-4-20250514",
+            )
+        ]
 
         # Should have multiple text events (one per delta)
         text_events = [e for e in events if SSEEvent.TEXT in e]
@@ -389,59 +401,66 @@ class TestStreamChatWithToolsStreaming:
     @pytest.mark.asyncio
     async def test_streaming_tool_use(self, ai_service, mock_anthropic_client, sample_messages, mock_db_session):
         """Streaming mode handles tool use with JSON input deltas."""
+
         # Define proper event objects with real attribute values
         class ToolUseBlock:
             type = "tool_use"
             id = "tool_123"
             name = "read_file"
-            input = {"path": "/test.txt"}
+            input: ClassVar[dict] = {"path": "/test.txt"}
 
         class TextBlock:
             type = "text"
             text = "Done"
 
+        class ContentBlockToolUse:
+            type = "tool_use"
+            id = "tool_123"
+            name = "read_file"
+
         class ToolBlockStart:
             type = "content_block_start"
+            content_block = ContentBlockToolUse
 
-            class content_block:
-                type = "tool_use"
-                id = "tool_123"
-                name = "read_file"
+        class InputJsonDeltaPart1:
+            type = "input_json_delta"
+            partial_json = '{"path"'
 
         class InputJsonDelta1:
             type = "content_block_delta"
+            delta = InputJsonDeltaPart1
 
-            class delta:
-                type = "input_json_delta"
-                partial_json = '{"path"'
+        class InputJsonDeltaPart2:
+            type = "input_json_delta"
+            partial_json = ': "/test.txt"}'
 
         class InputJsonDelta2:
             type = "content_block_delta"
-
-            class delta:
-                type = "input_json_delta"
-                partial_json = ': "/test.txt"}'
+            delta = InputJsonDeltaPart2
 
         class BlockStop:
             type = "content_block_stop"
 
+        class ContentBlockText:
+            type = "text"
+
         class TextBlockStart:
             type = "content_block_start"
+            content_block = ContentBlockText
 
-            class content_block:
-                type = "text"
+        class TextDeltaInner:
+            type = "text_delta"
+            text = "Done"
 
         class TextDelta:
             type = "content_block_delta"
-
-            class delta:
-                type = "text_delta"
-                text = "Done"
+            delta = TextDeltaInner
 
         # First iteration: tool use
         mock_stream1 = AsyncMock()
 
         async def mock_tool_events():
+            await asyncio.sleep(0)
             yield ToolBlockStart()
             yield InputJsonDelta1()
             yield InputJsonDelta2()
@@ -457,6 +476,7 @@ class TestStreamChatWithToolsStreaming:
         mock_stream2 = AsyncMock()
 
         async def mock_text_events():
+            await asyncio.sleep(0)
             yield TextBlockStart()
             yield TextDelta()
             yield BlockStop()
@@ -481,13 +501,14 @@ class TestStreamChatWithToolsStreaming:
         with patch("tracertm.services.ai_service.execute_tool") as mock_execute:
             mock_execute.return_value = {"success": True, "result": {"content": "test"}}
 
-            events = []
-            async for event in ai_service.stream_chat_with_tools_streaming(
-                messages=sample_messages,
-                model="claude-sonnet-4-20250514",
-                db_session=mock_db_session,
-            ):
-                events.append(event)
+            events = [
+                e
+                async for e in ai_service.stream_chat_with_tools_streaming(
+                    messages=sample_messages,
+                    model="claude-sonnet-4-20250514",
+                    db_session=mock_db_session,
+                )
+            ]
 
         event_types = [json.loads(e[6:-2])["type"] for e in events if e.startswith("data: ")]
 
@@ -503,12 +524,13 @@ class TestStreamChatWithToolsStreaming:
 
         mock_anthropic_client.messages.stream = MagicMock(return_value=async_cm)
 
-        events = []
-        async for event in ai_service.stream_chat_with_tools_streaming(
-            messages=sample_messages,
-            model="claude-sonnet-4-20250514",
-        ):
-            events.append(event)
+        events = [
+            e
+            async for e in ai_service.stream_chat_with_tools_streaming(
+                messages=sample_messages,
+                model="claude-sonnet-4-20250514",
+            )
+        ]
 
         error_events = [e for e in events if SSEEvent.ERROR in e]
         assert len(error_events) >= 1
@@ -525,8 +547,10 @@ class TestSimpleChat:
     @pytest.mark.asyncio
     async def test_simple_chat_returns_text(self, ai_service, mock_anthropic_client, sample_messages):
         """simple_chat returns concatenated text response."""
+
         # Mock the streaming method to return text events
         async def mock_stream(*args, **kwargs):
+            await asyncio.sleep(0)
             yield format_sse(SSEEvent.TEXT, {"content": "Hello "})
             yield format_sse(SSEEvent.TEXT, {"content": "World"})
             yield format_sse(SSEEvent.DONE, {})
@@ -543,7 +567,9 @@ class TestSimpleChat:
     @pytest.mark.asyncio
     async def test_simple_chat_handles_empty_response(self, ai_service, mock_anthropic_client, sample_messages):
         """simple_chat handles empty responses."""
+
         async def mock_stream(*args, **kwargs):
+            await asyncio.sleep(0)
             yield format_sse(SSEEvent.DONE, {})
 
         ai_service.stream_chat = MagicMock(return_value=mock_stream())
@@ -588,7 +614,8 @@ class TestRunChatTurnWithTools:
         tool_block.type = "tool_use"
         tool_block.id = "tu_1"
         tool_block.name = "read_file"
-        tool_block.input = {"path": "/tmp/foo.txt"}
+        work_dir = tempfile.mkdtemp(prefix="trace_test_")
+        tool_block.input = {"path": str(pathlib.Path(work_dir) / "foo.txt")}
 
         text_block = MagicMock()
         text_block.type = "text"
@@ -609,7 +636,7 @@ class TestRunChatTurnWithTools:
             result = await ai_service.run_chat_turn_with_tools(
                 messages=sample_messages,
                 model="claude-sonnet-4-20250514",
-                working_directory="/tmp",
+                working_directory=work_dir,
             )
 
         assert result == "File content: hello"
@@ -650,13 +677,14 @@ class TestMessageConversion:
         mock_response.content = [MagicMock(type="text", text="Hi")]
         mock_anthropic_client.messages.create = AsyncMock(return_value=mock_response)
 
-        events = []
-        async for event in ai_service.stream_chat_with_tools(
-            messages=messages,
-            model="claude-sonnet-4-20250514",
-            system_prompt="You are helpful",
-        ):
-            events.append(event)
+        _ = [
+            e
+            async for e in ai_service.stream_chat_with_tools(
+                messages=messages,
+                model="claude-sonnet-4-20250514",
+                system_prompt="You are helpful",
+            )
+        ]
 
         # Verify the call was made without system role in messages
         call_kwargs = mock_anthropic_client.messages.create.call_args[1]
@@ -676,12 +704,13 @@ class TestMessageConversion:
         mock_response.content = [MagicMock(type="text", text="Final")]
         mock_anthropic_client.messages.create = AsyncMock(return_value=mock_response)
 
-        events = []
-        async for event in ai_service.stream_chat_with_tools(
-            messages=messages,
-            model="claude-sonnet-4-20250514",
-        ):
-            events.append(event)
+        _ = [
+            e
+            async for e in ai_service.stream_chat_with_tools(
+                messages=messages,
+                model="claude-sonnet-4-20250514",
+            )
+        ]
 
         call_kwargs = mock_anthropic_client.messages.create.call_args[1]
         assert call_kwargs["messages"][0]["content"] == "First"
@@ -700,12 +729,13 @@ class TestToolIntegration:
     @pytest.mark.asyncio
     async def test_tool_result_format(self, ai_service, mock_anthropic_client, sample_messages, mock_db_session):
         """Tool results are properly formatted for API."""
+
         # Define proper block classes
         class ToolUseBlock:
             type = "tool_use"
             id = "tool_123"
             name = "read_file"
-            input = {"path": "/test.txt"}
+            input: ClassVar[dict] = {"path": "/test.txt"}
 
         class TextBlock:
             type = "text"
@@ -719,9 +749,7 @@ class TestToolIntegration:
         text_response = MagicMock()
         text_response.content = [TextBlock()]
 
-        mock_anthropic_client.messages.create = AsyncMock(
-            side_effect=[tool_response, text_response]
-        )
+        mock_anthropic_client.messages.create = AsyncMock(side_effect=[tool_response, text_response])
 
         with patch("tracertm.services.ai_service.execute_tool") as mock_execute:
             mock_execute.return_value = {
@@ -729,13 +757,14 @@ class TestToolIntegration:
                 "result": {"content": "file content", "path": "/test.txt"},
             }
 
-            events = []
-            async for event in ai_service.stream_chat_with_tools(
-                messages=sample_messages,
-                model="claude-sonnet-4-20250514",
-                db_session=mock_db_session,
-            ):
-                events.append(event)
+            _ = [
+                e
+                async for e in ai_service.stream_chat_with_tools(
+                    messages=sample_messages,
+                    model="claude-sonnet-4-20250514",
+                    db_session=mock_db_session,
+                )
+            ]
 
         # Verify tool was called with correct parameters
         mock_execute.assert_called()
@@ -744,13 +773,16 @@ class TestToolIntegration:
         assert call_kwargs["tool_input"]["path"] == "/test.txt"
 
     @pytest.mark.asyncio
-    async def test_failed_tool_continues_conversation(self, ai_service, mock_anthropic_client, sample_messages, mock_db_session):
+    async def test_failed_tool_continues_conversation(
+        self, ai_service, mock_anthropic_client, sample_messages, mock_db_session
+    ):
         """Failed tool execution continues conversation with error result."""
+
         class ToolUseBlock:
             type = "tool_use"
             id = "tool_123"
             name = "read_file"
-            input = {"path": "/missing.txt"}
+            input: ClassVar[dict] = {"path": "/missing.txt"}
 
         class TextBlock:
             type = "text"
@@ -762,9 +794,7 @@ class TestToolIntegration:
         text_response = MagicMock()
         text_response.content = [TextBlock()]
 
-        mock_anthropic_client.messages.create = AsyncMock(
-            side_effect=[tool_response, text_response]
-        )
+        mock_anthropic_client.messages.create = AsyncMock(side_effect=[tool_response, text_response])
 
         with patch("tracertm.services.ai_service.execute_tool") as mock_execute:
             mock_execute.return_value = {
@@ -772,13 +802,14 @@ class TestToolIntegration:
                 "error": "File not found: /missing.txt",
             }
 
-            events = []
-            async for event in ai_service.stream_chat_with_tools(
-                messages=sample_messages,
-                model="claude-sonnet-4-20250514",
-                db_session=mock_db_session,
-            ):
-                events.append(event)
+            events = [
+                e
+                async for e in ai_service.stream_chat_with_tools(
+                    messages=sample_messages,
+                    model="claude-sonnet-4-20250514",
+                    db_session=mock_db_session,
+                )
+            ]
 
         # Should still complete with done event
         done_events = [e for e in events if SSEEvent.DONE in e]

@@ -198,7 +198,7 @@ test.describe("Edge Cases - Boundary Values", () => {
 	test("should handle zero items in pagination", async ({ page }) => {
 		await page.route("**/api/items**", (route) => {
 			void route.fulfill({
-				body: JSON.stringify({ items: [], total: 0, page: 1, pageSize: 10 }),
+				body: JSON.stringify({ items: [], page: 1, pageSize: 10, total: 0 }),
 				status: 200,
 			});
 		});
@@ -351,9 +351,9 @@ test.describe("Edge Cases - Data Validation", () => {
 		await page.route("**/api/items/**", (route) => {
 			void route.fulfill({
 				body: JSON.stringify({
+					description: undefined,
 					id: "test-id",
 					title: null,
-					description: undefined,
 					type: "task",
 				}),
 				status: 200,

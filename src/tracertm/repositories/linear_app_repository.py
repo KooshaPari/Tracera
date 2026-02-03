@@ -2,7 +2,7 @@
 Repository for Linear App Installation operations.
 """
 
-from typing import Optional
+from datetime import datetime, timezone
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -21,8 +21,8 @@ class LinearAppInstallationRepository:
         account_id: str,
         workspace_id: str,
         workspace_name: str,
-        integration_credential_id: Optional[str] = None,
-        scopes: Optional[list[str]] = None,
+        integration_credential_id: str | None = None,
+        scopes: list[str] | None = None,
     ) -> LinearAppInstallation:
         """Create a new Linear App installation."""
         installation = LinearAppInstallation(
@@ -36,19 +36,15 @@ class LinearAppInstallationRepository:
         await self.db.flush()
         return installation
 
-    async def get_by_id(self, installation_id: str) -> Optional[LinearAppInstallation]:
+    async def get_by_id(self, installation_id: str) -> LinearAppInstallation | None:
         """Get installation by ID."""
-        result = await self.db.execute(
-            select(LinearAppInstallation).where(LinearAppInstallation.id == installation_id)
-        )
+        result = await self.db.execute(select(LinearAppInstallation).where(LinearAppInstallation.id == installation_id))
         return result.scalar_one_or_none()
 
-    async def get_by_workspace_id(self, workspace_id: str) -> Optional[LinearAppInstallation]:
+    async def get_by_workspace_id(self, workspace_id: str) -> LinearAppInstallation | None:
         """Get installation by Linear workspace ID."""
         result = await self.db.execute(
-            select(LinearAppInstallation).where(
-                LinearAppInstallation.workspace_id == workspace_id
-            )
+            select(LinearAppInstallation).where(LinearAppInstallation.workspace_id == workspace_id)
         )
         return result.scalar_one_or_none()
 
@@ -65,10 +61,10 @@ class LinearAppInstallationRepository:
     async def update(
         self,
         installation_id: str,
-        integration_credential_id: Optional[str] = None,
-        scopes: Optional[list[str]] = None,
-        suspended_at: Optional[bool] = None,
-    ) -> Optional[LinearAppInstallation]:
+        integration_credential_id: str | None = None,
+        scopes: list[str] | None = None,
+        suspended_at: bool | None = None,
+    ) -> LinearAppInstallation | None:
         """Update an installation."""
         installation = await self.get_by_id(installation_id)
         if not installation:
@@ -79,8 +75,7 @@ class LinearAppInstallationRepository:
         if scopes is not None:
             installation.scopes = scopes
         if suspended_at is not None:
-            from datetime import datetime
-            installation.suspended_at = datetime.now() if suspended_at else None
+            installation.suspended_at = datetime.now(UTC) if suspended_at else None
 
         await self.db.flush()
         return installation

@@ -48,7 +48,7 @@
 			}
 		},
 		'operator': /=\/?|\//,
-		'punctuation': /[()\[\]]/
+		'punctuation': /[()[\]]/
 	};
 
 }(Prism));

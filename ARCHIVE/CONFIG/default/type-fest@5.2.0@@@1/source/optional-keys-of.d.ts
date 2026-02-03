@@ -43,4 +43,4 @@ export type OptionalKeysOf<Type extends object> =
 		}) & keyof Type // Intersect with `keyof Type` to ensure result of `OptionalKeysOf<Type>` is always assignable to `keyof Type`
 		: never; // Should never happen
 
-export {};
+

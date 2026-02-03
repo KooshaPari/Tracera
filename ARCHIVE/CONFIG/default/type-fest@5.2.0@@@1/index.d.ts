@@ -205,4 +205,4 @@ export type {ExtendsStrict} from './source/extends-strict.d.ts';
 export type {ExtractStrict} from './source/extract-strict.d.ts';
 export type {ExcludeStrict} from './source/exclude-strict.d.ts';
 
-export {};
+

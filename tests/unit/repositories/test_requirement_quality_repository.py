@@ -17,7 +17,7 @@ Tests for:
 - get_stats() - getting aggregate statistics
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import uuid4
 
 import pytest
@@ -41,13 +41,12 @@ def unique_project_name() -> str:
 async def create_test_item(db_session: AsyncSession, project_id: str, title: str = "Test Item"):
     """Helper to create a test item."""
     item_repo = ItemRepository(db_session)
-    item = await item_repo.create(
+    return await item_repo.create(
         project_id=project_id,
         title=title,
         view="FEATURE",
         item_type="feature",
     )
-    return item
 
 
 # ============================================================================
@@ -223,7 +222,7 @@ async def test_get_by_item_id_existing(db_session: AsyncSession):
     await db_session.commit()
 
     repo = RequirementQualityRepository(db_session)
-    created = await repo.create(item_id=item.id, project_id=project.id)
+    await repo.create(item_id=item.id, project_id=project.id)
     await db_session.commit()
 
     found = await repo.get_by_item_id(item.id)
@@ -495,7 +494,7 @@ async def test_update_verification(db_session: AsyncSession):
     spec = await repo.create(item_id=item.id, project_id=project.id)
     await db_session.commit()
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     updated = await repo.update(
         spec.id,
         is_verified=True,
@@ -532,7 +531,7 @@ async def test_update_all_fields(db_session: AsyncSession):
     spec = await repo.create(item_id=item.id, project_id=project.id)
     await db_session.commit()
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     updated = await repo.update(
         spec.id,
         quality_scores={"test": 0.9},

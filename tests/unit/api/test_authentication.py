@@ -4,9 +4,10 @@ Comprehensive authentication and authorization tests for API endpoints.
 Tests authentication mechanisms, token validation, and access control.
 """
 
+from datetime import UTC, datetime, timezone
+from unittest.mock import MagicMock, patch
+
 import pytest
-from datetime import datetime, timedelta
-from unittest.mock import AsyncMock, MagicMock, patch
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
@@ -50,7 +51,7 @@ class TestTokenValidation:
 
         # Mock the token validation
         with patch("tracertm.api.main.verify_token") as mock_verify:
-            mock_verify.return_value = {"sub": "test_user", "exp": datetime.utcnow().timestamp() + 3600}
+            mock_verify.return_value = {"sub": "test_user", "exp": datetime.now(UTC).timestamp() + 3600}
             response = client.get("/api/v1/items", params={"project_id": "test"}, headers=headers)
 
             # Should not get 401 Unauthorized
@@ -245,10 +246,7 @@ class TestProjectAccess:
         headers = {"Authorization": f"Bearer {mock_jwt_token}"}
 
         with patch("tracertm.api.main.verify_token") as mock_verify:
-            mock_verify.return_value = {
-                "sub": "user123",
-                "projects": ["project_a", "project_b"]
-            }
+            mock_verify.return_value = {"sub": "user123", "projects": ["project_a", "project_b"]}
 
             with patch("tracertm.api.main.check_project_access") as mock_access:
                 mock_access.return_value = True
@@ -266,10 +264,7 @@ class TestProjectAccess:
         headers = {"Authorization": f"Bearer {mock_jwt_token}"}
 
         with patch("tracertm.api.main.verify_token") as mock_verify:
-            mock_verify.return_value = {
-                "sub": "user123",
-                "projects": ["project_a"]
-            }
+            mock_verify.return_value = {"sub": "user123", "projects": ["project_a"]}
 
             with patch("tracertm.api.main.check_project_access") as mock_access:
                 mock_access.return_value = False
@@ -314,10 +309,7 @@ class TestAPIKeyAuthentication:
         from tracertm.api.main import app
 
         client = TestClient(app)
-        headers = {
-            "Authorization": f"Bearer {mock_jwt_token}",
-            "X-API-Key": "valid_api_key"
-        }
+        headers = {"Authorization": f"Bearer {mock_jwt_token}", "X-API-Key": "valid_api_key"}
 
         with patch("tracertm.api.main.verify_token") as mock_jwt:
             mock_jwt.return_value = {"sub": "jwt_user"}
@@ -381,13 +373,11 @@ class TestTokenRefresh:
                 mock_gen.return_value = "new_access_token_67890"
 
                 from tracertm.api.main import app
+
                 client = TestClient(app)
 
                 try:
-                    response = client.post(
-                        "/api/auth/refresh",
-                        json={"refresh_token": refresh_token}
-                    )
+                    response = client.post("/api/auth/refresh", json={"refresh_token": refresh_token})
                     # Should get new token
                     if response.status_code == 200:
                         data = response.json()
@@ -403,13 +393,11 @@ class TestTokenRefresh:
             mock_verify.side_effect = ValueError("Refresh token expired")
 
             from tracertm.api.main import app
+
             client = TestClient(app)
 
             with pytest.raises(Exception):
-                client.post(
-                    "/api/auth/refresh",
-                    json={"refresh_token": expired_refresh}
-                )
+                client.post("/api/auth/refresh", json={"refresh_token": expired_refresh})
 
 
 class TestRateLimitingWithAuth:
@@ -463,4 +451,4 @@ class TestRateLimitingWithAuth:
                             break
 
                 # Should have hit limit before 20 requests
-                assert requests_made < 20 or True  # May not have rate limiting implemented
+                assert True  # May not have rate limiting implemented

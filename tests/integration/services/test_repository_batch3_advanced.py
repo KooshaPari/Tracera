@@ -10,24 +10,23 @@ Focus areas:
 - Data persistence and retrieval
 """
 
+from datetime import UTC, datetime
+from unittest.mock import AsyncMock, Mock
+
 import pytest
-from unittest.mock import AsyncMock, Mock, patch, MagicMock
-from datetime import datetime, timedelta, timezone
-from typing import Any, Optional
-import asyncio
-
 from sqlalchemy.ext.asyncio import AsyncSession
-from tracertm.repositories.item_repository import ItemRepository
-from tracertm.repositories.project_repository import ProjectRepository
-from tracertm.repositories.link_repository import LinkRepository
-from tracertm.models.item import Item
-from tracertm.models.project import Project
-from tracertm.models.link import Link
 
+from tracertm.models.item import Item
+from tracertm.models.link import Link
+from tracertm.models.project import Project
+from tracertm.repositories.item_repository import ItemRepository
+from tracertm.repositories.link_repository import LinkRepository
+from tracertm.repositories.project_repository import ProjectRepository
 
 # ==============================================================================
 # FIXTURES
 # ==============================================================================
+
 
 @pytest.fixture
 def async_session():
@@ -53,11 +52,7 @@ def link_repo(async_session):
     return LinkRepository(async_session)
 
 
-def create_mock_item(
-    item_id: str = "item-1",
-    project_id: str = "proj-1",
-    **kwargs
-) -> Mock:
+def create_mock_item(item_id: str = "item-1", project_id: str = "proj-1", **kwargs) -> Mock:
     """Create mock Item."""
     defaults = {
         "title": "Test Item",
@@ -80,17 +75,14 @@ def create_mock_item(
     return item
 
 
-def create_mock_project(
-    project_id: str = "proj-1",
-    **kwargs
-) -> Mock:
+def create_mock_project(project_id: str = "proj-1", **kwargs) -> Mock:
     """Create mock Project."""
     defaults = {
         "name": "Test Project",
         "description": "Test Description",
         "owner": "user-1",
-        "created_at": datetime.now(timezone.utc),
-        "updated_at": datetime.now(timezone.utc),
+        "created_at": datetime.now(UTC),
+        "updated_at": datetime.now(UTC),
     }
     defaults.update(kwargs)
     project = Mock(spec=Project)
@@ -100,12 +92,7 @@ def create_mock_project(
     return project
 
 
-def create_mock_link(
-    link_id: str = "link-1",
-    source_id: str = "item-1",
-    target_id: str = "item-2",
-    **kwargs
-) -> Mock:
+def create_mock_link(link_id: str = "link-1", source_id: str = "item-1", target_id: str = "item-2", **kwargs) -> Mock:
     """Create mock Link."""
     defaults = {
         "project_id": "proj-1",
@@ -126,6 +113,7 @@ def create_mock_link(
 # ITEM REPOSITORY CRUD TESTS (15 tests)
 # ==============================================================================
 
+
 class TestItemRepositoryCRUD:
     """Tests for Item CRUD operations."""
 
@@ -136,10 +124,7 @@ class TestItemRepositoryCRUD:
         async_session.execute.return_value.scalar_one_or_none.return_value = item
 
         result = await item_repo.create(
-            project_id="proj-1",
-            title="New Item",
-            view="REQUIREMENTS",
-            item_type="requirement"
+            project_id="proj-1", title="New Item", view="REQUIREMENTS", item_type="requirement"
         )
 
         assert result is not None
@@ -152,7 +137,7 @@ class TestItemRepositoryCRUD:
             description="Full description",
             owner="user-1",
             priority="high",
-            parent_id="item-parent"
+            parent_id="item-parent",
         )
         async_session.execute.return_value.scalar_one_or_none.return_value = item
 
@@ -164,7 +149,7 @@ class TestItemRepositoryCRUD:
             description="Full description",
             owner="user-1",
             priority="high",
-            parent_id="item-parent"
+            parent_id="item-parent",
         )
 
         assert result is not None
@@ -202,26 +187,17 @@ class TestItemRepositoryCRUD:
     @pytest.mark.asyncio
     async def test_update_item_multiple_fields(self, item_repo, async_session):
         """Test updating multiple fields."""
-        updated_item = create_mock_item(
-            status="done",
-            owner="user-2",
-            priority="low"
-        )
+        updated_item = create_mock_item(status="done", owner="user-2", priority="low")
         async_session.execute.return_value.scalar_one_or_none.return_value = updated_item
 
-        result = await item_repo.update(
-            "proj-1", "item-1",
-            {"status": "done", "owner": "user-2", "priority": "low"}
-        )
+        result = await item_repo.update("proj-1", "item-1", {"status": "done", "owner": "user-2", "priority": "low"})
 
         assert result.status == "done"
 
     @pytest.mark.asyncio
     async def test_delete_item_soft_delete(self, item_repo, async_session):
         """Test soft-deleting item."""
-        deleted_item = create_mock_item(
-            deleted_at=datetime.now(timezone.utc)
-        )
+        deleted_item = create_mock_item(deleted_at=datetime.now(UTC))
         async_session.execute.return_value.scalar_one_or_none.return_value = deleted_item
 
         result = await item_repo.delete("proj-1", "item-1", hard=False)
@@ -243,10 +219,7 @@ class TestItemRepositoryCRUD:
         items = [create_mock_item(f"item-{i}") for i in range(5)]
         async_session.execute.return_value.scalars.return_value.all.return_value = items
 
-        result = await item_repo.bulk_create(
-            "proj-1",
-            [{"title": f"Item {i}"} for i in range(5)]
-        )
+        result = await item_repo.bulk_create("proj-1", [{"title": f"Item {i}"} for i in range(5)])
 
         assert len(result) == 5
 
@@ -254,6 +227,7 @@ class TestItemRepositoryCRUD:
 # ==============================================================================
 # ITEM REPOSITORY QUERY TESTS (14 tests)
 # ==============================================================================
+
 
 class TestItemRepositoryQueries:
     """Tests for complex item queries."""
@@ -331,10 +305,7 @@ class TestItemRepositoryQueries:
     @pytest.mark.asyncio
     async def test_get_ancestors(self, item_repo, async_session):
         """Test getting ancestor items (parent chain)."""
-        ancestors = [
-            create_mock_item("item-2", parent_id="item-3"),
-            create_mock_item("item-3", parent_id=None)
-        ]
+        ancestors = [create_mock_item("item-2", parent_id="item-3"), create_mock_item("item-3", parent_id=None)]
         async_session.execute.return_value.scalars.return_value.all.return_value = ancestors
 
         result = await item_repo.get_ancestors("proj-1", "item-1")
@@ -346,6 +317,7 @@ class TestItemRepositoryQueries:
 # PROJECT REPOSITORY TESTS (12 tests)
 # ==============================================================================
 
+
 class TestProjectRepository:
     """Tests for Project repository operations."""
 
@@ -355,10 +327,7 @@ class TestProjectRepository:
         project = create_mock_project()
         async_session.execute.return_value.scalar_one_or_none.return_value = project
 
-        result = await project_repo.create(
-            name="New Project",
-            owner="user-1"
-        )
+        result = await project_repo.create(name="New Project", owner="user-1")
 
         assert result is not None
 
@@ -420,6 +389,7 @@ class TestProjectRepository:
 # LINK REPOSITORY TESTS (12 tests)
 # ==============================================================================
 
+
 class TestLinkRepository:
     """Tests for Link repository operations."""
 
@@ -430,10 +400,7 @@ class TestLinkRepository:
         async_session.execute.return_value.scalar_one_or_none.return_value = link
 
         result = await link_repo.create(
-            project_id="proj-1",
-            source_item_id="item-1",
-            target_item_id="item-2",
-            link_type="relates_to"
+            project_id="proj-1", source_item_id="item-1", target_item_id="item-2", link_type="relates_to"
         )
 
         assert result is not None
@@ -489,7 +456,7 @@ class TestLinkRepository:
                 ("item-1", "item-2", "relates_to"),
                 ("item-1", "item-3", "relates_to"),
                 ("item-2", "item-3", "implements"),
-            ]
+            ],
         )
 
         assert len(result) == 3
@@ -498,6 +465,7 @@ class TestLinkRepository:
 # ==============================================================================
 # TRANSACTION & CONSISTENCY TESTS (10 tests)
 # ==============================================================================
+
 
 class TestTransactionHandling:
     """Tests for transaction handling and consistency."""
@@ -509,10 +477,7 @@ class TestTransactionHandling:
         async_session.execute.return_value.scalar_one_or_none.return_value = item
 
         result = await item_repo.create(
-            project_id="proj-1",
-            title="New Item",
-            view="REQUIREMENTS",
-            item_type="requirement"
+            project_id="proj-1", title="New Item", view="REQUIREMENTS", item_type="requirement"
         )
 
         assert result is not None
@@ -523,12 +488,7 @@ class TestTransactionHandling:
         async_session.execute.side_effect = Exception("Database error")
 
         with pytest.raises(Exception):
-            await item_repo.create(
-                project_id="proj-1",
-                title="New Item",
-                view="REQUIREMENTS",
-                item_type="requirement"
-            )
+            await item_repo.create(project_id="proj-1", title="New Item", view="REQUIREMENTS", item_type="requirement")
 
     @pytest.mark.asyncio
     async def test_concurrent_updates_isolation(self, item_repo, async_session):
@@ -550,16 +510,13 @@ class TestTransactionHandling:
         async_session.execute.side_effect = Exception("Version mismatch")
 
         with pytest.raises(Exception):
-            await item_repo.update_with_version_check(
-                "proj-1", "item-1",
-                {"title": "Updated"},
-                expected_version=1
-            )
+            await item_repo.update_with_version_check("proj-1", "item-1", {"title": "Updated"}, expected_version=1)
 
 
 # ==============================================================================
 # RELATIONSHIP INTEGRITY TESTS (8 tests)
 # ==============================================================================
+
 
 class TestRelationshipIntegrity:
     """Tests for maintaining relationship integrity."""
@@ -593,7 +550,7 @@ class TestRelationshipIntegrity:
                 project_id="proj-1",
                 source_item_id="nonexistent-1",
                 target_item_id="nonexistent-2",
-                link_type="relates_to"
+                link_type="relates_to",
             )
 
     @pytest.mark.asyncio
@@ -610,6 +567,7 @@ class TestRelationshipIntegrity:
 # PERFORMANCE & OPTIMIZATION TESTS (8 tests)
 # ==============================================================================
 
+
 class TestRepositoryPerformance:
     """Tests for repository performance characteristics."""
 
@@ -619,10 +577,7 @@ class TestRepositoryPerformance:
         items = [create_mock_item(f"item-{i}") for i in range(100)]
         async_session.execute.return_value.scalars.return_value.all.return_value = items
 
-        result = await item_repo.bulk_create(
-            "proj-1",
-            [{"title": f"Item {i}"} for i in range(100)]
-        )
+        result = await item_repo.bulk_create("proj-1", [{"title": f"Item {i}"} for i in range(100)])
 
         assert len(result) == 100
 
@@ -653,9 +608,6 @@ class TestRepositoryPerformance:
         item = create_mock_item()
         async_session.execute.return_value.scalar_one_or_none.return_value = item
 
-        result = await item_repo.get(
-            "proj-1", "item-1",
-            eager_load=True
-        )
+        result = await item_repo.get("proj-1", "item-1", eager_load=True)
 
         assert result is not None

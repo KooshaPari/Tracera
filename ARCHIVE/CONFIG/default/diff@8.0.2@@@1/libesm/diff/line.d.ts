@@ -20,5 +20,5 @@ export declare function diffTrimmedLines(oldStr: string, newStr: string, options
 export declare function diffTrimmedLines(oldStr: string, newStr: string, options: DiffLinesOptionsAbortable): ChangeObject<string>[] | undefined;
 export declare function diffTrimmedLines(oldStr: string, newStr: string, options?: DiffLinesOptionsNonabortable): ChangeObject<string>[];
 export declare function tokenize(value: string, options: DiffLinesOptionsAbortable | DiffLinesOptionsNonabortable): string[];
-export {};
+
 //# sourceMappingURL=line.d.ts.map

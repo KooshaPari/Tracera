@@ -1,6 +1,6 @@
 """Unit tests for repository query methods."""
 
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timezone
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,7 +9,6 @@ from tracertm.repositories.event_repository import EventRepository
 from tracertm.repositories.item_repository import ItemRepository
 from tracertm.repositories.link_repository import LinkRepository
 from tracertm.repositories.project_repository import ProjectRepository
-
 
 # Use link_test_setup fixture for link-related tests
 pytestmark = pytest.mark.usefixtures("link_test_setup")
@@ -61,9 +60,7 @@ async def test_item_query_with_filters(db_session: AsyncSession):
     assert all(item.view == "FEATURE" for item in feature_items)
 
     # Query by multiple filters
-    high_todo = await item_repo.query(
-        project.id, {"status": "todo", "priority": "high"}
-    )
+    high_todo = await item_repo.query(project.id, {"status": "todo", "priority": "high"})
     assert len(high_todo) == 2
 
 
@@ -396,7 +393,7 @@ async def test_event_replay_entity_state(db_session: AsyncSession):
     )
 
     # Replay to get final state
-    state = await event_repo.get_entity_at_time(entity_id, datetime.utcnow())
+    state = await event_repo.get_entity_at_time(entity_id, datetime.now(UTC))
     assert state is not None
     assert state["title"] == "Original"
     assert state["status"] == "in_progress"
@@ -431,5 +428,5 @@ async def test_event_replay_shows_deletion(db_session: AsyncSession):
     )
 
     # Replay should return None since entity was deleted
-    state = await event_repo.get_entity_at_time(entity_id, datetime.utcnow())
+    state = await event_repo.get_entity_at_time(entity_id, datetime.now(UTC))
     assert state is None

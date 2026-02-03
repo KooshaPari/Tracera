@@ -9,14 +9,12 @@ to ensure CLI meets performance targets:
 """
 
 import gc
-import os
 import subprocess
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict
 
-import psutil
+import psutil  # type: ignore[import-untyped,import-not-found]
 import pytest
 
 # Performance targets
@@ -97,6 +95,7 @@ def memory_tracker():
 # Startup Time Tests
 # ============================================================
 
+
 def test_cli_startup_time_cold(cli_path, perf_tracker):
     """Test cold startup time (no cache).
 
@@ -106,6 +105,7 @@ def test_cli_startup_time_cold(cli_path, perf_tracker):
     cache_dir = Path.home() / ".cache" / "tracertm"
     if cache_dir.exists():
         import shutil
+
         shutil.rmtree(cache_dir, ignore_errors=True)
 
     # Measure startup time with --version (minimal operation)
@@ -192,6 +192,7 @@ def test_cli_help_performance(cli_path, perf_tracker):
 # Memory Usage Tests
 # ============================================================
 
+
 def test_cli_memory_usage(cli_path, memory_tracker, perf_tracker):
     """Test CLI memory usage during startup.
 
@@ -228,7 +229,7 @@ def test_cli_memory_no_leaks(cli_path):
     """
     memory_samples = []
 
-    for i in range(5):
+    for _i in range(5):
         gc.collect()
         process = psutil.Process()
         mem_before = process.memory_info().rss / 1024 / 1024
@@ -257,12 +258,16 @@ def test_cli_memory_no_leaks(cli_path):
 # Command Performance Tests
 # ============================================================
 
-@pytest.mark.parametrize("command,args", [
-    ("config", ["--help"]),
-    ("project", ["--help"]),
-    ("item", ["--help"]),
-    ("link", ["--help"]),
-])
+
+@pytest.mark.parametrize(
+    ("command", "args"),
+    [
+        ("config", ["--help"]),
+        ("project", ["--help"]),
+        ("item", ["--help"]),
+        ("link", ["--help"]),
+    ],
+)
 def test_command_group_help_performance(cli_path, command, args, perf_tracker):
     """Test command group help performance.
 
@@ -294,6 +299,7 @@ def test_command_group_help_performance(cli_path, command, args, perf_tracker):
 # Lazy Loading Tests
 # ============================================================
 
+
 def test_lazy_loading_performance():
     """Test that lazy loading mechanism works efficiently.
 
@@ -301,7 +307,7 @@ def test_lazy_loading_performance():
     """
     start = time.perf_counter()
 
-    from tracertm.cli.performance import get_loader, LazyLoader
+    from tracertm.cli.performance import LazyLoader, get_loader
 
     loader = get_loader()
     assert isinstance(loader, LazyLoader)
@@ -319,9 +325,7 @@ def test_lazy_loading_performance():
 
     assert module2 is module  # Same object from cache
     assert cached_elapsed < 1, f"Cache lookup too slow: {cached_elapsed:.2f}ms"
-    assert elapsed < LAZY_LOAD_THRESHOLD_MS, (
-        f"Lazy loading too slow: {elapsed:.2f}ms > {LAZY_LOAD_THRESHOLD_MS}ms"
-    )
+    assert elapsed < LAZY_LOAD_THRESHOLD_MS, f"Lazy loading too slow: {elapsed:.2f}ms > {LAZY_LOAD_THRESHOLD_MS}ms"
 
     print(f"✓ Lazy loading: {elapsed:.2f}ms (cache: {cached_elapsed:.3f}ms)")
 
@@ -383,6 +387,7 @@ def test_command_cache():
 # Integration Tests
 # ============================================================
 
+
 def test_cli_e2e_startup_sequence(cli_path, perf_tracker):
     """Test end-to-end startup sequence performance.
 
@@ -413,9 +418,7 @@ def test_cli_e2e_startup_sequence(cli_path, perf_tracker):
     perf_tracker.record("e2e_total", total_elapsed)
 
     # Total should still be reasonable
-    assert total_elapsed < STARTUP_TIME_THRESHOLD_MS * 3, (
-        f"E2E sequence too slow: {total_elapsed:.2f}ms"
-    )
+    assert total_elapsed < STARTUP_TIME_THRESHOLD_MS * 3, f"E2E sequence too slow: {total_elapsed:.2f}ms"
 
     print(f"✓ E2E startup sequence: {total_elapsed:.2f}ms")
 
@@ -424,13 +427,15 @@ def test_cli_e2e_startup_sequence(cli_path, perf_tracker):
 # Regression Tests
 # ============================================================
 
+
 def test_performance_baselines_exist():
     """Verify performance baseline file exists and is valid."""
     baselines_file = Path(__file__).parent / "performance_baselines.json"
 
     if baselines_file.exists():
         import json
-        with open(baselines_file) as f:
+
+        with Path(baselines_file).open() as f:
             baselines = json.load(f)
 
         assert isinstance(baselines, dict)
@@ -447,6 +452,7 @@ def test_performance_baselines_exist():
 # Benchmark Report
 # ============================================================
 
+
 @pytest.fixture(scope="session", autouse=True)
 def generate_performance_report(request):
     """Generate performance report after all tests."""
@@ -456,7 +462,7 @@ def generate_performance_report(request):
     if hasattr(request.session, "testscollector"):
         report_path = Path(__file__).parent / "cli_performance_report.txt"
 
-        with open(report_path, "w") as f:
+        with Path(report_path).open("w") as f:
             f.write("=" * 70 + "\n")
             f.write("CLI Performance Test Report\n")
             f.write("=" * 70 + "\n\n")

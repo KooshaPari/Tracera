@@ -10,7 +10,7 @@ This file covers all missing functionality identified in coverage analysis:
 - delete() agent deletion
 """
 
-from datetime import datetime
+import asyncio
 from uuid import uuid4
 
 import pytest
@@ -39,11 +39,7 @@ async def test_create_agent_basic(db_session: AsyncSession):
     await db_session.commit()
 
     agent_repo = AgentRepository(db_session)
-    agent = await agent_repo.create(
-        project_id=project.id,
-        name="Test Agent",
-        agent_type="test"
-    )
+    agent = await agent_repo.create(project_id=str(project.id), name="Test Agent", agent_type="test")
 
     assert agent.id is not None
     assert agent.project_id == project.id
@@ -63,10 +59,7 @@ async def test_create_agent_with_metadata(db_session: AsyncSession):
 
     agent_repo = AgentRepository(db_session)
     agent = await agent_repo.create(
-        project_id=project.id,
-        name="Test Agent",
-        agent_type="test",
-        metadata={"key": "value", "version": "1.0"}
+        project_id=str(project.id), name="Test Agent", agent_type="test", metadata={"key": "value", "version": "1.0"}
     )
 
     assert agent.agent_metadata == {"key": "value", "version": "1.0"}
@@ -81,12 +74,7 @@ async def test_create_agent_with_none_metadata(db_session: AsyncSession):
     await db_session.commit()
 
     agent_repo = AgentRepository(db_session)
-    agent = await agent_repo.create(
-        project_id=project.id,
-        name="Test Agent",
-        agent_type="test",
-        metadata=None
-    )
+    agent = await agent_repo.create(project_id=str(project.id), name="Test Agent", agent_type="test", metadata=None)
 
     assert agent.agent_metadata == {}
 
@@ -105,14 +93,10 @@ async def test_get_by_id_existing_agent(db_session: AsyncSession):
     await db_session.commit()
 
     agent_repo = AgentRepository(db_session)
-    created = await agent_repo.create(
-        project_id=project.id,
-        name="Test Agent",
-        agent_type="test"
-    )
+    created = await agent_repo.create(project_id=str(project.id), name="Test Agent", agent_type="test")
     await db_session.commit()
 
-    found = await agent_repo.get_by_id(created.id)
+    found = await agent_repo.get_by_id(str(created.id))
     assert found is not None
     assert found.id == created.id
     assert found.name == created.name
@@ -143,24 +127,16 @@ async def test_get_by_project_all_agents(db_session: AsyncSession):
 
     agent_repo = AgentRepository(db_session)
 
-    agent1 = await agent_repo.create(
-        project_id=project.id,
-        name="Agent 1",
-        agent_type="test"
-    )
-    agent2 = await agent_repo.create(
-        project_id=project.id,
-        name="Agent 2",
-        agent_type="test"
-    )
+    agent1 = await agent_repo.create(project_id=str(project.id), name="Agent 1", agent_type="test")
+    agent2 = await agent_repo.create(project_id=str(project.id), name="Agent 2", agent_type="test")
     await db_session.commit()
 
     # Update agent2 status
-    await agent_repo.update_status(agent2.id, "inactive")
+    await agent_repo.update_status(str(agent2.id), "inactive")
     await db_session.commit()
 
     # Get all agents
-    all_agents = await agent_repo.get_by_project(project.id)
+    all_agents = await agent_repo.get_by_project(str(project.id))
     assert len(all_agents) == 2
     agent_ids = {agent.id for agent in all_agents}
     assert agent1.id in agent_ids
@@ -177,29 +153,21 @@ async def test_get_by_project_with_status_filter(db_session: AsyncSession):
 
     agent_repo = AgentRepository(db_session)
 
-    agent1 = await agent_repo.create(
-        project_id=project.id,
-        name="Active Agent",
-        agent_type="test"
-    )
-    agent2 = await agent_repo.create(
-        project_id=project.id,
-        name="Inactive Agent",
-        agent_type="test"
-    )
+    agent1 = await agent_repo.create(project_id=str(project.id), name="Active Agent", agent_type="test")
+    agent2 = await agent_repo.create(project_id=str(project.id), name="Inactive Agent", agent_type="test")
     await db_session.commit()
 
     # Update agent2 status
-    await agent_repo.update_status(agent2.id, "inactive")
+    await agent_repo.update_status(str(agent2.id), "inactive")
     await db_session.commit()
 
     # Get only active agents
-    active_agents = await agent_repo.get_by_project(project.id, status="active")
+    active_agents = await agent_repo.get_by_project(str(project.id), status="active")
     assert len(active_agents) == 1
     assert active_agents[0].id == agent1.id
 
     # Get only inactive agents
-    inactive_agents = await agent_repo.get_by_project(project.id, status="inactive")
+    inactive_agents = await agent_repo.get_by_project(str(project.id), status="inactive")
     assert len(inactive_agents) == 1
     assert inactive_agents[0].id == agent2.id
 
@@ -214,7 +182,7 @@ async def test_get_by_project_empty_when_no_agents(db_session: AsyncSession):
 
     agent_repo = AgentRepository(db_session)
 
-    agents = await agent_repo.get_by_project(project.id)
+    agents = await agent_repo.get_by_project(str(project.id))
     assert len(agents) == 0
 
 
@@ -229,25 +197,17 @@ async def test_get_by_project_filters_by_project(db_session: AsyncSession):
 
     agent_repo = AgentRepository(db_session)
 
-    agent1 = await agent_repo.create(
-        project_id=project1.id,
-        name="Agent 1",
-        agent_type="test"
-    )
-    agent2 = await agent_repo.create(
-        project_id=project2.id,
-        name="Agent 2",
-        agent_type="test"
-    )
+    agent1 = await agent_repo.create(project_id=str(project1.id), name="Agent 1", agent_type="test")
+    agent2 = await agent_repo.create(project_id=str(project2.id), name="Agent 2", agent_type="test")
     await db_session.commit()
 
     # Get agents for project1
-    project1_agents = await agent_repo.get_by_project(project1.id)
+    project1_agents = await agent_repo.get_by_project(str(project1.id))
     assert len(project1_agents) == 1
     assert project1_agents[0].id == agent1.id
 
     # Get agents for project2
-    project2_agents = await agent_repo.get_by_project(project2.id)
+    project2_agents = await agent_repo.get_by_project(str(project2.id))
     assert len(project2_agents) == 1
     assert project2_agents[0].id == agent2.id
 
@@ -266,22 +226,18 @@ async def test_update_status_success(db_session: AsyncSession):
     await db_session.commit()
 
     agent_repo = AgentRepository(db_session)
-    agent = await agent_repo.create(
-        project_id=project.id,
-        name="Test Agent",
-        agent_type="test"
-    )
+    agent = await agent_repo.create(project_id=str(project.id), name="Test Agent", agent_type="test")
     assert agent.status == "active"
     await db_session.commit()
 
     # Update status
-    updated = await agent_repo.update_status(agent.id, "inactive")
+    updated = await agent_repo.update_status(str(agent.id), "inactive")
     assert updated.status == "inactive"
     await db_session.commit()
 
     # Verify persisted
-    found = await agent_repo.get_by_id(agent.id)
-    assert found.status == "inactive"
+    found = await agent_repo.get_by_id(str(agent.id))
+    assert found is not None and found.status == "inactive"
 
 
 @pytest.mark.unit
@@ -290,7 +246,7 @@ async def test_update_status_nonexistent_agent_raises_error(db_session: AsyncSes
     """Test update_status raises ValueError when agent doesn't exist."""
     agent_repo = AgentRepository(db_session)
 
-    with pytest.raises(ValueError, match="Agent .* not found"):
+    with pytest.raises(ValueError, match=r"Agent .* not found"):
         await agent_repo.update_status("nonexistent-id", "inactive")
 
 
@@ -303,25 +259,21 @@ async def test_update_status_multiple_updates(db_session: AsyncSession):
     await db_session.commit()
 
     agent_repo = AgentRepository(db_session)
-    agent = await agent_repo.create(
-        project_id=project.id,
-        name="Test Agent",
-        agent_type="test"
-    )
+    agent = await agent_repo.create(project_id=str(project.id), name="Test Agent", agent_type="test")
     await db_session.commit()
 
     # Update to inactive
-    updated = await agent_repo.update_status(agent.id, "inactive")
+    updated = await agent_repo.update_status(str(agent.id), "inactive")
     assert updated.status == "inactive"
     await db_session.commit()
 
     # Update back to active
-    updated = await agent_repo.update_status(agent.id, "active")
+    updated = await agent_repo.update_status(str(agent.id), "active")
     assert updated.status == "active"
     await db_session.commit()
 
     # Update to paused
-    updated = await agent_repo.update_status(agent.id, "paused")
+    updated = await agent_repo.update_status(str(agent.id), "paused")
     assert updated.status == "paused"
 
 
@@ -339,22 +291,19 @@ async def test_update_activity_success(db_session: AsyncSession):
     await db_session.commit()
 
     agent_repo = AgentRepository(db_session)
-    agent = await agent_repo.create(
-        project_id=project.id,
-        name="Test Agent",
-        agent_type="test"
-    )
+    agent = await agent_repo.create(project_id=str(project.id), name="Test Agent", agent_type="test")
     assert agent.last_activity_at is None
     await db_session.commit()
 
     # Update activity
-    updated = await agent_repo.update_activity(agent.id)
+    updated = await agent_repo.update_activity(str(agent.id))
     assert updated.last_activity_at is not None
     assert isinstance(updated.last_activity_at, str)
     await db_session.commit()
 
     # Verify persisted
-    found = await agent_repo.get_by_id(agent.id)
+    found = await agent_repo.get_by_id(str(agent.id))
+    assert found is not None
     assert found.last_activity_at is not None
     assert found.last_activity_at == updated.last_activity_at
 
@@ -365,7 +314,7 @@ async def test_update_activity_nonexistent_agent_raises_error(db_session: AsyncS
     """Test update_activity raises ValueError when agent doesn't exist."""
     agent_repo = AgentRepository(db_session)
 
-    with pytest.raises(ValueError, match="Agent .* not found"):
+    with pytest.raises(ValueError, match=r"Agent .* not found"):
         await agent_repo.update_activity("nonexistent-id")
 
 
@@ -380,23 +329,19 @@ async def test_update_activity_updates_timestamp(db_session: AsyncSession):
     await db_session.commit()
 
     agent_repo = AgentRepository(db_session)
-    agent = await agent_repo.create(
-        project_id=project.id,
-        name="Test Agent",
-        agent_type="test"
-    )
+    agent = await agent_repo.create(project_id=str(project.id), name="Test Agent", agent_type="test")
     await db_session.commit()
 
     # First update
-    updated1 = await agent_repo.update_activity(agent.id)
+    updated1 = await agent_repo.update_activity(str(agent.id))
     first_timestamp = updated1.last_activity_at
     await db_session.commit()
 
     # Wait a bit
-    time.sleep(0.1)
+    await asyncio.sleep(0.1)
 
     # Second update
-    updated2 = await agent_repo.update_activity(agent.id)
+    updated2 = await agent_repo.update_activity(str(agent.id))
     second_timestamp = updated2.last_activity_at
     await db_session.commit()
 
@@ -418,20 +363,16 @@ async def test_delete_agent_success(db_session: AsyncSession):
     await db_session.commit()
 
     agent_repo = AgentRepository(db_session)
-    agent = await agent_repo.create(
-        project_id=project.id,
-        name="Test Agent",
-        agent_type="test"
-    )
+    agent = await agent_repo.create(project_id=str(project.id), name="Test Agent", agent_type="test")
     await db_session.commit()
 
     # Delete agent
-    deleted = await agent_repo.delete(agent.id)
+    deleted = await agent_repo.delete(str(agent.id))
     assert deleted is True
     await db_session.commit()
 
     # Verify deleted
-    found = await agent_repo.get_by_id(agent.id)
+    found = await agent_repo.get_by_id(str(agent.id))
     assert found is None
 
 
@@ -455,25 +396,17 @@ async def test_delete_multiple_agents(db_session: AsyncSession):
 
     agent_repo = AgentRepository(db_session)
 
-    agent1 = await agent_repo.create(
-        project_id=project.id,
-        name="Agent 1",
-        agent_type="test"
-    )
-    agent2 = await agent_repo.create(
-        project_id=project.id,
-        name="Agent 2",
-        agent_type="test"
-    )
+    agent1 = await agent_repo.create(project_id=str(project.id), name="Agent 1", agent_type="test")
+    agent2 = await agent_repo.create(project_id=str(project.id), name="Agent 2", agent_type="test")
     await db_session.commit()
 
     # Delete both
-    deleted1 = await agent_repo.delete(agent1.id)
-    deleted2 = await agent_repo.delete(agent2.id)
+    deleted1 = await agent_repo.delete(str(agent1.id))
+    deleted2 = await agent_repo.delete(str(agent2.id))
     assert deleted1 is True
     assert deleted2 is True
     await db_session.commit()
 
     # Verify both deleted
-    assert await agent_repo.get_by_id(agent1.id) is None
-    assert await agent_repo.get_by_id(agent2.id) is None
+    assert await agent_repo.get_by_id(str(agent1.id)) is None
+    assert await agent_repo.get_by_id(str(agent2.id)) is None

@@ -2,7 +2,7 @@
 
 ## ✅ Current Status
 
-The Fumadocs project is **already initialized** at `docs-site/`. This is excellent progress!
+The Fumadocs project is **already initialized** at `docs/site/`. This is excellent progress!
 
 **What's Already Done:**
 - ✅ Next.js 16 + React 19 + TypeScript 5.7
@@ -20,7 +20,7 @@ The Fumadocs project is **already initialized** at `docs-site/`. This is excelle
 ### Task 1: Verify & Test Current Setup (1 hour)
 
 ```bash
-cd docs-site
+cd docs/site
 npm install  # or bun install
 npm run dev  # Start dev server
 # Visit http://localhost:3000
@@ -56,7 +56,7 @@ swag init -g main.go -o docs/swagger
 
 **Create Swagger UI page:**
 ```bash
-# docs-site/app/api-explorer/page.tsx
+# docs/site/app/api-explorer/page.tsx
 # (See SWAGGER_REDOC_INTEGRATION_GUIDE.md for code)
 ```
 
@@ -70,7 +70,7 @@ swag init -g main.go -o docs/swagger
 
 **Create ReDoc page:**
 ```bash
-# docs-site/app/api-reference/page.tsx
+# docs/site/app/api-reference/page.tsx
 # (See SWAGGER_REDOC_INTEGRATION_GUIDE.md for code)
 ```
 
@@ -84,7 +84,7 @@ swag init -g main.go -o docs/swagger
 
 **Create content directories:**
 ```bash
-mkdir -p docs-site/content/docs/{
+mkdir -p docs/site/content/docs/{
   00-getting-started,
   01-user-guide,
   02-api-reference,
@@ -108,7 +108,7 @@ mkdir -p docs-site/content/docs/{
 
 **Build static export:**
 ```bash
-cd docs-site
+cd docs/site
 npm run build:static
 ```
 
@@ -137,7 +137,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
-      - run: cd docs-site && npm install && npm run build:static
+      - run: cd docs/site && npm install && npm run build:static
       - uses: actions/upload-artifact@v3
 ```
 

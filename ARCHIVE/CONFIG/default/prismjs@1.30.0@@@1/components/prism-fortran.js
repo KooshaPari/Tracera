@@ -29,7 +29,7 @@ Prism.languages.fortran = {
 		/\b(?:ASSIGNMENT|DEFAULT|ELEMENTAL|ELSE|ELSEIF|ELSEWHERE|ENTRY|IN|INCLUDE|INOUT|KIND|NULL|ONLY|OPERATOR|OUT|PURE|RECURSIVE|RESULT|SEQUENCE|STAT|THEN|USE)\b/i
 	],
 	'operator': [
-		/\*\*|\/\/|=>|[=\/]=|[<>]=?|::|[+\-*=%]|\.[A-Z]+\./i,
+		/\*\*|\/\/|=>|[=/]=|[<>]=?|::|[+\-*=%]|\.[A-Z]+\./i,
 		{
 			// Use lookbehind to prevent confusion with (/ /)
 			pattern: /(^|(?!\().)\/(?!\))/,

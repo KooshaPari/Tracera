@@ -43,7 +43,7 @@
 					inside: Prism.languages.crystal
 				},
 				'delimiter': {
-					pattern: /^\{[\{%]|[\}%]\}$/,
+					pattern: /^\{[{%]|[}%]\}$/,
 					alias: 'operator'
 				}
 			}

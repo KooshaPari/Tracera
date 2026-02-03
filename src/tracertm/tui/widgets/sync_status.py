@@ -4,7 +4,7 @@ Sync status widget for TUI.
 Displays real-time sync status, pending changes, and conflict notifications.
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 try:
@@ -25,6 +25,7 @@ except ImportError:
     def reactive(*args: Any, **kwargs: Any) -> Any:
         def decorator(func: Any) -> Any:
             return func
+
         return decorator
 
 
@@ -86,10 +87,11 @@ if TEXTUAL_AVAILABLE:
 
         def compose(self) -> ComposeResult:
             """Compose the widget."""
-            yield Horizontal(
-                Static(id="connection-status", classes="status-line"),
-                Static(id="sync-info", classes="status-line"),
-                Static(id="conflict-info", classes="status-line"),
+            # Static/Horizontal are object when Textual is not installed; suppress for ty/pyright
+            yield Horizontal(  # type: ignore
+                Static(id="connection-status", classes="status-line"),  # type: ignore
+                Static(id="sync-info", classes="status-line"),  # type: ignore
+                Static(id="conflict-info", classes="status-line"),  # type: ignore
             )
 
         def on_mount(self) -> None:
@@ -154,8 +156,7 @@ if TEXTUAL_AVAILABLE:
             sync_info = self.query_one("#sync-info", Static)
             if self.pending_changes > 0:
                 sync_info.update(
-                    f"[bold]{self.pending_changes}[/] pending change"
-                    + ("s" if self.pending_changes != 1 else "")
+                    f"[bold]{self.pending_changes}[/] pending change" + ("s" if self.pending_changes != 1 else "")
                 )
             elif self.last_sync:
                 time_ago = self._format_time_ago(self.last_sync)
@@ -167,8 +168,7 @@ if TEXTUAL_AVAILABLE:
             conflict_info = self.query_one("#conflict-info", Static)
             if self.conflicts_count > 0:
                 conflict_info.update(
-                    f"[bold yellow]⚠[/] {self.conflicts_count} conflict"
-                    + ("s" if self.conflicts_count != 1 else "")
+                    f"[bold yellow]⚠[/] {self.conflicts_count} conflict" + ("s" if self.conflicts_count != 1 else "")
                 )
                 conflict_info.add_class("conflict")
             else:
@@ -185,22 +185,21 @@ if TEXTUAL_AVAILABLE:
             Returns:
                 Formatted string
             """
-            now = datetime.now(dt.tzinfo) if dt.tzinfo else datetime.now()
+            now = datetime.now(dt.tzinfo) if dt.tzinfo else datetime.now(UTC)
             delta = now - dt
 
             seconds = int(delta.total_seconds())
 
             if seconds < 60:
                 return "just now"
-            elif seconds < 3600:
+            if seconds < 3600:
                 minutes = seconds // 60
                 return f"{minutes} minute{'s' if minutes != 1 else ''} ago"
-            elif seconds < 86400:
+            if seconds < 86400:
                 hours = seconds // 3600
                 return f"{hours} hour{'s' if hours != 1 else ''} ago"
-            else:
-                days = seconds // 86400
-                return f"{days} day{'s' if days != 1 else ''} ago"
+            days = seconds // 86400
+            return f"{days} day{'s' if days != 1 else ''} ago"
 
         def set_online(self, online: bool) -> None:
             """
@@ -303,5 +302,3 @@ if TEXTUAL_AVAILABLE:
         def set_conflicts(self, count: int) -> None:
             """Set conflicts count."""
             self.conflicts_count = count
-
-

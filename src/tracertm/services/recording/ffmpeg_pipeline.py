@@ -7,9 +7,10 @@ frame extraction, and scene detection using FFmpeg.
 
 import asyncio
 import json
+import subprocess  # noqa: S404
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
 from uuid import uuid4
 
 
@@ -27,8 +28,6 @@ class VideoInfo:
 
 class FFmpegError(Exception):
     """Raised when FFmpeg command fails."""
-
-    pass
 
 
 class FFmpegPipeline:
@@ -50,13 +49,13 @@ class FFmpegPipeline:
             await pipeline.video_to_gif("input.webm", "output.gif", fps=10)
     """
 
-    def __init__(self, temp_dir: Optional[Path] = None):
+    def __init__(self, temp_dir: Path | None = None):
         """Initialize FFmpegPipeline.
 
         Args:
             temp_dir: Directory for temporary files. Defaults to system temp.
         """
-        self._temp_dir = temp_dir or Path("/tmp")
+        self._temp_dir = temp_dir or Path(tempfile.gettempdir())
 
     async def check_availability(self) -> tuple[bool, str]:
         """Check if FFmpeg is installed and working.
@@ -69,8 +68,8 @@ class FFmpegPipeline:
             proc = await asyncio.create_subprocess_exec(
                 "ffmpeg",
                 "-version",
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
             )
             stdout, _ = await proc.communicate()
             if proc.returncode == 0:
@@ -90,8 +89,8 @@ class FFmpegPipeline:
             proc = await asyncio.create_subprocess_exec(
                 "ffprobe",
                 "-version",
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
             )
             stdout, _ = await proc.communicate()
             if proc.returncode == 0:
@@ -140,51 +139,43 @@ class FFmpegPipeline:
 
             try:
                 # Pass 1: Generate optimized palette
-                await self._run(
-                    [
-                        "-i",
-                        str(input_path),
-                        "-vf",
-                        f"fps={fps},scale={scale}:-1:flags=lanczos,palettegen=stats_mode=diff",
-                        "-y",
-                        str(palette_path),
-                    ]
-                )
+                await self._run([
+                    "-i",
+                    str(input_path),
+                    "-vf",
+                    f"fps={fps},scale={scale}:-1:flags=lanczos,palettegen=stats_mode=diff",
+                    "-y",
+                    str(palette_path),
+                ])
 
                 # Pass 2: Apply palette with dithering
                 if dither_method == "none":
                     palette_use = "paletteuse=dither=none"
                 else:
-                    palette_use = (
-                        f"paletteuse=dither={dither_method}:bayer_scale={bayer_scale}"
-                    )
+                    palette_use = f"paletteuse=dither={dither_method}:bayer_scale={bayer_scale}"
 
-                await self._run(
-                    [
-                        "-i",
-                        str(input_path),
-                        "-i",
-                        str(palette_path),
-                        "-lavfi",
-                        f"fps={fps},scale={scale}:-1:flags=lanczos[x];[x][1:v]{palette_use}",
-                        "-y",
-                        str(output_path),
-                    ]
-                )
+                await self._run([
+                    "-i",
+                    str(input_path),
+                    "-i",
+                    str(palette_path),
+                    "-lavfi",
+                    f"fps={fps},scale={scale}:-1:flags=lanczos[x];[x][1:v]{palette_use}",
+                    "-y",
+                    str(output_path),
+                ])
             finally:
                 palette_path.unlink(missing_ok=True)
         else:
             # Single pass (faster, larger file)
-            await self._run(
-                [
-                    "-i",
-                    str(input_path),
-                    "-vf",
-                    f"fps={fps},scale={scale}:-1:flags=lanczos",
-                    "-y",
-                    str(output_path),
-                ]
-            )
+            await self._run([
+                "-i",
+                str(input_path),
+                "-vf",
+                f"fps={fps},scale={scale}:-1:flags=lanczos",
+                "-y",
+                str(output_path),
+            ])
 
         return output_path
 
@@ -213,22 +204,20 @@ class FFmpegPipeline:
         Raises:
             FFmpegError: If extraction fails.
         """
-        await self._run(
-            [
-                "-ss",
-                str(timestamp),
-                "-i",
-                str(video_path),
-                "-vframes",
-                "1",
-                "-vf",
-                f"scale={size[0]}:{size[1]}:force_original_aspect_ratio=decrease",
-                "-q:v",
-                str(quality),
-                "-y",
-                str(output_path),
-            ]
-        )
+        await self._run([
+            "-ss",
+            str(timestamp),
+            "-i",
+            str(video_path),
+            "-vframes",
+            "1",
+            "-vf",
+            f"scale={size[0]}:{size[1]}:force_original_aspect_ratio=decrease",
+            "-q:v",
+            str(quality),
+            "-y",
+            str(output_path),
+        ])
         return Path(output_path)
 
     async def generate_best_thumbnail(
@@ -255,20 +244,18 @@ class FFmpegPipeline:
         Raises:
             FFmpegError: If extraction fails.
         """
-        await self._run(
-            [
-                "-i",
-                str(video_path),
-                "-vf",
-                f"thumbnail=n={sample_frames},scale={size[0]}:{size[1]}:force_original_aspect_ratio=decrease",
-                "-vframes",
-                "1",
-                "-q:v",
-                "2",
-                "-y",
-                str(output_path),
-            ]
-        )
+        await self._run([
+            "-i",
+            str(video_path),
+            "-vf",
+            f"thumbnail=n={sample_frames},scale={size[0]}:{size[1]}:force_original_aspect_ratio=decrease",
+            "-vframes",
+            "1",
+            "-q:v",
+            "2",
+            "-y",
+            str(output_path),
+        ])
         return Path(output_path)
 
     async def compress_video(
@@ -278,8 +265,8 @@ class FFmpegPipeline:
         codec: str = "libx264",
         crf: int = 23,
         preset: str = "medium",
-        audio_codec: Optional[str] = "aac",
-        audio_bitrate: Optional[str] = "128k",
+        audio_codec: str | None = "aac",
+        audio_bitrate: str | None = "128k",
     ) -> Path:
         """Compress video with specified codec and quality.
 
@@ -358,18 +345,16 @@ class FFmpegPipeline:
 
         output_pattern = str(output_dir / f"frame_%04d.{format}")
 
-        await self._run(
-            [
-                "-i",
-                str(video_path),
-                "-vf",
-                f"fps=1/{interval_seconds}",
-                "-q:v",
-                str(quality),
-                "-y",
-                output_pattern,
-            ]
-        )
+        await self._run([
+            "-i",
+            str(video_path),
+            "-vf",
+            f"fps=1/{interval_seconds}",
+            "-q:v",
+            str(quality),
+            "-y",
+            output_pattern,
+        ])
 
         return sorted(output_dir.glob(f"frame_*.{format}"))
 
@@ -399,20 +384,18 @@ class FFmpegPipeline:
 
         output_pattern = str(output_dir / f"keyframe_%04d.{format}")
 
-        await self._run(
-            [
-                "-i",
-                str(video_path),
-                "-vf",
-                "select='eq(pict_type,I)'",
-                "-vsync",
-                "vfr",
-                "-q:v",
-                "2",
-                "-y",
-                output_pattern,
-            ]
-        )
+        await self._run([
+            "-i",
+            str(video_path),
+            "-vf",
+            "select='eq(pict_type,I)'",
+            "-vsync",
+            "vfr",
+            "-q:v",
+            "2",
+            "-y",
+            output_pattern,
+        ])
 
         return sorted(output_dir.glob(f"keyframe_*.{format}"))
 
@@ -447,20 +430,18 @@ class FFmpegPipeline:
 
         output_pattern = str(output_dir / f"scene_%04d.{format}")
 
-        await self._run(
-            [
-                "-i",
-                str(video_path),
-                "-vf",
-                f"select='gt(scene,{threshold})'",
-                "-vsync",
-                "vfr",
-                "-q:v",
-                "2",
-                "-y",
-                output_pattern,
-            ]
-        )
+        await self._run([
+            "-i",
+            str(video_path),
+            "-vf",
+            f"select='gt(scene,{threshold})'",
+            "-vsync",
+            "vfr",
+            "-q:v",
+            "2",
+            "-y",
+            output_pattern,
+        ])
 
         return sorted(output_dir.glob(f"scene_*.{format}"))
 
@@ -498,18 +479,16 @@ class FFmpegPipeline:
         info = await self.get_video_info(video_path)
         fps = total_frames / info.duration if info.duration > 0 else 1
 
-        await self._run(
-            [
-                "-i",
-                str(video_path),
-                "-vf",
-                f"scale={thumb_width}:{thumb_height},fps={fps},tile={columns}x{rows}",
-                "-vframes",
-                "1",
-                "-y",
-                str(output_path),
-            ]
-        )
+        await self._run([
+            "-i",
+            str(video_path),
+            "-vf",
+            f"scale={thumb_width}:{thumb_height},fps={fps},tile={columns}x{rows}",
+            "-vframes",
+            "1",
+            "-y",
+            str(output_path),
+        ])
 
         return Path(output_path)
 
@@ -534,8 +513,8 @@ class FFmpegPipeline:
             "-show_format",
             "-show_streams",
             str(video_path),
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
         )
 
         stdout, stderr = await proc.communicate()
@@ -555,11 +534,7 @@ class FFmpegPipeline:
 
         # Parse frame rate (usually "30000/1001" or "30/1")
         fps_parts = video_stream.get("r_frame_rate", "30/1").split("/")
-        fps = (
-            float(fps_parts[0]) / float(fps_parts[1])
-            if len(fps_parts) == 2 and float(fps_parts[1]) != 0
-            else 30.0
-        )
+        fps = float(fps_parts[0]) / float(fps_parts[1]) if len(fps_parts) == 2 and float(fps_parts[1]) != 0 else 30.0
 
         return VideoInfo(
             duration=float(data.get("format", {}).get("duration", 0)),
@@ -575,8 +550,8 @@ class FFmpegPipeline:
         input_path: str | Path,
         output_path: str | Path,
         start_time: float,
-        end_time: Optional[float] = None,
-        duration: Optional[float] = None,
+        end_time: float | None = None,
+        duration: float | None = None,
     ) -> Path:
         """Trim video to specified time range.
 
@@ -628,14 +603,14 @@ class FFmpegPipeline:
                 "-loglevel",
                 "warning",
                 *args,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
             )
 
             _, stderr = await asyncio.wait_for(proc.communicate(), timeout=timeout)
 
             if proc.returncode != 0:
                 raise FFmpegError(f"FFmpeg failed: {stderr.decode()}")
-        except asyncio.TimeoutError:
+        except TimeoutError:
             proc.kill()
-            raise FFmpegError(f"FFmpeg timed out after {timeout} seconds")
+            raise FFmpegError(f"FFmpeg timed out after {timeout} seconds") from None

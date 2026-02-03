@@ -35,4 +35,4 @@ type IsUppercaseHelper<S extends string> = S extends Uppercase<string>
 		? false
 		: boolean;
 
-export {};
+

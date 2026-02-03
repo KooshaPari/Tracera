@@ -37,23 +37,23 @@ interface CacheAnalysis {
 
 const analysis: CacheAnalysis = {
   chunks: {
-    total: 0,
     avgSize: 0,
     largest: null,
+    total: 0,
   },
   pages: {
-    total: 0,
     avgSize: 0,
+    total: 0,
   },
   serviceWorker: {
     exists: false,
     size: 0,
   },
   staticAssets: {
-    total: 0,
     hashed: 0,
-    unhashed: 0,
+    total: 0,
     totalSize: 0,
+    unhashed: 0,
   },
 };
 

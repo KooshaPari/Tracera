@@ -794,7 +794,7 @@ function reset(parent, ...children) {
     parent.textContent = '';
     append(parent, ...children);
 }
-const SELECTOR_REGEX = /([\w\-]+)?(#([\w\-]+))?((\.([\w\-]+))*)/;
+const SELECTOR_REGEX = /([\w-]+)?(#([\w-]+))?((\.([\w-]+))*)/;
 var Namespace;
 (function (Namespace) {
     Namespace["HTML"] = "http://www.w3.org/1999/xhtml";
@@ -907,7 +907,7 @@ function animate(targetWindow, fn) {
     let stepDisposable = scheduleAtNextAnimationFrame(targetWindow, step);
     return toDisposable(() => stepDisposable.dispose());
 }
-RemoteAuthorities.setPreferredWebSchema(/^https:/.test(mainWindow.location.href) ? 'https' : 'http');
+RemoteAuthorities.setPreferredWebSchema(mainWindow.location.href.startsWith('https:') ? 'https' : 'http');
 class ModifierKeyEmitter extends Emitter {
     constructor() {
         super();
@@ -1086,7 +1086,7 @@ class DragAndDropObserver extends Disposable {
         }));
     }
 }
-const H_REGEX = /(?<tag>[\w\-]+)?(?:#(?<id>[\w\-]+))?(?<class>(?:\.(?:[\w\-]+))*)(?:@(?<name>(?:[\w\_])+))?/;
+const H_REGEX = /(?<tag>[\w-]+)?(?:#(?<id>[\w-]+))?(?<class>(?:\.(?:[\w-]+))*)(?:@(?<name>(?:[\w_])+))?/;
 function h(tag, ...args) {
     let attributes;
     let children;

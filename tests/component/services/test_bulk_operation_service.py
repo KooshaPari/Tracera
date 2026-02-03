@@ -1,5 +1,6 @@
-import pytest
 from types import SimpleNamespace
+
+import pytest
 
 from tracertm.models.item import Item
 from tracertm.services.bulk_operation_service import BulkOperationService
@@ -26,9 +27,9 @@ def _seed_items(session, project_id="proj-1", count=5, status="todo", view="FEAT
     return items
 
 
-def test_bulk_update_preview_warnings(sync_session: object):
+def test_bulk_update_preview_warnings(sync_session):
     _seed_items(sync_session, count=120)
-    svc = BulkOperationService(sync_session)
+    svc = BulkOperationService(sync_session)  # type: ignore[arg-type]
 
     preview = svc.bulk_update_preview(
         project_id="proj-1", filters={"status": "todo"}, updates={"status": "done"}, limit=3
@@ -64,7 +65,7 @@ def test_bulk_update_items_rollback_on_failure(sync_session, monkeypatch):
 
     def fake_rollback():
         rolled_back.value = True
-        return None
+        return
 
     def failing_commit():
         raise RuntimeError("commit fail")

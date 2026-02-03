@@ -44,7 +44,7 @@
 					greedy: true
 				},
 				'number': numberPattern,
-				'punctuation': /[\[\].?]/
+				'punctuation': /[[\].?]/
 			}
 		},
 		'string': {
@@ -61,7 +61,7 @@
 		'boolean': /\b(?:false|true)\b/,
 		'number': numberPattern,
 		'operator': /\?:?|<=?|>=?|==?|!=|[+*/%-]|\b(?:and|not|or)\b/,
-		'punctuation': /[{}()\[\]|.,:]/
+		'punctuation': /[{}()[\]|.,:]/
 	};
 
 	// Tokenize all inline Soy expressions

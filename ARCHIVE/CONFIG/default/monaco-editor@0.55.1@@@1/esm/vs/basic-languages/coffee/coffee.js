@@ -1,5 +1,5 @@
 const conf = {
-  wordPattern: /(-?\d*\.\d\w*)|([^\`\~\!\@\#%\^\&\*\(\)\=\$\-\+\[\{\]\}\\\|\;\:\'\"\,\.\<\>\/\?\s]+)/g,
+  wordPattern: /(-?\d*\.\d\w*)|([^`~!@#%^&*()=$\-+[{\]}\\|;:'",.<>/?\s]+)/g,
   comments: {
     blockComment: ["###", "###"],
     lineComment: "#"
@@ -39,7 +39,7 @@ const language = {
     { open: "[", close: "]", token: "delimiter.square" },
     { open: "(", close: ")", token: "delimiter.parenthesis" }
   ],
-  regEx: /\/(?!\/\/)(?:[^\/\\]|\\.)*\/[igm]*/,
+  regEx: /\/(?!\/\/)(?:[^/\\]|\\.)*\/[igm]*/,
   keywords: [
     "and",
     "or",
@@ -87,13 +87,13 @@ const language = {
     "when"
   ],
   // we include these common regular expressions
-  symbols: /[=><!~?&%|+\-*\/\^\.,\:]+/,
+  symbols: /[=><!~?&%|+\-*/^.,:]+/,
   escapes: /\\(?:[abfnrtv\\"'$]|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
   // The main tokenizer for our languages
   tokenizer: {
     root: [
       // identifiers and keywords
-      [/\@[a-zA-Z_]\w*/, "variable.predefined"],
+      [/@[a-zA-Z_]\w*/, "variable.predefined"],
       [
         /[a-zA-Z_]\w*/,
         {
@@ -113,16 +113,16 @@ const language = {
       ["///", { token: "regexp", next: "@hereregexp" }],
       [/^(\s*)(@regEx)/, ["", "regexp"]],
       [/(\()(\s*)(@regEx)/, ["@brackets", "", "regexp"]],
-      [/(\,)(\s*)(@regEx)/, ["delimiter", "", "regexp"]],
-      [/(\=)(\s*)(@regEx)/, ["delimiter", "", "regexp"]],
-      [/(\:)(\s*)(@regEx)/, ["delimiter", "", "regexp"]],
+      [/(,)(\s*)(@regEx)/, ["delimiter", "", "regexp"]],
+      [/(=)(\s*)(@regEx)/, ["delimiter", "", "regexp"]],
+      [/(:)(\s*)(@regEx)/, ["delimiter", "", "regexp"]],
       [/(\[)(\s*)(@regEx)/, ["@brackets", "", "regexp"]],
-      [/(\!)(\s*)(@regEx)/, ["delimiter", "", "regexp"]],
-      [/(\&)(\s*)(@regEx)/, ["delimiter", "", "regexp"]],
+      [/(!)(\s*)(@regEx)/, ["delimiter", "", "regexp"]],
+      [/(&)(\s*)(@regEx)/, ["delimiter", "", "regexp"]],
       [/(\|)(\s*)(@regEx)/, ["delimiter", "", "regexp"]],
       [/(\?)(\s*)(@regEx)/, ["delimiter", "", "regexp"]],
       [/(\{)(\s*)(@regEx)/, ["@brackets", "", "regexp"]],
-      [/(\;)(\s*)(@regEx)/, ["", "", "regexp"]],
+      [/(;)(\s*)(@regEx)/, ["", "", "regexp"]],
       // delimiters
       [
         /}/,
@@ -136,11 +136,11 @@ const language = {
           }
         }
       ],
-      [/[{}()\[\]]/, "@brackets"],
+      [/[{}()[\]]/, "@brackets"],
       [/@symbols/, "delimiter"],
       // numbers
-      [/\d+[eE]([\-+]?\d+)?/, "number.float"],
-      [/\d+\.\d+([eE][\-+]?\d+)?/, "number.float"],
+      [/\d+[eE]([-+]?\d+)?/, "number.float"],
+      [/\d+\.\d+([eE][-+]?\d+)?/, "number.float"],
       [/0[xX][0-9a-fA-F]+/, "number.hex"],
       [/0[0-7]+(?!\d)/, "number.octal"],
       [/\d+/, "number"],
@@ -169,7 +169,7 @@ const language = {
       ]
     ],
     string: [
-      [/[^"'\#\\]+/, "string"],
+      [/[^"'#\\]+/, "string"],
       [/@escapes/, "string.escape"],
       [/\./, "string.escape.invalid"],
       [/\./, "string.escape.invalid"],
@@ -219,7 +219,7 @@ const language = {
       [/#/, "comment"]
     ],
     hereregexp: [
-      [/[^\\\/#]+/, "regexp"],
+      [/[^\\/#]+/, "regexp"],
       [/\\./, "regexp"],
       [/#.*$/, "comment"],
       ["///[igm]*", { token: "regexp", next: "@pop" }],

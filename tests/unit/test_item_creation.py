@@ -1,4 +1,3 @@
-
 import pytest
 
 # Remove direct import of models that might trigger table re-definition issues if not handled carefully in tests
@@ -19,19 +18,13 @@ class TestItemCreation:
 
     def test_item_type_enum(self):
         """Verify all item types are valid"""
-        valid_types = [
-            "epic", "feature", "story", "task", "bug",
-            "file", "endpoint", "test", "table", "milestone"
-        ]
+        valid_types = ["epic", "feature", "story", "task", "bug", "file", "endpoint", "test", "table", "milestone"]
         assert len(valid_types) == 10
         # In a real scenario, we'd import the Enum definition
 
     def test_item_view_enum(self):
         """Verify all views are valid"""
-        valid_views = [
-            "FEATURE", "CODE", "WIREFRAME", "API",
-            "TEST", "DATABASE", "ROADMAP", "PROGRESS"
-        ]
+        valid_views = ["FEATURE", "CODE", "WIREFRAME", "API", "TEST", "DATABASE", "ROADMAP", "PROGRESS"]
         assert len(valid_views) == 8
 
     def test_metadata_validation(self):
@@ -39,11 +32,7 @@ class TestItemCreation:
         import json
 
         # Valid metadata
-        valid_metadata = {
-            "priority": "high",
-            "tags": ["auth", "security"],
-            "nested": {"key": "value"}
-        }
+        valid_metadata = {"priority": "high", "tags": ["auth", "security"], "nested": {"key": "value"}}
 
         # Verify JSON serializable
         try:
@@ -53,4 +42,3 @@ class TestItemCreation:
 
     def test_parent_id_optional(self):
         """Verify parent_id is optional"""
-        pass

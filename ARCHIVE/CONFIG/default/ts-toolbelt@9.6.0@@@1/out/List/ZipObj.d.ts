@@ -31,4 +31,4 @@ export declare type _ZipObj<LKeys extends List<Key>, LFields extends List> = __Z
  * ```
  */
 export declare type ZipObj<LKeys extends List<Key>, LFields extends List> = LKeys extends unknown ? LFields extends unknown ? _ZipObj<LKeys, LFields> : never : never;
-export {};
+

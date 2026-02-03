@@ -11,4 +11,4 @@ interface PolygonProps {
 }
 export type Props = Omit<SVGProps<SVGPolygonElement>, 'points'> & PolygonProps;
 export declare const Polygon: React.FC<Props>;
-export {};
+

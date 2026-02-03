@@ -60,7 +60,7 @@ export default function abnf(Prism) {
         }
       },
       operator: /=\/?|\//,
-      punctuation: /[()\[\]]/
+      punctuation: /[()[\]]/
     }
   })(Prism)
 }

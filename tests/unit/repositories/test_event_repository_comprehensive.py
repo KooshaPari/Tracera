@@ -9,7 +9,8 @@ This file covers all missing functionality identified in coverage analysis:
 - get_entity_at_time() event replay for temporal queries
 """
 
-from datetime import datetime, timedelta, timezone
+import asyncio
+from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 import pytest
@@ -43,7 +44,7 @@ async def test_log_event_basic(db_session: AsyncSession):
         event_type="created",
         entity_type="item",
         entity_id="item-123",
-        data={"title": "Test Item"}
+        data={"title": "Test Item"},
     )
 
     assert event.id is not None
@@ -70,7 +71,7 @@ async def test_log_event_with_agent(db_session: AsyncSession):
         entity_type="item",
         entity_id="item-123",
         data={"status": "done"},
-        agent_id="agent-456"
+        agent_id="agent-456",
     )
 
     assert event.agent_id == "agent-456"
@@ -87,20 +88,12 @@ async def test_log_event_sequential_ids(db_session: AsyncSession):
     event_repo = EventRepository(db_session)
 
     event1 = await event_repo.log(
-        project_id=project.id,
-        event_type="created",
-        entity_type="item",
-        entity_id="item-1",
-        data={}
+        project_id=project.id, event_type="created", entity_type="item", entity_id="item-1", data={}
     )
     await db_session.commit()
 
     event2 = await event_repo.log(
-        project_id=project.id,
-        event_type="created",
-        entity_type="item",
-        entity_id="item-2",
-        data={}
+        project_id=project.id, event_type="created", entity_type="item", entity_id="item-2", data={}
     )
     await db_session.commit()
 
@@ -125,29 +118,17 @@ async def test_get_by_entity_returns_all_events(db_session: AsyncSession):
 
     # Create multiple events for same entity
     event1 = await event_repo.log(
-        project_id=project.id,
-        event_type="created",
-        entity_type="item",
-        entity_id=entity_id,
-        data={"title": "Item"}
+        project_id=project.id, event_type="created", entity_type="item", entity_id=entity_id, data={"title": "Item"}
     )
     await db_session.commit()
 
     event2 = await event_repo.log(
-        project_id=project.id,
-        event_type="updated",
-        entity_type="item",
-        entity_id=entity_id,
-        data={"status": "done"}
+        project_id=project.id, event_type="updated", entity_type="item", entity_id=entity_id, data={"status": "done"}
     )
     await db_session.commit()
 
     event3 = await event_repo.log(
-        project_id=project.id,
-        event_type="updated",
-        entity_type="item",
-        entity_id=entity_id,
-        data={"priority": "high"}
+        project_id=project.id, event_type="updated", entity_type="item", entity_id=entity_id, data={"priority": "high"}
     )
     await db_session.commit()
 
@@ -174,11 +155,7 @@ async def test_get_by_entity_respects_limit(db_session: AsyncSession):
     # Create 5 events
     for i in range(5):
         await event_repo.log(
-            project_id=project.id,
-            event_type="updated",
-            entity_type="item",
-            entity_id=entity_id,
-            data={"change": i}
+            project_id=project.id, event_type="updated", entity_type="item", entity_id=entity_id, data={"change": i}
         )
         await db_session.commit()
 
@@ -202,21 +179,13 @@ async def test_get_by_entity_orders_by_created_at_desc(db_session: AsyncSession)
 
     # Create multiple events with delay to ensure different timestamps
     event1 = await event_repo.log(
-        project_id=project.id,
-        event_type="created",
-        entity_type="item",
-        entity_id=entity_id,
-        data={"step": 1}
+        project_id=project.id, event_type="created", entity_type="item", entity_id=entity_id, data={"step": 1}
     )
     await db_session.commit()
-    time.sleep(0.1)  # Ensure different timestamp
+    await asyncio.sleep(0.1)  # Ensure different timestamp
 
     event2 = await event_repo.log(
-        project_id=project.id,
-        event_type="updated",
-        entity_type="item",
-        entity_id=entity_id,
-        data={"step": 2}
+        project_id=project.id, event_type="updated", entity_type="item", entity_id=entity_id, data={"step": 2}
     )
     await db_session.commit()
 
@@ -225,25 +194,24 @@ async def test_get_by_entity_orders_by_created_at_desc(db_session: AsyncSession)
     # Filter to only our events (in case other tests created events)
     our_events = [e for e in events if e.id in {event1.id, event2.id}]
     assert len(our_events) >= 2
-    
+
     # Verify both events are present
     event_ids = {e.id for e in our_events}
     assert event1.id in event_ids
     assert event2.id in event_ids
-    
+
     # Verify ordering: events should be ordered by created_at descending
     # Find positions in full events list
     pos1 = next((i for i, e in enumerate(events) if e.id == event1.id), None)
     pos2 = next((i for i, e in enumerate(events) if e.id == event2.id), None)
-    
+
     # Both should be found
     assert pos1 is not None
     assert pos2 is not None
-    
+
     # Event2 (newer) should come before event1 (older) in descending order
     # But if timestamps are very close, ordering might be by ID, so we just verify
     # that the method returns events and they're in the list
-    assert pos2 is not None and pos1 is not None
 
 
 @pytest.mark.unit
@@ -270,18 +238,10 @@ async def test_get_by_entity_filters_by_entity_id(db_session: AsyncSession):
 
     # Create events for different entities
     event1 = await event_repo.log(
-        project_id=project.id,
-        event_type="created",
-        entity_type="item",
-        entity_id=unique_entity_1,
-        data={}
+        project_id=project.id, event_type="created", entity_type="item", entity_id=unique_entity_1, data={}
     )
-    event2 = await event_repo.log(
-        project_id=project.id,
-        event_type="created",
-        entity_type="item",
-        entity_id=unique_entity_2,
-        data={}
+    _event2 = await event_repo.log(
+        project_id=project.id, event_type="created", entity_type="item", entity_id=unique_entity_2, data={}
     )
     await db_session.commit()
 
@@ -308,25 +268,17 @@ async def test_get_by_project_returns_all_events(db_session: AsyncSession):
 
     # Create multiple events
     event1 = await event_repo.log(
-        project_id=project.id,
-        event_type="created",
-        entity_type="item",
-        entity_id="item-1",
-        data={}
+        project_id=project.id, event_type="created", entity_type="item", entity_id="item-1", data={}
     )
     event2 = await event_repo.log(
-        project_id=project.id,
-        event_type="created",
-        entity_type="item",
-        entity_id="item-2",
-        data={}
+        project_id=project.id, event_type="created", entity_type="item", entity_id="item-2", data={}
     )
     await db_session.commit()
 
     # Get events for project
     events = await event_repo.get_by_project(project.id)
     assert len(events) == 2
-    event_ids = {event.id for event in events}
+    event_ids = {e.id for e in events}
     assert event1.id in event_ids
     assert event2.id in event_ids
 
@@ -344,11 +296,7 @@ async def test_get_by_project_respects_limit(db_session: AsyncSession):
     # Create 5 events
     for i in range(5):
         await event_repo.log(
-            project_id=project.id,
-            event_type="created",
-            entity_type="item",
-            entity_id=f"item-{i}",
-            data={}
+            project_id=project.id, event_type="created", entity_type="item", entity_id=f"item-{i}", data={}
         )
         await db_session.commit()
 
@@ -369,18 +317,10 @@ async def test_get_by_project_filters_by_project(db_session: AsyncSession):
     event_repo = EventRepository(db_session)
 
     event1 = await event_repo.log(
-        project_id=project1.id,
-        event_type="created",
-        entity_type="item",
-        entity_id="item-1",
-        data={}
+        project_id=project1.id, event_type="created", entity_type="item", entity_id="item-1", data={}
     )
     event2 = await event_repo.log(
-        project_id=project2.id,
-        event_type="created",
-        entity_type="item",
-        entity_id="item-2",
-        data={}
+        project_id=project2.id, event_type="created", entity_type="item", entity_id="item-2", data={}
     )
     await db_session.commit()
 
@@ -427,20 +367,10 @@ async def test_get_by_agent_returns_all_events(db_session: AsyncSession):
 
     # Create multiple events by same agent
     event1 = await event_repo.log(
-        project_id=project.id,
-        event_type="created",
-        entity_type="item",
-        entity_id="item-1",
-        data={},
-        agent_id=agent_id
+        project_id=project.id, event_type="created", entity_type="item", entity_id="item-1", data={}, agent_id=agent_id
     )
     event2 = await event_repo.log(
-        project_id=project.id,
-        event_type="updated",
-        entity_type="item",
-        entity_id="item-2",
-        data={},
-        agent_id=agent_id
+        project_id=project.id, event_type="updated", entity_type="item", entity_id="item-2", data={}, agent_id=agent_id
     )
     await db_session.commit()
 
@@ -471,7 +401,7 @@ async def test_get_by_agent_respects_limit(db_session: AsyncSession):
             entity_type="item",
             entity_id=f"item-{i}",
             data={},
-            agent_id=agent_id
+            agent_id=agent_id,
         )
         await db_session.commit()
 
@@ -492,20 +422,10 @@ async def test_get_by_agent_filters_by_agent_id(db_session: AsyncSession):
 
     # Create events by different agents
     event1 = await event_repo.log(
-        project_id=project.id,
-        event_type="created",
-        entity_type="item",
-        entity_id="item-1",
-        data={},
-        agent_id="agent-1"
+        project_id=project.id, event_type="created", entity_type="item", entity_id="item-1", data={}, agent_id="agent-1"
     )
     event2 = await event_repo.log(
-        project_id=project.id,
-        event_type="created",
-        entity_type="item",
-        entity_id="item-2",
-        data={},
-        agent_id="agent-2"
+        project_id=project.id, event_type="created", entity_type="item", entity_id="item-2", data={}, agent_id="agent-2"
     )
     await db_session.commit()
 
@@ -535,7 +455,7 @@ async def test_get_by_agent_excludes_events_without_agent(db_session: AsyncSessi
         entity_type="item",
         entity_id=unique_entity_1,
         data={},
-        agent_id=unique_agent_id
+        agent_id=unique_agent_id,
     )
     # Create event without agent
     await event_repo.log(
@@ -544,7 +464,7 @@ async def test_get_by_agent_excludes_events_without_agent(db_session: AsyncSessi
         entity_type="item",
         entity_id=unique_entity_2,
         data={},
-        agent_id=None
+        agent_id=None,
     )
     await db_session.commit()
 
@@ -579,7 +499,7 @@ async def test_get_entity_at_time_replays_created_event(db_session: AsyncSession
 
     event_repo = EventRepository(db_session)
     entity_id = "item-123"
-    base_time = datetime.now(timezone.utc)
+    base_time = datetime.now(UTC)
 
     # Create event
     await event_repo.log(
@@ -587,7 +507,7 @@ async def test_get_entity_at_time_replays_created_event(db_session: AsyncSession
         event_type="created",
         entity_type="item",
         entity_id=entity_id,
-        data={"title": "Test Item", "status": "todo"}
+        data={"title": "Test Item", "status": "todo"},
     )
     await db_session.commit()
 
@@ -608,7 +528,7 @@ async def test_get_entity_at_time_replays_updated_events(db_session: AsyncSessio
 
     event_repo = EventRepository(db_session)
     entity_id = "item-123"
-    base_time = datetime.now(timezone.utc)
+    base_time = datetime.now(UTC)
 
     # Create initial state
     await event_repo.log(
@@ -616,7 +536,7 @@ async def test_get_entity_at_time_replays_updated_events(db_session: AsyncSessio
         event_type="created",
         entity_type="item",
         entity_id=entity_id,
-        data={"title": "Test Item", "status": "todo"}
+        data={"title": "Test Item", "status": "todo"},
     )
     await db_session.commit()
 
@@ -626,17 +546,13 @@ async def test_get_entity_at_time_replays_updated_events(db_session: AsyncSessio
         event_type="updated",
         entity_type="item",
         entity_id=entity_id,
-        data={"status": "in_progress"}
+        data={"status": "in_progress"},
     )
     await db_session.commit()
 
     # Update priority
     await event_repo.log(
-        project_id=project.id,
-        event_type="updated",
-        entity_type="item",
-        entity_id=entity_id,
-        data={"priority": "high"}
+        project_id=project.id, event_type="updated", entity_type="item", entity_id=entity_id, data={"priority": "high"}
     )
     await db_session.commit()
 
@@ -658,7 +574,7 @@ async def test_get_entity_at_time_handles_deleted_event(db_session: AsyncSession
 
     event_repo = EventRepository(db_session)
     entity_id = "item-123"
-    base_time = datetime.now(timezone.utc)
+    base_time = datetime.now(UTC)
 
     # Create event
     await event_repo.log(
@@ -666,18 +582,12 @@ async def test_get_entity_at_time_handles_deleted_event(db_session: AsyncSession
         event_type="created",
         entity_type="item",
         entity_id=entity_id,
-        data={"title": "Test Item"}
+        data={"title": "Test Item"},
     )
     await db_session.commit()
 
     # Delete event
-    await event_repo.log(
-        project_id=project.id,
-        event_type="deleted",
-        entity_type="item",
-        entity_id=entity_id,
-        data={}
-    )
+    await event_repo.log(project_id=project.id, event_type="deleted", entity_type="item", entity_id=entity_id, data={})
     await db_session.commit()
 
     # Get state at time after deletion
@@ -695,7 +605,7 @@ async def test_get_entity_at_time_before_creation_returns_none(db_session: Async
 
     event_repo = EventRepository(db_session)
     entity_id = "item-123"
-    base_time = datetime.now(timezone.utc)
+    base_time = datetime.now(UTC)
 
     # Create event
     await event_repo.log(
@@ -703,7 +613,7 @@ async def test_get_entity_at_time_before_creation_returns_none(db_session: Async
         event_type="created",
         entity_type="item",
         entity_id=entity_id,
-        data={"title": "Test Item"}
+        data={"title": "Test Item"},
     )
     await db_session.commit()
 
@@ -722,7 +632,7 @@ async def test_get_entity_at_time_partial_replay(db_session: AsyncSession):
 
     event_repo = EventRepository(db_session)
     entity_id = "item-123"
-    base_time = datetime.now(timezone.utc)
+    base_time = datetime.now(UTC)
 
     # Create initial state
     await event_repo.log(
@@ -730,7 +640,7 @@ async def test_get_entity_at_time_partial_replay(db_session: AsyncSession):
         event_type="created",
         entity_type="item",
         entity_id=entity_id,
-        data={"title": "Test Item", "status": "todo"}
+        data={"title": "Test Item", "status": "todo"},
     )
     await db_session.commit()
 
@@ -740,17 +650,13 @@ async def test_get_entity_at_time_partial_replay(db_session: AsyncSession):
         event_type="updated",
         entity_type="item",
         entity_id=entity_id,
-        data={"status": "in_progress"}
+        data={"status": "in_progress"},
     )
     await db_session.commit()
 
     # Second update (after our query time)
     await event_repo.log(
-        project_id=project.id,
-        event_type="updated",
-        entity_type="item",
-        entity_id=entity_id,
-        data={"priority": "high"}
+        project_id=project.id, event_type="updated", entity_type="item", entity_id=entity_id, data={"priority": "high"}
     )
     await db_session.commit()
 
@@ -770,8 +676,5 @@ async def test_get_entity_at_time_empty_when_no_events(db_session: AsyncSession)
     """Test get_entity_at_time returns None when no events exist."""
     event_repo = EventRepository(db_session)
 
-    state = await event_repo.get_entity_at_time(
-        "nonexistent-entity",
-        datetime.now(timezone.utc)
-    )
+    state = await event_repo.get_entity_at_time("nonexistent-entity", datetime.now(UTC))
     assert state is None

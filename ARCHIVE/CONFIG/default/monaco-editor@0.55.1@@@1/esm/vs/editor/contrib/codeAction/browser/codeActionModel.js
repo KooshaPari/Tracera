@@ -198,7 +198,7 @@ class CodeActionModel extends Disposable {
                         if (foundQuickfix) {
                             for (const action of codeActionSet.validActions) {
                                 if (action.action.command?.arguments?.some(arg => typeof arg === 'string' && arg.includes(APPLY_FIX_ALL_COMMAND_ID))) {
-                                    action.action.diagnostics = [...allMarkers.filter(marker => marker.relatedInformation)];
+                                    action.action.diagnostics = allMarkers.filter(marker => marker.relatedInformation);
                                 }
                             }
                             return { validActions: codeActionSet.validActions, allActions: allCodeActions, documentation: codeActionSet.documentation, hasAutoFix: codeActionSet.hasAutoFix, hasAIFix: codeActionSet.hasAIFix, allAIFixes: codeActionSet.allAIFixes, dispose: () => { this.codeActionsDisposable.value = codeActionSet; } };
@@ -233,7 +233,7 @@ class CodeActionModel extends Disposable {
                                         if (actionsAtMarker.validActions.length !== 0) {
                                             for (const action of actionsAtMarker.validActions) {
                                                 if (action.action.command?.arguments?.some(arg => typeof arg === 'string' && arg.includes(APPLY_FIX_ALL_COMMAND_ID))) {
-                                                    action.action.diagnostics = [...allMarkers.filter(marker => marker.relatedInformation)];
+                                                    action.action.diagnostics = allMarkers.filter(marker => marker.relatedInformation);
                                                 }
                                             }
                                             if (codeActionSet.allActions.length === 0) {

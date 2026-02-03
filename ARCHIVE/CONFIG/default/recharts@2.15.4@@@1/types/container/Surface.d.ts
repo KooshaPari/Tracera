@@ -19,4 +19,4 @@ interface SurfaceProps {
 }
 export type Props = Omit<SVGProps<SVGSVGElement>, 'viewBox'> & SurfaceProps;
 export declare function Surface(props: Props): React.JSX.Element;
-export {};
+

@@ -50,7 +50,7 @@
 			inside: IDInside
 		},
 		'attr-name': {
-			pattern: withID(/([\[;, \t\r\n])<ID>(?=[ \t\r\n]*=)/.source),
+			pattern: withID(/([[;, \t\r\n])<ID>(?=[ \t\r\n]*=)/.source),
 			lookbehind: true,
 			greedy: true,
 			inside: IDInside
@@ -68,7 +68,7 @@
 			inside: IDInside
 		},
 		'operator': /[=:]|-[->]/,
-		'punctuation': /[\[\]{};,]/
+		'punctuation': /[[\]{};,]/
 	};
 
 	Prism.languages.gv = Prism.languages.dot;

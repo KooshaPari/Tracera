@@ -2,19 +2,22 @@
 
 from __future__ import annotations
 
+import asyncio
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from tracertm.config.manager import ConfigManager
+from tracertm.repositories.workflow_run_repository import WorkflowRunRepository
 from tracertm.services.export_service import ExportService
 from tracertm.services.graph_snapshot_service import GraphSnapshotService
 from tracertm.services.graph_validation_service import GraphValidationService
 from tracertm.services.integration_sync_processor import IntegrationSyncProcessor
-from tracertm.repositories.workflow_run_repository import WorkflowRunRepository
 
 
 async def _get_async_session() -> AsyncSession:
+    await asyncio.sleep(0)
     config = ConfigManager()
     database_url = config.get("database_url")
     if not database_url:
@@ -47,7 +50,7 @@ async def _update_workflow_run(
     if not external_run_id:
         return
     repo = WorkflowRunRepository(session)
-    now = __import__("datetime").datetime.utcnow()
+    now = datetime.now(UTC)
     await repo.update_by_external_id(
         external_run_id=external_run_id,
         status=status,
@@ -88,9 +91,7 @@ async def graph_snapshot_task(
             raise
 
 
-async def graph_validation_task(
-    project_id: str, graph_id: str, workflow_run_id: str | None = None
-) -> dict[str, Any]:
+async def graph_validation_task(project_id: str, graph_id: str, workflow_run_id: str | None = None) -> dict[str, Any]:
     async with await _get_async_session() as session:
         await _update_workflow_run(session, workflow_run_id, "running", started=True)
         try:

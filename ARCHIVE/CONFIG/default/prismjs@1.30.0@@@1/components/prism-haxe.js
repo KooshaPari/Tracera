@@ -47,7 +47,7 @@ Prism.languages.insertBefore('haxe', 'string', {
 
 Prism.languages.insertBefore('haxe', 'class-name', {
 	'regex': {
-		pattern: /~\/(?:[^\/\\\r\n]|\\.)+\/[a-z]*/,
+		pattern: /~\/(?:[^/\\\r\n]|\\.)+\/[a-z]*/,
 		greedy: true,
 		inside: {
 			'regex-flags': /\b[a-z]+$/,

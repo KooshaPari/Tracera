@@ -16,8 +16,8 @@ Tests cover:
 - Edge cases
 """
 
-import json
 import csv
+import json
 import uuid
 from io import StringIO
 
@@ -32,7 +32,6 @@ from tracertm.models.project import Project
 from tracertm.services.export_import_service import ExportImportService
 from tracertm.services.export_service import ExportService
 from tracertm.services.import_service import ImportService
-
 
 pytestmark = pytest.mark.integration
 
@@ -98,11 +97,7 @@ async def sample_project(db_session):
     """Create sample project with unique ID and name."""
     project_id = unique_id("test-proj")
     project_name = f"Test Project {uuid.uuid4().hex[:8]}"
-    project = Project(
-        id=project_id,
-        name=project_name,
-        description="Test project for export/import"
-    )
+    project = Project(id=project_id, name=project_name, description="Test project for export/import")
     db_session.add(project)
     await db_session.commit()
     return project
@@ -119,7 +114,7 @@ async def sample_items(db_session, sample_project):
             view="FEATURE",
             item_type="feature",
             status="todo",
-            description="First feature"
+            description="First feature",
         ),
         Item(
             id=unique_id("story"),
@@ -128,7 +123,7 @@ async def sample_items(db_session, sample_project):
             view="STORY",
             item_type="story",
             status="in_progress",
-            description="First story"
+            description="First story",
         ),
         Item(
             id=unique_id("test"),
@@ -137,7 +132,7 @@ async def sample_items(db_session, sample_project):
             view="TEST",
             item_type="test",
             status="done",
-            description="First test"
+            description="First test",
         ),
         Item(
             id=unique_id("api"),
@@ -146,7 +141,7 @@ async def sample_items(db_session, sample_project):
             view="API",
             item_type="api",
             status="blocked",
-            description="First API"
+            description="First API",
         ),
     ]
 
@@ -165,21 +160,21 @@ async def sample_links(db_session, sample_project, sample_items):
             project_id=sample_project.id,
             source_item_id=sample_items[0].id,
             target_item_id=sample_items[1].id,
-            link_type="implements"
+            link_type="implements",
         ),
         Link(
             id=unique_id("link"),
             project_id=sample_project.id,
             source_item_id=sample_items[1].id,
             target_item_id=sample_items[2].id,
-            link_type="tested_by"
+            link_type="tested_by",
         ),
         Link(
             id=unique_id("link"),
             project_id=sample_project.id,
             source_item_id=sample_items[0].id,
             target_item_id=sample_items[3].id,
-            link_type="exposes"
+            link_type="exposes",
         ),
     ]
 
@@ -190,6 +185,7 @@ async def sample_links(db_session, sample_project, sample_items):
 
 
 # JSON Export Tests
+
 
 @pytest.mark.asyncio
 async def test_export_to_json_basic(export_import_service, sample_project):
@@ -273,6 +269,7 @@ async def test_export_to_json_preserves_item_details(export_service, sample_proj
 
 # YAML Export Tests
 
+
 @pytest.mark.asyncio
 async def test_export_to_yaml_basic(export_service, sample_project, sample_items):
     """Test basic YAML export."""
@@ -297,6 +294,7 @@ async def test_export_to_yaml_valid_structure(export_service, sample_project, sa
 
     try:
         import yaml
+
         data = yaml.safe_load(result)
         assert isinstance(data, dict)
     except ImportError:
@@ -305,6 +303,7 @@ async def test_export_to_yaml_valid_structure(export_service, sample_project, sa
 
 
 # CSV Export Tests
+
 
 @pytest.mark.asyncio
 async def test_export_to_csv_basic(export_import_service, sample_project):
@@ -321,7 +320,7 @@ async def test_export_to_csv_header(export_import_service, sample_project, sampl
     """Test CSV export has correct header."""
     result = await export_import_service.export_to_csv(sample_project.id)
 
-    lines = result["content"].strip().split('\n')
+    lines = result["content"].strip().split("\n")
     assert len(lines) > 0
 
 
@@ -346,10 +345,11 @@ async def test_export_to_csv_data_integrity(export_service, sample_project, samp
 
     assert len(rows) == 4
     for row in rows:
-        assert "Title" in row or "title" in row.keys()
+        assert "Title" in row or "title" in row
 
 
 # Markdown Export Tests
+
 
 @pytest.mark.asyncio
 async def test_export_to_markdown_basic(export_import_service, sample_project):
@@ -387,17 +387,14 @@ async def test_export_to_markdown_grouped_by_view(export_service, sample_project
 
 # JSON Import Tests
 
+
 @pytest.mark.asyncio
 async def test_import_from_json_basic(db_session):
     """Test basic JSON import."""
     service = ExportImportService(db_session)
     project_id = unique_id("import-proj")
 
-    json_data = json.dumps({
-        "items": [
-            {"title": "New Item", "view": "FEATURE", "type": "feature", "status": "todo"}
-        ]
-    })
+    json_data = json.dumps({"items": [{"title": "New Item", "view": "FEATURE", "type": "feature", "status": "todo"}]})
 
     result = await service.import_from_json(project_id, json_data)
 
@@ -429,11 +426,7 @@ async def test_import_from_json_creates_items(db_session):
     service = ExportImportService(db_session)
     project_id = unique_id("test-proj")
 
-    json_data = json.dumps({
-        "items": [
-            {"title": "Test Item", "view": "FEATURE", "type": "feature", "status": "todo"}
-        ]
-    })
+    json_data = json.dumps({"items": [{"title": "Test Item", "view": "FEATURE", "type": "feature", "status": "todo"}]})
 
     result = await service.import_from_json(project_id, json_data)
 
@@ -468,11 +461,9 @@ async def test_import_from_json_with_links(db_session):
         "project": {"name": f"Link Test {uuid.uuid4().hex[:4]}", "description": "Test"},
         "items": [
             {"id": "item-a", "title": "Item A", "view": "FEATURE", "type": "feature", "status": "todo"},
-            {"id": "item-b", "title": "Item B", "view": "STORY", "type": "story", "status": "todo"}
+            {"id": "item-b", "title": "Item B", "view": "STORY", "type": "story", "status": "todo"},
         ],
-        "links": [
-            {"source_id": "item-a", "target_id": "item-b", "type": "relates_to"}
-        ]
+        "links": [{"source_id": "item-a", "target_id": "item-b", "type": "relates_to"}],
     })
 
     try:
@@ -484,6 +475,7 @@ async def test_import_from_json_with_links(db_session):
 
 
 # CSV Import Tests
+
 
 @pytest.mark.asyncio
 async def test_import_from_csv_basic(export_import_service, sample_project):
@@ -535,15 +527,14 @@ async def test_import_from_csv_with_special_chars(db_session):
 
 # Data Validation Tests
 
+
 @pytest.mark.asyncio
 async def test_validate_import_data_valid(import_service):
     """Test validation of valid import data."""
     json_data = json.dumps({
         "project": {"name": f"Valid {uuid.uuid4().hex[:4]}", "description": "Test"},
-        "items": [
-            {"id": "item-1", "title": "Item 1", "view": "FEATURE", "type": "feature", "status": "todo"}
-        ],
-        "links": []
+        "items": [{"id": "item-1", "title": "Item 1", "view": "FEATURE", "type": "feature", "status": "todo"}],
+        "links": [],
     })
 
     errors = await import_service.validate_import_data(json_data)
@@ -578,7 +569,7 @@ async def test_validate_import_data_missing_item_title(import_service):
     json_data = json.dumps({
         "project": {"name": "Test", "description": ""},
         "items": [{"id": "item-1", "view": "FEATURE", "type": "feature", "status": "todo"}],
-        "links": []
+        "links": [],
     })
 
     errors = await import_service.validate_import_data(json_data)
@@ -592,7 +583,7 @@ async def test_validate_import_data_broken_links(import_service):
     json_data = json.dumps({
         "project": {"name": "Test", "description": ""},
         "items": [{"id": "item-1", "title": "Item 1", "view": "FEATURE", "type": "feature", "status": "todo"}],
-        "links": [{"source_id": "nonexistent", "target_id": "item-1", "type": "relates_to"}]
+        "links": [{"source_id": "nonexistent", "target_id": "item-1", "type": "relates_to"}],
     })
 
     errors = await import_service.validate_import_data(json_data)
@@ -601,6 +592,7 @@ async def test_validate_import_data_broken_links(import_service):
 
 
 # Large Dataset Tests
+
 
 @pytest.mark.asyncio
 async def test_export_large_dataset(db_session, sample_project):
@@ -614,7 +606,7 @@ async def test_export_large_dataset(db_session, sample_project):
             title=f"Large Item {i}",
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         db_session.add(item)
     await db_session.commit()
@@ -630,10 +622,7 @@ async def test_import_large_dataset(db_session):
     service = ExportImportService(db_session)
     project_id = unique_id("large-import")
 
-    items_data = [
-        {"title": f"Item {i}", "view": "FEATURE", "type": "feature", "status": "todo"}
-        for i in range(100)
-    ]
+    items_data = [{"title": f"Item {i}", "view": "FEATURE", "type": "feature", "status": "todo"} for i in range(100)]
 
     json_data = json.dumps({"items": items_data})
 
@@ -654,18 +643,19 @@ async def test_export_csv_large_dataset(db_session, sample_project):
             title=f"CSV Item {i}",
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         db_session.add(item)
     await db_session.commit()
 
     result = await service.export_to_csv(sample_project.id)
 
-    lines = result["content"].strip().split('\n')
+    lines = result["content"].strip().split("\n")
     assert len(lines) >= 50
 
 
 # Export-Import Roundtrip Tests
+
 
 @pytest.mark.asyncio
 async def test_export_import_roundtrip_json(db_session, sample_project, sample_items):
@@ -692,6 +682,7 @@ async def test_export_import_roundtrip_csv(db_session, sample_project, sample_it
 
 # Edge Case Tests
 
+
 @pytest.mark.asyncio
 async def test_export_with_null_description(db_session, sample_project):
     """Test export handles null descriptions."""
@@ -704,7 +695,7 @@ async def test_export_with_null_description(db_session, sample_project):
         view="FEATURE",
         item_type="feature",
         status="todo",
-        description=None
+        description=None,
     )
     db_session.add(item)
     await db_session.commit()
@@ -743,7 +734,7 @@ async def test_export_empty_views(db_session, sample_project):
         title="Single View Item",
         view="FEATURE",
         item_type="feature",
-        status="todo"
+        status="todo",
     )
     db_session.add(item)
     await db_session.commit()
@@ -786,6 +777,7 @@ async def test_import_formats_available(export_import_service):
 
 
 # Error Handling Tests
+
 
 @pytest.mark.asyncio
 async def test_import_json_with_errors(db_session):
@@ -841,6 +833,7 @@ async def test_csv_import_header_only(db_session):
 
 # Complex Scenario Tests
 
+
 @pytest.mark.asyncio
 async def test_export_with_all_item_types(db_session, sample_project):
     """Test export includes all item types."""
@@ -854,7 +847,7 @@ async def test_export_with_all_item_types(db_session, sample_project):
             title=f"Type {item_type}",
             view="FEATURE",
             item_type=item_type,
-            status="todo"
+            status="todo",
         )
         db_session.add(item)
     await db_session.commit()
@@ -870,10 +863,8 @@ async def test_import_creates_project_if_missing(db_session):
     service = ImportService(db_session)
     json_data = json.dumps({
         "project": {"name": f"New Project {uuid.uuid4().hex[:4]}", "description": "Auto-created"},
-        "items": [
-            {"id": "new-item", "title": "New Item", "view": "FEATURE", "type": "feature", "status": "todo"}
-        ],
-        "links": []
+        "items": [{"id": "new-item", "title": "New Item", "view": "FEATURE", "type": "feature", "status": "todo"}],
+        "links": [],
     })
 
     try:
@@ -904,9 +895,7 @@ async def test_import_validates_all_data(import_service):
             {"id": "item-1", "view": "FEATURE", "type": "feature", "status": "todo"},
             {"id": "item-2", "title": "Good"},
         ],
-        "links": [
-            {"source_id": "missing", "target_id": "item-1", "type": "relates_to"}
-        ]
+        "links": [{"source_id": "missing", "target_id": "item-1", "type": "relates_to"}],
     })
 
     errors = await import_service.validate_import_data(json_data)
@@ -915,6 +904,7 @@ async def test_import_validates_all_data(import_service):
 
 
 # Content Integrity Tests
+
 
 @pytest.mark.asyncio
 async def test_export_preserves_unicode(db_session, sample_project):
@@ -928,7 +918,7 @@ async def test_export_preserves_unicode(db_session, sample_project):
         view="FEATURE",
         item_type="feature",
         status="todo",
-        description="Émojis: 😀"
+        description="Émojis: 😀",
     )
     db_session.add(item)
     await db_session.commit()
@@ -950,7 +940,7 @@ async def test_export_sanitizes_special_chars_csv(db_session, sample_project):
         title='Title with "quotes" and, commas',
         view="FEATURE",
         item_type="feature",
-        status="todo"
+        status="todo",
     )
     db_session.add(item)
     await db_session.commit()

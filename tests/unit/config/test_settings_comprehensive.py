@@ -4,9 +4,7 @@ Comprehensive tests for TraceRTM settings and configuration.
 Target: +2% coverage on configuration paths (40 test cases)
 """
 
-import os
 from pathlib import Path
-from unittest.mock import MagicMock, patch
 
 import pytest
 from pydantic import ValidationError
@@ -290,9 +288,7 @@ class TestTraceSettingsProperties:
     def test_database_settings_access(self):
         """Test accessing nested database settings."""
         reset_settings()
-        db_settings = DatabaseSettings(
-            url="postgresql://localhost/test", pool_size=20
-        )
+        db_settings = DatabaseSettings(url="postgresql://localhost/test", pool_size=20)
         settings = TraceSettings(database=db_settings)
 
         assert settings.database.url == "postgresql://localhost/test"
@@ -470,9 +466,7 @@ class TestSettingsFeatureFlags:
     def test_all_features_enabled(self):
         """Test all features enabled simultaneously."""
         reset_settings()
-        settings = TraceSettings(
-            enable_cache=True, enable_async=True, enable_validation=True
-        )
+        settings = TraceSettings(enable_cache=True, enable_async=True, enable_validation=True)
 
         assert settings.enable_cache is True
         assert settings.enable_async is True
@@ -482,9 +476,7 @@ class TestSettingsFeatureFlags:
     def test_all_features_disabled(self):
         """Test all features disabled simultaneously."""
         reset_settings()
-        settings = TraceSettings(
-            enable_cache=False, enable_async=False, enable_validation=False
-        )
+        settings = TraceSettings(enable_cache=False, enable_async=False, enable_validation=False)
 
         assert settings.enable_cache is False
         assert settings.enable_async is False

@@ -2,21 +2,20 @@
 Repository for Test Suite operations.
 """
 
-from datetime import datetime
-from typing import Any, Optional
 import uuid
+from typing import Any
 
-from sqlalchemy import select, func, and_
+from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from tracertm.models.test_case import TestCase
 from tracertm.models.test_suite import (
     TestSuite,
-    TestSuiteTestCase,
     TestSuiteActivity,
     TestSuiteStatus,
+    TestSuiteTestCase,
 )
-from tracertm.models.test_case import TestCase
 
 
 class TestSuiteRepository:
@@ -29,22 +28,22 @@ class TestSuiteRepository:
         self,
         project_id: str,
         name: str,
-        description: Optional[str] = None,
-        objective: Optional[str] = None,
-        parent_id: Optional[str] = None,
+        description: str | None = None,
+        objective: str | None = None,
+        parent_id: str | None = None,
         order_index: int = 0,
-        category: Optional[str] = None,
-        tags: Optional[list[str]] = None,
+        category: str | None = None,
+        tags: list[str] | None = None,
         is_parallel_execution: bool = False,
-        estimated_duration_minutes: Optional[int] = None,
-        required_environment: Optional[str] = None,
-        environment_variables: Optional[dict[str, str]] = None,
-        setup_instructions: Optional[str] = None,
-        teardown_instructions: Optional[str] = None,
-        owner: Optional[str] = None,
-        responsible_team: Optional[str] = None,
-        metadata: Optional[dict[str, Any]] = None,
-        created_by: Optional[str] = None,
+        estimated_duration_minutes: int | None = None,
+        required_environment: str | None = None,
+        environment_variables: dict[str, str] | None = None,
+        setup_instructions: str | None = None,
+        teardown_instructions: str | None = None,
+        owner: str | None = None,
+        responsible_team: str | None = None,
+        metadata: dict[str, Any] | None = None,
+        created_by: str | None = None,
     ) -> TestSuite:
         """Create a new test suite."""
         suite_number = f"TS-{str(uuid.uuid4())[:8].upper()}"
@@ -87,30 +86,26 @@ class TestSuiteRepository:
         await self.session.flush()
         return suite
 
-    async def get_by_id(self, suite_id: str) -> Optional[TestSuite]:
+    async def get_by_id(self, suite_id: str) -> TestSuite | None:
         """Get a test suite by ID."""
         result = await self.session.execute(
-            select(TestSuite)
-            .options(selectinload(TestSuite.test_case_associations))
-            .where(TestSuite.id == suite_id)
+            select(TestSuite).options(selectinload(TestSuite.test_case_associations)).where(TestSuite.id == suite_id)
         )
         return result.scalar_one_or_none()
 
-    async def get_by_number(self, suite_number: str) -> Optional[TestSuite]:
+    async def get_by_number(self, suite_number: str) -> TestSuite | None:
         """Get a test suite by suite number."""
-        result = await self.session.execute(
-            select(TestSuite).where(TestSuite.suite_number == suite_number)
-        )
+        result = await self.session.execute(select(TestSuite).where(TestSuite.suite_number == suite_number))
         return result.scalar_one_or_none()
 
     async def list_by_project(
         self,
         project_id: str,
-        status: Optional[str] = None,
-        category: Optional[str] = None,
-        parent_id: Optional[str] = None,
-        owner: Optional[str] = None,
-        search: Optional[str] = None,
+        status: str | None = None,
+        category: str | None = None,
+        parent_id: str | None = None,
+        owner: str | None = None,
+        search: str | None = None,
         skip: int = 0,
         limit: int = 50,
     ) -> tuple[list[TestSuite], int]:
@@ -130,10 +125,7 @@ class TestSuiteRepository:
             query = query.where(TestSuite.owner == owner)
         if search:
             search_pattern = f"%{search}%"
-            query = query.where(
-                TestSuite.name.ilike(search_pattern)
-                | TestSuite.description.ilike(search_pattern)
-            )
+            query = query.where(TestSuite.name.ilike(search_pattern) | TestSuite.description.ilike(search_pattern))
 
         # Count total
         count_query = select(func.count()).select_from(query.subquery())
@@ -152,9 +144,9 @@ class TestSuiteRepository:
     async def update(
         self,
         suite_id: str,
-        updated_by: Optional[str] = None,
+        updated_by: str | None = None,
         **updates: Any,
-    ) -> Optional[TestSuite]:
+    ) -> TestSuite | None:
         """Update a test suite."""
         suite = await self.get_by_id(suite_id)
         if not suite:
@@ -172,9 +164,9 @@ class TestSuiteRepository:
         self,
         suite_id: str,
         new_status: str,
-        reason: Optional[str] = None,
-        performed_by: Optional[str] = None,
-    ) -> Optional[TestSuite]:
+        reason: str | None = None,
+        performed_by: str | None = None,
+    ) -> TestSuite | None:
         """Transition suite status with validation."""
         suite = await self.get_by_id(suite_id)
         if not suite:
@@ -190,9 +182,7 @@ class TestSuiteRepository:
 
         new_status_enum = TestSuiteStatus(new_status)
         if new_status_enum not in valid_transitions.get(old_status, []):
-            raise ValueError(
-                f"Invalid transition from {old_status.value} to {new_status}"
-            )
+            raise ValueError(f"Invalid transition from {old_status.value} to {new_status}")
 
         suite.status = new_status_enum
         suite.version += 1
@@ -218,9 +208,9 @@ class TestSuiteRepository:
         test_case_id: str,
         order_index: int = 0,
         is_mandatory: bool = True,
-        skip_reason: Optional[str] = None,
-        custom_parameters: Optional[dict[str, Any]] = None,
-        added_by: Optional[str] = None,
+        skip_reason: str | None = None,
+        custom_parameters: dict[str, Any] | None = None,
+        added_by: str | None = None,
     ) -> TestSuiteTestCase:
         """Add a test case to a suite."""
         association = TestSuiteTestCase(
@@ -264,7 +254,7 @@ class TestSuiteRepository:
         self,
         suite_id: str,
         test_case_id: str,
-        removed_by: Optional[str] = None,
+        removed_by: str | None = None,
     ) -> bool:
         """Remove a test case from a suite."""
         result = await self.session.execute(
@@ -315,7 +305,7 @@ class TestSuiteRepository:
         self,
         suite_id: str,
         ordered_test_case_ids: list[str],
-        reordered_by: Optional[str] = None,
+        reordered_by: str | None = None,
     ) -> bool:
         """Reorder test cases within a suite."""
         for index, tc_id in enumerate(ordered_test_case_ids):
@@ -360,16 +350,12 @@ class TestSuiteRepository:
     async def get_stats(self, project_id: str) -> dict[str, Any]:
         """Get statistics for test suites in a project."""
         # Total count
-        total_result = await self.session.execute(
-            select(func.count()).where(TestSuite.project_id == project_id)
-        )
+        total_result = await self.session.execute(select(func.count()).where(TestSuite.project_id == project_id))
         total = total_result.scalar() or 0
 
         # By status
         status_result = await self.session.execute(
-            select(TestSuite.status, func.count())
-            .where(TestSuite.project_id == project_id)
-            .group_by(TestSuite.status)
+            select(TestSuite.status, func.count()).where(TestSuite.project_id == project_id).group_by(TestSuite.status)
         )
         by_status = {str(row[0].value): row[1] for row in status_result}
 
@@ -388,17 +374,13 @@ class TestSuiteRepository:
 
         # Total test cases in all suites
         tc_result = await self.session.execute(
-            select(func.sum(TestSuite.total_test_cases)).where(
-                TestSuite.project_id == project_id
-            )
+            select(func.sum(TestSuite.total_test_cases)).where(TestSuite.project_id == project_id)
         )
         total_test_cases = tc_result.scalar() or 0
 
         # Total automated
         auto_result = await self.session.execute(
-            select(func.sum(TestSuite.automated_count)).where(
-                TestSuite.project_id == project_id
-            )
+            select(func.sum(TestSuite.automated_count)).where(TestSuite.project_id == project_id)
         )
         automated_test_cases = auto_result.scalar() or 0
 

@@ -23,4 +23,4 @@ type C = IsMap<string>;
 */
 export type UnknownMap = ReadonlyMap<unknown, unknown>;
 
-export {};
+

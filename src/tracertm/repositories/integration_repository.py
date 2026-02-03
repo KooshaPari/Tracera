@@ -2,7 +2,7 @@
 
 import uuid
 from datetime import UTC, datetime, timedelta
-from typing import Any, Optional
+from typing import Any
 
 from sqlalchemy import case, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -65,7 +65,7 @@ class IntegrationCredentialRepository:
         await self.session.flush()
         return credential
 
-    async def get_by_id(self, credential_id: str) -> Optional[IntegrationCredential]:
+    async def get_by_id(self, credential_id: str) -> IntegrationCredential | None:
         """Get credential by ID."""
         result = await self.session.execute(
             select(IntegrationCredential).where(IntegrationCredential.id == credential_id)
@@ -79,9 +79,7 @@ class IntegrationCredentialRepository:
         include_global_user_id: str | None = None,
     ) -> list[IntegrationCredential]:
         """Get all credentials for project."""
-        query = select(IntegrationCredential).where(
-            IntegrationCredential.project_id == project_id
-        )
+        query = select(IntegrationCredential).where(IntegrationCredential.project_id == project_id)
         if include_global_user_id:
             query = select(IntegrationCredential).where(
                 (IntegrationCredential.project_id == project_id)
@@ -95,9 +93,7 @@ class IntegrationCredentialRepository:
         result = await self.session.execute(query)
         return list(result.scalars().all())
 
-    async def list_by_user(
-        self, user_id: str, provider: str | None = None
-    ) -> list[IntegrationCredential]:
+    async def list_by_user(self, user_id: str, provider: str | None = None) -> list[IntegrationCredential]:
         """Get all global credentials for a user."""
         query = select(IntegrationCredential).where(
             IntegrationCredential.project_id.is_(None),
@@ -108,9 +104,7 @@ class IntegrationCredentialRepository:
         result = await self.session.execute(query)
         return list(result.scalars().all())
 
-    async def get_by_project_and_provider(
-        self, project_id: str, provider: str
-    ) -> Optional[IntegrationCredential]:
+    async def get_by_project_and_provider(self, project_id: str, provider: str) -> IntegrationCredential | None:
         """Get credential for project and provider (any status)."""
         result = await self.session.execute(
             select(IntegrationCredential).where(
@@ -120,9 +114,7 @@ class IntegrationCredentialRepository:
         )
         return result.scalar_one_or_none()
 
-    async def get_global_by_user_and_provider(
-        self, user_id: str, provider: str
-    ) -> Optional[IntegrationCredential]:
+    async def get_global_by_user_and_provider(self, user_id: str, provider: str) -> IntegrationCredential | None:
         """Get global credential for user and provider."""
         result = await self.session.execute(
             select(IntegrationCredential).where(
@@ -133,9 +125,7 @@ class IntegrationCredentialRepository:
         )
         return result.scalar_one_or_none()
 
-    async def get_active_by_project_and_provider(
-        self, project_id: str, provider: str
-    ) -> Optional[IntegrationCredential]:
+    async def get_active_by_project_and_provider(self, project_id: str, provider: str) -> IntegrationCredential | None:
         """Get active credential for project and provider."""
         result = await self.session.execute(
             select(IntegrationCredential).where(
@@ -150,7 +140,7 @@ class IntegrationCredentialRepository:
         """Decrypt credential token."""
         return self.encryption.decrypt(credential.encrypted_token)
 
-    def decrypt_refresh_token(self, credential: IntegrationCredential) -> Optional[str]:
+    def decrypt_refresh_token(self, credential: IntegrationCredential) -> str | None:
         """Decrypt refresh token."""
         if credential.refresh_token:
             return self.encryption.decrypt(credential.refresh_token)
@@ -177,9 +167,7 @@ class IntegrationCredentialRepository:
             update_data["refresh_token"] = self.encryption.encrypt(refresh_token)
 
         await self.session.execute(
-            update(IntegrationCredential)
-            .where(IntegrationCredential.id == credential_id)
-            .values(**update_data)
+            update(IntegrationCredential).where(IntegrationCredential.id == credential_id).values(**update_data)
         )
 
     async def update(
@@ -213,9 +201,7 @@ class IntegrationCredentialRepository:
             update_data["status"] = status
 
         await self.session.execute(
-            update(IntegrationCredential)
-            .where(IntegrationCredential.id == credential_id)
-            .values(**update_data)
+            update(IntegrationCredential).where(IntegrationCredential.id == credential_id).values(**update_data)
         )
 
     async def update_validation_status(
@@ -237,9 +223,7 @@ class IntegrationCredentialRepository:
             update_data["validation_error"] = error
 
         await self.session.execute(
-            update(IntegrationCredential)
-            .where(IntegrationCredential.id == credential_id)
-            .values(**update_data)
+            update(IntegrationCredential).where(IntegrationCredential.id == credential_id).values(**update_data)
         )
 
     async def revoke(self, credential_id: str) -> None:
@@ -298,11 +282,9 @@ class IntegrationMappingRepository:
         await self.session.flush()
         return mapping
 
-    async def get_by_id(self, mapping_id: str) -> Optional[IntegrationMapping]:
+    async def get_by_id(self, mapping_id: str) -> IntegrationMapping | None:
         """Get mapping by ID."""
-        result = await self.session.execute(
-            select(IntegrationMapping).where(IntegrationMapping.id == mapping_id)
-        )
+        result = await self.session.execute(select(IntegrationMapping).where(IntegrationMapping.id == mapping_id))
         return result.scalar_one_or_none()
 
     async def get_by_tracertm_item(self, item_id: str) -> list[IntegrationMapping]:
@@ -312,9 +294,7 @@ class IntegrationMappingRepository:
         )
         return list(result.scalars().all())
 
-    async def get_by_external_id(
-        self, project_id: str, external_id: str
-    ) -> Optional[IntegrationMapping]:
+    async def get_by_external_id(self, project_id: str, external_id: str) -> IntegrationMapping | None:
         """Find mapping by external ID."""
         result = await self.session.execute(
             select(IntegrationMapping).where(
@@ -356,9 +336,7 @@ class IntegrationMappingRepository:
     async def list_by_credential(self, credential_id: str) -> list[IntegrationMapping]:
         """Get all mappings for credential."""
         result = await self.session.execute(
-            select(IntegrationMapping).where(
-                IntegrationMapping.integration_credential_id == credential_id
-            )
+            select(IntegrationMapping).where(IntegrationMapping.integration_credential_id == credential_id)
         )
         return list(result.scalars().all())
 
@@ -370,9 +348,7 @@ class IntegrationMappingRepository:
         """Update mapping fields."""
         kwargs["updated_at"] = datetime.now(UTC)
         await self.session.execute(
-            update(IntegrationMapping)
-            .where(IntegrationMapping.id == mapping_id)
-            .values(**kwargs)
+            update(IntegrationMapping).where(IntegrationMapping.id == mapping_id).values(**kwargs)
         )
 
     async def update_sync_status(
@@ -402,9 +378,7 @@ class IntegrationMappingRepository:
                     update_data["status"] = "sync_error"
 
         await self.session.execute(
-            update(IntegrationMapping)
-            .where(IntegrationMapping.id == mapping_id)
-            .values(**update_data)
+            update(IntegrationMapping).where(IntegrationMapping.id == mapping_id).values(**update_data)
         )
 
     async def delete(self, mapping_id: str) -> None:
@@ -445,11 +419,9 @@ class IntegrationSyncQueueRepository:
         await self.session.flush()
         return queue_item
 
-    async def get_by_id(self, queue_id: str) -> Optional[IntegrationSyncQueue]:
+    async def get_by_id(self, queue_id: str) -> IntegrationSyncQueue | None:
         """Get queue item by ID."""
-        result = await self.session.execute(
-            select(IntegrationSyncQueue).where(IntegrationSyncQueue.id == queue_id)
-        )
+        result = await self.session.execute(select(IntegrationSyncQueue).where(IntegrationSyncQueue.id == queue_id))
         return result.scalar_one_or_none()
 
     async def get_pending(self, limit: int = 100) -> list[IntegrationSyncQueue]:
@@ -487,11 +459,7 @@ class IntegrationSyncQueueRepository:
         limit: int = 100,
     ) -> tuple[list[IntegrationSyncQueue], int]:
         """List queue items for project (via mappings)."""
-        query = (
-            select(IntegrationSyncQueue)
-            .join(IntegrationMapping)
-            .where(IntegrationMapping.project_id == project_id)
-        )
+        query = select(IntegrationSyncQueue).join(IntegrationMapping).where(IntegrationMapping.project_id == project_id)
 
         if status:
             query = query.where(IntegrationSyncQueue.status == status)
@@ -656,11 +624,7 @@ class IntegrationSyncLogRepository:
         limit: int = 50,
     ) -> tuple[list[IntegrationSyncLog], int]:
         """Get sync logs for project."""
-        query = (
-            select(IntegrationSyncLog)
-            .join(IntegrationMapping)
-            .where(IntegrationMapping.project_id == project_id)
-        )
+        query = select(IntegrationSyncLog).join(IntegrationMapping).where(IntegrationMapping.project_id == project_id)
 
         if success is not None:
             query = query.where(IntegrationSyncLog.success == success)
@@ -702,11 +666,9 @@ class IntegrationConflictRepository:
         await self.session.flush()
         return conflict
 
-    async def get_by_id(self, conflict_id: str) -> Optional[IntegrationConflict]:
+    async def get_by_id(self, conflict_id: str) -> IntegrationConflict | None:
         """Get conflict by ID."""
-        result = await self.session.execute(
-            select(IntegrationConflict).where(IntegrationConflict.id == conflict_id)
-        )
+        result = await self.session.execute(select(IntegrationConflict).where(IntegrationConflict.id == conflict_id))
         return result.scalar_one_or_none()
 
     async def list_pending_by_project(

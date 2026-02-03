@@ -132,9 +132,9 @@ async function layoutWithELK(
 
 	const graph: ElkNode = {
 		children: nodes.map((n) => ({
+			height: n.height || nodeHeight,
 			id: n.id,
 			width: n.width || nodeWidth,
-			height: n.height || nodeHeight,
 		})),
 		edges: edges.map((e) => ({
 			id: e.id,
@@ -145,11 +145,11 @@ async function layoutWithELK(
 		layoutOptions: {
 			"elk.algorithm": "layered",
 			"elk.direction": DIRECTION_MAP[direction] || "DOWN",
-			"elk.spacing.nodeNode": String(nodeSep),
+			"elk.layered.crossingMinimization.strategy": "LAYER_SWEEP",
+			"elk.layered.nodePlacement.strategy": "NETWORK_SIMPLEX",
 			"elk.layered.spacing.nodeNodeBetweenLayers": String(rankSep),
 			"elk.padding": `[left=${marginX}, top=${marginY}, right=${marginX}, bottom=${marginY}]`,
-			"elk.layered.nodePlacement.strategy": "NETWORK_SIMPLEX",
-			"elk.layered.crossingMinimization.strategy": "LAYER_SWEEP",
+			"elk.spacing.nodeNode": String(nodeSep),
 		},
 	};
 
@@ -252,7 +252,7 @@ function layoutWithDagre(
 	let maxWidth = 0;
 	let maxHeight = 0;
 
-	const maxLevel = Math.max(...[...levelGroups.keys()]);
+	const maxLevel = Math.max(...levelGroups.keys());
 	for (const [level, nodeIds] of levelGroups) {
 		const y = marginY + level * (nodeHeight + rankSep);
 		const levelWidth = nodeIds.length * (nodeWidth + nodeSep);

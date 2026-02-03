@@ -5,6 +5,7 @@ Integration tests for Epic 6: Project Enhancements (Stories 6.3-6.6).
 import json
 
 import pytest
+
 pytestmark = pytest.mark.integration
 
 from tracertm.api.client import TraceRTMClient
@@ -18,6 +19,7 @@ def temp_project_setup(tmp_path, monkeypatch):
     monkeypatch.setenv("HOME", str(tmp_path))
 
     from tracertm.config.manager import ConfigManager
+
     config_manager = ConfigManager()
 
     db_path = tmp_path / "test.db"
@@ -50,7 +52,7 @@ def test_project_isolation(temp_project_setup):
     _project_id, _database_url = temp_project_setup
 
     client1 = TraceRTMClient()
-    client1.register_agent("agent-1", "ai_agent")
+    client1.register_agent("agent-1", agent_type="ai_agent")
 
     # Create items in project 1
     item1 = client1.create_item("Project 1 Item", "FEATURE", "feature")
@@ -70,7 +72,7 @@ def test_project_export_import(temp_project_setup):
     _project_id, _database_url = temp_project_setup
 
     client = TraceRTMClient()
-    client.register_agent("test-agent", "ai_agent")
+    client.register_agent("test-agent", agent_type="ai_agent")
 
     # Create items
     client.create_item("Item 1", "FEATURE", "feature")

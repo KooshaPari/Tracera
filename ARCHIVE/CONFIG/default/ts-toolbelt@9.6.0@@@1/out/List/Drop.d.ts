@@ -45,4 +45,4 @@ export declare type _Drop<L extends List, N extends number, way extends Way = '-
  * ```
  */
 export declare type Drop<L extends List, N extends number, way extends Way = '->'> = L extends unknown ? N extends unknown ? _Drop<L, N, way> : never : never;
-export {};
+

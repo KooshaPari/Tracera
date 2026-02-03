@@ -183,7 +183,7 @@ export default function markdown(Prism) {
           },
           string:
             /(?:"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\((?:\\.|[^)\\])*\))$/,
-          punctuation: /^[\[\]!:]|[<>]/
+          punctuation: /^[[\]!:]|[<>]/
         },
         alias: 'url'
       },

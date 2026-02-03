@@ -165,20 +165,17 @@ class ItemData:
         # Components Used (for wireframe type)
         if self.item_type == "wireframe" and self.components:
             sections.append("## Components Used\n")
-            for component in self.components:
-                sections.append(f"- {component}")
+            sections.extend(f"- {component}" for component in self.components)
 
         # Screens (for wireframe type)
         if self.item_type == "wireframe" and self.screens:
             sections.append("## Screens\n")
-            for screen in self.screens:
-                sections.append(f"- {screen}")
+            sections.extend(f"- {screen}" for screen in self.screens)
 
         # Acceptance Criteria
         if self.acceptance_criteria:
             sections.append("## Acceptance Criteria\n")
-            for criterion in self.acceptance_criteria:
-                sections.append(criterion)
+            sections.extend(self.acceptance_criteria)
 
         # Notes
         if self.notes:
@@ -190,11 +187,11 @@ class ItemData:
             sections.append("## History\n")
             sections.append("| Version | Date | Author | Changes |")
             sections.append("|---------|------|--------|---------|")
-            for entry in self.history:
-                sections.append(
-                    f"| {entry.get('version', '')} | {entry.get('date', '')} | "
-                    f"{entry.get('author', '')} | {entry.get('changes', '')} |"
-                )
+            sections.extend(
+                f"| {entry.get('version', '')} | {entry.get('date', '')} | "
+                f"{entry.get('author', '')} | {entry.get('changes', '')} |"
+                for entry in self.history
+            )
 
         return "\n\n".join(sections)
 
@@ -282,7 +279,7 @@ def parse_item_markdown(path: Path) -> ItemData:
     if not path.exists():
         raise FileNotFoundError(f"Item file not found: {path}")
 
-    with open(path, encoding="utf-8") as f:
+    with path.open(encoding="utf-8") as f:
         content = f.read()
 
     # Parse frontmatter manually
@@ -321,7 +318,7 @@ def write_item_markdown(item: ItemData, path: Path) -> None:
     content = _build_frontmatter(item.to_frontmatter_dict(), item.to_markdown_body())
 
     # Write to file
-    with open(path, "w", encoding="utf-8") as f:
+    with path.open("w", encoding="utf-8") as f:
         f.write(content)
 
 
@@ -341,7 +338,7 @@ def parse_links_yaml(path: Path) -> list[LinkData]:
     if not path.exists():
         raise FileNotFoundError(f"Links file not found: {path}")
 
-    with open(path, encoding="utf-8") as f:
+    with path.open(encoding="utf-8") as f:
         data = yaml.safe_load(f)
 
     if not data or "links" not in data:
@@ -388,7 +385,7 @@ def write_links_yaml(links: list[LinkData], path: Path) -> None:
 
 """
 
-    with open(path, "w", encoding="utf-8") as f:
+    with path.open("w", encoding="utf-8") as f:
         f.write(header)
         yaml.dump(data, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
 
@@ -408,7 +405,7 @@ def parse_config_yaml(path: Path) -> dict[str, Any]:
     if not path.exists():
         raise FileNotFoundError(f"Config file not found: {path}")
 
-    with open(path, encoding="utf-8") as f:
+    with path.open(encoding="utf-8") as f:
         data = yaml.safe_load(f)
 
     return data or {}
@@ -424,7 +421,7 @@ def write_config_yaml(config: dict[str, Any], path: Path) -> None:
     # Create parent directory if it doesn't exist
     path.parent.mkdir(parents=True, exist_ok=True)
 
-    with open(path, "w", encoding="utf-8") as f:
+    with path.open("w", encoding="utf-8") as f:
         yaml.dump(config, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
 
 
@@ -470,7 +467,7 @@ def _parse_markdown_body(body: str) -> tuple[str, str, list[str], str, list[dict
             # Parse checkbox items
             for line in section_content.split("\n"):
                 line = line.strip()
-                if line.startswith("- [") or line.startswith("* ["):
+                if line.startswith(("- [", "* [")):
                     acceptance_criteria.append(line)
         elif section_name == "notes":
             notes = section_content

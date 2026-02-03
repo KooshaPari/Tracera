@@ -54,17 +54,17 @@ export function DigitalSignatureBadge({
 			: (valid === false
 				? {
 						bg: "bg-red-100",
-						text: "text-red-700",
 						border: "border-red-300",
 						icon: "✕",
 						label: "Invalid",
+						text: "text-red-700",
 					}
 				: {
 						bg: "bg-yellow-100",
-						text: "text-yellow-700",
 						border: "border-yellow-300",
 						icon: "?",
 						label: "Unverified",
+						text: "text-yellow-700",
 					});
 
 	if (!showDetails) {

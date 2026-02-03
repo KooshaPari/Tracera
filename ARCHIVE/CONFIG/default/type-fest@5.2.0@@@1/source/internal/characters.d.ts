@@ -62,4 +62,4 @@ export type AsciiPunctuation =
 	| '}'
 	| '~';
 
-export {};
+

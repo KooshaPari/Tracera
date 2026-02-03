@@ -28,4 +28,4 @@ type CreateWithEqualityFn = {
     ], Mos>, defaultEqualityFn?: <U>(a: U, b: U) => boolean) => UseBoundStoreWithEqualityFn<Mutate<StoreApi<T>, Mos>>;
 };
 export declare const createWithEqualityFn: CreateWithEqualityFn;
-export {};
+

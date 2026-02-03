@@ -316,7 +316,7 @@ export type KillSignalListener = (signal: dntShim.Deno.Signal) => void;
 export declare class KillSignal {
     #private;
     /** @internal */
-    constructor(symbol: Symbol, state: KillSignalState);
+    constructor(symbol: symbol, state: KillSignalState);
     /** Returns if the command signal has ever received a SIGTERM,
      * SIGKILL, SIGABRT, SIGQUIT, SIGINT, or SIGSTOP
      */
@@ -336,4 +336,4 @@ export declare class KillSignal {
 export declare function getSignalAbortCode(signal: dntShim.Deno.Signal): number | undefined;
 export declare function template(strings: TemplateStringsArray, exprs: any[]): CommandBuilderStateCommand;
 export declare function templateRaw(strings: TemplateStringsArray, exprs: any[]): CommandBuilderStateCommand;
-export {};
+

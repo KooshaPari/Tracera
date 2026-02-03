@@ -19,7 +19,7 @@ export default function cooklang(Prism) {
       pattern: /\{[^{}]*\}/,
       inside: {
         amount: {
-          pattern: /([\{|])[^{}|*%]+/,
+          pattern: /([{|])[^{}|*%]+/,
           lookbehind: true,
           alias: 'number'
         },

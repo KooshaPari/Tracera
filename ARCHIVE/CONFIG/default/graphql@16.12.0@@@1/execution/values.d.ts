@@ -76,4 +76,4 @@ export declare function getDirectiveValues(
   | {
       [argument: string]: unknown;
     };
-export {};
+

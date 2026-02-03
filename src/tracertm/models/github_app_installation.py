@@ -2,14 +2,19 @@
 GitHub App Installation model for account-level GitHub App installations.
 """
 
-from datetime import datetime
-from typing import Any, Optional
+from __future__ import annotations
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Index, Integer, String
+from datetime import datetime
+from typing import TYPE_CHECKING, Any
+
+from sqlalchemy import DateTime, ForeignKey, Index, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from tracertm.models.base import Base, TimestampMixin, generate_uuid
 from tracertm.models.types import JSONType
+
+if TYPE_CHECKING:
+    from tracertm.models.account import Account
 
 
 class GitHubAppInstallation(Base, TimestampMixin):
@@ -26,37 +31,25 @@ class GitHubAppInstallation(Base, TimestampMixin):
         Index("ix_github_app_installations_installation_id", "installation_id"),
     )
 
-    id: Mapped[str] = mapped_column(
-        String(36), primary_key=True, default=generate_uuid
-    )
-    account_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("accounts.id", ondelete="CASCADE"), nullable=False
-    )
-    
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
+    account_id: Mapped[str] = mapped_column(String(36), ForeignKey("accounts.id", ondelete="CASCADE"), nullable=False)
+
     # GitHub installation details
-    installation_id: Mapped[int] = mapped_column(
-        nullable=False, unique=True
-    )
+    installation_id: Mapped[int] = mapped_column(nullable=False, unique=True)
     account_login: Mapped[str] = mapped_column(String(255), nullable=False)
     target_type: Mapped[str] = mapped_column(String(50), nullable=False)  # Organization or User
     target_id: Mapped[int] = mapped_column(nullable=False)
-    
+
     # Installation metadata
-    permissions: Mapped[dict[str, Any]] = mapped_column(
-        JSONType, nullable=False, default=dict
-    )
-    repository_selection: Mapped[str] = mapped_column(
-        String(50), nullable=False, default="all"
-    )  # all or selected
-    
+    permissions: Mapped[dict[str, Any]] = mapped_column(JSONType, nullable=False, default=dict)
+    repository_selection: Mapped[str] = mapped_column(String(50), nullable=False, default="all")  # all or selected
+
     # Status
-    suspended_at: Mapped[Optional[datetime]] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
-    suspended_by: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    
+    suspended_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    suspended_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
     # Relationships
-    account: Mapped["Account"] = relationship("Account")
+    account: Mapped[Account] = relationship("Account")
 
     def __repr__(self) -> str:
         return f"<GitHubAppInstallation(id={self.id!r}, installation_id={self.installation_id!r}, account_id={self.account_id!r})>"

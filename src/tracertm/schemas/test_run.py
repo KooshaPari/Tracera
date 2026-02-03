@@ -3,7 +3,7 @@ Pydantic schemas for Test Run API.
 """
 
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -13,24 +13,24 @@ class TestResultCreate(BaseModel):
 
     test_case_id: str
     status: str = Field(..., pattern="^(passed|failed|skipped|blocked|error)$")
-    started_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
-    duration_seconds: Optional[int] = Field(None, ge=0)
-    executed_by: Optional[str] = Field(None, max_length=255)
-    actual_result: Optional[str] = None
-    failure_reason: Optional[str] = None
-    error_message: Optional[str] = None
-    stack_trace: Optional[str] = None
-    screenshots: Optional[list[str]] = None
-    logs_url: Optional[str] = Field(None, max_length=1000)
-    attachments: Optional[list[dict[str, Any]]] = None
-    step_results: Optional[list[dict[str, Any]]] = None
-    linked_defect_ids: Optional[list[str]] = None
-    created_defect_id: Optional[str] = None
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
+    duration_seconds: int | None = Field(None, ge=0)
+    executed_by: str | None = Field(None, max_length=255)
+    actual_result: str | None = None
+    failure_reason: str | None = None
+    error_message: str | None = None
+    stack_trace: str | None = None
+    screenshots: list[str] | None = None
+    logs_url: str | None = Field(None, max_length=1000)
+    attachments: list[dict[str, Any]] | None = None
+    step_results: list[dict[str, Any]] | None = None
+    linked_defect_ids: list[str] | None = None
+    created_defect_id: str | None = None
     retry_count: int = 0
     is_flaky: bool = False
-    notes: Optional[str] = None
-    metadata: Optional[dict[str, Any]] = None
+    notes: str | None = None
+    metadata: dict[str, Any] | None = None
 
 
 class TestResultResponse(BaseModel):
@@ -40,24 +40,24 @@ class TestResultResponse(BaseModel):
     run_id: str
     test_case_id: str
     status: str
-    started_at: Optional[datetime]
-    completed_at: Optional[datetime]
-    duration_seconds: Optional[int]
-    executed_by: Optional[str]
-    actual_result: Optional[str]
-    failure_reason: Optional[str]
-    error_message: Optional[str]
-    stack_trace: Optional[str]
-    screenshots: Optional[list[str]]
-    logs_url: Optional[str]
-    attachments: Optional[list[dict[str, Any]]]
-    step_results: Optional[list[dict[str, Any]]]
-    linked_defect_ids: Optional[list[str]]
-    created_defect_id: Optional[str]
+    started_at: datetime | None
+    completed_at: datetime | None
+    duration_seconds: int | None
+    executed_by: str | None
+    actual_result: str | None
+    failure_reason: str | None
+    error_message: str | None
+    stack_trace: str | None
+    screenshots: list[str] | None
+    logs_url: str | None
+    attachments: list[dict[str, Any]] | None
+    step_results: list[dict[str, Any]] | None
+    linked_defect_ids: list[str] | None
+    created_defect_id: str | None
     retry_count: int
     is_flaky: bool
-    notes: Optional[str]
-    metadata: Optional[dict[str, Any]]
+    notes: str | None
+    metadata: dict[str, Any] | None
     created_at: datetime
     updated_at: datetime
 
@@ -68,37 +68,37 @@ class TestRunCreate(BaseModel):
     """Schema for creating a test run."""
 
     name: str = Field(..., min_length=1, max_length=500)
-    description: Optional[str] = Field(None, max_length=5000)
-    suite_id: Optional[str] = None
+    description: str | None = Field(None, max_length=5000)
+    suite_id: str | None = None
     run_type: str = Field(default="manual", pattern="^(manual|automated|ci_cd|scheduled)$")
-    environment: Optional[str] = Field(None, max_length=255)
-    build_number: Optional[str] = Field(None, max_length=255)
-    build_url: Optional[str] = Field(None, max_length=1000)
-    branch: Optional[str] = Field(None, max_length=255)
-    commit_sha: Optional[str] = Field(None, max_length=64)
-    scheduled_at: Optional[datetime] = None
-    initiated_by: Optional[str] = Field(None, max_length=255)
-    tags: Optional[list[str]] = None
-    external_run_id: Optional[str] = Field(None, max_length=255)
-    webhook_id: Optional[str] = None
-    metadata: Optional[dict[str, Any]] = None
+    environment: str | None = Field(None, max_length=255)
+    build_number: str | None = Field(None, max_length=255)
+    build_url: str | None = Field(None, max_length=1000)
+    branch: str | None = Field(None, max_length=255)
+    commit_sha: str | None = Field(None, max_length=64)
+    scheduled_at: datetime | None = None
+    initiated_by: str | None = Field(None, max_length=255)
+    tags: list[str] | None = None
+    external_run_id: str | None = Field(None, max_length=255)
+    webhook_id: str | None = None
+    metadata: dict[str, Any] | None = None
     # Optionally include test case IDs to include in this run
-    test_case_ids: Optional[list[str]] = None
+    test_case_ids: list[str] | None = None
 
 
 class TestRunUpdate(BaseModel):
     """Schema for updating a test run."""
 
-    name: Optional[str] = Field(None, min_length=1, max_length=500)
-    description: Optional[str] = Field(None, max_length=5000)
-    environment: Optional[str] = Field(None, max_length=255)
-    build_number: Optional[str] = Field(None, max_length=255)
-    build_url: Optional[str] = Field(None, max_length=1000)
-    branch: Optional[str] = Field(None, max_length=255)
-    commit_sha: Optional[str] = Field(None, max_length=64)
-    notes: Optional[str] = None
-    tags: Optional[list[str]] = None
-    metadata: Optional[dict[str, Any]] = None
+    name: str | None = Field(None, min_length=1, max_length=500)
+    description: str | None = Field(None, max_length=5000)
+    environment: str | None = Field(None, max_length=255)
+    build_number: str | None = Field(None, max_length=255)
+    build_url: str | None = Field(None, max_length=1000)
+    branch: str | None = Field(None, max_length=255)
+    commit_sha: str | None = Field(None, max_length=64)
+    notes: str | None = None
+    tags: list[str] | None = None
+    metadata: dict[str, Any] | None = None
 
 
 class TestRunResponse(BaseModel):
@@ -107,35 +107,35 @@ class TestRunResponse(BaseModel):
     id: str
     run_number: str
     project_id: str
-    suite_id: Optional[str]
+    suite_id: str | None
     name: str
-    description: Optional[str]
+    description: str | None
     status: str
     run_type: str
-    environment: Optional[str]
-    build_number: Optional[str]
-    build_url: Optional[str]
-    branch: Optional[str]
-    commit_sha: Optional[str]
-    scheduled_at: Optional[datetime]
-    started_at: Optional[datetime]
-    completed_at: Optional[datetime]
-    duration_seconds: Optional[int]
-    initiated_by: Optional[str]
-    executed_by: Optional[str]
+    environment: str | None
+    build_number: str | None
+    build_url: str | None
+    branch: str | None
+    commit_sha: str | None
+    scheduled_at: datetime | None
+    started_at: datetime | None
+    completed_at: datetime | None
+    duration_seconds: int | None
+    initiated_by: str | None
+    executed_by: str | None
     total_tests: int
     passed_count: int
     failed_count: int
     skipped_count: int
     blocked_count: int
     error_count: int
-    pass_rate: Optional[float]
-    notes: Optional[str]
-    failure_summary: Optional[str]
-    tags: Optional[list[str]]
-    external_run_id: Optional[str]
-    webhook_id: Optional[str]
-    metadata: Optional[dict[str, Any]]
+    pass_rate: float | None
+    notes: str | None
+    failure_summary: str | None
+    tags: list[str] | None
+    external_run_id: str | None
+    webhook_id: str | None
+    metadata: dict[str, Any] | None
     version: int
     created_at: datetime
     updated_at: datetime
@@ -153,17 +153,15 @@ class TestRunListResponse(BaseModel):
 class TestRunStart(BaseModel):
     """Schema for starting a test run."""
 
-    executed_by: Optional[str] = Field(None, max_length=255)
+    executed_by: str | None = Field(None, max_length=255)
 
 
 class TestRunComplete(BaseModel):
     """Schema for completing a test run."""
 
-    status: Optional[str] = Field(
-        None, pattern="^(passed|failed|blocked|cancelled)$"
-    )
-    notes: Optional[str] = None
-    failure_summary: Optional[str] = None
+    status: str | None = Field(None, pattern="^(passed|failed|blocked|cancelled)$")
+    notes: str | None = None
+    failure_summary: str | None = None
 
 
 class BulkTestResultsSubmit(BaseModel):
@@ -178,11 +176,11 @@ class TestRunActivityResponse(BaseModel):
     id: str
     run_id: str
     activity_type: str
-    from_value: Optional[str]
-    to_value: Optional[str]
-    description: Optional[str]
-    performed_by: Optional[str]
-    metadata: Optional[dict[str, Any]]
+    from_value: str | None
+    to_value: str | None
+    description: str | None
+    performed_by: str | None
+    metadata: dict[str, Any] | None
     created_at: datetime
 
     model_config = {"from_attributes": True}
@@ -203,6 +201,6 @@ class TestRunStats(BaseModel):
     by_status: dict[str, int]
     by_type: dict[str, int]
     by_environment: dict[str, int]
-    average_duration_seconds: Optional[float]
-    average_pass_rate: Optional[float]
+    average_duration_seconds: float | None
+    average_pass_rate: float | None
     recent_runs: list[TestRunResponse]

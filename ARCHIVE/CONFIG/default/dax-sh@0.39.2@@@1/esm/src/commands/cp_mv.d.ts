@@ -21,4 +21,4 @@ interface MoveFlags {
     }[];
 }
 export declare function parseMvArgs(cwd: string, args: string[]): Promise<MoveFlags>;
-export {};
+

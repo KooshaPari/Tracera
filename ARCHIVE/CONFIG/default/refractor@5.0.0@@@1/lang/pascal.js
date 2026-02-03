@@ -65,14 +65,14 @@ Support inline asm ?
       /\b\d+(?:\.\d+)?(?:e[+-]?\d+)?/i
     ],
     operator: [
-      /\.\.|\*\*|:=|<[<=>]?|>[>=]?|[+\-*\/]=?|[@^=]/,
+      /\.\.|\*\*|:=|<[<=>]?|>[>=]?|[+\-*/]=?|[@^=]/,
       {
         pattern:
           /(^|[^&])\b(?:and|as|div|exclude|in|include|is|mod|not|or|shl|shr|xor)\b/,
         lookbehind: true
       }
     ],
-    punctuation: /\(\.|\.\)|[()\[\]:;,.]/
+    punctuation: /\(\.|\.\)|[()[\]:;,.]/
   }
   Prism.languages.pascal.asm.inside = Prism.languages.extend('pascal', {
     asm: undefined,

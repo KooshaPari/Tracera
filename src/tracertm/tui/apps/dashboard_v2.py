@@ -61,6 +61,7 @@ except ImportError:
             pass
 
 
+import logging
 from pathlib import Path
 
 from tracertm.config.manager import ConfigManager
@@ -264,9 +265,7 @@ if TEXTUAL_AVAILABLE:
             stats_table.add_row("---", "---", "---")
 
             # Total
-            stats_table.add_row(
-                "TOTAL", str(stats["total_items"]), f"{stats['total_links']} links"
-            )
+            stats_table.add_row("TOTAL", str(stats["total_items"]), f"{stats['total_links']} links")
 
             # Update state summary
             state_summary = self.query_one("#state-summary", Static)
@@ -283,9 +282,7 @@ if TEXTUAL_AVAILABLE:
 
         def refresh_items(self, project) -> None:
             """Refresh items table."""
-            items = self.storage_adapter.list_items(
-                project, item_type=self.current_view
-            )
+            items = self.storage_adapter.list_items(project, item_type=self.current_view)
 
             items_table = self.query_one("#items-table", DataTable)
             items_table.clear()
@@ -360,6 +357,7 @@ if TEXTUAL_AVAILABLE:
         def action_search(self) -> None:
             """Open search dialog."""
             try:
+
                 class SearchDialog(Container):
                     """Search dialog for items."""
 
@@ -370,10 +368,7 @@ if TEXTUAL_AVAILABLE:
 
                     def compose(self):
                         with Horizontal():
-                            yield Input(
-                                placeholder="Enter search query...",
-                                id="search_input_v2"
-                            )
+                            yield Input(placeholder="Enter search query...", id="search_input_v2")
                             yield Button("Search", id="search_btn_v2")
                             yield Button("Cancel", id="cancel_btn_v2")
 
@@ -412,19 +407,16 @@ if TEXTUAL_AVAILABLE:
                 async def search():
                     async with self.db.session() as session:
                         search_service = SearchService(session)
-                        results = await search_service.search(
-                            query=query,
-                            project_id=self.current_project_id
-                        )
-                        return results
+                        filters = {"project_id": self.current_project_id} if self.current_project_id else None
+                        return await search_service.search(query=query, filters=filters)
 
                 # For now, fall back to simple filtering
-                if hasattr(self, 'items_data'):
+                if hasattr(self, "items_data"):
                     query_lower = query.lower()
                     matched = [
-                        item for item in self.items_data
-                        if query_lower in item.get("title", "").lower()
-                        or query_lower in item.get("type", "").lower()
+                        item
+                        for item in self.items_data
+                        if query_lower in item.get("title", "").lower() or query_lower in item.get("type", "").lower()
                     ]
                     self.notify(f"Found {len(matched)} items matching '{query}'", timeout=2)
                 else:
@@ -485,9 +477,8 @@ if TEXTUAL_AVAILABLE:
                         f"Conflicts detected: {state.conflicts_count}",
                         severity="warning",
                     )
-            except Exception:
-                # If app is not running, ignore
-                pass
+            except Exception as e:
+                logging.getLogger(__name__).debug("App not running, ignoring sync status callback: %s", e)
 
         def _on_conflict_detected(self, conflict) -> None:
             """Handle conflict detection."""
@@ -498,18 +489,16 @@ if TEXTUAL_AVAILABLE:
                     severity="warning",
                 )
                 self.call_from_thread(self.update_sync_status)
-            except Exception:
-                # If app is not running, ignore
-                pass
+            except Exception as e:
+                logging.getLogger(__name__).debug("App not running, ignoring conflict callback: %s", e)
 
         def _on_item_change(self, item_id: str) -> None:
             """Handle item changes."""
             # Refresh items list after change
             try:
                 self.call_from_thread(self.refresh_data)
-            except Exception:
-                # If app is not running, ignore
-                pass
+            except Exception as e:
+                logging.getLogger(__name__).debug("App not running, ignoring item change callback: %s", e)
 
         def on_unmount(self) -> None:
             """Cleanup on exit."""
@@ -524,6 +513,4 @@ if not TEXTUAL_AVAILABLE:
         """Placeholder when Textual is not installed."""
 
         def __init__(self, *args, **kwargs) -> None:
-            raise ImportError(
-                "Textual is required for TUI. Install with: pip install textual"
-            )
+            raise ImportError("Textual is required for TUI. Install with: pip install textual")

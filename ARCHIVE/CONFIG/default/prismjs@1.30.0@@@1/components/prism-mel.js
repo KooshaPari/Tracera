@@ -39,8 +39,8 @@ Prism.languages.mel = {
 		pattern: /<<|>>/,
 		alias: 'punctuation'
 	},
-	'operator': /\+[+=]?|-[-=]?|&&|\|\||[<>]=?|[*\/!=]=?|[%^]/,
-	'punctuation': /[.,:;?\[\](){}]/
+	'operator': /\+[+=]?|-[-=]?|&&|\|\||[<>]=?|[*/!=]=?|[%^]/,
+	'punctuation': /[.,:;?[\](){}]/
 };
 
 Prism.languages.mel['code'].inside['statement'].inside = Prism.languages.mel;

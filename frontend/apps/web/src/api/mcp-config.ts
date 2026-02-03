@@ -10,7 +10,7 @@ interface McpConfig {
 }
 
 const envMcpBaseUrl =
-	(import.meta.env?.VITE_MCP_BASE_URL as string | undefined) ?? "";
+	(import.meta.env?.["VITE_MCP_BASE_URL"] as string | undefined) ?? "";
 const ENV_MCP_BASE_URL = envMcpBaseUrl ?? "";
 const MCP_CONFIG_ENDPOINT = `${API_BASE_URL}/api/v1/mcp/config`;
 

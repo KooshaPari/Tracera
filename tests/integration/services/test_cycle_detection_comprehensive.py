@@ -16,14 +16,12 @@ Coverage target: 90%+
 Test count: 35+
 """
 
-import pytest
 import time
-import sys
-from datetime import datetime
-from unittest.mock import Mock, AsyncMock, patch
+from datetime import UTC, datetime, timezone
+
+import pytest
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+from sqlalchemy.orm import sessionmaker
 
 from tracertm.models.base import Base
 from tracertm.models.item import Item
@@ -31,13 +29,13 @@ from tracertm.models.link import Link
 from tracertm.models.project import Project
 from tracertm.services.cycle_detection_service import CycleDetectionService
 
-
 pytestmark = pytest.mark.integration
 
 
 # ============================================================
 # FIXTURES
 # ============================================================
+
 
 @pytest.fixture(scope="function")
 def db_session():
@@ -70,7 +68,7 @@ def sample_items_basic(db_session, sample_project):
             title=f"Item {i}",
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         db_session.add(item)
         items.append(item)
@@ -89,7 +87,7 @@ def sample_items_large(db_session, sample_project):
             title=f"Item {i}",
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         db_session.add(item)
         items.append(item)
@@ -109,7 +107,7 @@ def sample_items_xlarge(db_session, sample_project):
             title=f"Node {i}",
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         db_session.add(item)
         items.append(item)
@@ -126,6 +124,7 @@ def sample_items_xlarge(db_session, sample_project):
 # TEST CLASS 1: BASIC CYCLE DETECTION (has_cycle)
 # ============================================================
 
+
 class TestHasCycleBasic:
     """Test has_cycle method with basic scenarios."""
 
@@ -133,10 +132,7 @@ class TestHasCycleBasic:
         """Test has_cycle returns False for non-depends_on link types."""
         service = CycleDetectionService(db_session)
         result = service.has_cycle(
-            sample_project.id,
-            sample_items_basic[0].id,
-            sample_items_basic[1].id,
-            link_type="blocks"
+            sample_project.id, sample_items_basic[0].id, sample_items_basic[1].id, link_type="blocks"
         )
         assert result is False
 
@@ -147,7 +143,7 @@ class TestHasCycleBasic:
             project_id=sample_project.id,
             source_item_id=sample_items_basic[0].id,
             target_item_id=sample_items_basic[1].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(link1)
         db_session.commit()
@@ -156,10 +152,7 @@ class TestHasCycleBasic:
 
         # Adding B -> A would create cycle
         result = service.has_cycle(
-            sample_project.id,
-            sample_items_basic[1].id,
-            sample_items_basic[0].id,
-            link_type="depends_on"
+            sample_project.id, sample_items_basic[1].id, sample_items_basic[0].id, link_type="depends_on"
         )
         assert result is True
 
@@ -170,13 +163,13 @@ class TestHasCycleBasic:
             project_id=sample_project.id,
             source_item_id=sample_items_basic[0].id,
             target_item_id=sample_items_basic[1].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         link2 = Link(
             project_id=sample_project.id,
             source_item_id=sample_items_basic[1].id,
             target_item_id=sample_items_basic[2].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add_all([link1, link2])
         db_session.commit()
@@ -185,10 +178,7 @@ class TestHasCycleBasic:
 
         # Adding C -> A would create cycle
         result = service.has_cycle(
-            sample_project.id,
-            sample_items_basic[2].id,
-            sample_items_basic[0].id,
-            link_type="depends_on"
+            sample_project.id, sample_items_basic[2].id, sample_items_basic[0].id, link_type="depends_on"
         )
         assert result is True
 
@@ -199,13 +189,13 @@ class TestHasCycleBasic:
             project_id=sample_project.id,
             source_item_id=sample_items_basic[0].id,
             target_item_id=sample_items_basic[1].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         link2 = Link(
             project_id=sample_project.id,
             source_item_id=sample_items_basic[1].id,
             target_item_id=sample_items_basic[2].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add_all([link1, link2])
         db_session.commit()
@@ -214,10 +204,7 @@ class TestHasCycleBasic:
 
         # Adding A -> D doesn't create cycle
         result = service.has_cycle(
-            sample_project.id,
-            sample_items_basic[0].id,
-            sample_items_basic[3].id,
-            link_type="depends_on"
+            sample_project.id, sample_items_basic[0].id, sample_items_basic[3].id, link_type="depends_on"
         )
         assert result is False
 
@@ -227,10 +214,7 @@ class TestHasCycleBasic:
 
         # Self-dependency should be detected as cycle
         result = service.has_cycle(
-            sample_project.id,
-            sample_items_basic[0].id,
-            sample_items_basic[0].id,
-            link_type="depends_on"
+            sample_project.id, sample_items_basic[0].id, sample_items_basic[0].id, link_type="depends_on"
         )
         assert result is True
 
@@ -239,10 +223,7 @@ class TestHasCycleBasic:
         service = CycleDetectionService(db_session)
 
         result = service.has_cycle(
-            sample_project.id,
-            sample_items_basic[0].id,
-            sample_items_basic[1].id,
-            link_type="depends_on"
+            sample_project.id, sample_items_basic[0].id, sample_items_basic[1].id, link_type="depends_on"
         )
         assert result is False
 
@@ -254,7 +235,7 @@ class TestHasCycleBasic:
                 project_id=sample_project.id,
                 source_item_id=sample_items_basic[i].id,
                 target_item_id=sample_items_basic[i + 1].id,
-                link_type="depends_on"
+                link_type="depends_on",
             )
             links.append(link)
         db_session.add_all(links)
@@ -264,10 +245,7 @@ class TestHasCycleBasic:
 
         # Adding E -> A would create cycle
         result = service.has_cycle(
-            sample_project.id,
-            sample_items_basic[4].id,
-            sample_items_basic[0].id,
-            link_type="depends_on"
+            sample_project.id, sample_items_basic[4].id, sample_items_basic[0].id, link_type="depends_on"
         )
         assert result is True
 
@@ -275,6 +253,7 @@ class TestHasCycleBasic:
 # ============================================================
 # TEST CLASS 2: FULL CYCLE DETECTION (detect_cycles)
 # ============================================================
+
 
 class TestDetectCyclesFull:
     """Test detect_cycles method for finding all cycles."""
@@ -286,13 +265,13 @@ class TestDetectCyclesFull:
             project_id=sample_project.id,
             source_item_id=sample_items_basic[0].id,
             target_item_id=sample_items_basic[1].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         link2 = Link(
             project_id=sample_project.id,
             source_item_id=sample_items_basic[1].id,
             target_item_id=sample_items_basic[2].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add_all([link1, link2])
         db_session.commit()
@@ -311,13 +290,13 @@ class TestDetectCyclesFull:
             project_id=sample_project.id,
             source_item_id=sample_items_basic[0].id,
             target_item_id=sample_items_basic[1].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         link2 = Link(
             project_id=sample_project.id,
             source_item_id=sample_items_basic[1].id,
             target_item_id=sample_items_basic[0].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add_all([link1, link2])
         db_session.commit()
@@ -336,25 +315,25 @@ class TestDetectCyclesFull:
                 project_id=sample_project.id,
                 source_item_id=sample_items_basic[0].id,
                 target_item_id=sample_items_basic[1].id,
-                link_type="depends_on"
+                link_type="depends_on",
             ),
             Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_basic[1].id,
                 target_item_id=sample_items_basic[0].id,
-                link_type="depends_on"
+                link_type="depends_on",
             ),
             Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_basic[2].id,
                 target_item_id=sample_items_basic[3].id,
-                link_type="depends_on"
+                link_type="depends_on",
             ),
             Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_basic[3].id,
                 target_item_id=sample_items_basic[2].id,
-                link_type="depends_on"
+                link_type="depends_on",
             ),
         ]
         db_session.add_all(links)
@@ -373,13 +352,13 @@ class TestDetectCyclesFull:
             project_id=sample_project.id,
             source_item_id=sample_items_basic[0].id,
             target_item_id=sample_items_basic[1].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         link2 = Link(
             project_id=sample_project.id,
             source_item_id=sample_items_basic[1].id,
             target_item_id=sample_items_basic[0].id,
-            link_type="blocks"
+            link_type="blocks",
         )
         db_session.add_all([link1, link2])
         db_session.commit()
@@ -387,16 +366,14 @@ class TestDetectCyclesFull:
         service = CycleDetectionService(db_session)
 
         # Check only depends_on (should not detect cycle)
-        result = service.detect_cycles(
-            sample_project.id,
-            link_types=["depends_on"]
-        )
+        result = service.detect_cycles(sample_project.id, link_types=["depends_on"])
         assert result.has_cycles is False
 
 
 # ============================================================
 # TEST CLASS 3: MISSING DEPENDENCIES & ORPHANS
 # ============================================================
+
 
 class TestMissingDependenciesAndOrphans:
     """Test missing dependencies and orphan detection."""
@@ -408,16 +385,13 @@ class TestMissingDependenciesAndOrphans:
             project_id=sample_project.id,
             source_item_id=sample_items_basic[0].id,
             target_item_id=sample_items_basic[1].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(link)
         db_session.commit()
 
         service = CycleDetectionService(db_session)
-        result = service.detect_missing_dependencies(
-            sample_project.id,
-            link_type="depends_on"
-        )
+        result = service.detect_missing_dependencies(sample_project.id, link_type="depends_on")
 
         assert result["has_missing_dependencies"] is False
         assert result["missing_count"] == 0
@@ -430,16 +404,13 @@ class TestMissingDependenciesAndOrphans:
             project_id=sample_project.id,
             source_item_id="nonexistent-source",
             target_item_id=sample_items_basic[0].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(link)
         db_session.commit()
 
         service = CycleDetectionService(db_session)
-        result = service.detect_missing_dependencies(
-            sample_project.id,
-            link_type="depends_on"
-        )
+        result = service.detect_missing_dependencies(sample_project.id, link_type="depends_on")
 
         assert result["has_missing_dependencies"] is True
         assert result["missing_count"] >= 1
@@ -452,16 +423,13 @@ class TestMissingDependenciesAndOrphans:
             project_id=sample_project.id,
             source_item_id=sample_items_basic[0].id,
             target_item_id="nonexistent-target",
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(link)
         db_session.commit()
 
         service = CycleDetectionService(db_session)
-        result = service.detect_missing_dependencies(
-            sample_project.id,
-            link_type="depends_on"
-        )
+        result = service.detect_missing_dependencies(sample_project.id, link_type="depends_on")
 
         assert result["has_missing_dependencies"] is True
         assert result["missing_count"] >= 1
@@ -474,7 +442,7 @@ class TestMissingDependenciesAndOrphans:
             project_id=sample_project.id,
             source_item_id=sample_items_basic[0].id,
             target_item_id=sample_items_basic[1].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(link)
         db_session.commit()
@@ -502,7 +470,7 @@ class TestMissingDependenciesAndOrphans:
             project_id=sample_project.id,
             source_item_id=sample_items_basic[0].id,
             target_item_id=sample_items_basic[1].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(link)
         db_session.commit()
@@ -510,10 +478,7 @@ class TestMissingDependenciesAndOrphans:
         service = CycleDetectionService(db_session)
 
         # Check for orphans by blocks type (should find all)
-        result = service.detect_orphans(
-            sample_project.id,
-            link_type="blocks"
-        )
+        result = service.detect_orphans(sample_project.id, link_type="blocks")
         assert result["orphan_count"] == 5
 
 
@@ -521,16 +486,14 @@ class TestMissingDependenciesAndOrphans:
 # TEST CLASS 4: IMPACT ANALYSIS
 # ============================================================
 
+
 class TestImpactAnalysis:
     """Test impact analysis functionality."""
 
     def test_analyze_impact_no_dependents(self, db_session, sample_project, sample_items_basic):
         """Test impact analysis when item has no dependents."""
         service = CycleDetectionService(db_session)
-        result = service.analyze_impact(
-            sample_project.id,
-            sample_items_basic[0].id
-        )
+        result = service.analyze_impact(sample_project.id, sample_items_basic[0].id)
 
         assert result["root_item_id"] == sample_items_basic[0].id
         assert result["total_affected"] == 0
@@ -544,16 +507,13 @@ class TestImpactAnalysis:
                 project_id=sample_project.id,
                 source_item_id=sample_items_basic[i + 1].id,
                 target_item_id=sample_items_basic[i].id,
-                link_type="depends_on"
+                link_type="depends_on",
             )
             db_session.add(link)
         db_session.commit()
 
         service = CycleDetectionService(db_session)
-        result = service.analyze_impact(
-            sample_project.id,
-            sample_items_basic[0].id
-        )
+        result = service.analyze_impact(sample_project.id, sample_items_basic[0].id)
 
         assert result["root_item_id"] == sample_items_basic[0].id
         assert result["total_affected"] == 4
@@ -566,29 +526,26 @@ class TestImpactAnalysis:
                 project_id=sample_project.id,
                 source_item_id=sample_items_basic[1].id,
                 target_item_id=sample_items_basic[0].id,
-                link_type="depends_on"
+                link_type="depends_on",
             ),
             Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_basic[2].id,
                 target_item_id=sample_items_basic[0].id,
-                link_type="depends_on"
+                link_type="depends_on",
             ),
             Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_basic[1].id,
                 target_item_id=sample_items_basic[3].id,
-                link_type="depends_on"
+                link_type="depends_on",
             ),
         ]
         db_session.add_all(links)
         db_session.commit()
 
         service = CycleDetectionService(db_session)
-        result = service.analyze_impact(
-            sample_project.id,
-            sample_items_basic[0].id
-        )
+        result = service.analyze_impact(sample_project.id, sample_items_basic[0].id)
 
         assert result["root_item_id"] == sample_items_basic[0].id
         assert result["total_affected"] >= 2
@@ -601,7 +558,7 @@ class TestImpactAnalysis:
                 project_id=sample_project.id,
                 source_item_id=sample_items_large[i + 1].id,
                 target_item_id=sample_items_large[i].id,
-                link_type="depends_on"
+                link_type="depends_on",
             )
             db_session.add(link)
         db_session.commit()
@@ -609,11 +566,7 @@ class TestImpactAnalysis:
         service = CycleDetectionService(db_session)
 
         # With max_depth=3, should not traverse full chain
-        result = service.analyze_impact(
-            sample_project.id,
-            sample_items_large[0].id,
-            max_depth=3
-        )
+        result = service.analyze_impact(sample_project.id, sample_items_large[0].id, max_depth=3)
 
         assert result["max_depth_reached"] <= 3
 
@@ -621,6 +574,7 @@ class TestImpactAnalysis:
 # ============================================================
 # TEST CLASS 5: PERFORMANCE & SCALABILITY (Large Graphs)
 # ============================================================
+
 
 class TestPerformanceLargeGraphs:
     """Test performance on large graphs with 100+ nodes."""
@@ -633,7 +587,7 @@ class TestPerformanceLargeGraphs:
                 project_id=sample_project.id,
                 source_item_id=sample_items_large[i].id,
                 target_item_id=sample_items_large[i + 1].id,
-                link_type="depends_on"
+                link_type="depends_on",
             )
             db_session.add(link)
         db_session.commit()
@@ -642,10 +596,7 @@ class TestPerformanceLargeGraphs:
 
         start_time = time.time()
         result = service.has_cycle(
-            sample_project.id,
-            sample_items_large[99].id,
-            sample_items_large[0].id,
-            link_type="depends_on"
+            sample_project.id, sample_items_large[99].id, sample_items_large[0].id, link_type="depends_on"
         )
         elapsed = time.time() - start_time
 
@@ -661,7 +612,7 @@ class TestPerformanceLargeGraphs:
                 project_id=sample_project.id,
                 source_item_id=sample_items_large[i].id,
                 target_item_id=sample_items_large[i + 1].id,
-                link_type="depends_on"
+                link_type="depends_on",
             )
             db_session.add(link1)
 
@@ -670,7 +621,7 @@ class TestPerformanceLargeGraphs:
                     project_id=sample_project.id,
                     source_item_id=sample_items_large[i].id,
                     target_item_id=sample_items_large[i + 2].id,
-                    link_type="depends_on"
+                    link_type="depends_on",
                 )
                 db_session.add(link2)
 
@@ -694,7 +645,7 @@ class TestPerformanceLargeGraphs:
                 project_id=sample_project.id,
                 source_item_id=sample_items_xlarge[i].id,
                 target_item_id=sample_items_xlarge[i + 1].id,
-                link_type="depends_on"
+                link_type="depends_on",
             )
             db_session.add(link)
 
@@ -707,10 +658,7 @@ class TestPerformanceLargeGraphs:
 
         start_time = time.time()
         result = service.has_cycle(
-            sample_project.id,
-            sample_items_xlarge[999].id,
-            sample_items_xlarge[0].id,
-            link_type="depends_on"
+            sample_project.id, sample_items_xlarge[999].id, sample_items_xlarge[0].id, link_type="depends_on"
         )
         elapsed = time.time() - start_time
 
@@ -726,7 +674,7 @@ class TestPerformanceLargeGraphs:
                 project_id=sample_project.id,
                 source_item_id=sample_items_xlarge[i].id,
                 target_item_id=sample_items_xlarge[i + 1].id,
-                link_type="depends_on"
+                link_type="depends_on",
             )
             db_session.add(link)
 
@@ -736,7 +684,7 @@ class TestPerformanceLargeGraphs:
                     project_id=sample_project.id,
                     source_item_id=sample_items_xlarge[i].id,
                     target_item_id=sample_items_xlarge[i + 2].id,
-                    link_type="depends_on"
+                    link_type="depends_on",
                 )
                 db_session.add(branch_link)
 
@@ -765,6 +713,7 @@ class TestPerformanceLargeGraphs:
 # TEST CLASS 6: MEMORY EFFICIENCY & NESTED DEPENDENCIES
 # ============================================================
 
+
 class TestMemoryEfficiencyNestedDependencies:
     """Test memory efficiency and deeply nested dependencies."""
 
@@ -774,9 +723,16 @@ class TestMemoryEfficiencyNestedDependencies:
         # This simulates: item-1 depends on item-0, item-2 depends on item-1, etc.
         # So changing item-0 affects items that depend on it
         dependencies = [
-            (1, 0), (2, 1), (3, 2), (4, 3), (5, 4),
-            (10, 0), (11, 10), (12, 11),
-            (20, 0), (21, 20),
+            (1, 0),
+            (2, 1),
+            (3, 2),
+            (4, 3),
+            (5, 4),
+            (10, 0),
+            (11, 10),
+            (12, 11),
+            (20, 0),
+            (21, 20),
         ]
 
         for source_idx, target_idx in dependencies:
@@ -785,7 +741,7 @@ class TestMemoryEfficiencyNestedDependencies:
                     project_id=sample_project.id,
                     source_item_id=sample_items_large[source_idx].id,
                     target_item_id=sample_items_large[target_idx].id,
-                    link_type="depends_on"
+                    link_type="depends_on",
                 )
                 db_session.add(link)
 
@@ -794,11 +750,7 @@ class TestMemoryEfficiencyNestedDependencies:
         service = CycleDetectionService(db_session)
 
         # Analyze impact from root - what items are affected by changes to item-0
-        result = service.analyze_impact(
-            sample_project.id,
-            sample_items_large[0].id,
-            max_depth=10
-        )
+        result = service.analyze_impact(sample_project.id, sample_items_large[0].id, max_depth=10)
 
         # Items that depend on item-0 (directly or indirectly) are affected
         assert result["total_affected"] > 0
@@ -819,10 +771,7 @@ class TestMemoryEfficiencyNestedDependencies:
             child = sample_items_xlarge[i]
 
             link = Link(
-                project_id=sample_project.id,
-                source_item_id=parent.id,
-                target_item_id=child.id,
-                link_type="depends_on"
+                project_id=sample_project.id, source_item_id=parent.id, target_item_id=child.id, link_type="depends_on"
             )
             db_session.add(link)
             links_added += 1
@@ -837,6 +786,7 @@ class TestMemoryEfficiencyNestedDependencies:
         # Record memory before
         try:
             import tracemalloc
+
             tracemalloc.start()
             start_mem = tracemalloc.get_traced_memory()[0]
         except:
@@ -861,25 +811,25 @@ class TestMemoryEfficiencyNestedDependencies:
 # TEST CLASS 7: EDGE CASES & ERROR HANDLING
 # ============================================================
 
+
 class TestEdgeCasesErrorHandling:
     """Test edge cases and error handling."""
 
     def test_cycle_detection_with_deleted_items(self, db_session, sample_project, sample_items_basic):
         """Test cycle detection ignores deleted items."""
-        from datetime import datetime
 
         # Create link A -> B
         link = Link(
             project_id=sample_project.id,
             source_item_id=sample_items_basic[0].id,
             target_item_id=sample_items_basic[1].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(link)
         db_session.commit()
 
         # Mark B as deleted
-        sample_items_basic[1].deleted_at = datetime.utcnow()
+        sample_items_basic[1].deleted_at = datetime.now(UTC)
         db_session.commit()
 
         service = CycleDetectionService(db_session)
@@ -903,22 +853,14 @@ class TestEdgeCasesErrorHandling:
         service = CycleDetectionService(db_session)
 
         # Non-existent items should return False
-        result = service.has_cycle(
-            sample_project.id,
-            "nonexistent-1",
-            "nonexistent-2",
-            link_type="depends_on"
-        )
+        result = service.has_cycle(sample_project.id, "nonexistent-1", "nonexistent-2", link_type="depends_on")
         assert result is False
 
     def test_analyze_impact_nonexistent_item(self, db_session, sample_project):
         """Test analyze_impact with non-existent item."""
         service = CycleDetectionService(db_session)
 
-        result = service.analyze_impact(
-            sample_project.id,
-            "nonexistent-item"
-        )
+        result = service.analyze_impact(sample_project.id, "nonexistent-item")
 
         assert result["root_item_id"] == "nonexistent-item"
         assert result["total_affected"] == 0
@@ -931,25 +873,25 @@ class TestEdgeCasesErrorHandling:
                 project_id=sample_project.id,
                 source_item_id=sample_items_basic[0].id,
                 target_item_id=sample_items_basic[1].id,
-                link_type="depends_on"
+                link_type="depends_on",
             ),
             Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_basic[0].id,
                 target_item_id=sample_items_basic[2].id,
-                link_type="depends_on"
+                link_type="depends_on",
             ),
             Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_basic[1].id,
                 target_item_id=sample_items_basic[3].id,
-                link_type="depends_on"
+                link_type="depends_on",
             ),
             Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_basic[2].id,
                 target_item_id=sample_items_basic[3].id,
-                link_type="depends_on"
+                link_type="depends_on",
             ),
         ]
         db_session.add_all(links)
@@ -969,19 +911,19 @@ class TestEdgeCasesErrorHandling:
                 project_id=sample_project.id,
                 source_item_id=sample_items_basic[0].id,
                 target_item_id=sample_items_basic[1].id,
-                link_type="depends_on"
+                link_type="depends_on",
             ),
             Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_basic[1].id,
                 target_item_id=sample_items_basic[2].id,
-                link_type="blocks"
+                link_type="blocks",
             ),
             Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_basic[2].id,
                 target_item_id=sample_items_basic[3].id,
-                link_type="implements"
+                link_type="implements",
             ),
         ]
         db_session.add_all(links)
@@ -990,10 +932,7 @@ class TestEdgeCasesErrorHandling:
         service = CycleDetectionService(db_session)
 
         # Check with specific link type
-        result = service.detect_cycles(
-            sample_project.id,
-            link_types=["depends_on", "blocks"]
-        )
+        result = service.detect_cycles(sample_project.id, link_types=["depends_on", "blocks"])
 
         assert result is not None
 
@@ -1001,6 +940,7 @@ class TestEdgeCasesErrorHandling:
 # ============================================================
 # TEST CLASS 8: BUILD GRAPH FUNCTIONS
 # ============================================================
+
 
 class TestBuildGraphFunctions:
     """Test internal graph building functions."""
@@ -1013,13 +953,13 @@ class TestBuildGraphFunctions:
                 project_id=sample_project.id,
                 source_item_id=sample_items_basic[0].id,
                 target_item_id=sample_items_basic[1].id,
-                link_type="depends_on"
+                link_type="depends_on",
             ),
             Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_basic[1].id,
                 target_item_id=sample_items_basic[2].id,
-                link_type="depends_on"
+                link_type="depends_on",
             ),
         ]
         db_session.add_all(links)
@@ -1045,25 +985,13 @@ class TestBuildGraphFunctions:
         service = CycleDetectionService(db_session)
 
         # A can reach B
-        assert service._can_reach(
-            graph,
-            sample_items_basic[0].id,
-            sample_items_basic[1].id
-        ) is True
+        assert service._can_reach(graph, sample_items_basic[0].id, sample_items_basic[1].id) is True
 
         # A can reach C
-        assert service._can_reach(
-            graph,
-            sample_items_basic[0].id,
-            sample_items_basic[2].id
-        ) is True
+        assert service._can_reach(graph, sample_items_basic[0].id, sample_items_basic[2].id) is True
 
         # C cannot reach A
-        assert service._can_reach(
-            graph,
-            sample_items_basic[2].id,
-            sample_items_basic[0].id
-        ) is False
+        assert service._can_reach(graph, sample_items_basic[2].id, sample_items_basic[0].id) is False
 
     def test_find_cycles_detection(self, db_session, sample_project, sample_items_basic):
         """Test _find_cycles correctly identifies all cycles."""
@@ -1089,13 +1017,13 @@ class TestBuildGraphFunctions:
                 project_id=sample_project.id,
                 source_item_id=sample_items_basic[0].id,
                 target_item_id=sample_items_basic[1].id,
-                link_type="depends_on"
+                link_type="depends_on",
             ),
             Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_basic[1].id,
                 target_item_id=sample_items_basic[2].id,
-                link_type="blocks"
+                link_type="blocks",
             ),
         ]
         db_session.add_all(links)
@@ -1123,11 +1051,7 @@ class TestBuildGraphFunctions:
         service = CycleDetectionService(db_session)
 
         # A can reach D via multiple paths
-        assert service._can_reach(
-            graph,
-            sample_items_basic[0].id,
-            sample_items_basic[3].id
-        ) is True
+        assert service._can_reach(graph, sample_items_basic[0].id, sample_items_basic[3].id) is True
 
     def test_find_cycles_empty_graph(self, db_session, sample_project):
         """Test _find_cycles with empty graph."""
@@ -1161,7 +1085,7 @@ class TestBuildGraphFunctions:
             title="Other Item",
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         db_session.add(other_item)
         db_session.commit()
@@ -1172,13 +1096,13 @@ class TestBuildGraphFunctions:
                 project_id=sample_project.id,
                 source_item_id=sample_items_basic[0].id,
                 target_item_id=sample_items_basic[1].id,
-                link_type="depends_on"
+                link_type="depends_on",
             ),
             Link(
                 project_id=other_project.id,
                 source_item_id=other_item.id,
                 target_item_id=sample_items_basic[0].id,
-                link_type="depends_on"
+                link_type="depends_on",
             ),
         ]
         db_session.add_all(links)
@@ -1195,6 +1119,7 @@ class TestBuildGraphFunctions:
 # TEST CLASS 9: ADDITIONAL COVERAGE TESTS
 # ============================================================
 
+
 class TestAdditionalCoverage:
     """Additional tests for edge cases and branch coverage."""
 
@@ -1205,13 +1130,13 @@ class TestAdditionalCoverage:
             project_id=sample_project.id,
             source_item_id=sample_items_basic[0].id,
             target_item_id=sample_items_basic[1].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         link2 = Link(
             project_id=sample_project.id,
             source_item_id=sample_items_basic[1].id,
             target_item_id=sample_items_basic[0].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add_all([link1, link2])
         db_session.commit()
@@ -1219,10 +1144,7 @@ class TestAdditionalCoverage:
         service = CycleDetectionService(db_session)
 
         # Call with only link_types parameter (not link_type)
-        result = service.detect_cycles(
-            sample_project.id,
-            link_types=["depends_on"]
-        )
+        result = service.detect_cycles(sample_project.id, link_types=["depends_on"])
 
         assert result.has_cycles is True
         assert result.total_cycles == result.cycle_count
@@ -1237,11 +1159,7 @@ class TestAdditionalCoverage:
         service = CycleDetectionService(db_session)
 
         # Node can reach itself
-        assert service._can_reach(
-            graph,
-            sample_items_basic[0].id,
-            sample_items_basic[0].id
-        ) is True
+        assert service._can_reach(graph, sample_items_basic[0].id, sample_items_basic[0].id) is True
 
     def test_can_reach_nonexistent_node(self, db_session, sample_project, sample_items_basic):
         """Test _can_reach with node not in graph."""
@@ -1253,11 +1171,7 @@ class TestAdditionalCoverage:
         service = CycleDetectionService(db_session)
 
         # Nonexistent node cannot reach anything
-        assert service._can_reach(
-            graph,
-            "nonexistent",
-            sample_items_basic[0].id
-        ) is False
+        assert service._can_reach(graph, "nonexistent", sample_items_basic[0].id) is False
 
     def test_detect_cycles_operational_error_handling(self, db_session, sample_project):
         """Test cycle detection handles database errors gracefully."""
@@ -1272,10 +1186,9 @@ class TestAdditionalCoverage:
 
     def test_missing_dependencies_with_deleted_source(self, db_session, sample_project, sample_items_basic):
         """Test missing dependencies detection with soft-deleted items."""
-        from datetime import datetime
 
         # Mark an item as deleted before creating link to it
-        sample_items_basic[0].deleted_at = datetime.utcnow()
+        sample_items_basic[0].deleted_at = datetime.now(UTC)
         db_session.commit()
 
         # Create link to deleted item
@@ -1283,16 +1196,13 @@ class TestAdditionalCoverage:
             project_id=sample_project.id,
             source_item_id=sample_items_basic[0].id,
             target_item_id=sample_items_basic[1].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(link)
         db_session.commit()
 
         service = CycleDetectionService(db_session)
-        result = service.detect_missing_dependencies(
-            sample_project.id,
-            link_type="depends_on"
-        )
+        result = service.detect_missing_dependencies(sample_project.id, link_type="depends_on")
 
         # Deleted items are still considered as valid links (not missing)
         assert "has_missing_dependencies" in result
@@ -1305,13 +1215,13 @@ class TestAdditionalCoverage:
                 project_id=sample_project.id,
                 source_item_id=sample_items_basic[0].id,
                 target_item_id=sample_items_basic[1].id,
-                link_type="depends_on"
+                link_type="depends_on",
             ),
             Link(
                 project_id=sample_project.id,
                 source_item_id=sample_items_basic[1].id,
                 target_item_id=sample_items_basic[0].id,
-                link_type="depends_on"
+                link_type="depends_on",
             ),
         ]
         db_session.add_all(links)
@@ -1320,11 +1230,7 @@ class TestAdditionalCoverage:
         service = CycleDetectionService(db_session)
 
         # Should complete without infinite loop (uses visited set)
-        result = service.analyze_impact(
-            sample_project.id,
-            sample_items_basic[0].id,
-            max_depth=5
-        )
+        result = service.analyze_impact(sample_project.id, sample_items_basic[0].id, max_depth=5)
 
         assert result is not None
         assert isinstance(result["affected_items"], list)

@@ -10,13 +10,11 @@ This module provides optional feature tools:
 
 from __future__ import annotations
 
-from typing import Any, Dict
+import asyncio
+from typing import Any
 
-from fastmcp.exceptions import ToolError
-
-from tracertm.mcp.core import mcp
 from tracertm.config.manager import ConfigManager
-from tracertm.database.connection import DatabaseConnection
+from tracertm.mcp.core import mcp
 
 
 def _wrap(result: Any, ctx: Any | None, action: str) -> dict[str, Any]:
@@ -25,6 +23,7 @@ def _wrap(result: Any, ctx: Any | None, action: str) -> dict[str, Any]:
     if ctx is not None:
         try:
             from fastmcp.server.dependencies import get_access_token
+
             token = get_access_token()
             if token:
                 claims = getattr(token, "claims", {}) or {}
@@ -32,7 +31,7 @@ def _wrap(result: Any, ctx: Any | None, action: str) -> dict[str, Any]:
                     "client_id": getattr(token, "client_id", None),
                     "sub": claims.get("sub"),
                 }
-        except Exception:
+        except Exception:  # noqa: S110
             pass
 
     return {
@@ -59,12 +58,13 @@ def _error(message: str, action: str, code: str = "ERROR") -> dict[str, Any]:
 
 
 @mcp.tool()
-async def view_list(ctx: Any) -> Dict[str, Any]:
+async def view_list(ctx: Any) -> dict[str, Any]:
     """List available views.
 
     Returns:
         MCP response with available views
     """
+    await asyncio.sleep(0)
     try:
         return _wrap(
             {
@@ -81,11 +81,11 @@ async def view_list(ctx: Any) -> Dict[str, Any]:
             "view_list",
         )
     except Exception as e:
-        return _error(f"Failed to list views: {str(e)}", "view_list")
+        return _error(f"Failed to list views: {e!s}", "view_list")
 
 
 @mcp.tool()
-async def view_switch(ctx: Any, view_name: str) -> Dict[str, Any]:
+async def view_switch(ctx: Any, view_name: str) -> dict[str, Any]:
     """Switch to a different view.
 
     Args:
@@ -95,6 +95,7 @@ async def view_switch(ctx: Any, view_name: str) -> Dict[str, Any]:
     Returns:
         MCP response with current view
     """
+    await asyncio.sleep(0)
     try:
         config = ConfigManager()
         config.set("current_view", view_name)
@@ -108,16 +109,17 @@ async def view_switch(ctx: Any, view_name: str) -> Dict[str, Any]:
             "view_switch",
         )
     except Exception as e:
-        return _error(f"Failed to switch view: {str(e)}", "view_switch")
+        return _error(f"Failed to switch view: {e!s}", "view_switch")
 
 
 @mcp.tool()
-async def view_current(ctx: Any) -> Dict[str, Any]:
+async def view_current(ctx: Any) -> dict[str, Any]:
     """Get currently active view.
 
     Returns:
         MCP response with current view
     """
+    await asyncio.sleep(0)
     try:
         config = ConfigManager()
         current_view = config.get("current_view") or "table"
@@ -130,16 +132,17 @@ async def view_current(ctx: Any) -> Dict[str, Any]:
             "view_current",
         )
     except Exception as e:
-        return _error(f"Failed to get current view: {str(e)}", "view_current")
+        return _error(f"Failed to get current view: {e!s}", "view_current")
 
 
 @mcp.tool()
-async def view_stats(ctx: Any) -> Dict[str, Any]:
+async def view_stats(ctx: Any) -> dict[str, Any]:
     """Get view statistics.
 
     Returns:
         MCP response with view statistics
     """
+    await asyncio.sleep(0)
     try:
         return _wrap(
             {
@@ -151,7 +154,7 @@ async def view_stats(ctx: Any) -> Dict[str, Any]:
             "view_stats",
         )
     except Exception as e:
-        return _error(f"Failed to get view stats: {str(e)}", "view_stats")
+        return _error(f"Failed to get view stats: {e!s}", "view_stats")
 
 
 @mcp.tool()
@@ -159,7 +162,7 @@ async def view_show(
     ctx: Any,
     view_name: str,
     project_id: str | None = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Show specified view.
 
     Args:
@@ -170,6 +173,7 @@ async def view_show(
     Returns:
         MCP response with view data
     """
+    await asyncio.sleep(0)
     try:
         config = ConfigManager()
         project_id = project_id or config.get("current_project_id")
@@ -184,7 +188,7 @@ async def view_show(
             "view_show",
         )
     except Exception as e:
-        return _error(f"Failed to show view: {str(e)}", "view_show")
+        return _error(f"Failed to show view: {e!s}", "view_show")
 
 
 # ==========================================================================
@@ -197,7 +201,7 @@ async def history_show(
     ctx: Any,
     project_id: str | None = None,
     limit: int = 10,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Show item change history.
 
     Args:
@@ -208,6 +212,7 @@ async def history_show(
     Returns:
         MCP response with history
     """
+    await asyncio.sleep(0)
     try:
         config = ConfigManager()
         project_id = project_id or config.get("current_project_id")
@@ -223,14 +228,14 @@ async def history_show(
             "history_show",
         )
     except Exception as e:
-        return _error(f"Failed to show history: {str(e)}", "history_show")
+        return _error(f"Failed to show history: {e!s}", "history_show")
 
 
 @mcp.tool()
 async def history_version(
     ctx: Any,
     item_id: str,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Get version history for specific item.
 
     Args:
@@ -240,6 +245,7 @@ async def history_version(
     Returns:
         MCP response with version history
     """
+    await asyncio.sleep(0)
     try:
         return _wrap(
             {
@@ -251,7 +257,7 @@ async def history_version(
             "history_version",
         )
     except Exception as e:
-        return _error(f"Failed to get version history: {str(e)}", "history_version")
+        return _error(f"Failed to get version history: {e!s}", "history_version")
 
 
 @mcp.tool()
@@ -260,7 +266,7 @@ async def history_rollback(
     item_id: str,
     version: int,
     confirm: bool = False,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Rollback item to previous version.
 
     Args:
@@ -272,6 +278,7 @@ async def history_rollback(
     Returns:
         MCP response with rollback status
     """
+    await asyncio.sleep(0)
     try:
         if not confirm:
             return _error(
@@ -290,7 +297,7 @@ async def history_rollback(
             "history_rollback",
         )
     except Exception as e:
-        return _error(f"Rollback failed: {str(e)}", "history_rollback")
+        return _error(f"Rollback failed: {e!s}", "history_rollback")
 
 
 # ==========================================================================
@@ -302,7 +309,7 @@ async def history_rollback(
 async def agent_list(
     ctx: Any,
     project_id: str | None = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """List active agents in project.
 
     Args:
@@ -312,6 +319,7 @@ async def agent_list(
     Returns:
         MCP response with agent list
     """
+    await asyncio.sleep(0)
     try:
         config = ConfigManager()
         project_id = project_id or config.get("current_project_id")
@@ -327,14 +335,14 @@ async def agent_list(
             "agent_list",
         )
     except Exception as e:
-        return _error(f"Failed to list agents: {str(e)}", "agent_list")
+        return _error(f"Failed to list agents: {e!s}", "agent_list")
 
 
 @mcp.tool()
 async def agent_activity(
     ctx: Any,
     agent_id: str | None = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Get agent activity log.
 
     Args:
@@ -344,6 +352,7 @@ async def agent_activity(
     Returns:
         MCP response with activity
     """
+    await asyncio.sleep(0)
     try:
         return _wrap(
             {
@@ -355,14 +364,14 @@ async def agent_activity(
             "agent_activity",
         )
     except Exception as e:
-        return _error(f"Failed to get agent activity: {str(e)}", "agent_activity")
+        return _error(f"Failed to get agent activity: {e!s}", "agent_activity")
 
 
 @mcp.tool()
 async def agent_metrics(
     ctx: Any,
     agent_id: str | None = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Get agent performance metrics.
 
     Args:
@@ -372,6 +381,7 @@ async def agent_metrics(
     Returns:
         MCP response with metrics
     """
+    await asyncio.sleep(0)
     try:
         return _wrap(
             {
@@ -387,14 +397,14 @@ async def agent_metrics(
             "agent_metrics",
         )
     except Exception as e:
-        return _error(f"Failed to get agent metrics: {str(e)}", "agent_metrics")
+        return _error(f"Failed to get agent metrics: {e!s}", "agent_metrics")
 
 
 @mcp.tool()
 async def agent_workload(
     ctx: Any,
     agent_id: str | None = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Get agent workload status.
 
     Args:
@@ -404,6 +414,7 @@ async def agent_workload(
     Returns:
         MCP response with workload
     """
+    await asyncio.sleep(0)
     try:
         return _wrap(
             {
@@ -416,14 +427,14 @@ async def agent_workload(
             "agent_workload",
         )
     except Exception as e:
-        return _error(f"Failed to get agent workload: {str(e)}", "agent_workload")
+        return _error(f"Failed to get agent workload: {e!s}", "agent_workload")
 
 
 @mcp.tool()
 async def agent_health(
     ctx: Any,
     agent_id: str | None = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Check agent health status.
 
     Args:
@@ -433,6 +444,7 @@ async def agent_health(
     Returns:
         MCP response with health status
     """
+    await asyncio.sleep(0)
     try:
         return _wrap(
             {
@@ -445,7 +457,7 @@ async def agent_health(
             "agent_health",
         )
     except Exception as e:
-        return _error(f"Failed to check agent health: {str(e)}", "agent_health")
+        return _error(f"Failed to check agent health: {e!s}", "agent_health")
 
 
 # ==========================================================================
@@ -454,12 +466,13 @@ async def agent_health(
 
 
 @mcp.tool()
-async def state_show(ctx: Any) -> Dict[str, Any]:
+async def state_show(ctx: Any) -> dict[str, Any]:
     """Show current system state.
 
     Returns:
         MCP response with system state
     """
+    await asyncio.sleep(0)
     try:
         config = ConfigManager()
 
@@ -474,11 +487,11 @@ async def state_show(ctx: Any) -> Dict[str, Any]:
             "state_show",
         )
     except Exception as e:
-        return _error(f"Failed to show state: {str(e)}", "state_show")
+        return _error(f"Failed to show state: {e!s}", "state_show")
 
 
 @mcp.tool()
-async def state_get(ctx: Any, key: str) -> Dict[str, Any]:
+async def state_get(ctx: Any, key: str) -> dict[str, Any]:
     """Get a specific state value.
 
     Args:
@@ -488,6 +501,7 @@ async def state_get(ctx: Any, key: str) -> Dict[str, Any]:
     Returns:
         MCP response with state value
     """
+    await asyncio.sleep(0)
     try:
         config = ConfigManager()
         value = config.get(key)
@@ -501,7 +515,7 @@ async def state_get(ctx: Any, key: str) -> Dict[str, Any]:
             "state_get",
         )
     except Exception as e:
-        return _error(f"Failed to get state: {str(e)}", "state_get")
+        return _error(f"Failed to get state: {e!s}", "state_get")
 
 
 # ==========================================================================
@@ -515,7 +529,7 @@ async def drill_item(
     item_id: str,
     depth: int = 2,
     project_id: str | None = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Drill down into item details and relationships.
 
     Args:
@@ -527,6 +541,7 @@ async def drill_item(
     Returns:
         MCP response with item details
     """
+    await asyncio.sleep(0)
     try:
         config = ConfigManager()
         project_id = project_id or config.get("current_project_id")
@@ -543,7 +558,7 @@ async def drill_item(
             "drill_item",
         )
     except Exception as e:
-        return _error(f"Drill failed: {str(e)}", "drill_item")
+        return _error(f"Drill failed: {e!s}", "drill_item")
 
 
 # ==========================================================================
@@ -555,7 +570,7 @@ async def drill_item(
 async def dashboard_show(
     ctx: Any,
     project_id: str | None = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Show project dashboard.
 
     Args:
@@ -565,6 +580,7 @@ async def dashboard_show(
     Returns:
         MCP response with dashboard data
     """
+    await asyncio.sleep(0)
     try:
         config = ConfigManager()
         project_id = project_id or config.get("current_project_id")
@@ -583,4 +599,4 @@ async def dashboard_show(
             "dashboard_show",
         )
     except Exception as e:
-        return _error(f"Failed to show dashboard: {str(e)}", "dashboard_show")
+        return _error(f"Failed to show dashboard: {e!s}", "dashboard_show")

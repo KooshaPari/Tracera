@@ -5,11 +5,11 @@ Adapted from atomsAgent sandbox/types.py; adds sandbox_root for local FS.
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from enum import Enum
-from typing import Any, Dict, List, Optional
+from enum import StrEnum
+from typing import Any
 
 
-class SandboxStatus(str, Enum):
+class SandboxStatus(StrEnum):
     """Sandbox lifecycle status."""
 
     CREATING = "creating"
@@ -29,10 +29,10 @@ class SandboxConfig:
     memory_mb: int = 8192
     timeout_seconds: int = 600
     max_turns: int = 10
-    environment: Dict[str, str] = field(default_factory=dict)
-    dependencies: List[str] = field(default_factory=list)
-    sandbox_root: Optional[str] = None  # set by provider for local FS
-    project_id: Optional[str] = None  # optional project for DB/NATS context
+    environment: dict[str, str] = field(default_factory=dict)
+    dependencies: list[str] = field(default_factory=list)
+    sandbox_root: str | None = None  # set by provider for local FS
+    project_id: str | None = None  # optional project for DB/NATS context
 
 
 @dataclass
@@ -42,13 +42,13 @@ class SandboxMetadata:
     sandbox_id: str
     status: SandboxStatus
     created_at: datetime
-    started_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
     vcpus: int = 4
     memory_mb: int = 8192
     timeout_seconds: int = 600
-    sandbox_root: Optional[str] = None  # path for local FS
-    error: Optional[str] = None
+    sandbox_root: str | None = None  # path for local FS
+    error: str | None = None
 
 
 @dataclass
@@ -56,9 +56,9 @@ class ExecutionRequest:
     """Agent execution request."""
 
     prompt: str
-    tools: List[str] = field(default_factory=list)
+    tools: list[str] = field(default_factory=list)
     config: SandboxConfig = field(default_factory=SandboxConfig)
-    context: Dict[str, Any] = field(default_factory=dict)
+    context: dict[str, Any] = field(default_factory=dict)
     max_retries: int = 3
 
 
@@ -69,7 +69,7 @@ class ExecutionResult:
     sandbox_id: str
     status: SandboxStatus
     output: str
-    metadata: Dict[str, Any] = field(default_factory=dict)
-    error: Optional[str] = None
+    metadata: dict[str, Any] = field(default_factory=dict)
+    error: str | None = None
     execution_time_ms: float = 0.0
     tokens_used: int = 0

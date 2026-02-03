@@ -26,4 +26,4 @@ Trim<' foo '>
 */
 export type Trim<V extends string> = TrimLeft<TrimRight<V>>;
 
-export {};
+

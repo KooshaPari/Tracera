@@ -2,9 +2,10 @@
 Integration tests for Epic 5: Agent Monitoring (Story 5.8).
 """
 
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta, timezone
 
 import pytest
+
 pytestmark = pytest.mark.integration
 from sqlalchemy.orm import Session
 
@@ -62,7 +63,7 @@ def test_health_check(temp_project_setup):
             name="healthy-agent",
             agent_type="ai_agent",
             status="active",
-            last_activity_at=datetime.utcnow().isoformat(),
+            last_activity_at=datetime.now(UTC).isoformat(),
         )
         session.add(agent)
         session.commit()
@@ -88,7 +89,7 @@ def test_alerts_generation(temp_project_setup):
 
     with Session(db.engine) as session:
         # Create stale agent
-        stale_time = (datetime.utcnow() - timedelta(hours=25)).isoformat()
+        stale_time = (datetime.now(UTC) - timedelta(hours=25)).isoformat()
         agent = Agent(
             project_id=project_id,
             name="stale-agent",

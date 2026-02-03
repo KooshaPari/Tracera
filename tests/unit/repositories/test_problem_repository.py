@@ -18,7 +18,7 @@ Tests for:
 - get_activities() - retrieving activity log
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import uuid4
 
 import pytest
@@ -159,7 +159,7 @@ async def test_create_problem_with_target_date(db_session: AsyncSession):
     project = await project_repo.create(name=unique_project_name())
     await db_session.commit()
 
-    target_date = datetime(2025, 12, 31, tzinfo=timezone.utc)
+    target_date = datetime(2025, 12, 31, tzinfo=UTC)
 
     repo = ProblemRepository(db_session)
     problem = await repo.create(
@@ -629,9 +629,7 @@ async def test_update_logs_significant_changes(db_session: AsyncSession):
     activities = await repo.get_activities(problem.id)
     # Should have creation activity + status change activity
     assert len(activities) >= 2
-    status_activity = next(
-        (a for a in activities if a.activity_type == "status_changed"), None
-    )
+    status_activity = next((a for a in activities if a.activity_type == "status_changed"), None)
     assert status_activity is not None
 
 
@@ -705,9 +703,7 @@ async def test_transition_status_logs_activity(db_session: AsyncSession):
     await db_session.commit()
 
     activities = await repo.get_activities(problem.id)
-    transition_activity = next(
-        (a for a in activities if a.activity_type == "status_transition"), None
-    )
+    transition_activity = next((a for a in activities if a.activity_type == "status_transition"), None)
     assert transition_activity is not None
     assert transition_activity.from_value == "open"
     assert transition_activity.to_value == "in_investigation"

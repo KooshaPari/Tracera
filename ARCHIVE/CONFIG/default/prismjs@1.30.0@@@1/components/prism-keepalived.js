@@ -21,7 +21,7 @@ Prism.languages.keepalived = {
 
 	// support *nix / Windows, directory / file
 	'path': {
-		pattern: /(\s)\/(?:[^\/\s]+\/)*[^\/\s]*|\b[a-zA-Z]:\\(?:[^\\\s]+\\)*[^\\\s]*/,
+		pattern: /(\s)\/(?:[^/\s]+\/)*[^/\s]*|\b[a-zA-Z]:\\(?:[^\\\s]+\\)*[^\\\s]*/,
 		lookbehind: true,
 		alias: 'string',
 	},
@@ -47,5 +47,5 @@ Prism.languages.keepalived = {
 
 	'boolean': /\b(?:false|no|off|on|true|yes)\b/,
 
-	'punctuation': /[\{\}]/
+	'punctuation': /[{}]/
 };

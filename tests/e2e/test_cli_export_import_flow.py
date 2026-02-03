@@ -1,8 +1,6 @@
 """E2E-like CLI flows for export/import using fakes (no real DB/filesystem)."""
 
 import json
-import tempfile
-from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
@@ -86,8 +84,9 @@ def _fake_storage_manager():
 def test_export_json_writes_output(tmp_path):
     out_file = tmp_path / "export.json"
 
-    with patch("tracertm.cli.commands.export.ConfigManager") as cfg, patch(
-        "tracertm.cli.commands.export._get_storage_manager", return_value=_fake_storage_manager()
+    with (
+        patch("tracertm.cli.commands.export.ConfigManager") as cfg,
+        patch("tracertm.cli.commands.export._get_storage_manager", return_value=_fake_storage_manager()),
     ):
         cfg_inst = MagicMock()
         cfg_inst.get.return_value = "proj-1"
@@ -111,8 +110,9 @@ def test_export_yaml_and_csv(tmp_path):
     yaml_out = tmp_path / "export.yaml"
     csv_out = tmp_path / "export.csv"
 
-    with patch("tracertm.cli.commands.export.ConfigManager") as cfg, patch(
-        "tracertm.cli.commands.export._get_storage_manager", return_value=_fake_storage_manager()
+    with (
+        patch("tracertm.cli.commands.export.ConfigManager") as cfg,
+        patch("tracertm.cli.commands.export._get_storage_manager", return_value=_fake_storage_manager()),
     ):
         cfg_inst = MagicMock()
         cfg_inst.get.return_value = "proj-1"
@@ -150,12 +150,11 @@ def test_import_json_validate_only_passes(tmp_path):
     src = tmp_path / "backup.json"
     src.write_text(json.dumps(payload))
 
-    with patch("tracertm.cli.commands.import_cmd._validate_import_data", return_value=[]), patch(
-        "tracertm.cli.commands.import_cmd._import_data", return_value=None
+    with (
+        patch("tracertm.cli.commands.import_cmd._validate_import_data", return_value=[]),
+        patch("tracertm.cli.commands.import_cmd._import_data", return_value=None),
     ):
-        result = runner.invoke(
-            app, ["import", "json", str(src), "--validate-only"], catch_exceptions=False
-        )
+        result = runner.invoke(app, ["import", "json", str(src), "--validate-only"], catch_exceptions=False)
 
     assert result.exit_code == 0
     assert "Validation passed" in result.stdout
@@ -194,12 +193,11 @@ links: []
     src = tmp_path / "backup.yaml"
     src.write_text(payload)
 
-    with patch("tracertm.cli.commands.import_cmd._validate_import_data", return_value=[]), patch(
-        "tracertm.cli.commands.import_cmd._import_data", return_value=None
+    with (
+        patch("tracertm.cli.commands.import_cmd._validate_import_data", return_value=[]),
+        patch("tracertm.cli.commands.import_cmd._import_data", return_value=None),
     ):
-        result = runner.invoke(
-            app, ["import", "yaml", str(src), "--validate-only"], catch_exceptions=False
-        )
+        result = runner.invoke(app, ["import", "yaml", str(src), "--validate-only"], catch_exceptions=False)
 
     assert result.exit_code == 0
     assert "Validation passed" in result.stdout

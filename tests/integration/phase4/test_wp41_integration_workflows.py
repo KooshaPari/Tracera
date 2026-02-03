@@ -15,23 +15,15 @@ Test Classes:
 Total: 160+ comprehensive integration tests
 """
 
-import pytest
-import asyncio
-from typing import List, Dict, Any
-from datetime import datetime
-from unittest.mock import MagicMock, patch
+from datetime import UTC, datetime, timezone
 
+import pytest
 from sqlalchemy.orm import Session
-from tracertm.models.project import Project
+
 from tracertm.models.item import Item
 from tracertm.models.link import Link
-from tracertm.models.event import Event
+from tracertm.models.project import Project
 from tracertm.repositories.project_repository import ProjectRepository
-from tracertm.repositories.item_repository import ItemRepository
-from tracertm.repositories.link_repository import LinkRepository
-from tracertm.services.traceability_service import TraceabilityService
-from tracertm.services.graph_analysis_service import GraphAnalysisService
-
 
 pytestmark = [pytest.mark.integration]
 
@@ -41,20 +33,20 @@ class TestProjectLifecycleWorkflows:
 
     def test_create_project_with_metadata(self, db_session: Session) -> None:
         """Create a project with comprehensive metadata"""
-        repo = ProjectRepository(db_session)
+        repo = ProjectRepository(db_session)  # type: ignore[arg-type]
         project = Project(
             id="proj-1",
             name="E-Commerce Platform",
             description="Full-stack e-commerce system",
-            project_metadata={"team": "backend", "domain": "commerce"}
+            project_metadata={"team": "backend", "domain": "commerce"},
         )
         db_session.add(project)
         db_session.commit()
 
-        retrieved = repo.get_by_id("proj-1")
+        retrieved = repo.get_by_id("proj-1")  # type: ignore[union-attr]
         assert retrieved is not None
-        assert retrieved.name == "E-Commerce Platform"
-        assert retrieved.project_metadata["team"] == "backend"
+        assert retrieved.name == "E-Commerce Platform"  # type: ignore[union-attr]
+        assert retrieved.project_metadata["team"] == "backend"  # type: ignore[union-attr]
 
     def test_project_status_transitions(self, db_session: Session) -> None:
         """Test valid project status transitions"""
@@ -75,9 +67,7 @@ class TestProjectLifecycleWorkflows:
     def test_project_with_multiple_teams(self, db_session: Session) -> None:
         """Test project with multiple team assignments"""
         project = Project(
-            id="proj-3",
-            name="Multi-Team Project",
-            project_metadata={"teams": ["frontend", "backend", "qa"]}
+            id="proj-3", name="Multi-Team Project", project_metadata={"teams": ["frontend", "backend", "qa"]}
         )
         db_session.add(project)
         db_session.commit()
@@ -104,16 +94,12 @@ class TestProjectLifecycleWorkflows:
 
     def test_project_archival_flow(self, db_session: Session) -> None:
         """Test archiving a completed project"""
-        project = Project(
-            id="proj-5",
-            name="Archivable Project",
-            status="completed"
-        )
+        project = Project(id="proj-5", name="Archivable Project", status="completed")
         db_session.add(project)
         db_session.commit()
 
         project.archived = True
-        project.archived_at = datetime.utcnow()
+        project.archived_at = datetime.now(UTC)
         db_session.commit()
 
         assert project.archived is True
@@ -125,16 +111,9 @@ class TestProjectLifecycleWorkflows:
             id="proj-6",
             name="Complex Metadata Project",
             project_metadata={
-                "governance": {
-                    "approval_required": True,
-                    "approvers": ["lead", "qa-lead"]
-                },
-                "timeline": {
-                    "start": "2025-01-01",
-                    "end": "2025-12-31",
-                    "phases": ["design", "dev", "qa", "release"]
-                }
-            }
+                "governance": {"approval_required": True, "approvers": ["lead", "qa-lead"]},
+                "timeline": {"start": "2025-01-01", "end": "2025-12-31", "phases": ["design", "dev", "qa", "release"]},
+            },
         )
         db_session.add(project)
         db_session.commit()
@@ -151,23 +130,19 @@ class TestProjectLifecycleWorkflows:
             projects.append(proj)
         db_session.commit()
 
-        count = db_session.query(Project).filter(
-            Project.id.like("proj-batch-%")
-        ).count()
+        count = db_session.query(Project).filter(Project.id.like("proj-batch-%")).count()
         assert count == 10
 
     def test_project_retrieval_performance(self, db_session: Session) -> None:
         """Test efficient retrieval of projects"""
-        repo = ProjectRepository(db_session)
+        repo = ProjectRepository(db_session)  # type: ignore[arg-type]
         for i in range(50):
             proj = Project(id=f"perf-proj-{i}", name=f"Performance Project {i}")
             db_session.add(proj)
         db_session.commit()
 
         # Bulk retrieval
-        all_projects = db_session.query(Project).filter(
-            Project.id.like("perf-proj-%")
-        ).all()
+        all_projects = db_session.query(Project).filter(Project.id.like("perf-proj-%")).all()
         assert len(all_projects) == 50
 
     def test_project_state_consistency(self, db_session: Session) -> None:
@@ -214,7 +189,7 @@ class TestItemLifecycleWorkflows:
             view="FEATURE",
             item_type="feature",
             status="todo",
-            item_metadata={"priority": "high", "assignee": "alice"}
+            item_metadata={"priority": "high", "assignee": "alice"},
         )
         db_session.add(item)
         db_session.commit()
@@ -230,12 +205,7 @@ class TestItemLifecycleWorkflows:
         db_session.flush()
 
         item = Item(
-            id="ITEM-2",
-            project_id="proj-item-2",
-            title="Workflow Item",
-            view="STORY",
-            item_type="story",
-            status="todo"
+            id="ITEM-2", project_id="proj-item-2", title="Workflow Item", view="STORY", item_type="story", status="todo"
         )
         db_session.add(item)
         db_session.commit()
@@ -262,7 +232,7 @@ class TestItemLifecycleWorkflows:
                 title=f"Item of type {item_type}",
                 view="DEFAULT",
                 item_type=item_type,
-                status="todo"
+                status="todo",
             )
             db_session.add(item)
         db_session.commit()
@@ -283,7 +253,7 @@ class TestItemLifecycleWorkflows:
             view="FEATURE",
             item_type="feature",
             status="todo",
-            item_metadata={"template": "standard", "priority": "high"}
+            item_metadata={"template": "standard", "priority": "high"},
         )
         db_session.add(original)
         db_session.commit()
@@ -296,7 +266,7 @@ class TestItemLifecycleWorkflows:
             view=original.view,
             item_type=original.item_type,
             status=original.status,
-            item_metadata=original.item_metadata.copy() if original.item_metadata else {}
+            item_metadata=original.item_metadata.copy() if original.item_metadata else {},
         )
         db_session.add(copy)
         db_session.commit()
@@ -317,7 +287,7 @@ class TestItemLifecycleWorkflows:
                 title=f"Bulk Item {i}",
                 view="DEFAULT",
                 item_type="task",
-                status="todo"
+                status="todo",
             )
             items.append(item)
         db_session.add_all(items)
@@ -339,7 +309,7 @@ class TestItemLifecycleWorkflows:
             view="DEFAULT",
             item_type="feature",
             status="todo",
-            item_metadata={}
+            item_metadata={},
         )
         db_session.add(item)
         db_session.commit()
@@ -372,13 +342,13 @@ class TestItemLifecycleWorkflows:
             title="Archivable Item",
             view="DEFAULT",
             item_type="task",
-            status="done"
+            status="done",
         )
         db_session.add(item)
         db_session.commit()
 
         item.archived = True
-        item.archived_at = datetime.utcnow()
+        item.archived_at = datetime.now(UTC)
         db_session.commit()
 
         assert item.archived is True
@@ -399,7 +369,7 @@ class TestLinkManagementWorkflows:
             title="Source Item",
             view="DEFAULT",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         item2 = Item(
             id="LINK-TGT-1",
@@ -407,7 +377,7 @@ class TestLinkManagementWorkflows:
             title="Target Item",
             view="DEFAULT",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         db_session.add_all([item1, item2])
         db_session.flush()
@@ -417,7 +387,7 @@ class TestLinkManagementWorkflows:
             project_id="proj-link-1",
             source_item_id="LINK-SRC-1",
             target_item_id="LINK-TGT-1",
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(link)
         db_session.commit()
@@ -440,7 +410,7 @@ class TestLinkManagementWorkflows:
                 title=f"Item {i}",
                 view="DEFAULT",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             items.append(item)
         db_session.add_all(items)
@@ -453,7 +423,7 @@ class TestLinkManagementWorkflows:
                 project_id="proj-link-2",
                 source_item_id="LINK-ITEM-0",
                 target_item_id="LINK-ITEM-1",
-                link_type=link_type
+                link_type=link_type,
             )
             db_session.add(link)
         db_session.commit()
@@ -473,7 +443,7 @@ class TestLinkManagementWorkflows:
             title="Source",
             view="DEFAULT",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         item2 = Item(
             id="LINK-UPD-TGT",
@@ -481,7 +451,7 @@ class TestLinkManagementWorkflows:
             title="Target",
             view="DEFAULT",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         db_session.add_all([item1, item2])
         db_session.flush()
@@ -492,7 +462,7 @@ class TestLinkManagementWorkflows:
             source_item_id="LINK-UPD-SRC",
             target_item_id="LINK-UPD-TGT",
             link_type="depends_on",
-            link_metadata={"status": "draft"}
+            link_metadata={"status": "draft"},
         )
         db_session.add(link)
         db_session.commit()
@@ -515,7 +485,7 @@ class TestLinkManagementWorkflows:
             title="Source",
             view="DEFAULT",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         item2 = Item(
             id="LINK-CASC-TGT",
@@ -523,7 +493,7 @@ class TestLinkManagementWorkflows:
             title="Target",
             view="DEFAULT",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         db_session.add_all([item1, item2])
         db_session.flush()
@@ -533,7 +503,7 @@ class TestLinkManagementWorkflows:
             project_id="proj-link-4",
             source_item_id="LINK-CASC-SRC",
             target_item_id="LINK-CASC-TGT",
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(link)
         db_session.commit()
@@ -547,20 +517,10 @@ class TestLinkManagementWorkflows:
         db_session.flush()
 
         item1 = Item(
-            id="LINK-BI-1",
-            project_id="proj-link-5",
-            title="Item 1",
-            view="DEFAULT",
-            item_type="feature",
-            status="todo"
+            id="LINK-BI-1", project_id="proj-link-5", title="Item 1", view="DEFAULT", item_type="feature", status="todo"
         )
         item2 = Item(
-            id="LINK-BI-2",
-            project_id="proj-link-5",
-            title="Item 2",
-            view="DEFAULT",
-            item_type="feature",
-            status="todo"
+            id="LINK-BI-2", project_id="proj-link-5", title="Item 2", view="DEFAULT", item_type="feature", status="todo"
         )
         db_session.add_all([item1, item2])
         db_session.flush()
@@ -571,14 +531,14 @@ class TestLinkManagementWorkflows:
             project_id="proj-link-5",
             source_item_id="LINK-BI-1",
             target_item_id="LINK-BI-2",
-            link_type="depends_on"
+            link_type="depends_on",
         )
         link2 = Link(
             id="LINK-BI-REV",
             project_id="proj-link-5",
             source_item_id="LINK-BI-2",
             target_item_id="LINK-BI-1",
-            link_type="blocks"
+            link_type="blocks",
         )
         db_session.add_all([link1, link2])
         db_session.commit()
@@ -604,15 +564,14 @@ class TestSearchAndQueryWorkflows:
                 title=f"Important Feature {i}",
                 view="DEFAULT",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             db_session.add(item)
         db_session.commit()
 
-        results = db_session.query(Item).filter(
-            Item.project_id == "proj-search-1",
-            Item.title.like("%Important%")
-        ).all()
+        results = (
+            db_session.query(Item).filter(Item.project_id == "proj-search-1", Item.title.like("%Important%")).all()
+        )
         assert len(results) >= 5
 
     def test_search_by_item_status(self, db_session: Session) -> None:
@@ -630,15 +589,12 @@ class TestSearchAndQueryWorkflows:
                     title=f"Item {status} {i}",
                     view="DEFAULT",
                     item_type="feature",
-                    status=status
+                    status=status,
                 )
                 db_session.add(item)
         db_session.commit()
 
-        done_items = db_session.query(Item).filter_by(
-            project_id="proj-search-2",
-            status="done"
-        ).all()
+        done_items = db_session.query(Item).filter_by(project_id="proj-search-2", status="done").all()
         assert len(done_items) == 3
 
     def test_search_by_metadata(self, db_session: Session) -> None:
@@ -655,14 +611,16 @@ class TestSearchAndQueryWorkflows:
                 view="DEFAULT",
                 item_type="feature",
                 status="todo",
-                item_metadata={"priority": "high" if i % 2 == 0 else "low"}
+                item_metadata={"priority": "high" if i % 2 == 0 else "low"},
             )
             db_session.add(item)
         db_session.commit()
 
-        high_priority = [item for item in db_session.query(Item).filter_by(
-            project_id="proj-search-3"
-        ).all() if item.item_metadata.get("priority") == "high"]
+        high_priority = [
+            item
+            for item in db_session.query(Item).filter_by(project_id="proj-search-3").all()
+            if item.item_metadata.get("priority") == "high"
+        ]
         assert len(high_priority) >= 2
 
     def test_query_items_by_view(self, db_session: Session) -> None:
@@ -680,15 +638,12 @@ class TestSearchAndQueryWorkflows:
                     title=f"View {view} Item {i}",
                     view=view,
                     item_type="task",
-                    status="todo"
+                    status="todo",
                 )
                 db_session.add(item)
         db_session.commit()
 
-        feature_items = db_session.query(Item).filter_by(
-            project_id="proj-search-4",
-            view="FEATURE"
-        ).all()
+        feature_items = db_session.query(Item).filter_by(project_id="proj-search-4", view="FEATURE").all()
         assert len(feature_items) == 3
 
     def test_linked_items_query(self, db_session: Session) -> None:
@@ -705,7 +660,7 @@ class TestSearchAndQueryWorkflows:
                 title=f"Item {i}",
                 view="DEFAULT",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             items.append(item)
         db_session.add_all(items)
@@ -717,15 +672,19 @@ class TestSearchAndQueryWorkflows:
                 id=f"SEARCH-LINK-{i}",
                 project_id="proj-search-5",
                 source_item_id=f"SEARCH-LINKED-{i}",
-                target_item_id=f"SEARCH-LINKED-{i+1}",
-                link_type="depends_on"
+                target_item_id=f"SEARCH-LINKED-{i + 1}",
+                link_type="depends_on",
             )
             db_session.add(link)
         db_session.commit()
 
-        linked_sources = db_session.query(Item).join(
-            Link, Item.id == Link.source_item_id
-        ).filter(Link.project_id == "proj-search-5").all()
+        linked_sources = (
+            db_session
+            .query(Item)
+            .join(Link, Item.id == Link.source_item_id)
+            .filter(Link.project_id == "proj-search-5")
+            .all()
+        )
         assert len(linked_sources) >= 3
 
 
@@ -746,15 +705,13 @@ class TestBatchOperationsWorkflows:
                 title=f"Batch Item {i}",
                 view="DEFAULT",
                 item_type="task",
-                status="todo"
+                status="todo",
             )
             items.append(item)
         db_session.add_all(items)
         db_session.commit()
 
-        count = db_session.query(Item).filter_by(
-            project_id="proj-batch-1"
-        ).count()
+        count = db_session.query(Item).filter_by(project_id="proj-batch-1").count()
         assert count == 50
 
     def test_batch_update_status(self, db_session: Session) -> None:
@@ -771,7 +728,7 @@ class TestBatchOperationsWorkflows:
                 title=f"Item {i}",
                 view="DEFAULT",
                 item_type="task",
-                status="todo"
+                status="todo",
             )
             items.append(item)
         db_session.add_all(items)
@@ -782,10 +739,7 @@ class TestBatchOperationsWorkflows:
             item.status = "in_progress"
         db_session.commit()
 
-        updated = db_session.query(Item).filter_by(
-            project_id="proj-batch-2",
-            status="in_progress"
-        ).count()
+        updated = db_session.query(Item).filter_by(project_id="proj-batch-2", status="in_progress").count()
         assert updated == 30
 
     def test_batch_link_creation(self, db_session: Session) -> None:
@@ -802,7 +756,7 @@ class TestBatchOperationsWorkflows:
                 title=f"Item {i}",
                 view="DEFAULT",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             items.append(item)
         db_session.add_all(items)
@@ -814,16 +768,14 @@ class TestBatchOperationsWorkflows:
                 id=f"BATCH-LINK-{i}",
                 project_id="proj-batch-3",
                 source_item_id=f"BATCH-LINK-ITEM-{i}",
-                target_item_id=f"BATCH-LINK-ITEM-{i+1}",
-                link_type="depends_on"
+                target_item_id=f"BATCH-LINK-ITEM-{i + 1}",
+                link_type="depends_on",
             )
             links.append(link)
         db_session.add_all(links)
         db_session.commit()
 
-        count = db_session.query(Link).filter_by(
-            project_id="proj-batch-3"
-        ).count()
+        count = db_session.query(Link).filter_by(project_id="proj-batch-3").count()
         assert count == 9
 
     def test_batch_delete_items(self, db_session: Session) -> None:
@@ -840,7 +792,7 @@ class TestBatchOperationsWorkflows:
                 title=f"Item {i}",
                 view="DEFAULT",
                 item_type="task",
-                status="todo"
+                status="todo",
             )
             items.append(item)
         db_session.add_all(items)
@@ -852,9 +804,7 @@ class TestBatchOperationsWorkflows:
             db_session.delete(item)
         db_session.commit()
 
-        remaining = db_session.query(Item).filter_by(
-            project_id="proj-batch-4"
-        ).count()
+        remaining = db_session.query(Item).filter_by(project_id="proj-batch-4").count()
         assert remaining == 10
 
     def test_batch_metadata_update(self, db_session: Session) -> None:
@@ -872,7 +822,7 @@ class TestBatchOperationsWorkflows:
                 view="DEFAULT",
                 item_type="feature",
                 status="todo",
-                item_metadata={}
+                item_metadata={},
             )
             items.append(item)
         db_session.add_all(items)
@@ -899,12 +849,7 @@ class TestAdvancedRelationshipWorkflows:
 
         # Create 3-level hierarchy
         epic = Item(
-            id="ADV-EPIC-1",
-            project_id="proj-adv-1",
-            title="Epic",
-            view="DEFAULT",
-            item_type="epic",
-            status="todo"
+            id="ADV-EPIC-1", project_id="proj-adv-1", title="Epic", view="DEFAULT", item_type="epic", status="todo"
         )
         feature = Item(
             id="ADV-FEATURE-1",
@@ -912,15 +857,10 @@ class TestAdvancedRelationshipWorkflows:
             title="Feature",
             view="DEFAULT",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         task = Item(
-            id="ADV-TASK-1",
-            project_id="proj-adv-1",
-            title="Task",
-            view="DEFAULT",
-            item_type="task",
-            status="todo"
+            id="ADV-TASK-1", project_id="proj-adv-1", title="Task", view="DEFAULT", item_type="task", status="todo"
         )
         db_session.add_all([epic, feature, task])
         db_session.flush()
@@ -930,14 +870,14 @@ class TestAdvancedRelationshipWorkflows:
             project_id="proj-adv-1",
             source_item_id="ADV-EPIC-1",
             target_item_id="ADV-FEATURE-1",
-            link_type="contains"
+            link_type="contains",
         )
         link2 = Link(
             id="ADV-LINK-2",
             project_id="proj-adv-1",
             source_item_id="ADV-FEATURE-1",
             target_item_id="ADV-TASK-1",
-            link_type="contains"
+            link_type="contains",
         )
         db_session.add_all([link1, link2])
         db_session.commit()
@@ -961,7 +901,7 @@ class TestAdvancedRelationshipWorkflows:
                 title=f"Item {i}",
                 view="DEFAULT",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             items.append(item)
         db_session.add_all(items)
@@ -982,14 +922,12 @@ class TestAdvancedRelationshipWorkflows:
                 project_id="proj-adv-2",
                 source_item_id=src,
                 target_item_id=tgt,
-                link_type="depends_on"
+                link_type="depends_on",
             )
             db_session.add(link)
         db_session.commit()
 
-        all_links = db_session.query(Link).filter_by(
-            project_id="proj-adv-2"
-        ).all()
+        all_links = db_session.query(Link).filter_by(project_id="proj-adv-2").all()
         assert len(all_links) == len(links)
 
     def test_cross_project_references(self, db_session: Session) -> None:
@@ -1005,7 +943,7 @@ class TestAdvancedRelationshipWorkflows:
             title="Item A",
             view="DEFAULT",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         item_b = Item(
             id="ADV-CROSS-B",
@@ -1013,7 +951,7 @@ class TestAdvancedRelationshipWorkflows:
             title="Item B",
             view="DEFAULT",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         db_session.add_all([item_a, item_b])
         db_session.flush()
@@ -1024,14 +962,12 @@ class TestAdvancedRelationshipWorkflows:
             project_id="proj-adv-3a",
             source_item_id="ADV-CROSS-A",
             target_item_id="ADV-CROSS-B",
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(link)
         db_session.commit()
 
-        retrieved_link = db_session.query(Link).filter_by(
-            id="ADV-CROSS-LINK"
-        ).first()
+        retrieved_link = db_session.query(Link).filter_by(id="ADV-CROSS-LINK").first()
         assert retrieved_link is not None
 
     def test_bidirectional_workflow_graph(self, db_session: Session) -> None:
@@ -1048,7 +984,7 @@ class TestAdvancedRelationshipWorkflows:
                 title=f"Item {i}",
                 view="DEFAULT",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             items.append(item)
         db_session.add_all(items)
@@ -1060,14 +996,14 @@ class TestAdvancedRelationshipWorkflows:
             project_id="proj-adv-4",
             source_item_id="ADV-BIDIR-0",
             target_item_id="ADV-BIDIR-1",
-            link_type="implements"
+            link_type="implements",
         )
         link2 = Link(
             id="ADV-BIDIR-REV",
             project_id="proj-adv-4",
             source_item_id="ADV-BIDIR-1",
             target_item_id="ADV-BIDIR-0",
-            link_type="tests"
+            link_type="tests",
         )
         db_session.add_all([link1, link2])
         db_session.commit()
@@ -1092,13 +1028,11 @@ class TestAdvancedRelationshipWorkflows:
                     title=f"Item {item_idx}",
                     view="DEFAULT",
                     item_type="feature",
-                    status="todo"
+                    status="todo",
                 )
                 items.append(item)
         db_session.add_all(items)
         db_session.commit()
 
-        total = db_session.query(Item).filter(
-            Item.id.like("ADV-MULTI-%")
-        ).count()
+        total = db_session.query(Item).filter(Item.id.like("ADV-MULTI-%")).count()
         assert total == 15

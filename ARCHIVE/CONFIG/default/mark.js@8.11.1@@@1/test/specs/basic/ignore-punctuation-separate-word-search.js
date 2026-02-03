@@ -3,7 +3,7 @@ describe(
   'basic mark with ignorePunctuation and separateWordSearch', function() {
     function getPunctuation() {
       return ':;.,-–—‒_(){}[]!\'"+='
-        .replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&')
+        .replace(/[-[\]/{}()*+?.\\^$|]/g, '\\$&')
         .split('');
     }
     var $ctx1, $ctx2, $container,

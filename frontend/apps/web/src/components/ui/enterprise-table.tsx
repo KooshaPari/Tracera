@@ -101,6 +101,25 @@ export function DataTable<TData, TValue>({
 	const [searchQuery, setSearchQuery] = React.useState("");
 	const [isCompact, setIsCompact] = React.useState(false);
 
+	// Memoized animation variants
+	const toolbarAnimation = React.useMemo(() => ({
+		animate: { opacity: 1, y: 0 },
+		initial: { opacity: 0, y: -10 },
+		transition: { duration: 0.2 },
+	}), []);
+
+	const selectionBadgeAnimation = React.useMemo(() => ({
+		animate: { opacity: 1, scale: 1 },
+		initial: { opacity: 0, scale: 0.9 },
+	}), []);
+
+	const rowAnimation = React.useMemo(() => ({
+		animate: { opacity: 1, y: 0 },
+		exit: { opacity: 0, y: -10 },
+		initial: { opacity: 0, y: 10 },
+		transition: { duration: 0.15 },
+	}), []);
+
 	const table = useReactTable({
 		data,
 		columns,
@@ -125,6 +144,51 @@ export function DataTable<TData, TValue>({
 			pageCount: paginationProps.pageCount,
 		}),
 	});
+
+	// Memoized event handlers
+	const handleSearchChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+		setSearchQuery(e.target.value);
+	}, []);
+
+	const handleStatusFilterAll = React.useCallback(() => {
+		table.getColumn("status")?.setFilterValue("");
+	}, [table]);
+
+	const handleStatusFilterActive = React.useCallback(() => {
+		table.getColumn("status")?.setFilterValue("active");
+	}, [table]);
+
+	const handleStatusFilterPending = React.useCallback(() => {
+		table.getColumn("status")?.setFilterValue("pending");
+	}, [table]);
+
+	const handleStatusFilterCompleted = React.useCallback(() => {
+		table.getColumn("status")?.setFilterValue("completed");
+	}, [table]);
+
+	const handlePageSizeChange = React.useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+		table.setPageSize(Number(e.target.value));
+	}, [table]);
+
+	const handleFirstPage = React.useCallback(() => {
+		table.setPageIndex(0);
+	}, [table]);
+
+	const handlePreviousPage = React.useCallback(() => {
+		table.previousPage();
+	}, [table]);
+
+	const handleNextPage = React.useCallback(() => {
+		table.nextPage();
+	}, [table]);
+
+	const handleLastPage = React.useCallback(() => {
+		table.setPageIndex(table.getPageCount() - 1);
+	}, [table]);
+
+	const handleToggleCompact = React.useCallback((value: boolean) => {
+		setIsCompact(Boolean(value));
+	}, []);
 
 	// Export functionality
 	const handleExport = React.useCallback(() => {
@@ -181,14 +245,34 @@ export function DataTable<TData, TValue>({
 
 	const selectedRowCount = table.getFilteredSelectedRowModel().rows.length;
 
+	// Memoized column visibility items to prevent recreation on each render
+	const ColumnVisibilityItems = React.useMemo(() => {
+		return table
+			.getAllColumns()
+			.filter((column) => column.getCanHide())
+			.map((column) => {
+				const handleToggle = (value: boolean) => {
+					column.toggleVisibility(!!value);
+				};
+				return (
+					<DropdownMenuCheckboxItem
+						key={column.id}
+						className="capitalize"
+						checked={column.getIsVisible()}
+						onCheckedChange={handleToggle}
+					>
+						{column.id}
+					</DropdownMenuCheckboxItem>
+				);
+			});
+	}, [table]);
+
 	return (
 		<div className="space-y-4">
 			{/* Toolbar */}
 			<motion.div
 				className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between"
-				initial={{ opacity: 0, y: -10 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.2 }}
+				{...toolbarAnimation}
 			>
 				{/* Search and Filters */}
 				<div className="flex items-center gap-2 flex-1">
@@ -196,9 +280,7 @@ export function DataTable<TData, TValue>({
 						<Input
 							placeholder={searchPlaceholder}
 							value={searchQuery}
-							onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-								setSearchQuery(e.target.value)
-							}
+							onChange={handleSearchChange}
 							className="w-full sm:w-[300px] pl-9"
 						/>
 						<Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -216,30 +298,16 @@ export function DataTable<TData, TValue>({
 								</span>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent className="w-[150px]">
-								<DropdownMenuItem
-									onClick={() => table.getColumn("status")?.setFilterValue("")}
-								>
+								<DropdownMenuItem onClick={handleStatusFilterAll}>
 									All Status
 								</DropdownMenuItem>
-								<DropdownMenuItem
-									onClick={() =>
-										table.getColumn("status")?.setFilterValue("active")
-									}
-								>
+								<DropdownMenuItem onClick={handleStatusFilterActive}>
 									Active
 								</DropdownMenuItem>
-								<DropdownMenuItem
-									onClick={() =>
-										table.getColumn("status")?.setFilterValue("pending")
-									}
-								>
+								<DropdownMenuItem onClick={handleStatusFilterPending}>
 									Pending
 								</DropdownMenuItem>
-								<DropdownMenuItem
-									onClick={() =>
-										table.getColumn("status")?.setFilterValue("completed")
-									}
-								>
+								<DropdownMenuItem onClick={handleStatusFilterCompleted}>
 									Completed
 								</DropdownMenuItem>
 							</DropdownMenuContent>
@@ -252,8 +320,7 @@ export function DataTable<TData, TValue>({
 					{enableBulkActions && selectedRowCount > 0 && bulkActions && (
 						<motion.div
 							className="flex items-center gap-2"
-							initial={{ opacity: 0, scale: 0.9 }}
-							animate={{ opacity: 1, scale: 1 }}
+							{...selectionBadgeAnimation}
 						>
 							<Badge variant="secondary" className="px-2 py-1">
 								{selectedRowCount} selected
@@ -290,27 +357,11 @@ export function DataTable<TData, TValue>({
 									</>
 								)}
 								<DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
-								{table
-									.getAllColumns()
-									.filter((column) => column.getCanHide())
-									.map((column) => (
-										<DropdownMenuCheckboxItem
-											key={column.id}
-											className="capitalize"
-											checked={column.getIsVisible()}
-											onCheckedChange={(value: boolean) =>
-												column.toggleVisibility(!!value)
-											}
-										>
-											{column.id}
-										</DropdownMenuCheckboxItem>
-									))}
+								{ColumnVisibilityItems}
 								<DropdownMenuSeparator />
 								<DropdownMenuCheckboxItem
 									checked={isCompact}
-									onCheckedChange={(value: boolean) =>
-										setIsCompact(Boolean(value))
-									}
+									onCheckedChange={handleToggleCompact}
 								>
 									Compact View
 								</DropdownMenuCheckboxItem>
@@ -388,10 +439,7 @@ export function DataTable<TData, TValue>({
 									<motion.tr
 										key={row.id}
 										data-state={row.getIsSelected() && "selected"}
-										initial={{ opacity: 0, y: 10 }}
-										animate={{ opacity: 1, y: 0 }}
-										exit={{ opacity: 0, y: -10 }}
-										transition={{ duration: 0.15 }}
+										{...rowAnimation}
 										className={cn(
 											"hover:bg-muted/50 transition-colors",
 											isCompact && "divide-x divide-border",
@@ -437,9 +485,7 @@ export function DataTable<TData, TValue>({
 							<p className="text-sm font-medium">Rows per page</p>
 							<select
 								value={table.getState().pagination.pageSize}
-								onChange={(e) => {
-									table.setPageSize(Number(e.target.value));
-								}}
+								onChange={handlePageSizeChange}
 								className="h-8 w-[70px] rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 							>
 								{[10, 20, 30, 40, 50].map((pageSize) => (
@@ -457,7 +503,7 @@ export function DataTable<TData, TValue>({
 							<Button
 								variant="outline"
 								className="hidden h-8 w-8 p-0 lg:flex"
-								onClick={() => table.setPageIndex(0)}
+								onClick={handleFirstPage}
 								disabled={!table.getCanPreviousPage()}
 							>
 								<span className="sr-only">Go to first page</span>
@@ -466,7 +512,7 @@ export function DataTable<TData, TValue>({
 							<Button
 								variant="outline"
 								className="h-8 w-8 p-0"
-								onClick={() => table.previousPage()}
+								onClick={handlePreviousPage}
 								disabled={!table.getCanPreviousPage()}
 							>
 								<span className="sr-only">Go to previous page</span>
@@ -475,7 +521,7 @@ export function DataTable<TData, TValue>({
 							<Button
 								variant="outline"
 								className="h-8 w-8 p-0"
-								onClick={() => table.nextPage()}
+								onClick={handleNextPage}
 								disabled={!table.getCanNextPage()}
 							>
 								<span className="sr-only">Go to next page</span>
@@ -484,7 +530,7 @@ export function DataTable<TData, TValue>({
 							<Button
 								variant="outline"
 								className="hidden h-8 w-8 p-0 lg:flex"
-								onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+								onClick={handleLastPage}
 								disabled={!table.getCanNextPage()}
 							>
 								<span className="sr-only">Go to last page</span>

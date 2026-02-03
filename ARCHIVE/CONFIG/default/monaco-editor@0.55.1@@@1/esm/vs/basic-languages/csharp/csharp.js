@@ -1,5 +1,5 @@
 const conf = {
-  wordPattern: /(-?\d*\.\d\w*)|([^\`\~\!\#\$\%\^\&\*\(\)\-\=\+\[\{\]\}\\\|\;\:\'\"\,\.\<\>\/\?\s]+)/g,
+  wordPattern: /(-?\d*\.\d\w*)|([^`~!#$%^&*()\-=+[{\]}\\|;:'",.<>/?\s]+)/g,
   comments: {
     lineComment: "//",
     blockComment: ["/*", "*/"]
@@ -186,7 +186,7 @@ const language = {
     ">>",
     "=>"
   ],
-  symbols: /[=><!~?:&|+\-*\/\^%]+/,
+  symbols: /[=><!~?:&|+\-*/^%]+/,
   // escape sequences
   escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
   // The main tokenizer for our languages
@@ -194,7 +194,7 @@ const language = {
     root: [
       // identifiers and keywords
       [
-        /\@?[a-zA-Z_]\w*/,
+        /@?[a-zA-Z_]\w*/,
         {
           cases: {
             "@namespaceFollows": {
@@ -228,7 +228,7 @@ const language = {
           }
         }
       ],
-      [/[{}()\[\]]/, "@brackets"],
+      [/[{}()[\]]/, "@brackets"],
       [/[<>](?!@symbols)/, "@brackets"],
       [
         /@symbols/,
@@ -240,7 +240,7 @@ const language = {
         }
       ],
       // numbers
-      [/[0-9_]*\.[0-9_]+([eE][\-+]?\d+)?[fFdD]?/, "number.float"],
+      [/[0-9_]*\.[0-9_]+([eE][-+]?\d+)?[fFdD]?/, "number.float"],
       [/0[xX][0-9a-fA-F_]+/, "number.hex"],
       [/0[bB][01_]+/, "number.hex"],
       // binary: use same theme style as hex
@@ -251,8 +251,8 @@ const language = {
       [/"([^"\\]|\\.)*$/, "string.invalid"],
       // non-teminated string
       [/"/, { token: "string.quote", next: "@string" }],
-      [/\$\@"/, { token: "string.quote", next: "@litinterpstring" }],
-      [/\@"/, { token: "string.quote", next: "@litstring" }],
+      [/\$@"/, { token: "string.quote", next: "@litinterpstring" }],
+      [/@"/, { token: "string.quote", next: "@litstring" }],
       [/\$"/, { token: "string.quote", next: "@interpolatedstring" }],
       // characters
       [/'[^\\']'/, "string"],
@@ -275,14 +275,14 @@ const language = {
     namespace: [
       { include: "@whitespace" },
       [/[A-Z]\w*/, "namespace"],
-      [/[\.=]/, "delimiter"],
+      [/[.=]/, "delimiter"],
       ["", "", "@pop"]
     ],
     comment: [
-      [/[^\/*]+/, "comment"],
+      [/[^/*]+/, "comment"],
       // [/\/\*/,    'comment', '@push' ],    // no nested comments :-(
       ["\\*/", "comment", "@pop"],
-      [/[\/*]/, "comment"]
+      [/[/*]/, "comment"]
     ],
     string: [
       [/[^\\"]+/, "string"],

@@ -181,8 +181,7 @@ def extract_figma_protocol_url(markdown_text: str) -> list[tuple[str, str]]:
     """
     # Pattern: figma://file_key/node_id
     pattern = r"figma://([a-zA-Z0-9]+)/([0-9:]+)"
-    matches = re.findall(pattern, markdown_text)
-    return matches
+    return re.findall(pattern, markdown_text)
 
 
 def convert_figma_protocol_to_url(markdown_text: str) -> str:
@@ -215,8 +214,6 @@ def convert_figma_protocol_to_url(markdown_text: str) -> str:
 class FigmaAPIError(Exception):
     """Exception raised for Figma API errors."""
 
-    pass
-
 
 def validate_figma_metadata(metadata: dict[str, Any]) -> list[str]:
     """Validate Figma metadata fields.
@@ -246,16 +243,12 @@ def validate_figma_metadata(metadata: dict[str, Any]) -> list[str]:
                 # Validate file_key matches if provided separately
                 file_key = metadata.get("figma_file_key")
                 if file_key and file_key != parsed.file_key:
-                    errors.append(
-                        f"figma_file_key '{file_key}' does not match URL file key '{parsed.file_key}'"
-                    )
+                    errors.append(f"figma_file_key '{file_key}' does not match URL file key '{parsed.file_key}'")
 
                 # Validate node_id matches if provided separately
                 node_id = metadata.get("figma_node_id")
                 if node_id and node_id != parsed.node_id:
-                    errors.append(
-                        f"figma_node_id '{node_id}' does not match URL node ID '{parsed.node_id}'"
-                    )
+                    errors.append(f"figma_node_id '{node_id}' does not match URL node ID '{parsed.node_id}'")
             except ValueError as e:
                 errors.append(str(e))
 

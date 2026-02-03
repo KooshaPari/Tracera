@@ -4,7 +4,7 @@ import { libFileMap } from './lib/lib.js';
 
 function fileNameIsLib(resource) {
   if (typeof resource === "string") {
-    if (/^file:\/\/\//.test(resource)) {
+    if (resource.startsWith('file:///')) {
       return !!libFileMap[resource.substr(8)];
     }
     return false;

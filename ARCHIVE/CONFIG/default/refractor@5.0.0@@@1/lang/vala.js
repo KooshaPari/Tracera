@@ -52,7 +52,7 @@ export default function vala(Prism) {
     number:
       /(?:\b0x[\da-f]+\b|(?:\b\d+(?:\.\d*)?|\B\.\d+)(?:e[+-]?\d+)?)(?:f|u?l?)?/i,
     operator:
-      /\+\+|--|&&|\|\||<<=?|>>=?|=>|->|~|[+\-*\/%&^|=!<>]=?|\?\??|\.\.\./,
+      /\+\+|--|&&|\|\||<<=?|>>=?|=>|->|~|[+\-*/%&^|=!<>]=?|\?\??|\.\.\./,
     punctuation: /[{}[\];(),.:]/,
     constant: /\b[A-Z0-9_]+\b/
   })
@@ -83,7 +83,7 @@ export default function vala(Prism) {
   Prism.languages.insertBefore('vala', 'keyword', {
     regex: {
       pattern:
-        /\/(?:\[(?:[^\]\\\r\n]|\\.)*\]|\\.|[^/\\\[\r\n])+\/[imsx]{0,4}(?=\s*(?:$|[\r\n,.;})\]]))/,
+        /\/(?:\[(?:[^\]\\\r\n]|\\.)*\]|\\.|[^/\\[\r\n])+\/[imsx]{0,4}(?=\s*(?:$|[\r\n,.;})\]]))/,
       greedy: true,
       inside: {
         'regex-source': {

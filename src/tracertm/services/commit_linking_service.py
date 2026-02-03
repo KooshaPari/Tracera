@@ -50,14 +50,12 @@ class CommitLinkingService:
                     # Try to find item by ID or reference
                     item = await self._find_item_by_reference(project_id, match)
                     if item:
-                        references["found"].append(
-                            {
-                                "pattern": pattern_name,
-                                "reference": match,
-                                "item_id": item.id,
-                                "item_title": item.title,
-                            }
-                        )
+                        references["found"].append({
+                            "pattern": pattern_name,
+                            "reference": match,
+                            "item_id": item.id,
+                            "item_title": item.title,
+                        })
                 except Exception as e:
                     references["errors"].append(str(e))
 
@@ -73,9 +71,7 @@ class CommitLinkingService:
     ) -> dict[str, Any]:
         """Parse commit and auto-link to items."""
         # Parse commit message
-        references = await self.parse_commit_message(
-            project_id, commit_message, commit_hash, author
-        )
+        references = await self.parse_commit_message(project_id, commit_message, commit_hash, author)
 
         # Create links for found items
         for ref in references["found"]:
@@ -98,7 +94,7 @@ class CommitLinkingService:
                     project_id=project_id,
                     event_type="commit_linked",
                     entity_type="link",
-                    entity_id=link.id,
+                    entity_id=str(link.id),
                     data={
                         "commit_hash": commit_hash,
                         "item_id": ref["item_id"],
@@ -109,9 +105,7 @@ class CommitLinkingService:
 
                 references["linked"].append(ref)
             except Exception as e:
-                references["errors"].append(
-                    f"Failed to link {ref['reference']}: {e!s}"
-                )
+                references["errors"].append(f"Failed to link {ref['reference']}: {e!s}")
 
         return references
 

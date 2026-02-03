@@ -40,4 +40,4 @@ export type IsFloat<T> = T extends number
 			: false
 	: false;
 
-export {};
+

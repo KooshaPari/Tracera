@@ -2,7 +2,7 @@
 Repository for GitHub App Installation operations.
 """
 
-from typing import Optional
+from datetime import datetime, timezone
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -40,21 +40,15 @@ class GitHubAppInstallationRepository:
         await self.db.flush()
         return installation
 
-    async def get_by_id(self, installation_id: str) -> Optional[GitHubAppInstallation]:
+    async def get_by_id(self, installation_id: str) -> GitHubAppInstallation | None:
         """Get installation by ID."""
-        result = await self.db.execute(
-            select(GitHubAppInstallation).where(GitHubAppInstallation.id == installation_id)
-        )
+        result = await self.db.execute(select(GitHubAppInstallation).where(GitHubAppInstallation.id == installation_id))
         return result.scalar_one_or_none()
 
-    async def get_by_github_installation_id(
-        self, github_installation_id: int
-    ) -> Optional[GitHubAppInstallation]:
+    async def get_by_github_installation_id(self, github_installation_id: int) -> GitHubAppInstallation | None:
         """Get installation by GitHub's installation ID."""
         result = await self.db.execute(
-            select(GitHubAppInstallation).where(
-                GitHubAppInstallation.installation_id == github_installation_id
-            )
+            select(GitHubAppInstallation).where(GitHubAppInstallation.installation_id == github_installation_id)
         )
         return result.scalar_one_or_none()
 
@@ -71,9 +65,9 @@ class GitHubAppInstallationRepository:
     async def update(
         self,
         installation_id: str,
-        permissions: Optional[dict] = None,
-        suspended_at: Optional[bool] = None,
-    ) -> Optional[GitHubAppInstallation]:
+        permissions: dict | None = None,
+        suspended_at: bool | None = None,
+    ) -> GitHubAppInstallation | None:
         """Update an installation."""
         installation = await self.get_by_id(installation_id)
         if not installation:
@@ -82,8 +76,7 @@ class GitHubAppInstallationRepository:
         if permissions is not None:
             installation.permissions = permissions
         if suspended_at is not None:
-            from datetime import datetime
-            installation.suspended_at = datetime.now() if suspended_at else None
+            installation.suspended_at = datetime.now(UTC) if suspended_at else None
 
         await self.db.flush()
         return installation

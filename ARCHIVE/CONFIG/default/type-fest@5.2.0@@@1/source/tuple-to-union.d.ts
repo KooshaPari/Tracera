@@ -50,4 +50,4 @@ type NumberBool = typeof numberBool[number];
 */
 export type TupleToUnion<ArrayType> = ArrayType extends readonly unknown[] ? ArrayType[number] : never;
 
-export {};
+

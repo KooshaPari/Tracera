@@ -4,7 +4,7 @@ Project backup and restore service for Epic 6 (Story 6.6, FR53).
 Provides enhanced backup/restore capabilities with templates and cloning.
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy.orm import Session
@@ -46,18 +46,14 @@ class ProjectBackupService:
             raise ValueError(f"Project not found: {project_id}")
 
         # Get all items
-        items = (
-            self.session.query(Item)
-            .filter(Item.project_id == project_id, Item.deleted_at.is_(None))
-            .all()
-        )
+        items = self.session.query(Item).filter(Item.project_id == project_id, Item.deleted_at.is_(None)).all()
 
         # Get all links
         links = self.session.query(Link).filter(Link.project_id == project_id).all()
 
         backup_data = {
             "version": "1.0",
-            "backup_date": datetime.utcnow().isoformat(),
+            "backup_date": datetime.now(UTC).isoformat(),
             "project": {
                 "id": str(project.id),
                 "name": project.name,
@@ -94,12 +90,8 @@ class ProjectBackupService:
         # Include history if requested
         if include_history:
             from tracertm.models.event import Event
-            events = (
-                self.session.query(Event)
-                .filter(Event.project_id == project_id)
-                .order_by(Event.created_at)
-                .all()
-            )
+
+            events = self.session.query(Event).filter(Event.project_id == project_id).order_by(Event.created_at).all()
             backup_data["events"] = [
                 {
                     "event_type": event.event_type,
@@ -114,11 +106,7 @@ class ProjectBackupService:
 
         # Include agents if requested
         if include_agents:
-            agents = (
-                self.session.query(Agent)
-                .filter(Agent.project_id == project_id)
-                .all()
-            )
+            agents = self.session.query(Agent).filter(Agent.project_id == project_id).all()
             backup_data["agents"] = [
                 {
                     "id": agent.id,
@@ -299,7 +287,9 @@ class ProjectBackupService:
         template = self.session.query(Project).filter(Project.id == template_id).first()
         if template:
             # Get existing metadata or create new dict
-            metadata = {} if template.project_metadata is None else dict(template.project_metadata)  # Copy to avoid mutation issues
+            metadata = (
+                {} if template.project_metadata is None else dict(template.project_metadata)
+            )  # Copy to avoid mutation issues
 
             metadata["is_template"] = True
             metadata["template_name"] = template_name
@@ -317,14 +307,13 @@ class ProjectBackupService:
         """
         projects = self.session.query(Project).all()
 
-        templates = []
-        for project in projects:
-            if project.project_metadata and project.project_metadata.get("is_template"):
-                templates.append({
-                    "id": str(project.id),
-                    "name": project.name,
-                    "description": project.description,
-                    "template_name": project.project_metadata.get("template_name", project.name),
-                })
-
-        return templates
+        return [
+            {
+                "id": str(project.id),
+                "name": project.name,
+                "description": project.description,
+                "template_name": project.project_metadata.get("template_name", project.name),
+            }
+            for project in projects
+            if project.project_metadata and project.project_metadata.get("is_template")
+        ]

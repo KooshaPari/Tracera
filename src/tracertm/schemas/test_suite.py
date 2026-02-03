@@ -3,7 +3,7 @@ Pydantic schemas for Test Suite API.
 """
 
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -14,8 +14,8 @@ class TestSuiteTestCaseCreate(BaseModel):
     test_case_id: str
     order_index: int = 0
     is_mandatory: bool = True
-    skip_reason: Optional[str] = None
-    custom_parameters: Optional[dict[str, Any]] = None
+    skip_reason: str | None = None
+    custom_parameters: dict[str, Any] | None = None
 
 
 class TestSuiteTestCaseResponse(BaseModel):
@@ -26,8 +26,8 @@ class TestSuiteTestCaseResponse(BaseModel):
     test_case_id: str
     order_index: int
     is_mandatory: bool
-    skip_reason: Optional[str]
-    custom_parameters: Optional[dict[str, Any]]
+    skip_reason: str | None
+    custom_parameters: dict[str, Any] | None
     created_at: datetime
     updated_at: datetime
 
@@ -38,42 +38,42 @@ class TestSuiteCreate(BaseModel):
     """Schema for creating a test suite."""
 
     name: str = Field(..., min_length=1, max_length=500)
-    description: Optional[str] = Field(None, max_length=5000)
-    objective: Optional[str] = Field(None, max_length=2000)
-    parent_id: Optional[str] = None
+    description: str | None = Field(None, max_length=5000)
+    objective: str | None = Field(None, max_length=2000)
+    parent_id: str | None = None
     order_index: int = 0
-    category: Optional[str] = Field(None, max_length=100)
-    tags: Optional[list[str]] = None
+    category: str | None = Field(None, max_length=100)
+    tags: list[str] | None = None
     is_parallel_execution: bool = False
-    estimated_duration_minutes: Optional[int] = Field(None, ge=1)
-    required_environment: Optional[str] = Field(None, max_length=255)
-    environment_variables: Optional[dict[str, str]] = None
-    setup_instructions: Optional[str] = None
-    teardown_instructions: Optional[str] = None
-    owner: Optional[str] = Field(None, max_length=255)
-    responsible_team: Optional[str] = Field(None, max_length=255)
-    metadata: Optional[dict[str, Any]] = None
+    estimated_duration_minutes: int | None = Field(None, ge=1)
+    required_environment: str | None = Field(None, max_length=255)
+    environment_variables: dict[str, str] | None = None
+    setup_instructions: str | None = None
+    teardown_instructions: str | None = None
+    owner: str | None = Field(None, max_length=255)
+    responsible_team: str | None = Field(None, max_length=255)
+    metadata: dict[str, Any] | None = None
 
 
 class TestSuiteUpdate(BaseModel):
     """Schema for updating a test suite."""
 
-    name: Optional[str] = Field(None, min_length=1, max_length=500)
-    description: Optional[str] = Field(None, max_length=5000)
-    objective: Optional[str] = Field(None, max_length=2000)
-    parent_id: Optional[str] = None
-    order_index: Optional[int] = None
-    category: Optional[str] = Field(None, max_length=100)
-    tags: Optional[list[str]] = None
-    is_parallel_execution: Optional[bool] = None
-    estimated_duration_minutes: Optional[int] = Field(None, ge=1)
-    required_environment: Optional[str] = Field(None, max_length=255)
-    environment_variables: Optional[dict[str, str]] = None
-    setup_instructions: Optional[str] = None
-    teardown_instructions: Optional[str] = None
-    owner: Optional[str] = Field(None, max_length=255)
-    responsible_team: Optional[str] = Field(None, max_length=255)
-    metadata: Optional[dict[str, Any]] = None
+    name: str | None = Field(None, min_length=1, max_length=500)
+    description: str | None = Field(None, max_length=5000)
+    objective: str | None = Field(None, max_length=2000)
+    parent_id: str | None = None
+    order_index: int | None = None
+    category: str | None = Field(None, max_length=100)
+    tags: list[str] | None = None
+    is_parallel_execution: bool | None = None
+    estimated_duration_minutes: int | None = Field(None, ge=1)
+    required_environment: str | None = Field(None, max_length=255)
+    environment_variables: dict[str, str] | None = None
+    setup_instructions: str | None = None
+    teardown_instructions: str | None = None
+    owner: str | None = Field(None, max_length=255)
+    responsible_team: str | None = Field(None, max_length=255)
+    metadata: dict[str, Any] | None = None
 
 
 class TestSuiteResponse(BaseModel):
@@ -83,27 +83,27 @@ class TestSuiteResponse(BaseModel):
     suite_number: str
     project_id: str
     name: str
-    description: Optional[str]
-    objective: Optional[str]
+    description: str | None
+    objective: str | None
     status: str
-    parent_id: Optional[str]
+    parent_id: str | None
     order_index: int
-    category: Optional[str]
-    tags: Optional[list[str]]
+    category: str | None
+    tags: list[str] | None
     is_parallel_execution: bool
-    estimated_duration_minutes: Optional[int]
-    required_environment: Optional[str]
-    environment_variables: Optional[dict[str, str]]
-    setup_instructions: Optional[str]
-    teardown_instructions: Optional[str]
-    owner: Optional[str]
-    responsible_team: Optional[str]
+    estimated_duration_minutes: int | None
+    required_environment: str | None
+    environment_variables: dict[str, str] | None
+    setup_instructions: str | None
+    teardown_instructions: str | None
+    owner: str | None
+    responsible_team: str | None
     total_test_cases: int
     automated_count: int
-    last_run_at: Optional[datetime]
-    last_run_result: Optional[str]
-    pass_rate: Optional[float]
-    metadata: Optional[dict[str, Any]]
+    last_run_at: datetime | None
+    last_run_result: str | None
+    pass_rate: float | None
+    metadata: dict[str, Any] | None
     version: int
     created_at: datetime
     updated_at: datetime
@@ -122,7 +122,7 @@ class TestSuiteStatusTransition(BaseModel):
     """Schema for transitioning suite status."""
 
     new_status: str = Field(..., pattern="^(draft|active|deprecated|archived)$")
-    reason: Optional[str] = None
+    reason: str | None = None
 
 
 class TestSuiteActivityResponse(BaseModel):
@@ -131,11 +131,11 @@ class TestSuiteActivityResponse(BaseModel):
     id: str
     suite_id: str
     activity_type: str
-    from_value: Optional[str]
-    to_value: Optional[str]
-    description: Optional[str]
-    performed_by: Optional[str]
-    metadata: Optional[dict[str, Any]]
+    from_value: str | None
+    to_value: str | None
+    description: str | None
+    performed_by: str | None
+    metadata: dict[str, Any] | None
     created_at: datetime
 
     model_config = {"from_attributes": True}

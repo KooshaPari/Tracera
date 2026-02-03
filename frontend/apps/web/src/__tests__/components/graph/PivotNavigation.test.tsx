@@ -811,7 +811,7 @@ describe(buildPivotTargets, () => {
 				id: "link-1",
 				sourceItemId: "item-1",
 				status: "confirmed",
-				strategies: [{ strategy: "explicit_annotation", confidence: 0.95 }],
+				strategies: [{ confidence: 0.95, strategy: "explicit_annotation" }],
 				targetItemId: "item-2",
 			},
 		];
@@ -863,7 +863,7 @@ describe(buildPivotTargets, () => {
 				id: "link-1",
 				sourceItemId: "item-1",
 				status: "confirmed",
-				strategies: [{ strategy: "explicit_annotation", confidence: 0.95 }],
+				strategies: [{ confidence: 0.95, strategy: "explicit_annotation" }],
 				targetItemId: "item-2",
 			},
 		];
@@ -898,7 +898,7 @@ describe(buildPivotTargets, () => {
 				id: "link-1",
 				sourceItemId: "item-1",
 				status: "confirmed",
-				strategies: [{ strategy: "explicit_annotation", confidence: 0.5 }],
+				strategies: [{ confidence: 0.5, strategy: "explicit_annotation" }],
 				targetItemId: "item-2",
 			},
 			{
@@ -906,7 +906,7 @@ describe(buildPivotTargets, () => {
 				id: "link-2",
 				sourceItemId: "item-1",
 				status: "confirmed",
-				strategies: [{ strategy: "semantic_similarity", confidence: 0.95 }],
+				strategies: [{ confidence: 0.95, strategy: "semantic_similarity" }],
 				targetItemId: "item-3",
 			},
 		];
@@ -951,7 +951,7 @@ describe(buildPivotTargets, () => {
 				id: "link-1",
 				sourceItemId: "item-1",
 				status: "confirmed",
-				strategies: [{ strategy: "explicit_annotation", confidence: 0.95 }],
+				strategies: [{ confidence: 0.95, strategy: "explicit_annotation" }],
 				targetItemId: "nonexistent",
 			},
 		];
@@ -973,7 +973,7 @@ describe(buildPivotTargets, () => {
 				id: "link-1",
 				sourceItemId: "item-1",
 				status: "confirmed",
-				strategies: [{ strategy: "explicit_annotation", confidence: 0.95 }],
+				strategies: [{ confidence: 0.95, strategy: "explicit_annotation" }],
 				targetItemId: "item-2",
 			},
 		];

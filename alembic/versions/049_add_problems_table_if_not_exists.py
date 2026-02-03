@@ -9,15 +9,15 @@ Revises: 048_add_items_version
 Create Date: 2026-01-31
 
 """
-from typing import Sequence, Union
+
+from collections.abc import Sequence
 
 from alembic import op
 
-
 revision: str = "049_add_problems_if_not_exists"
-down_revision: Union[str, None] = "048_add_items_version"
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | None = "048_add_items_version"
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
@@ -74,16 +74,31 @@ def upgrade() -> None:
         )
     """)
     # Indexes for problems (IF NOT EXISTS)
-    for idx, stmt in [
-        ("idx_problems_problem_number", "CREATE INDEX IF NOT EXISTS idx_problems_problem_number ON problems (problem_number)"),
+    for _idx, stmt in [
+        (
+            "idx_problems_problem_number",
+            "CREATE INDEX IF NOT EXISTS idx_problems_problem_number ON problems (problem_number)",
+        ),
         ("idx_problems_project_id", "CREATE INDEX IF NOT EXISTS idx_problems_project_id ON problems (project_id)"),
         ("idx_problems_status", "CREATE INDEX IF NOT EXISTS idx_problems_status ON problems (status)"),
-        ("idx_problems_project_status", "CREATE INDEX IF NOT EXISTS idx_problems_project_status ON problems (project_id, status)"),
-        ("idx_problems_project_priority", "CREATE INDEX IF NOT EXISTS idx_problems_project_priority ON problems (project_id, priority)"),
-        ("idx_problems_project_impact", "CREATE INDEX IF NOT EXISTS idx_problems_project_impact ON problems (project_id, impact_level)"),
+        (
+            "idx_problems_project_status",
+            "CREATE INDEX IF NOT EXISTS idx_problems_project_status ON problems (project_id, status)",
+        ),
+        (
+            "idx_problems_project_priority",
+            "CREATE INDEX IF NOT EXISTS idx_problems_project_priority ON problems (project_id, priority)",
+        ),
+        (
+            "idx_problems_project_impact",
+            "CREATE INDEX IF NOT EXISTS idx_problems_project_impact ON problems (project_id, impact_level)",
+        ),
         ("idx_problems_assigned_to", "CREATE INDEX IF NOT EXISTS idx_problems_assigned_to ON problems (assigned_to)"),
         ("idx_problems_category", "CREATE INDEX IF NOT EXISTS idx_problems_category ON problems (category)"),
-        ("idx_problems_known_error_id", "CREATE INDEX IF NOT EXISTS idx_problems_known_error_id ON problems (known_error_id)"),
+        (
+            "idx_problems_known_error_id",
+            "CREATE INDEX IF NOT EXISTS idx_problems_known_error_id ON problems (known_error_id)",
+        ),
         ("idx_problems_deleted_at", "CREATE INDEX IF NOT EXISTS idx_problems_deleted_at ON problems (deleted_at)"),
     ]:
         op.execute(stmt)

@@ -11,4 +11,4 @@ export default class SubscriptionSet {
     channels(set: AddSet | DelSet): string[];
     isEmpty(): boolean;
 }
-export {};
+

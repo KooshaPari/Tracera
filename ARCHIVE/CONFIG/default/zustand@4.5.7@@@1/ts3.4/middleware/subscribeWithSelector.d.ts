@@ -39,4 +39,4 @@ type StoreSubscribeWithSelector<T> = {
     };
 };
 export declare const subscribeWithSelector: SubscribeWithSelector;
-export {};
+

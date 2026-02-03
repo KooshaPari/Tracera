@@ -273,5 +273,5 @@ alembic current
 ## Related Documentation
 
 - Full guide: `/docs/PERFORMANCE_INDEXES_GUIDE.md`
-- Test suite: `/tests/test_performance_indexes.sql`
+- Test suite: `/tests/sql/test_performance_indexes.sql`
 - Migration: `/alembic/versions/045_add_performance_indexes.py`

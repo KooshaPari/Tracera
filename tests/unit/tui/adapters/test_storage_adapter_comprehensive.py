@@ -6,14 +6,14 @@ sync operations, conflict operations, statistics, and reactive callbacks.
 Coverage target: 80%+ (596 lines total)
 """
 
-import pytest
 from datetime import datetime
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
+import pytest
+
 from tracertm.models import Item, Link, Project
-from tracertm.storage.conflict_resolver import Conflict
 from tracertm.storage.sync_engine import SyncState, SyncStatus
 from tracertm.tui.adapters.storage_adapter import StorageAdapter
 
@@ -92,20 +92,13 @@ class TestStorageAdapterProjectOperations:
 
         mock_project_storage = MagicMock()
         mock_project = Project(
-            id=str(uuid4()),
-            name="New Project",
-            description="Test description",
-            project_metadata={"key": "value"}
+            id=str(uuid4()), name="New Project", description="Test description", project_metadata={"key": "value"}
         )
         mock_project_storage.create_or_update_project.return_value = mock_project
         mock_storage.get_project_storage.return_value = mock_project_storage
 
         adapter = StorageAdapter()
-        result = adapter.create_project(
-            "New Project",
-            description="Test description",
-            metadata={"key": "value"}
-        )
+        result = adapter.create_project("New Project", description="Test description", metadata={"key": "value"})
 
         assert result == mock_project
         mock_project_storage.create_or_update_project.assert_called_once_with(
@@ -137,9 +130,7 @@ class TestStorageAdapterItemOperations:
 
         assert len(results) == 2
         assert results[0] == mock_item1
-        mock_item_storage.list_items.assert_called_once_with(
-            item_type="epic", status="todo", parent_id=None
-        )
+        mock_item_storage.list_items.assert_called_once_with(item_type="epic", status="todo", parent_id=None)
 
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
     def test_get_item_success(self, mock_storage_class):
@@ -171,13 +162,7 @@ class TestStorageAdapterItemOperations:
 
         project = Project(id=str(uuid4()), name="Test Project")
         item_id = str(uuid4())
-        mock_item = Item(
-            id=item_id,
-            title="New Item",
-            item_type="task",
-            status="todo",
-            priority="high"
-        )
+        mock_item = Item(id=item_id, title="New Item", item_type="task", status="todo", priority="high")
 
         mock_project_storage = MagicMock()
         mock_item_storage = MagicMock()
@@ -189,13 +174,7 @@ class TestStorageAdapterItemOperations:
         callback = MagicMock()
         adapter.on_item_change(callback)
 
-        result = adapter.create_item(
-            project,
-            title="New Item",
-            item_type="task",
-            status="todo",
-            priority="high"
-        )
+        result = adapter.create_item(project, title="New Item", item_type="task", status="todo", priority="high")
 
         assert result == mock_item
         callback.assert_called_once_with(item_id)
@@ -220,12 +199,7 @@ class TestStorageAdapterItemOperations:
         callback = MagicMock()
         adapter.on_item_change(callback)
 
-        result = adapter.update_item(
-            project,
-            item_id,
-            title="Updated Item",
-            status="done"
-        )
+        result = adapter.update_item(project, item_id, title="Updated Item", status="done")
 
         assert result == mock_item
         callback.assert_called_once_with(item_id)
@@ -277,9 +251,7 @@ class TestStorageAdapterLinkOperations:
         results = adapter.list_links(project, link_type="implements")
 
         assert len(results) == 2
-        mock_item_storage.list_links.assert_called_once_with(
-            source_id=None, target_id=None, link_type="implements"
-        )
+        mock_item_storage.list_links.assert_called_once_with(source_id=None, target_id=None, link_type="implements")
 
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
     def test_create_link_success(self, mock_storage_class):
@@ -290,12 +262,7 @@ class TestStorageAdapterLinkOperations:
         project = Project(id=str(uuid4()), name="Test Project")
         source_id = str(uuid4())
         target_id = str(uuid4())
-        mock_link = Link(
-            id=str(uuid4()),
-            source_item_id=source_id,
-            target_item_id=target_id,
-            link_type="tests"
-        )
+        mock_link = Link(id=str(uuid4()), source_item_id=source_id, target_item_id=target_id, link_type="tests")
 
         mock_project_storage = MagicMock()
         mock_item_storage = MagicMock()
@@ -304,13 +271,7 @@ class TestStorageAdapterLinkOperations:
         mock_storage.get_project_storage.return_value = mock_project_storage
 
         adapter = StorageAdapter()
-        result = adapter.create_link(
-            project,
-            source_id,
-            target_id,
-            "tests",
-            metadata={"coverage": "100%"}
-        )
+        result = adapter.create_link(project, source_id, target_id, "tests", metadata={"coverage": "100%"})
 
         assert result == mock_link
         mock_item_storage.create_link.assert_called_once()
@@ -365,11 +326,7 @@ class TestStorageAdapterSyncOperations:
         mock_storage_class.return_value = mock_storage
 
         mock_sync_engine = MagicMock()
-        expected_state = SyncState(
-            status=SyncStatus.SUCCESS,
-            last_sync=datetime.now(),
-            pending_changes=0
-        )
+        expected_state = SyncState(status=SyncStatus.SUCCESS, last_sync=datetime.now(), pending_changes=0)
         mock_sync_engine.get_status.return_value = expected_state
 
         adapter = StorageAdapter(sync_engine=mock_sync_engine)
@@ -400,18 +357,9 @@ class TestStorageAdapterSyncOperations:
         mock_storage_class.return_value = mock_storage
 
         mock_sync_engine = MagicMock()
-        mock_result = MagicMock(
-            success=True,
-            entities_synced=10,
-            conflicts=[],
-            errors=[],
-            duration_seconds=2.5
-        )
+        mock_result = MagicMock(success=True, entities_synced=10, conflicts=[], errors=[], duration_seconds=2.5)
         mock_sync_engine.sync = AsyncMock(return_value=mock_result)
-        mock_sync_engine.get_status.return_value = SyncState(
-            status=SyncStatus.SUCCESS,
-            pending_changes=0
-        )
+        mock_sync_engine.get_status.return_value = SyncState(status=SyncStatus.SUCCESS, pending_changes=0)
 
         adapter = StorageAdapter(sync_engine=mock_sync_engine)
         callback = MagicMock()
@@ -689,6 +637,7 @@ class TestStorageAdapterReactiveCallbacks:
 # Additional Error Handling Tests
 # =============================================================================
 
+
 class TestStorageAdapterErrorHandling:
     """Test error handling in StorageAdapter."""
 
@@ -759,6 +708,7 @@ class TestStorageAdapterErrorHandling:
 # Additional Item Operations Tests
 # =============================================================================
 
+
 class TestStorageAdapterItemOperationsExtended:
     """Extended tests for item operations."""
 
@@ -779,12 +729,7 @@ class TestStorageAdapterItemOperationsExtended:
 
         adapter = StorageAdapter()
         parent_id = str(uuid4())
-        results = adapter.list_items(
-            project,
-            item_type="story",
-            status="in_progress",
-            parent_id=parent_id
-        )
+        results = adapter.list_items(project, item_type="story", status="in_progress", parent_id=parent_id)
 
         assert len(results) == 1
         mock_item_storage.list_items.assert_called_once_with(
@@ -829,7 +774,7 @@ class TestStorageAdapterItemOperationsExtended:
             priority="critical",
             owner="user@example.com",
             parent_id=str(uuid4()),
-            item_metadata={"key": "value"}
+            item_metadata={"key": "value"},
         )
 
         mock_project_storage = MagicMock()
@@ -848,8 +793,8 @@ class TestStorageAdapterItemOperationsExtended:
             status="in_progress",
             priority="critical",
             owner="user@example.com",
-            parent_id=mock_item.parent_id,
-            metadata={"key": "value"}
+            parent_id=str(mock_item.parent_id) if mock_item.parent_id is not None else None,
+            metadata={"key": "value"},
         )
 
         assert result == mock_item
@@ -912,6 +857,7 @@ class TestStorageAdapterItemOperationsExtended:
 # Additional Link Operations Tests
 # =============================================================================
 
+
 class TestStorageAdapterLinkOperationsExtended:
     """Extended tests for link operations."""
 
@@ -935,9 +881,7 @@ class TestStorageAdapterLinkOperationsExtended:
         results = adapter.list_links(project, source_id=source_id)
 
         assert len(results) == 1
-        mock_item_storage.list_links.assert_called_once_with(
-            source_id=source_id, target_id=None, link_type=None
-        )
+        mock_item_storage.list_links.assert_called_once_with(source_id=source_id, target_id=None, link_type=None)
 
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
     def test_list_links_with_target_filter(self, mock_storage_class):
@@ -957,9 +901,7 @@ class TestStorageAdapterLinkOperationsExtended:
         adapter = StorageAdapter()
         results = adapter.list_links(project, target_id=target_id)
 
-        mock_item_storage.list_links.assert_called_once_with(
-            source_id=None, target_id=target_id, link_type=None
-        )
+        mock_item_storage.list_links.assert_called_once_with(source_id=None, target_id=target_id, link_type=None)
 
     @patch("tracertm.tui.adapters.storage_adapter.LocalStorageManager")
     def test_create_link_without_metadata(self, mock_storage_class):
@@ -970,12 +912,7 @@ class TestStorageAdapterLinkOperationsExtended:
         project = Project(id=str(uuid4()), name="Test Project")
         source_id = str(uuid4())
         target_id = str(uuid4())
-        mock_link = Link(
-            id=str(uuid4()),
-            source_item_id=source_id,
-            target_item_id=target_id,
-            link_type="implements"
-        )
+        mock_link = Link(id=str(uuid4()), source_item_id=source_id, target_item_id=target_id, link_type="implements")
 
         mock_project_storage = MagicMock()
         mock_item_storage = MagicMock()
@@ -993,6 +930,7 @@ class TestStorageAdapterLinkOperationsExtended:
 # Additional Sync Operations Tests
 # =============================================================================
 
+
 class TestStorageAdapterSyncOperationsExtended:
     """Extended tests for sync operations."""
 
@@ -1007,17 +945,10 @@ class TestStorageAdapterSyncOperationsExtended:
         mock_conflict1 = MagicMock()
         mock_conflict2 = MagicMock()
         mock_result = MagicMock(
-            success=True,
-            entities_synced=5,
-            conflicts=[mock_conflict1, mock_conflict2],
-            errors=[],
-            duration_seconds=1.5
+            success=True, entities_synced=5, conflicts=[mock_conflict1, mock_conflict2], errors=[], duration_seconds=1.5
         )
         mock_sync_engine.sync = AsyncMock(return_value=mock_result)
-        mock_sync_engine.get_status.return_value = SyncState(
-            status=SyncStatus.SUCCESS,
-            pending_changes=0
-        )
+        mock_sync_engine.get_status.return_value = SyncState(status=SyncStatus.SUCCESS, pending_changes=0)
 
         adapter = StorageAdapter(sync_engine=mock_sync_engine)
         result = await adapter.trigger_sync()
@@ -1034,17 +965,10 @@ class TestStorageAdapterSyncOperationsExtended:
 
         mock_sync_engine = MagicMock()
         mock_result = MagicMock(
-            success=True,
-            entities_synced=8,
-            conflicts=[],
-            errors=["Error 1", "Error 2"],
-            duration_seconds=2.0
+            success=True, entities_synced=8, conflicts=[], errors=["Error 1", "Error 2"], duration_seconds=2.0
         )
         mock_sync_engine.sync = AsyncMock(return_value=mock_result)
-        mock_sync_engine.get_status.return_value = SyncState(
-            status=SyncStatus.SUCCESS,
-            pending_changes=0
-        )
+        mock_sync_engine.get_status.return_value = SyncState(status=SyncStatus.SUCCESS, pending_changes=0)
 
         adapter = StorageAdapter(sync_engine=mock_sync_engine)
         result = await adapter.trigger_sync()
@@ -1068,6 +992,7 @@ class TestStorageAdapterSyncOperationsExtended:
 # =============================================================================
 # Additional Statistics Tests
 # =============================================================================
+
 
 class TestStorageAdapterStatisticsExtended:
     """Extended tests for statistics operations."""
@@ -1118,6 +1043,7 @@ class TestStorageAdapterStatisticsExtended:
 # =============================================================================
 # Callback Unregister Tests
 # =============================================================================
+
 
 class TestStorageAdapterCallbackUnregister:
     """Test callback unregister functionality."""

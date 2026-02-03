@@ -12,25 +12,25 @@ Tests all 6 integration repository classes:
 Target: ~80 tests to bring coverage to 80%+
 """
 
-import pytest
-import pytest_asyncio
+import asyncio
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
+import pytest
+import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.models.integration import (
-    IntegrationCredential,
-    IntegrationSyncQueue,
     IntegrationRateLimit,
+    IntegrationSyncQueue,
 )
 from tracertm.repositories.integration_repository import (
+    IntegrationConflictRepository,
     IntegrationCredentialRepository,
     IntegrationMappingRepository,
-    IntegrationSyncQueueRepository,
-    IntegrationSyncLogRepository,
-    IntegrationConflictRepository,
     IntegrationRateLimitRepository,
+    IntegrationSyncLogRepository,
+    IntegrationSyncQueueRepository,
 )
 
 
@@ -57,6 +57,7 @@ class MockEncryptionService:
 @pytest_asyncio.fixture
 async def mock_encryption():
     """Provide mock encryption service."""
+    await asyncio.sleep(0)
     return MockEncryptionService()
 
 
@@ -93,36 +94,42 @@ async def item(db_session: AsyncSession, project):
 @pytest_asyncio.fixture
 async def credential_repo(db_session: AsyncSession, mock_encryption):
     """Create IntegrationCredentialRepository with mock encryption."""
+    await asyncio.sleep(0)
     return IntegrationCredentialRepository(db_session, encryption_service=mock_encryption)
 
 
 @pytest_asyncio.fixture
 async def mapping_repo(db_session: AsyncSession):
     """Create IntegrationMappingRepository."""
+    await asyncio.sleep(0)
     return IntegrationMappingRepository(db_session)
 
 
 @pytest_asyncio.fixture
 async def sync_queue_repo(db_session: AsyncSession):
     """Create IntegrationSyncQueueRepository."""
+    await asyncio.sleep(0)
     return IntegrationSyncQueueRepository(db_session)
 
 
 @pytest_asyncio.fixture
 async def sync_log_repo(db_session: AsyncSession):
     """Create IntegrationSyncLogRepository."""
+    await asyncio.sleep(0)
     return IntegrationSyncLogRepository(db_session)
 
 
 @pytest_asyncio.fixture
 async def conflict_repo(db_session: AsyncSession):
     """Create IntegrationConflictRepository."""
+    await asyncio.sleep(0)
     return IntegrationConflictRepository(db_session)
 
 
 @pytest_asyncio.fixture
 async def rate_limit_repo(db_session: AsyncSession):
     """Create IntegrationRateLimitRepository."""
+    await asyncio.sleep(0)
     return IntegrationRateLimitRepository(db_session)
 
 
@@ -304,9 +311,7 @@ class TestIntegrationCredentialRepository:
             created_by_user_id=user_id,
         )
 
-        credentials = await credential_repo.get_by_project(
-            project.id, include_global_user_id=user_id
-        )
+        credentials = await credential_repo.get_by_project(project.id, include_global_user_id=user_id)
 
         assert len(credentials) == 2
 
@@ -456,9 +461,7 @@ class TestIntegrationCredentialRepository:
         assert found.status == "active"
 
     @pytest.mark.asyncio
-    async def test_get_active_by_project_and_provider_excludes_revoked(
-        self, credential_repo, project, credential
-    ):
+    async def test_get_active_by_project_and_provider_excludes_revoked(self, credential_repo, project, credential):
         """Test that revoked credentials are excluded."""
         await credential_repo.revoke(credential.id)
 
@@ -572,9 +575,7 @@ class TestIntegrationCredentialRepository:
     @pytest.mark.asyncio
     async def test_update_validation_status_invalid(self, credential_repo, credential, db_session):
         """Test marking credential as invalid."""
-        await credential_repo.update_validation_status(
-            credential.id, valid=False, error="Token expired"
-        )
+        await credential_repo.update_validation_status(credential.id, valid=False, error="Token expired")
         await db_session.refresh(credential)
 
         assert credential.status == "invalid"
@@ -693,9 +694,7 @@ class TestIntegrationMappingRepository:
         assert mappings[0].tracertm_item_id == item.id
 
     @pytest.mark.asyncio
-    async def test_get_by_tracertm_item_multiple(
-        self, mapping_repo, project, credential, item, mapping
-    ):
+    async def test_get_by_tracertm_item_multiple(self, mapping_repo, project, credential, item, mapping):
         """Test getting multiple mappings for same item."""
         # Create second mapping for same item
         await mapping_repo.create(
@@ -742,9 +741,7 @@ class TestIntegrationMappingRepository:
         assert mappings[0].id == mapping.id
 
     @pytest.mark.asyncio
-    async def test_list_by_project_with_status_filter(
-        self, mapping_repo, project, mapping, db_session
-    ):
+    async def test_list_by_project_with_status_filter(self, mapping_repo, project, mapping, db_session):
         """Test filtering mappings by status."""
         # Update mapping to have sync error
         await mapping_repo.update(mapping.id, status="sync_error")
@@ -757,21 +754,15 @@ class TestIntegrationMappingRepository:
         assert len(error_mappings) == 1
 
     @pytest.mark.asyncio
-    async def test_list_by_project_with_credential_filter(
-        self, mapping_repo, project, credential, mapping
-    ):
+    async def test_list_by_project_with_credential_filter(self, mapping_repo, project, credential, mapping):
         """Test filtering mappings by credential."""
-        mappings, total = await mapping_repo.list_by_project(
-            project.id, credential_id=credential.id
-        )
+        mappings, total = await mapping_repo.list_by_project(project.id, credential_id=credential.id)
 
         assert len(mappings) == 1
         assert total == 1
 
     @pytest.mark.asyncio
-    async def test_list_by_project_with_external_system_filter(
-        self, mapping_repo, project, mapping
-    ):
+    async def test_list_by_project_with_external_system_filter(self, mapping_repo, project, mapping):
         """Test filtering mappings by external system."""
         mappings, _ = await mapping_repo.list_by_project(project.id, external_system="github")
 
@@ -779,9 +770,7 @@ class TestIntegrationMappingRepository:
         assert mappings[0].external_system == "github"
 
     @pytest.mark.asyncio
-    async def test_list_by_project_pagination(
-        self, mapping_repo, project, credential, item, db_session
-    ):
+    async def test_list_by_project_pagination(self, mapping_repo, project, credential, item, db_session):
         """Test pagination of mappings."""
         from tracertm.models.item import Item
 
@@ -870,9 +859,7 @@ class TestIntegrationMappingRepository:
         assert mapping.consecutive_failures == 1
 
     @pytest.mark.asyncio
-    async def test_update_sync_status_multiple_failures_causes_error_status(
-        self, mapping_repo, mapping, db_session
-    ):
+    async def test_update_sync_status_multiple_failures_causes_error_status(self, mapping_repo, mapping, db_session):
         """Test that 5 consecutive failures sets sync_error status."""
         # Simulate 5 consecutive failures
         for _ in range(5):
@@ -925,9 +912,7 @@ class TestIntegrationSyncQueueRepository:
         assert queue_item.payload == {"item_id": "123"}
 
     @pytest.mark.asyncio
-    async def test_enqueue_with_priority_and_idempotency(
-        self, sync_queue_repo, credential, mapping
-    ):
+    async def test_enqueue_with_priority_and_idempotency(self, sync_queue_repo, credential, mapping):
         """Test enqueueing with priority and idempotency key."""
         queue_item = await sync_queue_repo.enqueue(
             credential_id=credential.id,
@@ -971,9 +956,7 @@ class TestIntegrationSyncQueueRepository:
         assert all(item.status == "pending" for item in pending)
 
     @pytest.mark.asyncio
-    async def test_get_pending_ordered_by_priority(
-        self, sync_queue_repo, credential, mapping
-    ):
+    async def test_get_pending_ordered_by_priority(self, sync_queue_repo, credential, mapping):
         """Test that pending items are ordered by priority."""
         # Create items with different priorities
         low = await sync_queue_repo.enqueue(
@@ -1023,9 +1006,7 @@ class TestIntegrationSyncQueueRepository:
     # get_retryable() tests
     # -------------------------------------------------------------------------
     @pytest.mark.asyncio
-    async def test_get_retryable_returns_ready_items(
-        self, sync_queue_repo, queue_item, db_session
-    ):
+    async def test_get_retryable_returns_ready_items(self, sync_queue_repo, queue_item, db_session):
         """Test getting retryable items."""
         # Mark as failed to set retry status
         await sync_queue_repo.mark_failed(queue_item.id, "Temporary error")
@@ -1057,9 +1038,7 @@ class TestIntegrationSyncQueueRepository:
         assert total >= 1
 
     @pytest.mark.asyncio
-    async def test_list_by_project_with_status_filter(
-        self, sync_queue_repo, project, queue_item
-    ):
+    async def test_list_by_project_with_status_filter(self, sync_queue_repo, project, queue_item):
         """Test filtering queue items by status."""
         pending, _ = await sync_queue_repo.list_by_project(project.id, status="pending")
         completed, _ = await sync_queue_repo.list_by_project(project.id, status="completed")
@@ -1098,9 +1077,7 @@ class TestIntegrationSyncQueueRepository:
     @pytest.mark.asyncio
     async def test_mark_failed_with_retry(self, sync_queue_repo, queue_item, db_session):
         """Test marking item as failed with retry."""
-        await sync_queue_repo.mark_failed(
-            queue_item.id, error="Connection timeout", error_code="TIMEOUT"
-        )
+        await sync_queue_repo.mark_failed(queue_item.id, error="Connection timeout", error_code="TIMEOUT")
         await db_session.refresh(queue_item)
 
         assert queue_item.status == "retried"
@@ -1110,9 +1087,7 @@ class TestIntegrationSyncQueueRepository:
         assert queue_item.next_retry_at is not None
 
     @pytest.mark.asyncio
-    async def test_mark_failed_max_attempts_reached(
-        self, sync_queue_repo, queue_item, db_session
-    ):
+    async def test_mark_failed_max_attempts_reached(self, sync_queue_repo, queue_item, db_session):
         """Test that max attempts causes permanent failure."""
         # Exhaust all attempts
         for _ in range(queue_item.max_attempts):
@@ -1150,9 +1125,7 @@ class TestIntegrationSyncQueueRepository:
         assert queue_item.error_message == "Cancelled by user"
 
     @pytest.mark.asyncio
-    async def test_cancel_processing_item_not_allowed(
-        self, sync_queue_repo, queue_item, db_session
-    ):
+    async def test_cancel_processing_item_not_allowed(self, sync_queue_repo, queue_item, db_session):
         """Test that processing items cannot be cancelled."""
         await sync_queue_repo.mark_processing(queue_item.id)
         await db_session.flush()
@@ -1212,9 +1185,7 @@ class TestIntegrationSyncLogRepository:
         assert log.error_message == "Validation failed: missing required field"
 
     @pytest.mark.asyncio
-    async def test_create_sync_log_with_queue_reference(
-        self, sync_log_repo, mapping, queue_item
-    ):
+    async def test_create_sync_log_with_queue_reference(self, sync_log_repo, mapping, queue_item):
         """Test creating log with queue item reference."""
         log = await sync_log_repo.create(
             mapping_id=mapping.id,
@@ -1431,9 +1402,7 @@ class TestIntegrationConflictRepository:
         assert all(c.resolution_status == "pending" for c in conflicts)
 
     @pytest.mark.asyncio
-    async def test_list_pending_excludes_resolved(
-        self, conflict_repo, project, mapping, db_session
-    ):
+    async def test_list_pending_excludes_resolved(self, conflict_repo, project, mapping, db_session):
         """Test that resolved conflicts are excluded."""
         conflict = await conflict_repo.create(
             mapping_id=mapping.id,
@@ -1546,9 +1515,7 @@ class TestIntegrationRateLimitRepository:
         assert second.requests_used == 1
 
     @pytest.mark.asyncio
-    async def test_get_or_create_resets_expired_window(
-        self, rate_limit_repo, credential, db_session
-    ):
+    async def test_get_or_create_resets_expired_window(self, rate_limit_repo, credential, db_session):
         """Test that expired window is reset."""
         # Create with expired window
         rate_limit = await rate_limit_repo.get_or_create(
@@ -1616,7 +1583,7 @@ class TestIntegrationRateLimitRepository:
 
         # Increment to limit
         for _ in range(3):
-            used, limit = await rate_limit_repo.increment_usage(rate_limit.id)
+            _used, _limit = await rate_limit_repo.increment_usage(rate_limit.id)
 
         await db_session.refresh(rate_limit)
 
@@ -1755,7 +1722,7 @@ class TestIntegrationRepositoryCrossRepository:
         )
 
         # 3. Check pending conflicts
-        pending, total = await conflict_repo.list_pending_by_project(project.id)
+        _pending, total = await conflict_repo.list_pending_by_project(project.id)
         assert total == 2
 
         # 4. Resolve one conflict
@@ -1765,7 +1732,7 @@ class TestIntegrationRepositoryCrossRepository:
         await conflict_repo.ignore(conflict2.id)
 
         # 6. Verify no more pending
-        pending, total = await conflict_repo.list_pending_by_project(project.id)
+        _pending, total = await conflict_repo.list_pending_by_project(project.id)
         assert total == 0
 
         # 7. Log the resolution

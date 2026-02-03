@@ -44,7 +44,7 @@ function checkFileUNIX(file) {
     if (soFar === undefined) {
       line = line.match(/([0-9a-f]*)? ([a-zA-Z]) (.*$)/);
       if (line[2] === 'U') {
-        if (/^napi/.test(line[3])) {
+        if (line[3].startsWith('napi')) {
           soFar = true;
         }
       }
@@ -58,7 +58,7 @@ function checkFileWin32(file) {
   checkFile(file, 'dumpbin', ['/imports', file], (soFar, line) => {
     if (soFar === undefined) {
       line = line.match(/([0-9a-f]*)? +([a-zA-Z0-9]) (.*$)/);
-      if (line && /^napi/.test(line[line.length - 1])) {
+      if (line && line[line.length - 1].startsWith('napi')) {
         soFar = true;
       }
     }

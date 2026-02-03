@@ -1,6 +1,6 @@
 """Service for agent performance analytics."""
 
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -31,12 +31,8 @@ class AgentPerformanceService:
         events = await self.events.get_by_agent(agent_id)
 
         # Filter by time window
-        cutoff_time = datetime.utcnow() - timedelta(hours=time_window_hours)
-        recent_events = [
-            e
-            for e in events
-            if hasattr(e, "created_at") and e.created_at >= cutoff_time
-        ]
+        cutoff_time = datetime.now(UTC) - timedelta(hours=time_window_hours)
+        recent_events = [e for e in events if hasattr(e, "created_at") and e.created_at >= cutoff_time]
 
         # Calculate stats
         event_types = {}
@@ -50,9 +46,7 @@ class AgentPerformanceService:
             "total_events": len(recent_events),
             "event_types": event_types,
             "time_window_hours": time_window_hours,
-            "events_per_hour": (
-                len(recent_events) / time_window_hours if time_window_hours > 0 else 0
-            ),
+            "events_per_hour": (len(recent_events) / time_window_hours if time_window_hours > 0 else 0),
         }
 
     async def get_team_performance(
@@ -69,10 +63,14 @@ class AgentPerformanceService:
             "total_events": 0,
         }
 
+        agents_list = team_stats.get("agents")
+        if not isinstance(agents_list, list):
+            agents_list = []
+            team_stats["agents"] = agents_list
         for agent in agents:
-            stats = await self.get_agent_stats(agent.id, time_window_hours=24)
+            stats = await self.get_agent_stats(str(agent.id), time_window_hours=24)
             if "error" not in stats:
-                team_stats["agents"].append(stats)
+                agents_list.append(stats)
                 team_stats["total_events"] += stats.get("total_events", 0)
 
         return team_stats
@@ -107,12 +105,11 @@ class AgentPerformanceService:
         """Get efficiency rating based on score."""
         if score >= 90:
             return "Excellent"
-        elif score >= 75:
+        if score >= 75:
             return "Good"
-        elif score >= 50:
+        if score >= 50:
             return "Fair"
-        else:
-            return "Poor"
+        return "Poor"
 
     async def get_agent_workload(
         self,

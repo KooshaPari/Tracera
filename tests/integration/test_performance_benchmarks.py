@@ -12,23 +12,18 @@ Requirements:
 - Baseline metrics tracking
 """
 
-import asyncio
-import json
 import time
 from datetime import datetime
 from typing import Any
 from uuid import uuid4
 
 import pytest
-from sqlalchemy import select
-from sqlalchemy.orm import Session
 
 from tracertm.models.event import Event
 from tracertm.models.item import Item
 from tracertm.models.link import Link
 from tracertm.models.project import Project
 from tracertm.services.bulk_operation_service import BulkOperationService
-
 
 # ============================================================================
 # Performance Baseline Constants (can be updated after first run)
@@ -50,6 +45,7 @@ PERFORMANCE_THRESHOLD = 1.5
 # ============================================================================
 # Test Metrics Storage
 # ============================================================================
+
 
 class PerformanceMetrics:
     """Tracks performance metrics for tests."""
@@ -120,6 +116,7 @@ def large_project(db_session):
 # Bulk Operation Tests
 # ============================================================================
 
+
 class TestBulkCreatePerformance:
     """Performance tests for bulk item creation."""
 
@@ -147,9 +144,7 @@ class TestBulkCreatePerformance:
 
         # Verify
         assert len(items) == 100
-        query_count = db_session.query(Item).filter(
-            Item.project_id == large_project.id
-        ).count()
+        query_count = db_session.query(Item).filter(Item.project_id == large_project.id).count()
         assert query_count == 100
 
     def test_bulk_create_500_items(self, db_session, large_project, perf_metrics):
@@ -175,9 +170,7 @@ class TestBulkCreatePerformance:
         perf_metrics.record("test_bulk_create_500_items", "bulk_create", duration_ms, 500)
 
         # Verify
-        query_count = db_session.query(Item).filter(
-            Item.project_id == large_project.id
-        ).count()
+        query_count = db_session.query(Item).filter(Item.project_id == large_project.id).count()
         assert query_count == 500
 
     def test_bulk_create_1000_items(self, db_session, large_project, perf_metrics):
@@ -203,9 +196,7 @@ class TestBulkCreatePerformance:
         perf_metrics.record("test_bulk_create_1000_items", "bulk_create", duration_ms, 1000)
 
         # Verify
-        query_count = db_session.query(Item).filter(
-            Item.project_id == large_project.id
-        ).count()
+        query_count = db_session.query(Item).filter(Item.project_id == large_project.id).count()
         assert query_count == 1000
 
     def test_bulk_create_2000_items(self, db_session, large_project, perf_metrics):
@@ -237,9 +228,7 @@ class TestBulkCreatePerformance:
         perf_metrics.record("test_bulk_create_2000_items", "bulk_create", duration_ms, 2000)
 
         # Verify
-        query_count = db_session.query(Item).filter(
-            Item.project_id == large_project.id
-        ).count()
+        query_count = db_session.query(Item).filter(Item.project_id == large_project.id).count()
         assert query_count == 2000
 
 
@@ -267,9 +256,7 @@ class TestBulkUpdatePerformance:
         # Update items
         start = time.perf_counter()
 
-        query_items = db_session.query(Item).filter(
-            Item.project_id == large_project.id
-        ).all()
+        query_items = db_session.query(Item).filter(Item.project_id == large_project.id).all()
 
         for item in query_items:
             item.status = "in_progress"
@@ -281,10 +268,15 @@ class TestBulkUpdatePerformance:
         perf_metrics.record("test_bulk_update_100_items", "bulk_update", duration_ms, 100)
 
         # Verify
-        updated_count = db_session.query(Item).filter(
-            Item.project_id == large_project.id,
-            Item.status == "in_progress",
-        ).count()
+        updated_count = (
+            db_session
+            .query(Item)
+            .filter(
+                Item.project_id == large_project.id,
+                Item.status == "in_progress",
+            )
+            .count()
+        )
         assert updated_count == 100
 
     def test_bulk_update_500_items(self, db_session, large_project, perf_metrics):
@@ -308,9 +300,7 @@ class TestBulkUpdatePerformance:
         # Update items
         start = time.perf_counter()
 
-        query_items = db_session.query(Item).filter(
-            Item.project_id == large_project.id
-        ).all()
+        query_items = db_session.query(Item).filter(Item.project_id == large_project.id).all()
 
         for item in query_items:
             item.status = "done"
@@ -322,10 +312,15 @@ class TestBulkUpdatePerformance:
         perf_metrics.record("test_bulk_update_500_items", "bulk_update", duration_ms, 500)
 
         # Verify
-        updated_count = db_session.query(Item).filter(
-            Item.project_id == large_project.id,
-            Item.status == "done",
-        ).count()
+        updated_count = (
+            db_session
+            .query(Item)
+            .filter(
+                Item.project_id == large_project.id,
+                Item.status == "done",
+            )
+            .count()
+        )
         assert updated_count == 500
 
     def test_bulk_update_1000_items(self, db_session, large_project, perf_metrics):
@@ -349,9 +344,7 @@ class TestBulkUpdatePerformance:
         # Update all items
         start = time.perf_counter()
 
-        query_items = db_session.query(Item).filter(
-            Item.project_id == large_project.id
-        ).all()
+        query_items = db_session.query(Item).filter(Item.project_id == large_project.id).all()
 
         for item in query_items:
             item.status = "in_progress"
@@ -363,10 +356,15 @@ class TestBulkUpdatePerformance:
         perf_metrics.record("test_bulk_update_1000_items", "bulk_update", duration_ms, 1000)
 
         # Verify
-        updated_count = db_session.query(Item).filter(
-            Item.project_id == large_project.id,
-            Item.status == "in_progress",
-        ).count()
+        updated_count = (
+            db_session
+            .query(Item)
+            .filter(
+                Item.project_id == large_project.id,
+                Item.status == "in_progress",
+            )
+            .count()
+        )
         assert updated_count == 1000
 
 
@@ -459,6 +457,7 @@ class TestBulkOperationService:
 # ============================================================================
 # Graph Traversal Tests
 # ============================================================================
+
 
 class TestGraphTraversalPerformance:
     """Performance tests for graph operations."""
@@ -567,16 +566,19 @@ class TestGraphTraversalPerformance:
         # Traverse chain
         start = time.perf_counter()
 
-        current_item = db_session.query(Item).filter(
-            Item.project_id == large_project.id,
-            Item.id == "chain-49",
-        ).first()
+        current_item = (
+            db_session
+            .query(Item)
+            .filter(
+                Item.project_id == large_project.id,
+                Item.id == "chain-49",
+            )
+            .first()
+        )
 
         depth = 0
         while current_item and current_item.parent_id:
-            current_item = db_session.query(Item).filter(
-                Item.id == current_item.parent_id
-            ).first()
+            current_item = db_session.query(Item).filter(Item.id == current_item.parent_id).first()
             depth += 1
 
         duration_ms = (time.perf_counter() - start) * 1000
@@ -615,20 +617,20 @@ class TestGraphTraversalPerformance:
         for i in range(500):
             if i + 1 < 500:
                 link1 = Link(
-                    id=f"link-{i}-{i+1}",
+                    id=f"link-{i}-{i + 1}",
                     project_id=large_project.id,
                     source_item_id=f"item-{i}",
-                    target_item_id=f"item-{i+1}",
+                    target_item_id=f"item-{i + 1}",
                     link_type="depends_on",
                 )
                 links.append(link1)
 
             if i + 2 < 500:
                 link2 = Link(
-                    id=f"link-{i}-{i+2}",
+                    id=f"link-{i}-{i + 2}",
                     project_id=large_project.id,
                     source_item_id=f"item-{i}",
-                    target_item_id=f"item-{i+2}",
+                    target_item_id=f"item-{i + 2}",
                     link_type="related_to",
                 )
                 links.append(link2)
@@ -645,9 +647,7 @@ class TestGraphTraversalPerformance:
         )
 
         # Verify
-        link_count = db_session.query(Link).filter(
-            Link.project_id == large_project.id
-        ).count()
+        link_count = db_session.query(Link).filter(Link.project_id == large_project.id).count()
         assert link_count >= 800
 
     def test_query_linked_items(self, db_session, large_project, perf_metrics):
@@ -686,19 +686,20 @@ class TestGraphTraversalPerformance:
         # Query linked items
         start = time.perf_counter()
 
-        source_item = db_session.query(Item).filter(
-            Item.id == "item-0"
-        ).first()
+        source_item = db_session.query(Item).filter(Item.id == "item-0").first()
 
-        outgoing_links = db_session.query(Link).filter(
-            Link.project_id == large_project.id,
-            Link.source_item_id == source_item.id,
-        ).all()
+        outgoing_links = (
+            db_session
+            .query(Link)
+            .filter(
+                Link.project_id == large_project.id,
+                Link.source_item_id == source_item.id,
+            )
+            .all()
+        )
 
         target_ids = [link.target_item_id for link in outgoing_links]
-        target_items = db_session.query(Item).filter(
-            Item.id.in_(target_ids)
-        ).all()
+        target_items = db_session.query(Item).filter(Item.id.in_(target_ids)).all()
 
         duration_ms = (time.perf_counter() - start) * 1000
         perf_metrics.record(
@@ -715,6 +716,7 @@ class TestGraphTraversalPerformance:
 # ============================================================================
 # Sync Performance Tests
 # ============================================================================
+
 
 class TestSyncPerformance:
     """Performance tests for sync operations."""
@@ -742,9 +744,7 @@ class TestSyncPerformance:
         perf_metrics.record("test_create_events_bulk", "event_create", duration_ms, 500)
 
         # Verify
-        event_count = db_session.query(Event).filter(
-            Event.project_id == large_project.id
-        ).count()
+        event_count = db_session.query(Event).filter(Event.project_id == large_project.id).count()
         assert event_count == 500
 
     def test_sync_state_tracking(self, db_session, large_project, perf_metrics):
@@ -773,9 +773,7 @@ class TestSyncPerformance:
         # Simulate sync state updates
         start = time.perf_counter()
 
-        query_items = db_session.query(Item).filter(
-            Item.project_id == large_project.id
-        ).all()
+        query_items = db_session.query(Item).filter(Item.project_id == large_project.id).all()
 
         for item in query_items:
             item.item_metadata = {
@@ -819,14 +817,15 @@ class TestSyncPerformance:
         # Generate changelog (simulate by querying)
         start = time.perf_counter()
 
-        changelog = []
-        for item in items:
-            changelog.append({
+        changelog = [
+            {
                 "item_id": item.id,
                 "version": item.version,
                 "updated_at": item.updated_at,
                 "changes": [],
-            })
+            }
+            for item in items
+        ]
 
         duration_ms = (time.perf_counter() - start) * 1000
         perf_metrics.record(
@@ -843,6 +842,7 @@ class TestSyncPerformance:
 # ============================================================================
 # Query Performance Tests
 # ============================================================================
+
 
 class TestQueryPerformance:
     """Performance tests for various query patterns."""
@@ -869,10 +869,15 @@ class TestQueryPerformance:
         # Query filter
         start = time.perf_counter()
 
-        filtered = db_session.query(Item).filter(
-            Item.project_id == large_project.id,
-            Item.status == "todo",
-        ).all()
+        filtered = (
+            db_session
+            .query(Item)
+            .filter(
+                Item.project_id == large_project.id,
+                Item.status == "todo",
+            )
+            .all()
+        )
 
         duration_ms = (time.perf_counter() - start) * 1000
         perf_metrics.record(
@@ -908,12 +913,17 @@ class TestQueryPerformance:
         # Complex query
         start = time.perf_counter()
 
-        filtered = db_session.query(Item).filter(
-            Item.project_id == large_project.id,
-            Item.status == "todo",
-            Item.priority == "high",
-            Item.owner == "alice",
-        ).all()
+        filtered = (
+            db_session
+            .query(Item)
+            .filter(
+                Item.project_id == large_project.id,
+                Item.status == "todo",
+                Item.priority == "high",
+                Item.owner == "alice",
+            )
+            .all()
+        )
 
         duration_ms = (time.perf_counter() - start) * 1000
         perf_metrics.record(
@@ -947,9 +957,7 @@ class TestQueryPerformance:
         # Count query
         start = time.perf_counter()
 
-        count = db_session.query(Item).filter(
-            Item.project_id == large_project.id
-        ).count()
+        count = db_session.query(Item).filter(Item.project_id == large_project.id).count()
 
         duration_ms = (time.perf_counter() - start) * 1000
         perf_metrics.record(
@@ -986,9 +994,9 @@ class TestQueryPerformance:
         pages_loaded = 0
         for page in range(10):
             offset = page * 50
-            paginated = db_session.query(Item).filter(
-                Item.project_id == large_project.id
-            ).offset(offset).limit(50).all()
+            paginated = (
+                db_session.query(Item).filter(Item.project_id == large_project.id).offset(offset).limit(50).all()
+            )
 
             if not paginated:
                 break
@@ -1009,6 +1017,7 @@ class TestQueryPerformance:
 # ============================================================================
 # Concurrency and Stress Tests
 # ============================================================================
+
 
 class TestConcurrencyPerformance:
     """Performance tests for concurrent operations."""
@@ -1087,6 +1096,7 @@ class TestConcurrencyPerformance:
 # Report Generation
 # ============================================================================
 
+
 def test_performance_report_generation(perf_metrics):
     """Test that performance report can be generated."""
     # Add some sample metrics
@@ -1115,6 +1125,7 @@ def test_performance_report_generation(perf_metrics):
 # ============================================================================
 # Performance Assertion Helpers
 # ============================================================================
+
 
 def test_performance_under_threshold(perf_metrics):
     """Test that we can verify performance thresholds."""

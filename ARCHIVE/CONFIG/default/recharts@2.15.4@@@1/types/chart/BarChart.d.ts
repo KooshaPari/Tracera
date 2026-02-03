@@ -1,5 +1,5 @@
 export declare const BarChart: import("react").ForwardRefExoticComponent<import("./generateCategoricalChart").CategoricalChartProps & import("react").RefAttributes<{
-    readonly eventEmitterSymbol: Symbol;
+    readonly eventEmitterSymbol: symbol;
     clipPathId: string;
     accessibilityManager: import("./AccessibilityManager").AccessibilityManager;
     throttleTriggeredAfterMouseMove: import("lodash").DebouncedFunc<(e: import("./generateCategoricalChart").MousePointer) => any>;
@@ -32,7 +32,7 @@ export declare const BarChart: import("react").ForwardRefExoticComponent<import(
     addListener(): void;
     removeListener(): void;
     handleLegendBBoxUpdate: (box: DOMRect) => void;
-    handleReceiveSyncEvent: (cId: string | number, data: import("./types").CategoricalChartState, emitter: Symbol) => void;
+    handleReceiveSyncEvent: (cId: string | number, data: import("./types").CategoricalChartState, emitter: symbol) => void;
     handleBrushChange: ({ startIndex, endIndex }: {
         startIndex: number;
         endIndex: number;

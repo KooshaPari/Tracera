@@ -30,4 +30,4 @@ export default abstract class Matcher {
     private _getPatternSegments;
     private _splitSegmentsIntoSections;
 }
-export {};
+

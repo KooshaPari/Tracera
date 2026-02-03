@@ -44,7 +44,7 @@ Prism.languages['avro-idl'] = {
 	],
 
 	'operator': /=/,
-	'punctuation': /[()\[\]{}<>.:,;-]/
+	'punctuation': /[()[\]{}<>.:,;-]/
 };
 
 Prism.languages.avdl = Prism.languages['avro-idl'];

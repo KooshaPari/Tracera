@@ -12,8 +12,8 @@ const meta: Meta<typeof GraphSearch> = {
 		chromatic: {
 			delay: 300,
 			modes: {
-				light: { query: "[data-theme='light']" },
 				dark: { query: "[data-theme='dark']" },
+				light: { query: "[data-theme='light']" },
 			},
 		},
 	},

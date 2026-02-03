@@ -5,14 +5,14 @@ Revises: 005
 Create Date: 2026-01-30 16:30:00.000000
 
 """
-from alembic import op
-from alembic import context
+
 import sqlalchemy as sa
 
+from alembic import context, op
 
 # revision identifiers, used by Alembic.
-revision = '006_add_uuid_constraints'
-down_revision = '005'
+revision = "006_add_uuid_constraints"
+down_revision = "005"
 branch_labels = None
 depends_on = None
 
@@ -22,20 +22,20 @@ def upgrade():
 
     # List of tables with UUID primary keys
     tables = [
-        'items',
-        'links',
-        'projects',
-        'agents',
-        'specifications',
-        'contracts',
-        'test_runs',
-        'test_cases',
-        'requirements',
-        'features',
-        'scenarios',
-        'users',
-        'teams',
-        'organizations'
+        "items",
+        "links",
+        "projects",
+        "agents",
+        "specifications",
+        "contracts",
+        "test_runs",
+        "test_cases",
+        "requirements",
+        "features",
+        "scenarios",
+        "users",
+        "teams",
+        "organizations",
     ]
 
     # Add UUID format constraint to each table
@@ -71,20 +71,20 @@ def downgrade():
     """Remove UUID format constraints"""
 
     tables = [
-        'items',
-        'links',
-        'projects',
-        'agents',
-        'specifications',
-        'contracts',
-        'test_runs',
-        'test_cases',
-        'requirements',
-        'features',
-        'scenarios',
-        'users',
-        'teams',
-        'organizations'
+        "items",
+        "links",
+        "projects",
+        "agents",
+        "specifications",
+        "contracts",
+        "test_runs",
+        "test_cases",
+        "requirements",
+        "features",
+        "scenarios",
+        "users",
+        "teams",
+        "organizations",
     ]
 
     for table in tables:

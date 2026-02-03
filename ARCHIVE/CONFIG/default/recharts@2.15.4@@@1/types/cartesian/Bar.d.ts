@@ -135,4 +135,4 @@ export declare class Bar extends PureComponent<Props, State> {
     renderErrorBar(needClip: boolean, clipPathId: string): React.JSX.Element;
     render(): React.JSX.Element;
 }
-export {};
+

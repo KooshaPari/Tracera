@@ -96,4 +96,4 @@ type CamelCasedPropertiesArrayDeep<
 						? ReadonlyArray<_CamelCasedPropertiesDeep<U, Options>>
 						: never;
 
-export {};
+

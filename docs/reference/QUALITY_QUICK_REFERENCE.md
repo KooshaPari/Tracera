@@ -57,7 +57,7 @@ Process-compose does **not** provide file-watch re-run for one-shot processes; i
 ## Config files and ignore patterns
 
 - **Root:** `.editorconfig` (indent, line endings, trim); `.prettierrc.json` (YAML/JSON/MD for pre-commit); `.semgrep.yml` (project rules; pre-commit runs `p/security-audit` + `.semgrep.yml`).
-- **Python:** Ruff, mypy, interrogate, bandit: config in `pyproject.toml` and `.bandit`. Ruff per-file ignores: `[tool.ruff.lint.per-file-ignores]`. Pre-commit global exclude: `.pre-commit-config.yaml` `exclude:` (e.g. `.venv/`, `__pycache__/`).
+- **Python:** Ruff, mypy, interrogate, bandit: config in `pyproject.toml` and `.bandit`. Ruff per-file ignores: `[tool.ruff.lint.per-file-ignores]`. Pre-commit global exclude: `.pre-commit-config.yaml` `exclude:` (e.g. `.venv/`, `__pycache__/`). **Bandit inline skip:** use `# nosec BXXX` with a brief reason when a finding is a false positive or accepted risk; document justification in code or here.
 - **Go:** `backend/.golangci.yml`; paths and exclusions in that file.
 - **Frontend:** Oxlint: `frontend/.oxlintrc.json`, `frontend/apps/web/.oxlintrc.json`; Biome: `frontend/biome.json`; ignore patterns in each.
 - **Tach:** `tach.toml` at repo root; `exclude` for tests, build, dist, docs. See [TOOLING_AUDIT_AND_STRICT_SETUP_PLAN.md](../reports/TOOLING_AUDIT_AND_STRICT_SETUP_PLAN.md) for full config locations.

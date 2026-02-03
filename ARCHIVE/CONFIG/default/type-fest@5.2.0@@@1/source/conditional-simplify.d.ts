@@ -47,4 +47,4 @@ export type ConditionalSimplify<Type, ExcludeType = never, IncludeType = unknown
 		? {[TypeKey in keyof Type]: Type[TypeKey]}
 		: Type;
 
-export {};
+

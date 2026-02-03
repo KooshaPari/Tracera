@@ -2,6 +2,7 @@
 
 import csv
 import json
+import uuid
 from io import StringIO
 from typing import Any
 
@@ -21,45 +22,42 @@ class ExportImportService:
         self.links = LinkRepository(session)
         self.projects = ProjectRepository(session)
 
-    async def export_to_json(self, project_id: str) -> dict[str, Any]:
+    async def export_to_json(self, project_id: str | uuid.UUID) -> dict[str, Any]:
         """Export project to JSON format."""
-        project = await self.projects.get_by_id(project_id)
+        pid = str(project_id) if isinstance(project_id, uuid.UUID) else project_id
+        project = await self.projects.get_by_id(pid)
         if not project:
             return {"error": "Project not found"}
 
-        items = await self.items.query(project_id, {})
+        items = await self.items.query(pid, {})
 
-        items_data = []
-        for item in items:
-            items_data.append(
-                {
-                    "id": item.id,
-                    "title": item.title if hasattr(item, "title") else "",
-                    "view": item.view if hasattr(item, "view") else "",
-                    "type": item.item_type if hasattr(item, "item_type") else "",
-                    "status": item.status if hasattr(item, "status") else "",
-                    "description": (
-                        item.description if hasattr(item, "description") else ""
-                    ),
-                }
-            )
+        items_data = [
+            {
+                "id": item.id,
+                "title": item.title if hasattr(item, "title") else "",
+                "view": item.view if hasattr(item, "view") else "",
+                "type": item.item_type if hasattr(item, "item_type") else "",
+                "status": item.status if hasattr(item, "status") else "",
+                "description": (item.description if hasattr(item, "description") else ""),
+            }
+            for item in items
+        ]
 
         return {
             "format": "json",
             "project": {
                 "id": project.id,
                 "name": project.name if hasattr(project, "name") else "",
-                "description": (
-                    project.description if hasattr(project, "description") else ""
-                ),
+                "description": (project.description if hasattr(project, "description") else ""),
             },
             "items": items_data,
             "item_count": len(items_data),
         }
 
-    async def export_to_csv(self, project_id: str) -> dict[str, Any]:
+    async def export_to_csv(self, project_id: str | uuid.UUID) -> dict[str, Any]:
         """Export project to CSV format."""
-        items = await self.items.query(project_id, {})
+        pid = str(project_id) if isinstance(project_id, uuid.UUID) else project_id
+        items = await self.items.query(pid, {})
 
         output = StringIO()
         writer = csv.writer(output)
@@ -69,16 +67,14 @@ class ExportImportService:
 
         # Write items
         for item in items:
-            writer.writerow(
-                [
-                    item.id,
-                    item.title if hasattr(item, "title") else "",
-                    item.view if hasattr(item, "view") else "",
-                    item.item_type if hasattr(item, "item_type") else "",
-                    item.status if hasattr(item, "status") else "",
-                    item.description if hasattr(item, "description") else "",
-                ]
-            )
+            writer.writerow([
+                item.id,
+                item.title if hasattr(item, "title") else "",
+                item.view if hasattr(item, "view") else "",
+                item.item_type if hasattr(item, "item_type") else "",
+                item.status if hasattr(item, "status") else "",
+                item.description if hasattr(item, "description") else "",
+            ])
 
         return {
             "format": "csv",
@@ -86,13 +82,14 @@ class ExportImportService:
             "item_count": len(items),
         }
 
-    async def export_to_markdown(self, project_id: str) -> dict[str, Any]:
+    async def export_to_markdown(self, project_id: str | uuid.UUID) -> dict[str, Any]:
         """Export project to Markdown format."""
-        project = await self.projects.get_by_id(project_id)
+        pid = str(project_id) if isinstance(project_id, uuid.UUID) else project_id
+        project = await self.projects.get_by_id(pid)
         if not project:
             return {"error": "Project not found"}
 
-        items = await self.items.query(project_id, {})
+        items = await self.items.query(pid, {})
 
         md = f"# {project.name if hasattr(project, 'name') else 'Project'}\n\n"
         md += f"{project.description if hasattr(project, 'description') else ''}\n\n"
@@ -122,10 +119,11 @@ class ExportImportService:
 
     async def import_from_json(
         self,
-        project_id: str,
+        project_id: str | uuid.UUID,
         json_data: str,
     ) -> dict[str, Any]:
         """Import project from JSON format."""
+        pid = str(project_id) if isinstance(project_id, uuid.UUID) else project_id
         try:
             data = json.loads(json_data)
         except json.JSONDecodeError:
@@ -140,7 +138,7 @@ class ExportImportService:
         for item_data in data["items"]:
             try:
                 await self.items.create(
-                    project_id=project_id,
+                    project_id=pid,
                     title=item_data.get("title", ""),
                     view=item_data.get("view", "FEATURE"),
                     item_type=item_data.get("type", "feature"),
@@ -159,10 +157,11 @@ class ExportImportService:
 
     async def import_from_csv(
         self,
-        project_id: str,
+        project_id: str | uuid.UUID,
         csv_data: str,
     ) -> dict[str, Any]:
         """Import project from CSV format."""
+        pid = str(project_id) if isinstance(project_id, uuid.UUID) else project_id
         try:
             reader = csv.DictReader(StringIO(csv_data))
             rows = list(reader)
@@ -175,7 +174,7 @@ class ExportImportService:
         for row in rows:
             try:
                 await self.items.create(
-                    project_id=project_id,
+                    project_id=pid,
                     title=row.get("Title", ""),
                     view=row.get("View", "FEATURE"),
                     item_type=row.get("Type", "feature"),

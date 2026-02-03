@@ -27,8 +27,8 @@ const config: StorybookConfig = {
 	},
 
 	features: {
-		storyStoreV7: true,
 		buildStoriesJson: true,
+		storyStoreV7: true,
 	},
 
 	framework: {
@@ -49,14 +49,14 @@ const config: StorybookConfig = {
 		check: true,
 		reactDocgen: "react-docgen-typescript",
 		reactDocgenTypescriptOptions: {
-			shouldExtractLiteralValuesFromEnum: true,
-			shouldRemoveUndefinedFromOptional: true,
 			propFilter: (prop) => {
 				if (prop.parent) {
 					return !prop.parent.fileName.includes("node_modules");
 				}
 				return true;
 			},
+			shouldExtractLiteralValuesFromEnum: true,
+			shouldRemoveUndefinedFromOptional: true,
 		},
 	},
 };

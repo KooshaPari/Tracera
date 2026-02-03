@@ -107,7 +107,7 @@ describe("Route Guards", () => {
 			useAuthStore.setState({
 				account: null,
 				isAuthenticated: true,
-				user: { id: "1", email: "test@example.com" },
+				user: { email: "test@example.com", id: "1" },
 			});
 
 			try {
@@ -121,13 +121,13 @@ describe("Route Guards", () => {
 		it("should not throw when user is authenticated with account", () => {
 			useAuthStore.setState({
 				account: {
+					account_type: "team",
 					id: "acc1",
 					name: "Test Account",
 					slug: "test",
-					account_type: "team",
 				},
 				isAuthenticated: true,
-				user: { id: "1", email: "test@example.com" },
+				user: { email: "test@example.com", id: "1" },
 			});
 
 			expect(() => requireAuthWithAccount()).not.toThrow();

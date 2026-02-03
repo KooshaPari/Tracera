@@ -40,7 +40,7 @@ export default function jsdoc(Prism) {
         lookbehind: true,
         inside: {
           parameter: {
-            pattern: /(^\[)[$\w\xA0-\uFFFF\.]+/,
+            pattern: /(^\[)[$\w\xA0-\uFFFF.]+/,
             lookbehind: true,
             inside: {
               punctuation: /\./

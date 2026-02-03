@@ -94,4 +94,4 @@ export type OmitIndexSignature<ObjectType> = {
 		: KeyType]: ObjectType[KeyType];
 };
 
-export {};
+

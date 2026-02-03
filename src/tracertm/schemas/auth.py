@@ -2,8 +2,7 @@
 Pydantic schemas for Authentication API.
 """
 
-from typing import Optional
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 
 class SignupRequest(BaseModel):
@@ -11,9 +10,9 @@ class SignupRequest(BaseModel):
 
     email: EmailStr
     password: str = Field(..., min_length=8)
-    name: Optional[str] = None
+    name: str | None = None
     account_name: str = Field(..., min_length=1, max_length=255)
-    account_slug: Optional[str] = None
+    account_slug: str | None = None
 
 
 class LoginRequest(BaseModel):
@@ -27,10 +26,10 @@ class AuthResponse(BaseModel):
     """Schema for auth response."""
 
     access_token: str
-    token_type: str = "bearer"
-    expires_in: Optional[int] = None
+    token_type: str = "bearer"  # noqa: S105
+    expires_in: int | None = None
     user: dict
-    account: Optional[dict] = None
+    account: dict | None = None
 
 
 class UserResponse(BaseModel):
@@ -38,7 +37,7 @@ class UserResponse(BaseModel):
 
     id: str
     email: str
-    name: Optional[str] = None
+    name: str | None = None
     accounts: list[dict] = []
 
 
@@ -76,7 +75,7 @@ class DeviceTokenResponse(BaseModel):
     """Schema for device token response (RFC 8628)."""
 
     access_token: str
-    token_type: str = "bearer"
-    expires_in: Optional[int] = None
-    refresh_token: Optional[str] = None
-    user: Optional[dict] = None
+    token_type: str = "bearer"  # noqa: S105
+    expires_in: int | None = None
+    refresh_token: str | None = None
+    user: dict | None = None

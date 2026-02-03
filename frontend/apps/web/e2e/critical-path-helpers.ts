@@ -38,16 +38,16 @@ export async function authenticateAndNavigate(
 ): Promise<void> {
 	const authState = {
 		account: {
+			account_type: "personal",
 			id: "test-account",
 			name: "Test Account",
 			slug: "test-account",
-			account_type: "personal",
 		},
 		isAuthenticated: true,
 		token: "test-token",
 		user: {
-			id: "test-user",
 			email: "test@example.com",
+			id: "test-user",
 			name: "Test User",
 			role: "admin",
 		},

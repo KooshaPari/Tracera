@@ -6,7 +6,7 @@ Supports both native subprocess execution (default) and Docker containers (optio
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -18,13 +18,13 @@ from tracertm.repositories.execution_repository import (
     ExecutionRepository,
 )
 from tracertm.services.execution.artifact_storage import ArtifactStorageService
-from tracertm.services.execution.native_orchestrator import (
-    NativeOrchestrator,
-    NativeOrchestratorError,
-)
 from tracertm.services.execution.docker_orchestrator import (
     DockerOrchestrator,
     DockerOrchestratorError,
+)
+from tracertm.services.execution.native_orchestrator import (
+    NativeOrchestrator,
+    NativeOrchestratorError,
 )
 
 
@@ -113,13 +113,8 @@ class ExecutionService:
 
         try:
             if use_docker:
-                return await self._start_with_docker(
-                    execution, execution_id, config, mount_source, command
-                )
-            else:
-                return await self._start_with_native(
-                    execution, execution_id, config, mount_source, command
-                )
+                return await self._start_with_docker(execution, execution_id, config, mount_source, command)
+            return await self._start_with_native(execution, execution_id, config, mount_source, command)
         except (NativeOrchestratorError, DockerOrchestratorError) as e:
             await self._exec_repo.update_status(
                 execution_id,
@@ -164,7 +159,7 @@ class ExecutionService:
         if mount_source:
             await self._orchestrator.copy_to(workspace_id, mount_source)
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         await self._exec_repo.update_status(
             execution_id,
             "running",
@@ -210,7 +205,7 @@ class ExecutionService:
             timeout=config.execution_timeout if config else 600,
         )
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         await self._exec_repo.update_status(
             execution_id,
             "running",
@@ -237,7 +232,7 @@ class ExecutionService:
         if not execution:
             return None
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         status = "passed" if exit_code == 0 else "failed"
         if error_message:
             status = "failed"
@@ -293,7 +288,7 @@ class ExecutionService:
             execution_id=execution_id,
             artifact_type=artifact_type,
             file_path=str(dest_path),
-            captured_at=datetime.now(timezone.utc),
+            captured_at=datetime.now(UTC),
             item_id=item_id,
             file_size=size,
             artifact_metadata={"stored_from": str(source_path)},
@@ -301,9 +296,7 @@ class ExecutionService:
 
     async def list_artifacts(self, execution_id: str, artifact_type: str | None = None):
         """List artifacts for an execution."""
-        return await self._artifact_repo.list_by_execution(
-            execution_id, artifact_type=artifact_type
-        )
+        return await self._artifact_repo.list_by_execution(execution_id, artifact_type=artifact_type)
 
     async def get_config(self, project_id: str):
         """Get execution environment config for project (create default if missing)."""

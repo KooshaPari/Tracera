@@ -45,7 +45,7 @@ Prism.languages.bsl = {
 			pattern: /\b(?:and|not|or)\b/i
 		}
 	],
-	'punctuation': /\(\.|\.\)|[()\[\]:;,.]/,
+	'punctuation': /\(\.|\.\)|[()[\]:;,.]/,
 	'directive': [
 		// Теги препроцессора вида &Клиент, &Сервер, ...
 		// Preprocessor tags of the type &Client, &Server, ...

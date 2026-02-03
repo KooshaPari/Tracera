@@ -11,6 +11,7 @@ try:
     from textual.binding import Binding
     from textual.containers import Container, Horizontal, Vertical
     from textual.widgets import Button, DataTable, Footer, Header, Input, Static, Tree
+
     TEXTUAL_AVAILABLE = True
 except ImportError:
     TEXTUAL_AVAILABLE = False
@@ -24,26 +25,37 @@ except ImportError:
         # Create dummy classes for type checking
         class App:
             pass
+
         class ComposeResult:
             pass
+
         class Container:
             pass
+
         class Header:
             pass
+
         class Footer:
             pass
+
         class DataTable:
             pass
+
         class Static:
             pass
+
         class Tree:
             pass
+
         class Binding:
             pass
+
         class Button:
             pass
+
         class Input:
             pass
+
 
 from sqlalchemy.orm import Session
 
@@ -53,6 +65,7 @@ from tracertm.models.item import Item
 from tracertm.models.link import Link
 
 if TEXTUAL_AVAILABLE:
+
     class DashboardApp(App):
         """Main dashboard TUI application."""
 
@@ -170,17 +183,20 @@ if TEXTUAL_AVAILABLE:
                 # Get item counts by view
                 view_counts = {}
                 for view in ["FEATURE", "CODE", "WIREFRAME", "API", "TEST", "DATABASE", "ROADMAP", "PROGRESS"]:
-                    count = session.query(Item).filter(
-                        Item.project_id == self.project_id,
-                        Item.view == view,
-                        Item.deleted_at.is_(None),
-                    ).count()
+                    count = (
+                        session
+                        .query(Item)
+                        .filter(
+                            Item.project_id == self.project_id,
+                            Item.view == view,
+                            Item.deleted_at.is_(None),
+                        )
+                        .count()
+                    )
                     view_counts[view] = count
 
                 # Get link count
-                link_count = session.query(Link).filter(
-                    Link.project_id == self.project_id
-                ).count()
+                link_count = session.query(Link).filter(Link.project_id == self.project_id).count()
 
                 # Update stats table
                 stats_table = self.query_one("#stats-table", DataTable)
@@ -188,12 +204,16 @@ if TEXTUAL_AVAILABLE:
                 stats_table.add_columns("View", "Items", "Links")
 
                 for view, count in view_counts.items():
-                    links_for_view = session.query(Link).join(
-                        Item, Link.source_item_id == Item.id
-                    ).filter(
-                        Item.view == view,
-                        Item.project_id == self.project_id,
-                    ).count()
+                    links_for_view = (
+                        session
+                        .query(Link)
+                        .join(Item, Link.source_item_id == Item.id)
+                        .filter(
+                            Item.view == view,
+                            Item.project_id == self.project_id,
+                        )
+                        .count()
+                    )
                     stats_table.add_row(view, str(count), str(links_for_view))
 
                 stats_table.add_row("TOTAL", str(sum(view_counts.values())), str(link_count))
@@ -209,11 +229,17 @@ if TEXTUAL_AVAILABLE:
                 return
 
             with Session(self.db.engine) as session:
-                items = session.query(Item).filter(
-                    Item.project_id == self.project_id,
-                    Item.view == self.current_view,
-                    Item.deleted_at.is_(None),
-                ).limit(100).all()
+                items = (
+                    session
+                    .query(Item)
+                    .filter(
+                        Item.project_id == self.project_id,
+                        Item.view == self.current_view,
+                        Item.deleted_at.is_(None),
+                    )
+                    .limit(100)
+                    .all()
+                )
 
                 items_table = self.query_one("#items-table", DataTable)
                 items_table.clear()
@@ -253,6 +279,7 @@ if TEXTUAL_AVAILABLE:
         def action_search(self) -> None:
             """Open search dialog."""
             try:
+
                 class SearchDialog(Container):
                     """Search dialog for items."""
 
@@ -263,10 +290,7 @@ if TEXTUAL_AVAILABLE:
 
                     def compose(self):
                         with Horizontal():
-                            yield Input(
-                                placeholder="Enter search query (name, type, status)...",
-                                id="search_input"
-                            )
+                            yield Input(placeholder="Enter search query (name, type, status)...", id="search_input")
                             yield Button("Search", id="search_btn")
                             yield Button("Cancel", id="cancel_btn")
 
@@ -306,7 +330,8 @@ if TEXTUAL_AVAILABLE:
 
                 query_lower = query.lower()
                 matched_items = [
-                    item for item in self.items_data
+                    item
+                    for item in self.items_data
                     if query_lower in item.get("title", "").lower()
                     or query_lower in item.get("type", "").lower()
                     or query_lower in item.get("status", "").lower()
@@ -334,12 +359,31 @@ if TEXTUAL_AVAILABLE:
             if self.db:
                 self.db.close()
 
+
 if not TEXTUAL_AVAILABLE:
     # Fallback when Textual is not available
     class DashboardApp:  # type: ignore[no-redef]
         """Placeholder when Textual is not installed."""
 
+        project_id: str | None
+        current_view: str
+        db: DatabaseConnection | None
+        config_manager: object
+        BINDINGS: ClassVar[list]
+
         def __init__(self) -> None:
-            raise ImportError(
-                "Textual is required for TUI. Install with: pip install textual"
-            )
+            raise ImportError("Textual is required for TUI. Install with: pip install textual")
+
+        def setup_database(self) -> None: ...
+        def setup_view_tree(self) -> None: ...
+        def refresh_stats(self) -> None: ...
+        def refresh_items(self) -> None: ...
+        def refresh_data(self) -> None: ...
+        def on_tree_node_selected(self, event: object) -> None: ...
+        def action_switch_view(self) -> None: ...
+        def action_refresh(self) -> None: ...
+        def action_search(self) -> None: ...
+        def action_help(self) -> None: ...
+        def notify(self, message: str, *args: object, **kwargs: object) -> None: ...
+        def query_one(self, selector: str, widget_type: type | None = None) -> object: ...
+        def exit(self, *args: object, **kwargs: object) -> None: ...

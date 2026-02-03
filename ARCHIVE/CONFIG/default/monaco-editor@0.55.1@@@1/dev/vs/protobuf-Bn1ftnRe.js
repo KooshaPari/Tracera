@@ -372,11 +372,11 @@ define("vs/protobuf-Bn1ftnRe", ["exports"], (function(exports) {
         [/}/, { token: "@brackets", bracket: "@close", next: "@pop" }]
       ],
       comment: [
-        [/[^\/*]+/, "comment"],
+        [/[^/*]+/, "comment"],
         [/\/\*/, "comment", "@push"],
         // nested comment
         ["\\*/", "comment", "@pop"],
-        [/[\/*]/, "comment"]
+        [/[/*]/, "comment"]
       ],
       string: [
         [/[^\\"]+/, "string"],

@@ -5,6 +5,7 @@ This template demonstrates the proper structure, naming, and documentation
 for tests in the TraceRTM project.
 """
 
+from typing import Any, cast
 
 import pytest
 
@@ -22,17 +23,15 @@ def sample_fixture():
     Cleanup: Automatic teardown
     """
     # Setup
-    data = {"key": "value"}
-
-    yield data
+    return {"key": "value"}
 
     # Teardown
-    pass
 
 
 # ============================================================================
 # TEST CLASSES
 # ============================================================================
+
 
 class TestEpicXStoryY:
     """
@@ -119,9 +118,9 @@ class TestEpicXStoryY:
         # Arrange
         data = None
 
-        # Act & Assert
+        # Act & Assert (intentionally subscript None to raise TypeError)
         with pytest.raises(TypeError):
-            _ = data["key"]
+            _ = cast(Any, data)["key"]  # runtime: data is None -> TypeError
 
     # ========================================================================
     # EDGE CASE TEST CASES
@@ -178,6 +177,7 @@ class TestEpicXStoryY:
 # INTEGRATION TEST CLASS
 # ============================================================================
 
+
 class TestEpicXStoryYIntegration:
     """
     Integration Test Suite: Epic X - Story Y
@@ -214,6 +214,7 @@ class TestEpicXStoryYIntegration:
 # PARAMETRIZED TESTS
 # ============================================================================
 
+
 class TestParametrized:
     """
     Parametrized Test Suite
@@ -222,11 +223,14 @@ class TestParametrized:
     """
 
     @pytest.mark.unit
-    @pytest.mark.parametrize(("input_val", "expected"), [
-        ("value1", "value1"),
-        ("value2", "value2"),
-        ("", ""),
-    ])
+    @pytest.mark.parametrize(
+        ("input_val", "expected"),
+        [
+            ("value1", "value1"),
+            ("value2", "value2"),
+            ("", ""),
+        ],
+    )
     def test_tc_X_Y_7_parametrized_scenarios(self, input_val, expected):
         """
         TC-X.Y.7: Story Title - Parametrized Scenarios

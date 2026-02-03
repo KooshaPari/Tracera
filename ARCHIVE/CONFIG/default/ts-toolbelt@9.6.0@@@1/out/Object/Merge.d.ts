@@ -119,4 +119,4 @@ export declare type Merge<O extends object, O1 extends object, depth extends Dep
     'flat': MergeFlat<O, O1, ignore, fill>;
     'deep': MergeDeep<O, O1, ignore, fill>;
 }[depth];
-export {};
+

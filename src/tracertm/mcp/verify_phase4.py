@@ -11,6 +11,7 @@ from pathlib import Path
 src_path = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(src_path))
 
+
 def verify_files_exist():
     """Verify all expected files were created."""
     print("=== Verifying File Creation ===")
@@ -63,10 +64,7 @@ def verify_imports():
             module = __import__(f"tracertm.mcp.{module_name}", fromlist=expected_exports)
 
             # Check exports
-            missing = []
-            for export in expected_exports:
-                if not hasattr(module, export):
-                    missing.append(export)
+            missing = [export for export in expected_exports if not hasattr(module, export)]
 
             if missing:
                 print(f"  ✗ {module_name}: Missing exports {missing}")
@@ -90,8 +88,9 @@ def verify_middleware_integration():
     print("\n=== Verifying Middleware Integration ===")
 
     try:
-        from tracertm.mcp.core import build_mcp_server
         import os
+
+        from tracertm.mcp.core import build_mcp_server
 
         # Set env vars to enable monitoring
         os.environ["TRACERTM_MCP_TELEMETRY_ENABLED"] = "true"
@@ -121,10 +120,10 @@ def verify_error_classes():
 
     try:
         from tracertm.mcp.error_handlers import (
+            DatabaseError,
+            ItemNotFoundError,
             LLMFriendlyError,
             ProjectNotSelectedError,
-            ItemNotFoundError,
-            DatabaseError,
             ValidationError,
         )
 
@@ -168,13 +167,13 @@ def verify_metrics_definitions():
 
     try:
         from tracertm.mcp.metrics import (
-            tool_duration_seconds,
+            active_tool_calls,
+            auth_failures_total,
+            rate_limit_hits_total,
             tool_calls_total,
+            tool_duration_seconds,
             tool_errors_total,
             tool_payload_size_bytes,
-            active_tool_calls,
-            rate_limit_hits_total,
-            auth_failures_total,
         )
 
         metrics = {
@@ -233,12 +232,11 @@ def main():
         print("4. Set up Grafana dashboards")
         print("5. Review MONITORING.md for complete documentation")
         return 0
-    else:
-        print("\n" + "=" * 60)
-        print("✗ PHASE 4 VERIFICATION FAILED")
-        print("=" * 60)
-        print("\nSome checks failed. Review the output above for details.")
-        return 1
+    print("\n" + "=" * 60)
+    print("✗ PHASE 4 VERIFICATION FAILED")
+    print("=" * 60)
+    print("\nSome checks failed. Review the output above for details.")
+    return 1
 
 
 if __name__ == "__main__":

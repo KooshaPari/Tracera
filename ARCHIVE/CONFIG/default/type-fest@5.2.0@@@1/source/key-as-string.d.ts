@@ -24,4 +24,4 @@ type StringKeysOfFoo = KeyAsString<Foo>;
 */
 export type KeyAsString<BaseType> = `${Extract<keyof BaseType, string | number>}`;
 
-export {};
+

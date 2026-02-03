@@ -51,7 +51,7 @@ export default function avroIdl(Prism) {
       /-?\b(?:Infinity|NaN)\b/
     ],
     operator: /=/,
-    punctuation: /[()\[\]{}<>.:,;-]/
+    punctuation: /[()[\]{}<>.:,;-]/
   }
   Prism.languages.avdl = Prism.languages['avro-idl']
 }

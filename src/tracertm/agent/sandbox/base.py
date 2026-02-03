@@ -11,21 +11,15 @@ from tracertm.agent.types import SandboxConfig, SandboxMetadata
 class SandboxProvider(Protocol):
     """Protocol for sandbox lifecycle: create, exec, write, cleanup."""
 
-    async def create_sandbox(
-        self, config: SandboxConfig, session_id: str
-    ) -> SandboxMetadata:
+    async def create_sandbox(self, config: SandboxConfig, session_id: str) -> SandboxMetadata:
         """Create a sandbox for the given session. Returns metadata with sandbox_id and sandbox_root."""
         ...
 
-    async def execute_command(
-        self, sandbox_id: str, command: str
-    ) -> dict:
+    async def execute_command(self, sandbox_id: str, command: str) -> dict:
         """Execute a command inside the sandbox. Returns result dict (e.g. stdout, stderr, returncode)."""
         ...
 
-    async def write_file(
-        self, sandbox_id: str, path: str, content: str
-    ) -> dict:
+    async def write_file(self, sandbox_id: str, path: str, content: str) -> dict:
         """Write content to a file under the sandbox root. Path is relative to sandbox root."""
         ...
 

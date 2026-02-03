@@ -28,8 +28,8 @@ class AdvancedTraceabilityEnhancementsService:
             visited = set()
             rec_stack = set()
 
-            if self._has_cycle(item.id, visited, rec_stack, items):
-                cycles.append(item.id)
+            if self._has_cycle(str(item.id), visited, rec_stack, items):
+                cycles.append(str(item.id))
 
         return {
             "project_id": project_id,
@@ -38,22 +38,16 @@ class AdvancedTraceabilityEnhancementsService:
             "items_in_cycles": cycles,
         }
 
-    def _has_cycle(
-        self, item_id: str, visited: set, rec_stack: set, items: list
-    ) -> bool:
+    def _has_cycle(self, item_id: str, visited: set, rec_stack: set, items: list) -> bool:
         """Check if item has cycle using DFS."""
         visited.add(item_id)
         rec_stack.add(item_id)
 
         # Find outgoing links
         for item in items:
-            if hasattr(item, "id") and item.id == item_id and hasattr(item, "outgoing_links"):
-                for link in item.outgoing_links:
-                    target_id = (
-                        link.target_item_id
-                        if hasattr(link, "target_item_id")
-                        else None
-                    )
+            if hasattr(item, "id") and item.id == item_id:
+                for link in getattr(item, "outgoing_links", []):
+                    target_id = link.target_item_id if hasattr(link, "target_item_id") else None
 
                     if target_id not in visited:
                         if self._has_cycle(target_id, visited, rec_stack, items):
@@ -73,12 +67,8 @@ class AdvancedTraceabilityEnhancementsService:
         """Analyze coverage gaps between two views."""
         items = await self.items.query(project_id, {})
 
-        source_items = [
-            i for i in items if hasattr(i, "view") and i.view == source_view
-        ]
-        target_items = [
-            i for i in items if hasattr(i, "view") and i.view == target_view
-        ]
+        source_items = [i for i in items if hasattr(i, "view") and i.view == source_view]
+        target_items = [i for i in items if hasattr(i, "view") and i.view == target_view]
 
         covered = 0
         uncovered = []
@@ -89,10 +79,7 @@ class AdvancedTraceabilityEnhancementsService:
                 # Check if there's a link
                 if hasattr(source, "outgoing_links"):
                     for link in source.outgoing_links:
-                        if (
-                            hasattr(link, "target_item_id")
-                            and link.target_item_id == target.id
-                        ):
+                        if hasattr(link, "target_item_id") and link.target_item_id == target.id:
                             has_link = True
                             break
 
@@ -130,38 +117,23 @@ class AdvancedTraceabilityEnhancementsService:
 
         for other_item in all_items:
             if hasattr(other_item, "outgoing_links"):
-                for link in other_item.outgoing_links:
-                    if (
-                        hasattr(link, "target_item_id")
-                        and link.target_item_id == item_id
-                    ):
-                        incoming.append(
-                            {
-                                "source_id": other_item.id,
-                                "link_type": (
-                                    link.link_type
-                                    if hasattr(link, "link_type")
-                                    else "unknown"
-                                ),
-                            }
-                        )
+                incoming.extend(
+                    {
+                        "source_id": other_item.id,
+                        "link_type": (link.link_type if hasattr(link, "link_type") else "unknown"),
+                    }
+                    for link in getattr(other_item, "outgoing_links", [])
+                    if hasattr(link, "target_item_id") and link.target_item_id == item_id
+                )
 
         # Get outgoing links
-        outgoing = []
-        if hasattr(item, "outgoing_links"):
-            for link in item.outgoing_links:
-                outgoing.append(
-                    {
-                        "target_id": (
-                            link.target_item_id
-                            if hasattr(link, "target_item_id")
-                            else None
-                        ),
-                        "link_type": (
-                            link.link_type if hasattr(link, "link_type") else "unknown"
-                        ),
-                    }
-                )
+        outgoing = [
+            {
+                "target_id": (link.target_item_id if hasattr(link, "target_item_id") else None),
+                "link_type": (link.link_type if hasattr(link, "link_type") else "unknown"),
+            }
+            for link in getattr(item, "outgoing_links", [])
+        ]
 
         return {
             "item_id": item_id,
@@ -181,12 +153,8 @@ class AdvancedTraceabilityEnhancementsService:
         """Generate traceability matrix between two views."""
         items = await self.items.query(project_id, {})
 
-        source_items = [
-            i for i in items if hasattr(i, "view") and i.view == source_view
-        ]
-        target_items = [
-            i for i in items if hasattr(i, "view") and i.view == target_view
-        ]
+        source_items = [i for i in items if hasattr(i, "view") and i.view == source_view]
+        target_items = [i for i in items if hasattr(i, "view") and i.view == target_view]
 
         matrix = []
 
@@ -197,22 +165,15 @@ class AdvancedTraceabilityEnhancementsService:
                 "targets": [],
             }
 
-            if hasattr(source, "outgoing_links"):
-                for link in source.outgoing_links:
-                    target_id = (
-                        link.target_item_id if hasattr(link, "target_item_id") else None
-                    )
-                    if target_id in [t.id for t in target_items]:
-                        row["targets"].append(
-                            {
-                                "target_id": target_id,
-                                "link_type": (
-                                    link.link_type
-                                    if hasattr(link, "link_type")
-                                    else "unknown"
-                                ),
-                            }
-                        )
+            for link in getattr(source, "outgoing_links", []):
+                target_id = link.target_item_id if hasattr(link, "target_item_id") else None
+                if target_id in [t.id for t in target_items]:
+                    row.setdefault("targets", [])
+                    if isinstance(row["targets"], list):
+                        row["targets"].append({
+                            "target_id": target_id,
+                            "link_type": (link.link_type if hasattr(link, "link_type") else "unknown"),
+                        })
 
             matrix.append(row)
 
@@ -252,14 +213,17 @@ class AdvancedTraceabilityEnhancementsService:
 
             # Find items that depend on current item
             all_items = await self.items.query(project_id, {})
-            for other_item in all_items:
-                if hasattr(other_item, "outgoing_links"):
-                    for link in other_item.outgoing_links:
-                        if (
-                            hasattr(link, "target_item_id")
-                            and link.target_item_id == current_id
-                        ) and other_item.id not in visited:
-                            queue.append((other_item.id, depth + 1))
+            to_add = [
+                (str(other_item.id), depth + 1)
+                for other_item in all_items
+                for link in getattr(other_item, "outgoing_links", [])
+                if (
+                    hasattr(link, "target_item_id")
+                    and link.target_item_id == current_id
+                    and other_item.id not in visited
+                )
+            ]
+            queue.extend(to_add)
 
         return {
             "item_id": item_id,

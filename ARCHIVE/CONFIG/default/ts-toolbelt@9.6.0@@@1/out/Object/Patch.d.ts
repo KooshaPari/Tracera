@@ -115,4 +115,4 @@ export declare type Patch<O extends object, O1 extends object, depth extends Dep
     'flat': PatchFlat<O, O1, ignore, fill>;
     'deep': PatchDeep<O, O1, ignore, fill>;
 }[depth];
-export {};
+

@@ -19,8 +19,8 @@ export const testProjects: Project[] = [
 		description: "Test project for E2E testing",
 		id: "test-proj-1",
 		metadata: {
-			team: "QA",
 			status: "active",
+			team: "QA",
 		},
 		name: "E2E Test Project",
 		updatedAt: now,
@@ -30,8 +30,8 @@ export const testProjects: Project[] = [
 		description: "Sample project for testing filters and search",
 		id: "test-proj-2",
 		metadata: {
-			team: "Dev",
 			status: "active",
+			team: "Dev",
 		},
 		name: "Sample Project",
 		updatedAt: now,
@@ -144,15 +144,15 @@ export const formInputs = {
 		type: "test",
 	},
 	item: {
-		title: "Test Item from E2E",
 		description: "This item was created by an E2E test",
+		title: "Test Item from E2E",
 	},
 	link: {
 		type: "implements",
 	},
 	project: {
-		name: "Test Project from E2E",
 		description: "This project was created by an E2E test",
+		name: "Test Project from E2E",
 	},
 };
 

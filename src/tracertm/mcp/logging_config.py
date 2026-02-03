@@ -10,7 +10,6 @@ Provides:
 
 from __future__ import annotations
 
-import json
 import logging
 import sys
 import time
@@ -78,8 +77,15 @@ def censor_sensitive_data(logger: logging.Logger, method_name: str, event_dict: 
         Modified event dictionary with sensitive data censored
     """
     sensitive_keys = {
-        "password", "secret", "token", "api_key", "auth",
-        "authorization", "credential", "private_key", "jwt"
+        "password",
+        "secret",
+        "token",
+        "api_key",
+        "auth",
+        "authorization",
+        "credential",
+        "private_key",
+        "jwt",
     }
 
     def _censor_dict(data: dict[str, Any]) -> dict[str, Any]:
@@ -97,7 +103,7 @@ def censor_sensitive_data(logger: logging.Logger, method_name: str, event_dict: 
                 censored[key] = value
         return censored
 
-    return _censor_dict(event_dict)
+    return _censor_dict(dict(event_dict))  # type: ignore[arg-type]
 
 
 def configure_structured_logging(
@@ -326,7 +332,7 @@ def get_structured_logger() -> StructuredLogger:
 
 
 __all__ = [
-    "configure_structured_logging",
     "StructuredLogger",
+    "configure_structured_logging",
     "get_structured_logger",
 ]

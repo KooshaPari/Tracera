@@ -13,4 +13,4 @@ interface CrossProps {
 }
 export type Props = SVGProps<SVGPathElement> & CrossProps;
 export declare const Cross: React.FC<Props>;
-export {};
+

@@ -4,7 +4,7 @@ describe(
   function() {
     function getPunctuation() {
       return ':;.,-–—‒_(){}[]!\'"+='
-        .replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&')
+        .replace(/[-[\]/{}()*+?.\\^$|]/g, '\\$&')
         .split('');
     }
     var $ctx,

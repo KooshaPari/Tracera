@@ -151,7 +151,7 @@ class TestCreateItemHelper:
 
         # Assert
         assert item.project_id is not None
-        assert len(item.project_id) > 0
+        assert len(str(item.project_id)) > 0
 
     def test_create_item_has_all_required_fields(self):
         """Test that created item has all required fields."""
@@ -274,7 +274,7 @@ class TestCreateLinkHelper:
 
         # Assert
         assert link.project_id is not None
-        assert len(link.project_id) > 0
+        assert len(str(link.project_id)) > 0
 
     def test_create_link_has_all_required_fields(self):
         """Test that created link has all required fields."""
@@ -468,13 +468,13 @@ class TestFactoryIntegration:
         item1 = create_item(title="Source Item")
         item2 = create_item(title="Target Item")
         link = create_link(
-            source_item_id=item1.id,
-            target_item_id=item2.id,
+            source_item_id=str(item1.id),
+            target_item_id=str(item2.id),
         )
 
         # Assert
-        assert link.source_item_id == item1.id
-        assert link.target_item_id == item2.id
+        assert link.source_item_id == str(item1.id)
+        assert link.target_item_id == str(item2.id)
 
     def test_empty_string_values_are_accepted(self):
         """Test that empty string values are accepted where appropriate."""

@@ -88,4 +88,4 @@ export declare class Sankey extends PureComponent<Props, State> {
     renderTooltip(): ReactElement;
     render(): React.JSX.Element;
 }
-export {};
+

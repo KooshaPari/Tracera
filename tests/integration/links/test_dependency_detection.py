@@ -3,7 +3,7 @@ Integration tests for Epic 4: Dependency Detection (Story 4.6, FR22, NFR-R2).
 """
 
 import pytest
-import pytest_asyncio
+
 pytestmark = pytest.mark.integration
 from sqlalchemy.orm import Session
 

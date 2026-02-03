@@ -249,9 +249,9 @@ define("vs/rust-DIvkf86i", ["exports"], (function(exports) {
       "?",
       "#"
     ],
-    escapes: /\\([nrt0\"''\\]|x\h{2}|u\{\h{1,6}\})/,
+    escapes: /\\([nrt0"''\\]|xh{2}|u\{h{1,6}\})/,
     delimiters: /[,]/,
-    symbols: /[\#\!\%\&\*\+\-\.\/\:\;\<\=\>\@\^\|_\?]+/,
+    symbols: /[#!%&*+\-./:;<=>@^|_?]+/,
     intSuffixes: /[iu](8|16|32|64|128|size)/,
     floatSuffixes: /f(32|64)/,
     tokenizer: {
@@ -274,7 +274,7 @@ define("vs/rust-DIvkf86i", ["exports"], (function(exports) {
         // Designator
         [/\$/, "identifier"],
         // Lifetime annotations
-        [/'[a-zA-Z_][a-zA-Z0-9_]*(?=[^\'])/, "identifier"],
+        [/'[a-zA-Z_][a-zA-Z0-9_]*(?=[^'])/, "identifier"],
         // Byte literal
         [/'(\S|@escapes)'/, "string.byteliteral"],
         // Strings
@@ -291,7 +291,7 @@ define("vs/rust-DIvkf86i", ["exports"], (function(exports) {
             }
           }
         ],
-        [/[{}()\[\]<>]/, "@brackets"],
+        [/[{}()[\]<>]/, "@brackets"],
         [/@symbols/, { cases: { "@operators": "operator", "@default": "" } }]
       ],
       whitespace: [
@@ -300,10 +300,10 @@ define("vs/rust-DIvkf86i", ["exports"], (function(exports) {
         [/\/\/.*$/, "comment"]
       ],
       comment: [
-        [/[^\/*]+/, "comment"],
+        [/[^/*]+/, "comment"],
         [/\/\*/, "comment", "@push"],
         ["\\*/", "comment", "@pop"],
-        [/[\/*]/, "comment"]
+        [/[/*]/, "comment"]
       ],
       string: [
         [/[^\\"]+/, "string"],

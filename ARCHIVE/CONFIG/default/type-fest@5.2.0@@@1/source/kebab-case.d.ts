@@ -43,4 +43,4 @@ export type KebabCase<
 	Options extends WordsOptions = {},
 > = DelimiterCase<Value, '-', ApplyDefaultOptions<WordsOptions, _DefaultDelimiterCaseOptions, Options>>;
 
-export {};
+

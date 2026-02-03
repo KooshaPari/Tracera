@@ -123,20 +123,15 @@ export function createStartHandler<TRegister = Register>(
           initialEntries: [href],
         })
 
-        router.update({
-          history,
-          isShell,
-          isPrerendering,
-          origin: router.options.origin ?? origin,
-          ...{
-            defaultSsr: requestStartOptions.defaultSsr,
-            serializationAdapters: [
-              ...requestStartOptions.serializationAdapters,
-              ...(router.options.serializationAdapters || []),
-            ],
-          },
-          basepath: ROUTER_BASEPATH,
-        })
+        router.update(({
+	history,
+	isShell,
+	isPrerendering,
+	origin: router.options.origin ?? origin,
+	defaultSsr: requestStartOptions.defaultSsr,
+	serializationAdapters: [...requestStartOptions.serializationAdapters, ...router.options.serializationAdapters || []],
+	basepath: ROUTER_BASEPATH
+}))
         return router
       }
 
@@ -464,7 +459,7 @@ function executeMiddleware(middlewares: TODO, ctx: TODO) {
             ...nextCtx,
             context: {
               ...ctx.context,
-              ...(nextCtx?.context || {}),
+              ...nextCtx?.context,
             },
           })
 

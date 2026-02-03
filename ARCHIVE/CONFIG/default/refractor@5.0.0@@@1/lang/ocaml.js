@@ -63,7 +63,7 @@ export default function ocaml(Prism) {
     },
     // Custom operators are allowed
     operator:
-      /\.[.~]|:[=>]|[=<>@^|&+\-*\/$%!?~][!$%&*+\-.\/:<=>?@^|~]*|\b(?:and|asr|land|lor|lsl|lsr|lxor|mod|or)\b/,
-    punctuation: /;;|::|[(){}\[\].,:;#]|\b_\b/
+      /\.[.~]|:[=>]|[=<>@^|&+\-*/$%!?~][!$%&*+\-./:<=>?@^|~]*|\b(?:and|asr|land|lor|lsl|lsr|lxor|mod|or)\b/,
+    punctuation: /;;|::|[(){}[\].,:;#]|\b_\b/
   }
 }

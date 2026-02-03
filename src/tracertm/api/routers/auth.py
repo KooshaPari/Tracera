@@ -13,17 +13,13 @@ import logging
 import secrets
 import time
 import uuid
-from datetime import datetime, timedelta, timezone
-from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from pydantic import BaseModel, Field
-
-from tracertm.api.deps import get_db, auth_guard
-from tracertm.services.workos_auth_service import WorkOSAuthService, get_user
-from tracertm.services.user_repository import UserRepository
-from tracertm.models.user import User
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from tracertm.api.deps import auth_guard, get_db
+from tracertm.services.workos_auth_service import WorkOSAuthService, get_user
 
 logger = logging.getLogger(__name__)
 
@@ -32,13 +28,14 @@ router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 # Device flow storage (in production, use database)
 _DEVICE_FLOWS: dict[str, dict] = {}
 _DEVICE_FLOW_TIMEOUT = 900  # 15 minutes
+TOKEN_TYPE_BEARER = "bearer"  # OAuth 2.0 token type (not a secret)
 
 
 class DeviceCodeRequest(BaseModel):
     """Request for device authorization code."""
 
     client_id: str = Field(..., description="OAuth client ID")
-    scope: Optional[str] = Field(None, description="Space-separated scopes")
+    scope: str | None = Field(None, description="Space-separated scopes")
 
 
 class DeviceCodeResponse(BaseModel):
@@ -47,12 +44,8 @@ class DeviceCodeResponse(BaseModel):
     device_code: str = Field(..., description="Device verification code")
     user_code: str = Field(..., description="User-friendly code for manual entry")
     verification_uri: str = Field(..., description="URL user visits to authenticate")
-    verification_uri_complete: str = Field(
-        ..., description="Complete URL with pre-filled user code"
-    )
-    expires_in: int = Field(
-        default=900, description="Seconds until device code expires"
-    )
+    verification_uri_complete: str = Field(..., description="Complete URL with pre-filled user code")
+    expires_in: int = Field(default=900, description="Seconds until device code expires")
     interval: int = Field(default=5, description="Seconds to wait between polls")
 
 
@@ -73,8 +66,8 @@ class TokenResponse(BaseModel):
     access_token: str = Field(..., description="JWT access token")
     token_type: str = Field(default="bearer", description="Token type")
     expires_in: int = Field(default=3600, description="Seconds until expiration")
-    refresh_token: Optional[str] = Field(None, description="Refresh token")
-    user: Optional[dict] = Field(None, description="User information")
+    refresh_token: str | None = Field(None, description="Refresh token")
+    user: dict | None = Field(None, description="User information")
 
 
 class MeResponse(BaseModel):
@@ -82,7 +75,7 @@ class MeResponse(BaseModel):
 
     user: dict = Field(..., description="User object")
     claims: dict = Field(..., description="JWT claims")
-    account: Optional[dict] = Field(None, description="Account information")
+    account: dict | None = Field(None, description="Account information")
 
 
 class RefreshTokenRequest(BaseModel):
@@ -95,16 +88,14 @@ class RevokeTokenRequest(BaseModel):
     """Request to revoke a token."""
 
     token: str = Field(..., description="Token to revoke")
-    token_type: str = Field(
-        default="access_token", description="Type of token to revoke"
-    )
+    token_type: str = Field(default="access_token", description="Type of token to revoke")
 
 
 class LogoutResponse(BaseModel):
     """Logout success response."""
 
     success: bool = Field(default=True, description="Logout successful")
-    message: Optional[str] = Field(None, description="Optional message")
+    message: str | None = Field(None, description="Optional message")
 
 
 def _generate_user_code(length: int = 8) -> str:
@@ -164,7 +155,7 @@ async def request_device_code(
     return DeviceCodeResponse(
         device_code=device_code,
         user_code=user_code,
-        verification_uri=f"https://auth.tracertm.local/device",
+        verification_uri="https://auth.tracertm.local/device",
         verification_uri_complete=f"https://auth.tracertm.local/device?user_code={user_code}",
         expires_in=_DEVICE_FLOW_TIMEOUT,
         interval=5,
@@ -227,18 +218,9 @@ async def exchange_device_code(
             detail="invalid_grant",
         )
 
-    # Generate access token
-    workos_service = _get_workos_service()
+    # Generate access token (ensure WorkOS service is available)
+    _get_workos_service()
     user_id = flow["user_id"]
-
-    # Create JWT token
-    token_data = {
-        "sub": user_id,
-        "iat": datetime.now(timezone.utc),
-        "exp": datetime.now(timezone.utc) + timedelta(hours=1),
-        "scope": " ".join(flow["scope"]),
-        "client_id": request.client_id,
-    }
 
     access_token = flow["access_token"] or "jwt_token_placeholder"
 
@@ -249,7 +231,7 @@ async def exchange_device_code(
 
     return TokenResponse(
         access_token=access_token,
-        token_type="bearer",
+        token_type=TOKEN_TYPE_BEARER,
         expires_in=3600,
         refresh_token=None,
         user={
@@ -310,7 +292,9 @@ async def get_current_user(
             account={
                 "id": claims.get("org_id"),
                 "name": claims.get("org_name"),
-            } if claims.get("org_id") else None,
+            }
+            if claims.get("org_id")
+            else None,
         )
     except HTTPException:
         # Re-raise HTTP exceptions
@@ -321,7 +305,7 @@ async def get_current_user(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Authentication service not configured",
-        )
+        ) from e
     except Exception as e:
         # WorkOS API error or user not found
         logger.error(f"Failed to fetch user {user_id} from WorkOS: {e}")
@@ -331,13 +315,13 @@ async def get_current_user(
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"User {user_id} not found",
-            )
+            ) from e
 
         # Other API errors
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to fetch user information",
-        )
+        ) from e
 
 
 @router.post("/refresh", response_model=TokenResponse)
@@ -374,7 +358,7 @@ async def refresh_access_token(
 
     return TokenResponse(
         access_token=new_access_token,
-        token_type="bearer",
+        token_type=TOKEN_TYPE_BEARER,
         expires_in=3600,
         refresh_token=refresh_token,
         user=None,  # User info not included in refresh response

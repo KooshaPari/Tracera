@@ -56,7 +56,7 @@ export default function soy(Prism) {
             greedy: true
           },
           number: numberPattern,
-          punctuation: /[\[\].?]/
+          punctuation: /[[\].?]/
         }
       },
       string: {
@@ -73,7 +73,7 @@ export default function soy(Prism) {
       boolean: /\b(?:false|true)\b/,
       number: numberPattern,
       operator: /\?:?|<=?|>=?|==?|!=|[+*/%-]|\b(?:and|not|or)\b/,
-      punctuation: /[{}()\[\]|.,:]/
+      punctuation: /[{}()[\]|.,:]/
     }
 
     // Tokenize all inline Soy expressions

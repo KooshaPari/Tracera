@@ -262,7 +262,7 @@ define("vs/cpp-9dJI961u", ["exports"], (function(exports) {
       ">>="
     ],
     // we include these common regular expressions
-    symbols: /[=><!~?:&|+\-*\/\^%]+/,
+    symbols: /[=><!~?:&|+\-*/^%]+/,
     escapes: /\\(?:[0abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
     integersuffix: /([uU](ll|LL|l|L)|(ll|LL|l|L)?[uU]?)/,
     floatsuffix: /[fFlL]?/,
@@ -271,7 +271,7 @@ define("vs/cpp-9dJI961u", ["exports"], (function(exports) {
     tokenizer: {
       root: [
         // C++ 11 Raw String
-        [/@encoding?R\"(?:([^ ()\\\t]*))\(/, { token: "string.raw.begin", next: "@raw.$1" }],
+        [/@encoding?R"(?:([^ ()\\\t]*))\(/, { token: "string.raw.begin", next: "@raw.$1" }],
         // identifiers and keywords
         [
           /[a-zA-Z_]\w*/,
@@ -293,7 +293,7 @@ define("vs/cpp-9dJI961u", ["exports"], (function(exports) {
         // [[ attributes ]].
         [/\[\s*\[/, { token: "annotation", next: "@annotation" }],
         // delimiters and operators
-        [/[{}()<>\[\]]/, "@brackets"],
+        [/[{}()<>[\]]/, "@brackets"],
         [
           /@symbols/,
           {
@@ -304,8 +304,8 @@ define("vs/cpp-9dJI961u", ["exports"], (function(exports) {
           }
         ],
         // numbers
-        [/\d*\d+[eE]([\-+]?\d+)?(@floatsuffix)/, "number.float"],
-        [/\d*\.\d+([eE][\-+]?\d+)?(@floatsuffix)/, "number.float"],
+        [/\d*\d+[eE]([-+]?\d+)?(@floatsuffix)/, "number.float"],
+        [/\d*\.\d+([eE][-+]?\d+)?(@floatsuffix)/, "number.float"],
         [/0[xX][0-9a-fA-F']*[0-9a-fA-F](@integersuffix)/, "number.hex"],
         [/0[0-7']*[0-7](@integersuffix)/, "number.octal"],
         [/0[bB][0-1']*[0-1](@integersuffix)/, "number.binary"],
@@ -330,9 +330,9 @@ define("vs/cpp-9dJI961u", ["exports"], (function(exports) {
         [/\/\/.*$/, "comment"]
       ],
       comment: [
-        [/[^\/*]+/, "comment"],
+        [/[^/*]+/, "comment"],
         [/\*\//, "comment", "@pop"],
-        [/[\/*]/, "comment"]
+        [/[/*]/, "comment"]
       ],
       //For use with continuous line comments
       linecomment: [
@@ -341,9 +341,9 @@ define("vs/cpp-9dJI961u", ["exports"], (function(exports) {
       ],
       //Identical copy of comment above, except for the addition of .doc
       doccomment: [
-        [/[^\/*]+/, "comment.doc"],
+        [/[^/*]+/, "comment.doc"],
         [/\*\//, "comment.doc", "@pop"],
-        [/[\/*]/, "comment.doc"]
+        [/[/*]/, "comment.doc"]
       ],
       string: [
         [/[^\\"]+/, "string"],
@@ -353,7 +353,7 @@ define("vs/cpp-9dJI961u", ["exports"], (function(exports) {
       ],
       raw: [
         [/[^)]+/, "string.raw"],
-        [/\)$S2\"/, { token: "string.raw.end", next: "@pop" }],
+        [/\)$S2"/, { token: "string.raw.end", next: "@pop" }],
         [/\)/, "string.raw"]
       ],
       annotation: [

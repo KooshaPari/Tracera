@@ -41,4 +41,4 @@ export type ExtendsStrict<Left, Right> =
 				? true
 				: false;
 
-export {};
+

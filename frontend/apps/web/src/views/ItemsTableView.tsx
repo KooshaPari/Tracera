@@ -1183,9 +1183,9 @@ export function ItemsTableView({
 											colIndex={1}
 											sortDirection={
 												sortColumn === "title"
-													? sortOrder === "asc"
+													? (sortOrder === "asc"
 														? "ascending"
-														: "descending"
+														: "descending")
 													: "none"
 											}
 											className="w-[400px] h-14 px-6 text-[10px] font-black uppercase tracking-widest sticky top-0 bg-card/50 z-10"
@@ -1267,9 +1267,9 @@ export function ItemsTableView({
 												colIndex={1}
 												sortDirection={
 													sortColumn === "title"
-														? sortOrder === "asc"
+														? (sortOrder === "asc"
 															? "ascending"
-															: "descending"
+															: "descending")
 														: "none"
 												}
 												className="w-[400px] h-14 px-6 text-[10px] font-black uppercase tracking-widest sticky top-0 bg-card/50 z-10"

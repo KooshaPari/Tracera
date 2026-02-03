@@ -1,6 +1,6 @@
 (function (Prism) {
 
-	var expressionDef = /\{[^\r\n\[\]{}]*\}/;
+	var expressionDef = /\{[^\r\n[\]{}]*\}/;
 
 	var params = {
 		'quoted-string': {
@@ -83,14 +83,14 @@
 			alias: 'punctuation',
 			inside: {
 				// \{ ... \} ... \[ ... \] ... \"
-				'escaped-char': /\\[{}\[\]"]/,
+				'escaped-char': /\\[{}[\]"]/,
 				'expression': {
 					pattern: expressionDef,
 					greedy: true,
 					alias: 'selector'
 				},
 				'inline-command': {
-					pattern: /\[[\t ]*\w[^\r\n\[\]]*\]/,
+					pattern: /\[[\t ]*\w[^\r\n[\]]*\]/,
 					greedy: true,
 					alias: 'function',
 					inside: {
@@ -104,7 +104,7 @@
 							lookbehind: true,
 							alias: 'name',
 						},
-						'start-stop-char': /[\[\]]/,
+						'start-stop-char': /[[\]]/,
 					}
 				},
 			}

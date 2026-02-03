@@ -8,7 +8,7 @@ const F = 12;
 const R = 13;
 const SPACE = 32;
 const NAME_CHAR = new Uint8Array(128).map((_, idx) =>
-    /[a-zA-Z0-9\-]/.test(String.fromCharCode(idx)) ? 1 : 0
+    /[a-zA-Z0-9-]/.test(String.fromCharCode(idx)) ? 1 : 0
 );
 
 class Scanner {

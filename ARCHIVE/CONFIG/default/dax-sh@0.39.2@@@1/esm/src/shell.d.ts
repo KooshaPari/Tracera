@@ -165,4 +165,4 @@ export interface SpawnOpts {
     fds: StreamFds | undefined;
 }
 export declare function spawn(list: SequentialList, opts: SpawnOpts): Promise<number>;
-export {};
+

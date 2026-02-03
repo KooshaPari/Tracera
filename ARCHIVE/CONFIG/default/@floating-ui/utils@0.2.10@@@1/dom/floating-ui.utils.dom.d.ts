@@ -44,4 +44,4 @@ export declare function isWebKit(): boolean;
 
 declare type OverflowAncestors = Array<Element | Window | VisualViewport>;
 
-export { }
+

@@ -634,17 +634,17 @@ export function useGitHubRepos(
 				page: data["page"],
 				perPage: data["per_page"],
 				repos: (data["repos"] || []).map((r: Record<string, unknown>) => ({
+					defaultBranch: r.default_branch,
+					description: r.description,
+					fullName: r.full_name,
+					htmlUrl: r.html_url,
 					id: r.id,
 					name: r.name,
-					fullName: r.full_name,
-					description: r.description,
-					htmlUrl: r.html_url,
-					private: r["private"],
 					owner: {
-						login: r["owner"]?.login,
 						avatarUrl: r["owner"]?.avatar_url,
+						login: r["owner"]?.login,
 					},
-					defaultBranch: r.default_branch,
+					private: r["private"],
 					updatedAt: r.updated_at,
 				})) as GitHubRepo[],
 			};
@@ -688,8 +688,8 @@ export function useGitHubIssues(
 					title: i.title,
 					updatedAt: i.updated_at,
 					user: {
-						login: i["user"]?.login,
 						avatarUrl: i["user"]?.avatar_url,
+						login: i["user"]?.login,
 					},
 				})) as GitHubIssue[],
 				page: data["page"],

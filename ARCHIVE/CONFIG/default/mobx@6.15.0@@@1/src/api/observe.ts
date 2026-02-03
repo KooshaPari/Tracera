@@ -42,7 +42,7 @@ export function observe<K, V>(
     fireImmediately?: boolean
 ): Lambda
 export function observe(
-    object: Object,
+    object: object,
     listener: (change: IObjectDidChange) => void,
     fireImmediately?: boolean
 ): Lambda

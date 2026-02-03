@@ -1,0 +1,387 @@
+name: Canary Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Image tag to deploy as canary'
+        required: true
+        type: string
+      skip_stages:
+        description: 'Skip stages (comma-separated: stage1,stage2)'
+        required: false
+        type: string
+        default: ''
+      auto_promote:
+        description: 'Automatically promote if all checks pass'
+        required: false
+        type: boolean
+        default: true
+  workflow_call:
+    inputs:
+      image_tag:
+        description: 'Image tag to deploy as canary'
+        required: true
+        type: string
+      auto_promote:
+        description: 'Automatically promote if all checks pass'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  NAMESPACE: tracertm
+  PROMETHEUS_URL: http://prometheus.tracertm.svc.cluster.local:9090
+  CHECK_INTERVAL: 60
+  STAGE_DURATION: 300
+
+jobs:
+  # Pre-deployment validation
+  validate:
+    name: Validate Deployment
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Validate image tag
+      run: |
+        echo "Validating image tag: ${{ inputs.image_tag }}"
+        if [ -z "${{ inputs.image_tag }}" ]; then
+          echo "Error: Image tag is required"
+          exit 1
+        fi
+
+    - name: Check Kubernetes access
+      run: |
+        echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" | base64 -d > kubeconfig
+        export KUBECONFIG=kubeconfig
+        kubectl cluster-info
+        kubectl get namespace ${{ env.NAMESPACE }}
+
+    - name: Verify stable deployment health
+      run: |
+        export KUBECONFIG=kubeconfig
+        kubectl rollout status deployment/tracertm-api -n ${{ env.NAMESPACE }} --timeout=30s
+        kubectl rollout status deployment/tracertm-backend -n ${{ env.NAMESPACE }} --timeout=30s
+
+    outputs:
+      validated: 'true'
+
+  # Deploy canary version
+  deploy-canary:
+    name: Deploy Canary
+    runs-on: ubuntu-latest
+    needs: validate
+    timeout-minutes: 10
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure kubectl
+      run: |
+        echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" | base64 -d > kubeconfig
+        export KUBECONFIG=kubeconfig
+
+    - name: Deploy canary deployments
+      run: |
+        export KUBECONFIG=kubeconfig
+
+        # Apply canary deployments
+        kubectl apply -f deploy/k8s/overlays/canary/deployment-canary.yaml -n ${{ env.NAMESPACE }}
+
+        # Update images
+        kubectl set image deployment/tracertm-api-canary \
+          api="${{ secrets.DOCKER_REGISTRY }}/${{ github.repository }}/tracertm-api:${{ inputs.image_tag }}" \
+          -n ${{ env.NAMESPACE }}
+
+        kubectl set image deployment/tracertm-backend-canary \
+          backend="${{ secrets.DOCKER_REGISTRY }}/${{ github.repository }}/tracertm-backend:${{ inputs.image_tag }}" \
+          -n ${{ env.NAMESPACE }}
+
+    - name: Wait for canary rollout
+      run: |
+        export KUBECONFIG=kubeconfig
+        kubectl rollout status deployment/tracertm-api-canary -n ${{ env.NAMESPACE }} --timeout=5m
+        kubectl rollout status deployment/tracertm-backend-canary -n ${{ env.NAMESPACE }} --timeout=5m
+
+    - name: Verify canary pods are ready
+      run: |
+        export KUBECONFIG=kubeconfig
+
+        API_READY=$(kubectl get deployment tracertm-api-canary -n ${{ env.NAMESPACE }} \
+          -o jsonpath='{.status.readyReplicas}')
+        BACKEND_READY=$(kubectl get deployment tracertm-backend-canary -n ${{ env.NAMESPACE }} \
+          -o jsonpath='{.status.readyReplicas}')
+
+        if [ "$API_READY" -lt 1 ] || [ "$BACKEND_READY" -lt 1 ]; then
+          echo "Error: Canary pods not ready"
+          exit 1
+        fi
+
+        echo "✓ Canary deployment successful"
+        echo "API Pods Ready: $API_READY"
+        echo "Backend Pods Ready: $BACKEND_READY"
+
+    outputs:
+      deployed: 'true'
+
+  # Stage 1: 10% traffic
+  canary-stage1:
+    name: Stage 1 - 10% Traffic
+    runs-on: ubuntu-latest
+    needs: deploy-canary
+    timeout-minutes: 15
+    if: ${{ !contains(inputs.skip_stages, 'stage1') }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure kubectl
+      run: |
+        echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" | base64 -d > kubeconfig
+        export KUBECONFIG=kubeconfig
+
+    - name: Set canary weight to 10%
+      run: |
+        export KUBECONFIG=kubeconfig
+        kubectl patch ingress tracertm-ingress-canary -n ${{ env.NAMESPACE }} \
+          --type=json \
+          -p='[{"op": "replace", "path": "/metadata/annotations/nginx.ingress.kubernetes.io~1canary-weight", "value": "10"}]'
+        echo "✓ Traffic weight set to 10%"
+
+    - name: Monitor metrics (10%)
+      run: |
+        export KUBECONFIG=kubeconfig
+        export PROMETHEUS_URL=${{ env.PROMETHEUS_URL }}
+
+        # Run monitoring script
+        bash scripts/canary/canary-metrics.sh
+
+        # Check for active alerts
+        ALERTS=$(kubectl exec -n ${{ env.NAMESPACE }} deploy/prometheus -- \
+          promtool query instant ${{ env.PROMETHEUS_URL }} \
+          'ALERTS{alertname=~"Canary.*",alertstate="firing"}' | grep -c "firing" || echo "0")
+
+        if [ "$ALERTS" -gt 0 ]; then
+          echo "Error: $ALERTS canary alerts firing"
+          exit 1
+        fi
+
+    - name: Wait and monitor (5 minutes)
+      run: |
+        echo "Monitoring stage 1 for ${{ env.STAGE_DURATION }} seconds..."
+
+        for i in {1..5}; do
+          echo "Check $i/5..."
+
+          # Check pod health
+          export KUBECONFIG=kubeconfig
+          RESTARTS=$(kubectl get pods -n ${{ env.NAMESPACE }} -l version=canary \
+            -o jsonpath='{.items[*].status.containerStatuses[*].restartCount}' | \
+            awk '{for(i=1;i<=NF;i++) sum+=$i} END {print sum}')
+
+          if [ "$RESTARTS" -gt 2 ]; then
+            echo "Error: Too many pod restarts ($RESTARTS)"
+            exit 1
+          fi
+
+          if [ $i -lt 5 ]; then
+            sleep ${{ env.CHECK_INTERVAL }}
+          fi
+        done
+
+        echo "✓ Stage 1 monitoring complete"
+
+    outputs:
+      stage1_passed: 'true'
+
+  # Stage 2: 50% traffic
+  canary-stage2:
+    name: Stage 2 - 50% Traffic
+    runs-on: ubuntu-latest
+    needs: canary-stage1
+    timeout-minutes: 15
+    if: ${{ !contains(inputs.skip_stages, 'stage2') }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure kubectl
+      run: |
+        echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" | base64 -d > kubeconfig
+        export KUBECONFIG=kubeconfig
+
+    - name: Set canary weight to 50%
+      run: |
+        export KUBECONFIG=kubeconfig
+        kubectl patch ingress tracertm-ingress-canary -n ${{ env.NAMESPACE }} \
+          --type=json \
+          -p='[{"op": "replace", "path": "/metadata/annotations/nginx.ingress.kubernetes.io~1canary-weight", "value": "50"}]'
+        echo "✓ Traffic weight set to 50%"
+
+    - name: Monitor metrics (50%)
+      run: |
+        export KUBECONFIG=kubeconfig
+        bash scripts/canary/canary-metrics.sh
+
+    - name: Wait and monitor (5 minutes)
+      run: |
+        echo "Monitoring stage 2 for ${{ env.STAGE_DURATION }} seconds..."
+
+        for i in {1..5}; do
+          echo "Check $i/5..."
+
+          export KUBECONFIG=kubeconfig
+          RESTARTS=$(kubectl get pods -n ${{ env.NAMESPACE }} -l version=canary \
+            -o jsonpath='{.items[*].status.containerStatuses[*].restartCount}' | \
+            awk '{for(i=1;i<=NF;i++) sum+=$i} END {print sum}')
+
+          if [ "$RESTARTS" -gt 2 ]; then
+            echo "Error: Too many pod restarts ($RESTARTS)"
+            exit 1
+          fi
+
+          if [ $i -lt 5 ]; then
+            sleep ${{ env.CHECK_INTERVAL }}
+          fi
+        done
+
+        echo "✓ Stage 2 monitoring complete"
+
+    outputs:
+      stage2_passed: 'true'
+
+  # Promote canary to stable
+  promote:
+    name: Promote Canary to Stable
+    runs-on: ubuntu-latest
+    needs: [canary-stage1, canary-stage2]
+    timeout-minutes: 15
+    if: ${{ inputs.auto_promote && (needs.canary-stage1.outputs.stage1_passed == 'true' || contains(inputs.skip_stages, 'stage1')) && (needs.canary-stage2.outputs.stage2_passed == 'true' || contains(inputs.skip_stages, 'stage2')) }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure kubectl
+      run: |
+        echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" | base64 -d > kubeconfig
+        export KUBECONFIG=kubeconfig
+
+    - name: Update stable deployments
+      run: |
+        export KUBECONFIG=kubeconfig
+
+        # Update stable deployments with canary image
+        kubectl set image deployment/tracertm-api \
+          api="${{ secrets.DOCKER_REGISTRY }}/${{ github.repository }}/tracertm-api:${{ inputs.image_tag }}" \
+          -n ${{ env.NAMESPACE }}
+
+        kubectl set image deployment/tracertm-backend \
+          backend="${{ secrets.DOCKER_REGISTRY }}/${{ github.repository }}/tracertm-backend:${{ inputs.image_tag }}" \
+          -n ${{ env.NAMESPACE }}
+
+    - name: Wait for stable rollout
+      run: |
+        export KUBECONFIG=kubeconfig
+        kubectl rollout status deployment/tracertm-api -n ${{ env.NAMESPACE }} --timeout=10m
+        kubectl rollout status deployment/tracertm-backend -n ${{ env.NAMESPACE }} --timeout=10m
+
+    - name: Cleanup canary
+      run: |
+        export KUBECONFIG=kubeconfig
+
+        # Set canary traffic to 0
+        kubectl patch ingress tracertm-ingress-canary -n ${{ env.NAMESPACE }} \
+          --type=json \
+          -p='[{"op": "replace", "path": "/metadata/annotations/nginx.ingress.kubernetes.io~1canary-weight", "value": "0"}]'
+
+        # Scale down canary deployments
+        kubectl scale deployment tracertm-api-canary -n ${{ env.NAMESPACE }} --replicas=0
+        kubectl scale deployment tracertm-backend-canary -n ${{ env.NAMESPACE }} --replicas=0
+
+    - name: Verify promotion
+      run: |
+        export KUBECONFIG=kubeconfig
+
+        # Wait for stable to be fully ready
+        sleep 30
+
+        # Check stable deployment health
+        kubectl rollout status deployment/tracertm-api -n ${{ env.NAMESPACE }} --timeout=1m
+        kubectl rollout status deployment/tracertm-backend -n ${{ env.NAMESPACE }} --timeout=1m
+
+        echo "✓ Canary promoted to stable successfully!"
+
+    - name: Create deployment summary
+      run: |
+        echo "## Canary Deployment Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "✅ **Deployment Successful**" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "- **Image Tag**: ${{ inputs.image_tag }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Namespace**: ${{ env.NAMESPACE }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Stage 1 (10%)**: ✅ Passed" >> $GITHUB_STEP_SUMMARY
+        echo "- **Stage 2 (50%)**: ✅ Passed" >> $GITHUB_STEP_SUMMARY
+        echo "- **Promotion**: ✅ Complete" >> $GITHUB_STEP_SUMMARY
+
+  # Rollback on failure
+  rollback:
+    name: Rollback Canary
+    runs-on: ubuntu-latest
+    needs: [deploy-canary, canary-stage1, canary-stage2]
+    if: ${{ failure() }}
+    timeout-minutes: 5
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure kubectl
+      run: |
+        echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" | base64 -d > kubeconfig
+        export KUBECONFIG=kubeconfig
+
+    - name: Execute rollback
+      run: |
+        export KUBECONFIG=kubeconfig
+        export NAMESPACE=${{ env.NAMESPACE }}
+        bash scripts/canary/canary-rollback.sh
+
+    - name: Verify rollback
+      run: |
+        export KUBECONFIG=kubeconfig
+
+        # Ensure canary traffic is 0
+        WEIGHT=$(kubectl get ingress tracertm-ingress-canary -n ${{ env.NAMESPACE }} \
+          -o jsonpath='{.metadata.annotations.nginx\.ingress\.kubernetes\.io/canary-weight}')
+
+        if [ "$WEIGHT" != "0" ]; then
+          echo "Warning: Canary weight is $WEIGHT (expected 0)"
+        fi
+
+        # Verify stable is healthy
+        kubectl rollout status deployment/tracertm-api -n ${{ env.NAMESPACE }} --timeout=1m
+        kubectl rollout status deployment/tracertm-backend -n ${{ env.NAMESPACE }} --timeout=1m
+
+        echo "✓ Rollback complete - all traffic on stable"
+
+    - name: Create rollback summary
+      if: always()
+      run: |
+        echo "## Canary Deployment Failed - Rolled Back" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "❌ **Deployment Failed and Rolled Back**" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "- **Image Tag**: ${{ inputs.image_tag }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Namespace**: ${{ env.NAMESPACE }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Rollback**: ✅ Complete" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "All traffic has been restored to the stable version." >> $GITHUB_STEP_SUMMARY
+        echo "Review logs for failure details." >> $GITHUB_STEP_SUMMARY

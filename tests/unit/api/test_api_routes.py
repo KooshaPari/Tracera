@@ -5,20 +5,13 @@ Tests all HTTP methods, request validation, response formats, error handling,
 and authentication/authorization for all API endpoints.
 """
 
-import json
-import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
 from datetime import datetime
+from unittest.mock import AsyncMock, MagicMock, patch
 
-from fastapi import HTTPException
+import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from tracertm.api.main import app, auth_guard, ensure_write_permission
-from tracertm.models.item import Item
-from tracertm.models.link import Link
-from tracertm.models.project import Project
-
+from tracertm.api.main import app
 
 # Use TestClient for synchronous testing
 client = TestClient(app)
@@ -112,10 +105,19 @@ class TestItemsEndpoints:
         mock_session = AsyncMock()
         mock_db.return_value = mock_session
 
-        mock_items = [MagicMock(id=f"item{i}", project_id="proj1", title=f"Item {i}",
-                                view="FEATURE", item_type="feature", status="todo",
-                                priority="medium", created_at=datetime.now())
-                      for i in range(10)]
+        mock_items = [
+            MagicMock(
+                id=f"item{i}",
+                project_id="proj1",
+                title=f"Item {i}",
+                view="FEATURE",
+                item_type="feature",
+                status="todo",
+                priority="medium",
+                created_at=datetime.now(),
+            )
+            for i in range(10)
+        ]
 
         mock_result = AsyncMock()
         mock_result.scalar.return_value = 10
@@ -618,9 +620,7 @@ class TestAnalysisEndpoints:
             mock_service.find_shortest_path.return_value = mock_result
             mock_service_class.return_value = mock_service
 
-            response = client.get(
-                "/api/v1/analysis/shortest-path?project_id=proj1&source_id=item1&target_id=item4"
-            )
+            response = client.get("/api/v1/analysis/shortest-path?project_id=proj1&source_id=item1&target_id=item4")
             assert response.status_code == 200
             data = response.json()
             assert data["exists"] is True
@@ -647,9 +647,7 @@ class TestAnalysisEndpoints:
             mock_service.find_shortest_path.return_value = mock_result
             mock_service_class.return_value = mock_service
 
-            response = client.get(
-                "/api/v1/analysis/shortest-path?project_id=proj1&source_id=item1&target_id=item999"
-            )
+            response = client.get("/api/v1/analysis/shortest-path?project_id=proj1&source_id=item1&target_id=item999")
             assert response.status_code == 200
             data = response.json()
             assert data["exists"] is False

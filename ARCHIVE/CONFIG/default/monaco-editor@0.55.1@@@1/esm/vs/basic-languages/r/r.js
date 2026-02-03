@@ -145,7 +145,7 @@ const language = {
     root: [
       { include: "@numbers" },
       { include: "@strings" },
-      [/[{}\[\]()]/, "@brackets"],
+      [/[{}[\]()]/, "@brackets"],
       { include: "@operators" },
       [/#'$/, "comment.doc"],
       [/#'/, "comment.doc", "@roxygen"],
@@ -190,7 +190,7 @@ const language = {
     // Recognize positives, negatives, decimals, imaginaries, and scientific notation
     numbers: [
       [/0[xX][0-9a-fA-F]+/, "number.hex"],
-      [/-?(\d*\.)?\d+([eE][+\-]?\d+)?/, "number"]
+      [/-?(\d*\.)?\d+([eE][+-]?\d+)?/, "number"]
     ],
     // Recognize operators
     operators: [

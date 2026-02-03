@@ -4,8 +4,8 @@ Integration tests for Epic 7: Search and Filters (FR60-FR67).
 Tests full-text search, filtering, and saved queries.
 """
 
-
 import pytest
+
 pytestmark = pytest.mark.integration
 from typer.testing import CliRunner
 

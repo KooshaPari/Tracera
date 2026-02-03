@@ -12,7 +12,6 @@ import httpx
 from tenacity import (
     retry,
     retry_if_exception,
-    retry_if_exception_type,
     stop_after_attempt,
     wait_exponential,
 )
@@ -29,11 +28,7 @@ class TraceRTMHttpError(RuntimeError):
 
 
 def _default_base_url() -> str:
-    return (
-        os.getenv("TRACERTM_API_URL")
-        or os.getenv("PYTHON_BACKEND_URL")
-        or "http://127.0.0.1:4000"
-    )
+    return os.getenv("TRACERTM_API_URL") or os.getenv("PYTHON_BACKEND_URL") or "http://127.0.0.1:4000"
 
 
 def _is_retryable_status(status: int) -> bool:
@@ -80,10 +75,9 @@ class TraceRTMHttpClient:
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, min=1, max=10),
         retry=retry_if_exception(
-            lambda e: isinstance(e, (httpx.NetworkError, httpx.TimeoutException))
-            or (
-                isinstance(e, TraceRTMHttpError)
-                and _is_retryable_status(e.status)
+            lambda e: (
+                isinstance(e, (httpx.NetworkError, httpx.TimeoutException))
+                or (isinstance(e, TraceRTMHttpError) and _is_retryable_status(e.status))
             )
         ),
         reraise=True,

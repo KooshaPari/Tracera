@@ -5,5 +5,5 @@ type FlattenMap = {
     (map: Ro<SectionedSourceMapInput>, mapUrl?: string | null): TraceMap;
 };
 export declare const FlattenMap: FlattenMap;
-export {};
+
 //# sourceMappingURL=flatten-map.d.ts.map

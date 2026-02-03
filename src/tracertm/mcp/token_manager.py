@@ -11,11 +11,9 @@ from __future__ import annotations
 
 import json
 import logging
-import os
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -25,12 +23,12 @@ class TokenInfo:
     """Token information."""
 
     access_token: str
-    token_type: str = "bearer"
-    expires_at: Optional[int] = None
-    refresh_token: Optional[str] = None
-    scopes: list[str] = None
-    user_id: Optional[str] = None
-    email: Optional[str] = None
+    token_type: str = "bearer"  # noqa: S105
+    expires_at: int | None = None
+    refresh_token: str | None = None
+    scopes: list[str] | None = None
+    user_id: str | None = None
+    email: str | None = None
 
     def __post_init__(self):
         if self.scopes is None:
@@ -73,17 +71,17 @@ class TokenInfo:
 
     def has_scope(self, scope: str) -> bool:
         """Check if token has a specific scope."""
-        return scope in self.scopes
+        return scope in (self.scopes or [])
 
     def has_scopes(self, scopes: list[str]) -> bool:
         """Check if token has all scopes."""
-        return all(s in self.scopes for s in scopes)
+        return all(s in (self.scopes or []) for s in scopes)
 
 
 class TokenManager:
     """Manages tokens for MCP operations."""
 
-    def __init__(self, config_dir: Optional[Path] = None):
+    def __init__(self, config_dir: Path | None = None):
         """Initialize token manager.
 
         Args:
@@ -92,7 +90,7 @@ class TokenManager:
         self.config_dir = config_dir or (Path.home() / ".tracertm" / "mcp")
         self.config_dir.mkdir(parents=True, exist_ok=True)
         self._token_file = self.config_dir / "token.json"
-        self._current_token: Optional[TokenInfo] = None
+        self._current_token: TokenInfo | None = None
 
     def save_token(self, token: TokenInfo) -> None:
         """Save token to storage.
@@ -110,7 +108,7 @@ class TokenManager:
             logger.error(f"Failed to save token: {e}")
             raise
 
-    def load_token(self) -> Optional[TokenInfo]:
+    def load_token(self) -> TokenInfo | None:
         """Load token from storage.
 
         Returns:
@@ -131,7 +129,7 @@ class TokenManager:
             logger.warning(f"Failed to load token: {e}")
             return None
 
-    def get_valid_token(self) -> Optional[str]:
+    def get_valid_token(self) -> str | None:
         """Get a valid (non-expired) token.
 
         Returns:

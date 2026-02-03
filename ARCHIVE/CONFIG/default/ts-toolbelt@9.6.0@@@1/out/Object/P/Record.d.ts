@@ -50,4 +50,4 @@ export declare type Record<Path extends List<Key>, A, modx extends Modx = ['!', 
         'W': Record_OW<Path, A>;
     };
 }[modx[0]][modx[1]];
-export {};
+

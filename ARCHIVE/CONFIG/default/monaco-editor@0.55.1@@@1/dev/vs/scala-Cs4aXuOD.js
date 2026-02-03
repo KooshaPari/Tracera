@@ -7,7 +7,7 @@ define("vs/scala-Cs4aXuOD", ["exports"], (function(exports) {
      * unary_<op> is allowed as an identifier.
      * <name>_= is allowed as an identifier.
      */
-    wordPattern: /(unary_[@~!#%^&*()\-=+\\|:<>\/?]+)|([a-zA-Z_$][\w$]*?_=)|(`[^`]+`)|([a-zA-Z_$][\w$]*)/g,
+    wordPattern: /(unary_[@~!#%^&*()\-=+\\|:<>/?]+)|([a-zA-Z_$][\w$]*?_=)|(`[^`]+`)|([a-zA-Z_$][\w$]*)/g,
     comments: {
       lineComment: "//",
       blockComment: ["/*", "*/"]
@@ -96,7 +96,7 @@ define("vs/scala-Cs4aXuOD", ["exports"], (function(exports) {
     name: /(?:[a-z_$][\w$]*|`[^`]+`)/,
     type: /(?:[A-Z][\w$]*)/,
     // we include these common regular expressions
-    symbols: /[=><!~?:&|+\-*\/^\\%@#]+/,
+    symbols: /[=><!~?:&|+\-*/^\\%@#]+/,
     digits: /\d+(_+\d+)*/,
     hexdigits: /[[0-9a-fA-F]+(_+[0-9a-fA-F]+)*/,
     // C# style strings
@@ -115,8 +115,8 @@ define("vs/scala-Cs4aXuOD", ["exports"], (function(exports) {
         [/"""/, { token: "string.quote", bracket: "@open", next: "@stringt" }],
         [/"/, { token: "string.quote", bracket: "@open", next: "@string" }],
         // numbers
-        [/(@digits)[eE]([\-+]?(@digits))?[fFdD]?/, "number.float", "@allowMethod"],
-        [/(@digits)\.(@digits)([eE][\-+]?(@digits))?[fFdD]?/, "number.float", "@allowMethod"],
+        [/(@digits)[eE]([-+]?(@digits))?[fFdD]?/, "number.float", "@allowMethod"],
+        [/(@digits)\.(@digits)([eE][-+]?(@digits))?[fFdD]?/, "number.float", "@allowMethod"],
         [/0[xX](@hexdigits)[Ll]?/, "number.hex", "@allowMethod"],
         [/(@digits)[fFdD]/, "number.float", "@allowMethod"],
         [/(@digits)[lL]?/, "number", "@allowMethod"],
@@ -164,10 +164,10 @@ define("vs/scala-Cs4aXuOD", ["exports"], (function(exports) {
         [/\[/, "operator.square"],
         [/](?!\s*(?:va[rl]|def|type)\b)/, "operator.square", "@allowMethod"],
         [/]/, "operator.square"],
-        [/([=-]>|<-|>:|<:|:>|<%)(?=[\s\w()[\]{},\."'`])/, "keyword"],
+        [/([=-]>|<-|>:|<:|:>|<%)(?=[\s\w()[\]{},."'`])/, "keyword"],
         [/@symbols/, "operator"],
         // delimiter: after number because of .\d floats
-        [/[;,\.]/, "delimiter"],
+        [/[;,.]/, "delimiter"],
         // symbols
         [/'[a-zA-Z$][\w$]*(?!')/, "attribute.name"],
         // characters
@@ -184,7 +184,7 @@ define("vs/scala-Cs4aXuOD", ["exports"], (function(exports) {
         [/@name|@type/, "type"],
         [/[(){}]/, "@brackets"],
         [/[[\]]/, "operator.square"],
-        [/[\.,]/, "delimiter"]
+        [/[.,]/, "delimiter"]
       ],
       allowMethod: [
         [/^|$/, "", "@pop"],
@@ -205,11 +205,11 @@ define("vs/scala-Cs4aXuOD", ["exports"], (function(exports) {
         ["", "", "@pop"]
       ],
       comment: [
-        [/[^\/*]+/, "comment"],
+        [/[^/*]+/, "comment"],
         [/\/\*/, "comment", "@push"],
         // nested comment
         [/\*\//, "comment", "@pop"],
-        [/[\/*]/, "comment"]
+        [/[/*]/, "comment"]
       ],
       case: [
         [/\b_\*/, "key"],
@@ -272,11 +272,11 @@ define("vs/scala-Cs4aXuOD", ["exports"], (function(exports) {
         [/\$\{/, "operator", "@interp"],
         [/%%/, "string"],
         [
-          /(%)([\-#+ 0,(])(\d+|\.\d+|\d+\.\d+)(@fstring_conv)/,
+          /(%)([-#+ 0,(])(\d+|\.\d+|\d+\.\d+)(@fstring_conv)/,
           ["metatag", "keyword.modifier", "number", "metatag"]
         ],
         [/(%)(\d+|\.\d+|\d+\.\d+)(@fstring_conv)/, ["metatag", "number", "metatag"]],
-        [/(%)([\-#+ 0,(])(@fstring_conv)/, ["metatag", "keyword.modifier", "metatag"]],
+        [/(%)([-#+ 0,(])(@fstring_conv)/, ["metatag", "keyword.modifier", "metatag"]],
         [/(%)(@fstring_conv)/, ["metatag", "metatag"]],
         [/./, "string"]
       ],
@@ -296,11 +296,11 @@ define("vs/scala-Cs4aXuOD", ["exports"], (function(exports) {
         [/\$\{/, "operator", "@interp"],
         [/%%/, "string"],
         [
-          /(%)([\-#+ 0,(])(\d+|\.\d+|\d+\.\d+)(@fstring_conv)/,
+          /(%)([-#+ 0,(])(\d+|\.\d+|\d+\.\d+)(@fstring_conv)/,
           ["metatag", "keyword.modifier", "number", "metatag"]
         ],
         [/(%)(\d+|\.\d+|\d+\.\d+)(@fstring_conv)/, ["metatag", "number", "metatag"]],
-        [/(%)([\-#+ 0,(])(@fstring_conv)/, ["metatag", "keyword.modifier", "metatag"]],
+        [/(%)([-#+ 0,(])(@fstring_conv)/, ["metatag", "keyword.modifier", "metatag"]],
         [/(%)(@fstring_conv)/, ["metatag", "metatag"]],
         [/./, "string"]
       ],

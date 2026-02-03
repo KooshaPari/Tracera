@@ -7,8 +7,8 @@ Tests programmatic access for AI agents.
 import json
 
 import pytest
+
 pytestmark = pytest.mark.integration
-from sqlalchemy.orm.exc import StaleDataError
 
 from tracertm.api.client import TraceRTMClient
 
@@ -22,6 +22,7 @@ def temp_project_setup(tmp_path, monkeypatch):
 
     # Initialize config
     from tracertm.config.manager import ConfigManager
+
     config_manager = ConfigManager()
 
     db_path = tmp_path / "test.db"
@@ -60,7 +61,7 @@ def test_api_client_initialization(temp_project_setup):
 def test_register_agent(temp_project_setup):
     """Test agent registration (FR41)."""
     client = TraceRTMClient()
-    agent_id = client.register_agent("Test Agent", "ai_agent", {"capabilities": ["code", "test"]})
+    agent_id = client.register_agent("Test Agent", capabilities=["code", "test"], agent_type="ai_agent")
 
     assert agent_id is not None
     assert client.agent_id == agent_id

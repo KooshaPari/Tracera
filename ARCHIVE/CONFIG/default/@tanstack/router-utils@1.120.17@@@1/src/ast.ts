@@ -14,15 +14,13 @@ export type ParseAstOptions = {
 export function parseAst(
   opts: ParseAstOptions,
 ): ParseResult<_babel_types.File> {
-  return parse(opts.code, {
-    plugins: ['jsx', 'typescript'],
-    sourceType: 'module',
-    ...{
-      root: opts.root,
-      filename: opts.filename,
-      env: opts.env,
-    },
-  })
+  return parse(opts.code, ({
+	plugins: ['jsx', 'typescript'],
+	sourceType: 'module',
+	root: opts.root,
+	filename: opts.filename,
+	env: opts.env
+}))
 }
 
 let generate = _generate

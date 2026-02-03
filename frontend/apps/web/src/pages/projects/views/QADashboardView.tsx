@@ -614,9 +614,9 @@ export function QADashboardView({ projectId }: QADashboardViewProps) {
 															className={
 																run.passRate >= 90
 																	? "text-green-600"
-																	: run.passRate >= 70
+																	: (run.passRate >= 70
 																		? "text-yellow-600"
-																		: "text-red-600"
+																		: "text-red-600")
 															}
 														>
 															{run.passRate.toFixed(1)}%

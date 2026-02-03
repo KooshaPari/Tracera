@@ -12,19 +12,22 @@ Tests cover:
 - Error handling
 """
 
-import asyncio
+import tempfile
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from typing import Any, cast
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
 try:
-    from textual.widgets import DataTable, Footer, Header, Static, Tree
+    from textual.widgets import Footer, Header  # type: ignore[unresolved-import,possibly-missing-import]
+
     TEXTUAL_AVAILABLE = True
 except ImportError:
     TEXTUAL_AVAILABLE = False
 
-from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp, TEXTUAL_AVAILABLE as APP_TEXTUAL
+from tracertm.tui.apps.dashboard_v2 import TEXTUAL_AVAILABLE as APP_TEXTUAL
+from tracertm.tui.apps.dashboard_v2 import EnhancedDashboardApp  # type: ignore[possibly-missing-import]
 
 
 @pytest.mark.skipif(not TEXTUAL_AVAILABLE, reason="Textual not installed")
@@ -33,18 +36,18 @@ class TestEnhancedDashboardAppInitialization:
 
     def test_app_creation(self):
         """Test app can be created."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         assert app is not None
 
     def test_app_with_base_dir(self):
         """Test app with custom base directory."""
-        base_dir = Path("/tmp/test")
+        base_dir = Path(tempfile.gettempdir()) / "test"
         app = EnhancedDashboardApp(base_dir=base_dir)
         assert app is not None
 
     def test_app_attributes_initialized(self):
         """Test app attributes are initialized."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         assert hasattr(app, "config_manager")
         assert hasattr(app, "storage_adapter")
         assert hasattr(app, "current_view")
@@ -52,12 +55,12 @@ class TestEnhancedDashboardAppInitialization:
 
     def test_storage_adapter_created(self):
         """Test storage adapter is created."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         assert app.storage_adapter is not None
 
     def test_sync_state_initialized(self):
         """Test sync state tracking is initialized."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         assert hasattr(app, "_is_syncing")
         assert app._is_syncing is False
         assert hasattr(app, "_sync_timer")
@@ -70,27 +73,27 @@ class TestEnhancedDashboardAppComposition:
 
     def test_compose_returns_widgets(self):
         """Test compose returns widgets."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         widgets = list(app.compose())
         assert len(widgets) > 0
 
     def test_has_header(self):
         """Test app has header."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         widgets = list(app.compose())
         has_header = any(isinstance(w, Header) for w in widgets)
         assert has_header
 
     def test_has_footer(self):
         """Test app has footer."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         widgets = list(app.compose())
         has_footer = any(isinstance(w, Footer) for w in widgets)
         assert has_footer
 
     def test_compose_structure(self):
         """Test compose creates proper structure."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         widgets = list(app.compose())
         # Should have Header, containers, Footer
         assert len(widgets) >= 3
@@ -102,43 +105,43 @@ class TestEnhancedDashboardAppBindings:
 
     def test_has_bindings(self):
         """Test app has keyboard bindings."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         assert hasattr(app, "BINDINGS")
-        assert len(app.BINDINGS) > 0
+        assert len(cast(list, app.BINDINGS)) > 0
 
     def test_quit_binding(self):
         """Test quit binding exists."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         bindings = [b.key for b in app.BINDINGS]
         assert "q" in bindings
 
     def test_refresh_binding(self):
         """Test refresh binding exists."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         bindings = [b.key for b in app.BINDINGS]
         assert "r" in bindings
 
     def test_sync_binding(self):
         """Test sync binding exists."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         bindings = [b.key for b in app.BINDINGS]
         assert "ctrl+s" in bindings
 
     def test_view_switch_binding(self):
         """Test view switch binding exists."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         bindings = [b.key for b in app.BINDINGS]
         assert "v" in bindings
 
     def test_conflicts_binding(self):
         """Test conflicts binding exists."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         bindings = [b.key for b in app.BINDINGS]
         assert "c" in bindings
 
     def test_help_binding(self):
         """Test help binding exists."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         bindings = [b.key for b in app.BINDINGS]
         assert "?" in bindings
 
@@ -149,12 +152,12 @@ class TestEnhancedDashboardAppViews:
 
     def test_default_view(self):
         """Test default view is set."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         assert app.current_view == "epic"
 
     def test_view_types(self):
         """Test expected view types."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         expected_views = ["epic", "story", "test", "task"]
         # App should support these views
         assert app.current_view in expected_views
@@ -163,7 +166,7 @@ class TestEnhancedDashboardAppViews:
     @patch.object(EnhancedDashboardApp, "refresh_data")
     def test_switch_view_action(self, mock_refresh, mock_query):
         """Test switching views."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         app.current_view = "epic"
 
         # Mock the Static widget
@@ -178,7 +181,7 @@ class TestEnhancedDashboardAppViews:
 
     def test_view_cycle(self):
         """Test view cycling."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         views = ["epic", "story", "test", "task"]
 
         with patch.object(app, "refresh_data"), patch.object(app, "query_one"):
@@ -193,19 +196,19 @@ class TestEnhancedDashboardAppStorageIntegration:
 
     def test_storage_adapter_exists(self):
         """Test storage adapter is created."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         assert app.storage_adapter is not None
 
     @patch("tracertm.tui.apps.dashboard_v2.StorageAdapter")
     def test_storage_adapter_initialization(self, mock_adapter):
         """Test storage adapter is initialized with base_dir."""
-        base_dir = Path("/tmp/test")
-        app = EnhancedDashboardApp(base_dir=base_dir)
+        base_dir = Path(tempfile.gettempdir()) / "test"
+        EnhancedDashboardApp(base_dir=base_dir)
         mock_adapter.assert_called_once()
 
     def test_setup_storage_callbacks(self):
         """Test storage callbacks are setup."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         # Mock storage adapter
         app.storage_adapter = Mock()
         app.storage_adapter.on_sync_status_change = Mock()
@@ -226,12 +229,9 @@ class TestEnhancedDashboardAppSyncOperations:
     @pytest.mark.asyncio
     async def test_sync_action_success(self):
         """Test successful sync action."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         app.storage_adapter = Mock()
-        app.storage_adapter.trigger_sync = AsyncMock(return_value={
-            "success": True,
-            "entities_synced": 10
-        })
+        app.storage_adapter.trigger_sync = AsyncMock(return_value={"success": True, "entities_synced": 10})
         app.notify = Mock()
         app.refresh_data = Mock()
 
@@ -243,12 +243,9 @@ class TestEnhancedDashboardAppSyncOperations:
     @pytest.mark.asyncio
     async def test_sync_action_failure(self):
         """Test failed sync action."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         app.storage_adapter = Mock()
-        app.storage_adapter.trigger_sync = AsyncMock(return_value={
-            "success": False,
-            "error": "Connection failed"
-        })
+        app.storage_adapter.trigger_sync = AsyncMock(return_value={"success": False, "error": "Connection failed"})
         app.notify = Mock()
 
         await app.action_sync()
@@ -258,7 +255,7 @@ class TestEnhancedDashboardAppSyncOperations:
     @pytest.mark.asyncio
     async def test_sync_already_in_progress(self):
         """Test sync when already syncing."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         app._is_syncing = True
         app.notify = Mock()
         app.storage_adapter = Mock()
@@ -272,7 +269,7 @@ class TestEnhancedDashboardAppSyncOperations:
     @pytest.mark.asyncio
     async def test_sync_error_handling(self):
         """Test sync error handling."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         app.storage_adapter = Mock()
         app.storage_adapter.trigger_sync = AsyncMock(side_effect=Exception("Test error"))
         app.notify = Mock()
@@ -291,7 +288,7 @@ class TestEnhancedDashboardAppActions:
     @patch.object(EnhancedDashboardApp, "notify")
     def test_action_refresh(self, mock_notify, mock_refresh):
         """Test refresh action."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         app.action_refresh()
 
         mock_refresh.assert_called_once()
@@ -300,7 +297,7 @@ class TestEnhancedDashboardAppActions:
     @patch.object(EnhancedDashboardApp, "notify")
     def test_action_search(self, mock_notify):
         """Test search action."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         app.action_search()
 
         # Search not yet implemented
@@ -309,7 +306,7 @@ class TestEnhancedDashboardAppActions:
     @patch.object(EnhancedDashboardApp, "notify")
     def test_action_help(self, mock_notify):
         """Test help action."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         app.action_help()
 
         mock_notify.assert_called_once()
@@ -318,11 +315,9 @@ class TestEnhancedDashboardAppActions:
     @patch.object(EnhancedDashboardApp, "notify")
     def test_action_show_conflicts_with_conflicts(self, mock_notify, mock_push):
         """Test show conflicts when conflicts exist."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         app.storage_adapter = Mock()
-        app.storage_adapter.get_unresolved_conflicts = Mock(return_value=[
-            Mock(entity_id="123", entity_type="item")
-        ])
+        app.storage_adapter.get_unresolved_conflicts = Mock(return_value=[Mock(entity_id="123", entity_type="item")])
 
         app.action_show_conflicts()
 
@@ -331,7 +326,7 @@ class TestEnhancedDashboardAppActions:
     @patch.object(EnhancedDashboardApp, "notify")
     def test_action_show_conflicts_without_conflicts(self, mock_notify):
         """Test show conflicts when no conflicts."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         app.storage_adapter = Mock()
         app.storage_adapter.get_unresolved_conflicts = Mock(return_value=[])
 
@@ -348,7 +343,7 @@ class TestEnhancedDashboardAppDataRefresh:
     @patch.object(EnhancedDashboardApp, "refresh_items")
     def test_refresh_data_with_project(self, mock_items, mock_stats):
         """Test refresh data with existing project."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         app.project_name = "test-project"
         app.storage_adapter = Mock()
 
@@ -365,7 +360,7 @@ class TestEnhancedDashboardAppDataRefresh:
     @patch.object(EnhancedDashboardApp, "refresh_items")
     def test_refresh_data_creates_project(self, mock_items, mock_stats):
         """Test refresh data creates project if missing."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         app.project_name = "test-project"
         app.storage_adapter = Mock()
 
@@ -379,7 +374,7 @@ class TestEnhancedDashboardAppDataRefresh:
 
     def test_refresh_data_without_project(self):
         """Test refresh data without project name."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         app.project_name = None
 
         # Should return early without error
@@ -396,7 +391,7 @@ class TestEnhancedDashboardAppCallbacks:
         """Test sync status change callback for success."""
         from tracertm.storage.sync_engine import SyncStatus
 
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         state = Mock()
         state.status = SyncStatus.SUCCESS
         state.synced_entities = 10
@@ -412,7 +407,7 @@ class TestEnhancedDashboardAppCallbacks:
         """Test sync status change callback for error."""
         from tracertm.storage.sync_engine import SyncStatus
 
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         state = Mock()
         state.status = SyncStatus.ERROR
         state.last_error = "Test error"
@@ -426,7 +421,7 @@ class TestEnhancedDashboardAppCallbacks:
     @patch.object(EnhancedDashboardApp, "notify")
     def test_on_conflict_detected(self, mock_notify, mock_call_later):
         """Test conflict detected callback."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         conflict = Mock()
         conflict.entity_type = "item"
         conflict.entity_id = "123456789012"
@@ -439,7 +434,7 @@ class TestEnhancedDashboardAppCallbacks:
     @patch.object(EnhancedDashboardApp, "call_later")
     def test_on_item_change(self, mock_call_later):
         """Test item change callback."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         item_id = "test-item-id"
 
         app._on_item_change(item_id)
@@ -455,7 +450,7 @@ class TestEnhancedDashboardAppTreeEvents:
     @patch.object(EnhancedDashboardApp, "query_one")
     def test_on_tree_node_selected(self, mock_query, mock_refresh):
         """Test tree node selection."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         app.project_name = "test-project"
         app.storage_adapter = Mock()
         app.storage_adapter.get_project = Mock(return_value=Mock())
@@ -476,7 +471,7 @@ class TestEnhancedDashboardAppTreeEvents:
 
     def test_on_tree_node_selected_without_data(self):
         """Test tree node selection without data."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
 
         # Mock event without data
         event = Mock()
@@ -493,24 +488,24 @@ class TestEnhancedDashboardAppCSS:
 
     def test_has_css(self):
         """Test app has CSS defined."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         assert hasattr(app, "CSS")
         assert isinstance(app.CSS, str)
         assert len(app.CSS) > 0
 
     def test_css_defines_sidebar(self):
         """Test CSS defines sidebar."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         assert "#sidebar" in app.CSS
 
     def test_css_defines_main(self):
         """Test CSS defines main panel."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         assert "#main" in app.CSS
 
     def test_css_defines_sync_status(self):
         """Test CSS defines sync status panel."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         assert "#sync-status-panel" in app.CSS
 
 
@@ -525,7 +520,7 @@ class TestEnhancedDashboardAppEdgeCases:
         mock_config_instance.get = Mock(return_value=None)
         mock_config.return_value = mock_config_instance
 
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         app.exit = Mock()
 
         app.load_project()
@@ -535,7 +530,7 @@ class TestEnhancedDashboardAppEdgeCases:
 
     def test_unmount_cleanup(self):
         """Test cleanup on unmount."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         app._sync_timer = Mock()
         app._sync_timer.stop = Mock()
 
@@ -545,7 +540,7 @@ class TestEnhancedDashboardAppEdgeCases:
 
     def test_unmount_without_timer(self):
         """Test unmount without sync timer."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         app._sync_timer = None
 
         # Should not crash
@@ -561,7 +556,7 @@ class TestEnhancedDashboardAppSyncStatusUpdates:
         """Test sync status update."""
         from tracertm.storage.sync_engine import SyncStatus
 
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         app.storage_adapter = Mock()
 
         state = Mock()
@@ -585,7 +580,7 @@ class TestEnhancedDashboardAppSyncStatusUpdates:
     @patch.object(EnhancedDashboardApp, "set_interval")
     def test_start_sync_status_updates(self, mock_interval):
         """Test starting periodic sync status updates."""
-        app = EnhancedDashboardApp()
+        app = cast(Any, EnhancedDashboardApp())
         app.start_sync_status_updates()
 
         mock_interval.assert_called_once()
@@ -598,7 +593,7 @@ class TestEnhancedDashboardAppPlaceholder:
     def test_placeholder_raises_import_error(self):
         """Test placeholder raises ImportError."""
         with pytest.raises(ImportError):
-            app = EnhancedDashboardApp()
+            EnhancedDashboardApp()
 
 
 class TestEnhancedDashboardAppAvailability:

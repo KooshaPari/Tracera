@@ -6,6 +6,7 @@
 
 import { useState } from "react";
 import {
+	type WorkerStatus,
 	useDataTransformWorker,
 	useExportImportWorker,
 	useGraphLayoutWorker,
@@ -13,37 +14,84 @@ import {
 	useWorkerSupport,
 } from "@/hooks/useWorker";
 
-export function GraphLayoutExample() {
+const DEFAULT_NODE_SIZE = 50;
+const DIRECTION_TB = "TB";
+const LAYOUT_TYPE_DAGRE = "dagre";
+const MAX_DISPLAY_ITEMS = 10;
+const CATEGORY_COUNT = 3;
+const DEFAULT_WEIGHT = 1;
+const TITLE_WEIGHT_MULTIPLIER = 2;
+const MAX_DISTANCE = 2;
+const DEFAULT_CATEGORY_LIST = ["A", "B", "C"] as const;
+
+const defaultNode = { height: DEFAULT_NODE_SIZE, width: DEFAULT_NODE_SIZE * 2 };
+
+const defaultNodes = [
+	{ ...defaultNode, id: "A" },
+	{ ...defaultNode, id: "B" },
+	{ ...defaultNode, id: "C" },
+];
+
+const defaultEdges = [
+	{ id: "AB", source: "A", target: "B" },
+	{ id: "BC", source: "B", target: "C" },
+];
+
+const layoutOptions = { direction: DIRECTION_TB, type: LAYOUT_TYPE_DAGRE };
+
+const indexFieldWeights = {
+	content: DEFAULT_WEIGHT,
+	title: TITLE_WEIGHT_MULTIPLIER,
+};
+
+function GraphLayoutExample() {
 	const { worker, status, createProgressCallback } = useGraphLayoutWorker();
-	const [layoutResult, setLayoutResult] = useState<any>(null);
+	const [layoutResult, setLayoutResult] = useState<unknown>(null);
 
 	const handleComputeLayout = async () => {
 		if (!worker) {
 			return;
 		}
 
-		const nodes = [
-			{ height: 50, id: "A", width: 100 },
-			{ height: 50, id: "B", width: 100 },
-			{ height: 50, id: "C", width: 100 },
-		];
-
-		const edges = [
-			{ id: "AB", source: "A", target: "B" },
-			{ id: "BC", source: "B", target: "C" },
-		];
-
 		const onProgress = createProgressCallback();
 
 		try {
 			const result = await worker.computeLayout(
-				nodes,
-				edges,
-				{ direction: "TB", type: "dagre" },
+				defaultNodes,
+				defaultEdges,
+				layoutOptions,
 				onProgress,
 			);
 			setLayoutResult(result);
-		} catch (error) {}
+		} catch {
+			// Error handling is managed through status.error
+		}
+	};
+
+	const renderStatus = () => {
+		if (status.error) {
+			return (
+				<div className="text-red-500">
+					Error: {status.error.message}
+				</div>
+			);
+		}
+		if (status.progress > 0) {
+			return (
+				<div className="mt-2">
+					<div className="text-sm mb-1">
+						Progress: {status.progress.toFixed(0)}%
+					</div>
+					<div className="w-full bg-gray-200 rounded">
+						<div
+							className="bg-blue-500 h-2 rounded transition-all"
+							style={{ width: `${status.progress}%` }}
+						/>
+					</div>
+				</div>
+			);
+		}
+		return null;
 	};
 
 	return (
@@ -51,29 +99,14 @@ export function GraphLayoutExample() {
 			<h2 className="text-lg font-bold mb-4">Graph Layout Worker</h2>
 
 			<div className="mb-4">
-				<div>Status: {status.isReady ? "✅ Ready" : "⏳ Loading..."}</div>
-				{status.error && (
-					<div className="text-red-500">Error: {status.error.message}</div>
-				)}
-				{status.progress > 0 && (
-					<div className="mt-2">
-						<div className="text-sm mb-1">
-							Progress: {status.progress.toFixed(0)}%
-						</div>
-						<div className="w-full bg-gray-200 rounded">
-							<div
-								className="bg-blue-500 h-2 rounded transition-all"
-								style={{ width: `${status.progress}%` }}
-							/>
-						</div>
-					</div>
-				)}
+				<div>Status: {status.isReady ? "Ready" : "Loading..."}</div>
+				{renderStatus()}
 			</div>
 
 			<button
-				onClick={handleComputeLayout}
 				disabled={!status.isReady}
 				className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+				onClick={handleComputeLayout}
 			>
 				Compute Layout
 			</button>
@@ -90,29 +123,64 @@ export function GraphLayoutExample() {
 	);
 }
 
-export function DataTransformExample() {
+const generateRandomData = (count: number) =>
+	Array.from({ length: count }, (_, i) => ({
+		category: DEFAULT_CATEGORY_LIST[i % CATEGORY_COUNT],
+		id: i,
+		value: Math.random() * 100,
+	}));
+
+const transformResultDisplay = (
+	result: Readonly<{
+		readonly aggregated: unknown;
+		readonly sorted: ReadonlyArray<{ id: number; value: number }>;
+		readonly stats: unknown;
+	}>,
+) => (
+	<div className="mt-4 space-y-2">
+		<div>
+			<h3 className="font-semibold">Statistics:</h3>
+			<pre className="mt-1 p-2 bg-gray-100 rounded text-xs">
+				{JSON.stringify(result.stats, null, 2)}
+			</pre>
+		</div>
+		<div>
+			<h3 className="font-semibold">Top 10 (sorted):</h3>
+			<ul className="mt-1 text-sm">
+				{result.sorted.map((item) => (
+					<li key={item.id}>
+						ID: {item.id}, Value: {item.value.toFixed(2)}
+					</li>
+				))}
+			</ul>
+		</div>
+		<div>
+			<h3 className="font-semibold">Aggregated by Category:</h3>
+			<pre className="mt-1 p-2 bg-gray-100 rounded text-xs">
+				{JSON.stringify(result.aggregated, null, 2)}
+			</pre>
+		</div>
+	</div>
+);
+
+function DataTransformExample() {
 	const { worker, status } = useDataTransformWorker();
-	const [result, setResult] = useState<any>(null);
+	const [result, setResult] = useState<Readonly<{
+		readonly aggregated: unknown;
+		readonly sorted: ReadonlyArray<{ id: number; value: number }>;
+		readonly stats: unknown;
+	}> | null>(null);
 
 	const handleTransform = async () => {
 		if (!worker) {
 			return;
 		}
 
-		const data = Array.from({ length: 1000 }, (_, i) => ({
-			category: ["A", "B", "C"][i % 3],
-			id: i,
-			value: Math.random() * 100,
-		}));
+		const data = generateRandomData(1000);
 
 		try {
-			// Sort data
 			const sorted = await worker.sortData(data, "value", "desc");
-
-			// Calculate statistics
 			const stats = await worker.calculateStatistics(data, "value");
-
-			// Aggregate by category
 			const aggregated = await worker.aggregateData(
 				data,
 				"category",
@@ -120,71 +188,56 @@ export function DataTransformExample() {
 				"sum",
 			);
 
-			setResult({ aggregated, sorted: sorted.slice(0, 10), stats });
-		} catch (error) {}
+			setResult({
+				aggregated,
+				sorted: sorted.slice(0, MAX_DISPLAY_ITEMS),
+				stats,
+			});
+		} catch {
+			// Error handling is managed through status.error
+		}
 	};
+
+	const isDisabled = !status.isReady;
 
 	return (
 		<div className="p-4 border rounded">
 			<h2 className="text-lg font-bold mb-4">Data Transform Worker</h2>
 
 			<button
-				onClick={handleTransform}
-				disabled={!status.isReady}
+				disabled={isDisabled}
 				className="px-4 py-2 bg-green-500 text-white rounded disabled:opacity-50"
+				onClick={handleTransform}
 			>
 				Transform 1000 Items
 			</button>
 
-			{result && (
-				<div className="mt-4 space-y-2">
-					<div>
-						<h3 className="font-semibold">Statistics:</h3>
-						<pre className="mt-1 p-2 bg-gray-100 rounded text-xs">
-							{JSON.stringify(result.stats, null, 2)}
-						</pre>
-					</div>
-					<div>
-						<h3 className="font-semibold">Top 10 (sorted):</h3>
-						<ul className="mt-1 text-sm">
-							{result.sorted.map((item: any) => (
-								<li key={item.id}>
-									ID: {item.id}, Value: {item.value.toFixed(2)}
-								</li>
-							))}
-						</ul>
-					</div>
-					<div>
-						<h3 className="font-semibold">Aggregated by Category:</h3>
-						<pre className="mt-1 p-2 bg-gray-100 rounded text-xs">
-							{JSON.stringify(result.aggregated, null, 2)}
-						</pre>
-					</div>
-				</div>
-			)}
+			{result && transformResultDisplay(result)}
 		</div>
 	);
 }
 
-export function ExportImportExample() {
+const sampleExportData = [
+	{ age: 30, id: 1, name: "Alice" },
+	{ age: 25, id: 2, name: "Bob" },
+	{ age: 35, id: 3, name: "Charlie" },
+];
+
+function ExportImportExample() {
 	const { worker, status } = useExportImportWorker();
-	const [exported, setExported] = useState<string>("");
+	const [exported, setExported] = useState("");
 
 	const handleExport = async () => {
 		if (!worker) {
 			return;
 		}
 
-		const data = [
-			{ age: 30, id: 1, name: "Alice" },
-			{ age: 25, id: 2, name: "Bob" },
-			{ age: 35, id: 3, name: "Charlie" },
-		];
-
 		try {
-			const ndjson = await worker.generateNDJSON(data);
+			const ndjson = await worker.generateNDJSON(sampleExportData);
 			setExported(ndjson);
-		} catch (error) {}
+		} catch {
+			// Error handling is managed through status.error
+		}
 	};
 
 	const handleImport = async () => {
@@ -194,9 +247,11 @@ export function ExportImportExample() {
 
 		try {
 			const data = await worker.parseNDJSON(exported);
-
-			alert(`Imported ${data.length} items`);
-		} catch (error) {}
+			// eslint-disable-next-line no-console
+			console.log(`Imported ${data.length} items`);
+		} catch {
+			// Error handling is managed through status.error
+		}
 	};
 
 	return (
@@ -205,16 +260,16 @@ export function ExportImportExample() {
 
 			<div className="space-x-2 mb-4">
 				<button
-					onClick={handleExport}
 					disabled={!status.isReady}
 					className="px-4 py-2 bg-purple-500 text-white rounded disabled:opacity-50"
+					onClick={handleExport}
 				>
 					Export to NDJSON
 				</button>
 				<button
-					onClick={handleImport}
 					disabled={!status.isReady || !exported}
 					className="px-4 py-2 bg-purple-700 text-white rounded disabled:opacity-50"
+					onClick={handleImport}
 				>
 					Import from NDJSON
 				</button>
@@ -232,49 +287,58 @@ export function ExportImportExample() {
 	);
 }
 
-export function SearchIndexExample() {
+const sampleDocuments = [
+	{
+		fields: {
+			content: "React is a JavaScript library for building user interfaces",
+			title: "Introduction to React",
+		},
+		id: "1",
+	},
+	{
+		fields: {
+			content: "Vue is a progressive framework for building user interfaces",
+			title: "Vue.js Basics",
+		},
+		id: "2",
+	},
+	{
+		fields: {
+			content: "Angular is a platform for building web applications",
+			title: "Angular Guide",
+		},
+		id: "3",
+	},
+];
+
+const defaultSearchOptions = {
+	fuzzy: true,
+	maxDistance: MAX_DISTANCE,
+};
+
+function SearchIndexExample() {
 	const { worker, status } = useSearchIndexWorker();
-	const [index, setIndex] = useState<any>(null);
+	const [index, setIndex] = useState<unknown>(null);
 	const [query, setQuery] = useState("");
-	const [results, setResults] = useState<any[]>([]);
+	const [results, setResults] = useState<ReadonlyArray<{
+		id: string;
+		score: number;
+	}>>([]);
 
 	const handleBuildIndex = async () => {
 		if (!worker) {
 			return;
 		}
 
-		const documents = [
-			{
-				fields: {
-					content: "React is a JavaScript library for building user interfaces",
-					title: "Introduction to React",
-				},
-				id: "1",
-			},
-			{
-				fields: {
-					content:
-						"Vue is a progressive framework for building user interfaces",
-					title: "Vue.js Basics",
-				},
-				id: "2",
-			},
-			{
-				fields: {
-					content: "Angular is a platform for building web applications",
-					title: "Angular Guide",
-				},
-				id: "3",
-			},
-		];
-
 		try {
-			const newIndex = await worker.buildIndex(documents, {
-				title: 2, // Title has 2x weight
-				content: 1, // Content has default weight
-			});
+			const newIndex = await worker.buildIndex(
+				sampleDocuments,
+				indexFieldWeights,
+			);
 			setIndex(newIndex);
-		} catch (error) {}
+		} catch {
+			// Error handling is managed through status.error
+		}
 	};
 
 	const handleSearch = async () => {
@@ -283,13 +347,41 @@ export function SearchIndexExample() {
 		}
 
 		try {
-			const searchResults = await worker.search(index, query, {
-				fuzzy: true,
-				maxDistance: 2,
-			});
+			const searchResults = await worker.search(
+				index,
+				query,
+				defaultSearchOptions,
+			);
 			setResults(searchResults);
-		} catch (error) {}
+		} catch {
+			// Error handling is managed through status.error
+		}
 	};
+
+	const renderSearchResults = () => {
+		if (results.length === 0) {
+			return null;
+		}
+
+		return (
+			<div className="mt-4">
+				<h3 className="font-semibold">Results:</h3>
+				<ul className="mt-2 space-y-2">
+					{results.map((result) => (
+						<li key={result.id} className="p-2 bg-gray-100 rounded">
+							<div className="font-medium">Document {result.id}</div>
+							<div className="text-sm text-gray-600">
+								Score: {result.score.toFixed(2)}
+							</div>
+						</li>
+					))}
+				</ul>
+			</div>
+		);
+	};
+
+	const isBuildDisabled = !status.isReady;
+	const isSearchDisabled = !status.isReady || !index || !query;
 
 	return (
 		<div className="p-4 border rounded">
@@ -297,9 +389,9 @@ export function SearchIndexExample() {
 
 			<div className="space-y-4">
 				<button
-					onClick={handleBuildIndex}
-					disabled={!status.isReady}
+					disabled={isBuildDisabled}
 					className="px-4 py-2 bg-orange-500 text-white rounded disabled:opacity-50"
+					onClick={handleBuildIndex}
 				>
 					Build Index
 				</button>
@@ -315,28 +407,15 @@ export function SearchIndexExample() {
 								className="flex-1 px-3 py-2 border rounded"
 							/>
 							<button
-								onClick={handleSearch}
+								disabled={isSearchDisabled}
 								className="px-4 py-2 bg-orange-700 text-white rounded"
+								onClick={handleSearch}
 							>
 								Search
 							</button>
 						</div>
 
-						{results.length > 0 && (
-							<div className="mt-4">
-								<h3 className="font-semibold">Results:</h3>
-								<ul className="mt-2 space-y-2">
-									{results.map((result) => (
-										<li key={result.id} className="p-2 bg-gray-100 rounded">
-											<div className="font-medium">Document {result.id}</div>
-											<div className="text-sm text-gray-600">
-												Score: {result.score.toFixed(2)}
-											</div>
-										</li>
-									))}
-								</ul>
-							</div>
-						)}
+						{renderSearchResults()}
 					</>
 				)}
 			</div>
@@ -344,28 +423,25 @@ export function SearchIndexExample() {
 	);
 }
 
-export function WorkerSupportCheck() {
+function WorkerSupportCheck() {
 	const { supported, checked } = useWorkerSupport();
 
 	if (!checked) {
 		return <div>Checking Web Worker support...</div>;
 	}
 
+	const containerClass = supported ? "bg-green-50" : "bg-red-50";
+	const messageClass = supported ? "text-green-700" : "text-red-700";
+	const supportMessage = supported
+		? "Web Workers are supported in this browser"
+		: "Web Workers are not supported. Some features may be unavailable or slower.";
+
 	return (
-		<div
-			className={`p-4 border rounded ${supported ? "bg-green-50" : "bg-red-50"}`}
-		>
+		<div className={`p-4 border rounded ${containerClass}`}>
 			<h3 className="font-semibold mb-2">Web Worker Support</h3>
-			{supported ? (
-				<div className="text-green-700">
-					✅ Web Workers are supported in this browser
-				</div>
-			) : (
-				<div className="text-red-700">
-					❌ Web Workers are not supported. Some features may be unavailable or
-					slower.
-				</div>
-			)}
+			<div className={messageClass}>
+				{supported ? "✓" : "✗"} {supportMessage}
+			</div>
 		</div>
 	);
 }
@@ -373,7 +449,7 @@ export function WorkerSupportCheck() {
 /**
  * Main demo component showing all worker examples
  */
-export function WebWorkersDemo() {
+function WebWorkersDemo() {
 	return (
 		<div className="p-8 max-w-6xl mx-auto">
 			<h1 className="text-3xl font-bold mb-8">Web Workers Demo</h1>
@@ -388,3 +464,12 @@ export function WebWorkersDemo() {
 		</div>
 	);
 }
+
+export {
+	WebWorkersDemo,
+	GraphLayoutExample,
+	DataTransformExample,
+	ExportImportExample,
+	SearchIndexExample,
+	WorkerSupportCheck,
+};

@@ -14,8 +14,6 @@ Setup: Fresh SQLite database for each test (auto cleanup)
 Teardown: Database automatically closed after test completes
 """
 
-import pytest
-
 
 class TestHelloWorldDatabase:
     """
@@ -35,6 +33,7 @@ class TestHelloWorldDatabase:
         """
         # Setup: Create in-memory database
         import sqlite3
+
         db = sqlite3.connect(":memory:")
         cursor = db.cursor()
 

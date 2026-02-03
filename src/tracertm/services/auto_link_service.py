@@ -18,11 +18,11 @@ class AutoLinkService:
 
     # Patterns for matching story IDs in commit messages
     STORY_PATTERNS: ClassVar[list[str]] = [
-        r'#(\w+-\d+)',  # #STORY-123
-        r'STORY[-\s]?(\d+)',  # STORY-123 or STORY 123
-        r'\[(\w+-\d+)\]',  # [STORY-123]
-        r'\((\w+-\d+)\)',  # (STORY-123)
-        r'story[-\s]?(\d+)',  # story-123 (case insensitive)
+        r"#(\w+-\d+)",  # #STORY-123
+        r"STORY[-\s]?(\d+)",  # STORY-123 or STORY 123
+        r"\[(\w+-\d+)\]",  # [STORY-123]
+        r"\((\w+-\d+)\)",  # (STORY-123)
+        r"story[-\s]?(\d+)",  # story-123 (case insensitive)
     ]
 
     def __init__(self, session: Session):
@@ -52,7 +52,7 @@ class AutoLinkService:
             item_ids.update(matches)
 
         # Also try to find full UUIDs
-        uuid_pattern = r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
+        uuid_pattern = r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
         uuid_matches = re.findall(uuid_pattern, commit_message, re.IGNORECASE)
         item_ids.update(uuid_matches)
 
@@ -60,11 +60,12 @@ class AutoLinkService:
         for potential_id in item_ids:
             # Try exact match first
             item = (
-                self.session.query(Item)
+                self.session
+                .query(Item)
                 .filter(
                     Item.project_id == project_id,
                     Item.deleted_at.is_(None),
-                    (Item.id == potential_id) | (Item.id.like(f"{potential_id}%"))
+                    (Item.id == potential_id) | (Item.id.like(f"{potential_id}%")),
                 )
                 .first()
             )
@@ -103,7 +104,8 @@ class AutoLinkService:
         for item_id, link_type in linked_items:
             # Check if link already exists
             existing = (
-                self.session.query(Link)
+                self.session
+                .query(Link)
                 .filter(
                     Link.project_id == project_id,
                     Link.source_item_id == item_id,
@@ -147,11 +149,11 @@ class AutoLinkService:
         message_lower = commit_message.lower()
 
         # Check for test-related keywords
-        if any(keyword in message_lower for keyword in ['test', 'testing', 'spec', 'specification']):
+        if any(keyword in message_lower for keyword in ["test", "testing", "spec", "specification"]):
             return "tests"
 
         # Check for implementation keywords
-        if any(keyword in message_lower for keyword in ['implement', 'add', 'create', 'feat']):
+        if any(keyword in message_lower for keyword in ["implement", "add", "create", "feat"]):
             return "implements"
 
         # Default to implements

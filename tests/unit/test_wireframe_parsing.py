@@ -79,9 +79,7 @@ class TestFigmaURLParsing:
 
     def test_figma_metadata_properties(self):
         """Test FigmaMetadata computed properties."""
-        meta = FigmaMetadata(
-            file_key="abc123", node_id="1:42", file_name="MyProject", full_url="https://..."
-        )
+        meta = FigmaMetadata(file_key="abc123", node_id="1:42", file_name="MyProject", full_url="https://...")
 
         assert meta.base_url == "https://www.figma.com/file/abc123/MyProject"
         assert meta.node_url == "https://www.figma.com/file/abc123/MyProject?node-id=1:42"

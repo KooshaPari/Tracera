@@ -9954,7 +9954,7 @@
       htmlPreambleContributionChunk =
         stringToPrecomputedChunk("\x3c!--html--\x3e"),
       leadingNewline = stringToPrecomputedChunk("\n"),
-      VALID_TAG_REGEX = /^[a-zA-Z][a-zA-Z:_\.\-\d]*$/,
+      VALID_TAG_REGEX = /^[a-zA-Z][a-zA-Z:_.\-\d]*$/,
       validatedTagCache = new Map(),
       doctypeChunk = stringToPrecomputedChunk("<!DOCTYPE html>"),
       endTagCache = new Map(),

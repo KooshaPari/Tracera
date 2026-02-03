@@ -37,4 +37,4 @@ export declare type _Either<O extends object, K extends Key, strict extends Bool
  * ```
  */
 export declare type Either<O extends object, K extends Key, strict extends Boolean = 1> = O extends unknown ? _Either<O, K, strict> : never;
-export {};
+

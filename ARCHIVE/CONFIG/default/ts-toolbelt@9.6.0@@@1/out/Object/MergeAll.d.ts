@@ -34,4 +34,4 @@ export declare type _MergeAll<O extends object, Os extends List<object>, depth e
  * ```
  */
 export declare type MergeAll<O extends object, Os extends List<object>, depth extends Depth = 'flat', ignore extends object = BuiltIn, fill extends any = undefined> = O extends unknown ? Os extends unknown ? _MergeAll<O, Os, depth, ignore, fill> : never : never;
-export {};
+

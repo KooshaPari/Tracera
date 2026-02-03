@@ -1,14 +1,15 @@
 """Unit tests for tracertm.agent.types."""
 
+from datetime import UTC, datetime, timezone
+
 import pytest
-from datetime import datetime
 
 from tracertm.agent.types import (
+    ExecutionRequest,
+    ExecutionResult,
     SandboxConfig,
     SandboxMetadata,
     SandboxStatus,
-    ExecutionRequest,
-    ExecutionResult,
 )
 
 pytestmark = pytest.mark.unit
@@ -58,7 +59,7 @@ class TestSandboxMetadata:
     """Test SandboxMetadata dataclass."""
 
     def test_required_fields(self):
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         meta = SandboxMetadata(
             sandbox_id="s1",
             status=SandboxStatus.READY,
@@ -74,7 +75,7 @@ class TestSandboxMetadata:
         assert meta.error is None
 
     def test_default_vcpus_memory(self):
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         meta = SandboxMetadata(
             sandbox_id="s1",
             status=SandboxStatus.READY,

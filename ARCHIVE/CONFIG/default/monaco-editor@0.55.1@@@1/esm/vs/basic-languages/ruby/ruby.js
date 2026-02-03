@@ -151,16 +151,16 @@ const language = {
     { open: "[", close: "]", token: "delimiter.square" }
   ],
   // we include these common regular expressions
-  symbols: /[=><!~?:&|+\-*\/\^%\.]+/,
+  symbols: /[=><!~?:&|+\-*/^%.]+/,
   // escape sequences
   escape: /(?:[abefnrstv\\"'\n\r]|[0-7]{1,3}|x[0-9A-Fa-f]{1,2}|u[0-9A-Fa-f]{4})/,
-  escapes: /\\(?:C\-(@escape|.)|c(@escape|.)|@escape)/,
+  escapes: /\\(?:C-(@escape|.)|c(@escape|.)|@escape)/,
   decpart: /\d(_?\d)*/,
   decimal: /0|@decpart/,
   delim: /[^a-zA-Z0-9\s\n\r]/,
   heredelim: /(?:\w+|'[^']*'|"[^"]*"|`[^`]*`)/,
-  regexpctl: /[(){}\[\]\$\^|\-*+?\.]/,
-  regexpesc: /\\(?:[AzZbBdDfnrstvwWn0\\\/]|@regexpctl|c[A-Z]|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4})?/,
+  regexpctl: /[(){}[\]$^|\-*+?.]/,
+  regexpesc: /\\(?:[AzZbBdDfnrstvwWn0\\/]|@regexpctl|c[A-Z]|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4})?/,
   // The main tokenizer for our languages
   tokenizer: {
     // Main entry.
@@ -233,9 +233,9 @@ const language = {
       [/:"/, { token: "string.s.delim", next: '@dstring.s."' }],
       [/:'/, { token: "string.s.delim", next: "@sstring.s" }],
       // regular expressions. Lookahead for a (not escaped) closing forwardslash on the same line
-      [/\/(?=(\\\/|[^\/\n])+\/)/, { token: "regexp.delim", next: "@regexp" }],
+      [/\/(?=(\\\/|[^/\n])+\/)/, { token: "regexp.delim", next: "@regexp" }],
       // delimiters and operators
-      [/[{}()\[\]]/, "@brackets"],
+      [/[{}()[\]]/, "@brackets"],
       [
         /@symbols/,
         {
@@ -253,7 +253,7 @@ const language = {
       [/0[bB][01](_?[01])*/, "number.binary"],
       [/0[dD]@decpart/, "number"],
       [
-        /@decimal((\.@decpart)?([eE][\-+]?@decpart)?)/,
+        /@decimal((\.@decpart)?([eE][-+]?@decpart)?)/,
         {
           cases: {
             $1: "number.float",
@@ -388,7 +388,7 @@ const language = {
       // for example; %r|kgjgaj| is ok (even though | is used for alternation)
       // so, we need to match those first
       [
-        /[^\(\{\[\\]/,
+        /[^({[\\]/,
         {
           cases: {
             "$#==$S3": { token: "regexp.delim", next: "@pop" },
@@ -405,7 +405,7 @@ const language = {
     // We match regular expression quite precisely
     regexp: [
       { include: "@regexcontrol" },
-      [/[^\\\/]/, "regexp"],
+      [/[^\\/]/, "regexp"],
       ["/[ixmp]*", { token: "regexp.delim" }, "@pop"]
     ],
     regexcontrol: [

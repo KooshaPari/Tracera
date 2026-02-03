@@ -5,7 +5,7 @@ const conf = {
    * unary_<op> is allowed as an identifier.
    * <name>_= is allowed as an identifier.
    */
-  wordPattern: /(unary_[@~!#%^&*()\-=+\\|:<>\/?]+)|([a-zA-Z_$][\w$]*?_=)|(`[^`]+`)|([a-zA-Z_$][\w$]*)/g,
+  wordPattern: /(unary_[@~!#%^&*()\-=+\\|:<>/?]+)|([a-zA-Z_$][\w$]*?_=)|(`[^`]+`)|([a-zA-Z_$][\w$]*)/g,
   comments: {
     lineComment: "//",
     blockComment: ["/*", "*/"]
@@ -94,7 +94,7 @@ const language = {
   name: /(?:[a-z_$][\w$]*|`[^`]+`)/,
   type: /(?:[A-Z][\w$]*)/,
   // we include these common regular expressions
-  symbols: /[=><!~?:&|+\-*\/^\\%@#]+/,
+  symbols: /[=><!~?:&|+\-*/^\\%@#]+/,
   digits: /\d+(_+\d+)*/,
   hexdigits: /[[0-9a-fA-F]+(_+[0-9a-fA-F]+)*/,
   // C# style strings
@@ -113,8 +113,8 @@ const language = {
       [/"""/, { token: "string.quote", bracket: "@open", next: "@stringt" }],
       [/"/, { token: "string.quote", bracket: "@open", next: "@string" }],
       // numbers
-      [/(@digits)[eE]([\-+]?(@digits))?[fFdD]?/, "number.float", "@allowMethod"],
-      [/(@digits)\.(@digits)([eE][\-+]?(@digits))?[fFdD]?/, "number.float", "@allowMethod"],
+      [/(@digits)[eE]([-+]?(@digits))?[fFdD]?/, "number.float", "@allowMethod"],
+      [/(@digits)\.(@digits)([eE][-+]?(@digits))?[fFdD]?/, "number.float", "@allowMethod"],
       [/0[xX](@hexdigits)[Ll]?/, "number.hex", "@allowMethod"],
       [/(@digits)[fFdD]/, "number.float", "@allowMethod"],
       [/(@digits)[lL]?/, "number", "@allowMethod"],
@@ -162,10 +162,10 @@ const language = {
       [/\[/, "operator.square"],
       [/](?!\s*(?:va[rl]|def|type)\b)/, "operator.square", "@allowMethod"],
       [/]/, "operator.square"],
-      [/([=-]>|<-|>:|<:|:>|<%)(?=[\s\w()[\]{},\."'`])/, "keyword"],
+      [/([=-]>|<-|>:|<:|:>|<%)(?=[\s\w()[\]{},."'`])/, "keyword"],
       [/@symbols/, "operator"],
       // delimiter: after number because of .\d floats
-      [/[;,\.]/, "delimiter"],
+      [/[;,.]/, "delimiter"],
       // symbols
       [/'[a-zA-Z$][\w$]*(?!')/, "attribute.name"],
       // characters
@@ -182,7 +182,7 @@ const language = {
       [/@name|@type/, "type"],
       [/[(){}]/, "@brackets"],
       [/[[\]]/, "operator.square"],
-      [/[\.,]/, "delimiter"]
+      [/[.,]/, "delimiter"]
     ],
     allowMethod: [
       [/^|$/, "", "@pop"],
@@ -203,11 +203,11 @@ const language = {
       ["", "", "@pop"]
     ],
     comment: [
-      [/[^\/*]+/, "comment"],
+      [/[^/*]+/, "comment"],
       [/\/\*/, "comment", "@push"],
       // nested comment
       [/\*\//, "comment", "@pop"],
-      [/[\/*]/, "comment"]
+      [/[/*]/, "comment"]
     ],
     case: [
       [/\b_\*/, "key"],
@@ -270,11 +270,11 @@ const language = {
       [/\$\{/, "operator", "@interp"],
       [/%%/, "string"],
       [
-        /(%)([\-#+ 0,(])(\d+|\.\d+|\d+\.\d+)(@fstring_conv)/,
+        /(%)([-#+ 0,(])(\d+|\.\d+|\d+\.\d+)(@fstring_conv)/,
         ["metatag", "keyword.modifier", "number", "metatag"]
       ],
       [/(%)(\d+|\.\d+|\d+\.\d+)(@fstring_conv)/, ["metatag", "number", "metatag"]],
-      [/(%)([\-#+ 0,(])(@fstring_conv)/, ["metatag", "keyword.modifier", "metatag"]],
+      [/(%)([-#+ 0,(])(@fstring_conv)/, ["metatag", "keyword.modifier", "metatag"]],
       [/(%)(@fstring_conv)/, ["metatag", "metatag"]],
       [/./, "string"]
     ],
@@ -294,11 +294,11 @@ const language = {
       [/\$\{/, "operator", "@interp"],
       [/%%/, "string"],
       [
-        /(%)([\-#+ 0,(])(\d+|\.\d+|\d+\.\d+)(@fstring_conv)/,
+        /(%)([-#+ 0,(])(\d+|\.\d+|\d+\.\d+)(@fstring_conv)/,
         ["metatag", "keyword.modifier", "number", "metatag"]
       ],
       [/(%)(\d+|\.\d+|\d+\.\d+)(@fstring_conv)/, ["metatag", "number", "metatag"]],
-      [/(%)([\-#+ 0,(])(@fstring_conv)/, ["metatag", "keyword.modifier", "metatag"]],
+      [/(%)([-#+ 0,(])(@fstring_conv)/, ["metatag", "keyword.modifier", "metatag"]],
       [/(%)(@fstring_conv)/, ["metatag", "metatag"]],
       [/./, "string"]
     ],

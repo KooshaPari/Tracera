@@ -180,12 +180,12 @@ export async function setupApiMocks(page: Page): Promise<void> {
 		if (pathname === "/api/v1/auth/login" && method === "POST") {
 			await route.fulfill({
 				body: JSON.stringify({
+					access_token: "test-token",
 					user: {
-						id: "test-user",
 						email: "test@example.com",
+						id: "test-user",
 						name: "Test User",
 					},
-					access_token: "test-token",
 				}),
 				contentType: "application/json",
 				status: 200,
@@ -203,18 +203,18 @@ export async function setupApiMocks(page: Page): Promise<void> {
 		if (pathname === "/api/v1/auth/me" && method === "GET") {
 			await route.fulfill({
 				body: JSON.stringify({
-					user: {
-						id: "test-user",
-						email: "test@example.com",
-						name: "Test User",
-					},
 					account: {
+						account_type: "personal",
 						id: "test-account",
 						name: "Test Account",
 						slug: "test-account",
-						account_type: "personal",
 					},
 					accounts: [],
+					user: {
+						email: "test@example.com",
+						id: "test-user",
+						name: "Test User",
+					},
 				}),
 				contentType: "application/json",
 				status: 200,
@@ -234,8 +234,8 @@ export async function setupApiMocks(page: Page): Promise<void> {
 		if (pathname === "/api/v1/mcp/config") {
 			await route.fulfill({
 				body: JSON.stringify({
-					mcp_base_url: "http://localhost:4000/api/v1/mcp",
 					auth_mode: "oauth",
+					mcp_base_url: "http://localhost:4000/api/v1/mcp",
 					requires_auth: true,
 				}),
 				contentType: "application/json",
@@ -382,17 +382,17 @@ export async function setupApiMocks(page: Page): Promise<void> {
 		if (pathname.startsWith("/api/v1/graph")) {
 			await route.fulfill({
 				body: JSON.stringify({
-					nodes: mockItems.map((item) => ({
-						id: item.id,
-						label: item.title,
-						type: item.type,
-						data: item,
-					})),
 					edges: mockLinks.map((link) => ({
 						id: link.id,
 						source: link.sourceId,
 						target: link.targetId,
 						type: link.type,
+					})),
+					nodes: mockItems.map((item) => ({
+						data: item,
+						id: item.id,
+						label: item.title,
+						type: item.type,
 					})),
 				}),
 				contentType: "application/json",
@@ -435,10 +435,10 @@ export async function setupApiMocks(page: Page): Promise<void> {
 			await route.fulfill({
 				body: JSON.stringify([
 					{
-						id: "event-1",
-						type: "item_created",
 						data: { itemId: "item-1", title: "User Authentication" },
+						id: "event-1",
 						timestamp: new Date().toISOString(),
+						type: "item_created",
 					},
 				]),
 				contentType: "application/json",

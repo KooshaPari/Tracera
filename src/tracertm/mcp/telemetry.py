@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import json
 import logging
-import sys
 import time
 from typing import Any
 
@@ -102,8 +101,14 @@ class TelemetryMiddleware(Middleware):
             Sanitized arguments
         """
         sensitive_keys = {
-            "password", "secret", "token", "api_key", "auth",
-            "authorization", "credential", "private_key"
+            "password",
+            "secret",
+            "token",
+            "api_key",
+            "auth",
+            "authorization",
+            "credential",
+            "private_key",
         }
 
         sanitized = {}
@@ -148,18 +153,20 @@ class TelemetryMiddleware(Middleware):
 
                 # Add sanitized arguments as event
                 span.add_event(
-                    "tool.arguments",
-                    attributes={"arguments": json.dumps(sanitized_args, default=str)[:1000]}
+                    "tool.arguments", attributes={"arguments": json.dumps(sanitized_args, default=str)[:1000]}
                 )
 
                 # Add auth context if available
-                if hasattr(ctx, "auth") and ctx.auth:
-                    claims = ctx.auth.get("claims", {})
+                auth = getattr(ctx, "auth", None)
+                if isinstance(auth, dict):
+                    claims = auth.get("claims", {}) or {}
                     span.set_attribute("mcp.auth.subject", claims.get("sub", "unknown"))
                     span.set_attribute("mcp.auth.client_id", claims.get("client_id", "unknown"))
 
                 # Execute tool
-                await ctx.next()
+                next_fn = getattr(ctx, "next", None)
+                if callable(next_fn):
+                    await next_fn()
 
                 # Mark success
                 elapsed = time.time() - start_time
@@ -221,7 +228,9 @@ class PerformanceMonitoringMiddleware(Middleware):
         start_time = time.time()
 
         try:
-            await ctx.next()
+            next_fn = getattr(ctx, "next", None)
+            if callable(next_fn):
+                await next_fn()
             elapsed = time.time() - start_time
 
             # Record call
@@ -235,14 +244,10 @@ class PerformanceMonitoringMiddleware(Middleware):
             # Warn about slow calls
             if elapsed >= self.very_slow_threshold:
                 logger.warning(
-                    f"[PERFORMANCE] VERY SLOW: {tool_name} took {elapsed:.2f}s "
-                    f"(threshold: {self.very_slow_threshold}s)"
+                    f"[PERFORMANCE] VERY SLOW: {tool_name} took {elapsed:.2f}s (threshold: {self.very_slow_threshold}s)"
                 )
             elif elapsed >= self.slow_threshold:
-                logger.info(
-                    f"[PERFORMANCE] Slow: {tool_name} took {elapsed:.2f}s "
-                    f"(threshold: {self.slow_threshold}s)"
-                )
+                logger.info(f"[PERFORMANCE] Slow: {tool_name} took {elapsed:.2f}s (threshold: {self.slow_threshold}s)")
 
         except Exception as e:
             elapsed = time.time() - start_time
@@ -284,8 +289,8 @@ class PerformanceMonitoringMiddleware(Middleware):
 
 
 __all__ = [
-    "setup_telemetry",
-    "get_tracer",
-    "TelemetryMiddleware",
     "PerformanceMonitoringMiddleware",
+    "TelemetryMiddleware",
+    "get_tracer",
+    "setup_telemetry",
 ]

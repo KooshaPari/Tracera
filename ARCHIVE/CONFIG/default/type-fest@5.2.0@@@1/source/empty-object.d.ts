@@ -45,4 +45,4 @@ type Fail = IsEmptyObject<null>; //=> false
 */
 export type IsEmptyObject<T> = T extends EmptyObject ? true : false;
 
-export {};
+

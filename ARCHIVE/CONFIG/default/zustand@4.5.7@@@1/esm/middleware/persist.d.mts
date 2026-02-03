@@ -116,4 +116,4 @@ type WithPersist<S, A> = S extends {
     getState: () => infer T;
 } ? Write<S, StorePersist<T, A>> : never;
 export declare const persist: Persist;
-export {};
+

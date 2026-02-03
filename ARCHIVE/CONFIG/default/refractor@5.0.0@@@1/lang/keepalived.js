@@ -35,7 +35,7 @@ export default function keepalived(Prism) {
     // support *nix / Windows, directory / file
     path: {
       pattern:
-        /(\s)\/(?:[^\/\s]+\/)*[^\/\s]*|\b[a-zA-Z]:\\(?:[^\\\s]+\\)*[^\\\s]*/,
+        /(\s)\/(?:[^/\s]+\/)*[^/\s]*|\b[a-zA-Z]:\\(?:[^\\\s]+\\)*[^\\\s]*/,
       lookbehind: true,
       alias: 'string'
     },
@@ -58,6 +58,6 @@ export default function keepalived(Prism) {
       lookbehind: true
     },
     boolean: /\b(?:false|no|off|on|true|yes)\b/,
-    punctuation: /[\{\}]/
+    punctuation: /[{}]/
   }
 }

@@ -78,7 +78,7 @@ export function isStringish(value: any): value is string | number | symbol {
     return false
 }
 
-export function isObject(value: any): value is Object {
+export function isObject(value: any): value is object {
     return value !== null && typeof value === "object"
 }
 
@@ -205,7 +205,7 @@ export function toPrimitive(value: any) {
     return value === null ? null : typeof value === "object" ? "" + value : value
 }
 
-export function hasProp(target: Object, prop: PropertyKey): boolean {
+export function hasProp(target: object, prop: PropertyKey): boolean {
     return objectPrototype.hasOwnProperty.call(target, prop)
 }
 

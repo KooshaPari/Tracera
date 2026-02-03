@@ -9,5 +9,5 @@ export declare const SOURCES_INDEX = 1;
 export declare const SOURCE_LINE = 2;
 export declare const SOURCE_COLUMN = 3;
 export declare const NAMES_INDEX = 4;
-export {};
+
 //# sourceMappingURL=sourcemap-segment.d.ts.map

@@ -1,5 +1,5 @@
+import type { Edge, Node } from "@xyflow/react";
 import type Graph from "graphology";
-import type { Node, Edge } from "@xyflow/react";
 
 export interface GraphologyNodeAttributes {
 	label: string;

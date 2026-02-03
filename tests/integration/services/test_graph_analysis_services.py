@@ -14,25 +14,19 @@ Coverage target: +4-5%
 Test count: 50+
 """
 
-import pytest
-import asyncio
 import time
-from datetime import datetime
-from typing import List
-from unittest.mock import Mock, AsyncMock, patch, MagicMock
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import Session, sessionmaker
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+
+import pytest
+from sqlalchemy import create_engine
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.orm import sessionmaker
 
 from tracertm.models.base import Base
 from tracertm.models.item import Item
 from tracertm.models.link import Link
 from tracertm.models.project import Project
 from tracertm.services.cycle_detection_service import CycleDetectionService
-from tracertm.services.impact_analysis_service import ImpactAnalysisService, ImpactAnalysisResult
-from tracertm.repositories.item_repository import ItemRepository
-from tracertm.repositories.link_repository import LinkRepository
-
+from tracertm.services.impact_analysis_service import ImpactAnalysisService
 
 pytestmark = pytest.mark.integration
 
@@ -40,6 +34,7 @@ pytestmark = pytest.mark.integration
 # ============================================================
 # FIXTURES
 # ============================================================
+
 
 @pytest.fixture(scope="function")
 def db_session():
@@ -55,11 +50,7 @@ def db_session():
 @pytest.fixture(scope="function")
 async def async_session():
     """Create an async test database session."""
-    engine = create_async_engine(
-        "sqlite+aiosqlite:///:memory:",
-        echo=False,
-        connect_args={"check_same_thread": False}
-    )
+    engine = create_async_engine("sqlite+aiosqlite:///:memory:", echo=False, connect_args={"check_same_thread": False})
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
@@ -90,7 +81,7 @@ def sample_items_basic(db_session, sample_project):
             title=f"Item {i}",
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         db_session.add(item)
         items.append(item)
@@ -109,7 +100,7 @@ def sample_items_large(db_session, sample_project):
             title=f"Item {i}",
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         db_session.add(item)
         items.append(item)
@@ -128,7 +119,7 @@ def sample_items_xlarge(db_session, sample_project):
             title=f"Item {i}",
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         db_session.add(item)
         items.append(item)
@@ -146,6 +137,7 @@ def cycle_detection_service(db_session):
 # SIMPLE CYCLE DETECTION TESTS
 # ============================================================
 
+
 class TestSimpleCycleDetection:
     """Tests for simple cycle detection scenarios."""
 
@@ -154,12 +146,10 @@ class TestSimpleCycleDetection:
         # item-1 depends on itself
         service = CycleDetectionService(db_session)
 
-        assert service.has_cycle(
-            sample_project.id,
-            sample_items_basic[0].id,
-            sample_items_basic[0].id,
-            "depends_on"
-        ) is True
+        assert (
+            service.has_cycle(sample_project.id, sample_items_basic[0].id, sample_items_basic[0].id, "depends_on")
+            is True
+        )
 
     def test_two_item_cycle(self, db_session, sample_project, sample_items_basic):
         """Test two-item cycle detection."""
@@ -171,18 +161,16 @@ class TestSimpleCycleDetection:
             project_id=sample_project.id,
             source_item_id=sample_items_basic[0].id,
             target_item_id=sample_items_basic[1].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(link)
         db_session.commit()
 
         # Verify: item-2 -> item-1 would create cycle
-        assert service.has_cycle(
-            sample_project.id,
-            sample_items_basic[1].id,
-            sample_items_basic[0].id,
-            "depends_on"
-        ) is True
+        assert (
+            service.has_cycle(sample_project.id, sample_items_basic[1].id, sample_items_basic[0].id, "depends_on")
+            is True
+        )
 
     def test_no_cycle_simple(self, db_session, sample_project, sample_items_basic):
         """Test that simple dependencies don't create cycles."""
@@ -194,18 +182,16 @@ class TestSimpleCycleDetection:
             project_id=sample_project.id,
             source_item_id=sample_items_basic[0].id,
             target_item_id=sample_items_basic[1].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(link)
         db_session.commit()
 
         # Verify: item-3 -> item-1 doesn't create cycle
-        assert service.has_cycle(
-            sample_project.id,
-            sample_items_basic[2].id,
-            sample_items_basic[0].id,
-            "depends_on"
-        ) is False
+        assert (
+            service.has_cycle(sample_project.id, sample_items_basic[2].id, sample_items_basic[0].id, "depends_on")
+            is False
+        )
 
     def test_non_depends_on_links_ignored(self, db_session, sample_project, sample_items_basic):
         """Test that non-depends_on links are ignored for cycle detection."""
@@ -217,35 +203,32 @@ class TestSimpleCycleDetection:
             project_id=sample_project.id,
             source_item_id=sample_items_basic[0].id,
             target_item_id=sample_items_basic[1].id,
-            link_type="relates_to"
+            link_type="relates_to",
         )
         db_session.add(link1)
         db_session.commit()
 
         # Should not be treated as cycle (not depends_on)
-        assert service.has_cycle(
-            sample_project.id,
-            sample_items_basic[1].id,
-            sample_items_basic[0].id,
-            "depends_on"
-        ) is False
+        assert (
+            service.has_cycle(sample_project.id, sample_items_basic[1].id, sample_items_basic[0].id, "depends_on")
+            is False
+        )
 
     def test_isolated_items_no_cycle(self, db_session, sample_project, sample_items_basic):
         """Test that isolated items don't create cycles."""
         service = CycleDetectionService(db_session)
 
         # No links created - items isolated
-        assert service.has_cycle(
-            sample_project.id,
-            sample_items_basic[2].id,
-            sample_items_basic[3].id,
-            "depends_on"
-        ) is False
+        assert (
+            service.has_cycle(sample_project.id, sample_items_basic[2].id, sample_items_basic[3].id, "depends_on")
+            is False
+        )
 
 
 # ============================================================
 # COMPLEX MULTI-LEVEL CYCLE DETECTION
 # ============================================================
+
 
 class TestComplexCycleDetection:
     """Tests for complex multi-level cycles."""
@@ -261,27 +244,25 @@ class TestComplexCycleDetection:
                 project_id=sample_project.id,
                 source_item_id=sample_items_basic[0].id,
                 target_item_id=sample_items_basic[1].id,
-                link_type="depends_on"
+                link_type="depends_on",
             ),
             Link(
                 id="link-2",
                 project_id=sample_project.id,
                 source_item_id=sample_items_basic[1].id,
                 target_item_id=sample_items_basic[2].id,
-                link_type="depends_on"
-            )
+                link_type="depends_on",
+            ),
         ]
         for link in links:
             db_session.add(link)
         db_session.commit()
 
         # item-3 -> item-1 completes cycle
-        assert service.has_cycle(
-            sample_project.id,
-            sample_items_basic[2].id,
-            sample_items_basic[0].id,
-            "depends_on"
-        ) is True
+        assert (
+            service.has_cycle(sample_project.id, sample_items_basic[2].id, sample_items_basic[0].id, "depends_on")
+            is True
+        )
 
     def test_four_level_cycle(self, db_session, sample_project, sample_items_basic):
         """Test four-item circular dependency."""
@@ -292,9 +273,9 @@ class TestComplexCycleDetection:
             Link(
                 id=f"link-{i}",
                 project_id=sample_project.id,
-                source_item_id=sample_items_basic[i-1].id,
+                source_item_id=sample_items_basic[i - 1].id,
                 target_item_id=sample_items_basic[i].id,
-                link_type="depends_on"
+                link_type="depends_on",
             )
             for i in range(1, 4)
         ]
@@ -303,12 +284,10 @@ class TestComplexCycleDetection:
         db_session.commit()
 
         # item-4 -> item-1 completes cycle
-        assert service.has_cycle(
-            sample_project.id,
-            sample_items_basic[3].id,
-            sample_items_basic[0].id,
-            "depends_on"
-        ) is True
+        assert (
+            service.has_cycle(sample_project.id, sample_items_basic[3].id, sample_items_basic[0].id, "depends_on")
+            is True
+        )
 
     def test_multiple_paths_to_cycle(self, db_session, sample_project, sample_items_basic):
         """Test cycle detection with multiple dependency paths."""
@@ -323,41 +302,39 @@ class TestComplexCycleDetection:
                 project_id=sample_project.id,
                 source_item_id=sample_items_basic[0].id,
                 target_item_id=sample_items_basic[1].id,
-                link_type="depends_on"
+                link_type="depends_on",
             ),
             Link(
                 id="link-2",
                 project_id=sample_project.id,
                 source_item_id=sample_items_basic[1].id,
                 target_item_id=sample_items_basic[2].id,
-                link_type="depends_on"
+                link_type="depends_on",
             ),
             Link(
                 id="link-3",
                 project_id=sample_project.id,
                 source_item_id=sample_items_basic[0].id,
                 target_item_id=sample_items_basic[3].id,
-                link_type="depends_on"
+                link_type="depends_on",
             ),
             Link(
                 id="link-4",
                 project_id=sample_project.id,
                 source_item_id=sample_items_basic[3].id,
                 target_item_id=sample_items_basic[2].id,
-                link_type="depends_on"
-            )
+                link_type="depends_on",
+            ),
         ]
         for link in links:
             db_session.add(link)
         db_session.commit()
 
         # item-3 -> item-1 creates cycle via multiple paths
-        assert service.has_cycle(
-            sample_project.id,
-            sample_items_basic[2].id,
-            sample_items_basic[0].id,
-            "depends_on"
-        ) is True
+        assert (
+            service.has_cycle(sample_project.id, sample_items_basic[2].id, sample_items_basic[0].id, "depends_on")
+            is True
+        )
 
     def test_deep_dependency_chain(self, db_session, sample_project, sample_items_large):
         """Test cycle detection in deep dependency chains."""
@@ -369,24 +346,20 @@ class TestComplexCycleDetection:
                 id=f"link-{i}",
                 project_id=sample_project.id,
                 source_item_id=f"item-{i:03d}",
-                target_item_id=f"item-{i+1:03d}",
-                link_type="depends_on"
+                target_item_id=f"item-{i + 1:03d}",
+                link_type="depends_on",
             )
             db_session.add(link)
         db_session.commit()
 
         # item-050 -> item-001 creates cycle
-        assert service.has_cycle(
-            sample_project.id,
-            "item-050",
-            "item-001",
-            "depends_on"
-        ) is True
+        assert service.has_cycle(sample_project.id, "item-050", "item-001", "depends_on") is True
 
 
 # ============================================================
 # CYCLE DETECTION - FULL GRAPH ANALYSIS
 # ============================================================
+
 
 class TestFullGraphCycleAnalysis:
     """Tests for detect_cycles method."""
@@ -401,7 +374,7 @@ class TestFullGraphCycleAnalysis:
             project_id=sample_project.id,
             source_item_id=sample_items_basic[0].id,
             target_item_id=sample_items_basic[1].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(link)
         db_session.commit()
@@ -422,15 +395,15 @@ class TestFullGraphCycleAnalysis:
                 project_id=sample_project.id,
                 source_item_id=sample_items_basic[0].id,
                 target_item_id=sample_items_basic[1].id,
-                link_type="depends_on"
+                link_type="depends_on",
             ),
             Link(
                 id="link-2",
                 project_id=sample_project.id,
                 source_item_id=sample_items_basic[1].id,
                 target_item_id=sample_items_basic[0].id,
-                link_type="depends_on"
-            )
+                link_type="depends_on",
+            ),
         ]
         for link in links:
             db_session.add(link)
@@ -454,14 +427,14 @@ class TestFullGraphCycleAnalysis:
                 project_id=sample_project.id,
                 source_item_id="item-001",
                 target_item_id="item-002",
-                link_type="depends_on"
+                link_type="depends_on",
             ),
             Link(
                 id="link-2",
                 project_id=sample_project.id,
                 source_item_id="item-002",
                 target_item_id="item-001",
-                link_type="depends_on"
+                link_type="depends_on",
             ),
             # Cycle 2: item-010 -> item-011 -> item-010
             Link(
@@ -469,15 +442,15 @@ class TestFullGraphCycleAnalysis:
                 project_id=sample_project.id,
                 source_item_id="item-010",
                 target_item_id="item-011",
-                link_type="depends_on"
+                link_type="depends_on",
             ),
             Link(
                 id="link-4",
                 project_id=sample_project.id,
                 source_item_id="item-011",
                 target_item_id="item-010",
-                link_type="depends_on"
-            )
+                link_type="depends_on",
+            ),
         ]
         for link in links:
             db_session.add(link)
@@ -499,24 +472,21 @@ class TestFullGraphCycleAnalysis:
                 project_id=sample_project.id,
                 source_item_id=sample_items_basic[0].id,
                 target_item_id=sample_items_basic[1].id,
-                link_type="depends_on"
+                link_type="depends_on",
             ),
             Link(
                 id="link-2",
                 project_id=sample_project.id,
                 source_item_id=sample_items_basic[1].id,
                 target_item_id=sample_items_basic[0].id,
-                link_type="depends_on"
-            )
+                link_type="depends_on",
+            ),
         ]
         for link in links:
             db_session.add(link)
         db_session.commit()
 
-        result = service.detect_cycles(
-            sample_project.id,
-            link_types=["depends_on", "relates_to"]
-        )
+        result = service.detect_cycles(sample_project.id, link_types=["depends_on", "relates_to"])
 
         assert result is not None
         assert result.get("cycles_detected") is True
@@ -525,6 +495,7 @@ class TestFullGraphCycleAnalysis:
 # ============================================================
 # CYCLE BREAKING STRATEGIES
 # ============================================================
+
 
 class TestCycleBreakingStrategies:
     """Tests for breaking cycles and impact analysis."""
@@ -540,15 +511,15 @@ class TestCycleBreakingStrategies:
                 project_id=sample_project.id,
                 source_item_id=sample_items_basic[0].id,
                 target_item_id=sample_items_basic[1].id,
-                link_type="depends_on"
+                link_type="depends_on",
             ),
             Link(
                 id="link-2",
                 project_id=sample_project.id,
                 source_item_id=sample_items_basic[1].id,
                 target_item_id=sample_items_basic[0].id,
-                link_type="depends_on"
-            )
+                link_type="depends_on",
+            ),
         ]
         for link in links:
             db_session.add(link)
@@ -560,12 +531,10 @@ class TestCycleBreakingStrategies:
         db_session.commit()
 
         # Verify cycle is broken
-        assert service.has_cycle(
-            sample_project.id,
-            sample_items_basic[1].id,
-            sample_items_basic[0].id,
-            "depends_on"
-        ) is False
+        assert (
+            service.has_cycle(sample_project.id, sample_items_basic[1].id, sample_items_basic[0].id, "depends_on")
+            is False
+        )
 
     def test_identify_breaking_link_in_cycle(self, db_session, sample_project, sample_items_basic):
         """Test identifying which link breaks a cycle."""
@@ -578,22 +547,22 @@ class TestCycleBreakingStrategies:
                 project_id=sample_project.id,
                 source_item_id=sample_items_basic[0].id,
                 target_item_id=sample_items_basic[1].id,
-                link_type="depends_on"
+                link_type="depends_on",
             ),
             Link(
                 id="link-2",
                 project_id=sample_project.id,
                 source_item_id=sample_items_basic[1].id,
                 target_item_id=sample_items_basic[2].id,
-                link_type="depends_on"
+                link_type="depends_on",
             ),
             Link(
                 id="link-3",
                 project_id=sample_project.id,
                 source_item_id=sample_items_basic[2].id,
                 target_item_id=sample_items_basic[0].id,
-                link_type="depends_on"
-            )
+                link_type="depends_on",
+            ),
         ]
         for link in links:
             db_session.add(link)
@@ -619,6 +588,7 @@ class TestCycleBreakingStrategies:
 # LARGE GRAPH PERFORMANCE TESTS
 # ============================================================
 
+
 class TestLargeGraphPerformance:
     """Tests for performance on large graphs."""
 
@@ -632,8 +602,8 @@ class TestLargeGraphPerformance:
                 id=f"link-{i}",
                 project_id=sample_project.id,
                 source_item_id=f"item-{i:03d}",
-                target_item_id=f"item-{i+1:03d}",
-                link_type="depends_on"
+                target_item_id=f"item-{i + 1:03d}",
+                link_type="depends_on",
             )
             db_session.add(link)
         db_session.commit()
@@ -655,8 +625,8 @@ class TestLargeGraphPerformance:
                 id=f"link-{i}",
                 project_id=sample_project.id,
                 source_item_id=f"item-{i:04d}",
-                target_item_id=f"item-{i+1:04d}",
-                link_type="depends_on"
+                target_item_id=f"item-{i + 1:04d}",
+                link_type="depends_on",
             )
             db_session.add(link)
 
@@ -666,7 +636,7 @@ class TestLargeGraphPerformance:
             project_id=sample_project.id,
             source_item_id="item-0500",
             target_item_id="item-0001",
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(link)
         db_session.commit()
@@ -689,7 +659,7 @@ class TestLargeGraphPerformance:
                 project_id=sample_project.id,
                 source_item_id="item-001",
                 target_item_id=f"item-{i:03d}",
-                link_type="depends_on"
+                link_type="depends_on",
             )
             db_session.add(link)
         db_session.commit()
@@ -706,6 +676,7 @@ class TestLargeGraphPerformance:
 # IMPACT ANALYSIS TESTS
 # ============================================================
 
+
 class TestImpactAnalysis:
     """Tests for impact analysis functionality."""
 
@@ -717,12 +688,7 @@ class TestImpactAnalysis:
         await async_session.flush()
 
         item = Item(
-            id="item-1",
-            project_id=project.id,
-            title="Item 1",
-            view="FEATURE",
-            item_type="feature",
-            status="todo"
+            id="item-1", project_id=project.id, title="Item 1", view="FEATURE", item_type="feature", status="todo"
         )
         async_session.add(item)
         await async_session.flush()
@@ -751,7 +717,7 @@ class TestImpactAnalysis:
                 title=f"Item {i}",
                 view="FEATURE",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             async_session.add(item)
             items.append(item)
@@ -759,18 +725,10 @@ class TestImpactAnalysis:
 
         # item-1 depends on item-2 depends on item-3
         link1 = Link(
-            id="link-1",
-            project_id=project.id,
-            source_item_id="item-1",
-            target_item_id="item-2",
-            link_type="depends_on"
+            id="link-1", project_id=project.id, source_item_id="item-1", target_item_id="item-2", link_type="depends_on"
         )
         link2 = Link(
-            id="link-2",
-            project_id=project.id,
-            source_item_id="item-2",
-            target_item_id="item-3",
-            link_type="depends_on"
+            id="link-2", project_id=project.id, source_item_id="item-2", target_item_id="item-3", link_type="depends_on"
         )
         async_session.add(link1)
         async_session.add(link2)
@@ -797,7 +755,7 @@ class TestImpactAnalysis:
                 title=f"Item {i}",
                 view="FEATURE",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             async_session.add(item)
         await async_session.flush()
@@ -808,8 +766,8 @@ class TestImpactAnalysis:
                 id=f"link-{i}",
                 project_id=project.id,
                 source_item_id=f"item-{i}",
-                target_item_id=f"item-{i+1}",
-                link_type="depends_on"
+                target_item_id=f"item-{i + 1}",
+                link_type="depends_on",
             )
             async_session.add(link)
         await async_session.flush()
@@ -833,35 +791,24 @@ class TestImpactAnalysis:
                 title=f"Item {i}",
                 view="FEATURE",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             async_session.add(item)
         await async_session.flush()
 
         # Mixed link types
         link1 = Link(
-            id="link-1",
-            project_id=project.id,
-            source_item_id="item-1",
-            target_item_id="item-2",
-            link_type="depends_on"
+            id="link-1", project_id=project.id, source_item_id="item-1", target_item_id="item-2", link_type="depends_on"
         )
         link2 = Link(
-            id="link-2",
-            project_id=project.id,
-            source_item_id="item-2",
-            target_item_id="item-3",
-            link_type="relates_to"
+            id="link-2", project_id=project.id, source_item_id="item-2", target_item_id="item-3", link_type="relates_to"
         )
         async_session.add(link1)
         async_session.add(link2)
         await async_session.flush()
 
         service = ImpactAnalysisService(async_session)
-        result = await service.analyze_impact(
-            "item-1",
-            link_types=["depends_on"]
-        )
+        result = await service.analyze_impact("item-1", link_types=["depends_on"])
 
         assert result is not None
 
@@ -878,6 +825,7 @@ class TestImpactAnalysis:
 # CIRCULAR DEPENDENCY HANDLING
 # ============================================================
 
+
 class TestCircularDependencyHandling:
     """Tests for handling circular dependencies."""
 
@@ -891,17 +839,14 @@ class TestCircularDependencyHandling:
             project_id=sample_project.id,
             source_item_id=sample_items_basic[0].id,
             target_item_id=sample_items_basic[1].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(link)
         db_session.commit()
 
         # Attempt to create circular dependency should be detected
         would_create_cycle = service.has_cycle(
-            sample_project.id,
-            sample_items_basic[1].id,
-            sample_items_basic[0].id,
-            "depends_on"
+            sample_project.id, sample_items_basic[1].id, sample_items_basic[0].id, "depends_on"
         )
 
         assert would_create_cycle is True
@@ -917,15 +862,15 @@ class TestCircularDependencyHandling:
                 project_id=sample_project.id,
                 source_item_id=sample_items_basic[0].id,
                 target_item_id=sample_items_basic[1].id,
-                link_type="depends_on"
+                link_type="depends_on",
             ),
             Link(
                 id="link-2",
                 project_id=sample_project.id,
                 source_item_id=sample_items_basic[1].id,
                 target_item_id=sample_items_basic[2].id,
-                link_type="depends_on"
-            )
+                link_type="depends_on",
+            ),
         ]
         for link in links:
             db_session.add(link)
@@ -940,6 +885,7 @@ class TestCircularDependencyHandling:
 # ============================================================
 # ERROR HANDLING AND EDGE CASES
 # ============================================================
+
 
 class TestErrorHandlingAndEdgeCases:
     """Tests for error handling and edge cases."""
@@ -975,12 +921,10 @@ class TestErrorHandlingAndEdgeCases:
         service = CycleDetectionService(db_session)
 
         # Should not find cycles for non-depends_on types
-        assert service.has_cycle(
-            sample_project.id,
-            sample_items_basic[0].id,
-            sample_items_basic[1].id,
-            "invalid_type"
-        ) is False
+        assert (
+            service.has_cycle(sample_project.id, sample_items_basic[0].id, sample_items_basic[1].id, "invalid_type")
+            is False
+        )
 
     def test_null_item_ids(self, db_session, sample_project):
         """Test handling of null/empty item IDs."""
@@ -1000,14 +944,14 @@ class TestErrorHandlingAndEdgeCases:
             project_id=sample_project.id,
             source_item_id=sample_items_basic[0].id,
             target_item_id=sample_items_basic[1].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         link2 = Link(
             id="link-2",
             project_id=sample_project.id,
             source_item_id=sample_items_basic[0].id,
             target_item_id=sample_items_basic[1].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(link1)
         db_session.add(link2)
@@ -1020,6 +964,7 @@ class TestErrorHandlingAndEdgeCases:
 # ============================================================
 # INTEGRATION SCENARIOS
 # ============================================================
+
 
 class TestIntegrationScenarios:
     """Integration tests combining multiple features."""
@@ -1034,8 +979,8 @@ class TestIntegrationScenarios:
                 id=f"link-{i}",
                 project_id=sample_project.id,
                 source_item_id=f"item-{i:03d}",
-                target_item_id=f"item-{i+5:03d}",
-                link_type="depends_on"
+                target_item_id=f"item-{i + 5:03d}",
+                link_type="depends_on",
             )
             db_session.add(link)
         db_session.commit()
@@ -1053,7 +998,7 @@ class TestIntegrationScenarios:
             project_id=sample_project.id,
             source_item_id=sample_items_basic[0].id,
             target_item_id=sample_items_basic[1].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(link)
         db_session.commit()
@@ -1061,10 +1006,7 @@ class TestIntegrationScenarios:
         # Rapid calls should not cause issues
         for _ in range(10):
             result = service.has_cycle(
-                sample_project.id,
-                sample_items_basic[1].id,
-                sample_items_basic[0].id,
-                "depends_on"
+                sample_project.id, sample_items_basic[1].id, sample_items_basic[0].id, "depends_on"
             )
             assert result is True
 
@@ -1080,14 +1022,14 @@ class TestIntegrationScenarios:
                 project_id=sample_project.id,
                 source_item_id="item-001",
                 target_item_id="item-002",
-                link_type="depends_on"
+                link_type="depends_on",
             ),
             Link(
                 id="link-cycle-2",
                 project_id=sample_project.id,
                 source_item_id="item-002",
                 target_item_id="item-001",
-                link_type="depends_on"
+                link_type="depends_on",
             ),
             # Acyclic: 010 -> 011 -> 012
             Link(
@@ -1095,15 +1037,15 @@ class TestIntegrationScenarios:
                 project_id=sample_project.id,
                 source_item_id="item-010",
                 target_item_id="item-011",
-                link_type="depends_on"
+                link_type="depends_on",
             ),
             Link(
                 id="link-acyclic-2",
                 project_id=sample_project.id,
                 source_item_id="item-011",
                 target_item_id="item-012",
-                link_type="depends_on"
-            )
+                link_type="depends_on",
+            ),
         ]
         for link in links:
             db_session.add(link)

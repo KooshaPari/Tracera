@@ -1,7 +1,9 @@
 """Unit tests for Event model."""
 
-import pytest
 from uuid import uuid4
+
+import pytest
+
 from tracertm.models import Event
 
 pytestmark = pytest.mark.unit
@@ -27,7 +29,7 @@ class TestEventModelCreation:
             event_type="item_created",
             entity_type="Item",
             entity_id=test_data["entity_id"],
-            data={"title": "New Item"}
+            data={"title": "New Item"},
         )
         assert event.project_id == test_data["project_id"]
         assert event.event_type == "item_created"
@@ -43,7 +45,7 @@ class TestEventModelCreation:
             entity_type="Item",
             entity_id=test_data["entity_id"],
             agent_id=test_data["agent_id"],
-            data={"status": "done"}
+            data={"status": "done"},
         )
         assert event.agent_id == test_data["agent_id"]
 
@@ -54,7 +56,7 @@ class TestEventModelCreation:
             event_type="item_created",
             entity_type="Item",
             entity_id=test_data["entity_id"],
-            data={}
+            data={},
         )
         assert event.agent_id is None
 
@@ -69,7 +71,7 @@ class TestEventModelTypes:
             event_type="item_created",
             entity_type="Item",
             entity_id=test_data["entity_id"],
-            data={}
+            data={},
         )
         assert event.event_type == "item_created"
 
@@ -80,7 +82,7 @@ class TestEventModelTypes:
             event_type="item_updated",
             entity_type="Item",
             entity_id=test_data["entity_id"],
-            data={}
+            data={},
         )
         assert event.event_type == "item_updated"
 
@@ -91,7 +93,7 @@ class TestEventModelTypes:
             event_type="link_created",
             entity_type="Link",
             entity_id=test_data["entity_id"],
-            data={}
+            data={},
         )
         assert event.event_type == "link_created"
 
@@ -102,7 +104,7 @@ class TestEventModelTypes:
             event_type="project_created",
             entity_type="Project",
             entity_id=test_data["project_id"],
-            data={}
+            data={},
         )
         assert event.event_type == "project_created"
 
@@ -117,7 +119,7 @@ class TestEventModelEntityTypes:
             event_type="item_created",
             entity_type="Item",
             entity_id=test_data["entity_id"],
-            data={}
+            data={},
         )
         assert event.entity_type == "Item"
 
@@ -128,7 +130,7 @@ class TestEventModelEntityTypes:
             event_type="link_created",
             entity_type="Link",
             entity_id=test_data["entity_id"],
-            data={}
+            data={},
         )
         assert event.entity_type == "Link"
 
@@ -139,7 +141,7 @@ class TestEventModelEntityTypes:
             event_type="project_updated",
             entity_type="Project",
             entity_id=test_data["entity_id"],
-            data={}
+            data={},
         )
         assert event.entity_type == "Project"
 
@@ -155,7 +157,7 @@ class TestEventModelData:
             event_type="item_updated",
             entity_type="Item",
             entity_id=test_data["entity_id"],
-            data=event_data
+            data=event_data,
         )
         assert isinstance(event.data, dict)
         assert event.data == event_data
@@ -167,25 +169,22 @@ class TestEventModelData:
             event_type="item_created",
             entity_type="Item",
             entity_id=test_data["entity_id"],
-            data={}
+            data={},
         )
         assert event.data == {}
 
     def test_event_data_nested_structures(self, test_data):
         """Event data can contain nested structures."""
         event_data = {
-            "changes": {
-                "status": {"from": "todo", "to": "done"},
-                "priority": {"from": "low", "to": "high"}
-            },
-            "metadata": ["tag1", "tag2"]
+            "changes": {"status": {"from": "todo", "to": "done"}, "priority": {"from": "low", "to": "high"}},
+            "metadata": ["tag1", "tag2"],
         }
         event = Event(
             project_id=test_data["project_id"],
             event_type="item_updated",
             entity_type="Item",
             entity_id=test_data["entity_id"],
-            data=event_data
+            data=event_data,
         )
         assert event.data == event_data
 
@@ -200,10 +199,10 @@ class TestEventModelAttributes:
             event_type="item_created",
             entity_type="Item",
             entity_id=test_data["entity_id"],
-            data={}
+            data={},
         )
-        assert hasattr(event, 'created_at')
-        assert hasattr(event, 'updated_at')
+        assert hasattr(event, "created_at")
+        assert hasattr(event, "updated_at")
 
     def test_event_has_id_attribute(self, test_data):
         """Event has id attribute (auto-increment)."""
@@ -212,9 +211,9 @@ class TestEventModelAttributes:
             event_type="item_created",
             entity_type="Item",
             entity_id=test_data["entity_id"],
-            data={}
+            data={},
         )
-        assert hasattr(event, 'id')
+        assert hasattr(event, "id")
 
 
 class TestEventModelRepresentation:
@@ -227,7 +226,7 @@ class TestEventModelRepresentation:
             event_type="item_created",
             entity_type="Item",
             entity_id=test_data["entity_id"],
-            data={}
+            data={},
         )
         repr_str = repr(event)
         assert "Event" in repr_str or "event" in repr_str.lower()

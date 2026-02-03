@@ -90,7 +90,7 @@ function getClassifier() {
     if (_classifier === null) {
         _classifier = new CharacterClassifier(0 /* CharacterClass.None */);
         // allow-any-unicode-next-line
-        const FORCE_TERMINATION_CHARACTERS = ' \t<>\'\"、。｡､，．：；‘〈「『〔（［｛｢｣｝］）〕』」〉’｀～…|';
+        const FORCE_TERMINATION_CHARACTERS = ' \t<>\'"、。｡､，．：；‘〈「『〔（［｛｢｣｝］）〕』」〉’｀～…|';
         for (let i = 0; i < FORCE_TERMINATION_CHARACTERS.length; i++) {
             _classifier.set(FORCE_TERMINATION_CHARACTERS.charCodeAt(i), 1 /* CharacterClass.ForceTermination */);
         }

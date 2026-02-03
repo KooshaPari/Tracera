@@ -11,13 +11,8 @@ Tests full workflow including:
 
 import pytest
 import pytest_asyncio
-from datetime import datetime, UTC
 
 from tracertm.models.project import Project
-from tracertm.models.blockchain import (
-    VersionBlock,
-    VersionChainIndex,
-)
 from tracertm.repositories.blockchain_repository import VersionBlockRepository
 
 pytestmark = pytest.mark.integration
@@ -179,7 +174,7 @@ class TestChainGrowth:
         await db_session.flush()
 
         chain = await repo.get_chain_index(db_session, "GROW-001", "document")
-
+        assert chain is not None
         assert chain.chain_length == 4  # 1 genesis + 3 updates
 
     @pytest.mark.asyncio
@@ -202,7 +197,7 @@ class TestChainGrowth:
         await db_session.flush()
 
         chain = await repo.get_chain_index(db_session, "GROW-001", "document")
-
+        assert chain is not None
         assert chain.chain_head_id == new_block.block_id
         assert chain.genesis_block_id == genesis.block_id
 
@@ -393,7 +388,7 @@ class TestChainIntegrity:
         await db_session.flush()
 
         chain = await repo.get_chain_index(db_session, "INT-001", "integrity")
-
+        assert chain is not None
         assert chain.is_valid is True
         assert chain.last_verified_at is not None
 
@@ -446,7 +441,8 @@ class TestMultipleChains:
         # Check chains are independent
         chain_a = await repo.get_chain_index(db_session, "CHAIN-A", "type-a")
         chain_b = await repo.get_chain_index(db_session, "CHAIN-B", "type-b")
-
+        assert chain_a is not None
+        assert chain_b is not None
         assert chain_a.chain_length == 2
         assert chain_b.chain_length == 1
 

@@ -5,16 +5,14 @@ Provides type-safe access to secrets stored in Vault KV v2 engine.
 """
 
 import os
-from typing import Any, Dict, Optional
+from typing import Any
 
-import hvac
-from pydantic import BaseModel, Field
+import hvac  # type: ignore[import-untyped]
+from pydantic import BaseModel
 
 
 class VaultError(Exception):
     """Raised when Vault operations fail."""
-
-    pass
 
 
 class DatabaseCredentials(BaseModel):
@@ -75,8 +73,8 @@ class VaultClient:
 
     def __init__(
         self,
-        vault_addr: Optional[str] = None,
-        vault_token: Optional[str] = None,
+        vault_addr: str | None = None,
+        vault_token: str | None = None,
         mount_point: str = "secret",
         namespace: str = "tracertm",
     ):
@@ -109,7 +107,7 @@ class VaultClient:
         except Exception as e:
             raise VaultError(f"Failed to initialize Vault client: {e}") from e
 
-    def get_secret(self, path: str) -> Dict[str, Any]:
+    def get_secret(self, path: str) -> dict[str, Any]:
         """
         Retrieve a secret from Vault KV v2.
 
@@ -125,17 +123,15 @@ class VaultClient:
         full_path = f"{self.namespace}/{path}"
 
         try:
-            response = self.client.secrets.kv.v2.read_secret_version(
-                path=full_path, mount_point=self.mount_point
-            )
+            response = self.client.secrets.kv.v2.read_secret_version(path=full_path, mount_point=self.mount_point)
 
             if not response or "data" not in response or "data" not in response["data"]:
                 raise VaultError(f"Secret not found or invalid format: {full_path}")
 
             return response["data"]["data"]
 
-        except hvac.exceptions.InvalidPath:
-            raise VaultError(f"Secret not found: {full_path}")
+        except hvac.exceptions.InvalidPath as e:
+            raise VaultError(f"Secret not found: {full_path}") from e
         except Exception as e:
             raise VaultError(f"Failed to read secret {full_path}: {e}") from e
 
@@ -160,9 +156,7 @@ class VaultClient:
 
         value = data[field]
         if not isinstance(value, str):
-            raise VaultError(
-                f"Field '{field}' in secret '{path}' is not a string (got {type(value).__name__})"
-            )
+            raise VaultError(f"Field '{field}' in secret '{path}' is not a string (got {type(value).__name__})")
 
         return value
 
@@ -232,7 +226,7 @@ class VaultClient:
             raise VaultError(f"Health check failed: {e}") from e
 
 
-def load_config_from_vault() -> Dict[str, Any]:
+def load_config_from_vault() -> dict[str, Any]:
     """
     Load configuration from Vault (convenience function).
 

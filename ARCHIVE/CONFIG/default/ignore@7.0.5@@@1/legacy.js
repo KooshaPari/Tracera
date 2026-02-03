@@ -270,7 +270,7 @@ function (_, p1, p2) {
 // 'js/' will not match 'a.js'
 // 'js' will match 'a.js' and 'a.js/'
 function (match) {
-  return /\/$/.test(match)
+  return match.endsWith('/')
   // foo/ will not match 'foo'
   ? "".concat(match, "$") // foo matches 'foo' and 'foo/'
   : "".concat(match, "(?=$|\\/$)");
@@ -646,7 +646,7 @@ var isPathValid = function isPathValid(path) {
 var setupWindows = function setupWindows() {
   /* eslint no-control-regex: "off" */
   var makePosix = function makePosix(str) {
-    return /^\\\\\?\\/.test(str) || /[\0-\x1F"<>\|]+/.test(str) ? str : str.replace(/\\/g, '/');
+    return str.startsWith('\\\\?\\') || /[\0-\x1F"<>|]+/.test(str) ? str : str.replace(/\\/g, '/');
   };
   checkPath.convert = makePosix;
 

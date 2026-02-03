@@ -7,26 +7,30 @@ By extracting these, we avoid duplication and keep domain modules focused.
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+import asyncio
+from collections.abc import Awaitable, Callable
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from fastmcp.exceptions import ToolError
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
+from tracertm.api.client import TraceRTMClient
 from tracertm.config.manager import ConfigManager
 from tracertm.database.connection import DatabaseConnection
+from tracertm.storage.conflict_resolver import ConflictStrategy as StorageConflictStrategy
+from tracertm.storage.file_watcher import TraceFileWatcher
 from tracertm.storage.local_storage import LocalStorageManager
 from tracertm.storage.sync_engine import SyncEngine
-from tracertm.storage.conflict_resolver import ConflictStrategy as StorageConflictStrategy
-from tracertm.api.client import TraceRTMClient
-from tracertm.storage.file_watcher import TraceFileWatcher
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 # Import tool modules (tolerate missing FastMCP deps in tests)
 try:
     from tracertm.mcp.tools import core_tools as core
 except Exception:  # pragma: no cover - test fallback
+
     async def _core_unavailable(*_args: Any, **_kwargs: Any):
+        await asyncio.sleep(0)
         raise ToolError("MCP core tools are unavailable in this environment.")
 
     class _CoreStub:
@@ -38,6 +42,7 @@ except Exception:  # pragma: no cover - test fallback
 try:
     from tracertm.mcp.tools import specifications as spec_tools
 except Exception:  # pragma: no cover - test fallback
+
     class _SpecStub:
         pass
 
@@ -86,6 +91,12 @@ def _wrap(result: Any, ctx: Any | None, action: str) -> dict[str, Any]:
     }
 
 
+async def _call_tool(mod: Any, tool_name: str, **kwargs: Any) -> Any:
+    """Invoke a tool by name on a module (handles FunctionTool/callable from @mcp.tool())."""
+    fn = getattr(mod, tool_name)
+    return await cast(Callable[..., Awaitable[Any]], fn)(**kwargs)
+
+
 def _get_access_token_from_ctx() -> Any | None:
     """Get access token from FastMCP context."""
     try:
@@ -130,9 +141,9 @@ async def _maybe_select_project(payload: dict[str, Any], ctx: Any | None) -> Non
     if project_id:
         payload["project_id"] = project_id
         try:
-            await project_tools.select_project(project_id=project_id, ctx=ctx)
+            await _call_tool(project_tools, "select_project", project_id=project_id, ctx=ctx)
         except TypeError:
-            await project_tools.select_project(project_id=project_id)
+            await _call_tool(project_tools, "select_project", project_id=project_id)
 
 
 def _build_sync_engine() -> SyncEngine:
@@ -156,13 +167,14 @@ def _build_sync_engine() -> SyncEngine:
             return []
 
     try:
-        api_client = TraceRTMClient()
+        api_client: TraceRTMClient | _NoopApiClient = TraceRTMClient()
     except Exception:
         api_client = _NoopApiClient()
 
+    # SyncEngine accepts TraceRTMClient; _NoopApiClient is duck-type compatible (get_changes).
     return SyncEngine(
         db_connection=db_connection,
-        api_client=api_client,
+        api_client=api_client,  # type: ignore[arg-type]
         storage_manager=storage_manager,
         conflict_strategy=conflict_strategy,
     )
@@ -179,10 +191,10 @@ def _parse_since(value: str | None) -> datetime | None:
     try:
         if value.endswith("h"):
             hours = int(value[:-1])
-            return datetime.utcnow() - timedelta(hours=hours)
+            return datetime.now(UTC) - timedelta(hours=hours)
         if value.endswith("d"):
             days = int(value[:-1])
-            return datetime.utcnow() - timedelta(days=days)
+            return datetime.now(UTC) - timedelta(days=days)
     except Exception:
         return None
     return None
@@ -190,6 +202,7 @@ def _parse_since(value: str | None) -> datetime | None:
 
 async def _get_async_session() -> AsyncSession:
     """Create async database session."""
+    await asyncio.sleep(0)
     config = ConfigManager()
     database_url = config.get("database_url")
     if not database_url:

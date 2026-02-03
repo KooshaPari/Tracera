@@ -2,9 +2,10 @@
 Integration tests for Epic 5: Agent Metrics (Story 5.6).
 """
 
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta, timezone
 
 import pytest
+
 pytestmark = pytest.mark.integration
 from sqlalchemy.orm import Session
 
@@ -64,7 +65,7 @@ def test_metrics_calculation(temp_project_setup):
             name="test-agent",
             agent_type="ai_agent",
             status="active",
-            last_activity_at=datetime.utcnow().isoformat(),
+            last_activity_at=datetime.now(UTC).isoformat(),
         )
         session.add(agent)
         session.commit()
@@ -85,7 +86,7 @@ def test_metrics_calculation(temp_project_setup):
 
         # Calculate metrics
         service = AgentMetricsService(session)
-        since = datetime.utcnow() - timedelta(hours=1)
+        since = datetime.now(UTC) - timedelta(hours=1)
         metrics = service.calculate_metrics(project_id, agent_id, since)
 
         assert "metrics" in metrics

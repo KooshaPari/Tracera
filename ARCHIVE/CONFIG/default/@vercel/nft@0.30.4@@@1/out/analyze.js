@@ -207,7 +207,7 @@ const excludeAssetFiles = new Set([
     'changelog.md',
 ]);
 let cwd;
-const absoluteRegEx = /^\/[^\/]+|^[a-z]:[\\/][^\\/]+/i;
+const absoluteRegEx = /^\/[^/]+|^[a-z]:[\\/][^\\/]+/i;
 function isAbsolutePathOrUrl(str) {
     if (str instanceof url_1.URL)
         return str.protocol === 'file:';
@@ -226,7 +226,7 @@ function isAbsolutePathOrUrl(str) {
     return false;
 }
 const BOUND_REQUIRE = Symbol();
-const repeatGlobRegEx = /([\/\\]\*\*[\/\\]\*)+/g;
+const repeatGlobRegEx = /([/\\]\*\*[/\\]\*)+/g;
 async function analyze(id, code, job) {
     const assets = new Set();
     const deps = new Set();

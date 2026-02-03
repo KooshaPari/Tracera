@@ -51,7 +51,7 @@ function parseLine(stackLine) {
             id: stackLine,
         };
     }
-    const match2 = stackLine.match(/at ([^\(\)]*):(\d+):(\d+)/);
+    const match2 = stackLine.match(/at ([^()]*):(\d+):(\d+)/);
     if (match2) {
         return {
             fileName: match2[1],

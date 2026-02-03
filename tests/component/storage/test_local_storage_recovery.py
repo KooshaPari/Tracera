@@ -10,21 +10,15 @@ Tests cover:
 - Database integrity
 """
 
-import json
-import time
-from datetime import datetime
 from pathlib import Path
 from threading import Thread
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import patch
 
 import pytest
-from sqlalchemy.exc import IntegrityError, OperationalError
 
-from tracertm.models import Item, Project
+from tracertm.models import Item
 from tracertm.storage.local_storage import (
-    ItemStorage,
     LocalStorageManager,
-    ProjectStorage,
 )
 
 
@@ -93,9 +87,7 @@ class TestLocalStorageRecovery:
 
         config = yaml.safe_load(project_yaml.read_text(encoding="utf-8"))
         del config["id"]
-        project_yaml.write_text(
-            yaml.dump(config, default_flow_style=False), encoding="utf-8"
-        )
+        project_yaml.write_text(yaml.dump(config, default_flow_style=False), encoding="utf-8")
 
         # Register should generate new ID
         project_id = mgr.register_project(project_path)
@@ -127,9 +119,7 @@ class TestLocalStorageRecovery:
         """Test transaction rollback when operation fails."""
         mgr = LocalStorageManager(base_dir=tmp_path)
         project_storage = mgr.get_project_storage("TestProject")
-        project = project_storage.create_or_update_project(
-            name="TestProject", description="Test"
-        )
+        project = project_storage.create_or_update_project(name="TestProject", description="Test")
 
         item_storage = project_storage.get_item_storage(project)
 
@@ -157,7 +147,7 @@ class TestLocalStorageRecovery:
             pass
 
         # Original item should still exist
-        retrieved = item_storage.get_item(item.id)
+        retrieved = item_storage.get_item(str(item.id))
         assert retrieved is not None
         assert retrieved.title == "Original Item"
 
@@ -174,9 +164,7 @@ class TestLocalStorageRecovery:
         def worker(worker_id):
             try:
                 # Each worker increments counter
-                counter, external_id = mgr.increment_project_counter(
-                    project_path, "epic"
-                )
+                counter, external_id = mgr.increment_project_counter(project_path, "epic")
                 results.append((worker_id, counter, external_id))
             except Exception as e:
                 errors.append((worker_id, str(e)))
@@ -203,14 +191,12 @@ class TestLocalStorageRecovery:
         """Test recovery when item creation is interrupted."""
         mgr = LocalStorageManager(base_dir=tmp_path)
         project_storage = mgr.get_project_storage("TestProject")
-        project = project_storage.create_or_update_project(
-            name="TestProject", description="Test"
-        )
+        project = project_storage.create_or_update_project(name="TestProject", description="Test")
 
         item_storage = project_storage.get_item_storage(project)
 
         # Mock markdown write to fail
-        with patch.object(item_storage, "_write_item_markdown", side_effect=IOError("Disk full")):
+        with patch.object(item_storage, "_write_item_markdown", side_effect=OSError("Disk full")):
             with pytest.raises(IOError):
                 item_storage.create_item(
                     title="Incomplete Item",
@@ -232,29 +218,23 @@ class TestLocalStorageRecovery:
         """Test recovery when link creation fails partway."""
         mgr = LocalStorageManager(base_dir=tmp_path)
         project_storage = mgr.get_project_storage("TestProject")
-        project = project_storage.create_or_update_project(
-            name="TestProject", description="Test"
-        )
+        project = project_storage.create_or_update_project(name="TestProject", description="Test")
 
         item_storage = project_storage.get_item_storage(project)
 
         # Create source and target items
-        source = item_storage.create_item(
-            title="Source", item_type="epic", external_id="EPIC-SRC"
-        )
-        target = item_storage.create_item(
-            title="Target", item_type="story", external_id="STORY-TGT"
-        )
+        source = item_storage.create_item(title="Source", item_type="epic", external_id="EPIC-SRC")
+        target = item_storage.create_item(title="Target", item_type="story", external_id="STORY-TGT")
 
         # Mock links.yaml update to fail
-        with patch.object(
-            item_storage, "_update_links_yaml", side_effect=IOError("Write failed")
+        with (
+            patch.object(item_storage, "_update_links_yaml", side_effect=OSError("Write failed")),
+            pytest.raises(IOError),
         ):
-            with pytest.raises(IOError):
-                item_storage.create_link(source.id, target.id, "implements")
+            item_storage.create_link(str(source.id), str(target.id), "implements")
 
         # Link should still be in database
-        links = item_storage.list_links(source_id=source.id)
+        links = item_storage.list_links(source_id=str(source.id))
         # Might exist if commit happened before yaml write
         assert len(links) >= 0
 
@@ -262,9 +242,7 @@ class TestLocalStorageRecovery:
         """Test full-text search with special characters."""
         mgr = LocalStorageManager(base_dir=tmp_path)
         project_storage = mgr.get_project_storage("TestProject")
-        project = project_storage.create_or_update_project(
-            name="TestProject", description="Test"
-        )
+        project = project_storage.create_or_update_project(name="TestProject", description="Test")
 
         item_storage = project_storage.get_item_storage(project)
 
@@ -277,7 +255,7 @@ class TestLocalStorageRecovery:
         )
 
         # Search should handle special characters
-        results = mgr.search_items("special", project_id=project.id)
+        results = mgr.search_items("special", project_id=str(project.id))
         # May or may not find depending on FTS tokenization
         assert isinstance(results, list)
 
@@ -336,9 +314,7 @@ status: todo
         project_yaml = trace_dir / "project.yaml"
         config = yaml.safe_load(project_yaml.read_text(encoding="utf-8"))
         del config["id"]
-        project_yaml.write_text(
-            yaml.dump(config, default_flow_style=False), encoding="utf-8"
-        )
+        project_yaml.write_text(yaml.dump(config, default_flow_style=False), encoding="utf-8")
 
         with pytest.raises(ValueError, match="Project ID not found"):
             mgr.index_project(project_path)
@@ -356,7 +332,7 @@ status: todo
         # Change to deep directory
         import os
 
-        old_cwd = os.getcwd()
+        old_cwd = Path.cwd()
         try:
             os.chdir(deep_dir)
             found = mgr.get_current_project_path()
@@ -370,7 +346,7 @@ status: todo
 
         import os
 
-        old_cwd = os.getcwd()
+        old_cwd = Path.cwd()
         try:
             os.chdir(tmp_path)
             found = mgr.get_current_project_path()
@@ -398,9 +374,7 @@ status: todo
         """Test that updating item preserves existing metadata."""
         mgr = LocalStorageManager(base_dir=tmp_path)
         project_storage = mgr.get_project_storage("TestProject")
-        project = project_storage.create_or_update_project(
-            name="TestProject", description="Test"
-        )
+        project = project_storage.create_or_update_project(name="TestProject", description="Test")
 
         item_storage = project_storage.get_item_storage(project)
 
@@ -413,9 +387,7 @@ status: todo
         )
 
         # Update with new metadata
-        updated = item_storage.update_item(
-            item.id, title="Updated Title", metadata={"new_field": "new_value"}
-        )
+        updated = item_storage.update_item(str(item.id), title="Updated Title", metadata={"new_field": "new_value"})
 
         # Should merge metadata
         assert "custom_field" in updated.item_metadata
@@ -427,18 +399,14 @@ status: todo
         """Test that delete_item performs soft delete."""
         mgr = LocalStorageManager(base_dir=tmp_path)
         project_storage = mgr.get_project_storage("TestProject")
-        project = project_storage.create_or_update_project(
-            name="TestProject", description="Test"
-        )
+        project = project_storage.create_or_update_project(name="TestProject", description="Test")
 
         item_storage = project_storage.get_item_storage(project)
 
-        item = item_storage.create_item(
-            title="To Delete", item_type="epic", external_id="EPIC-DEL"
-        )
+        item = item_storage.create_item(title="To Delete", item_type="epic", external_id="EPIC-DEL")
 
         # Delete
-        item_storage.delete_item(item.id)
+        item_storage.delete_item(str(item.id))
 
         # Should still exist in database with deleted_at set
         session = mgr.get_session()
@@ -453,22 +421,18 @@ status: todo
         """Test that delete_item removes markdown file."""
         mgr = LocalStorageManager(base_dir=tmp_path)
         project_storage = mgr.get_project_storage("TestProject")
-        project = project_storage.create_or_update_project(
-            name="TestProject", description="Test"
-        )
+        project = project_storage.create_or_update_project(name="TestProject", description="Test")
 
         item_storage = project_storage.get_item_storage(project)
 
-        item = item_storage.create_item(
-            title="To Delete", item_type="epic", external_id="EPIC-DEL"
-        )
+        item = item_storage.create_item(title="To Delete", item_type="epic", external_id="EPIC-DEL")
 
         # Check markdown exists
         md_path = project_storage.epics_dir / "EPIC-DEL.md"
         assert md_path.exists()
 
         # Delete
-        item_storage.delete_item(item.id)
+        item_storage.delete_item(str(item.id))
 
         # Markdown should be removed
         assert not md_path.exists()
@@ -479,15 +443,11 @@ status: todo
         project_storage = mgr.get_project_storage("TestProject")
 
         # Create
-        project = project_storage.create_or_update_project(
-            name="TestProject", description="Original"
-        )
+        project = project_storage.create_or_update_project(name="TestProject", description="Original")
         original_id = project.id
 
         # Update
-        updated = project_storage.create_or_update_project(
-            name="TestProject", description="Updated"
-        )
+        updated = project_storage.create_or_update_project(name="TestProject", description="Updated")
 
         assert updated.id == original_id
         assert updated.description == "Updated"
@@ -504,9 +464,7 @@ status: todo
         """Test list_items with various filters."""
         mgr = LocalStorageManager(base_dir=tmp_path)
         project_storage = mgr.get_project_storage("TestProject")
-        project = project_storage.create_or_update_project(
-            name="TestProject", description="Test"
-        )
+        project = project_storage.create_or_update_project(name="TestProject", description="Test")
 
         item_storage = project_storage.get_item_storage(project)
 
@@ -522,14 +480,14 @@ status: todo
             item_type="story",
             external_id="STORY-001",
             status="in_progress",
-            parent_id=epic1.id,
+            parent_id=str(epic1.id),
         )
         story2 = item_storage.create_item(
             title="Story 2",
             item_type="story",
             external_id="STORY-002",
             status="todo",
-            parent_id=epic1.id,
+            parent_id=str(epic1.id),
         )
 
         # Filter by type
@@ -547,39 +505,31 @@ status: todo
         assert len(in_progress) == 1
 
         # Filter by parent
-        children = item_storage.list_items(parent_id=epic1.id)
+        children = item_storage.list_items(parent_id=str(epic1.id))
         assert len(children) == 2
 
     def test_list_links_filters(self, tmp_path: Path):
         """Test list_links with various filters."""
         mgr = LocalStorageManager(base_dir=tmp_path)
         project_storage = mgr.get_project_storage("TestProject")
-        project = project_storage.create_or_update_project(
-            name="TestProject", description="Test"
-        )
+        project = project_storage.create_or_update_project(name="TestProject", description="Test")
 
         item_storage = project_storage.get_item_storage(project)
 
         # Create items and links
-        epic = item_storage.create_item(
-            title="Epic", item_type="epic", external_id="EPIC-001"
-        )
-        story = item_storage.create_item(
-            title="Story", item_type="story", external_id="STORY-001"
-        )
-        test = item_storage.create_item(
-            title="Test", item_type="test", external_id="TEST-001"
-        )
+        epic = item_storage.create_item(title="Epic", item_type="epic", external_id="EPIC-001")
+        story = item_storage.create_item(title="Story", item_type="story", external_id="STORY-001")
+        test = item_storage.create_item(title="Test", item_type="test", external_id="TEST-001")
 
-        link1 = item_storage.create_link(epic.id, story.id, "implements")
-        link2 = item_storage.create_link(story.id, test.id, "tested_by")
+        link1 = item_storage.create_link(str(epic.id), str(story.id), "implements")
+        link2 = item_storage.create_link(str(story.id), str(test.id), "tested_by")
 
         # Filter by source
-        from_epic = item_storage.list_links(source_id=epic.id)
+        from_epic = item_storage.list_links(source_id=str(epic.id))
         assert len(from_epic) == 1
 
         # Filter by target
-        to_story = item_storage.list_links(target_id=story.id)
+        to_story = item_storage.list_links(target_id=str(story.id))
         assert len(to_story) == 1
 
         # Filter by type

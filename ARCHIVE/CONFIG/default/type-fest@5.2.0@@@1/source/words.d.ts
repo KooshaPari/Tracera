@@ -117,4 +117,4 @@ type WordsImplementation<
 								: WordsImplementation<RemainingCharacters, Options, FirstCharacter, `${CurrentWord}${FirstCharacter}`>
 	: [...SkipEmptyWord<CurrentWord>];
 
-export {};
+

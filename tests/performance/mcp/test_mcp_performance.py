@@ -16,23 +16,20 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import pathlib
 import time
-from typing import Any
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
-import pytest_asyncio
 
 from tests.performance.conftest import (
-    PerformanceThresholds,
-    assert_performance,
     measure_time,
 )
-
 
 # ============================================================
 # Performance Thresholds for MCP Operations
 # ============================================================
+
 
 class MCPPerformanceThresholds:
     """Performance targets for MCP optimizations."""
@@ -63,6 +60,7 @@ class MCPPerformanceThresholds:
 # ============================================================
 # Fixtures
 # ============================================================
+
 
 @pytest.fixture
 def mcp_server_env():
@@ -98,14 +96,10 @@ def mock_registry():
 
     # Register sample tools
     registry.register_tool_loader(
-        "test_tool_fast",
-        "tracertm.mcp.tools.params.project",
-        {"description": "Fast test tool", "domain": "test"}
+        "test_tool_fast", "tracertm.mcp.tools.params.project", {"description": "Fast test tool", "domain": "test"}
     )
     registry.register_tool_loader(
-        "test_tool_slow",
-        "tracertm.mcp.tools.params.item",
-        {"description": "Slow test tool", "domain": "test"}
+        "test_tool_slow", "tracertm.mcp.tools.params.item", {"description": "Slow test tool", "domain": "test"}
     )
 
     return registry
@@ -114,6 +108,7 @@ def mock_registry():
 @pytest.fixture
 def token_counter():
     """Utility to count tokens in responses."""
+
     def count_tokens(text: str) -> int:
         """Simple token counting (approximation: ~4 chars per token)."""
         return len(text) // 4
@@ -125,17 +120,16 @@ def token_counter():
 # Test: Tool Registration Performance
 # ============================================================
 
+
 class TestToolRegistrationPerformance:
     """Test tool registration optimization."""
 
     def test_tool_registration_under_100ms(self, mcp_server_env, perf_tracker):
         """Test that all tools can be registered in <100ms."""
-        from tracertm.mcp.registry import register_all_tools, get_registry
+        from tracertm.mcp.registry import get_registry, register_all_tools
 
         with measure_time(
-            "tool_registration",
-            perf_tracker=perf_tracker,
-            threshold_ms=MCPPerformanceThresholds.TOOL_REGISTRATION_MS
+            "tool_registration", perf_tracker=perf_tracker, threshold_ms=MCPPerformanceThresholds.TOOL_REGISTRATION_MS
         ) as timing:
             register_all_tools()
 
@@ -156,9 +150,7 @@ class TestToolRegistrationPerformance:
 
         # Register a tool
         registry.register_tool_loader(
-            "test_lazy_tool",
-            "tracertm.mcp.tools.params.project",
-            {"description": "Test lazy loading"}
+            "test_lazy_tool", "tracertm.mcp.tools.params.project", {"description": "Test lazy loading"}
         )
 
         # Verify module not loaded yet
@@ -174,9 +166,7 @@ class TestToolRegistrationPerformance:
         """Test that lazy loading overhead is <10ms per tool."""
 
         with measure_time(
-            "lazy_load_overhead",
-            perf_tracker=perf_tracker,
-            threshold_ms=MCPPerformanceThresholds.LAZY_LOAD_OVERHEAD_MS
+            "lazy_load_overhead", perf_tracker=perf_tracker, threshold_ms=MCPPerformanceThresholds.LAZY_LOAD_OVERHEAD_MS
         ) as timing:
             mock_registry.load_tool("test_tool_fast")
 
@@ -192,9 +182,7 @@ class TestToolRegistrationPerformance:
         # Register multiple tools
         for i in range(10):
             registry.register_tool_loader(
-                f"batch_tool_{i}",
-                "tracertm.mcp.tools.params.project",
-                {"description": f"Batch tool {i}", "batch": i}
+                f"batch_tool_{i}", "tracertm.mcp.tools.params.project", {"description": f"Batch tool {i}", "batch": i}
             )
 
         # Verify metadata is stored
@@ -211,6 +199,7 @@ class TestToolRegistrationPerformance:
 # Test: Cold Start Performance
 # ============================================================
 
+
 class TestColdStartPerformance:
     """Test server cold start optimization."""
 
@@ -218,18 +207,18 @@ class TestColdStartPerformance:
         """Test that server cold start is <200ms."""
         # Clear any cached imports
         import sys
-        mcp_modules = [m for m in sys.modules.keys() if "tracertm.mcp" in m]
+
+        mcp_modules = [m for m in sys.modules if "tracertm.mcp" in m]
         for module in mcp_modules:
             if module != "tracertm.mcp.registry":  # Keep registry
                 sys.modules.pop(module, None)
 
         with measure_time(
-            "cold_start",
-            perf_tracker=perf_tracker,
-            threshold_ms=MCPPerformanceThresholds.COLD_START_MS
+            "cold_start", perf_tracker=perf_tracker, threshold_ms=MCPPerformanceThresholds.COLD_START_MS
         ) as timing:
             # Import and build server
             from tracertm.mcp.core import build_mcp_server
+
             server = build_mcp_server()
 
         assert server is not None
@@ -245,7 +234,6 @@ class TestColdStartPerformance:
         before_modules = set(sys.modules.keys())
 
         # Import core server
-        from tracertm.mcp import core
 
         # Record modules after import
         after_modules = set(sys.modules.keys())
@@ -255,9 +243,7 @@ class TestColdStartPerformance:
         mcp_tool_modules = [m for m in new_modules if "tracertm.mcp.tools.params" in m]
 
         # Should not import any tool parameter modules
-        assert len(mcp_tool_modules) == 0, (
-            f"Tool modules imported on startup: {mcp_tool_modules}"
-        )
+        assert len(mcp_tool_modules) == 0, f"Tool modules imported on startup: {mcp_tool_modules}"
 
         print(f"\n✓ Minimal imports: {len(new_modules)} total, 0 tool modules")
 
@@ -265,6 +251,7 @@ class TestColdStartPerformance:
 # ============================================================
 # Test: Tool Response Time
 # ============================================================
+
 
 class TestToolResponseTime:
     """Test tool execution performance."""
@@ -282,9 +269,7 @@ class TestToolResponseTime:
             return {"status": "success", "data": "result"}
 
         with measure_time(
-            "simple_tool_response",
-            perf_tracker=perf_tracker,
-            threshold_ms=MCPPerformanceThresholds.SIMPLE_TOOL_MS
+            "simple_tool_response", perf_tracker=perf_tracker, threshold_ms=MCPPerformanceThresholds.SIMPLE_TOOL_MS
         ) as timing:
             result = await simple_tool()
 
@@ -301,20 +286,10 @@ class TestToolResponseTime:
         async def complex_tool():
             # Simulate complex analysis (graph traversal, etc.)
             await asyncio.sleep(0.2)  # Simulate 200ms work
-            return {
-                "status": "success",
-                "analysis": {
-                    "nodes": 100,
-                    "edges": 250,
-                    "cycles": [],
-                    "paths": []
-                }
-            }
+            return {"status": "success", "analysis": {"nodes": 100, "edges": 250, "cycles": [], "paths": []}}
 
         with measure_time(
-            "complex_tool_response",
-            perf_tracker=perf_tracker,
-            threshold_ms=MCPPerformanceThresholds.COMPLEX_TOOL_MS
+            "complex_tool_response", perf_tracker=perf_tracker, threshold_ms=MCPPerformanceThresholds.COMPLEX_TOOL_MS
         ) as timing:
             result = await complex_tool()
 
@@ -353,6 +328,7 @@ class TestToolResponseTime:
 # Test: Token Usage
 # ============================================================
 
+
 class TestTokenUsage:
     """Test token optimization."""
 
@@ -362,10 +338,7 @@ class TestTokenUsage:
         # Simulate a tool response
         response = {
             "status": "success",
-            "items": [
-                {"id": f"item-{i}", "title": f"Item {i}", "status": "todo"}
-                for i in range(10)
-            ]
+            "items": [{"id": f"item-{i}", "title": f"Item {i}", "status": "todo"} for i in range(10)],
         }
 
         response_text = json.dumps(response)
@@ -380,12 +353,7 @@ class TestTokenUsage:
     def test_error_response_minimal_tokens(self, token_counter):
         """Test that error responses use minimal tokens."""
 
-        error_response = {
-            "error": {
-                "code": "VALIDATION_ERROR",
-                "message": "Invalid parameter: project_id required"
-            }
-        }
+        error_response = {"error": {"code": "VALIDATION_ERROR", "message": "Invalid parameter: project_id required"}}
 
         response_text = json.dumps(error_response)
         token_count = token_counter(response_text)
@@ -404,16 +372,8 @@ class TestTokenUsage:
 
         page_response = {
             "status": "success",
-            "items": [
-                {"id": f"item-{i}", "title": f"Item {i}"}
-                for i in range(page_size)
-            ],
-            "pagination": {
-                "page": 1,
-                "page_size": page_size,
-                "total": total_items,
-                "has_more": True
-            }
+            "items": [{"id": f"item-{i}", "title": f"Item {i}"} for i in range(page_size)],
+            "pagination": {"page": 1, "page_size": page_size, "total": total_items, "has_more": True},
         }
 
         response_text = json.dumps(page_response)
@@ -428,6 +388,7 @@ class TestTokenUsage:
 # ============================================================
 # Test: Streaming and Compression
 # ============================================================
+
 
 class TestStreamingAndCompression:
     """Test streaming responses and compression."""
@@ -447,7 +408,7 @@ class TestStreamingAndCompression:
         with measure_time(
             "streaming_first_chunk",
             perf_tracker=perf_tracker,
-            threshold_ms=MCPPerformanceThresholds.STREAMING_LATENCY_MS
+            threshold_ms=MCPPerformanceThresholds.STREAMING_LATENCY_MS,
         ) as timing:
             gen = streaming_generator()
             first_chunk = await gen.__anext__()
@@ -469,14 +430,14 @@ class TestStreamingAndCompression:
                     "title": f"Test Item {i}",
                     "description": "This is a test description that repeats many times. " * 10,
                     "status": "todo",
-                    "priority": "medium"
+                    "priority": "medium",
                 }
                 for i in range(50)
             ]
         })
 
-        original_size = len(data.encode('utf-8'))
-        compressed_data = gzip.compress(data.encode('utf-8'))
+        original_size = len(data.encode("utf-8"))
+        compressed_data = gzip.compress(data.encode("utf-8"))
         compressed_size = len(compressed_data)
 
         compression_ratio = compressed_size / original_size
@@ -492,6 +453,7 @@ class TestStreamingAndCompression:
 # ============================================================
 # Test: Connection Pooling
 # ============================================================
+
 
 class TestConnectionPooling:
     """Test connection pooling performance."""
@@ -518,9 +480,7 @@ class TestConnectionPooling:
         pool = MockPool()
 
         with measure_time(
-            "pool_acquire",
-            perf_tracker=perf_tracker,
-            threshold_ms=MCPPerformanceThresholds.POOL_CONNECTION_MS
+            "pool_acquire", perf_tracker=perf_tracker, threshold_ms=MCPPerformanceThresholds.POOL_CONNECTION_MS
         ) as timing:
             conn = await pool.acquire()
 
@@ -549,11 +509,10 @@ class TestConnectionPooling:
                         self.reused_count += 1
                     return conn
                 # Create new connection (pool exhausted)
-                new_conn = MagicMock(id=self.acquired_count)
-                return new_conn
+                return MagicMock(id=self.acquired_count)
 
             async def release(self, conn):
-                if hasattr(conn, 'id') and conn.id < self.size:
+                if hasattr(conn, "id") and conn.id < self.size:
                     self.available.append(conn)
 
         pool = MockPool()
@@ -567,8 +526,7 @@ class TestConnectionPooling:
         reuse_rate = (pool.reused_count / pool.acquired_count) * 100
 
         assert reuse_rate >= MCPPerformanceThresholds.POOL_REUSE_PERCENTAGE, (
-            f"Low connection reuse: {reuse_rate:.1f}% "
-            f"(target: {MCPPerformanceThresholds.POOL_REUSE_PERCENTAGE}%)"
+            f"Low connection reuse: {reuse_rate:.1f}% (target: {MCPPerformanceThresholds.POOL_REUSE_PERCENTAGE}%)"
         )
 
         print(f"\n✓ Connection reuse rate: {reuse_rate:.1f}%")
@@ -577,6 +535,7 @@ class TestConnectionPooling:
 # ============================================================
 # Test: End-to-End Performance
 # ============================================================
+
 
 class TestEndToEndPerformance:
     """Test complete request-response cycle performance."""
@@ -603,9 +562,7 @@ class TestEndToEndPerformance:
             return {"status": "success", "result": "data"}
 
         with measure_time(
-            "complete_tool_call",
-            perf_tracker=perf_tracker,
-            threshold_ms=MCPPerformanceThresholds.SIMPLE_TOOL_MS
+            "complete_tool_call", perf_tracker=perf_tracker, threshold_ms=MCPPerformanceThresholds.SIMPLE_TOOL_MS
         ) as timing:
             result = await complete_tool_call()
 
@@ -635,6 +592,7 @@ class TestEndToEndPerformance:
 # Performance Baselines
 # ============================================================
 
+
 def test_save_performance_baselines(tmp_path, perf_tracker):
     """Save performance baselines for future comparison."""
 
@@ -648,7 +606,7 @@ def test_save_performance_baselines(tmp_path, perf_tracker):
             p99_time_ms=95.0,
             throughput_ops_sec=20.0,
             max_memory_mb=50.0,
-            notes="Tool registration with lazy loading"
+            notes="Tool registration with lazy loading",
         ),
         PerformanceBaseline(
             operation="cold_start",
@@ -657,24 +615,20 @@ def test_save_performance_baselines(tmp_path, perf_tracker):
             p99_time_ms=195.0,
             throughput_ops_sec=6.7,
             max_memory_mb=75.0,
-            notes="Server cold start time"
+            notes="Server cold start time",
         ),
     ]
 
     # Save baselines
     baselines_file = tmp_path / "mcp_performance_baselines.json"
-    with open(baselines_file, "w") as f:
-        json.dump(
-            [b.to_dict() for b in baselines],
-            f,
-            indent=2
-        )
+    with pathlib.Path(baselines_file).open("w") as f:
+        json.dump([b.to_dict() for b in baselines], f, indent=2)
 
     # Verify saved
     assert baselines_file.exists()
 
     # Load and verify
-    with open(baselines_file) as f:
+    with pathlib.Path(baselines_file).open() as f:
         loaded = json.load(f)
 
     assert len(loaded) == 2

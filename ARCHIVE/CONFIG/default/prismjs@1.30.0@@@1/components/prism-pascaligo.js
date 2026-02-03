@@ -46,8 +46,8 @@
 			// Decimal
 			/\b\d+(?:\.\d+)?(?:e[+-]?\d+)?(?:mtz|n)?/i
 		],
-		'operator': /->|=\/=|\.\.|\*\*|:=|<[<=>]?|>[>=]?|[+\-*\/]=?|[@^=|]|\b(?:and|mod|or)\b/,
-		'punctuation': /\(\.|\.\)|[()\[\]:;,.{}]/
+		'operator': /->|=\/=|\.\.|\*\*|:=|<[<=>]?|>[>=]?|[+\-*/]=?|[@^=|]|\b(?:and|mod|or)\b/,
+		'punctuation': /\(\.|\.\)|[()[\]:;,.{}]/
 	};
 
 	var classNameInside = ['comment', 'keyword', 'builtin', 'operator', 'punctuation'].reduce(function (accum, key) {

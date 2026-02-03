@@ -13,7 +13,7 @@ export default function rip(Prism) {
       greedy: true
     },
     char: {
-      pattern: /\B`[^\s`'",.:;#\/\\()<>\[\]{}]\b/,
+      pattern: /\B`[^\s`'",.:;#/\\()<>[\]{}]\b/,
       greedy: true
     },
     string: {
@@ -22,7 +22,7 @@ export default function rip(Prism) {
     },
     regex: {
       pattern:
-        /(^|[^/])\/(?!\/)(?:\[[^\n\r\]]*\]|\\.|[^/\\\r\n\[])+\/(?=\s*(?:$|[\r\n,.;})]))/,
+        /(^|[^/])\/(?!\/)(?:\[[^\n\r\]]*\]|\\.|[^/\\\r\n[])+\/(?=\s*(?:$|[\r\n,.;})]))/,
       lookbehind: true,
       greedy: true
     },
@@ -33,9 +33,9 @@ export default function rip(Prism) {
     date: /\b\d{4}-\d{2}-\d{2}\b/,
     time: /\b\d{2}:\d{2}:\d{2}\b/,
     datetime: /\b\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\b/,
-    symbol: /:[^\d\s`'",.:;#\/\\()<>\[\]{}][^\s`'",.:;#\/\\()<>\[\]{}]*/,
+    symbol: /:[^\d\s`'",.:;#/\\()<>[\]{}][^\s`'",.:;#/\\()<>[\]{}]*/,
     number: /[+-]?\b(?:\d+\.\d+|\d+)\b/,
-    punctuation: /(?:\.{2,3})|[`,.:;=\/\\()<>\[\]{}]/,
-    reference: /[^\d\s`'",.:;#\/\\()<>\[\]{}][^\s`'",.:;#\/\\()<>\[\]{}]*/
+    punctuation: /(?:\.{2,3})|[`,.:;=/\\()<>[\]{}]/,
+    reference: /[^\d\s`'",.:;#/\\()<>[\]{}][^\s`'",.:;#/\\()<>[\]{}]*/
   }
 }

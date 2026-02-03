@@ -25,4 +25,4 @@ export declare type _Group<L extends List, N extends number> = __Group<L, N> ext
  * ```
  */
 export declare type Group<L extends List, N extends number> = L extends unknown ? N extends unknown ? _Group<L, N> : never : never;
-export {};
+

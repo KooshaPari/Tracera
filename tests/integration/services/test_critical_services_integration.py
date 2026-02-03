@@ -15,11 +15,10 @@ Total Tests: 65+ integration tests
 Approach: Real database, minimal mocking, comprehensive edge case coverage
 """
 
-import json
+import asyncio
 import tempfile
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any
 
 import pytest
 import pytest_asyncio
@@ -28,24 +27,21 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
-from tracertm.models.base import Base
 from tracertm.models.event import Event
 from tracertm.models.item import Item
 from tracertm.models.link import Link
 from tracertm.models.project import Project
-from tracertm.repositories.event_repository import EventRepository
 from tracertm.repositories.item_repository import ItemRepository
 from tracertm.repositories.link_repository import LinkRepository
-from tracertm.services.bulk_operation_service import BulkOperationService
 from tracertm.services.chaos_mode_service import ChaosModeService
 from tracertm.services.cycle_detection_service import CycleDetectionService
 from tracertm.services.shortest_path_service import ShortestPathService
 from tracertm.services.stateless_ingestion_service import StatelessIngestionService
 
-
 # ============================================================
 # FIXTURES
 # ============================================================
+
 
 @pytest_asyncio.fixture
 async def test_project(db_session: AsyncSession) -> Project:
@@ -93,9 +89,7 @@ async def sample_items(db_session: AsyncSession, test_project: Project) -> list[
 
 
 @pytest_asyncio.fixture
-async def dependency_graph(
-    db_session: AsyncSession, test_project: Project, sample_items: list[Item]
-) -> list[Link]:
+async def dependency_graph(db_session: AsyncSession, test_project: Project, sample_items: list[Item]) -> list[Link]:
     """Create a dependency graph for cycle and path testing."""
     links_repo = LinkRepository(db_session)
     links = []
@@ -191,7 +185,7 @@ class TestStatelessIngestionService:
             assert result["items_created"] == 4  # 1 epic + 2 stories + 1 task
             assert result["project_id"] == test_project.id
         finally:
-            Path(file_path).unlink()
+            await asyncio.to_thread(Path(file_path).unlink)
 
     def test_ingest_markdown_with_frontmatter(
         self, db_session: AsyncSession, test_project: Project, sync_db_session: Session
@@ -266,9 +260,7 @@ class TestStatelessIngestionService:
         with pytest.raises(FileNotFoundError):
             service.ingest_markdown("/nonexistent/file.md")
 
-    def test_ingest_markdown_creates_project_if_missing(
-        self, sync_db_session: Session
-    ):
+    def test_ingest_markdown_creates_project_if_missing(self, sync_db_session: Session):
         """
         Given: No project_id provided
         When: Ingest markdown
@@ -312,9 +304,7 @@ class TestStatelessIngestionService:
 
     # ========== MDX Ingestion Tests ==========
 
-    def test_ingest_mdx_simple_file(
-        self, db_session: AsyncSession, test_project: Project, sync_db_session: Session
-    ):
+    def test_ingest_mdx_simple_file(self, db_session: AsyncSession, test_project: Project, sync_db_session: Session):
         """
         Given: MDX file with JSX components
         When: Ingest MDX
@@ -402,9 +392,7 @@ class TestStatelessIngestionService:
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_yaml_openapi_spec(
-        self, db_session: AsyncSession, test_project: Project, sync_db_session: Session
-    ):
+    def test_ingest_yaml_openapi_spec(self, db_session: AsyncSession, test_project: Project, sync_db_session: Session):
         """
         Given: OpenAPI spec YAML file
         When: Ingest YAML
@@ -446,9 +434,7 @@ class TestStatelessIngestionService:
         finally:
             Path(file_path).unlink()
 
-    def test_ingest_yaml_bmad_format(
-        self, db_session: AsyncSession, test_project: Project, sync_db_session: Session
-    ):
+    def test_ingest_yaml_bmad_format(self, db_session: AsyncSession, test_project: Project, sync_db_session: Session):
         """
         Given: BMad format YAML with requirements
         When: Ingest YAML
@@ -473,9 +459,7 @@ class TestStatelessIngestionService:
                         "parent_id": "REQ-001",
                     },
                 ],
-                "traceability": [
-                    {"source": "REQ-001", "target": "REQ-002", "type": "parent_of"}
-                ],
+                "traceability": [{"source": "REQ-001", "target": "REQ-002", "type": "parent_of"}],
             }
             yaml.dump(bmad_data, f)
             file_path = f.name
@@ -576,21 +560,11 @@ class TestStatelessIngestionService:
                     "/users": {
                         "post": {
                             "requestBody": {
-                                "content": {
-                                    "application/json": {
-                                        "schema": {"$ref": "#/components/schemas/User"}
-                                    }
-                                }
+                                "content": {"application/json": {"schema": {"$ref": "#/components/schemas/User"}}}
                             },
                             "responses": {
                                 "200": {
-                                    "content": {
-                                        "application/json": {
-                                            "schema": {
-                                                "$ref": "#/components/schemas/User"
-                                            }
-                                        }
-                                    }
+                                    "content": {"application/json": {"schema": {"$ref": "#/components/schemas/User"}}}
                                 }
                             },
                         }
@@ -851,9 +825,7 @@ class TestCycleDetectionService:
     # ========== detect_cycles_async Tests ==========
 
     @pytest.mark.asyncio
-    async def test_detect_cycles_async(
-        self, db_session: AsyncSession, test_project: Project, sample_items: list[Item]
-    ):
+    async def test_detect_cycles_async(self, db_session: AsyncSession, test_project: Project, sample_items: list[Item]):
         """
         Given: AsyncSession and dependency graph
         When: Call detect_cycles_async
@@ -877,14 +849,12 @@ class TestCycleDetectionService:
 
         items_repo = ItemRepository(db_session)
         links_repo_for_service = LinkRepository(db_session)
-        service = CycleDetectionService(
-            db_session, items=items_repo, links=links_repo_for_service
-        )
+        service = CycleDetectionService(db_session, items=items_repo, links=links_repo_for_service)
 
         result = await service.detect_cycles_async(test_project.id)
 
-        assert result.has_cycles is True
-        assert result.cycle_count >= 1
+        assert result["has_cycles"] is True
+        assert result["cycle_count"] >= 1
 
     @pytest.mark.asyncio
     async def test_detect_cycles_async_multiple_link_types(
@@ -914,15 +884,11 @@ class TestCycleDetectionService:
 
         items_repo = ItemRepository(db_session)
         links_repo_for_service = LinkRepository(db_session)
-        service = CycleDetectionService(
-            db_session, items=items_repo, links=links_repo_for_service
-        )
+        service = CycleDetectionService(db_session, items=items_repo, links=links_repo_for_service)
 
-        result = await service.detect_cycles_async(
-            test_project.id, link_types=["implements", "depends_on"]
-        )
+        result = await service.detect_cycles_async(test_project.id, link_types=["implements", "depends_on"])
 
-        assert result.has_cycles is True
+        assert result["has_cycles"] is True
 
     # ========== detect_missing_dependencies Tests ==========
 
@@ -1123,9 +1089,7 @@ class TestCycleDetectionService:
         """
         service = CycleDetectionService(sync_db_session)
 
-        result = service.analyze_impact(
-            test_project.id, sample_items[0].id, max_depth=1
-        )
+        result = service.analyze_impact(test_project.id, sample_items[0].id, max_depth=1)
 
         # Should only find direct dependents, not transitive
         assert "max_depth_reached" in result
@@ -1169,9 +1133,7 @@ class TestChaosModeService:
         assert "total_items" in result
 
     @pytest.mark.asyncio
-    async def test_detect_zombies_finds_stale_orphans(
-        self, db_session: AsyncSession, test_project: Project
-    ):
+    async def test_detect_zombies_finds_stale_orphans(self, db_session: AsyncSession, test_project: Project):
         """
         Given: Orphaned items not updated in 30+ days
         When: Detect zombies
@@ -1187,7 +1149,7 @@ class TestChaosModeService:
             item_type="feature",
         )
         # Manually set old updated_at
-        zombie.updated_at = datetime.utcnow() - timedelta(days=60)
+        zombie.updated_at = datetime.now(UTC) - timedelta(days=60)
         await db_session.commit()
 
         service = ChaosModeService(db_session)
@@ -1221,9 +1183,7 @@ class TestChaosModeService:
         assert "transitive_impact" in result
 
     @pytest.mark.asyncio
-    async def test_analyze_impact_item_not_found(
-        self, db_session: AsyncSession, test_project: Project
-    ):
+    async def test_analyze_impact_item_not_found(self, db_session: AsyncSession, test_project: Project):
         """
         Given: Nonexistent item ID
         When: Analyze impact
@@ -1252,9 +1212,7 @@ class TestChaosModeService:
         """
         service = ChaosModeService(db_session)
 
-        snapshot = await service.create_temporal_snapshot(
-            test_project.id, "Snapshot 1", agent_id="test_agent"
-        )
+        snapshot = await service.create_temporal_snapshot(test_project.id, "Snapshot 1", agent_id="test_agent")
 
         assert snapshot["name"] == "Snapshot 1"
         assert snapshot["project_id"] == test_project.id
@@ -1271,9 +1229,7 @@ class TestChaosModeService:
     # ========== mass_update_items Tests ==========
 
     @pytest.mark.asyncio
-    async def test_mass_update_items(
-        self, db_session: AsyncSession, test_project: Project, sample_items: list[Item]
-    ):
+    async def test_mass_update_items(self, db_session: AsyncSession, test_project: Project, sample_items: list[Item]):
         """
         Given: Multiple item IDs
         When: Mass update with new values
@@ -1284,9 +1240,7 @@ class TestChaosModeService:
         item_ids = [sample_items[0].id, sample_items[1].id]
         updates = {"status": "done", "priority": "high"}
 
-        result = await service.mass_update_items(
-            test_project.id, item_ids, updates, agent_id="mass_updater"
-        )
+        result = await service.mass_update_items(test_project.id, item_ids, updates, agent_id="mass_updater")
 
         assert result["updated_count"] == 2
         assert result["error_count"] == 0
@@ -1349,9 +1303,7 @@ class TestChaosModeService:
     # ========== explode_file Tests ==========
 
     @pytest.mark.asyncio
-    async def test_explode_file_markdown_headers(
-        self, db_session: AsyncSession, test_project: Project
-    ):
+    async def test_explode_file_markdown_headers(self, db_session: AsyncSession, test_project: Project):
         """
         Given: File content with markdown headers
         When: Explode file
@@ -1367,16 +1319,12 @@ class TestChaosModeService:
 """
         service = ChaosModeService(db_session)
 
-        items_created = await service.explode_file(
-            content, test_project.id, view="FEATURE"
-        )
+        items_created = await service.explode_file(content, test_project.id, view="FEATURE")
 
         assert items_created >= 4
 
     @pytest.mark.asyncio
-    async def test_explode_file_yaml_list(
-        self, db_session: AsyncSession, test_project: Project
-    ):
+    async def test_explode_file_yaml_list(self, db_session: AsyncSession, test_project: Project):
         """
         Given: YAML-style list items
         When: Explode file
@@ -1394,9 +1342,7 @@ class TestChaosModeService:
     # ========== track_scope_crash Tests ==========
 
     @pytest.mark.asyncio
-    async def test_track_scope_crash(
-        self, db_session: AsyncSession, test_project: Project, sample_items: list[Item]
-    ):
+    async def test_track_scope_crash(self, db_session: AsyncSession, test_project: Project, sample_items: list[Item]):
         """
         Given: Multiple item IDs to cancel
         When: Track scope crash
@@ -1405,9 +1351,7 @@ class TestChaosModeService:
         service = ChaosModeService(db_session)
 
         item_ids = [sample_items[0].id, sample_items[1].id]
-        result = await service.track_scope_crash(
-            test_project.id, "Budget constraints", item_ids, agent_id="pm"
-        )
+        result = await service.track_scope_crash(test_project.id, "Budget constraints", item_ids, agent_id="pm")
 
         assert result["items_affected"] == 2
         assert result["reason"] == "Budget constraints"
@@ -1420,9 +1364,7 @@ class TestChaosModeService:
     # ========== cleanup_zombies Tests ==========
 
     @pytest.mark.asyncio
-    async def test_cleanup_zombies(
-        self, db_session: AsyncSession, test_project: Project
-    ):
+    async def test_cleanup_zombies(self, db_session: AsyncSession, test_project: Project):
         """
         Given: Zombie items exist
         When: Cleanup zombies
@@ -1436,7 +1378,7 @@ class TestChaosModeService:
             view="FEATURE",
             item_type="feature",
         )
-        zombie.updated_at = datetime.utcnow() - timedelta(days=60)
+        zombie.updated_at = datetime.now(UTC) - timedelta(days=60)
         await db_session.commit()
 
         service = ChaosModeService(db_session)
@@ -1501,9 +1443,7 @@ class TestShortestPathService:
 
         service = ShortestPathService(db_session)
 
-        result = await service.find_shortest_path(
-            test_project.id, sample_items[0].id, sample_items[1].id
-        )
+        result = await service.find_shortest_path(test_project.id, sample_items[0].id, sample_items[1].id)
 
         assert result.exists is True
         assert result.distance == 1
@@ -1527,7 +1467,9 @@ class TestShortestPathService:
         service = ShortestPathService(db_session)
 
         result = await service.find_shortest_path(
-            test_project.id, sample_items[0].id, sample_items[3].id  # A to D
+            test_project.id,
+            sample_items[0].id,
+            sample_items[3].id,  # A to D
         )
 
         assert result.exists is True
@@ -1550,9 +1492,7 @@ class TestShortestPathService:
         service = ShortestPathService(db_session)
 
         # Try to find path from D to A (no reverse path exists)
-        result = await service.find_shortest_path(
-            test_project.id, sample_items[3].id, sample_items[0].id
-        )
+        result = await service.find_shortest_path(test_project.id, sample_items[3].id, sample_items[0].id)
 
         assert result.exists is False
         assert result.distance == -1
@@ -1653,9 +1593,7 @@ class TestShortestPathService:
 
         service = ShortestPathService(db_session)
 
-        result = await service.find_shortest_path(
-            test_project.id, sample_items[0].id, sample_items[3].id
-        )
+        result = await service.find_shortest_path(test_project.id, sample_items[0].id, sample_items[3].id)
 
         assert result.exists is True
         assert result.distance == 1  # Takes shortest path
@@ -1674,9 +1612,7 @@ class TestShortestPathService:
         """
         service = ShortestPathService(db_session)
 
-        result = await service.find_shortest_path(
-            test_project.id, sample_items[0].id, sample_items[0].id
-        )
+        result = await service.find_shortest_path(test_project.id, sample_items[0].id, sample_items[0].id)
 
         assert result.exists is True
         assert result.distance == 0
@@ -1700,7 +1636,8 @@ class TestShortestPathService:
         service = ShortestPathService(db_session)
 
         results = await service.find_all_shortest_paths(
-            test_project.id, sample_items[0].id  # From A
+            test_project.id,
+            sample_items[0].id,  # From A
         )
 
         assert len(results) >= 1
@@ -1732,13 +1669,11 @@ class TestShortestPathService:
 
         service = ShortestPathService(db_session)
 
-        results = await service.find_all_shortest_paths(
-            test_project.id, sample_items[0].id
-        )
+        results = await service.find_all_shortest_paths(test_project.id, sample_items[0].id)
 
         # C should be unreachable
-        if sample_items[2].id in results:
-            assert results[sample_items[2].id].exists is False
+        if str(sample_items[2].id) in results:
+            assert results[str(sample_items[2].id)].exists is False
 
     @pytest.mark.asyncio
     async def test_find_all_shortest_paths_filter_link_types(
@@ -1771,13 +1706,11 @@ class TestShortestPathService:
 
         service = ShortestPathService(db_session)
 
-        results = await service.find_all_shortest_paths(
-            test_project.id, sample_items[0].id, link_types=["implements"]
-        )
+        results = await service.find_all_shortest_paths(test_project.id, sample_items[0].id, link_types=["implements"])
 
         # Should find B but not C (depends_on filtered out)
-        assert sample_items[1].id in results
-        assert results[sample_items[1].id].exists is True
+        assert str(sample_items[1].id) in results
+        assert results[str(sample_items[1].id)].exists is True
 
     @pytest.mark.asyncio
     async def test_find_all_shortest_paths_empty_graph(
@@ -1790,13 +1723,11 @@ class TestShortestPathService:
         """
         service = ShortestPathService(db_session)
 
-        results = await service.find_all_shortest_paths(
-            test_project.id, sample_items[0].id
-        )
+        results = await service.find_all_shortest_paths(test_project.id, sample_items[0].id)
 
         # Only source should be reachable (to itself)
-        assert results[sample_items[0].id].exists is True
-        assert results[sample_items[0].id].distance == 0
+        assert results[str(sample_items[0].id)].exists is True
+        assert results[str(sample_items[0].id)].distance == 0
 
     @pytest.mark.asyncio
     async def test_shortest_path_link_types_tracking(
@@ -1828,9 +1759,7 @@ class TestShortestPathService:
 
         service = ShortestPathService(db_session)
 
-        result = await service.find_shortest_path(
-            test_project.id, sample_items[0].id, sample_items[2].id
-        )
+        result = await service.find_shortest_path(test_project.id, sample_items[0].id, sample_items[2].id)
 
         assert result.exists is True
         assert len(result.link_types) >= 2
@@ -1865,12 +1794,10 @@ class TestEdgeCasesAndErrorHandling:
 
             assert result["items_created"] >= 2
         finally:
-            Path(file_path).unlink()
+            await asyncio.to_thread(Path(file_path).unlink)
 
     @pytest.mark.asyncio
-    async def test_cycle_detection_empty_project(
-        self, db_session: AsyncSession, sync_db_session: Session
-    ):
+    async def test_cycle_detection_empty_project(self, db_session: AsyncSession, sync_db_session: Session):
         """
         Given: Project with no items or links
         When: Detect cycles
@@ -1887,9 +1814,7 @@ class TestEdgeCasesAndErrorHandling:
         assert result.cycle_count == 0
 
     @pytest.mark.asyncio
-    async def test_shortest_path_large_graph_performance(
-        self, db_session: AsyncSession, test_project: Project
-    ):
+    async def test_shortest_path_large_graph_performance(self, db_session: AsyncSession, test_project: Project):
         """
         Given: Large graph with many items
         When: Find shortest path
@@ -1923,10 +1848,9 @@ class TestEdgeCasesAndErrorHandling:
 
         # Should complete quickly
         import time
+
         start = time.time()
-        result = await service.find_shortest_path(
-            test_project.id, items[0].id, items[49].id
-        )
+        result = await service.find_shortest_path(test_project.id, items[0].id, items[49].id)
         duration = time.time() - start
 
         assert result.exists is True

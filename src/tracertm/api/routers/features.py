@@ -1,26 +1,25 @@
-from typing import List, Optional
-
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from tracertm.api.deps import get_db, auth_guard
+from tracertm.api.deps import auth_guard, get_db
+from tracertm.repositories.event_repository import EventRepository
 from tracertm.schemas.specification import (
+    FeatureActivityListResponse,
     FeatureCreate,
     FeatureRead,
-    FeatureActivityListResponse,
+    ScenarioActivityListResponse,
     ScenarioCreate,
     ScenarioRead,
-    ScenarioActivityListResponse,
 )
 from tracertm.services.feature_service import FeatureService
 from tracertm.services.scenario_service import ScenarioService
-from tracertm.repositories.event_repository import EventRepository
 
 router = APIRouter(prefix="/features", tags=["BDD Features"])
 
 # =============================================================================
 # Features
 # =============================================================================
+
 
 @router.post("/", response_model=FeatureRead, status_code=201)
 async def create_feature(
@@ -39,8 +38,8 @@ async def create_feature(
         status=feature.status,
         tags=feature.tags,
         related_requirements=feature.related_requirements,
-        related_adrs=feature.related_adrs,
     )
+
 
 @router.get("/{feature_id}", response_model=FeatureRead)
 async def get_feature(
@@ -52,19 +51,19 @@ async def get_feature(
     feature = await service.get_feature(feature_id)
     if not feature:
         raise HTTPException(status_code=404, detail="Feature not found")
-    
+
     # Simple way to attach scenarios (could be optimized with a join)
     scenario_service = ScenarioService(db)
     scenarios = await scenario_service.list_scenarios(feature_id)
-    
+
     # We need to manually construct the response or rely on ORM lazy loading if configured (not in async usually)
     # Using Pydantic's from_attributes with pre-populated object is trickier with async ORM unless joined loaded.
     # For now, let's just return the feature and let the frontend fetch scenarios separately if needed,
     # OR manually patch it. The schema expects 'scenarios'.
-    
+
     # Re-wrap to include scenarios
     feature_dict = {c.name: getattr(feature, c.name) for c in feature.__table__.columns}
-    feature_dict['scenarios'] = scenarios
+    feature_dict["scenarios"] = scenarios
     return feature_dict
 
 
@@ -94,6 +93,7 @@ async def get_feature_activities(
     ]
     return {"activities": activities}
 
+
 @router.delete("/{feature_id}", status_code=204)
 async def delete_feature(
     feature_id: str,
@@ -104,26 +104,23 @@ async def delete_feature(
     success = await service.delete_feature(feature_id)
     if not success:
         raise HTTPException(status_code=404, detail="Feature not found")
-    return None
 
-@router.get("/", response_model=List[FeatureRead])
+
+@router.get("/", response_model=list[FeatureRead])
 async def list_features(
     project_id: str = Query(..., description="Project ID"),
-    status: Optional[str] = Query(None, description="Filter by status"),
+    status: str | None = Query(None, description="Filter by status"),
     claims: dict = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     service = FeatureService(db)
-    features = await service.list_features(project_id, status)
-    
-    # For list view, we might not want to fetch all scenarios for all features to save perf
-    # But schema requires it. Let's return empty list for scenarios in list view or fetch them.
-    # For now, returning empty list for performance.
-    return features
+    return await service.list_features(project_id, status)
+
 
 # =============================================================================
 # Scenarios
 # =============================================================================
+
 
 @router.post("/{feature_id}/scenarios", response_model=ScenarioRead, status_code=201)
 async def create_scenario(
@@ -151,6 +148,7 @@ async def create_scenario(
         is_outline=scenario.is_outline,
         examples=scenario.examples,
     )
+
 
 @router.get("/scenarios/{scenario_id}", response_model=ScenarioRead)
 async def get_scenario(
@@ -191,6 +189,7 @@ async def get_scenario_activities(
     ]
     return {"activities": activities}
 
+
 @router.delete("/scenarios/{scenario_id}", status_code=204)
 async def delete_scenario(
     scenario_id: str,
@@ -201,4 +200,3 @@ async def delete_scenario(
     success = await service.delete_scenario(scenario_id)
     if not success:
         raise HTTPException(status_code=404, detail="Scenario not found")
-    return None

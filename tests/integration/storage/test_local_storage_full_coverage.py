@@ -15,16 +15,12 @@ Tests hybrid SQLite + Markdown storage operations:
 - Unicode and special characters
 """
 
-import hashlib
-import json
-import os
 import tempfile
 import threading
 import time
-import uuid
-from datetime import datetime
+from collections.abc import Generator
 from pathlib import Path
-from typing import Generator
+from typing import cast
 
 import pytest
 import yaml
@@ -36,6 +32,13 @@ from tracertm.storage.local_storage import (
     LocalStorageManager,
     ProjectStorage,
 )
+
+
+def _get_project_storage(manager: LocalStorageManager, project_dir: Path) -> ProjectStorage:
+    """Return project storage or fail; narrows type for type checker."""
+    ps = manager.get_project_storage_for_path(project_dir)
+    assert ps is not None, "get_project_storage_for_path returned None"
+    return ps
 
 
 @pytest.fixture
@@ -63,18 +66,12 @@ def setup_project_with_storage(base_dir: Path) -> tuple[LocalStorageManager, Pat
     manager = LocalStorageManager(base_dir=base_dir / "storage")
     project_dir = base_dir / "project"
     project_dir.mkdir()
-    trace_dir, project_id = manager.init_project(
-        project_dir, project_name="TestProject", description="Test project"
-    )
+    trace_dir, project_id = manager.init_project(project_dir, project_name="TestProject", description="Test project")
 
     # Create project in database
     session = manager.get_session()
     try:
-        project = Project(
-            id=project_id,
-            name="TestProject",
-            description="Test project"
-        )
+        project = Project(id=project_id, name="TestProject", description="Test project")
         session.add(project)
         session.commit()
         session.refresh(project)
@@ -127,21 +124,15 @@ class TestLocalStorageManagerInitialization:
             assert result.fetchone() is not None
 
             # Check sync_queue table exists
-            result = session.execute(
-                text("SELECT name FROM sqlite_master WHERE type='table' AND name='sync_queue'")
-            )
+            result = session.execute(text("SELECT name FROM sqlite_master WHERE type='table' AND name='sync_queue'"))
             assert result.fetchone() is not None
 
             # Check sync_state table exists
-            result = session.execute(
-                text("SELECT name FROM sqlite_master WHERE type='table' AND name='sync_state'")
-            )
+            result = session.execute(text("SELECT name FROM sqlite_master WHERE type='table' AND name='sync_state'"))
             assert result.fetchone() is not None
 
             # Check items_fts table exists
-            result = session.execute(
-                text("SELECT name FROM sqlite_master WHERE type='table' AND name='items_fts'")
-            )
+            result = session.execute(text("SELECT name FROM sqlite_master WHERE type='table' AND name='items_fts'"))
             assert result.fetchone() is not None
         finally:
             session.close()
@@ -281,9 +272,7 @@ class TestProjectInitialization:
     def test_init_project_with_metadata(self, temp_project_dir, storage_manager):
         """Test that init_project stores custom metadata."""
         metadata = {"team": "backend", "owner": "alice"}
-        trace_dir, project_id = storage_manager.init_project(
-            temp_project_dir, metadata=metadata
-        )
+        trace_dir, project_id = storage_manager.init_project(temp_project_dir, metadata=metadata)
 
         project_yaml = trace_dir / "project.yaml"
         config = yaml.safe_load(project_yaml.read_text(encoding="utf-8"))
@@ -420,8 +409,7 @@ class TestItemCRUD:
     def test_create_item(self, temp_base_dir):
         """Test creating a new item."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
-
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
         item = item_storage.create_item(
             title="Test Epic",
@@ -437,8 +425,7 @@ class TestItemCRUD:
     def test_create_item_generates_markdown(self, temp_base_dir):
         """Test that create_item generates markdown file."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
-
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
         item = item_storage.create_item(
             title="Test Epic",
@@ -452,12 +439,9 @@ class TestItemCRUD:
     def test_create_item_queues_for_sync(self, temp_base_dir):
         """Test that create_item queues for sync."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
-
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
-        item = item_storage.create_item(
-            title="Test Epic", item_type="epic", external_id="EPIC-001"
-        )
+        item = item_storage.create_item(title="Test Epic", item_type="epic", external_id="EPIC-001")
 
         sync_queue = manager.get_sync_queue()
         assert len(sync_queue) > 0
@@ -466,14 +450,11 @@ class TestItemCRUD:
     def test_update_item(self, temp_base_dir):
         """Test updating an item."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
-
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
         item = item_storage.create_item(title="Old Title", item_type="story")
 
-        updated = item_storage.update_item(
-            item.id, title="New Title", status="in_progress"
-        )
+        updated = item_storage.update_item(str(item.id), title="New Title", status="in_progress")
 
         assert updated.title == "New Title"
         assert updated.status == "in_progress"
@@ -481,17 +462,14 @@ class TestItemCRUD:
     def test_update_item_updates_markdown(self, temp_base_dir):
         """Test that update_item updates markdown file."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
-
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
-        item = item_storage.create_item(
-            title="Old Title", item_type="epic", external_id="EPIC-001"
-        )
+        item = item_storage.create_item(title="Old Title", item_type="epic", external_id="EPIC-001")
 
         markdown_path = project_dir / ".trace" / "epics" / "EPIC-001.md"
         old_content = markdown_path.read_text(encoding="utf-8")
 
-        item_storage.update_item(item.id, title="New Title")
+        item_storage.update_item(str(item.id), title="New Title")
 
         new_content = markdown_path.read_text(encoding="utf-8")
         assert "New Title" in new_content
@@ -500,45 +478,41 @@ class TestItemCRUD:
     def test_delete_item_soft_deletes(self, temp_base_dir):
         """Test that delete_item performs soft delete."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
-
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
         item = item_storage.create_item(title="Test", item_type="task")
 
-        item_storage.delete_item(item.id)
+        item_storage.delete_item(str(item.id))
 
         session = manager.get_session()
         try:
-            deleted_item = session.get(Item, item.id)
-            assert deleted_item.deleted_at is not None
+            deleted_item = session.get(Item, str(item.id))
+            assert deleted_item is not None
+            assert getattr(deleted_item, "deleted_at", None) is not None
         finally:
             session.close()
 
     def test_delete_item_removes_markdown(self, temp_base_dir):
         """Test that delete_item removes markdown file."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
-
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
-        item = item_storage.create_item(
-            title="Test", item_type="epic", external_id="EPIC-001"
-        )
+        item = item_storage.create_item(title="Test", item_type="epic", external_id="EPIC-001")
 
         markdown_path = project_dir / ".trace" / "epics" / "EPIC-001.md"
         assert markdown_path.exists()
 
-        item_storage.delete_item(item.id)
+        item_storage.delete_item(str(item.id))
 
         assert not markdown_path.exists()
 
     def test_get_item_returns_item(self, temp_base_dir):
         """Test getting an item by ID."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
-
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
         created = item_storage.create_item(title="Test", item_type="story")
-        retrieved = item_storage.get_item(created.id)
+        retrieved = item_storage.get_item(str(created.id))
 
         assert retrieved is not None
         assert retrieved.id == created.id
@@ -546,8 +520,7 @@ class TestItemCRUD:
     def test_list_items_returns_all(self, temp_base_dir):
         """Test listing all items."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
-
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
         item_storage.create_item(title="Item 1", item_type="epic")
         item_storage.create_item(title="Item 2", item_type="story")
@@ -558,8 +531,7 @@ class TestItemCRUD:
     def test_list_items_filters_by_type(self, temp_base_dir):
         """Test listing items filtered by type."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
-
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
         item_storage.create_item(title="Epic 1", item_type="epic")
         item_storage.create_item(title="Story 1", item_type="story")
@@ -570,13 +542,10 @@ class TestItemCRUD:
     def test_list_items_filters_by_status(self, temp_base_dir):
         """Test listing items filtered by status."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
-
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
         item_storage.create_item(title="Todo Item", item_type="story", status="todo")
-        item_storage.create_item(
-            title="Done Item", item_type="story", status="done"
-        )
+        item_storage.create_item(title="Done Item", item_type="story", status="done")
 
         todos = item_storage.list_items(status="todo")
         assert all(item.status == "todo" for item in todos)
@@ -593,15 +562,12 @@ class TestLinkManagement:
     def test_create_link(self, temp_base_dir):
         """Test creating a link between items."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
-
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
         item1 = item_storage.create_item(title="Epic 1", item_type="epic")
         item2 = item_storage.create_item(title="Story 1", item_type="story")
 
-        link = item_storage.create_link(
-            item1.id, item2.id, link_type="implements"
-        )
+        link = item_storage.create_link(str(item1.id), str(item2.id), link_type="implements")
 
         assert link.source_item_id == item1.id
         assert link.target_item_id == item2.id
@@ -610,14 +576,13 @@ class TestLinkManagement:
     def test_delete_link(self, temp_base_dir):
         """Test deleting a link."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
-
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
         item1 = item_storage.create_item(title="Item 1", item_type="epic")
         item2 = item_storage.create_item(title="Item 2", item_type="story")
 
-        link = item_storage.create_link(item1.id, item2.id, "implements")
-        item_storage.delete_link(link.id)
+        link = item_storage.create_link(str(item1.id), str(item2.id), "implements")
+        item_storage.delete_link(str(link.id))
 
         session = manager.get_session()
         try:
@@ -629,32 +594,30 @@ class TestLinkManagement:
     def test_list_links_by_source(self, temp_base_dir):
         """Test listing links filtered by source."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
-
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
         item1 = item_storage.create_item(title="Item 1", item_type="epic")
         item2 = item_storage.create_item(title="Item 2", item_type="story")
         item3 = item_storage.create_item(title="Item 3", item_type="task")
 
-        item_storage.create_link(item1.id, item2.id, "implements")
-        item_storage.create_link(item1.id, item3.id, "depends_on")
+        item_storage.create_link(str(item1.id), str(item2.id), "implements")
+        item_storage.create_link(str(item1.id), str(item3.id), "depends_on")
 
-        links = item_storage.list_links(source_id=item1.id)
+        links = item_storage.list_links(source_id=str(item1.id))
         assert len(links) == 2
         assert all(link.source_item_id == item1.id for link in links)
 
     def test_list_links_by_type(self, temp_base_dir):
         """Test listing links filtered by type."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
-
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
         item1 = item_storage.create_item(title="Item 1", item_type="epic")
         item2 = item_storage.create_item(title="Item 2", item_type="story")
         item3 = item_storage.create_item(title="Item 3", item_type="task")
 
-        item_storage.create_link(item1.id, item2.id, "implements")
-        item_storage.create_link(item1.id, item3.id, "depends_on")
+        item_storage.create_link(str(item1.id), str(item2.id), "implements")
+        item_storage.create_link(str(item1.id), str(item3.id), "depends_on")
 
         impl_links = item_storage.list_links(link_type="implements")
         assert all(link.link_type == "implements" for link in impl_links)
@@ -678,9 +641,7 @@ class TestCounterManagement:
     def test_increment_project_counter(self, temp_base_dir):
         """Test incrementing a project counter."""
         manager, project_dir, project_id, _ = setup_project_with_storage(temp_base_dir)
-        counter, external_id = manager.increment_project_counter(
-            project_dir, "epic"
-        )
+        counter, external_id = manager.increment_project_counter(project_dir, "epic")
 
         assert counter == 1
         assert external_id == "EPIC-001"
@@ -706,12 +667,9 @@ class TestMarkdownFileIO:
     def test_write_item_markdown_creates_file(self, temp_base_dir):
         """Test that markdown file is created."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
-
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
-        item = item_storage.create_item(
-            title="Test Item", item_type="epic", external_id="EPIC-001"
-        )
+        item = item_storage.create_item(title="Test Item", item_type="epic", external_id="EPIC-001")
 
         markdown_path = project_dir / ".trace" / "epics" / "EPIC-001.md"
         assert markdown_path.exists()
@@ -720,12 +678,9 @@ class TestMarkdownFileIO:
     def test_markdown_contains_frontmatter(self, temp_base_dir):
         """Test that generated markdown contains YAML frontmatter."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
-
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
-        item = item_storage.create_item(
-            title="Test Item", item_type="epic", external_id="EPIC-001"
-        )
+        item = item_storage.create_item(title="Test Item", item_type="epic", external_id="EPIC-001")
 
         markdown_path = project_dir / ".trace" / "epics" / "EPIC-001.md"
         content = markdown_path.read_text(encoding="utf-8")
@@ -737,12 +692,9 @@ class TestMarkdownFileIO:
     def test_markdown_contains_title_heading(self, temp_base_dir):
         """Test that markdown contains item title as heading."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
-
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
-        item = item_storage.create_item(
-            title="My Test Item", item_type="story", external_id="STORY-001"
-        )
+        item = item_storage.create_item(title="My Test Item", item_type="story", external_id="STORY-001")
 
         markdown_path = project_dir / ".trace" / "stories" / "STORY-001.md"
         content = markdown_path.read_text(encoding="utf-8")
@@ -753,9 +705,11 @@ class TestMarkdownFileIO:
         """Test that markdown can be parsed back into item."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
         trace_dir = manager.get_project_trace_dir(project_dir)
+        assert trace_dir is not None
+        trace_path: Path = trace_dir
 
         # Create markdown file
-        epic_file = trace_dir / "epics" / "EPIC-001.md"
+        epic_file = trace_path / "epics" / "EPIC-001.md"
         content = """---
 id: test-id-123
 external_id: EPIC-001
@@ -902,8 +856,7 @@ class TestFullTextSearch:
     def test_search_items_by_title(self, temp_base_dir):
         """Test searching items by title."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
-
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
         item_storage.create_item(title="Authentication System", item_type="epic")
         item_storage.create_item(title="Login UI Component", item_type="story")
@@ -916,8 +869,7 @@ class TestFullTextSearch:
     def test_search_items_by_description(self, temp_base_dir):
         """Test searching items by description."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
-
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
         item_storage.create_item(
             title="Test Item",
@@ -958,24 +910,26 @@ class TestFullTextSearch:
             session.close()
 
         # Add items to each project
-        proj1_storage = manager.get_project_storage_for_path(proj1_path)
+        proj1_storage = _get_project_storage(manager, proj1_path)
         session = manager.get_session()
         try:
             proj1 = session.get(Project, proj1_id)
         finally:
             session.close()
 
-        proj1_item_storage = ItemStorage(manager, proj1_storage, proj1)
+        assert proj1_storage is not None and proj1 is not None
+        proj1_item_storage = ItemStorage(manager, proj1_storage, cast(Project, proj1))
         proj1_item_storage.create_item(title="Project 1 Item", item_type="epic")
 
-        proj2_storage = manager.get_project_storage_for_path(proj2_path)
+        proj2_storage = _get_project_storage(manager, proj2_path)
         session = manager.get_session()
         try:
             proj2 = session.get(Project, proj2_id)
         finally:
             session.close()
 
-        proj2_item_storage = ItemStorage(manager, proj2_storage, proj2)
+        assert proj2 is not None
+        proj2_item_storage = ItemStorage(manager, proj2_storage, cast(Project, proj2))
         proj2_item_storage.create_item(title="Project 1 Item", item_type="epic")
 
         # Search project 1 specifically
@@ -994,8 +948,7 @@ class TestErrorHandling:
     def test_update_nonexistent_item_raises(self, temp_base_dir):
         """Test that updating nonexistent item raises error."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
-
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
 
         with pytest.raises(ValueError, match="Item not found"):
@@ -1004,8 +957,7 @@ class TestErrorHandling:
     def test_delete_nonexistent_item_raises(self, temp_base_dir):
         """Test that deleting nonexistent item raises error."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
-
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
 
         with pytest.raises(ValueError, match="Item not found"):
@@ -1014,8 +966,7 @@ class TestErrorHandling:
     def test_delete_nonexistent_link_raises(self, temp_base_dir):
         """Test that deleting nonexistent link raises error."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
-
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
 
         with pytest.raises(ValueError, match="Link not found"):
@@ -1026,9 +977,7 @@ class TestErrorHandling:
         with pytest.raises(ValueError, match="No .trace/ directory"):
             storage_manager.register_project(temp_project_dir)
 
-    def test_index_project_without_trace_raises(
-        self, temp_project_dir, storage_manager
-    ):
+    def test_index_project_without_trace_raises(self, temp_project_dir, storage_manager):
         """Test that indexing project without .trace/ raises."""
         with pytest.raises(ValueError, match="No .trace/ directory"):
             storage_manager.index_project(temp_project_dir)
@@ -1045,12 +994,9 @@ class TestEdgeCases:
     def test_item_with_unicode_title(self, temp_base_dir):
         """Test creating item with unicode characters in title."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
-
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
-        item = item_storage.create_item(
-            title="测试 Test 🚀", item_type="epic", external_id="EPIC-001"
-        )
+        item = item_storage.create_item(title="测试 Test 🚀", item_type="epic", external_id="EPIC-001")
 
         assert "测试" in item.title
         assert "🚀" in item.title
@@ -1062,8 +1008,7 @@ class TestEdgeCases:
     def test_item_with_special_characters(self, temp_base_dir):
         """Test creating item with special characters."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
-
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
         item = item_storage.create_item(
             title='Test with "quotes" & <brackets>',
@@ -1077,8 +1022,7 @@ class TestEdgeCases:
     def test_item_with_very_long_description(self, temp_base_dir):
         """Test creating item with very long description."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
-
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
         long_desc = "A" * 10000
         item = item_storage.create_item(
@@ -1087,13 +1031,12 @@ class TestEdgeCases:
             description=long_desc,
         )
 
-        assert len(item.description) == 10000
+        assert len(item.description or "") == 10000
 
     def test_item_with_multiline_description(self, temp_base_dir):
         """Test creating item with multiline description."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
-
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
         multiline = "Line 1\nLine 2\nLine 3\n\nWith blank lines"
         item = item_storage.create_item(
@@ -1111,8 +1054,7 @@ class TestEdgeCases:
     def test_empty_item_title(self, temp_base_dir):
         """Test creating item with empty title."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
-
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
         item = item_storage.create_item(title="", item_type="epic")
 
@@ -1121,22 +1063,18 @@ class TestEdgeCases:
     def test_item_with_all_statuses(self, temp_base_dir):
         """Test creating items with different statuses."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
-
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
         statuses = ["todo", "in_progress", "done", "blocked"]
 
         for status in statuses:
-            item = item_storage.create_item(
-                title=f"Item {status}", item_type="story", status=status
-            )
+            item = item_storage.create_item(title=f"Item {status}", item_type="story", status=status)
             assert item.status == status
 
     def test_item_with_all_priorities(self, temp_base_dir):
         """Test creating items with different priorities."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
-
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
         priorities = ["low", "medium", "high", "critical"]
 
@@ -1160,8 +1098,7 @@ class TestConcurrentAccess:
     def test_concurrent_item_creation(self, temp_base_dir):
         """Test creating items concurrently."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
-
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
         created_items = []
 
@@ -1169,10 +1106,7 @@ class TestConcurrentAccess:
             item = item_storage.create_item(title=title, item_type="story")
             created_items.append(item)
 
-        threads = [
-            threading.Thread(target=create_item, args=(f"Item {i}",))
-            for i in range(5)
-        ]
+        threads = [threading.Thread(target=create_item, args=(f"Item {i}",)) for i in range(5)]
 
         for thread in threads:
             thread.start()
@@ -1185,8 +1119,7 @@ class TestConcurrentAccess:
     def test_concurrent_item_updates(self, temp_base_dir):
         """Test updating items concurrently."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
-
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
 
         errors = []
@@ -1194,19 +1127,12 @@ class TestConcurrentAccess:
         def update_item(idx):
             try:
                 # Each thread creates and updates its own item to avoid concurrency issues
-                item = item_storage.create_item(
-                    title=f"Item {idx}",
-                    item_type="story",
-                    status="todo"
-                )
-                item_storage.update_item(item.id, status="done")
+                item = item_storage.create_item(title=f"Item {idx}", item_type="story", status="todo")
+                item_storage.update_item(str(item.id), status="done")
             except Exception as e:
                 errors.append(e)
 
-        threads = [
-            threading.Thread(target=update_item, args=(i,))
-            for i in range(3)
-        ]
+        threads = [threading.Thread(target=update_item, args=(i,)) for i in range(3)]
 
         for thread in threads:
             thread.start()
@@ -1229,11 +1155,10 @@ class TestProjectStorage:
     def test_project_storage_creates_project(self, temp_base_dir):
         """Test creating project via ProjectStorage."""
         manager, project_dir, project_id, _ = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
+        project_storage = _get_project_storage(manager, project_dir)
+        assert project_storage is not None
 
-        project = project_storage.create_or_update_project(
-            name="New Project", description="Description"
-        )
+        project = project_storage.create_or_update_project(name="New Project", description="Description")
 
         assert project is not None
         assert project.name == "New Project"
@@ -1241,7 +1166,8 @@ class TestProjectStorage:
     def test_project_storage_gets_project(self, temp_base_dir):
         """Test getting project via ProjectStorage."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
+        project_storage = _get_project_storage(manager, project_dir)
+        assert project_storage is not None
 
         retrieved = project_storage.get_project()
         # May or may not find project depending on naming
@@ -1250,11 +1176,10 @@ class TestProjectStorage:
     def test_project_storage_generates_readme(self, temp_base_dir):
         """Test that ProjectStorage generates README."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
+        project_storage = _get_project_storage(manager, project_dir)
+        assert project_storage is not None
 
-        project_storage.create_or_update_project(
-            name="Readme Project", description="Test readme"
-        )
+        project_storage.create_or_update_project(name="Readme Project", description="Test readme")
 
         readme = project_storage.project_dir / "README.md"
         # README may be created if conditions are right
@@ -1285,16 +1210,12 @@ class TestProjectPathDetection:
         assert trace_dir is not None
         assert trace_dir.name == ".trace"
 
-    def test_get_project_trace_dir_returns_none(
-        self, temp_project_dir, storage_manager
-    ):
+    def test_get_project_trace_dir_returns_none(self, temp_project_dir, storage_manager):
         """Test get_project_trace_dir returns None if not found."""
         trace_dir = storage_manager.get_project_trace_dir(temp_project_dir)
         assert trace_dir is None
 
-    def test_get_project_trace_dir_with_file_path(
-        self, project_with_trace, storage_manager
-    ):
+    def test_get_project_trace_dir_with_file_path(self, project_with_trace, storage_manager):
         """Test get_project_trace_dir works with file path."""
         project_dir, _ = project_with_trace
         file_path = project_dir / "README.md"
@@ -1315,8 +1236,7 @@ class TestIntegration:
     def test_full_workflow_epic_to_stories(self, temp_base_dir):
         """Test full workflow: create epic with stories."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
-
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
 
         # Create epic
@@ -1332,27 +1252,25 @@ class TestIntegration:
             title="Login UI",
             item_type="story",
             external_id="STORY-001",
-            parent_id=epic.id,
+            parent_id=str(epic.id),
         )
 
         story2 = item_storage.create_item(
             title="Backend API",
             item_type="story",
             external_id="STORY-002",
-            parent_id=epic.id,
+            parent_id=str(epic.id),
         )
 
         # Create links
-        item_storage.create_link(epic.id, story1.id, "contains")
-        item_storage.create_link(epic.id, story2.id, "contains")
+        item_storage.create_link(str(epic.id), str(story1.id), "contains")
+        item_storage.create_link(str(epic.id), str(story2.id), "contains")
 
         # Verify
-        epic_stories = item_storage.list_items(
-            item_type="story", parent_id=epic.id
-        )
+        epic_stories = item_storage.list_items(item_type="story", parent_id=str(epic.id))
         assert len(epic_stories) == 2
 
-        links = item_storage.list_links(source_id=epic.id)
+        links = item_storage.list_links(source_id=str(epic.id))
         assert len(links) == 2
 
     def test_full_workflow_project_lifecycle(self, temp_base_dir):
@@ -1367,15 +1285,14 @@ class TestIntegration:
         )
 
         # Get storage
-        project_storage = manager.get_project_storage_for_path(project_dir)
+        project_storage = _get_project_storage(manager, project_dir)
+        assert project_storage is not None
 
         session = manager.get_session()
         try:
             project = session.get(Project, project_id)
             if not project:
-                project = Project(
-                    id=project_id, name="MyProject", description="A test project"
-                )
+                project = Project(id=project_id, name="MyProject", description="A test project")
                 session.add(project)
                 session.commit()
                 session.refresh(project)
@@ -1384,18 +1301,14 @@ class TestIntegration:
 
         # Create items
         item_storage = ItemStorage(manager, project_storage, project)
-        item1 = item_storage.create_item(
-            title="Task 1", item_type="task", external_id="TASK-001"
-        )
-        item2 = item_storage.create_item(
-            title="Task 2", item_type="task", external_id="TASK-002"
-        )
+        item1 = item_storage.create_item(title="Task 1", item_type="task", external_id="TASK-001")
+        item2 = item_storage.create_item(title="Task 2", item_type="task", external_id="TASK-002")
 
         # Create link
-        link = item_storage.create_link(item1.id, item2.id, "depends_on")
+        link = item_storage.create_link(str(item1.id), str(item2.id), "depends_on")
 
         # Update item
-        item_storage.update_item(item1.id, status="in_progress")
+        item_storage.update_item(str(item1.id), status="in_progress")
 
         # List items
         items = item_storage.list_items(item_type="task")
@@ -1434,15 +1347,12 @@ class TestAdditionalCoverage:
     def test_item_storage_with_tags_metadata(self, temp_base_dir):
         """Test creating item with tags in metadata."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
 
         metadata = {"tags": ["feature", "backend"]}
         item = item_storage.create_item(
-            title="Tagged Item",
-            item_type="story",
-            metadata=metadata,
-            external_id="STORY-001"
+            title="Tagged Item", item_type="story", metadata=metadata, external_id="STORY-001"
         )
 
         # Verify tags are preserved
@@ -1453,37 +1363,25 @@ class TestAdditionalCoverage:
     def test_item_with_parent_relationship(self, temp_base_dir):
         """Test creating item with parent relationship."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
 
         parent = item_storage.create_item(title="Parent", item_type="epic")
-        child = item_storage.create_item(
-            title="Child",
-            item_type="story",
-            parent_id=parent.id
-        )
+        child = item_storage.create_item(title="Child", item_type="story", parent_id=str(parent.id))
 
         assert child.parent_id == parent.id
 
     def test_link_creation_updates_markdown(self, temp_base_dir):
         """Test that creating a link updates the source item's markdown."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
 
-        item1 = item_storage.create_item(
-            title="Epic",
-            item_type="epic",
-            external_id="EPIC-001"
-        )
-        item2 = item_storage.create_item(
-            title="Story",
-            item_type="story",
-            external_id="STORY-001"
-        )
+        item1 = item_storage.create_item(title="Epic", item_type="epic", external_id="EPIC-001")
+        item2 = item_storage.create_item(title="Story", item_type="story", external_id="STORY-001")
 
         # Create link
-        link = item_storage.create_link(item1.id, item2.id, "implements")
+        link = item_storage.create_link(str(item1.id), str(item2.id), "implements")
 
         # Verify link was created
         assert link.id is not None
@@ -1491,14 +1389,14 @@ class TestAdditionalCoverage:
     def test_update_links_yaml(self, temp_base_dir):
         """Test that links.yaml is properly maintained."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
 
         item1 = item_storage.create_item(title="Item1", item_type="epic")
         item2 = item_storage.create_item(title="Item2", item_type="story")
 
         # Create link
-        item_storage.create_link(item1.id, item2.id, "implements")
+        item_storage.create_link(str(item1.id), str(item2.id), "implements")
 
         # Check links.yaml exists
         links_yaml = project_dir / ".trace" / ".meta" / "links.yaml"
@@ -1507,7 +1405,8 @@ class TestAdditionalCoverage:
     def test_get_item_storage(self, temp_base_dir):
         """Test getting ItemStorage from ProjectStorage."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
+        project_storage = _get_project_storage(manager, project_dir)
+        assert project_storage is not None
 
         item_storage = project_storage.get_item_storage(project)
         assert item_storage is not None
@@ -1515,13 +1414,12 @@ class TestAdditionalCoverage:
     def test_create_or_update_project_updates_existing(self, temp_base_dir):
         """Test updating existing project."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
+        project_storage = _get_project_storage(manager, project_dir)
+        assert project_storage is not None
 
         # Update project
         updated = project_storage.create_or_update_project(
-            name="Updated Name",
-            description="Updated description",
-            metadata={"updated": True}
+            name="Updated Name", description="Updated description", metadata={"updated": True}
         )
 
         assert updated is not None
@@ -1529,21 +1427,14 @@ class TestAdditionalCoverage:
     def test_item_metadata_merge_on_update(self, temp_base_dir):
         """Test that metadata is merged (not replaced) on update."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
 
         # Create with initial metadata
-        item = item_storage.create_item(
-            title="Item",
-            item_type="story",
-            metadata={"key1": "value1"}
-        )
+        item = item_storage.create_item(title="Item", item_type="story", metadata={"key1": "value1"})
 
         # Update with additional metadata
-        updated = item_storage.update_item(
-            item.id,
-            metadata={"key2": "value2"}
-        )
+        updated = item_storage.update_item(str(item.id), metadata={"key2": "value2"})
 
         # Verify both keys present (merged)
         assert "key1" in updated.item_metadata
@@ -1552,14 +1443,14 @@ class TestAdditionalCoverage:
     def test_markdown_file_with_description(self, temp_base_dir):
         """Test markdown generation includes description."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
 
         item = item_storage.create_item(
             title="Item with Desc",
             item_type="story",
             description="Test description\nWith multiple lines",
-            external_id="STORY-001"
+            external_id="STORY-001",
         )
 
         markdown_path = project_dir / ".trace" / "stories" / "STORY-001.md"
@@ -1572,13 +1463,10 @@ class TestAdditionalCoverage:
     def test_hash_content_calculation(self, temp_base_dir):
         """Test content hash calculation."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
 
-        item = item_storage.create_item(
-            title="Hash Test",
-            item_type="story"
-        )
+        item = item_storage.create_item(title="Hash Test", item_type="story")
 
         # Verify hash is stored in metadata
         assert "content_hash" in item.item_metadata
@@ -1586,13 +1474,11 @@ class TestAdditionalCoverage:
     def test_fts_index_update(self, temp_base_dir):
         """Test that FTS index is updated on item creation."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
 
         item = item_storage.create_item(
-            title="Searchable Item",
-            item_type="epic",
-            description="With searchable content"
+            title="Searchable Item", item_type="epic", description="With searchable content"
         )
 
         # Verify search works
@@ -1602,15 +1488,10 @@ class TestAdditionalCoverage:
     def test_get_item_path_for_different_types(self, temp_base_dir):
         """Test get_item_path returns correct path for each item type."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
 
-        types_and_dirs = [
-            ("epic", "epics"),
-            ("story", "stories"),
-            ("test", "tests"),
-            ("task", "tasks")
-        ]
+        types_and_dirs = [("epic", "epics"), ("story", "stories"), ("test", "tests"), ("task", "tasks")]
 
         for item_type, expected_dir in types_and_dirs:
             path = item_storage._get_item_path(item_type, f"{item_type.upper()}-001.md")
@@ -1626,14 +1507,10 @@ class TestAdditionalCoverage:
     def test_view_field_uppercase(self, temp_base_dir):
         """Test that item view field is uppercased."""
         manager, project_dir, project_id, project = setup_project_with_storage(temp_base_dir)
-        project_storage = manager.get_project_storage_for_path(project_dir)
+        project_storage = _get_project_storage(manager, project_dir)
         item_storage = ItemStorage(manager, project_storage, project)
 
-        item = item_storage.create_item(
-            title="View Test",
-            item_type="story",
-            view="custom_view"
-        )
+        item = item_storage.create_item(title="View Test", item_type="story", view="custom_view")
 
         # View should be uppercased
         assert item.view == "CUSTOM_VIEW"

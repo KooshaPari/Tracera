@@ -21,4 +21,4 @@ declare type UpdateAt<O, Path extends List<Key>, A> = O extends BuiltIn ? O : Pa
  * ```
  */
 export declare type Update<O extends object, Path extends List<Key>, A extends any> = Path extends unknown ? UpdateAt<O, Path, A> : never;
-export {};
+

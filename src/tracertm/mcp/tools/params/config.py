@@ -2,22 +2,27 @@
 
 from __future__ import annotations
 
-import yaml
+import asyncio
 from typing import Any
 
+import yaml
 from fastmcp.exceptions import ToolError
 
 try:
     from tracertm.mcp.core import mcp
 except Exception:  # pragma: no cover
+
     class _StubMCP:
         def tool(self, *args: Any, **kwargs: Any):
             def decorator(fn):
                 return fn
+
             return decorator
+
     mcp = _StubMCP()  # type: ignore[assignment]
 
 from tracertm.config.manager import ConfigManager
+
 from .common import _wrap
 
 
@@ -46,6 +51,7 @@ async def _config_manage_impl(
     ctx: Any | None,
 ) -> dict[str, Any]:
     """Implementation of configuration management."""
+    await asyncio.sleep(0)
     payload = payload or {}
     action = action.lower()
     config = ConfigManager()
@@ -63,7 +69,7 @@ async def _config_manage_impl(
             raise ToolError("key is required for config get.")
         config_path = config.projects_dir / project_id / "config.yaml" if project_id else config.config_path
         if config_path.exists():
-            with open(config_path) as handle:
+            with config_path.open() as handle:
                 stored = yaml.safe_load(handle) or {}
             if key in stored:
                 return _wrap({"key": key, "value": stored.get(key)}, ctx, action)

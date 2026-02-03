@@ -22,41 +22,35 @@ Key tested functionality:
 - Status transitions for defects
 """
 
-from datetime import datetime, timezone, timedelta
 from uuid import uuid4
 
 import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from tracertm.repositories.item_repository import ItemRepository
 from tracertm.repositories.item_spec_repository import (
-    BaseSpecRepository,
-    RequirementSpecRepository,
-    TestSpecRepository as SpecRepoForTests,
-    EpicSpecRepository,
-    UserStorySpecRepository,
-    TaskSpecRepository,
-    DefectSpecRepository,
-    ItemSpecBatchRepository,
-    RequirementType,
     ConstraintType,
-    RiskLevel,
-    VerificationStatus,
-    TestType as SpecTestType,
-    EpicType,
     DefectSeverity,
+    DefectSpecRepository,
     DefectStatus,
+    EpicSpecRepository,
+    EpicType,
+    ItemSpecBatchRepository,
+    RequirementSpecRepository,
+    RequirementType,
+    RiskLevel,
+    TaskSpecRepository,
+    UserStorySpecRepository,
+    VerificationStatus,
+)
+from tracertm.repositories.item_spec_repository import (
+    TestSpecRepository as SpecRepoForTests,
+)
+from tracertm.repositories.item_spec_repository import (
+    TestType as SpecTestType,
 )
 from tracertm.repositories.project_repository import ProjectRepository
-from tracertm.repositories.item_repository import ItemRepository
-from tracertm.models.item_spec import (
-    RequirementSpec,
-    TestSpec as SpecModelForTests,
-    EpicSpec,
-    UserStorySpec,
-    TaskSpec,
-    DefectSpec,
-)
 
 
 def unique_project_name() -> str:
@@ -83,7 +77,7 @@ async def setup_project_and_item(db_session: AsyncSession):
 
     item_repo = ItemRepository(db_session)
     item = await item_repo.create(
-        project_id=project.id,
+        project_id=str(project.id),
         title="Test Item",
         view="REQUIREMENT",
         item_type="requirement",
@@ -104,7 +98,7 @@ async def setup_multiple_items(db_session: AsyncSession):
     items = []
     for i in range(5):
         item = await item_repo.create(
-            project_id=project.id,
+            project_id=str(project.id),
             title=f"Test Item {i}",
             view="REQUIREMENT",
             item_type="requirement",
@@ -125,9 +119,7 @@ class TestBaseSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_get_by_id_returns_spec(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_get_by_id_returns_spec(self, db_session: AsyncSession, setup_project_and_item):
         """Test get_by_id returns specification by ID."""
         setup = setup_project_and_item
         repo = RequirementSpecRepository(db_session)
@@ -146,9 +138,7 @@ class TestBaseSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_get_by_id_returns_none_for_nonexistent(
-        self, db_session: AsyncSession
-    ):
+    async def test_get_by_id_returns_none_for_nonexistent(self, db_session: AsyncSession):
         """Test get_by_id returns None for non-existent ID."""
         repo = RequirementSpecRepository(db_session)
 
@@ -157,9 +147,7 @@ class TestBaseSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_get_by_item_id_returns_spec(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_get_by_item_id_returns_spec(self, db_session: AsyncSession, setup_project_and_item):
         """Test get_by_item_id returns specification by item ID."""
         setup = setup_project_and_item
         repo = RequirementSpecRepository(db_session)
@@ -177,9 +165,7 @@ class TestBaseSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_get_by_item_id_returns_none_for_nonexistent(
-        self, db_session: AsyncSession
-    ):
+    async def test_get_by_item_id_returns_none_for_nonexistent(self, db_session: AsyncSession):
         """Test get_by_item_id returns None for non-existent item ID."""
         repo = RequirementSpecRepository(db_session)
 
@@ -188,9 +174,7 @@ class TestBaseSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_update_modifies_spec(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_update_modifies_spec(self, db_session: AsyncSession, setup_project_and_item):
         """Test update modifies specification fields."""
         setup = setup_project_and_item
         repo = RequirementSpecRepository(db_session)
@@ -220,15 +204,12 @@ class TestBaseSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_delete_soft_deletes_spec(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_delete_soft_deletes_spec(self, db_session: AsyncSession, setup_project_and_item):
         """Test delete sets deleted_at timestamp."""
         setup = setup_project_and_item
         repo = RequirementSpecRepository(db_session)
 
-        spec = await repo.create(item_id=setup["item"].id,
-            project_id=setup["project"].id)
+        spec = await repo.create(item_id=setup["item"].id, project_id=setup["project"].id)
         await db_session.commit()
 
         result = await repo.delete(spec.id)
@@ -243,9 +224,7 @@ class TestBaseSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_delete_returns_false_for_nonexistent(
-        self, db_session: AsyncSession
-    ):
+    async def test_delete_returns_false_for_nonexistent(self, db_session: AsyncSession):
         """Test delete returns False for non-existent spec."""
         repo = RequirementSpecRepository(db_session)
 
@@ -254,15 +233,12 @@ class TestBaseSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_restore_clears_deleted_at(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_restore_clears_deleted_at(self, db_session: AsyncSession, setup_project_and_item):
         """Test restore clears deleted_at timestamp."""
         setup = setup_project_and_item
         repo = RequirementSpecRepository(db_session)
 
-        spec = await repo.create(item_id=setup["item"].id,
-            project_id=setup["project"].id)
+        spec = await repo.create(item_id=setup["item"].id, project_id=setup["project"].id)
         await db_session.commit()
 
         await repo.delete(spec.id)
@@ -285,9 +261,7 @@ class TestBaseSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_batch_update_modifies_multiple_specs(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_batch_update_modifies_multiple_specs(self, db_session: AsyncSession, setup_multiple_items):
         """Test batch_update modifies multiple specifications."""
         setup = setup_multiple_items
         repo = RequirementSpecRepository(db_session)
@@ -296,7 +270,7 @@ class TestBaseSpecRepository:
         for item in setup["items"][:3]:
             spec = await repo.create(
                 item_id=item.id,
-            project_id=setup["project"].id,
+                project_id=setup["project"].id,
                 risk_level=RiskLevel.LOW.value,
             )
             specs.append(spec)
@@ -319,17 +293,14 @@ class TestBaseSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_batch_delete_soft_deletes_multiple_specs(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_batch_delete_soft_deletes_multiple_specs(self, db_session: AsyncSession, setup_multiple_items):
         """Test batch_delete soft deletes multiple specifications."""
         setup = setup_multiple_items
         repo = RequirementSpecRepository(db_session)
 
         specs = []
         for item in setup["items"][:3]:
-            spec = await repo.create(item_id=item.id,
-            project_id=setup["project"].id)
+            spec = await repo.create(item_id=item.id, project_id=setup["project"].id)
             specs.append(spec)
         await db_session.commit()
 
@@ -342,19 +313,17 @@ class TestBaseSpecRepository:
         # Verify all are soft deleted
         for spec_id in spec_ids:
             found = await repo.get_by_id(spec_id)
+            assert found is not None
             assert found.deleted_at is not None
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_batch_delete_ignores_already_deleted(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_batch_delete_ignores_already_deleted(self, db_session: AsyncSession, setup_multiple_items):
         """Test batch_delete ignores already deleted specs."""
         setup = setup_multiple_items
         repo = RequirementSpecRepository(db_session)
 
-        spec = await repo.create(item_id=setup["items"][0].id,
-            project_id=setup["project"].id)
+        spec = await repo.create(item_id=setup["items"][0].id, project_id=setup["project"].id)
         await db_session.commit()
 
         # Delete once
@@ -367,9 +336,7 @@ class TestBaseSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_get_active_count_by_project(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_get_active_count_by_project(self, db_session: AsyncSession, setup_multiple_items):
         """Test get_active_count_by_project returns correct count."""
         setup = setup_multiple_items
         repo = RequirementSpecRepository(db_session)
@@ -377,8 +344,7 @@ class TestBaseSpecRepository:
         # Create 3 specs
         specs = []
         for item in setup["items"][:3]:
-            spec = await repo.create(item_id=item.id,
-            project_id=setup["project"].id)
+            spec = await repo.create(item_id=item.id, project_id=setup["project"].id)
             specs.append(spec)
         await db_session.commit()
 
@@ -400,15 +366,12 @@ class TestRequirementSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_create_with_defaults(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_create_with_defaults(self, db_session: AsyncSession, setup_project_and_item):
         """Test create with default values."""
         setup = setup_project_and_item
         repo = RequirementSpecRepository(db_session)
 
-        spec = await repo.create(item_id=setup["item"].id,
-            project_id=setup["project"].id)
+        spec = await repo.create(item_id=setup["item"].id, project_id=setup["project"].id)
         await db_session.commit()
 
         assert spec.id is not None
@@ -418,9 +381,7 @@ class TestRequirementSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_create_with_custom_values(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_create_with_custom_values(self, db_session: AsyncSession, setup_project_and_item):
         """Test create with custom values."""
         setup = setup_project_and_item
         repo = RequirementSpecRepository(db_session)
@@ -444,16 +405,13 @@ class TestRequirementSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_list_by_project_returns_all_specs(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_list_by_project_returns_all_specs(self, db_session: AsyncSession, setup_multiple_items):
         """Test list_by_project returns all specifications for a project."""
         setup = setup_multiple_items
         repo = RequirementSpecRepository(db_session)
 
         for item in setup["items"][:3]:
-            await repo.create(item_id=item.id,
-            project_id=setup["project"].id)
+            await repo.create(item_id=item.id, project_id=setup["project"].id)
         await db_session.commit()
 
         specs = await repo.list_by_project(setup["project"].id)
@@ -461,9 +419,7 @@ class TestRequirementSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_list_by_project_filters_by_requirement_type(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_list_by_project_filters_by_requirement_type(self, db_session: AsyncSession, setup_multiple_items):
         """Test list_by_project filters by requirement type."""
         setup = setup_multiple_items
         repo = RequirementSpecRepository(db_session)
@@ -493,9 +449,7 @@ class TestRequirementSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_list_by_project_filters_by_risk_level(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_list_by_project_filters_by_risk_level(self, db_session: AsyncSession, setup_multiple_items):
         """Test list_by_project filters by risk level."""
         setup = setup_multiple_items
         repo = RequirementSpecRepository(db_session)
@@ -521,9 +475,7 @@ class TestRequirementSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_list_by_project_filters_by_verification_status(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_list_by_project_filters_by_verification_status(self, db_session: AsyncSession, setup_multiple_items):
         """Test list_by_project filters by verification status."""
         setup = setup_multiple_items
         repo = RequirementSpecRepository(db_session)
@@ -548,17 +500,13 @@ class TestRequirementSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_list_by_project_excludes_deleted(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_list_by_project_excludes_deleted(self, db_session: AsyncSession, setup_multiple_items):
         """Test list_by_project excludes deleted specs."""
         setup = setup_multiple_items
         repo = RequirementSpecRepository(db_session)
 
-        spec1 = await repo.create(item_id=setup["items"][0].id,
-            project_id=setup["project"].id)
-        await repo.create(item_id=setup["items"][1].id,
-            project_id=setup["project"].id)
+        spec1 = await repo.create(item_id=setup["items"][0].id, project_id=setup["project"].id)
+        await repo.create(item_id=setup["items"][1].id, project_id=setup["project"].id)
         await db_session.commit()
 
         await repo.delete(spec1.id)
@@ -569,16 +517,13 @@ class TestRequirementSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_list_by_project_pagination(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_list_by_project_pagination(self, db_session: AsyncSession, setup_multiple_items):
         """Test list_by_project supports pagination."""
         setup = setup_multiple_items
         repo = RequirementSpecRepository(db_session)
 
         for item in setup["items"]:
-            await repo.create(item_id=item.id,
-            project_id=setup["project"].id)
+            await repo.create(item_id=item.id, project_id=setup["project"].id)
         await db_session.commit()
 
         page1 = await repo.list_by_project(setup["project"].id, limit=2, offset=0)
@@ -593,15 +538,12 @@ class TestRequirementSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_update_quality_scores(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_update_quality_scores(self, db_session: AsyncSession, setup_project_and_item):
         """Test update_quality_scores updates quality metrics."""
         setup = setup_project_and_item
         repo = RequirementSpecRepository(db_session)
 
-        spec = await repo.create(item_id=setup["item"].id,
-            project_id=setup["project"].id)
+        spec = await repo.create(item_id=setup["item"].id, project_id=setup["project"].id)
         await db_session.commit()
 
         updated = await repo.update_quality_scores(
@@ -623,15 +565,12 @@ class TestRequirementSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_update_volatility(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_update_volatility(self, db_session: AsyncSession, setup_project_and_item):
         """Test update_volatility updates volatility metrics."""
         setup = setup_project_and_item
         repo = RequirementSpecRepository(db_session)
 
-        spec = await repo.create(item_id=setup["item"].id,
-            project_id=setup["project"].id)
+        spec = await repo.create(item_id=setup["item"].id, project_id=setup["project"].id)
         await db_session.commit()
 
         updated = await repo.update_volatility(spec.id, volatility_index=0.75, change_count=5)
@@ -643,9 +582,7 @@ class TestRequirementSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_update_volatility_raises_for_nonexistent(
-        self, db_session: AsyncSession
-    ):
+    async def test_update_volatility_raises_for_nonexistent(self, db_session: AsyncSession):
         """Test update_volatility raises ValueError for non-existent spec."""
         repo = RequirementSpecRepository(db_session)
 
@@ -654,15 +591,12 @@ class TestRequirementSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_verify_marks_requirement_verified(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_verify_marks_requirement_verified(self, db_session: AsyncSession, setup_project_and_item):
         """Test verify marks requirement as verified."""
         setup = setup_project_and_item
         repo = RequirementSpecRepository(db_session)
 
-        spec = await repo.create(item_id=setup["item"].id,
-            project_id=setup["project"].id)
+        spec = await repo.create(item_id=setup["item"].id, project_id=setup["project"].id)
         await db_session.commit()
 
         updated = await repo.verify(
@@ -679,9 +613,7 @@ class TestRequirementSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_get_unverified_by_project(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_get_unverified_by_project(self, db_session: AsyncSession, setup_multiple_items):
         """Test get_unverified_by_project returns only unverified requirements."""
         setup = setup_multiple_items
         repo = RequirementSpecRepository(db_session)
@@ -704,9 +636,7 @@ class TestRequirementSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_get_high_risk_by_project(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_get_high_risk_by_project(self, db_session: AsyncSession, setup_multiple_items):
         """Test get_high_risk_by_project returns critical and high risk requirements."""
         setup = setup_multiple_items
         repo = RequirementSpecRepository(db_session)
@@ -738,9 +668,7 @@ class TestRequirementSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_calculate_wsjf_computes_score(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_calculate_wsjf_computes_score(self, db_session: AsyncSession, setup_project_and_item):
         """Test calculate_wsjf computes WSJF score correctly."""
         setup = setup_project_and_item
         repo = RequirementSpecRepository(db_session)
@@ -763,13 +691,12 @@ class TestRequirementSpecRepository:
 
         # Verify it's saved
         found = await repo.get_by_id(spec.id)
+        assert found is not None
         assert found.wsjf_score == 6.0
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_calculate_wsjf_with_different_complexities(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_calculate_wsjf_with_different_complexities(self, db_session: AsyncSession, setup_project_and_item):
         """Test calculate_wsjf with different complexity estimates."""
         setup = setup_project_and_item
         repo = RequirementSpecRepository(db_session)
@@ -811,9 +738,7 @@ class TestRequirementSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_calculate_wsjf_returns_none_for_nonexistent(
-        self, db_session: AsyncSession
-    ):
+    async def test_calculate_wsjf_returns_none_for_nonexistent(self, db_session: AsyncSession):
         """Test calculate_wsjf returns None for non-existent spec."""
         repo = RequirementSpecRepository(db_session)
 
@@ -822,9 +747,7 @@ class TestRequirementSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_get_by_risk_level_and_status(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_get_by_risk_level_and_status(self, db_session: AsyncSession, setup_multiple_items):
         """Test get_by_risk_level_and_status filters correctly."""
         setup = setup_multiple_items
         repo = RequirementSpecRepository(db_session)
@@ -869,15 +792,12 @@ class TestSpecRepoForTestsTests:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_create_with_defaults(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_create_with_defaults(self, db_session: AsyncSession, setup_project_and_item):
         """Test create with default values."""
         setup = setup_project_and_item
         repo = SpecRepoForTests(db_session)
 
-        spec = await repo.create(item_id=setup["item"].id,
-            project_id=setup["project"].id)
+        spec = await repo.create(item_id=setup["item"].id, project_id=setup["project"].id)
         await db_session.commit()
 
         assert spec.id is not None
@@ -887,9 +807,7 @@ class TestSpecRepoForTestsTests:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_create_with_custom_test_type(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_create_with_custom_test_type(self, db_session: AsyncSession, setup_project_and_item):
         """Test create with custom test type."""
         setup = setup_project_and_item
         repo = SpecRepoForTests(db_session)
@@ -905,9 +823,7 @@ class TestSpecRepoForTestsTests:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_list_by_project_filters_by_test_type(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_list_by_project_filters_by_test_type(self, db_session: AsyncSession, setup_multiple_items):
         """Test list_by_project filters by test type."""
         setup = setup_multiple_items
         repo = SpecRepoForTests(db_session)
@@ -937,17 +853,13 @@ class TestSpecRepoForTestsTests:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_list_by_project_filters_by_quarantine_status(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_list_by_project_filters_by_quarantine_status(self, db_session: AsyncSession, setup_multiple_items):
         """Test list_by_project filters by quarantine status."""
         setup = setup_multiple_items
         repo = SpecRepoForTests(db_session)
 
-        spec1 = await repo.create(item_id=setup["items"][0].id,
-            project_id=setup["project"].id)
-        await repo.create(item_id=setup["items"][1].id,
-            project_id=setup["project"].id)
+        spec1 = await repo.create(item_id=setup["items"][0].id, project_id=setup["project"].id)
+        await repo.create(item_id=setup["items"][1].id, project_id=setup["project"].id)
         await db_session.commit()
 
         await repo.quarantine(spec1.id, reason="Flaky test")
@@ -967,15 +879,12 @@ class TestSpecRepoForTestsTests:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_record_run_updates_statistics(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_record_run_updates_statistics(self, db_session: AsyncSession, setup_project_and_item):
         """Test record_run updates test run statistics."""
         setup = setup_project_and_item
         repo = SpecRepoForTests(db_session)
 
-        spec = await repo.create(item_id=setup["item"].id,
-            project_id=setup["project"].id)
+        spec = await repo.create(item_id=setup["item"].id, project_id=setup["project"].id)
         await db_session.commit()
 
         updated = await repo.record_run(
@@ -995,15 +904,12 @@ class TestSpecRepoForTestsTests:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_record_run_tracks_failures(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_record_run_tracks_failures(self, db_session: AsyncSession, setup_project_and_item):
         """Test record_run tracks failed runs."""
         setup = setup_project_and_item
         repo = SpecRepoForTests(db_session)
 
-        spec = await repo.create(item_id=setup["item"].id,
-            project_id=setup["project"].id)
+        spec = await repo.create(item_id=setup["item"].id, project_id=setup["project"].id)
         await db_session.commit()
 
         updated = await repo.record_run(
@@ -1020,15 +926,12 @@ class TestSpecRepoForTestsTests:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_record_run_tracks_skipped(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_record_run_tracks_skipped(self, db_session: AsyncSession, setup_project_and_item):
         """Test record_run tracks skipped runs."""
         setup = setup_project_and_item
         repo = SpecRepoForTests(db_session)
 
-        spec = await repo.create(item_id=setup["item"].id,
-            project_id=setup["project"].id)
+        spec = await repo.create(item_id=setup["item"].id, project_id=setup["project"].id)
         await db_session.commit()
 
         updated = await repo.record_run(
@@ -1051,15 +954,12 @@ class TestSpecRepoForTestsTests:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_record_run_calculates_flakiness(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_record_run_calculates_flakiness(self, db_session: AsyncSession, setup_project_and_item):
         """Test record_run calculates flakiness score."""
         setup = setup_project_and_item
         repo = SpecRepoForTests(db_session)
 
-        spec = await repo.create(item_id=setup["item"].id,
-            project_id=setup["project"].id)
+        spec = await repo.create(item_id=setup["item"].id, project_id=setup["project"].id)
         await db_session.commit()
 
         # Record alternating pass/fail runs to create flakiness
@@ -1072,20 +972,18 @@ class TestSpecRepoForTestsTests:
             await db_session.refresh(spec)
 
         found = await repo.get_by_id(spec.id)
+        assert found is not None
         assert found.flakiness_score is not None
         assert found.flakiness_score > 0  # Should detect flakiness (5 transitions / 5 = 1.0)
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_record_run_calculates_performance_metrics(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_record_run_calculates_performance_metrics(self, db_session: AsyncSession, setup_project_and_item):
         """Test record_run calculates performance metrics."""
         setup = setup_project_and_item
         repo = SpecRepoForTests(db_session)
 
-        spec = await repo.create(item_id=setup["item"].id,
-            project_id=setup["project"].id)
+        spec = await repo.create(item_id=setup["item"].id, project_id=setup["project"].id)
         await db_session.commit()
 
         # Record multiple runs with varying durations
@@ -1095,6 +993,7 @@ class TestSpecRepoForTestsTests:
             await db_session.commit()
 
         found = await repo.get_by_id(spec.id)
+        assert found is not None
         assert found.avg_duration_ms is not None
         assert found.p50_duration_ms is not None
         # avg should be around 146
@@ -1102,15 +1001,12 @@ class TestSpecRepoForTestsTests:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_record_run_history_limited_to_50(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_record_run_history_limited_to_50(self, db_session: AsyncSession, setup_project_and_item):
         """Test record_run limits history to 50 entries."""
         setup = setup_project_and_item
         repo = SpecRepoForTests(db_session)
 
-        spec = await repo.create(item_id=setup["item"].id,
-            project_id=setup["project"].id)
+        spec = await repo.create(item_id=setup["item"].id, project_id=setup["project"].id)
         await db_session.commit()
 
         # Record 60 runs
@@ -1119,19 +1015,17 @@ class TestSpecRepoForTestsTests:
             await db_session.commit()
 
         found = await repo.get_by_id(spec.id)
+        assert found is not None
         assert len(found.run_history) == 50
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_quarantine_sets_quarantine_fields(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_quarantine_sets_quarantine_fields(self, db_session: AsyncSession, setup_project_and_item):
         """Test quarantine sets quarantine fields."""
         setup = setup_project_and_item
         repo = SpecRepoForTests(db_session)
 
-        spec = await repo.create(item_id=setup["item"].id,
-            project_id=setup["project"].id)
+        spec = await repo.create(item_id=setup["item"].id, project_id=setup["project"].id)
         await db_session.commit()
 
         updated = await repo.quarantine(spec.id, reason="Consistently failing")
@@ -1143,15 +1037,12 @@ class TestSpecRepoForTestsTests:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_unquarantine_clears_quarantine_fields(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_unquarantine_clears_quarantine_fields(self, db_session: AsyncSession, setup_project_and_item):
         """Test unquarantine clears quarantine fields."""
         setup = setup_project_and_item
         repo = SpecRepoForTests(db_session)
 
-        spec = await repo.create(item_id=setup["item"].id,
-            project_id=setup["project"].id)
+        spec = await repo.create(item_id=setup["item"].id, project_id=setup["project"].id)
         await db_session.commit()
 
         await repo.quarantine(spec.id, reason="Test reason")
@@ -1166,18 +1057,14 @@ class TestSpecRepoForTestsTests:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_get_flaky_tests(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_get_flaky_tests(self, db_session: AsyncSession, setup_multiple_items):
         """Test get_flaky_tests returns tests above threshold."""
         setup = setup_multiple_items
         repo = SpecRepoForTests(db_session)
 
         # Create tests with different flakiness levels
-        spec1 = await repo.create(item_id=setup["items"][0].id,
-            project_id=setup["project"].id)
-        spec2 = await repo.create(item_id=setup["items"][1].id,
-            project_id=setup["project"].id)
+        spec1 = await repo.create(item_id=setup["items"][0].id, project_id=setup["project"].id)
+        spec2 = await repo.create(item_id=setup["items"][1].id, project_id=setup["project"].id)
         await db_session.commit()
 
         # Make spec1 flaky by recording alternating results
@@ -1196,9 +1083,7 @@ class TestSpecRepoForTestsTests:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_get_by_test_type_and_status(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_get_by_test_type_and_status(self, db_session: AsyncSession, setup_multiple_items):
         """Test get_by_test_type_and_status filters correctly."""
         setup = setup_multiple_items
         repo = SpecRepoForTests(db_session)
@@ -1224,19 +1109,14 @@ class TestSpecRepoForTestsTests:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_get_slowest_tests(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_get_slowest_tests(self, db_session: AsyncSession, setup_multiple_items):
         """Test get_slowest_tests returns tests ordered by avg duration."""
         setup = setup_multiple_items
         repo = SpecRepoForTests(db_session)
 
-        spec1 = await repo.create(item_id=setup["items"][0].id,
-            project_id=setup["project"].id)
-        spec2 = await repo.create(item_id=setup["items"][1].id,
-            project_id=setup["project"].id)
-        spec3 = await repo.create(item_id=setup["items"][2].id,
-            project_id=setup["project"].id)
+        spec1 = await repo.create(item_id=setup["items"][0].id, project_id=setup["project"].id)
+        spec2 = await repo.create(item_id=setup["items"][1].id, project_id=setup["project"].id)
+        spec3 = await repo.create(item_id=setup["items"][2].id, project_id=setup["project"].id)
         await db_session.commit()
 
         # Record runs with different durations
@@ -1261,15 +1141,12 @@ class TestEpicSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_create_with_defaults(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_create_with_defaults(self, db_session: AsyncSession, setup_project_and_item):
         """Test create with default values."""
         setup = setup_project_and_item
         repo = EpicSpecRepository(db_session)
 
-        spec = await repo.create(item_id=setup["item"].id,
-            project_id=setup["project"].id)
+        spec = await repo.create(item_id=setup["item"].id, project_id=setup["project"].id)
         await db_session.commit()
 
         assert spec.id is not None
@@ -1279,9 +1156,7 @@ class TestEpicSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_create_with_custom_values(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_create_with_custom_values(self, db_session: AsyncSession, setup_project_and_item):
         """Test create with custom values."""
         setup = setup_project_and_item
         repo = EpicSpecRepository(db_session)
@@ -1301,9 +1176,7 @@ class TestEpicSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_list_by_project_filters_by_epic_type(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_list_by_project_filters_by_epic_type(self, db_session: AsyncSession, setup_multiple_items):
         """Test list_by_project filters by epic type."""
         setup = setup_multiple_items
         repo = EpicSpecRepository(db_session)
@@ -1328,9 +1201,7 @@ class TestEpicSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_list_by_project_filters_by_status(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_list_by_project_filters_by_status(self, db_session: AsyncSession, setup_multiple_items):
         """Test list_by_project filters by status."""
         setup = setup_multiple_items
         repo = EpicSpecRepository(db_session)
@@ -1355,15 +1226,12 @@ class TestEpicSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_update_metrics(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_update_metrics(self, db_session: AsyncSession, setup_project_and_item):
         """Test update_metrics updates epic metrics."""
         setup = setup_project_and_item
         repo = EpicSpecRepository(db_session)
 
-        spec = await repo.create(item_id=setup["item"].id,
-            project_id=setup["project"].id)
+        spec = await repo.create(item_id=setup["item"].id, project_id=setup["project"].id)
         await db_session.commit()
 
         updated = await repo.update_metrics(
@@ -1382,9 +1250,7 @@ class TestEpicSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_get_by_team(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_get_by_team(self, db_session: AsyncSession, setup_multiple_items):
         """Test get_by_team returns epics for a specific team."""
         setup = setup_multiple_items
         repo = EpicSpecRepository(db_session)
@@ -1411,9 +1277,7 @@ class TestEpicSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_get_in_progress(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_get_in_progress(self, db_session: AsyncSession, setup_multiple_items):
         """Test get_in_progress returns only in-progress epics."""
         setup = setup_multiple_items
         repo = EpicSpecRepository(db_session)
@@ -1449,15 +1313,12 @@ class TestUserStorySpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_create_with_defaults(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_create_with_defaults(self, db_session: AsyncSession, setup_project_and_item):
         """Test create with default values."""
         setup = setup_project_and_item
         repo = UserStorySpecRepository(db_session)
 
-        spec = await repo.create(item_id=setup["item"].id,
-            project_id=setup["project"].id)
+        spec = await repo.create(item_id=setup["item"].id, project_id=setup["project"].id)
         await db_session.commit()
 
         assert spec.id is not None
@@ -1466,9 +1327,7 @@ class TestUserStorySpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_create_with_user_story_format(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_create_with_user_story_format(self, db_session: AsyncSession, setup_project_and_item):
         """Test create with As a/I want/So that format."""
         setup = setup_project_and_item
         repo = UserStorySpecRepository(db_session)
@@ -1490,9 +1349,7 @@ class TestUserStorySpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_list_by_project_filters_by_status(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_list_by_project_filters_by_status(self, db_session: AsyncSession, setup_multiple_items):
         """Test list_by_project filters by status."""
         setup = setup_multiple_items
         repo = UserStorySpecRepository(db_session)
@@ -1514,15 +1371,12 @@ class TestUserStorySpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_update_acceptance_criteria(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_update_acceptance_criteria(self, db_session: AsyncSession, setup_project_and_item):
         """Test update_acceptance_criteria updates criteria list."""
         setup = setup_project_and_item
         repo = UserStorySpecRepository(db_session)
 
-        spec = await repo.create(item_id=setup["item"].id,
-            project_id=setup["project"].id)
+        spec = await repo.create(item_id=setup["item"].id, project_id=setup["project"].id)
         await db_session.commit()
 
         criteria = [
@@ -1538,9 +1392,7 @@ class TestUserStorySpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_get_by_epic(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_get_by_epic(self, db_session: AsyncSession, setup_multiple_items):
         """Test get_by_epic returns stories for a specific epic."""
         setup = setup_multiple_items
         repo = UserStorySpecRepository(db_session)
@@ -1569,9 +1421,7 @@ class TestUserStorySpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_get_by_assignee(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_get_by_assignee(self, db_session: AsyncSession, setup_multiple_items):
         """Test get_by_assignee returns stories for a specific assignee."""
         setup = setup_multiple_items
         repo = UserStorySpecRepository(db_session)
@@ -1607,15 +1457,12 @@ class TestTaskSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_create_with_defaults(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_create_with_defaults(self, db_session: AsyncSession, setup_project_and_item):
         """Test create with default values."""
         setup = setup_project_and_item
         repo = TaskSpecRepository(db_session)
 
-        spec = await repo.create(item_id=setup["item"].id,
-            project_id=setup["project"].id)
+        spec = await repo.create(item_id=setup["item"].id, project_id=setup["project"].id)
         await db_session.commit()
 
         assert spec.id is not None
@@ -1625,9 +1472,7 @@ class TestTaskSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_create_with_parent_story(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_create_with_parent_story(self, db_session: AsyncSession, setup_multiple_items):
         """Test create with parent story reference."""
         setup = setup_multiple_items
         repo = TaskSpecRepository(db_session)
@@ -1647,9 +1492,7 @@ class TestTaskSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_list_by_project_filters_by_status(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_list_by_project_filters_by_status(self, db_session: AsyncSession, setup_multiple_items):
         """Test list_by_project filters by status."""
         setup = setup_multiple_items
         repo = TaskSpecRepository(db_session)
@@ -1676,9 +1519,7 @@ class TestTaskSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_update_progress(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_update_progress(self, db_session: AsyncSession, setup_project_and_item):
         """Test update_progress updates progress fields."""
         setup = setup_project_and_item
         repo = TaskSpecRepository(db_session)
@@ -1702,9 +1543,7 @@ class TestTaskSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_get_by_parent_story(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_get_by_parent_story(self, db_session: AsyncSession, setup_multiple_items):
         """Test get_by_parent_story returns tasks for a specific story."""
         setup = setup_multiple_items
         repo = TaskSpecRepository(db_session)
@@ -1733,9 +1572,7 @@ class TestTaskSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_get_blocked_tasks(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_get_blocked_tasks(self, db_session: AsyncSession, setup_multiple_items):
         """Test get_blocked_tasks returns only blocked tasks."""
         setup = setup_multiple_items
         repo = TaskSpecRepository(db_session)
@@ -1764,9 +1601,7 @@ class TestTaskSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_get_by_assignee(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_get_by_assignee(self, db_session: AsyncSession, setup_multiple_items):
         """Test get_by_assignee returns tasks for a specific assignee."""
         setup = setup_multiple_items
         repo = TaskSpecRepository(db_session)
@@ -1797,15 +1632,12 @@ class TestDefectSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_create_with_defaults(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_create_with_defaults(self, db_session: AsyncSession, setup_project_and_item):
         """Test create with default values."""
         setup = setup_project_and_item
         repo = DefectSpecRepository(db_session)
 
-        spec = await repo.create(item_id=setup["item"].id,
-            project_id=setup["project"].id)
+        spec = await repo.create(item_id=setup["item"].id, project_id=setup["project"].id)
         await db_session.commit()
 
         assert spec.id is not None
@@ -1814,9 +1646,7 @@ class TestDefectSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_create_with_custom_severity(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_create_with_custom_severity(self, db_session: AsyncSession, setup_project_and_item):
         """Test create with custom severity."""
         setup = setup_project_and_item
         repo = DefectSpecRepository(db_session)
@@ -1836,9 +1666,7 @@ class TestDefectSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_list_by_project_filters_by_severity(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_list_by_project_filters_by_severity(self, db_session: AsyncSession, setup_multiple_items):
         """Test list_by_project filters by severity."""
         setup = setup_multiple_items
         repo = DefectSpecRepository(db_session)
@@ -1863,9 +1691,7 @@ class TestDefectSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_list_by_project_filters_by_status(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_list_by_project_filters_by_status(self, db_session: AsyncSession, setup_multiple_items):
         """Test list_by_project filters by status."""
         setup = setup_multiple_items
         repo = DefectSpecRepository(db_session)
@@ -1890,9 +1716,7 @@ class TestDefectSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_get_critical_defects(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_get_critical_defects(self, db_session: AsyncSession, setup_multiple_items):
         """Test get_critical_defects returns only critical defects."""
         setup = setup_multiple_items
         repo = DefectSpecRepository(db_session)
@@ -1915,9 +1739,7 @@ class TestDefectSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_get_blockers(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_get_blockers(self, db_session: AsyncSession, setup_multiple_items):
         """Test get_blockers returns only blocker defects."""
         setup = setup_multiple_items
         repo = DefectSpecRepository(db_session)
@@ -1940,9 +1762,7 @@ class TestDefectSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_get_by_status(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_get_by_status(self, db_session: AsyncSession, setup_multiple_items):
         """Test get_by_status returns defects with specific status."""
         setup = setup_multiple_items
         repo = DefectSpecRepository(db_session)
@@ -1967,15 +1787,12 @@ class TestDefectSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_assign_defect(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_assign_defect(self, db_session: AsyncSession, setup_project_and_item):
         """Test assign_defect assigns defect to developer."""
         setup = setup_project_and_item
         repo = DefectSpecRepository(db_session)
 
-        spec = await repo.create(item_id=setup["item"].id,
-            project_id=setup["project"].id)
+        spec = await repo.create(item_id=setup["item"].id, project_id=setup["project"].id)
         await db_session.commit()
 
         updated = await repo.assign_defect(spec.id, assigned_to="dev-123")
@@ -1987,15 +1804,12 @@ class TestDefectSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_resolve_defect(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_resolve_defect(self, db_session: AsyncSession, setup_project_and_item):
         """Test resolve_defect marks defect as resolved."""
         setup = setup_project_and_item
         repo = DefectSpecRepository(db_session)
 
-        spec = await repo.create(item_id=setup["item"].id,
-            project_id=setup["project"].id)
+        spec = await repo.create(item_id=setup["item"].id, project_id=setup["project"].id)
         await db_session.commit()
 
         updated = await repo.resolve_defect(
@@ -2014,9 +1828,7 @@ class TestDefectSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_reopen_defect(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_reopen_defect(self, db_session: AsyncSession, setup_project_and_item):
         """Test reopen_defect reopens a closed defect."""
         setup = setup_project_and_item
         repo = DefectSpecRepository(db_session)
@@ -2037,9 +1849,7 @@ class TestDefectSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_get_by_component(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_get_by_component(self, db_session: AsyncSession, setup_multiple_items):
         """Test get_by_component returns defects for a specific component."""
         setup = setup_multiple_items
         repo = DefectSpecRepository(db_session)
@@ -2069,9 +1879,7 @@ class TestDefectSpecRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_get_by_assignee(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_get_by_assignee(self, db_session: AsyncSession, setup_multiple_items):
         """Test get_by_assignee returns defects for a specific assignee."""
         setup = setup_multiple_items
         repo = DefectSpecRepository(db_session)
@@ -2102,18 +1910,14 @@ class TestItemSpecBatchRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_get_all_specs_for_item_returns_all_types(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_get_all_specs_for_item_returns_all_types(self, db_session: AsyncSession, setup_project_and_item):
         """Test get_all_specs_for_item returns all spec types for an item."""
         setup = setup_project_and_item
         batch_repo = ItemSpecBatchRepository(db_session)
 
         # Create different spec types for the same item
-        await batch_repo.requirements.create(item_id=setup["item"].id,
-            project_id=setup["project"].id)
-        await batch_repo.tests.create(item_id=setup["item"].id,
-            project_id=setup["project"].id)
+        await batch_repo.requirements.create(item_id=setup["item"].id, project_id=setup["project"].id)
+        await batch_repo.tests.create(item_id=setup["item"].id, project_id=setup["project"].id)
         await db_session.commit()
 
         specs = await batch_repo.get_all_specs_for_item(setup["item"].id)
@@ -2127,9 +1931,7 @@ class TestItemSpecBatchRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_get_all_specs_for_item_returns_empty_for_nonexistent(
-        self, db_session: AsyncSession
-    ):
+    async def test_get_all_specs_for_item_returns_empty_for_nonexistent(self, db_session: AsyncSession):
         """Test get_all_specs_for_item returns None values for non-existent item."""
         batch_repo = ItemSpecBatchRepository(db_session)
 
@@ -2144,22 +1946,16 @@ class TestItemSpecBatchRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_get_project_summary(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_get_project_summary(self, db_session: AsyncSession, setup_multiple_items):
         """Test get_project_summary returns correct counts."""
         setup = setup_multiple_items
         batch_repo = ItemSpecBatchRepository(db_session)
 
         # Create specs of different types
-        await batch_repo.requirements.create(item_id=setup["items"][0].id,
-            project_id=setup["project"].id)
-        await batch_repo.requirements.create(item_id=setup["items"][1].id,
-            project_id=setup["project"].id)
-        await batch_repo.tests.create(item_id=setup["items"][2].id,
-            project_id=setup["project"].id)
-        await batch_repo.epics.create(item_id=setup["items"][3].id,
-            project_id=setup["project"].id)
+        await batch_repo.requirements.create(item_id=setup["items"][0].id, project_id=setup["project"].id)
+        await batch_repo.requirements.create(item_id=setup["items"][1].id, project_id=setup["project"].id)
+        await batch_repo.tests.create(item_id=setup["items"][2].id, project_id=setup["project"].id)
+        await batch_repo.epics.create(item_id=setup["items"][3].id, project_id=setup["project"].id)
         await db_session.commit()
 
         summary = await batch_repo.get_project_summary(setup["project"].id)
@@ -2173,17 +1969,13 @@ class TestItemSpecBatchRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_get_project_summary_excludes_deleted(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_get_project_summary_excludes_deleted(self, db_session: AsyncSession, setup_multiple_items):
         """Test get_project_summary excludes deleted specs."""
         setup = setup_multiple_items
         batch_repo = ItemSpecBatchRepository(db_session)
 
-        spec1 = await batch_repo.requirements.create(item_id=setup["items"][0].id,
-            project_id=setup["project"].id)
-        await batch_repo.requirements.create(item_id=setup["items"][1].id,
-            project_id=setup["project"].id)
+        spec1 = await batch_repo.requirements.create(item_id=setup["items"][0].id, project_id=setup["project"].id)
+        await batch_repo.requirements.create(item_id=setup["items"][1].id, project_id=setup["project"].id)
         await db_session.commit()
 
         # Delete one spec
@@ -2195,20 +1987,15 @@ class TestItemSpecBatchRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_delete_all_specs_for_item(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_delete_all_specs_for_item(self, db_session: AsyncSession, setup_project_and_item):
         """Test delete_all_specs_for_item soft deletes all specs for an item."""
         setup = setup_project_and_item
         batch_repo = ItemSpecBatchRepository(db_session)
 
         # Create multiple spec types for the same item
-        await batch_repo.requirements.create(item_id=setup["item"].id,
-            project_id=setup["project"].id)
-        await batch_repo.tests.create(item_id=setup["item"].id,
-            project_id=setup["project"].id)
-        await batch_repo.tasks.create(item_id=setup["item"].id,
-            project_id=setup["project"].id)
+        await batch_repo.requirements.create(item_id=setup["item"].id, project_id=setup["project"].id)
+        await batch_repo.tests.create(item_id=setup["item"].id, project_id=setup["project"].id)
+        await batch_repo.tasks.create(item_id=setup["item"].id, project_id=setup["project"].id)
         await db_session.commit()
 
         count = await batch_repo.delete_all_specs_for_item(setup["item"].id)
@@ -2217,7 +2004,7 @@ class TestItemSpecBatchRepository:
         assert count == 3
 
         # Verify all are soft deleted
-        specs = await batch_repo.get_all_specs_for_item(setup["item"].id)
+        await batch_repo.get_all_specs_for_item(setup["item"].id)
         # get_all_specs_for_item may still return deleted specs since it doesn't filter
         # Let's verify by checking deleted_at
         req = await batch_repo.requirements.get_by_item_id(setup["item"].id)
@@ -2238,9 +2025,7 @@ class TestItemSpecBatchRepository:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_batch_repository_initializes_all_sub_repositories(
-        self, db_session: AsyncSession
-    ):
+    async def test_batch_repository_initializes_all_sub_repositories(self, db_session: AsyncSession):
         """Test ItemSpecBatchRepository initializes all sub-repositories."""
         batch_repo = ItemSpecBatchRepository(db_session)
 
@@ -2270,9 +2055,7 @@ class TestBaseSpecRepositoryBranchCoverage:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_update_ignores_nonexistent_attribute(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_update_ignores_nonexistent_attribute(self, db_session: AsyncSession, setup_project_and_item):
         """Test update ignores attributes that don't exist on the model."""
         setup = setup_project_and_item
         repo = RequirementSpecRepository(db_session)
@@ -2296,9 +2079,7 @@ class TestBaseSpecRepositoryBranchCoverage:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_update_ignores_none_values(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_update_ignores_none_values(self, db_session: AsyncSession, setup_project_and_item):
         """Test update ignores None values (doesn't overwrite existing values)."""
         setup = setup_project_and_item
         repo = RequirementSpecRepository(db_session)
@@ -2322,9 +2103,7 @@ class TestBaseSpecRepositoryBranchCoverage:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_batch_update_with_empty_dict(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_batch_update_with_empty_dict(self, db_session: AsyncSession, setup_project_and_item):
         """Test batch_update with empty updates dict."""
         setup = setup_project_and_item
         repo = RequirementSpecRepository(db_session)
@@ -2341,9 +2120,7 @@ class TestBaseSpecRepositoryBranchCoverage:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_batch_delete_with_empty_list(
-        self, db_session: AsyncSession
-    ):
+    async def test_batch_delete_with_empty_list(self, db_session: AsyncSession):
         """Test batch_delete with empty list."""
         repo = RequirementSpecRepository(db_session)
 
@@ -2352,9 +2129,7 @@ class TestBaseSpecRepositoryBranchCoverage:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_batch_delete_with_nonexistent_ids(
-        self, db_session: AsyncSession
-    ):
+    async def test_batch_delete_with_nonexistent_ids(self, db_session: AsyncSession):
         """Test batch_delete with non-existent IDs."""
         repo = RequirementSpecRepository(db_session)
 
@@ -2367,9 +2142,7 @@ class TestTestSpecRepositoryFlakinessPerformance:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_recalculate_flakiness_insufficient_data(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_recalculate_flakiness_insufficient_data(self, db_session: AsyncSession, setup_project_and_item):
         """Test flakiness calculation with insufficient data (< 5 runs)."""
         setup = setup_project_and_item
         repo = SpecRepoForTests(db_session)
@@ -2386,13 +2159,12 @@ class TestTestSpecRepositoryFlakinessPerformance:
             await db_session.commit()
 
         found = await repo.get_by_id(spec.id)
+        assert found is not None
         assert found.flakiness_score is None  # Not enough data
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_recalculate_performance_empty_durations(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_recalculate_performance_empty_durations(self, db_session: AsyncSession, setup_project_and_item):
         """Test performance calculation with no durations."""
         setup = setup_project_and_item
         repo = SpecRepoForTests(db_session)
@@ -2408,13 +2180,12 @@ class TestTestSpecRepositoryFlakinessPerformance:
         await db_session.commit()
 
         found = await repo.get_by_id(spec.id)
+        assert found is not None
         assert found.avg_duration_ms == 100
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_performance_metrics_p95_requires_20_runs(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_performance_metrics_p95_requires_20_runs(self, db_session: AsyncSession, setup_project_and_item):
         """Test that p95 is only calculated with 20+ runs."""
         setup = setup_project_and_item
         repo = SpecRepoForTests(db_session)
@@ -2431,13 +2202,12 @@ class TestTestSpecRepositoryFlakinessPerformance:
             await db_session.commit()
 
         found = await repo.get_by_id(spec.id)
+        assert found is not None
         assert found.p95_duration_ms is None  # < 20 runs
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_get_flaky_tests_returns_empty_when_no_flaky(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_get_flaky_tests_returns_empty_when_no_flaky(self, db_session: AsyncSession, setup_multiple_items):
         """Test get_flaky_tests returns empty list when no flaky tests."""
         setup = setup_multiple_items
         repo = SpecRepoForTests(db_session)
@@ -2459,9 +2229,7 @@ class TestTestSpecRepositoryFilterCombinations:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_list_by_project_both_filters(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_list_by_project_both_filters(self, db_session: AsyncSession, setup_multiple_items):
         """Test list_by_project with both test_type and is_quarantined filters."""
         setup = setup_multiple_items
         repo = SpecRepoForTests(db_session)
@@ -2499,9 +2267,7 @@ class TestTestSpecRepositoryFilterCombinations:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_list_by_project_no_filters(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_list_by_project_no_filters(self, db_session: AsyncSession, setup_multiple_items):
         """Test list_by_project with no filters returns all."""
         setup = setup_multiple_items
         repo = SpecRepoForTests(db_session)
@@ -2522,9 +2288,7 @@ class TestEpicSpecRepositoryBranchCoverage:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_update_metrics_partial_updates(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_update_metrics_partial_updates(self, db_session: AsyncSession, setup_project_and_item):
         """Test update_metrics with only some parameters provided."""
         setup = setup_project_and_item
         repo = EpicSpecRepository(db_session)
@@ -2549,9 +2313,7 @@ class TestEpicSpecRepositoryBranchCoverage:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_update_metrics_no_updates(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_update_metrics_no_updates(self, db_session: AsyncSession, setup_project_and_item):
         """Test update_metrics with no parameters (empty update)."""
         setup = setup_project_and_item
         repo = EpicSpecRepository(db_session)
@@ -2571,9 +2333,7 @@ class TestEpicSpecRepositoryBranchCoverage:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_list_by_project_both_filters(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_list_by_project_both_filters(self, db_session: AsyncSession, setup_multiple_items):
         """Test list_by_project with both epic_type and status filters."""
         setup = setup_multiple_items
         repo = EpicSpecRepository(db_session)
@@ -2608,9 +2368,7 @@ class TestEpicSpecRepositoryBranchCoverage:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_list_by_project_no_filters(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_list_by_project_no_filters(self, db_session: AsyncSession, setup_multiple_items):
         """Test list_by_project without filters returns all epics."""
         setup = setup_multiple_items
         repo = EpicSpecRepository(db_session)
@@ -2631,9 +2389,7 @@ class TestUserStorySpecRepositoryBranchCoverage:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_list_by_project_no_status_filter(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_list_by_project_no_status_filter(self, db_session: AsyncSession, setup_multiple_items):
         """Test list_by_project without status filter."""
         setup = setup_multiple_items
         repo = UserStorySpecRepository(db_session)
@@ -2660,9 +2416,7 @@ class TestTaskSpecRepositoryBranchCoverage:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_list_by_project_no_status_filter(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_list_by_project_no_status_filter(self, db_session: AsyncSession, setup_multiple_items):
         """Test list_by_project without status filter."""
         setup = setup_multiple_items
         repo = TaskSpecRepository(db_session)
@@ -2685,9 +2439,7 @@ class TestTaskSpecRepositoryBranchCoverage:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_update_progress_without_checklist(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_update_progress_without_checklist(self, db_session: AsyncSession, setup_project_and_item):
         """Test update_progress without completed_checklist_items."""
         setup = setup_project_and_item
         repo = TaskSpecRepository(db_session)
@@ -2714,9 +2466,7 @@ class TestDefectSpecRepositoryBranchCoverage:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_list_by_project_both_filters(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_list_by_project_both_filters(self, db_session: AsyncSession, setup_multiple_items):
         """Test list_by_project with both severity and status filters."""
         setup = setup_multiple_items
         repo = DefectSpecRepository(db_session)
@@ -2751,9 +2501,7 @@ class TestDefectSpecRepositoryBranchCoverage:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_list_by_project_no_filters(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_list_by_project_no_filters(self, db_session: AsyncSession, setup_multiple_items):
         """Test list_by_project without filters."""
         setup = setup_multiple_items
         repo = DefectSpecRepository(db_session)
@@ -2774,9 +2522,7 @@ class TestRequirementSpecRepositoryBranchCoverage:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_list_by_project_all_filters(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_list_by_project_all_filters(self, db_session: AsyncSession, setup_multiple_items):
         """Test list_by_project with all filters combined."""
         setup = setup_multiple_items
         repo = RequirementSpecRepository(db_session)
@@ -2815,9 +2561,7 @@ class TestRequirementSpecRepositoryBranchCoverage:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_list_by_project_no_filters(
-        self, db_session: AsyncSession, setup_multiple_items
-    ):
+    async def test_list_by_project_no_filters(self, db_session: AsyncSession, setup_multiple_items):
         """Test list_by_project without any filters."""
         setup = setup_multiple_items
         repo = RequirementSpecRepository(db_session)
@@ -2834,9 +2578,7 @@ class TestRequirementSpecRepositoryBranchCoverage:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_update_quality_scores_raises_for_nonexistent(
-        self, db_session: AsyncSession
-    ):
+    async def test_update_quality_scores_raises_for_nonexistent(self, db_session: AsyncSession):
         """Test update_quality_scores raises for non-existent spec."""
         repo = RequirementSpecRepository(db_session)
 
@@ -2848,9 +2590,7 @@ class TestRequirementSpecRepositoryBranchCoverage:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_verify_raises_for_nonexistent(
-        self, db_session: AsyncSession
-    ):
+    async def test_verify_raises_for_nonexistent(self, db_session: AsyncSession):
         """Test verify raises for non-existent spec."""
         repo = RequirementSpecRepository(db_session)
 
@@ -2867,9 +2607,7 @@ class TestTestSpecRepositoryErrorCases:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_quarantine_raises_for_nonexistent(
-        self, db_session: AsyncSession
-    ):
+    async def test_quarantine_raises_for_nonexistent(self, db_session: AsyncSession):
         """Test quarantine raises for non-existent spec."""
         repo = SpecRepoForTests(db_session)
 
@@ -2878,9 +2616,7 @@ class TestTestSpecRepositoryErrorCases:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_unquarantine_raises_for_nonexistent(
-        self, db_session: AsyncSession
-    ):
+    async def test_unquarantine_raises_for_nonexistent(self, db_session: AsyncSession):
         """Test unquarantine raises for non-existent spec."""
         repo = SpecRepoForTests(db_session)
 
@@ -2893,9 +2629,7 @@ class TestEpicSpecRepositoryErrorCases:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_update_metrics_raises_for_nonexistent(
-        self, db_session: AsyncSession
-    ):
+    async def test_update_metrics_raises_for_nonexistent(self, db_session: AsyncSession):
         """Test update_metrics raises for non-existent spec."""
         repo = EpicSpecRepository(db_session)
 
@@ -2911,9 +2645,7 @@ class TestUserStorySpecRepositoryErrorCases:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_update_acceptance_criteria_raises_for_nonexistent(
-        self, db_session: AsyncSession
-    ):
+    async def test_update_acceptance_criteria_raises_for_nonexistent(self, db_session: AsyncSession):
         """Test update_acceptance_criteria raises for non-existent spec."""
         repo = UserStorySpecRepository(db_session)
 
@@ -2929,9 +2661,7 @@ class TestTaskSpecRepositoryErrorCases:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_update_progress_raises_for_nonexistent(
-        self, db_session: AsyncSession
-    ):
+    async def test_update_progress_raises_for_nonexistent(self, db_session: AsyncSession):
         """Test update_progress raises for non-existent spec."""
         repo = TaskSpecRepository(db_session)
 
@@ -2947,9 +2677,7 @@ class TestDefectSpecRepositoryErrorCases:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_assign_defect_raises_for_nonexistent(
-        self, db_session: AsyncSession
-    ):
+    async def test_assign_defect_raises_for_nonexistent(self, db_session: AsyncSession):
         """Test assign_defect raises for non-existent spec."""
         repo = DefectSpecRepository(db_session)
 
@@ -2958,9 +2686,7 @@ class TestDefectSpecRepositoryErrorCases:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_resolve_defect_raises_for_nonexistent(
-        self, db_session: AsyncSession
-    ):
+    async def test_resolve_defect_raises_for_nonexistent(self, db_session: AsyncSession):
         """Test resolve_defect raises for non-existent spec."""
         repo = DefectSpecRepository(db_session)
 
@@ -2974,9 +2700,7 @@ class TestDefectSpecRepositoryErrorCases:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_reopen_defect_raises_for_nonexistent(
-        self, db_session: AsyncSession
-    ):
+    async def test_reopen_defect_raises_for_nonexistent(self, db_session: AsyncSession):
         """Test reopen_defect raises for non-existent spec."""
         repo = DefectSpecRepository(db_session)
 
@@ -2994,9 +2718,7 @@ class TestTestSpecRepositoryRecordRunEdgeCases:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_record_run_with_unknown_status(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_record_run_with_unknown_status(self, db_session: AsyncSession, setup_project_and_item):
         """Test record_run with a status that's not passed/failed/skipped.
 
         This covers the branch where status is not one of the known statuses
@@ -3030,9 +2752,7 @@ class TestTestSpecRepositoryRecordRunEdgeCases:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_record_run_with_environment_parameter(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_record_run_with_environment_parameter(self, db_session: AsyncSession, setup_project_and_item):
         """Test record_run properly records environment in run_history."""
         setup = setup_project_and_item
         repo = SpecRepoForTests(db_session)
@@ -3065,9 +2785,7 @@ class TestTestSpecRepositoryFlakinessWithSufficientData:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_flakiness_with_no_transitions(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_flakiness_with_no_transitions(self, db_session: AsyncSession, setup_project_and_item):
         """Test flakiness calculation when all runs have the same status.
 
         This covers the flakiness calculation path where transitions = 0.
@@ -3088,15 +2806,14 @@ class TestTestSpecRepositoryFlakinessWithSufficientData:
 
         # Flakiness should be 0 (no transitions)
         found = await repo.get_by_id(spec.id)
+        assert found is not None
         # Due to JSON mutation bug, we just verify the method was called
         # The flakiness_score calculation is exercised
         assert found.total_runs == 6
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_flakiness_with_high_transitions(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_flakiness_with_high_transitions(self, db_session: AsyncSession, setup_project_and_item):
         """Test flakiness calculation with high transition rate.
 
         This covers the 'high_transition_rate' pattern detection.
@@ -3117,6 +2834,7 @@ class TestTestSpecRepositoryFlakinessWithSufficientData:
             await db_session.commit()
 
         found = await repo.get_by_id(spec.id)
+        assert found is not None
         assert found.total_runs == 6
 
 
@@ -3128,9 +2846,7 @@ class TestTestSpecRepositoryPerformanceTrend:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_performance_trend_with_increasing_durations(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_performance_trend_with_increasing_durations(self, db_session: AsyncSession, setup_project_and_item):
         """Test performance trend when recent runs are slower.
 
         This covers the 'increasing' trend branch (lines 599-609).
@@ -3152,14 +2868,13 @@ class TestTestSpecRepositoryPerformanceTrend:
             await db_session.commit()
 
         found = await repo.get_by_id(spec.id)
+        assert found is not None
         assert found.total_runs == 10
         # The duration_trend should be calculated (may be 'increasing' or 'stable')
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_performance_trend_with_decreasing_durations(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_performance_trend_with_decreasing_durations(self, db_session: AsyncSession, setup_project_and_item):
         """Test performance trend when recent runs are faster.
 
         This covers the 'decreasing' trend branch.
@@ -3181,13 +2896,12 @@ class TestTestSpecRepositoryPerformanceTrend:
             await db_session.commit()
 
         found = await repo.get_by_id(spec.id)
+        assert found is not None
         assert found.total_runs == 10
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_performance_trend_with_stable_durations(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_performance_trend_with_stable_durations(self, db_session: AsyncSession, setup_project_and_item):
         """Test performance trend when durations are stable.
 
         This covers the 'stable' trend branch.
@@ -3207,14 +2921,13 @@ class TestTestSpecRepositoryPerformanceTrend:
             await db_session.commit()
 
         found = await repo.get_by_id(spec.id)
+        assert found is not None
         assert found.total_runs == 10
         # Duration trend should be 'stable'
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_p95_and_p99_calculation_with_many_runs(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_p95_and_p99_calculation_with_many_runs(self, db_session: AsyncSession, setup_project_and_item):
         """Test p95/p99 calculation with sufficient runs.
 
         p95 requires >= 20 runs, p99 requires >= 100 runs.
@@ -3237,6 +2950,7 @@ class TestTestSpecRepositoryPerformanceTrend:
             await db_session.commit()
 
         found = await repo.get_by_id(spec.id)
+        assert found is not None
         assert found.total_runs == 20
         # Due to JSON mutation bug, p95 may not be calculated properly
         # but the code path is still exercised
@@ -3252,9 +2966,7 @@ class TestPrivateFlakinessAndPerformanceMethods:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_recalculate_flakiness_with_sufficient_data(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_recalculate_flakiness_with_sufficient_data(self, db_session: AsyncSession, setup_project_and_item):
         """Test _recalculate_flakiness with >= 5 entries (covers lines 567-579)."""
         setup = setup_project_and_item
         repo = SpecRepoForTests(db_session)
@@ -3286,9 +2998,7 @@ class TestPrivateFlakinessAndPerformanceMethods:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_recalculate_flakiness_no_transitions(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_recalculate_flakiness_no_transitions(self, db_session: AsyncSession, setup_project_and_item):
         """Test _recalculate_flakiness with no transitions (covers all same status)."""
         setup = setup_project_and_item
         repo = SpecRepoForTests(db_session)
@@ -3317,9 +3027,7 @@ class TestPrivateFlakinessAndPerformanceMethods:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_recalculate_flakiness_below_threshold(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_recalculate_flakiness_below_threshold(self, db_session: AsyncSession, setup_project_and_item):
         """Test _recalculate_flakiness with low transition rate (< 0.3 threshold)."""
         setup = setup_project_and_item
         repo = SpecRepoForTests(db_session)
@@ -3348,9 +3056,7 @@ class TestPrivateFlakinessAndPerformanceMethods:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_recalculate_performance_trend_increasing(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_recalculate_performance_trend_increasing(self, db_session: AsyncSession, setup_project_and_item):
         """Test _recalculate_performance with increasing trend (covers lines 604-605)."""
         setup = setup_project_and_item
         repo = SpecRepoForTests(db_session)
@@ -3384,9 +3090,7 @@ class TestPrivateFlakinessAndPerformanceMethods:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_recalculate_performance_trend_decreasing(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_recalculate_performance_trend_decreasing(self, db_session: AsyncSession, setup_project_and_item):
         """Test _recalculate_performance with decreasing trend (covers lines 606-607)."""
         setup = setup_project_and_item
         repo = SpecRepoForTests(db_session)
@@ -3419,9 +3123,7 @@ class TestPrivateFlakinessAndPerformanceMethods:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_recalculate_performance_trend_stable(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_recalculate_performance_trend_stable(self, db_session: AsyncSession, setup_project_and_item):
         """Test _recalculate_performance with stable trend (covers lines 608-609)."""
         setup = setup_project_and_item
         repo = SpecRepoForTests(db_session)
@@ -3453,9 +3155,7 @@ class TestPrivateFlakinessAndPerformanceMethods:
 
     @pytest.mark.unit
     @pytest.mark.asyncio
-    async def test_recalculate_performance_p95_and_p99(
-        self, db_session: AsyncSession, setup_project_and_item
-    ):
+    async def test_recalculate_performance_p95_and_p99(self, db_session: AsyncSession, setup_project_and_item):
         """Test _recalculate_performance calculates p95 and p99 correctly."""
         setup = setup_project_and_item
         repo = SpecRepoForTests(db_session)
@@ -3467,9 +3167,7 @@ class TestPrivateFlakinessAndPerformanceMethods:
         await db_session.commit()
 
         # Create 100 runs for p99 calculation
-        spec.run_history = [
-            {"status": "passed", "duration_ms": 100 + i} for i in range(100)
-        ]
+        spec.run_history = [{"status": "passed", "duration_ms": 100 + i} for i in range(100)]
 
         await repo._recalculate_performance(spec)
 

@@ -29,6 +29,6 @@ Prism.languages.autoit = {
 	'keyword': /\b(?:Case|Const|Continue(?:Case|Loop)|Default|Dim|Do|Else(?:If)?|End(?:Func|If|Select|Switch|With)|Enum|Exit(?:Loop)?|For|Func|Global|If|In|Local|Next|Null|ReDim|Select|Static|Step|Switch|Then|To|Until|Volatile|WEnd|While|With)\b/i,
 	'number': /\b(?:0x[\da-f]+|\d+(?:\.\d+)?(?:e[+-]?\d+)?)\b/i,
 	'boolean': /\b(?:False|True)\b/i,
-	'operator': /<[=>]?|[-+*\/=&>]=?|[?^]|\b(?:And|Not|Or)\b/i,
-	'punctuation': /[\[\]().,:]/
+	'operator': /<[=>]?|[-+*/=&>]=?|[?^]|\b(?:And|Not|Or)\b/i,
+	'punctuation': /[[\]().,:]/
 };

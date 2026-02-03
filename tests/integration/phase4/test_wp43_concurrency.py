@@ -15,18 +15,14 @@ Test Classes:
 Total: 50+ comprehensive concurrency tests
 """
 
-import pytest
-import asyncio
-from typing import List, Dict, Any
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime
+from typing import cast
 
-from sqlalchemy.orm import Session, sessionmaker
-from sqlalchemy import create_engine
-from tracertm.models.project import Project
+import pytest
+from sqlalchemy.orm import Session
+
 from tracertm.models.item import Item
 from tracertm.models.link import Link
-
+from tracertm.models.project import Project
 
 pytestmark = [pytest.mark.integration]
 
@@ -42,14 +38,10 @@ class TestConcurrentReads:
 
         # Simulate concurrent reads
         def read_project():
-            retrieved = db_session.query(Project).filter_by(
-                id="concurrent-read-proj"
-            ).first()
+            retrieved = db_session.query(Project).filter_by(id="concurrent-read-proj").first()
             return retrieved.name if retrieved else None
 
-        results = []
-        for _ in range(10):
-            results.append(read_project())
+        results = [read_project() for _ in range(10)]
 
         assert all(r == "Concurrent Test" for r in results)
 
@@ -67,20 +59,16 @@ class TestConcurrentReads:
                 title=f"Item {i}",
                 view="DEFAULT",
                 item_type="task",
-                status="todo"
+                status="todo",
             )
             items.append(item)
         db_session.add_all(items)
         db_session.commit()
 
         def read_items():
-            return db_session.query(Item).filter_by(
-                project_id="concurrent-item-proj"
-            ).count()
+            return db_session.query(Item).filter_by(project_id="concurrent-item-proj").count()
 
-        results = []
-        for _ in range(15):
-            results.append(read_items())
+        results = [read_items() for _ in range(15)]
 
         assert all(r == 5 for r in results)
 
@@ -96,7 +84,7 @@ class TestConcurrentReads:
             title="Source",
             view="DEFAULT",
             item_type="task",
-            status="todo"
+            status="todo",
         )
         item2 = Item(
             id="conc-link-tgt",
@@ -104,7 +92,7 @@ class TestConcurrentReads:
             title="Target",
             view="DEFAULT",
             item_type="task",
-            status="todo"
+            status="todo",
         )
         db_session.add_all([item1, item2])
         db_session.flush()
@@ -114,7 +102,7 @@ class TestConcurrentReads:
             project_id="concurrent-link-proj",
             source_item_id="conc-link-src",
             target_item_id="conc-link-tgt",
-            link_type="depends_on"
+            link_type="depends_on",
         )
         db_session.add(link)
         db_session.commit()
@@ -138,16 +126,14 @@ class TestConcurrentReads:
                 title=f"Item {i}",
                 view="DEFAULT",
                 item_type="task",
-                status="todo"
+                status="todo",
             )
             db_session.add(item)
         db_session.commit()
 
         read_count = 0
         for _ in range(100):
-            items = db_session.query(Item).filter_by(
-                project_id="heavy-read-proj"
-            ).all()
+            items = db_session.query(Item).filter_by(project_id="heavy-read-proj").all()
             read_count += len(items)
 
         assert read_count == 2000  # 100 reads * 20 items
@@ -169,7 +155,7 @@ class TestConcurrentWrites:
                 title=f"Item {idx}",
                 view="DEFAULT",
                 item_type="task",
-                status="todo"
+                status="todo",
             )
             db_session.add(item)
             db_session.commit()
@@ -177,9 +163,7 @@ class TestConcurrentWrites:
         for i in range(25):
             create_item(i)
 
-        count = db_session.query(Item).filter_by(
-            project_id="concurrent-create-proj"
-        ).count()
+        count = db_session.query(Item).filter_by(project_id="concurrent-create-proj").count()
         assert count == 25
 
     def test_concurrent_item_updates(self, db_session: Session) -> None:
@@ -196,7 +180,7 @@ class TestConcurrentWrites:
                 title=f"Item {i}",
                 view="DEFAULT",
                 item_type="task",
-                status="todo"
+                status="todo",
             )
             items.append(item)
         db_session.add_all(items)
@@ -207,10 +191,7 @@ class TestConcurrentWrites:
             item.status = "in_progress"
         db_session.commit()
 
-        updated = db_session.query(Item).filter_by(
-            project_id="concurrent-update-proj",
-            status="in_progress"
-        ).count()
+        updated = db_session.query(Item).filter_by(project_id="concurrent-update-proj", status="in_progress").count()
         assert updated == 20
 
     def test_concurrent_link_creation(self, db_session: Session) -> None:
@@ -227,7 +208,7 @@ class TestConcurrentWrites:
                 title=f"Item {i}",
                 view="DEFAULT",
                 item_type="task",
-                status="todo"
+                status="todo",
             )
             items.append(item)
         db_session.add_all(items)
@@ -239,16 +220,14 @@ class TestConcurrentWrites:
                 id=f"conc-link-create-{i}",
                 project_id="concurrent-link-create-proj",
                 source_item_id=f"conc-link-create-{i}",
-                target_item_id=f"conc-link-create-{i+1}",
-                link_type="depends_on"
+                target_item_id=f"conc-link-create-{i + 1}",
+                link_type="depends_on",
             )
             links.append(link)
         db_session.add_all(links)
         db_session.commit()
 
-        count = db_session.query(Link).filter_by(
-            project_id="concurrent-link-create-proj"
-        ).count()
+        count = db_session.query(Link).filter_by(project_id="concurrent-link-create-proj").count()
         assert count == 20
 
     def test_concurrent_metadata_updates(self, db_session: Session) -> None:
@@ -264,7 +243,7 @@ class TestConcurrentWrites:
             view="DEFAULT",
             item_type="task",
             status="todo",
-            item_metadata={}
+            item_metadata={},
         )
         db_session.add(item)
         db_session.commit()
@@ -291,16 +270,14 @@ class TestConcurrentWrites:
                 title=f"Item {i}",
                 view="DEFAULT",
                 item_type="task",
-                status="todo"
+                status="todo",
             )
             db_session.add(item)
         db_session.commit()
 
         # Update existing while creating new
         for i in range(10):
-            items = db_session.query(Item).filter_by(
-                project_id="concurrent-mixed-proj"
-            ).all()
+            items = db_session.query(Item).filter_by(project_id="concurrent-mixed-proj").all()
             for item in items[:5]:
                 item.status = "in_progress"
             db_session.commit()
@@ -311,14 +288,12 @@ class TestConcurrentWrites:
                 title=f"New Item {i}",
                 view="DEFAULT",
                 item_type="task",
-                status="todo"
+                status="todo",
             )
             db_session.add(new_item)
             db_session.commit()
 
-        total = db_session.query(Item).filter_by(
-            project_id="concurrent-mixed-proj"
-        ).count()
+        total = db_session.query(Item).filter_by(project_id="concurrent-mixed-proj").count()
         assert total == 20
 
 
@@ -337,7 +312,7 @@ class TestReadWriteConflicts:
             title="Original",
             view="DEFAULT",
             item_type="task",
-            status="todo"
+            status="todo",
         )
         db_session.add(item)
         db_session.commit()
@@ -361,7 +336,7 @@ class TestReadWriteConflicts:
             title="Original",
             view="DEFAULT",
             item_type="task",
-            status="todo"
+            status="todo",
         )
         db_session.add(item)
         db_session.commit()
@@ -387,7 +362,7 @@ class TestReadWriteConflicts:
             title="Item",
             view="DEFAULT",
             item_type="task",
-            status="todo"
+            status="todo",
         )
         db_session.add(item)
         db_session.commit()
@@ -412,7 +387,7 @@ class TestReadWriteConflicts:
             title="Original",
             view="DEFAULT",
             item_type="task",
-            status="todo"
+            status="todo",
         )
         db_session.add(item)
         db_session.commit()
@@ -446,7 +421,7 @@ class TestLockManagement:
             view="DEFAULT",
             item_type="task",
             status="todo",
-            item_metadata={"version": 1}
+            item_metadata={"version": 1},
         )
         db_session.add(item)
         db_session.commit()
@@ -455,7 +430,7 @@ class TestLockManagement:
         assert item.item_metadata["version"] == 1
 
         # Update with version check
-        item.item_metadata["version"] += 1
+        item.item_metadata["version"] = int(item.item_metadata.get("version", 0)) + 1
         item.title = "Updated"
         db_session.commit()
 
@@ -463,19 +438,14 @@ class TestLockManagement:
 
     def test_lock_timeout_scenario(self, db_session: Session) -> None:
         """Test handling of lock timeouts"""
-        project = Project(
-            id="lock-timeout-proj",
-            name="Lock Timeout Test",
-            project_metadata={"lock_timeout": 30}
-        )
+        project = Project(id="lock-timeout-proj", name="Lock Timeout Test", project_metadata={"lock_timeout": 30})
         db_session.add(project)
         db_session.commit()
 
         # Verify lock config
-        retrieved = db_session.query(Project).filter_by(
-            id="lock-timeout-proj"
-        ).first()
-        assert retrieved.project_metadata["lock_timeout"] == 30
+        retrieved = db_session.query(Project).filter_by(id="lock-timeout-proj").first()
+        assert retrieved is not None
+        assert cast(Project, retrieved).project_metadata["lock_timeout"] == 30
 
     def test_deadlock_detection(self, db_session: Session) -> None:
         """Test deadlock detection scenario"""
@@ -484,20 +454,10 @@ class TestLockManagement:
         db_session.flush()
 
         item1 = Item(
-            id="deadlock-1",
-            project_id="deadlock-proj",
-            title="Item 1",
-            view="DEFAULT",
-            item_type="task",
-            status="todo"
+            id="deadlock-1", project_id="deadlock-proj", title="Item 1", view="DEFAULT", item_type="task", status="todo"
         )
         item2 = Item(
-            id="deadlock-2",
-            project_id="deadlock-proj",
-            title="Item 2",
-            view="DEFAULT",
-            item_type="task",
-            status="todo"
+            id="deadlock-2", project_id="deadlock-proj", title="Item 2", view="DEFAULT", item_type="task", status="todo"
         )
         db_session.add_all([item1, item2])
         db_session.commit()
@@ -523,7 +483,7 @@ class TestLockManagement:
             title="Item",
             view="DEFAULT",
             item_type="task",
-            status="todo"
+            status="todo",
         )
         db_session.add(item)
         db_session.commit()
@@ -551,7 +511,7 @@ class TestLockManagement:
             view="DEFAULT",
             item_type="task",
             status="todo",
-            item_metadata={"priority": 1}  # Higher priority gets lock first
+            item_metadata={"priority": 1},  # Higher priority gets lock first
         )
         db_session.add(item)
         db_session.commit()
@@ -578,14 +538,12 @@ class TestStressTesting:
                 title=f"Item {i}",
                 view="DEFAULT",
                 item_type="task",
-                status="todo"
+                status="todo",
             )
             db_session.add(item)
         db_session.commit()
 
-        count = db_session.query(Item).filter_by(
-            project_id="stress-100-proj"
-        ).count()
+        count = db_session.query(Item).filter_by(project_id="stress-100-proj").count()
         assert count == 100
 
     def test_dense_link_graph(self, db_session: Session) -> None:
@@ -602,7 +560,7 @@ class TestStressTesting:
                 title=f"Item {i}",
                 view="DEFAULT",
                 item_type="task",
-                status="todo"
+                status="todo",
             )
             items.append(item)
         db_session.add_all(items)
@@ -618,16 +576,14 @@ class TestStressTesting:
                     project_id="dense-graph-proj",
                     source_item_id=f"dense-{i}",
                     target_item_id=f"dense-{j}",
-                    link_type="depends_on"
+                    link_type="depends_on",
                 )
                 links.append(link)
                 link_id += 1
         db_session.add_all(links)
         db_session.commit()
 
-        link_count = db_session.query(Link).filter_by(
-            project_id="dense-graph-proj"
-        ).count()
+        link_count = db_session.query(Link).filter_by(project_id="dense-graph-proj").count()
         assert link_count > 50
 
     def test_high_metadata_volume(self, db_session: Session) -> None:
@@ -643,7 +599,7 @@ class TestStressTesting:
             view="DEFAULT",
             item_type="task",
             status="todo",
-            item_metadata={}
+            item_metadata={},
         )
         # Add large metadata
         for i in range(50):
@@ -651,10 +607,9 @@ class TestStressTesting:
         db_session.add(item)
         db_session.commit()
 
-        retrieved = db_session.query(Item).filter_by(
-            id="meta-volume-item"
-        ).first()
-        assert len(retrieved.item_metadata) == 50
+        retrieved = db_session.query(Item).filter_by(id="meta-volume-item").first()
+        assert retrieved is not None
+        assert len(cast(Item, retrieved).item_metadata) == 50
 
     def test_rapid_status_transitions(self, db_session: Session) -> None:
         """Test rapid status changes on single item"""
@@ -668,7 +623,7 @@ class TestStressTesting:
             title="Rapid Item",
             view="DEFAULT",
             item_type="task",
-            status="todo"
+            status="todo",
         )
         db_session.add(item)
         db_session.commit()
@@ -697,7 +652,7 @@ class TestStressTesting:
                 view="DEFAULT",
                 item_type="task",
                 status="todo",
-                item_metadata={"count": 0}
+                item_metadata={"count": 0},
             )
             items.append(item)
         db_session.add_all(items)
@@ -709,9 +664,7 @@ class TestStressTesting:
                 item.item_metadata[f"update_{j}"] = j
         db_session.commit()
 
-        retrieved_items = db_session.query(Item).filter_by(
-            project_id="bulk-meta-proj"
-        ).all()
+        retrieved_items = db_session.query(Item).filter_by(project_id="bulk-meta-proj").all()
         assert all(len(i.item_metadata) == 11 for i in retrieved_items)
 
 
@@ -732,7 +685,7 @@ class TestDeadlockPrevention:
                 title=f"Item {i}",
                 view="DEFAULT",
                 item_type="task",
-                status="todo"
+                status="todo",
             )
             items.append(item)
         db_session.add_all(items)
@@ -740,8 +693,9 @@ class TestDeadlockPrevention:
 
         # Acquire in order: 0, 1, 2
         for i in range(3):
-            item = db_session.query(Item).filter_by(id=f"ordered-{i}").first()
-            item.status = "in_progress"
+            row = db_session.query(Item).filter_by(id=f"ordered-{i}").first()
+            assert row is not None
+            cast(Item, row).status = "in_progress"
         db_session.commit()
 
         assert True  # No deadlock
@@ -749,17 +703,14 @@ class TestDeadlockPrevention:
     def test_timeout_based_deadlock_recovery(self, db_session: Session) -> None:
         """Test timeout-based recovery from potential deadlock"""
         project = Project(
-            id="timeout-deadlock-proj",
-            name="Timeout Deadlock Test",
-            project_metadata={"deadlock_timeout": 1}
+            id="timeout-deadlock-proj", name="Timeout Deadlock Test", project_metadata={"deadlock_timeout": 1}
         )
         db_session.add(project)
         db_session.commit()
 
-        retrieved = db_session.query(Project).filter_by(
-            id="timeout-deadlock-proj"
-        ).first()
-        assert retrieved.project_metadata["deadlock_timeout"] == 1
+        retrieved = db_session.query(Project).filter_by(id="timeout-deadlock-proj").first()
+        assert retrieved is not None
+        assert cast(Project, retrieved).project_metadata["deadlock_timeout"] == 1
 
     def test_lock_free_read_approach(self, db_session: Session) -> None:
         """Test lock-free read optimistic approach"""
@@ -775,7 +726,7 @@ class TestDeadlockPrevention:
                 title=f"Item {i}",
                 view="DEFAULT",
                 item_type="task",
-                status="todo"
+                status="todo",
             )
             items.append(item)
         db_session.add_all(items)
@@ -784,9 +735,7 @@ class TestDeadlockPrevention:
         # Concurrent reads without locks
         count = 0
         for _ in range(100):
-            items = db_session.query(Item).filter_by(
-                project_id="lock-free-proj"
-            ).all()
+            items = db_session.query(Item).filter_by(project_id="lock-free-proj").all()
             count += len(items)
 
         assert count == 1000

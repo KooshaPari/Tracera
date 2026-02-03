@@ -9,14 +9,17 @@ from fastmcp.exceptions import ToolError
 try:
     from tracertm.mcp.core import mcp
 except Exception:  # pragma: no cover
+
     class _StubMCP:
         def tool(self, *args: Any, **kwargs: Any):
             def decorator(fn):
                 return fn
+
             return decorator
+
     mcp = _StubMCP()  # type: ignore[assignment]
 
-from .common import _wrap, project_tools
+from .common import _call_tool, _wrap, project_tools
 
 
 @mcp.tool(description="Unified project operations")
@@ -38,23 +41,26 @@ async def project_manage(
     action = action.lower()
 
     if action == "create":
-        result = await project_tools.create_project(
-            name=payload.get("name"),
+        result = await _call_tool(
+            project_tools, "create_project",
+            name=(payload.get("name") or ""),
             description=payload.get("description"),
             ctx=ctx,
         )
         return _wrap(result, ctx, action)
     if action == "list":
-        result = await project_tools.list_projects(ctx=ctx)
+        result = await _call_tool(project_tools, "list_projects", ctx=ctx)
         return _wrap(result, ctx, action)
     if action == "select":
-        result = await project_tools.select_project(
+        result = await _call_tool(
+            project_tools, "select_project",
             project_id=payload.get("project_id"),
             ctx=ctx,
         )
         return _wrap(result, ctx, action)
     if action == "snapshot":
-        result = await project_tools.snapshot_project(
+        result = await _call_tool(
+            project_tools, "snapshot_project",
             project_id=payload.get("project_id"),
             label=payload.get("label"),
             ctx=ctx,

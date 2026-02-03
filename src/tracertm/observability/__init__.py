@@ -8,13 +8,14 @@ Provides comprehensive APM (Application Performance Monitoring) capabilities inc
 - Custom span decorators
 """
 
-from .tracing import init_tracing, get_tracer, trace_method
-from .instrumentation import instrument_app, instrument_database
+from .instrumentation import instrument_all, instrument_app, instrument_database
+from .tracing import get_tracer, init_tracing, trace_method
 
 __all__ = [
-    "init_tracing",
     "get_tracer",
-    "trace_method",
+    "init_tracing",
+    "instrument_all",
     "instrument_app",
     "instrument_database",
+    "trace_method",
 ]

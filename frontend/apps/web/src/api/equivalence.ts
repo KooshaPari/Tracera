@@ -1,23 +1,25 @@
 import {
-	useMutation,
-	useQuery,
-	useQueryClient,
 	type UseMutationOptions,
 	type UseMutationResult,
 	type UseQueryOptions,
 	type UseQueryResult,
+	useMutation,
+	useQuery,
+	useQueryClient,
 } from "@tanstack/react-query";
 import client from "./client";
 
-const apiClient = client.apiClient;
-const handleApiResponse = client.handleApiResponse;
-const get = apiClient.GET.bind(apiClient);
-const post = apiClient.POST.bind(apiClient);
+type ApiClient = typeof client.apiClient;
+
+const apiClient: ApiClient = client.apiClient;
+const handleApiResponse: typeof client.handleApiResponse = client.handleApiResponse;
+const get: ApiClient["GET"] = apiClient.GET.bind(apiClient);
+const post: ApiClient["POST"] = apiClient.POST.bind(apiClient);
 
 // Types for equivalence API
 interface EquivalenceLink {
-	confidence: number;
 	confirmedAt?: string;
+	confidence: number;
 	createdAt: string;
 	id: string;
 	itemId1: string;
@@ -26,19 +28,19 @@ interface EquivalenceLink {
 	status: "pending" | "confirmed" | "rejected";
 }
 
-interface DetectEquivalencesInput {
-	projectId: string;
-	threshold?: number;
-}
-
 interface ConfirmEquivalenceInput {
 	comment?: string;
 	equivalenceId: string;
 }
 
+interface DetectEquivalencesInput {
+	projectId: string;
+	threshold?: number;
+}
+
 interface RejectEquivalenceInput {
-	reason?: string;
 	equivalenceId: string;
+	reason?: string;
 }
 
 // Query Keys
@@ -57,13 +59,13 @@ const useEquivalenceLinks = (
 	options?: UseQueryOptions<EquivalenceLink[]>,
 ): UseQueryResult<EquivalenceLink[]> => {
 	const query: Record<string, string> = {};
-	if (typeof status === "string" && status !== "") {
+	if (status && status !== "") {
 		query["status"] = status;
 	}
 
 	const baseOptions: UseQueryOptions<EquivalenceLink[]> = {
 		enabled: Boolean(projectId),
-		queryFn: () =>
+		queryFn: async (): Promise<EquivalenceLink[]> =>
 			handleApiResponse(
 				get("/api/v1/projects/{projectId}/equivalences", {
 					params: {
@@ -75,7 +77,7 @@ const useEquivalenceLinks = (
 		queryKey: equivalenceQueryKeys.list(projectId, status),
 	};
 
-	return useQuery({ ...baseOptions, ...(options ?? {}) });
+	return useQuery(Object.assign({}, baseOptions, options));
 };
 
 const useEquivalenceLink = (
@@ -84,7 +86,7 @@ const useEquivalenceLink = (
 ): UseQueryResult<EquivalenceLink> => {
 	const baseOptions: UseQueryOptions<EquivalenceLink> = {
 		enabled: Boolean(equivalenceId),
-		queryFn: () =>
+		queryFn: async (): Promise<EquivalenceLink> =>
 			handleApiResponse(
 				get("/api/v1/equivalences/{equivalenceId}", {
 					params: { path: { equivalenceId } },
@@ -93,7 +95,7 @@ const useEquivalenceLink = (
 		queryKey: equivalenceQueryKeys.detail(equivalenceId),
 	};
 
-	return useQuery({ ...baseOptions, ...(options ?? {}) });
+	return useQuery(Object.assign({}, baseOptions, options));
 };
 
 const useDetectEquivalences = (
@@ -109,24 +111,23 @@ const useDetectEquivalences = (
 		Error,
 		DetectEquivalencesInput
 	> = {
-		mutationFn: (input: DetectEquivalencesInput) => {
-			const { projectId, threshold } = input;
-			return handleApiResponse(
-				post("/api/v1/projects/{projectId}/equivalences/detect", {
-					body: { threshold },
-					params: { path: { projectId } },
-				}),
-			);
-		},
-		onSuccess: async (data: EquivalenceLink[], variables: DetectEquivalencesInput) => {
+			mutationFn: async (input: DetectEquivalencesInput) => {
+				const { projectId, threshold } = input;
+				return await handleApiResponse(
+					post("/api/v1/projects/{projectId}/equivalences/detect", {
+						body: { threshold },
+						params: { path: { projectId } },
+					}),
+				);
+			},
+		onSuccess: async (_data: EquivalenceLink[], variables: DetectEquivalencesInput) => {
 			await queryClient.invalidateQueries({
 				queryKey: equivalenceQueryKeys.list(variables.projectId),
 			});
-			return data;
 		},
 	};
 
-	return useMutation({ ...baseOptions, ...(options ?? {}) });
+	return useMutation(Object.assign({}, baseOptions, options));
 };
 
 const useConfirmEquivalence = (
@@ -134,8 +135,8 @@ const useConfirmEquivalence = (
 ): UseMutationResult<EquivalenceLink, Error, ConfirmEquivalenceInput> => {
 	const queryClient = useQueryClient();
 	const baseOptions: UseMutationOptions<EquivalenceLink, Error, ConfirmEquivalenceInput> = {
-		mutationFn: (input: ConfirmEquivalenceInput) =>
-			handleApiResponse(
+		mutationFn: async (input: ConfirmEquivalenceInput) =>
+			await handleApiResponse(
 				post("/api/v1/equivalences/{equivalenceId}/confirm", {
 					body: { comment: input.comment },
 					params: { path: { equivalenceId: input.equivalenceId } },
@@ -148,11 +149,10 @@ const useConfirmEquivalence = (
 			await queryClient.invalidateQueries({
 				queryKey: equivalenceQueryKeys.lists(),
 			});
-			return data;
 		},
 	};
 
-	return useMutation({ ...baseOptions, ...(options ?? {}) });
+	return useMutation(Object.assign({}, baseOptions, options));
 };
 
 const useRejectEquivalence = (
@@ -160,8 +160,8 @@ const useRejectEquivalence = (
 ): UseMutationResult<void, Error, RejectEquivalenceInput> => {
 	const queryClient = useQueryClient();
 	const baseOptions: UseMutationOptions<void, Error, RejectEquivalenceInput> = {
-		mutationFn: (input: RejectEquivalenceInput) =>
-			handleApiResponse(
+		mutationFn: async (input: RejectEquivalenceInput) =>
+			await handleApiResponse(
 				post("/api/v1/equivalences/{equivalenceId}/reject", {
 					body: { reason: input.reason },
 					params: { path: { equivalenceId: input.equivalenceId } },
@@ -177,7 +177,7 @@ const useRejectEquivalence = (
 		},
 	};
 
-	return useMutation({ ...baseOptions, ...(options ?? {}) });
+	return useMutation(Object.assign({}, baseOptions, options));
 };
 
 const useBatchConfirmEquivalences = (
@@ -185,8 +185,8 @@ const useBatchConfirmEquivalences = (
 ): UseMutationResult<EquivalenceLink[], Error, string[]> => {
 	const queryClient = useQueryClient();
 	const baseOptions: UseMutationOptions<EquivalenceLink[], Error, string[]> = {
-		mutationFn: (equivalenceIds: string[]) =>
-			handleApiResponse(
+		mutationFn: async (equivalenceIds: string[]) =>
+			await handleApiResponse(
 				post("/api/v1/equivalences/batch-confirm", {
 					body: { equivalenceIds },
 				}),
@@ -198,7 +198,7 @@ const useBatchConfirmEquivalences = (
 		},
 	};
 
-	return useMutation({ ...baseOptions, ...(options ?? {}) });
+	return useMutation(Object.assign({}, baseOptions, options));
 };
 
 const useBatchRejectEquivalences = (
@@ -206,8 +206,8 @@ const useBatchRejectEquivalences = (
 ): UseMutationResult<void, Error, string[]> => {
 	const queryClient = useQueryClient();
 	const baseOptions: UseMutationOptions<void, Error, string[]> = {
-		mutationFn: (equivalenceIds: string[]) =>
-			handleApiResponse(
+		mutationFn: async (equivalenceIds: string[]) =>
+			await handleApiResponse(
 				post("/api/v1/equivalences/batch-reject", {
 					body: { equivalenceIds },
 				}),
@@ -219,7 +219,7 @@ const useBatchRejectEquivalences = (
 		},
 	};
 
-	return useMutation({ ...baseOptions, ...(options ?? {}) });
+	return useMutation(Object.assign({}, baseOptions, options));
 };
 
 export {

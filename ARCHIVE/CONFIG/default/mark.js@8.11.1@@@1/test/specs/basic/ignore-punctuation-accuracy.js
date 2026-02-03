@@ -2,7 +2,7 @@
 describe('basic mark with ignorePunctuation and accuracy', function() {
   function getPunctuation() {
     return ':;.,-–—‒_(){}[]!\'"+='
-      .replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&')
+      .replace(/[-[\]/{}()*+?.\\^$|]/g, '\\$&')
       .split('');
   }
   var $ctx1, $ctx2,

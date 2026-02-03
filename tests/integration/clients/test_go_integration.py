@@ -1,13 +1,11 @@
 """Integration tests for Go Backend Client."""
 
 import asyncio
-import json
-from typing import Any
 from unittest.mock import AsyncMock, patch
 
 import httpx
 import pytest
-from tenacity import RetryError
+from aiohttp import web
 
 from tracertm.clients.go_client import GoBackendClient, GoBackendError, generate_cache_key
 
@@ -15,8 +13,6 @@ from tracertm.clients.go_client import GoBackendClient, GoBackendError, generate
 @pytest.fixture
 async def mock_go_server(aiohttp_server, aiohttp_client):
     """Create a mock Go backend server."""
-    from aiohttp import web
-
     request_count = {"count": 0}
 
     async def health_handler(request):
@@ -24,32 +20,26 @@ async def mock_go_server(aiohttp_server, aiohttp_client):
 
     async def get_item_handler(request):
         item_id = request.match_info["item_id"]
-        return web.json_response(
-            {
-                "id": item_id,
-                "title": "Test Item",
-                "type": "requirement",
-                "project_id": "proj-123",
-            }
-        )
+        return web.json_response({
+            "id": item_id,
+            "title": "Test Item",
+            "type": "requirement",
+            "project_id": "proj-123",
+        })
 
     async def create_link_handler(request):
         data = await request.json()
-        return web.json_response(
-            {
-                "id": "link-123",
-                "source_id": data["source_id"],
-                "target_id": data["target_id"],
-                "link_type": data["link_type"],
-                "metadata": data.get("metadata", {}),
-            }
-        )
+        return web.json_response({
+            "id": "link-123",
+            "source_id": data["source_id"],
+            "target_id": data["target_id"],
+            "link_type": data["link_type"],
+            "metadata": data.get("metadata", {}),
+        })
 
     async def search_items_handler(request):
         query = request.query.get("q", "")
-        return web.json_response(
-            {"results": [{"id": "item-1", "title": f"Result for {query}"}], "total": 1}
-        )
+        return web.json_response({"results": [{"id": "item-1", "title": f"Result for {query}"}], "total": 1})
 
     async def retry_handler(request):
         request_count["count"] += 1
@@ -64,8 +54,7 @@ async def mock_go_server(aiohttp_server, aiohttp_client):
     app.router.add_get("/api/v1/search/items", search_items_handler)
     app.router.add_get("/test/retry", retry_handler)
 
-    server = await aiohttp_server(app)
-    return server
+    return await aiohttp_server(app)
 
 
 @pytest.mark.asyncio
@@ -257,13 +246,11 @@ async def test_go_client_update_item(mock_go_server):
 
         item_id = request.match_info["item_id"]
         data = await request.json()
-        return web.json_response(
-            {
-                "id": item_id,
-                "title": data.get("title", "Updated"),
-                "description": data.get("description", ""),
-            }
-        )
+        return web.json_response({
+            "id": item_id,
+            "title": data.get("title", "Updated"),
+            "description": data.get("description", ""),
+        })
 
     # Add update endpoint to mock server
     mock_go_server._app.router.add_patch("/api/v1/items/{item_id}", update_handler)

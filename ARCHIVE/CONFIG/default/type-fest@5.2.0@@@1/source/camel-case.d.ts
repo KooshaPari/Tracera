@@ -89,4 +89,4 @@ export type CamelCase<Type, Options extends CamelCaseOptions = {}> = Type extend
 		>>
 	: Type;
 
-export {};
+

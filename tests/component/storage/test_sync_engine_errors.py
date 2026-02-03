@@ -12,8 +12,8 @@ Tests cover:
 """
 
 import asyncio
-from datetime import datetime, timedelta
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from datetime import datetime
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
@@ -213,17 +213,19 @@ class TestSyncEngineErrorScenarios:
             ]
             mock_pending.return_value = changes
 
-            with patch.object(
-                engine,
-                "_upload_change",
-                side_effect=[True, Exception("Network error"), True],
+            with (
+                patch.object(
+                    engine,
+                    "_upload_change",
+                    side_effect=[True, Exception("Network error"), True],
+                ),
+                patch.object(engine.queue, "update_retry"),
+                patch.object(engine.queue, "remove"),
             ):
-                with patch.object(engine.queue, "update_retry"):
-                    with patch.object(engine.queue, "remove"):
-                        result = await engine.process_queue()
+                result = await engine.process_queue()
 
-                        # Should report errors
-                        assert len(result.errors) > 0
+                # Should report errors
+                assert len(result.errors) > 0
 
     async def test_sync_handles_corrupt_remote_data(self):
         """Test handling of corrupt data from remote."""
@@ -423,9 +425,7 @@ class TestSyncEngineErrorScenarios:
             mock_connect.return_value = mock_conn
 
             # Enqueue first time
-            queue_id = queue.enqueue(
-                EntityType.ITEM, "item-1", OperationType.CREATE, {"data": "test"}
-            )
+            queue_id = queue.enqueue(EntityType.ITEM, "item-1", OperationType.CREATE, {"data": "test"})
 
             assert queue_id == 1
 

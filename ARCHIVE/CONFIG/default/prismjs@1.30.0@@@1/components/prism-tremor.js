@@ -34,8 +34,8 @@
 			pattern: /%(?=[({[])/,
 			alias: 'punctuation'
 		},
-		'operator': /[-+*\/%~!^]=?|=[=>]?|&[&=]?|\|[|=]?|<<?=?|>>?>?=?|(?:absent|and|not|or|present|xor)\b/,
-		'punctuation': /::|[;\[\]()\{\},.:]/,
+		'operator': /[-+*/%~!^]=?|=[=>]?|&[&=]?|\|[|=]?|<<?=?|>>?>?=?|(?:absent|and|not|or|present|xor)\b/,
+		'punctuation': /::|[;[\](){},.:]/,
 	};
 
 	var interpolationPattern = /#\{(?:[^"{}]|\{[^{}]*\}|"(?:[^"\\\r\n]|\\(?:\r\n|[\s\S]))*")*\}/.source;

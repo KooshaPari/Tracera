@@ -63,4 +63,4 @@ export type IterableElement<TargetIterable> =
 			ElementType :
 			never;
 
-export {};
+

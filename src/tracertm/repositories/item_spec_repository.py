@@ -17,19 +17,18 @@ Architecture:
 """
 
 from datetime import UTC, datetime
-from enum import Enum
-from typing import Any, Optional
+from enum import StrEnum
+from typing import Any
 from uuid import uuid4
 
-from sqlalchemy import and_, func, or_, select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from tracertm.models.base import TimestampMixin
 
 
 # Type Enums for specifications
-class RequirementType(str, Enum):
+class RequirementType(StrEnum):
     """Types of requirements."""
+
     UBIQUITOUS = "ubiquitous"
     FUNCTIONAL = "functional"
     NON_FUNCTIONAL = "non_functional"
@@ -37,15 +36,17 @@ class RequirementType(str, Enum):
     QUALITY = "quality"
 
 
-class ConstraintType(str, Enum):
+class ConstraintType(StrEnum):
     """Types of constraints."""
+
     HARD = "hard"
     SOFT = "soft"
     PREFERENCE = "preference"
 
 
-class RiskLevel(str, Enum):
+class RiskLevel(StrEnum):
     """Risk levels."""
+
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"
@@ -53,8 +54,9 @@ class RiskLevel(str, Enum):
     MINIMAL = "minimal"
 
 
-class VerificationStatus(str, Enum):
+class VerificationStatus(StrEnum):
     """Verification statuses."""
+
     UNVERIFIED = "unverified"
     PENDING = "pending"
     VERIFIED = "verified"
@@ -62,8 +64,9 @@ class VerificationStatus(str, Enum):
     SUPERSEDED = "superseded"
 
 
-class TestType(str, Enum):
+class TestType(StrEnum):
     """Types of tests."""
+
     UNIT = "unit"
     INTEGRATION = "integration"
     E2E = "e2e"
@@ -74,16 +77,18 @@ class TestType(str, Enum):
     ACCEPTANCE = "acceptance"
 
 
-class EpicType(str, Enum):
+class EpicType(StrEnum):
     """Types of epics."""
+
     FEATURE = "feature"
     CAPABILITY = "capability"
     INITIATIVE = "initiative"
     PROGRAM = "program"
 
 
-class DefectSeverity(str, Enum):
+class DefectSeverity(StrEnum):
     """Defect severity levels."""
+
     BLOCKER = "blocker"
     CRITICAL = "critical"
     MAJOR = "major"
@@ -91,8 +96,9 @@ class DefectSeverity(str, Enum):
     TRIVIAL = "trivial"
 
 
-class DefectStatus(str, Enum):
+class DefectStatus(StrEnum):
     """Defect statuses."""
+
     NEW = "new"
     ASSIGNED = "assigned"
     IN_PROGRESS = "in_progress"
@@ -114,13 +120,13 @@ class BaseSpecRepository:
         self.session = session
         self.model_class = model_class
 
-    async def get_by_id(self, spec_id: str) -> Optional[Any]:
+    async def get_by_id(self, spec_id: str) -> Any | None:
         """Get specification by ID."""
         query = select(self.model_class).where(self.model_class.id == spec_id)
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
 
-    async def get_by_item_id(self, item_id: str) -> Optional[Any]:
+    async def get_by_item_id(self, item_id: str) -> Any | None:
         """Get specification by associated item ID."""
         query = select(self.model_class).where(self.model_class.item_id == item_id)
         result = await self.session.execute(query)
@@ -254,9 +260,9 @@ class RequirementSpecRepository(BaseSpecRepository):
     async def list_by_project(
         self,
         project_id: str,
-        requirement_type: Optional[str] = None,
-        risk_level: Optional[str] = None,
-        verification_status: Optional[str] = None,
+        requirement_type: str | None = None,
+        risk_level: str | None = None,
+        verification_status: str | None = None,
         limit: int = 100,
         offset: int = 0,
     ) -> list[Any]:
@@ -279,15 +285,9 @@ class RequirementSpecRepository(BaseSpecRepository):
         if risk_level:
             query = query.where(RequirementSpec.risk_level == risk_level)
         if verification_status:
-            query = query.where(
-                RequirementSpec.verification_status == verification_status
-            )
+            query = query.where(RequirementSpec.verification_status == verification_status)
 
-        query = (
-            query.order_by(RequirementSpec.created_at.desc())
-            .limit(limit)
-            .offset(offset)
-        )
+        query = query.order_by(RequirementSpec.created_at.desc()).limit(limit).offset(offset)
         result = await self.session.execute(query)
         return list(result.scalars().all())
 
@@ -295,11 +295,11 @@ class RequirementSpecRepository(BaseSpecRepository):
         self,
         spec_id: str,
         quality_scores: dict[str, float],
-        ambiguity_score: Optional[float] = None,
-        completeness_score: Optional[float] = None,
-        testability_score: Optional[float] = None,
-        overall_quality_score: Optional[float] = None,
-        quality_issues: Optional[list] = None,
+        ambiguity_score: float | None = None,
+        completeness_score: float | None = None,
+        testability_score: float | None = None,
+        overall_quality_score: float | None = None,
+        quality_issues: list | None = None,
     ) -> Any:
         """Update quality scores for a requirement spec."""
         return await self.update(
@@ -312,9 +312,7 @@ class RequirementSpecRepository(BaseSpecRepository):
             quality_issues=quality_issues or [],
         )
 
-    async def update_volatility(
-        self, spec_id: str, volatility_index: float, change_count: int
-    ) -> Any:
+    async def update_volatility(self, spec_id: str, volatility_index: float, change_count: int) -> Any:
         """Update volatility metrics for a requirement spec."""
         spec = await self.get_by_id(spec_id)
         if not spec:
@@ -371,9 +369,7 @@ class RequirementSpecRepository(BaseSpecRepository):
                 Item.project_id == project_id,
                 Item.deleted_at.is_(None),
                 RequirementSpec.deleted_at.is_(None),
-                RequirementSpec.risk_level.in_(
-                    [RiskLevel.CRITICAL.value, RiskLevel.HIGH.value]
-                ),
+                RequirementSpec.risk_level.in_([RiskLevel.CRITICAL.value, RiskLevel.HIGH.value]),
             )
             .order_by(
                 RequirementSpec.risk_level,
@@ -384,7 +380,7 @@ class RequirementSpecRepository(BaseSpecRepository):
         result = await self.session.execute(query)
         return list(result.scalars().all())
 
-    async def calculate_wsjf(self, spec_id: str) -> Optional[float]:
+    async def calculate_wsjf(self, spec_id: str) -> float | None:
         """Calculate WSJF score for a requirement.
 
         WSJF = (Business Value + Time Criticality + Risk Reduction) / Job Size
@@ -398,9 +394,7 @@ class RequirementSpecRepository(BaseSpecRepository):
             size_map = {"XS": 1, "S": 2, "M": 3, "L": 5, "XL": 8}
             job_size = size_map.get(spec.complexity_estimate, 3)
 
-            wsjf = (
-                spec.business_value + spec.time_criticality + spec.risk_reduction
-            ) / job_size
+            wsjf = (spec.business_value + spec.time_criticality + spec.risk_reduction) / job_size
             spec.wsjf_score = wsjf
             await self.session.flush()
             return wsjf
@@ -471,8 +465,8 @@ class TestSpecRepository(BaseSpecRepository):
     async def list_by_project(
         self,
         project_id: str,
-        test_type: Optional[str] = None,
-        is_quarantined: Optional[bool] = None,
+        test_type: str | None = None,
+        is_quarantined: bool | None = None,
         limit: int = 100,
         offset: int = 0,
     ) -> list[Any]:
@@ -495,9 +489,7 @@ class TestSpecRepository(BaseSpecRepository):
         if is_quarantined is not None:
             query = query.where(TestSpec.is_quarantined == is_quarantined)
 
-        query = (
-            query.order_by(TestSpec.created_at.desc()).limit(limit).offset(offset)
-        )
+        query = query.order_by(TestSpec.created_at.desc()).limit(limit).offset(offset)
         result = await self.session.execute(query)
         return list(result.scalars().all())
 
@@ -506,8 +498,8 @@ class TestSpecRepository(BaseSpecRepository):
         spec_id: str,
         status: str,
         duration_ms: int,
-        error_message: Optional[str] = None,
-        environment: Optional[str] = None,
+        error_message: str | None = None,
+        environment: str | None = None,
     ) -> Any:
         """Record a test run and update statistics."""
         spec = await self.get_by_id(spec_id)
@@ -539,7 +531,7 @@ class TestSpecRepository(BaseSpecRepository):
             "environment": environment,
         }
         # Create new list instead of mutating to trigger SQLAlchemy change detection
-        spec.run_history = [run_entry] + (spec.run_history or [])[:49]
+        spec.run_history = [run_entry, *(spec.run_history or [])[:49]]
 
         # Recalculate flakiness
         await self._recalculate_flakiness(spec)
@@ -728,8 +720,8 @@ class EpicSpecRepository(BaseSpecRepository):
     async def list_by_project(
         self,
         project_id: str,
-        epic_type: Optional[str] = None,
-        status: Optional[str] = None,
+        epic_type: str | None = None,
+        status: str | None = None,
         limit: int = 100,
         offset: int = 0,
     ) -> list[Any]:
@@ -752,19 +744,17 @@ class EpicSpecRepository(BaseSpecRepository):
         if status:
             query = query.where(EpicSpec.status == status)
 
-        query = (
-            query.order_by(EpicSpec.created_at.desc()).limit(limit).offset(offset)
-        )
+        query = query.order_by(EpicSpec.created_at.desc()).limit(limit).offset(offset)
         result = await self.session.execute(query)
         return list(result.scalars().all())
 
     async def update_metrics(
         self,
         spec_id: str,
-        user_story_count: Optional[int] = None,
-        completed_story_count: Optional[int] = None,
-        defect_count: Optional[int] = None,
-        progress_percentage: Optional[float] = None,
+        user_story_count: int | None = None,
+        completed_story_count: int | None = None,
+        defect_count: int | None = None,
+        progress_percentage: float | None = None,
     ) -> Any:
         """Update epic metrics."""
         updates = {}
@@ -851,7 +841,7 @@ class UserStorySpecRepository(BaseSpecRepository):
     async def list_by_project(
         self,
         project_id: str,
-        status: Optional[str] = None,
+        status: str | None = None,
         limit: int = 100,
         offset: int = 0,
     ) -> list[Any]:
@@ -872,11 +862,7 @@ class UserStorySpecRepository(BaseSpecRepository):
         if status:
             query = query.where(UserStorySpec.status == status)
 
-        query = (
-            query.order_by(UserStorySpec.created_at.desc())
-            .limit(limit)
-            .offset(offset)
-        )
+        query = query.order_by(UserStorySpec.created_at.desc()).limit(limit).offset(offset)
         result = await self.session.execute(query)
         return list(result.scalars().all())
 
@@ -971,7 +957,7 @@ class TaskSpecRepository(BaseSpecRepository):
     async def list_by_project(
         self,
         project_id: str,
-        status: Optional[str] = None,
+        status: str | None = None,
         limit: int = 100,
         offset: int = 0,
     ) -> list[Any]:
@@ -992,9 +978,7 @@ class TaskSpecRepository(BaseSpecRepository):
         if status:
             query = query.where(TaskSpec.status == status)
 
-        query = (
-            query.order_by(TaskSpec.created_at.desc()).limit(limit).offset(offset)
-        )
+        query = query.order_by(TaskSpec.created_at.desc()).limit(limit).offset(offset)
         result = await self.session.execute(query)
         return list(result.scalars().all())
 
@@ -1002,7 +986,7 @@ class TaskSpecRepository(BaseSpecRepository):
         self,
         spec_id: str,
         progress_percentage: float,
-        completed_checklist_items: Optional[int] = None,
+        completed_checklist_items: int | None = None,
     ) -> Any:
         """Update task progress."""
         updates = {
@@ -1048,7 +1032,7 @@ class TaskSpecRepository(BaseSpecRepository):
                 Item.project_id == project_id,
                 Item.deleted_at.is_(None),
                 TaskSpec.deleted_at.is_(None),
-                TaskSpec.is_blocked == True,
+                TaskSpec.is_blocked,
             )
             .order_by(TaskSpec.created_at.desc())
             .limit(limit)
@@ -1120,8 +1104,8 @@ class DefectSpecRepository(BaseSpecRepository):
     async def list_by_project(
         self,
         project_id: str,
-        severity: Optional[str] = None,
-        status: Optional[str] = None,
+        severity: str | None = None,
+        status: str | None = None,
         limit: int = 100,
         offset: int = 0,
     ) -> list[Any]:
@@ -1144,9 +1128,7 @@ class DefectSpecRepository(BaseSpecRepository):
         if status:
             query = query.where(DefectSpec.status == status)
 
-        query = (
-            query.order_by(DefectSpec.created_at.desc()).limit(limit).offset(offset)
-        )
+        query = query.order_by(DefectSpec.created_at.desc()).limit(limit).offset(offset)
         result = await self.session.execute(query)
         return list(result.scalars().all())
 
@@ -1312,18 +1294,12 @@ class ItemSpecBatchRepository:
     async def get_project_summary(self, project_id: str) -> dict[str, Any]:
         """Get summary counts for all spec types in a project."""
         return {
-            "total_requirements": await self.requirements.get_active_count_by_project(
-                project_id
-            ),
+            "total_requirements": await self.requirements.get_active_count_by_project(project_id),
             "total_tests": await self.tests.get_active_count_by_project(project_id),
             "total_epics": await self.epics.get_active_count_by_project(project_id),
-            "total_stories": await self.stories.get_active_count_by_project(
-                project_id
-            ),
+            "total_stories": await self.stories.get_active_count_by_project(project_id),
             "total_tasks": await self.tasks.get_active_count_by_project(project_id),
-            "total_defects": await self.defects.get_active_count_by_project(
-                project_id
-            ),
+            "total_defects": await self.defects.get_active_count_by_project(project_id),
         }
 
     async def delete_all_specs_for_item(self, item_id: str) -> int:
@@ -1352,11 +1328,7 @@ class ItemSpecBatchRepository:
             TaskSpec,
             DefectSpec,
         ]:
-            query = (
-                select(spec_class)
-                .where(spec_class.item_id == item_id)
-                .where(spec_class.deleted_at.is_(None))
-            )
+            query = select(spec_class).where(spec_class.item_id == item_id).where(spec_class.deleted_at.is_(None))
             result = await self.session.execute(query)
             specs = result.scalars().all()
 

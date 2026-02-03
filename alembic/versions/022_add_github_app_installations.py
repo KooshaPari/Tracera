@@ -6,11 +6,12 @@ Revision ID: 022_github_app_installations
 Revises: 021_accounts
 Create Date: 2026-01-28 12:30:00.000000
 """
-from alembic import op
-from alembic import context
+
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import JSON
-from sqlalchemy.dialects.sqlite import JSON as SQLiteJSON
+from sqlalchemy.dialects.sqlite import JSON as sqlite_json  # noqa: N811
+
+from alembic import context, op
 
 # revision identifiers, used by Alembic.
 revision = "022_github_app_installations"
@@ -22,12 +23,8 @@ depends_on = None
 def upgrade() -> None:
     # Determine JSON type based on database
     bind = op.get_bind()
-    dialect_name = (
-        bind.dialect.name
-        if bind is not None
-        else context.get_context().dialect.name
-    )
-    json_type = JSON if dialect_name == "postgresql" else SQLiteJSON
+    dialect_name = bind.dialect.name if bind is not None else context.get_context().dialect.name
+    json_type = JSON if dialect_name == "postgresql" else sqlite_json
 
     # Create github_app_installations table
     op.create_table(
@@ -51,14 +48,14 @@ def upgrade() -> None:
     # Add account_id and github_app_installation_id to integration_credentials
     op.add_column("integration_credentials", sa.Column("account_id", sa.String(36), nullable=True))
     op.add_column("integration_credentials", sa.Column("github_app_installation_id", sa.String(36), nullable=True))
-    
+
     op.create_foreign_key(
         "fk_integration_credentials_account_id",
         "integration_credentials",
         "accounts",
         ["account_id"],
         ["id"],
-        ondelete="CASCADE"
+        ondelete="CASCADE",
     )
     op.create_foreign_key(
         "fk_integration_credentials_github_app_installation_id",
@@ -66,26 +63,37 @@ def upgrade() -> None:
         "github_app_installations",
         ["github_app_installation_id"],
         ["id"],
-        ondelete="SET NULL"
+        ondelete="SET NULL",
     )
     op.create_index("ix_integration_credentials_account_id", "integration_credentials", ["account_id"])
-    op.create_index("ix_integration_credentials_github_app_installation_id", "integration_credentials", ["github_app_installation_id"])
-    
+    op.create_index(
+        "ix_integration_credentials_github_app_installation_id",
+        "integration_credentials",
+        ["github_app_installation_id"],
+    )
+
     # Update index to include account_id
+    import logging
+
+    log = logging.getLogger(__name__)
     try:
         op.drop_index("ix_integration_credentials_project_provider", table_name="integration_credentials")
-    except Exception:
-        pass  # Index might not exist
-    op.create_index("ix_integration_credentials_account_provider", "integration_credentials", ["account_id", "provider"])
+    except Exception as e:
+        log.debug("drop_index ix_integration_credentials_project_provider: %s", e)
+    op.create_index(
+        "ix_integration_credentials_account_provider", "integration_credentials", ["account_id", "provider"]
+    )
 
 
 def downgrade() -> None:
     # Remove indexes and foreign keys
     op.drop_index("ix_integration_credentials_github_app_installation_id", table_name="integration_credentials")
     op.drop_index("ix_integration_credentials_account_id", table_name="integration_credentials")
-    op.drop_constraint("fk_integration_credentials_github_app_installation_id", "integration_credentials", type_="foreignkey")
+    op.drop_constraint(
+        "fk_integration_credentials_github_app_installation_id", "integration_credentials", type_="foreignkey"
+    )
     op.drop_constraint("fk_integration_credentials_account_id", "integration_credentials", type_="foreignkey")
-    
+
     # Remove columns
     op.drop_column("integration_credentials", "github_app_installation_id")
     op.drop_column("integration_credentials", "account_id")

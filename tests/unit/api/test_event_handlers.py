@@ -1,8 +1,8 @@
 """Unit tests for event handlers in main.py."""
 
+from unittest.mock import AsyncMock
+
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
-from tracertm.infrastructure.event_bus import EventBus
 
 
 @pytest.mark.asyncio
@@ -16,9 +16,9 @@ async def test_handle_item_created_invalidates_cache():
     # Create a simple handler that mimics the one in main.py
     async def handle_item_created(event: dict) -> None:
         """Simplified version of the handler from main.py."""
-        entity_id = event.get('entity_id')
-        project_id = event.get('project_id')
-        entity_type = event.get('entity_type')
+        entity_id = event.get("entity_id")
+        project_id = event.get("project_id")
+        entity_type = event.get("entity_type")
 
         if project_id:
             try:
@@ -29,11 +29,7 @@ async def test_handle_item_created_invalidates_cache():
                 pass
 
     # Test event
-    event = {
-        'entity_id': 'test-item-123',
-        'project_id': 'test-project-456',
-        'entity_type': 'requirement'
-    }
+    event = {"entity_id": "test-item-123", "project_id": "test-project-456", "entity_type": "requirement"}
 
     # Execute handler
     await handle_item_created(event)
@@ -54,7 +50,7 @@ async def test_handle_link_created_invalidates_graph_caches():
     # Create handler
     async def handle_link_created(event: dict) -> None:
         """Simplified version of the handler from main.py."""
-        project_id = event.get('project_id')
+        project_id = event.get("project_id")
 
         if project_id:
             try:
@@ -67,10 +63,7 @@ async def test_handle_link_created_invalidates_graph_caches():
                 pass
 
     # Test event
-    event = {
-        'entity_id': 'test-link-789',
-        'project_id': 'test-project-456'
-    }
+    event = {"entity_id": "test-link-789", "project_id": "test-project-456"}
 
     # Execute handler
     await handle_link_created(event)
@@ -95,7 +88,7 @@ async def test_handle_project_updated_invalidates_all_project_caches():
     # Create handler
     async def handle_project_updated(event: dict) -> None:
         """Simplified version of the handler from main.py."""
-        project_id = event.get('project_id')
+        project_id = event.get("project_id")
 
         if project_id:
             try:
@@ -105,10 +98,7 @@ async def test_handle_project_updated_invalidates_all_project_caches():
                 pass
 
     # Test event
-    event = {
-        'project_id': 'test-project-456',
-        'entity_id': 'test-project-456'
-    }
+    event = {"project_id": "test-project-456", "entity_id": "test-project-456"}
 
     # Execute handler
     await handle_project_updated(event)
@@ -129,7 +119,7 @@ async def test_handle_item_deleted_invalidates_items_and_links():
     # Create handler
     async def handle_item_deleted(event: dict) -> None:
         """Simplified version of the handler from main.py."""
-        project_id = event.get('project_id')
+        project_id = event.get("project_id")
 
         if project_id:
             try:
@@ -141,10 +131,7 @@ async def test_handle_item_deleted_invalidates_items_and_links():
                 pass
 
     # Test event
-    event = {
-        'entity_id': 'deleted-item-123',
-        'project_id': 'test-project-456'
-    }
+    event = {"entity_id": "deleted-item-123", "project_id": "test-project-456"}
 
     # Execute handler
     await handle_item_deleted(event)
@@ -165,16 +152,13 @@ async def test_event_handler_handles_missing_project_id():
     # Create handler
     async def handle_item_created(event: dict) -> None:
         """Simplified version that should not call cache if no project_id."""
-        project_id = event.get('project_id')
+        project_id = event.get("project_id")
 
         if project_id:
             await mock_cache.clear_prefix(f"items:{project_id}")
 
     # Test event without project_id
-    event = {
-        'entity_id': 'orphan-item-123',
-        'entity_type': 'requirement'
-    }
+    event = {"entity_id": "orphan-item-123", "entity_type": "requirement"}
 
     # Execute handler
     await handle_item_created(event)
@@ -196,21 +180,17 @@ async def test_event_handler_gracefully_handles_cache_errors():
     async def handle_item_updated(event: dict) -> None:
         """Handler with error handling."""
         nonlocal error_logged
-        project_id = event.get('project_id')
+        project_id = event.get("project_id")
 
         if project_id:
             try:
                 await mock_cache.clear_prefix(f"items:{project_id}")
             except Exception:
                 error_logged = True
-                pass  # Should not re-raise
+                # Should not re-raise
 
     # Test event
-    event = {
-        'entity_id': 'test-item-123',
-        'project_id': 'test-project-456',
-        'entity_type': 'test'
-    }
+    event = {"entity_id": "test-item-123", "project_id": "test-project-456", "entity_type": "test"}
 
     # Execute handler - should not raise exception
     await handle_item_updated(event)

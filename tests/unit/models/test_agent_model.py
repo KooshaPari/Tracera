@@ -1,7 +1,9 @@
 """Unit tests for Agent model."""
 
-import pytest
 from uuid import uuid4
+
+import pytest
+
 from tracertm.models import Agent
 
 pytestmark = pytest.mark.unit
@@ -46,7 +48,7 @@ class TestAgentModelCreation:
     def test_agent_defaults_status(self):
         """Agent has status field (defaults to active)."""
         agent = Agent(name="Test")
-        assert hasattr(agent, 'status')
+        assert hasattr(agent, "status")
 
 
 class TestAgentModelTypes:
@@ -97,13 +99,13 @@ class TestAgentModelAttributes:
     def test_agent_has_timestamps(self):
         """Agent has timestamp attributes."""
         agent = Agent(name="Test")
-        assert hasattr(agent, 'created_at')
-        assert hasattr(agent, 'updated_at')
+        assert hasattr(agent, "created_at")
+        assert hasattr(agent, "updated_at")
 
     def test_agent_has_last_activity(self):
         """Agent has last_activity_at field."""
         agent = Agent(name="Test")
-        assert hasattr(agent, 'last_activity_at')
+        assert hasattr(agent, "last_activity_at")
 
     def test_agent_last_activity_optional(self):
         """Agent last_activity_at is optional."""

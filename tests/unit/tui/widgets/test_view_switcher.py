@@ -10,16 +10,20 @@ Tests cover:
 - Edge cases
 """
 
+import logging
+
 import pytest
 
 try:
     from textual.widgets import Tree
+
     TEXTUAL_AVAILABLE = True
 except ImportError:
     TEXTUAL_AVAILABLE = False
     Tree = None
 
-from tracertm.tui.widgets.view_switcher import ViewSwitcherWidget, TEXTUAL_AVAILABLE as WIDGET_TEXTUAL
+from tracertm.tui.widgets.view_switcher import TEXTUAL_AVAILABLE as WIDGET_TEXTUAL
+from tracertm.tui.widgets.view_switcher import ViewSwitcherWidget
 
 
 @pytest.mark.skipif(not TEXTUAL_AVAILABLE, reason="Textual not installed")
@@ -184,9 +188,8 @@ class TestViewSwitcherWidgetEdgeCases:
             widget = ViewSwitcherWidget()
             # Should use default "Views" label
             assert widget.label == "Views"
-        except Exception:
-            # If it fails, that's acceptable
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("ViewSwitcherWidget init or default label failed: %s", e)
 
     def test_widget_without_setup(self):
         """Test accessing widget before setup."""

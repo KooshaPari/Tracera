@@ -11,4 +11,4 @@ export declare class Doc {
     write(line: string): void;
     compile(): Function;
 }
-export {};
+

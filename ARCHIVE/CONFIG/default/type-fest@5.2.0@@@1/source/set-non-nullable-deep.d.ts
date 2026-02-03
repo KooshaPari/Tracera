@@ -82,4 +82,4 @@ type SetNonNullableDeepSinglePath<BaseType, KeyPath> =
 			}
 			: Simplify<SetNonNullable<BaseType, (KeyPath | StringToNumber<KeyPath & string>) & keyof BaseType>>;
 
-export {};
+

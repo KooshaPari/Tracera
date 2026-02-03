@@ -116,13 +116,13 @@ describe("Events API", () => {
 			});
 		});
 
-		it("should return null on error", async () => {
+		it("should return undefined on error", async () => {
 			vi.mocked(apiClient.GET).mockRejectedValue(new Error("Not found"));
 			vi.mocked(safeApiCall).mockRejectedValue(new Error("Not found"));
 			vi.mocked(handleApiResponse).mockRejectedValue(new Error("Not found"));
 
 			const result = await fetchEvent("non-existent");
-			expect(result).toBeNull();
+			expect(result).toBeUndefined();
 		});
 	});
 });

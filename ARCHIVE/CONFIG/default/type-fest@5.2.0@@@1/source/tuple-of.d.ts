@@ -75,4 +75,4 @@ type _TupleOf<L extends number, Fill, Accumulator extends UnknownArray> = number
 		? Accumulator
 		: _TupleOf<L, Fill, [...Accumulator, Fill]>;
 
-export {};
+

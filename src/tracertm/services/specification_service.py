@@ -4,13 +4,13 @@ Services for specification entities (ADR, Contract, Feature, Scenario, StepDefin
 
 from __future__ import annotations
 
-import uuid
-from datetime import date as date_type
-from datetime import datetime
-from typing import Any, Optional
 import inspect
+import uuid
+from datetime import UTC, datetime
+from datetime import date as date_type
+from typing import Any
 
-from sqlalchemy import select, delete, and_, func
+from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.core.concurrency import update_with_retry
@@ -37,21 +37,18 @@ class ADRService:
         decision: str,
         consequences: str,
         status: str = "proposed",
-        decision_drivers: Optional[list[str]] = None,
-        considered_options: Optional[list[dict]] = None,
-        related_requirements: Optional[list[str]] = None,
-        related_adrs: Optional[list[str]] = None,
-        stakeholders: Optional[list[str]] = None,
-        tags: Optional[list[str]] = None,
-        date_value: Optional[date_type] = None,
+        decision_drivers: list[str] | None = None,
+        considered_options: list[dict] | None = None,
+        related_requirements: list[str] | None = None,
+        related_adrs: list[str] | None = None,
+        stakeholders: list[str] | None = None,
+        tags: list[str] | None = None,
+        date_value: date_type | None = None,
     ) -> ADR:
         """Create a new ADR."""
         # Generate sequential ADR number
         result = await self.session.execute(
-            select(ADR)
-            .where(ADR.project_id == project_id)
-            .order_by(ADR.created_at.desc())
-            .limit(1)
+            select(ADR).where(ADR.project_id == project_id).order_by(ADR.created_at.desc()).limit(1)
         )
         last_adr = await _maybe_await(result.scalar_one_or_none())
 
@@ -81,7 +78,7 @@ class ADRService:
             related_adrs=related_adrs or [],
             stakeholders=stakeholders or [],
             tags=tags or [],
-            date=date_value or datetime.now().date(),
+            date=date_value or datetime.now(UTC).date(),
             version=1,
         )
 
@@ -89,17 +86,15 @@ class ADRService:
         await self.session.flush()
         return adr
 
-    async def get(self, adr_id: str) -> Optional[ADR]:
+    async def get(self, adr_id: str) -> ADR | None:
         """Get ADR by ID."""
-        result = await self.session.execute(
-            select(ADR).where(ADR.id == adr_id)
-        )
+        result = await self.session.execute(select(ADR).where(ADR.id == adr_id))
         return await _maybe_await(result.scalar_one_or_none())
 
     async def list_by_project(
         self,
         project_id: str,
-        status: Optional[str] = None,
+        status: str | None = None,
         skip: int = 0,
         limit: int = 50,
     ) -> tuple[list[ADR], int]:
@@ -124,8 +119,9 @@ class ADRService:
         rows = await _maybe_await(scalars.all())
         return list(rows), total
 
-    async def update(self, adr_id: str, **updates: Any) -> Optional[ADR]:
+    async def update(self, adr_id: str, **updates: Any) -> ADR | None:
         """Update an ADR with optimistic locking."""
+
         async def do_update() -> ADR:
             adr = await self.get(adr_id)
             if not adr:
@@ -149,27 +145,25 @@ class ADRService:
         """Delete an ADR."""
         result = await self.session.execute(delete(ADR).where(ADR.id == adr_id))
         await self.session.flush()
-        return (result.rowcount or 0) > 0
+        return (getattr(result, "rowcount", 0) or 0) > 0
 
     async def verify_compliance(
-        self, adr_id: str, compliance_score: float, verified_at: Optional[datetime] = None
-    ) -> Optional[ADR]:
+        self, adr_id: str, compliance_score: float, verified_at: datetime | None = None
+    ) -> ADR | None:
         """Verify ADR compliance and update score."""
         adr = await self.get(adr_id)
         if not adr:
             return None
 
         adr.compliance_score = max(0.0, min(1.0, compliance_score))
-        adr.last_verified_at = verified_at or datetime.now().isoformat()
+        adr.last_verified_at = verified_at or datetime.now(UTC).isoformat()
         adr.version += 1
 
         self.session.add(adr)
         await self.session.flush()
         return adr
 
-    async def link_requirements(
-        self, adr_id: str, requirement_ids: list[str]
-    ) -> Optional[ADR]:
+    async def link_requirements(self, adr_id: str, requirement_ids: list[str]) -> ADR | None:
         """Link requirements to an ADR."""
         adr = await self.get(adr_id)
         if not adr:
@@ -182,9 +176,7 @@ class ADRService:
         await self.session.flush()
         return adr
 
-    async def supersede(
-        self, adr_id: str, superseded_by_number: str
-    ) -> Optional[ADR]:
+    async def supersede(self, adr_id: str, superseded_by_number: str) -> ADR | None:
         """Mark ADR as superseded by another."""
         adr = await self.get(adr_id)
         if not adr:
@@ -211,22 +203,19 @@ class ContractService:
         item_id: str,
         title: str,
         contract_type: str,
-        preconditions: Optional[list[dict]] = None,
-        postconditions: Optional[list[dict]] = None,
-        invariants: Optional[list[dict]] = None,
-        states: Optional[list[str]] = None,
-        transitions: Optional[list[dict]] = None,
-        executable_spec: Optional[str] = None,
-        spec_language: Optional[str] = None,
-        tags: Optional[list[str]] = None,
+        preconditions: list[dict] | None = None,
+        postconditions: list[dict] | None = None,
+        invariants: list[dict] | None = None,
+        states: list[str] | None = None,
+        transitions: list[dict] | None = None,
+        executable_spec: str | None = None,
+        spec_language: str | None = None,
+        tags: list[str] | None = None,
     ) -> Contract:
         """Create a new Contract."""
         # Generate sequential contract number
         result = await self.session.execute(
-            select(Contract)
-            .where(Contract.project_id == project_id)
-            .order_by(Contract.created_at.desc())
-            .limit(1)
+            select(Contract).where(Contract.project_id == project_id).order_by(Contract.created_at.desc()).limit(1)
         )
         last_contract = await _maybe_await(result.scalar_one_or_none())
 
@@ -264,18 +253,16 @@ class ContractService:
         await self.session.flush()
         return contract
 
-    async def get(self, contract_id: str) -> Optional[Contract]:
+    async def get(self, contract_id: str) -> Contract | None:
         """Get Contract by ID."""
-        result = await self.session.execute(
-            select(Contract).where(Contract.id == contract_id)
-        )
+        result = await self.session.execute(select(Contract).where(Contract.id == contract_id))
         return await _maybe_await(result.scalar_one_or_none())
 
     async def list_by_project(
         self,
         project_id: str,
-        contract_type: Optional[str] = None,
-        status: Optional[str] = None,
+        contract_type: str | None = None,
+        status: str | None = None,
         skip: int = 0,
         limit: int = 50,
     ) -> tuple[list[Contract], int]:
@@ -306,16 +293,15 @@ class ContractService:
     async def list_by_item(self, item_id: str) -> list[Contract]:
         """List contracts for an item."""
         result = await self.session.execute(
-            select(Contract)
-            .where(Contract.item_id == item_id)
-            .order_by(Contract.created_at.desc())
+            select(Contract).where(Contract.item_id == item_id).order_by(Contract.created_at.desc())
         )
         scalars = await _maybe_await(result.scalars())
         rows = await _maybe_await(scalars.all())
         return list(rows)
 
-    async def update(self, contract_id: str, **updates: Any) -> Optional[Contract]:
+    async def update(self, contract_id: str, **updates: Any) -> Contract | None:
         """Update a Contract with optimistic locking."""
+
         async def do_update() -> Contract:
             contract = await self.get(contract_id)
             if not contract:
@@ -337,31 +323,25 @@ class ContractService:
 
     async def delete(self, contract_id: str) -> bool:
         """Delete a Contract."""
-        result = await self.session.execute(
-            delete(Contract).where(Contract.id == contract_id)
-        )
+        result = await self.session.execute(delete(Contract).where(Contract.id == contract_id))
         await self.session.flush()
-        return result.rowcount > 0
+        return (getattr(result, "rowcount", 0) or 0) > 0
 
-    async def verify(
-        self, contract_id: str, verification_result: dict[str, Any]
-    ) -> Optional[Contract]:
+    async def verify(self, contract_id: str, verification_result: dict[str, Any]) -> Contract | None:
         """Verify contract and store verification result."""
         contract = await self.get(contract_id)
         if not contract:
             return None
 
         contract.verification_result = verification_result
-        contract.last_verified_at = datetime.now().isoformat()
+        contract.last_verified_at = datetime.now(UTC).isoformat()
         contract.version += 1
 
         self.session.add(contract)
         await self.session.flush()
         return contract
 
-    async def execute_transition(
-        self, contract_id: str, from_state: str, to_state: str
-    ) -> Optional[Contract]:
+    async def execute_transition(self, contract_id: str, from_state: str, to_state: str) -> Contract | None:
         """Execute state transition in contract."""
         contract = await self.get(contract_id)
         if not contract:
@@ -370,10 +350,7 @@ class ContractService:
         # Validate transition exists
         valid_transition = False
         for transition in contract.transitions or []:
-            if (
-                transition.get("from") == from_state
-                and transition.get("to") == to_state
-            ):
+            if transition.get("from") == from_state and transition.get("to") == to_state:
                 valid_transition = True
                 break
 
@@ -402,23 +379,20 @@ class FeatureService:
         self,
         project_id: str,
         name: str,
-        description: Optional[str] = None,
-        as_a: Optional[str] = None,
-        i_want: Optional[str] = None,
-        so_that: Optional[str] = None,
+        description: str | None = None,
+        as_a: str | None = None,
+        i_want: str | None = None,
+        so_that: str | None = None,
         status: str = "draft",
-        file_path: Optional[str] = None,
-        tags: Optional[list[str]] = None,
-        related_requirements: Optional[list[str]] = None,
-        related_adrs: Optional[list[str]] = None,
+        file_path: str | None = None,
+        tags: list[str] | None = None,
+        related_requirements: list[str] | None = None,
+        related_adrs: list[str] | None = None,
     ) -> Feature:
         """Create a new Feature."""
         # Generate sequential feature number
         result = await self.session.execute(
-            select(Feature)
-            .where(Feature.project_id == project_id)
-            .order_by(Feature.created_at.desc())
-            .limit(1)
+            select(Feature).where(Feature.project_id == project_id).order_by(Feature.created_at.desc()).limit(1)
         )
         last_feature = await _maybe_await(result.scalar_one_or_none())
 
@@ -454,17 +428,15 @@ class FeatureService:
         await self.session.flush()
         return feature
 
-    async def get(self, feature_id: str) -> Optional[Feature]:
+    async def get(self, feature_id: str) -> Feature | None:
         """Get Feature by ID."""
-        result = await self.session.execute(
-            select(Feature).where(Feature.id == feature_id)
-        )
+        result = await self.session.execute(select(Feature).where(Feature.id == feature_id))
         return await _maybe_await(result.scalar_one_or_none())
 
     async def list_by_project(
         self,
         project_id: str,
-        status: Optional[str] = None,
+        status: str | None = None,
         skip: int = 0,
         limit: int = 50,
     ) -> tuple[list[Feature], int]:
@@ -489,8 +461,9 @@ class FeatureService:
         rows = await _maybe_await(scalars.all())
         return list(rows), total
 
-    async def update(self, feature_id: str, **updates: Any) -> Optional[Feature]:
+    async def update(self, feature_id: str, **updates: Any) -> Feature | None:
         """Update a Feature with optimistic locking."""
+
         async def do_update() -> Feature:
             feature = await self.get(feature_id)
             if not feature:
@@ -512,13 +485,11 @@ class FeatureService:
 
     async def delete(self, feature_id: str) -> bool:
         """Delete a Feature."""
-        result = await self.session.execute(
-            delete(Feature).where(Feature.id == feature_id)
-        )
+        result = await self.session.execute(delete(Feature).where(Feature.id == feature_id))
         await self.session.flush()
-        return result.rowcount > 0
+        return (getattr(result, "rowcount", 0) or 0) > 0
 
-    async def get_with_scenarios(self, feature_id: str) -> Optional[dict[str, Any]]:
+    async def get_with_scenarios(self, feature_id: str) -> dict[str, Any] | None:
         """Get Feature with related scenarios."""
         feature = await self.get(feature_id)
         if not feature:
@@ -526,9 +497,7 @@ class FeatureService:
 
         # Get scenarios for this feature
         result = await self.session.execute(
-            select(Scenario)
-            .where(Scenario.feature_id == feature_id)
-            .order_by(Scenario.created_at)
+            select(Scenario).where(Scenario.feature_id == feature_id).order_by(Scenario.created_at)
         )
         scalars = await _maybe_await(result.scalars())
         scenarios = list(await _maybe_await(scalars.all()))
@@ -542,8 +511,7 @@ class FeatureService:
     async def calculate_pass_rate(self, feature_id: str) -> float:
         """Calculate average pass rate across scenarios."""
         result = await self.session.execute(
-            select(func.avg(Scenario.pass_rate))
-            .where(Scenario.feature_id == feature_id)
+            select(func.avg(Scenario.pass_rate)).where(Scenario.feature_id == feature_id)
         )
         avg_pass_rate = await _maybe_await(result.scalar())
         avg_pass_rate = avg_pass_rate or 0.0
@@ -561,32 +529,27 @@ class ScenarioService:
         feature_id: str,
         title: str,
         gherkin_text: str,
-        description: Optional[str] = None,
+        description: str | None = None,
         is_outline: bool = False,
-        background: Optional[list[dict]] = None,
-        given_steps: Optional[list[dict]] = None,
-        when_steps: Optional[list[dict]] = None,
-        then_steps: Optional[list[dict]] = None,
-        examples: Optional[dict] = None,
-        tags: Optional[list[str]] = None,
-        requirement_ids: Optional[list[str]] = None,
-        test_case_ids: Optional[list[str]] = None,
+        background: list[dict] | None = None,
+        given_steps: list[dict] | None = None,
+        when_steps: list[dict] | None = None,
+        then_steps: list[dict] | None = None,
+        examples: dict | None = None,
+        tags: list[str] | None = None,
+        requirement_ids: list[str] | None = None,
+        test_case_ids: list[str] | None = None,
     ) -> Scenario:
         """Create a new Scenario."""
         # Get feature to find project context
-        feature = await self.session.execute(
-            select(Feature).where(Feature.id == feature_id)
-        )
+        feature = await self.session.execute(select(Feature).where(Feature.id == feature_id))
         feature_obj = await _maybe_await(feature.scalar_one_or_none())
         if not feature_obj:
             raise ValueError(f"Feature {feature_id} not found")
 
         # Generate sequential scenario number within feature
         result = await self.session.execute(
-            select(Scenario)
-            .where(Scenario.feature_id == feature_id)
-            .order_by(Scenario.created_at.desc())
-            .limit(1)
+            select(Scenario).where(Scenario.feature_id == feature_id).order_by(Scenario.created_at.desc()).limit(1)
         )
         last_scenario = await _maybe_await(result.scalar_one_or_none())
 
@@ -626,17 +589,15 @@ class ScenarioService:
         await self.session.flush()
         return scenario
 
-    async def get(self, scenario_id: str) -> Optional[Scenario]:
+    async def get(self, scenario_id: str) -> Scenario | None:
         """Get Scenario by ID."""
-        result = await self.session.execute(
-            select(Scenario).where(Scenario.id == scenario_id)
-        )
+        result = await self.session.execute(select(Scenario).where(Scenario.id == scenario_id))
         return await _maybe_await(result.scalar_one_or_none())
 
     async def list_by_feature(
         self,
         feature_id: str,
-        status: Optional[str] = None,
+        status: str | None = None,
     ) -> list[Scenario]:
         """List scenarios for a feature."""
         query = select(Scenario).where(Scenario.feature_id == feature_id)
@@ -644,15 +605,14 @@ class ScenarioService:
         if status:
             query = query.where(Scenario.status == status)
 
-        result = await self.session.execute(
-            query.order_by(Scenario.created_at)
-        )
+        result = await self.session.execute(query.order_by(Scenario.created_at))
         scalars = await _maybe_await(result.scalars())
         rows = await _maybe_await(scalars.all())
         return list(rows)
 
-    async def update(self, scenario_id: str, **updates: Any) -> Optional[Scenario]:
+    async def update(self, scenario_id: str, **updates: Any) -> Scenario | None:
         """Update a Scenario with optimistic locking."""
+
         async def do_update() -> Scenario:
             scenario = await self.get(scenario_id)
             if not scenario:
@@ -674,13 +634,11 @@ class ScenarioService:
 
     async def delete(self, scenario_id: str) -> bool:
         """Delete a Scenario."""
-        result = await self.session.execute(
-            delete(Scenario).where(Scenario.id == scenario_id)
-        )
+        result = await self.session.execute(delete(Scenario).where(Scenario.id == scenario_id))
         await self.session.flush()
-        return result.rowcount > 0
+        return (getattr(result, "rowcount", 0) or 0) > 0
 
-    async def run(self, scenario_id: str, results: dict[str, Any]) -> Optional[Scenario]:
+    async def run(self, scenario_id: str, results: dict[str, Any]) -> Scenario | None:
         """Run scenario and record results."""
         scenario = await self.get(scenario_id)
         if not scenario:
@@ -707,7 +665,7 @@ class ScenarioService:
         await self.session.flush()
         return scenario
 
-    async def update_pass_rate(self, scenario_id: str, pass_rate: float) -> Optional[Scenario]:
+    async def update_pass_rate(self, scenario_id: str, pass_rate: float) -> Scenario | None:
         """Update scenario pass rate."""
         scenario = await self.get(scenario_id)
         if not scenario:
@@ -720,9 +678,7 @@ class ScenarioService:
         await self.session.flush()
         return scenario
 
-    async def link_test_cases(
-        self, scenario_id: str, test_case_ids: list[str]
-    ) -> Optional[Scenario]:
+    async def link_test_cases(self, scenario_id: str, test_case_ids: list[str]) -> Scenario | None:
         """Link test cases to a scenario."""
         scenario = await self.get(scenario_id)
         if not scenario:
@@ -749,12 +705,12 @@ class StepDefinitionService:
         step_type: str,
         implementation_code: str,
         language: str = "python",
-        description: Optional[str] = None,
-        parameters: Optional[list[dict]] = None,
-        tags: Optional[list[str]] = None,
+        description: str | None = None,
+        parameters: list[dict] | None = None,
+        tags: list[str] | None = None,
     ) -> dict[str, Any]:
         """Create a new Step Definition."""
-        step_definition = {
+        return {
             "id": str(uuid.uuid4()),
             "project_id": project_id,
             "step_pattern": step_pattern,
@@ -765,23 +721,22 @@ class StepDefinitionService:
             "parameters": parameters or [],
             "tags": tags or [],
             "usage_count": 0,
-            "created_at": datetime.now().isoformat(),
+            "created_at": datetime.now(UTC).isoformat(),
             "version": 1,
         }
-        return step_definition
 
     async def find_matching(
         self,
         project_id: str,
         step_text: str,
-        step_type: Optional[str] = None,
+        step_type: str | None = None,
     ) -> list[dict[str, Any]]:
         """Find step definitions matching text (mock implementation)."""
         # In a real implementation, this would query database with pattern matching
         # For now, return empty list as placeholder
         return []
 
-    async def get(self, step_id: str) -> Optional[dict[str, Any]]:
+    async def get(self, step_id: str) -> dict[str, Any] | None:
         """Get Step Definition by ID."""
         # Placeholder implementation
         return None
@@ -789,7 +744,7 @@ class StepDefinitionService:
     async def list_by_project(
         self,
         project_id: str,
-        step_type: Optional[str] = None,
+        step_type: str | None = None,
         skip: int = 0,
         limit: int = 50,
     ) -> tuple[list[dict[str, Any]], int]:
@@ -797,7 +752,7 @@ class StepDefinitionService:
         # Placeholder implementation
         return [], 0
 
-    async def update(self, step_id: str, **updates: Any) -> Optional[dict[str, Any]]:
+    async def update(self, step_id: str, **updates: Any) -> dict[str, Any] | None:
         """Update a Step Definition."""
         # Placeholder implementation
         return None
@@ -807,7 +762,7 @@ class StepDefinitionService:
         # Placeholder implementation
         return False
 
-    async def increment_usage(self, step_id: str) -> Optional[dict[str, Any]]:
+    async def increment_usage(self, step_id: str) -> dict[str, Any] | None:
         """Increment usage count for a step definition."""
         # Placeholder implementation
         return None

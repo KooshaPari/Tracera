@@ -76,10 +76,7 @@ class ProjectNotFoundError(LLMFriendlyError):
     def __init__(self, project_id: str):
         super().__init__(
             message=f"Project '{project_id}' not found.",
-            recovery_hint=(
-                "Use list_projects() to see available projects, "
-                "or create_project() to create a new one."
-            ),
+            recovery_hint=("Use list_projects() to see available projects, or create_project() to create a new one."),
             context={"project_id": project_id},
         )
 
@@ -94,10 +91,7 @@ class ItemNotFoundError(LLMFriendlyError):
 
         super().__init__(
             message=f"Item '{item_id}' not found.",
-            recovery_hint=(
-                "Use query_items() to search for items, "
-                "or create_item() to create a new one."
-            ),
+            recovery_hint=("Use query_items() to search for items, or create_item() to create a new one."),
             context=context,
         )
 
@@ -144,8 +138,7 @@ class DatabaseError(LLMFriendlyError):
         # Remove passwords from connection strings
         error = re.sub(r"://[^:]+:([^@]+)@", r"://***:***@", error)
         # Remove file paths
-        error = re.sub(r"/[/\w.-]+\.db", r"***.db", error)
-        return error
+        return re.sub(r"/[/\w.-]+\.db", r"***.db", error)
 
 
 class ValidationError(LLMFriendlyError):
@@ -173,10 +166,7 @@ class AuthorizationError(LLMFriendlyError):
     def __init__(self, required_scopes: list[str], user_scopes: list[str]):
         super().__init__(
             message="Insufficient permissions for this operation.",
-            recovery_hint=(
-                "Request access from your administrator, "
-                "or use a token with appropriate scopes."
-            ),
+            recovery_hint=("Request access from your administrator, or use a token with appropriate scopes."),
             context={
                 "required": required_scopes,
                 "available": user_scopes,
@@ -244,6 +234,7 @@ class ErrorEnhancementMiddleware(Middleware):
         if "not found" in error_str:
             # Try to extract ID
             import re
+
             id_match = re.search(r"'([^']+)'", str(error))
             item_id = id_match.group(1) if id_match else "unknown"
             return ItemNotFoundError(item_id)
@@ -276,7 +267,9 @@ class ErrorEnhancementMiddleware(Middleware):
             arguments: Tool arguments
         """
         try:
-            await ctx.next()
+            next_fn = getattr(ctx, "next", None)
+            if next_fn is not None and callable(next_fn):
+                await next_fn()
         except Exception as e:
             # Enhance the error
             enhanced = self._enhance_error(e, tool_name)
@@ -292,9 +285,8 @@ class ErrorEnhancementMiddleware(Middleware):
                     f"Recovery hint: {enhanced.recovery_hint or 'None'}\n"
                     f"Context: {enhanced.context}"
                 ) from e
-            else:
-                # Re-raise if not enhanced
-                raise
+            # Re-raise if not enhanced
+            raise
 
 
 def create_error_response(error: Exception) -> dict[str, Any]:
@@ -316,15 +308,15 @@ def create_error_response(error: Exception) -> dict[str, Any]:
 
 
 __all__ = [
-    "LLMFriendlyError",
-    "ProjectNotSelectedError",
-    "ProjectNotFoundError",
-    "ItemNotFoundError",
-    "InvalidLinkError",
-    "DatabaseError",
-    "ValidationError",
     "AuthorizationError",
-    "RateLimitError",
+    "DatabaseError",
     "ErrorEnhancementMiddleware",
+    "InvalidLinkError",
+    "ItemNotFoundError",
+    "LLMFriendlyError",
+    "ProjectNotFoundError",
+    "ProjectNotSelectedError",
+    "RateLimitError",
+    "ValidationError",
     "create_error_response",
 ]

@@ -14,20 +14,17 @@ Target: +3% coverage (30-50 test cases)
 
 import asyncio
 import sys
-from datetime import datetime, timedelta, timezone
-from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
-from uuid import UUID, uuid4
+from datetime import UTC, datetime
+from typing import Any, cast
+from unittest.mock import AsyncMock, Mock, patch
+from uuid import uuid4
 
 import pytest
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.core.concurrency import ConcurrencyError, update_with_retry
 from tracertm.models.item import Item
 from tracertm.models.link import Link
-from tracertm.models.project import Project
 from tracertm.repositories.item_repository import ItemRepository
 from tracertm.repositories.link_repository import LinkRepository
 from tracertm.repositories.project_repository import ProjectRepository
@@ -104,7 +101,7 @@ class TestStringBoundaryConditions:
             "Title with\nnewline",
             "Title with\ttab",
             "Title with\r\nwindows line",
-            'Title with \\backslash',
+            "Title with \\backslash",
             "Title with 'mixed\"quotes'",
             "Title with <!-- HTML -->",
             "Title with <script>alert('xss')</script>",
@@ -241,10 +238,22 @@ class TestCollectionBoundaryConditions:
             item_type="req",
             item_metadata=nested,
         )
-        assert (
-            item.item_metadata["level1"]["level2"]["level3"]["level4"]["level5"]
-            == "value"
-        )
+        meta = item.item_metadata
+        assert isinstance(meta, dict)
+        meta_dict = meta if isinstance(meta, dict) else {}
+        # Nested dict access: type checker needs explicit narrowing
+        level1 = meta_dict.get("level1")
+        assert isinstance(level1, dict)
+        level1_dict = cast(dict[str, Any], level1)
+        level2 = level1_dict.get("level2")
+        assert isinstance(level2, dict)
+        level3 = level2.get("level3")
+        assert isinstance(level3, dict)
+        level3_dict = cast(dict[str, Any], level3)
+        level4 = level3_dict.get("level4")
+        assert isinstance(level4, dict)
+        level4_dict = cast(dict[str, Any], level4)
+        assert level4_dict.get("level5") == "value"
 
     def test_metadata_with_none_values(self):
         """Test metadata containing None values."""
@@ -265,7 +274,7 @@ class TestDateTimeBoundaryConditions:
 
     def test_datetime_with_timezone_info(self):
         """Test datetime with timezone information."""
-        now_utc = datetime.now(timezone.utc)
+        now_utc = datetime.now(UTC)
         item = Item(
             id=str(uuid4()),
             project_id="proj-1",
@@ -304,7 +313,7 @@ class TestDateTimeBoundaryConditions:
 
     def test_deleted_at_far_past(self):
         """Test deleted_at with far past date."""
-        far_past = datetime(1970, 1, 1, tzinfo=timezone.utc)
+        far_past = datetime(1970, 1, 1, tzinfo=UTC)
         item = Item(
             id=str(uuid4()),
             project_id="proj-1",
@@ -317,7 +326,7 @@ class TestDateTimeBoundaryConditions:
 
     def test_deleted_at_far_future(self):
         """Test deleted_at with far future date."""
-        far_future = datetime(2099, 12, 31, 23, 59, 59, tzinfo=timezone.utc)
+        far_future = datetime(2099, 12, 31, 23, 59, 59, tzinfo=UTC)
         item = Item(
             id=str(uuid4()),
             project_id="proj-1",
@@ -482,6 +491,7 @@ class TestConcurrencyEdgeCases:
         mock_item.version = 1
 
         async def update_func():
+            await asyncio.sleep(0)
             return mock_item
 
         result = await update_with_retry(update_func, max_retries=3)
@@ -492,6 +502,7 @@ class TestConcurrencyEdgeCases:
         """Test update_with_retry fails after max retries."""
 
         async def failing_update():
+            await asyncio.sleep(0)
             raise ConcurrencyError("Version conflict")
 
         with pytest.raises(ConcurrencyError):
@@ -500,7 +511,6 @@ class TestConcurrencyEdgeCases:
     @pytest.mark.asyncio
     async def test_concurrent_item_updates(self):
         """Test multiple concurrent updates to same item."""
-        session = AsyncMock(spec=AsyncSession)
 
         async def simulate_update(item_id):
             await asyncio.sleep(0.001)
@@ -515,9 +525,9 @@ class TestConcurrencyEdgeCases:
     @pytest.mark.asyncio
     async def test_concurrent_operations_empty_queue(self):
         """Test concurrent operations with empty work queue."""
-        session = AsyncMock(spec=AsyncSession)
 
         async def process_item(item):
+            await asyncio.sleep(0)
             return item
 
         tasks = [process_item(item) for item in []]
@@ -540,7 +550,7 @@ class TestUUIDEdgeCases:
             item_type="req",
         )
         assert item.id == uuid_str
-        assert len(item.id) == 36  # Standard UUID length
+        assert len(str(item.id)) == 36  # Standard UUID length
 
     def test_uuid_all_zeros(self):
         """Test UUID with all zeros (invalid but structurally valid)."""
@@ -719,7 +729,7 @@ class TestOwnerFieldEdgeCases:
             item_type="req",
             owner=long_email,
         )
-        assert len(item.owner) == 249
+        assert item.owner is not None and len(item.owner) == 249
 
 
 class TestParentChildRelationships:

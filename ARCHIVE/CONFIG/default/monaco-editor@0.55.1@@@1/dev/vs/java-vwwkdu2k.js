@@ -2,7 +2,7 @@ define("vs/java-vwwkdu2k", ["exports"], (function(exports) {
   "use strict";
   const conf = {
     // the default separators except `@$`
-    wordPattern: /(-?\d*\.\d\w*)|([^\`\~\!\#\%\^\&\*\(\)\-\=\+\[\{\]\}\\\|\;\:\'\"\,\.\<\>\/\?\s]+)/g,
+    wordPattern: /(-?\d*\.\d\w*)|([^`~!#%^&*()\-=+[{\]}\\|;:'",.<>/?\s]+)/g,
     comments: {
       lineComment: "//",
       blockComment: ["/*", "*/"]
@@ -136,7 +136,7 @@ define("vs/java-vwwkdu2k", ["exports"], (function(exports) {
       ">>>="
     ],
     // we include these common regular expressions
-    symbols: /[=><!~?:&|+\-*\/\^%]+/,
+    symbols: /[=><!~?:&|+\-*/^%]+/,
     escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
     digits: /\d+(_+\d+)*/,
     octaldigits: /[0-7]+(_+[0-7]+)*/,
@@ -160,7 +160,7 @@ define("vs/java-vwwkdu2k", ["exports"], (function(exports) {
         // whitespace
         { include: "@whitespace" },
         // delimiters and operators
-        [/[{}()\[\]]/, "@brackets"],
+        [/[{}()[\]]/, "@brackets"],
         [/[<>](?!@symbols)/, "@brackets"],
         [
           /@symbols/,
@@ -172,10 +172,10 @@ define("vs/java-vwwkdu2k", ["exports"], (function(exports) {
           }
         ],
         // @ annotations.
-        [/@\s*[a-zA-Z_\$][\w\$]*/, "annotation"],
+        [/@\s*[a-zA-Z_$][\w$]*/, "annotation"],
         // numbers
-        [/(@digits)[eE]([\-+]?(@digits))?[fFdD]?/, "number.float"],
-        [/(@digits)\.(@digits)([eE][\-+]?(@digits))?[fFdD]?/, "number.float"],
+        [/(@digits)[eE]([-+]?(@digits))?[fFdD]?/, "number.float"],
+        [/(@digits)\.(@digits)([eE][-+]?(@digits))?[fFdD]?/, "number.float"],
         [/0[xX](@hexdigits)[Ll]?/, "number.hex"],
         [/0(@octaldigits)[Ll]?/, "number.octal"],
         [/0[bB](@binarydigits)[Ll]?/, "number.binary"],
@@ -200,19 +200,19 @@ define("vs/java-vwwkdu2k", ["exports"], (function(exports) {
         [/\/\/.*$/, "comment"]
       ],
       comment: [
-        [/[^\/*]+/, "comment"],
+        [/[^/*]+/, "comment"],
         // [/\/\*/, 'comment', '@push' ],    // nested comment not allowed :-(
         // [/\/\*/,    'comment.invalid' ],    // this breaks block comments in the shape of /* //*/
         [/\*\//, "comment", "@pop"],
-        [/[\/*]/, "comment"]
+        [/[/*]/, "comment"]
       ],
       //Identical copy of comment above, except for the addition of .doc
       javadoc: [
-        [/[^\/*]+/, "comment.doc"],
+        [/[^/*]+/, "comment.doc"],
         // [/\/\*/, 'comment.doc', '@push' ],    // nested comment not allowed :-(
         [/\/\*/, "comment.doc.invalid"],
         [/\*\//, "comment.doc", "@pop"],
-        [/[\/*]/, "comment.doc"]
+        [/[/*]/, "comment.doc"]
       ],
       string: [
         [/[^\\"]+/, "string"],

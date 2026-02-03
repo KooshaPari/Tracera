@@ -14,5 +14,5 @@ export declare function diffCss(oldStr: string, newStr: string, options: DiffCss
 export declare function diffCss(oldStr: string, newStr: string, options: DiffCssOptionsNonabortable & CallbackOptionNonabortable<string>): undefined;
 export declare function diffCss(oldStr: string, newStr: string, options: DiffCssOptionsAbortable): ChangeObject<string>[] | undefined;
 export declare function diffCss(oldStr: string, newStr: string, options?: DiffCssOptionsNonabortable): ChangeObject<string>[];
-export {};
+
 //# sourceMappingURL=css.d.ts.map

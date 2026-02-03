@@ -342,7 +342,7 @@ RedirectableRequest.prototype._performRequest = function () {
 
   // RFC7230§5.3.1: When making a request directly to an origin server, […]
   // a client MUST send only the absolute path […] as the request-target.
-  this._currentUrl = /^\//.test(this._options.path) ?
+  this._currentUrl = this._options.path.startsWith('/') ?
     url.format(this._options) :
     // When making a request to a proxy, […]
     // a client MUST send the target URI in absolute-form […].
@@ -583,10 +583,10 @@ function resolveUrl(relative, base) {
 }
 
 function validateUrl(input) {
-  if (/^\[/.test(input.hostname) && !/^\[[:0-9a-f]+\]$/i.test(input.hostname)) {
+  if (input.hostname.startsWith('[') && !/^\[[:0-9a-f]+\]$/i.test(input.hostname)) {
     throw new InvalidUrlError({ input: input.href || input });
   }
-  if (/^\[/.test(input.host) && !/^\[[:0-9a-f]+\](:\d+)?$/i.test(input.host)) {
+  if (input.host.startsWith('[') && !/^\[[:0-9a-f]+\](:\d+)?$/i.test(input.host)) {
     throw new InvalidUrlError({ input: input.href || input });
   }
   return input;

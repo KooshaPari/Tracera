@@ -493,7 +493,7 @@ make proto-watch
 |-----------------------------------|----------------------------------------|
 | `proto/tracertm.proto`            | Service definitions                    |
 | `scripts/generate-grpc.sh`        | Code generation script                 |
-| `scripts/test-grpc.py`            | gRPC integration test                  |
+| `scripts/python/test_grpc.py`     | gRPC integration test                  |
 | `tests/grpc/test_helpers.py`      | Python test utilities                  |
 | `backend/internal/grpc/testing/`  | Go test utilities                      |
 | `buf.yaml`                        | Buf configuration (optional)           |

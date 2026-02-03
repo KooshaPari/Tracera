@@ -1,8 +1,10 @@
 """Feature flag management using Redis"""
 
-from typing import Dict, Optional
+import logging
+
 from redis.asyncio import Redis
 
+logger = logging.getLogger(__name__)
 
 # Common feature flags
 FLAG_NATS_EVENTS = "nats_events"
@@ -95,7 +97,7 @@ class FeatureFlagStore:
         """
         await self.redis.delete(f"{self.prefix}{flag_name}")
 
-    async def list_flags(self) -> Dict[str, bool]:
+    async def list_flags(self) -> dict[str, bool]:
         """List all feature flags and their values
 
         Returns:
@@ -107,33 +109,24 @@ class FeatureFlagStore:
         try:
             cursor = 0
             while True:
-                cursor, keys = await self.redis.scan(
-                    cursor=cursor,
-                    match=pattern,
-                    count=100
-                )
+                cursor, keys = await self.redis.scan(cursor=cursor, match=pattern, count=100)
 
                 for key in keys:
                     val = await self.redis.get(key)
                     if val is not None:
                         # Remove prefix from key
-                        flag_name = key.decode('utf-8')[len(self.prefix):]
+                        flag_name = key.decode("utf-8")[len(self.prefix) :]
                         flags[flag_name] = val == b"true"
 
                 if cursor == 0:
                     break
 
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("Failed to list feature flags from Redis: %s", e)
 
         return flags
 
-    async def set_flag_with_ttl(
-        self,
-        flag_name: str,
-        enabled: bool,
-        ttl_seconds: int
-    ) -> None:
+    async def set_flag_with_ttl(self, flag_name: str, enabled: bool, ttl_seconds: int) -> None:
         """Set flag with expiration time
 
         Args:
@@ -142,11 +135,7 @@ class FeatureFlagStore:
             ttl_seconds: Time to live in seconds
         """
         value = "true" if enabled else "false"
-        await self.redis.setex(
-            f"{self.prefix}{flag_name}",
-            ttl_seconds,
-            value
-        )
+        await self.redis.setex(f"{self.prefix}{flag_name}", ttl_seconds, value)
 
     async def initialize_default_flags(self) -> None:
         """Initialize default feature flags if they don't exist"""

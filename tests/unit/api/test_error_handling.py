@@ -4,9 +4,8 @@ Comprehensive error handling tests for API endpoints.
 Tests error responses, exception handling, and error recovery.
 """
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
-from fastapi import HTTPException
+
 from fastapi.testclient import TestClient
 from sqlalchemy.exc import IntegrityError, OperationalError
 
@@ -83,7 +82,7 @@ class TestHTTPErrorResponses:
         try:
             response = client.post(
                 "/api/v1/items",
-                json={"title": 123, "view": "FEATURE"}  # title should be string
+                json={"title": 123, "view": "FEATURE"},  # title should be string
             )
             if response.status_code == 422:
                 data = response.json()
@@ -158,10 +157,7 @@ class TestDatabaseErrors:
                 mock_repo.return_value = repo
 
                 try:
-                    response = client.post(
-                        "/api/v1/items",
-                        json={"title": "Test", "view": "FEATURE"}
-                    )
+                    response = client.post("/api/v1/items", json={"title": "Test", "view": "FEATURE"})
                     assert response.status_code in [400, 409, 422]
                 except Exception:
                     pass
@@ -178,10 +174,7 @@ class TestValidationErrors:
 
         # Missing title
         try:
-            response = client.post(
-                "/api/v1/items",
-                json={"view": "FEATURE"}
-            )
+            response = client.post("/api/v1/items", json={"view": "FEATURE"})
             assert response.status_code == 422
         except Exception:
             pass
@@ -215,10 +208,7 @@ class TestValidationErrors:
 
         # Negative skip/limit
         try:
-            response = client.get(
-                "/api/v1/items",
-                params={"project_id": "test", "skip": -1, "limit": -1}
-            )
+            response = client.get("/api/v1/items", params={"project_id": "test", "skip": -1, "limit": -1})
             # Should handle gracefully or reject
             assert response.status_code in [200, 400, 422]
         except Exception:
@@ -232,10 +222,7 @@ class TestValidationErrors:
 
         # Invalid view value
         try:
-            response = client.post(
-                "/api/v1/items",
-                json={"title": "Test", "view": "INVALID_VIEW"}
-            )
+            response = client.post("/api/v1/items", json={"title": "Test", "view": "INVALID_VIEW"})
             # Should reject or convert
             assert response.status_code in [200, 400, 422]
         except Exception:
@@ -296,10 +283,7 @@ class TestBusinessLogicErrors:
                 mock_service.return_value = service
 
                 try:
-                    response = client.get(
-                        "/api/v1/analysis/impact/nonexistent_item",
-                        params={"project_id": "test"}
-                    )
+                    response = client.get("/api/v1/analysis/impact/nonexistent_item", params={"project_id": "test"})
                     assert response.status_code in [404, 500]
                 except Exception:
                     pass
@@ -330,11 +314,7 @@ class TestBusinessLogicErrors:
                 try:
                     response = client.get(
                         "/api/v1/analysis/shortest-path",
-                        params={
-                            "project_id": "test",
-                            "source_id": "item1",
-                            "target_id": "item2"
-                        }
+                        params={"project_id": "test", "source_id": "item1", "target_id": "item2"},
                     )
                     # Should return result with exists=False
                     if response.status_code == 200:
@@ -363,14 +343,12 @@ class TestConcurrencyErrors:
             with patch("tracertm.api.main.ItemRepository") as mock_repo:
                 repo = MagicMock()
                 from sqlalchemy.orm.exc import StaleDataError
+
                 repo.update = AsyncMock(side_effect=StaleDataError())
                 mock_repo.return_value = repo
 
                 try:
-                    response = client.put(
-                        "/api/v1/items/test_item",
-                        json={"title": "Updated"}
-                    )
+                    response = client.put("/api/v1/items/test_item", json={"title": "Updated"})
                     # Should return conflict error
                     assert response.status_code in [409, 500]
                 except Exception:
@@ -391,14 +369,11 @@ class TestConcurrencyErrors:
 
             with patch("tracertm.api.main.ItemRepository") as mock_repo:
                 repo = MagicMock()
-                repo.create = AsyncMock(side_effect=OperationalError("", "", "Deadlock"))
+                repo.create = AsyncMock(side_effect=OperationalError("", "", Exception("Deadlock")))
                 mock_repo.return_value = repo
 
                 try:
-                    response = client.post(
-                        "/api/v1/items",
-                        json={"title": "Test", "view": "FEATURE"}
-                    )
+                    response = client.post("/api/v1/items", json={"title": "Test", "view": "FEATURE"})
                     # Should retry or return error
                     assert response.status_code in [409, 500, 503]
                 except Exception:
@@ -427,10 +402,7 @@ class TestErrorRecovery:
                 mock_service.return_value = service
 
                 try:
-                    response = client.get(
-                        "/api/v1/analysis/impact/test_item",
-                        params={"project_id": "test"}
-                    )
+                    response = client.get("/api/v1/analysis/impact/test_item", params={"project_id": "test"})
                     # Should return error but not crash
                     assert response.status_code >= 400
                 except Exception:
@@ -474,11 +446,12 @@ class TestErrorRecovery:
         call_count = 0
 
         with patch("tracertm.api.main.DatabaseConnection") as mock_db:
+
             def connect_with_retry():
                 nonlocal call_count
                 call_count += 1
                 if call_count < 3:
-                    raise OperationalError("", "", "Connection lost")
+                    raise OperationalError("", "", Exception("Connection lost"))
                 connection = MagicMock()
                 session = MagicMock()
                 session.close = AsyncMock()
@@ -514,7 +487,7 @@ class TestErrorLogging:
                     pass
 
                 # Logger should have been called
-                assert mock_logger.error.called or mock_logger.exception.called or True
+                assert True
 
     def test_error_context_logged(self):
         """Test that error context is included in logs."""

@@ -102,9 +102,9 @@ declare module "tree-sitter" {
       descendantForPosition(startPosition: Point, endPosition: Point): SyntaxNode;
       namedDescendantForPosition(position: Point): SyntaxNode;
       namedDescendantForPosition(startPosition: Point, endPosition: Point): SyntaxNode;
-      descendantsOfType(types: String | Array<String>, startPosition?: Point, endPosition?: Point): Array<SyntaxNode>;
+      descendantsOfType(types: string | Array<string>, startPosition?: Point, endPosition?: Point): Array<SyntaxNode>;
 
-      closest(types: String | Array<String>): SyntaxNode | null;
+      closest(types: string | Array<string>): SyntaxNode | null;
       walk(): TreeCursor;
     }
 

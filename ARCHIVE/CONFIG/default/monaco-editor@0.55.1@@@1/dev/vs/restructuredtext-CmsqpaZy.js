@@ -27,7 +27,7 @@ define("vs/restructuredtext-CmsqpaZy", ["exports"], (function(exports) {
   const language = {
     defaultToken: "",
     tokenPostfix: ".rst",
-    control: /[\\`*_\[\]{}()#+\-\.!]/,
+    control: /[\\`*_[\]{}()#+\-.!]/,
     escapes: /\\(?:@control)/,
     empty: [
       "area",
@@ -49,7 +49,7 @@ define("vs/restructuredtext-CmsqpaZy", ["exports"], (function(exports) {
     simpleRefName: /(?:`@phrase`|@simpleRefNameWithoutBq)/,
     phrase: /@simpleRefNameWithoutBq(?:\s@simpleRefNameWithoutBq)*/,
     citationName: /[A-Za-z][A-Za-z0-9-_.]*/,
-    blockLiteralStart: /(?:[!"#$%&'()*+,-./:;<=>?@\[\]^_`{|}~]|[\s])/,
+    blockLiteralStart: /(?:[!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~]|[\s])/,
     precedingChars: /(?:[ -:/'"<([{])/,
     followingChars: /(?:[ -.,:;!?/'")\]}>]|$)/,
     punctuation: /(=|-|~|`|#|"|\^|\+|\*|:|\.|'|_|\+)/,
@@ -60,7 +60,7 @@ define("vs/restructuredtext-CmsqpaZy", ["exports"], (function(exports) {
         //line-blocks
         //No rules on it
         //bullet-lists
-        [/^\s*([\*\-+‣•]|[a-zA-Z0-9]+\.|\([a-zA-Z0-9]+\)|[a-zA-Z0-9]+\))\s/, "keyword"],
+        [/^\s*([*\-+‣•]|[a-zA-Z0-9]+\.|\([a-zA-Z0-9]+\)|[a-zA-Z0-9]+\))\s/, "keyword"],
         //literal-blocks
         [/([ ]::)\s*$/, "keyword", "@blankLineOfLiteralBlocks"],
         [/(::)\s*$/, "keyword", "@blankLineOfLiteralBlocks"],
@@ -110,7 +110,7 @@ define("vs/restructuredtext-CmsqpaZy", ["exports"], (function(exports) {
         [/\*\*([^\\*]|\*(?!\*))+\*\*/, "strong"],
         [/\*[^*]+\*/, "emphasis"],
         //inline-literals
-        [/(``)((?:[^`]|\`(?!`))+)(``)/, ["", "keyword", ""]],
+        [/(``)((?:[^`]|`(?!`))+)(``)/, ["", "keyword", ""]],
         [/(__\s+)(.+)/, ["", "keyword"]],
         //interpreted-text
         [/(:)((?:@simpleRefNameWithoutBq)?)(:`)([^`]+)(`)/, ["", "keyword", "", "", ""]],

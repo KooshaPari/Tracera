@@ -25,8 +25,8 @@ export declare function escapePathComponent(path: string): string;
  * @return The unescaped path
  */
 export declare function unescapePathComponent(path: string): string;
-export declare function _getPathRecursive(root: Object, obj: Object): string;
-export declare function getPath(root: Object, obj: Object): string;
+export declare function _getPathRecursive(root: object, obj: object): string;
+export declare function getPath(root: object, obj: object): string;
 /**
 * Recursively checks whether an object has any undefined values inside.
 */

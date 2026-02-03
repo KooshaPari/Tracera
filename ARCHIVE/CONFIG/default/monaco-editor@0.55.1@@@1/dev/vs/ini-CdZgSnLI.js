@@ -35,7 +35,7 @@ define("vs/ini-CdZgSnLI", ["exports"], (function(exports) {
         // sections
         [/^\[[^\]]*\]/, "metatag"],
         // keys
-        [/(^\w+)(\s*)(\=)/, ["key", "", "delimiter"]],
+        [/(^\w+)(\s*)(=)/, ["key", "", "delimiter"]],
         // whitespace
         { include: "@whitespace" },
         // numbers

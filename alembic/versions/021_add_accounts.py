@@ -6,11 +6,16 @@ Revision ID: 021_accounts
 Revises: 020_specifications
 Create Date: 2026-01-28 12:00:00.000000
 """
-from alembic import op
-from alembic import context
+
+import logging
+
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import JSON
-from sqlalchemy.dialects.sqlite import JSON as SQLiteJSON
+from sqlalchemy.dialects.sqlite import JSON as sqlite_json  # noqa: N811
+
+from alembic import context, op
+
+_log = logging.getLogger(__name__)
 
 # revision identifiers, used by Alembic.
 revision = "021_accounts"
@@ -22,12 +27,8 @@ depends_on = None
 def upgrade() -> None:
     # Determine JSON type based on database
     bind = op.get_bind()
-    dialect_name = (
-        bind.dialect.name
-        if bind is not None
-        else context.get_context().dialect.name
-    )
-    json_type = JSON if dialect_name == "postgresql" else SQLiteJSON
+    dialect_name = bind.dialect.name if bind is not None else context.get_context().dialect.name
+    json_type = JSON if dialect_name == "postgresql" else sqlite_json
 
     # Create accounts table
     op.create_table(
@@ -59,14 +60,7 @@ def upgrade() -> None:
 
     # Add account_id to projects table
     op.add_column("projects", sa.Column("account_id", sa.String(36), nullable=True))
-    op.create_foreign_key(
-        "fk_projects_account_id",
-        "projects",
-        "accounts",
-        ["account_id"],
-        ["id"],
-        ondelete="CASCADE"
-    )
+    op.create_foreign_key("fk_projects_account_id", "projects", "accounts", ["account_id"], ["id"], ondelete="CASCADE")
     op.create_index("ix_projects_account_id", "projects", ["account_id"])
 
     # Remove unique constraint on projects.name since accounts can have projects with same name
@@ -76,25 +70,21 @@ def upgrade() -> None:
         for constraint_name in ("projects_name_key", "uq_projects_name"):
             try:
                 op.drop_constraint(constraint_name, "projects", type_="unique")
-            except Exception:
-                pass
+            except Exception as e:
+                _log.debug("drop_constraint %s: %s", constraint_name, e)
     else:
         inspector = sa.inspect(conn)
-        unique_constraints = [
-            c["name"] for c in inspector.get_unique_constraints("projects")
-        ]
-        if "projects_name_key" in unique_constraints or any(
-            "name" in str(c) for c in unique_constraints
-        ):
+        unique_constraints = [c["name"] for c in inspector.get_unique_constraints("projects")]
+        if "projects_name_key" in unique_constraints or any("name" in str(c) for c in unique_constraints):
             # Try to drop the constraint - exact name may vary
             try:
                 op.drop_constraint("projects_name_key", "projects", type_="unique")
-            except Exception:
-                # Constraint might have different name, try alternative
+            except Exception as e:
+                _log.debug("drop_constraint projects_name_key: %s", e)
                 try:
                     op.drop_constraint("uq_projects_name", "projects", type_="unique")
-                except Exception:
-                    pass  # Constraint might not exist or have different name
+                except Exception as e2:
+                    _log.debug("drop_constraint uq_projects_name: %s", e2)
 
 
 def downgrade() -> None:

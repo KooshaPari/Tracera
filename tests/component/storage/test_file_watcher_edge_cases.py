@@ -11,7 +11,7 @@ Tests cover:
 
 import time
 from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
 import pytest
 
@@ -45,7 +45,7 @@ class TestFileWatcherEdgeCases:
         )
 
         # Trigger rapid changes (should be debounced)
-        for i in range(10):
+        for _i in range(10):
             watcher._debounce_event(item_file, "modified")
 
         # Multiple rapid changes will queue multiple events (timers not yet fired)
@@ -337,8 +337,8 @@ class TestFileWatcherEdgeCases:
                 parent: str | None = None
                 title: str = "No External ID"
                 description: str = ""
-                tags: list = None
-                custom_fields: dict = None
+                tags: list | None = None
+                custom_fields: dict | None = None
 
                 def __post_init__(self):
                     if self.tags is None:

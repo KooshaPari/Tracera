@@ -15,14 +15,12 @@ This file covers all missing functionality identified in coverage analysis:
 - count_by_status()
 """
 
-from datetime import datetime, timezone
 from uuid import uuid4
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.core.concurrency import ConcurrencyError
-from tracertm.models.item import Item
 from tracertm.models.link import Link
 from tracertm.repositories.item_repository import ItemRepository
 from tracertm.repositories.project_repository import ProjectRepository
@@ -47,25 +45,16 @@ async def test_create_with_parent_validation_success(db_session: AsyncSession):
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    
+
     # Create parent
-    parent = await item_repo.create(
-        project_id=project.id,
-        title="Parent Item",
-        view="EPIC",
-        item_type="epic"
-    )
+    parent = await item_repo.create(project_id=str(project.id), title="Parent Item", view="EPIC", item_type="epic")
     await db_session.commit()
 
     # Create child with parent
     child = await item_repo.create(
-        project_id=project.id,
-        title="Child Item",
-        view="STORY",
-        item_type="story",
-        parent_id=parent.id
+        project_id=str(project.id), title="Child Item", view="STORY", item_type="story", parent_id=str(parent.id)
     )
-    
+
     assert child.parent_id == parent.id
     assert child.project_id == project.id
 
@@ -79,14 +68,14 @@ async def test_create_with_invalid_parent_raises_error(db_session: AsyncSession)
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    
-    with pytest.raises(ValueError, match="Parent item .* not found"):
+
+    with pytest.raises(ValueError, match=r"Parent item .* not found"):
         await item_repo.create(
-            project_id=project.id,
+            project_id=str(project.id),
             title="Orphan Item",
             view="STORY",
             item_type="story",
-            parent_id="nonexistent-parent-id"
+            parent_id="nonexistent-parent-id",
         )
 
 
@@ -100,24 +89,15 @@ async def test_create_with_parent_different_project_raises_error(db_session: Asy
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    
+
     # Create parent in project1
-    parent = await item_repo.create(
-        project_id=project1.id,
-        title="Parent",
-        view="EPIC",
-        item_type="epic"
-    )
+    parent = await item_repo.create(project_id=project1.id, title="Parent", view="EPIC", item_type="epic")
     await db_session.commit()
 
     # Try to create child in project2 with parent from project1
     with pytest.raises(ValueError, match="not in same project"):
         await item_repo.create(
-            project_id=project2.id,
-            title="Child",
-            view="STORY",
-            item_type="story",
-            parent_id=parent.id
+            project_id=str(project2.id), title="Child", view="STORY", item_type="story", parent_id=str(parent.id)
         )
 
 
@@ -136,12 +116,7 @@ async def test_get_by_id_with_project_scope_success(db_session: AsyncSession):
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    item = await item_repo.create(
-        project_id=project1.id,
-        title="Test Item",
-        view="FEATURE",
-        item_type="feature"
-    )
+    item = await item_repo.create(project_id=project1.id, title="Test Item", view="FEATURE", item_type="feature")
     await db_session.commit()
 
     # Query with correct project
@@ -150,7 +125,7 @@ async def test_get_by_id_with_project_scope_success(db_session: AsyncSession):
     assert found.id == item.id
 
     # Query with wrong project
-    not_found = await item_repo.get_by_id(item.id, project_id=project2.id)
+    not_found = await item_repo.get_by_id(item.id, project_id=str(project2.id))
     assert not_found is None
 
 
@@ -163,12 +138,7 @@ async def test_get_by_id_without_project_scope(db_session: AsyncSession):
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    item = await item_repo.create(
-        project_id=project.id,
-        title="Test Item",
-        view="FEATURE",
-        item_type="feature"
-    )
+    item = await item_repo.create(project_id=str(project.id), title="Test Item", view="FEATURE", item_type="feature")
     await db_session.commit()
 
     # Query without project scope
@@ -191,23 +161,13 @@ async def test_list_by_view_excludes_deleted_by_default(db_session: AsyncSession
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    
-    item1 = await item_repo.create(
-        project_id=project.id,
-        title="Active Item",
-        view="FEATURE",
-        item_type="feature"
-    )
-    item2 = await item_repo.create(
-        project_id=project.id,
-        title="Deleted Item",
-        view="FEATURE",
-        item_type="feature"
-    )
+
+    item1 = await item_repo.create(project_id=str(project.id), title="Active Item", view="FEATURE", item_type="feature")
+    item2 = await item_repo.create(project_id=str(project.id), title="Deleted Item", view="FEATURE", item_type="feature")
     await db_session.commit()
 
     # Delete item2
-    await item_repo.delete(item2.id, soft=True)
+    await item_repo.delete(str(item2.id), soft=True)
     await db_session.commit()
 
     # List without deleted (default)
@@ -225,23 +185,13 @@ async def test_list_by_view_includes_deleted_when_requested(db_session: AsyncSes
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    
-    item1 = await item_repo.create(
-        project_id=project.id,
-        title="Active Item",
-        view="FEATURE",
-        item_type="feature"
-    )
-    item2 = await item_repo.create(
-        project_id=project.id,
-        title="Deleted Item",
-        view="FEATURE",
-        item_type="feature"
-    )
+
+    item1 = await item_repo.create(project_id=str(project.id), title="Active Item", view="FEATURE", item_type="feature")
+    item2 = await item_repo.create(project_id=str(project.id), title="Deleted Item", view="FEATURE", item_type="feature")
     await db_session.commit()
 
     # Delete item2
-    await item_repo.delete(item2.id, soft=True)
+    await item_repo.delete(str(item2.id), soft=True)
     await db_session.commit()
 
     # List with deleted
@@ -266,23 +216,13 @@ async def test_list_all_excludes_deleted_by_default(db_session: AsyncSession):
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    
-    item1 = await item_repo.create(
-        project_id=project.id,
-        title="Active Item",
-        view="FEATURE",
-        item_type="feature"
-    )
-    item2 = await item_repo.create(
-        project_id=project.id,
-        title="Deleted Item",
-        view="STORY",
-        item_type="story"
-    )
+
+    item1 = await item_repo.create(project_id=str(project.id), title="Active Item", view="FEATURE", item_type="feature")
+    item2 = await item_repo.create(project_id=str(project.id), title="Deleted Item", view="STORY", item_type="story")
     await db_session.commit()
 
     # Delete item2
-    await item_repo.delete(item2.id, soft=True)
+    await item_repo.delete(str(item2.id), soft=True)
     await db_session.commit()
 
     # List without deleted (default)
@@ -300,23 +240,13 @@ async def test_list_all_includes_deleted_when_requested(db_session: AsyncSession
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    
-    item1 = await item_repo.create(
-        project_id=project.id,
-        title="Active Item",
-        view="FEATURE",
-        item_type="feature"
-    )
-    item2 = await item_repo.create(
-        project_id=project.id,
-        title="Deleted Item",
-        view="STORY",
-        item_type="story"
-    )
+
+    item1 = await item_repo.create(project_id=str(project.id), title="Active Item", view="FEATURE", item_type="feature")
+    item2 = await item_repo.create(project_id=str(project.id), title="Deleted Item", view="STORY", item_type="story")
     await db_session.commit()
 
     # Delete item2
-    await item_repo.delete(item2.id, soft=True)
+    await item_repo.delete(str(item2.id), soft=True)
     await db_session.commit()
 
     # List with deleted
@@ -337,17 +267,13 @@ async def test_list_all_includes_deleted_when_requested(db_session: AsyncSession
 async def test_update_with_missing_item_raises_error(db_session: AsyncSession):
     """Test update raises ValueError when item doesn't exist."""
     project_repo = ProjectRepository(db_session)
-    project = await project_repo.create(name=unique_project_name())
+    _project = await project_repo.create(name=unique_project_name())
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    
-    with pytest.raises(ValueError, match="Item .* not found"):
-        await item_repo.update(
-            item_id="nonexistent-id",
-            expected_version=1,
-            title="Updated"
-        )
+
+    with pytest.raises(ValueError, match=r"Item .* not found"):
+        await item_repo.update(item_id="nonexistent-id", expected_version=1, title="Updated")
 
 
 @pytest.mark.unit
@@ -359,21 +285,12 @@ async def test_update_with_stale_version_raises_concurrency_error(db_session: As
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    item = await item_repo.create(
-        project_id=project.id,
-        title="Test Item",
-        view="FEATURE",
-        item_type="feature"
-    )
+    item = await item_repo.create(project_id=str(project.id), title="Test Item", view="FEATURE", item_type="feature")
     original_version = item.version
     await db_session.commit()
 
     # First update succeeds
-    updated = await item_repo.update(
-        item_id=item.id,
-        expected_version=original_version,
-        status="in_progress"
-    )
+    updated = await item_repo.update(item_id=item.id, expected_version=original_version, status="in_progress")
     assert updated.version == original_version + 1
     await db_session.commit()
 
@@ -382,7 +299,7 @@ async def test_update_with_stale_version_raises_concurrency_error(db_session: As
         await item_repo.update(
             item_id=item.id,
             expected_version=original_version,  # Stale version (before first update)
-            status="done"
+            status="done",
         )
 
 
@@ -395,21 +312,12 @@ async def test_update_version_increments(db_session: AsyncSession):
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    item = await item_repo.create(
-        project_id=project.id,
-        title="Test Item",
-        view="FEATURE",
-        item_type="feature"
-    )
+    item = await item_repo.create(project_id=str(project.id), title="Test Item", view="FEATURE", item_type="feature")
     original_version = item.version
     await db_session.commit()
 
     # Update should increment version
-    updated = await item_repo.update(
-        item_id=item.id,
-        expected_version=original_version,
-        title="Updated Title"
-    )
+    updated = await item_repo.update(item_id=item.id, expected_version=original_version, title="Updated Title")
     assert updated.version == original_version + 1
 
 
@@ -427,35 +335,22 @@ async def test_soft_delete_cascades_to_children(db_session: AsyncSession):
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    
+
     # Create parent
-    parent = await item_repo.create(
-        project_id=project.id,
-        title="Parent",
-        view="EPIC",
-        item_type="epic"
-    )
+    parent = await item_repo.create(project_id=str(project.id), title="Parent", view="EPIC", item_type="epic")
     await db_session.commit()
 
     # Create children
     child1 = await item_repo.create(
-        project_id=project.id,
-        title="Child 1",
-        view="STORY",
-        item_type="story",
-        parent_id=parent.id
+        project_id=str(project.id), title="Child 1", view="STORY", item_type="story", parent_id=str(parent.id)
     )
     child2 = await item_repo.create(
-        project_id=project.id,
-        title="Child 2",
-        view="STORY",
-        item_type="story",
-        parent_id=parent.id
+        project_id=str(project.id), title="Child 2", view="STORY", item_type="story", parent_id=str(parent.id)
     )
     await db_session.commit()
 
     # Soft delete parent
-    deleted = await item_repo.delete(parent.id, soft=True)
+    deleted = await item_repo.delete(str(parent.id), soft=True)
     assert deleted is True
     await db_session.commit()
 
@@ -466,7 +361,7 @@ async def test_soft_delete_cascades_to_children(db_session: AsyncSession):
     # Check children are also deleted
     found_child1 = await item_repo.get_by_id(child1.id)
     assert found_child1 is None
-    
+
     found_child2 = await item_repo.get_by_id(child2.id)
     assert found_child2 is None
 
@@ -481,11 +376,11 @@ async def test_soft_delete_cascades_to_children(db_session: AsyncSession):
 async def test_soft_delete_nonexistent_item_returns_false(db_session: AsyncSession):
     """Test soft delete returns False when item doesn't exist."""
     project_repo = ProjectRepository(db_session)
-    project = await project_repo.create(name=unique_project_name())
+    _project = await project_repo.create(name=unique_project_name())
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    
+
     deleted = await item_repo.delete("nonexistent-id", soft=True)
     assert deleted is False
 
@@ -503,40 +398,26 @@ async def test_hard_delete_removes_links(db_session: AsyncSession):
 
     item_repo = ItemRepository(db_session)
 
-    item1 = await item_repo.create(
-        project_id=project.id,
-        title="Item 1",
-        view="FEATURE",
-        item_type="feature"
-    )
-    item2 = await item_repo.create(
-        project_id=project.id,
-        title="Item 2",
-        view="FEATURE",
-        item_type="feature"
-    )
+    item1 = await item_repo.create(project_id=str(project.id), title="Item 1", view="FEATURE", item_type="feature")
+    item2 = await item_repo.create(project_id=str(project.id), title="Item 2", view="FEATURE", item_type="feature")
     await db_session.commit()
 
     # Create link using repository (which handles graph_id)
     link_repo = LinkRepository(db_session)
     link = await link_repo.create(
-        project_id=project.id,
-        source_item_id=item1.id,
-        target_item_id=item2.id,
-        link_type="depends_on"
+        project_id=str(project.id), source_item_id=str(item1.id), target_item_id=str(item2.id), link_type="depends_on"
     )
     await db_session.commit()
 
     # Hard delete item1
-    deleted = await item_repo.delete(item1.id, soft=False)
+    deleted = await item_repo.delete(str(item1.id), soft=False)
     assert deleted is True
     await db_session.commit()
 
     # Verify link is removed
     from sqlalchemy import select
-    result = await db_session.execute(
-        select(Link).where(Link.id == link.id)
-    )
+
+    result = await db_session.execute(select(Link).where(Link.id == link.id))
     found_link = result.scalar_one_or_none()
     assert found_link is None
 
@@ -550,11 +431,11 @@ async def test_hard_delete_removes_links(db_session: AsyncSession):
 async def test_hard_delete_nonexistent_item_returns_false(db_session: AsyncSession):
     """Test hard delete returns False when item doesn't exist."""
     project_repo = ProjectRepository(db_session)
-    project = await project_repo.create(name=unique_project_name())
+    _project = await project_repo.create(name=unique_project_name())
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    
+
     deleted = await item_repo.delete("nonexistent-id", soft=False)
     assert deleted is False
 
@@ -573,16 +454,11 @@ async def test_restore_soft_deleted_item(db_session: AsyncSession):
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    item = await item_repo.create(
-        project_id=project.id,
-        title="To Be Restored",
-        view="FEATURE",
-        item_type="feature"
-    )
+    item = await item_repo.create(project_id=str(project.id), title="To Be Restored", view="FEATURE", item_type="feature")
     await db_session.commit()
 
     # Soft delete
-    await item_repo.delete(item.id, soft=True)
+    await item_repo.delete(str(item.id), soft=True)
     await db_session.commit()
 
     # Verify deleted
@@ -607,11 +483,11 @@ async def test_restore_soft_deleted_item(db_session: AsyncSession):
 async def test_restore_nonexistent_item_returns_none(db_session: AsyncSession):
     """Test restore returns None when item doesn't exist."""
     project_repo = ProjectRepository(db_session)
-    project = await project_repo.create(name=unique_project_name())
+    _project = await project_repo.create(name=unique_project_name())
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    
+
     restored = await item_repo.restore("nonexistent-id")
     assert restored is None
 
@@ -625,12 +501,7 @@ async def test_restore_active_item_returns_none(db_session: AsyncSession):
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    item = await item_repo.create(
-        project_id=project.id,
-        title="Active Item",
-        view="FEATURE",
-        item_type="feature"
-    )
+    item = await item_repo.create(project_id=str(project.id), title="Active Item", view="FEATURE", item_type="feature")
     await db_session.commit()
 
     # Try to restore active item
@@ -652,29 +523,11 @@ async def test_get_by_project_with_status_filter(db_session: AsyncSession):
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    
+
     # Create items with different statuses
-    await item_repo.create(
-        project_id=project.id,
-        title="Todo Item",
-        view="FEATURE",
-        item_type="feature",
-        status="todo"
-    )
-    await item_repo.create(
-        project_id=project.id,
-        title="Done Item",
-        view="FEATURE",
-        item_type="feature",
-        status="done"
-    )
-    await item_repo.create(
-        project_id=project.id,
-        title="Another Todo",
-        view="STORY",
-        item_type="story",
-        status="todo"
-    )
+    await item_repo.create(project_id=str(project.id), title="Todo Item", view="FEATURE", item_type="feature", status="todo")
+    await item_repo.create(project_id=str(project.id), title="Done Item", view="FEATURE", item_type="feature", status="done")
+    await item_repo.create(project_id=str(project.id), title="Another Todo", view="STORY", item_type="story", status="todo")
     await db_session.commit()
 
     # Get only todo items
@@ -697,15 +550,10 @@ async def test_get_by_project_with_pagination(db_session: AsyncSession):
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    
+
     # Create 5 items
     for i in range(5):
-        await item_repo.create(
-            project_id=project.id,
-            title=f"Item {i}",
-            view="FEATURE",
-            item_type="feature"
-        )
+        await item_repo.create(project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature")
     await db_session.commit()
 
     # Get first page (limit=2)
@@ -737,22 +585,10 @@ async def test_get_by_project_without_status_filter(db_session: AsyncSession):
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    
+
     # Create items with different statuses
-    await item_repo.create(
-        project_id=project.id,
-        title="Todo Item",
-        view="FEATURE",
-        item_type="feature",
-        status="todo"
-    )
-    await item_repo.create(
-        project_id=project.id,
-        title="Done Item",
-        view="FEATURE",
-        item_type="feature",
-        status="done"
-    )
+    await item_repo.create(project_id=str(project.id), title="Todo Item", view="FEATURE", item_type="feature", status="todo")
+    await item_repo.create(project_id=str(project.id), title="Done Item", view="FEATURE", item_type="feature", status="done")
     await db_session.commit()
 
     # Get all items
@@ -777,28 +613,16 @@ async def test_get_by_view_with_status_filter(db_session: AsyncSession):
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    
+
     # Create items in same view with different statuses
     await item_repo.create(
-        project_id=project.id,
-        title="Todo Feature",
-        view="FEATURE",
-        item_type="feature",
-        status="todo"
+        project_id=str(project.id), title="Todo Feature", view="FEATURE", item_type="feature", status="todo"
     )
     await item_repo.create(
-        project_id=project.id,
-        title="Done Feature",
-        view="FEATURE",
-        item_type="feature",
-        status="done"
+        project_id=str(project.id), title="Done Feature", view="FEATURE", item_type="feature", status="done"
     )
     await item_repo.create(
-        project_id=project.id,
-        title="In Progress Feature",
-        view="FEATURE",
-        item_type="feature",
-        status="in_progress"
+        project_id=str(project.id), title="In Progress Feature", view="FEATURE", item_type="feature", status="in_progress"
     )
     await db_session.commit()
 
@@ -817,15 +641,10 @@ async def test_get_by_view_with_pagination(db_session: AsyncSession):
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    
+
     # Create 5 items in same view
     for i in range(5):
-        await item_repo.create(
-            project_id=project.id,
-            title=f"Feature {i}",
-            view="FEATURE",
-            item_type="feature"
-        )
+        await item_repo.create(project_id=str(project.id), title=f"Feature {i}", view="FEATURE", item_type="feature")
     await db_session.commit()
 
     # Get first page
@@ -856,29 +675,18 @@ async def test_query_with_single_filter(db_session: AsyncSession):
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    
+
     # Create items
     await item_repo.create(
-        project_id=project.id,
-        title="High Priority",
-        view="FEATURE",
-        item_type="feature",
-        priority="high"
+        project_id=str(project.id), title="High Priority", view="FEATURE", item_type="feature", priority="high"
     )
     await item_repo.create(
-        project_id=project.id,
-        title="Low Priority",
-        view="FEATURE",
-        item_type="feature",
-        priority="low"
+        project_id=str(project.id), title="Low Priority", view="FEATURE", item_type="feature", priority="low"
     )
     await db_session.commit()
 
     # Query by priority
-    high_priority = await item_repo.query(
-        project_id=project.id,
-        filters={"priority": "high"}
-    )
+    high_priority = await item_repo.query(project_id=str(project.id), filters={"priority": "high"})
     assert len(high_priority) == 1
     assert high_priority[0].priority == "high"
 
@@ -892,39 +700,21 @@ async def test_query_with_multiple_filters(db_session: AsyncSession):
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    
+
     # Create items
     await item_repo.create(
-        project_id=project.id,
-        title="High Todo",
-        view="FEATURE",
-        item_type="feature",
-        priority="high",
-        status="todo"
+        project_id=str(project.id), title="High Todo", view="FEATURE", item_type="feature", priority="high", status="todo"
     )
     await item_repo.create(
-        project_id=project.id,
-        title="High Done",
-        view="FEATURE",
-        item_type="feature",
-        priority="high",
-        status="done"
+        project_id=str(project.id), title="High Done", view="FEATURE", item_type="feature", priority="high", status="done"
     )
     await item_repo.create(
-        project_id=project.id,
-        title="Low Todo",
-        view="FEATURE",
-        item_type="feature",
-        priority="low",
-        status="todo"
+        project_id=str(project.id), title="Low Todo", view="FEATURE", item_type="feature", priority="low", status="todo"
     )
     await db_session.commit()
 
     # Query with multiple filters
-    results = await item_repo.query(
-        project_id=project.id,
-        filters={"priority": "high", "status": "todo"}
-    )
+    results = await item_repo.query(project_id=str(project.id), filters={"priority": "high", "status": "todo"})
     assert len(results) == 1
     assert results[0].priority == "high"
     assert results[0].status == "todo"
@@ -939,23 +729,14 @@ async def test_query_with_limit(db_session: AsyncSession):
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    
+
     # Create 5 items
     for i in range(5):
-        await item_repo.create(
-            project_id=project.id,
-            title=f"Item {i}",
-            view="FEATURE",
-            item_type="feature"
-        )
+        await item_repo.create(project_id=str(project.id), title=f"Item {i}", view="FEATURE", item_type="feature")
     await db_session.commit()
 
     # Query with limit
-    results = await item_repo.query(
-        project_id=project.id,
-        filters={},
-        limit=3
-    )
+    results = await item_repo.query(project_id=str(project.id), filters={}, limit=3)
     assert len(results) <= 3
 
 
@@ -968,20 +749,12 @@ async def test_query_with_invalid_filter_attribute_ignored(db_session: AsyncSess
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    
-    item = await item_repo.create(
-        project_id=project.id,
-        title="Test Item",
-        view="FEATURE",
-        item_type="feature"
-    )
+
+    _item = await item_repo.create(project_id=str(project.id), title="Test Item", view="FEATURE", item_type="feature")
     await db_session.commit()
 
     # Query with invalid filter (should be ignored)
-    results = await item_repo.query(
-        project_id=project.id,
-        filters={"nonexistent_field": "value"}
-    )
+    results = await item_repo.query(project_id=str(project.id), filters={"nonexistent_field": "value"})
     # Should return all items since invalid filter is ignored
     assert len(results) >= 1
 
@@ -1000,45 +773,28 @@ async def test_get_children_returns_direct_children(db_session: AsyncSession):
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    
+
     # Create parent
-    parent = await item_repo.create(
-        project_id=project.id,
-        title="Parent",
-        view="EPIC",
-        item_type="epic"
-    )
+    parent = await item_repo.create(project_id=str(project.id), title="Parent", view="EPIC", item_type="epic")
     await db_session.commit()
 
     # Create direct children
     child1 = await item_repo.create(
-        project_id=project.id,
-        title="Child 1",
-        view="STORY",
-        item_type="story",
-        parent_id=parent.id
+        project_id=str(project.id), title="Child 1", view="STORY", item_type="story", parent_id=str(parent.id)
     )
     child2 = await item_repo.create(
-        project_id=project.id,
-        title="Child 2",
-        view="STORY",
-        item_type="story",
-        parent_id=parent.id
+        project_id=str(project.id), title="Child 2", view="STORY", item_type="story", parent_id=str(parent.id)
     )
     await db_session.commit()
 
     # Create grandchild (should not be returned)
     grandchild = await item_repo.create(
-        project_id=project.id,
-        title="Grandchild",
-        view="TASK",
-        item_type="task",
-        parent_id=child1.id
+        project_id=str(project.id), title="Grandchild", view="TASK", item_type="task", parent_id=str(child1.id)
     )
     await db_session.commit()
 
     # Get children
-    children = await item_repo.get_children(parent.id)
+    children = await item_repo.get_children(str(parent.id))
     assert len(children) == 2
     child_ids = {child.id for child in children}
     assert child1.id in child_ids
@@ -1055,39 +811,26 @@ async def test_get_children_excludes_deleted(db_session: AsyncSession):
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    
+
     # Create parent
-    parent = await item_repo.create(
-        project_id=project.id,
-        title="Parent",
-        view="EPIC",
-        item_type="epic"
-    )
+    parent = await item_repo.create(project_id=str(project.id), title="Parent", view="EPIC", item_type="epic")
     await db_session.commit()
 
     # Create children
     child1 = await item_repo.create(
-        project_id=project.id,
-        title="Active Child",
-        view="STORY",
-        item_type="story",
-        parent_id=parent.id
+        project_id=str(project.id), title="Active Child", view="STORY", item_type="story", parent_id=str(parent.id)
     )
     child2 = await item_repo.create(
-        project_id=project.id,
-        title="Deleted Child",
-        view="STORY",
-        item_type="story",
-        parent_id=parent.id
+        project_id=str(project.id), title="Deleted Child", view="STORY", item_type="story", parent_id=str(parent.id)
     )
     await db_session.commit()
 
     # Delete child2
-    await item_repo.delete(child2.id, soft=True)
+    await item_repo.delete(str(child2.id), soft=True)
     await db_session.commit()
 
     # Get children (should exclude deleted)
-    children = await item_repo.get_children(parent.id)
+    children = await item_repo.get_children(str(parent.id))
     assert len(children) == 1
     assert children[0].id == child1.id
 
@@ -1101,16 +844,13 @@ async def test_get_children_empty_when_no_children(db_session: AsyncSession):
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    
+
     item = await item_repo.create(
-        project_id=project.id,
-        title="Item Without Children",
-        view="FEATURE",
-        item_type="feature"
+        project_id=str(project.id), title="Item Without Children", view="FEATURE", item_type="feature"
     )
     await db_session.commit()
 
-    children = await item_repo.get_children(item.id)
+    children = await item_repo.get_children(str(item.id))
     assert len(children) == 0
 
 
@@ -1128,36 +868,23 @@ async def test_get_ancestors_returns_all_parents(db_session: AsyncSession):
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    
+
     # Create hierarchy: root -> parent -> child
-    root = await item_repo.create(
-        project_id=project.id,
-        title="Root",
-        view="EPIC",
-        item_type="epic"
-    )
+    root = await item_repo.create(project_id=str(project.id), title="Root", view="EPIC", item_type="epic")
     await db_session.commit()
 
     parent = await item_repo.create(
-        project_id=project.id,
-        title="Parent",
-        view="STORY",
-        item_type="story",
-        parent_id=root.id
+        project_id=str(project.id), title="Parent", view="STORY", item_type="story", parent_id=str(root.id)
     )
     await db_session.commit()
 
     child = await item_repo.create(
-        project_id=project.id,
-        title="Child",
-        view="TASK",
-        item_type="task",
-        parent_id=parent.id
+        project_id=str(project.id), title="Child", view="TASK", item_type="task", parent_id=str(parent.id)
     )
     await db_session.commit()
 
     # Get ancestors of child
-    ancestors = await item_repo.get_ancestors(child.id)
+    ancestors = await item_repo.get_ancestors(str(child.id))
     assert len(ancestors) == 2
     ancestor_ids = {ancestor.id for ancestor in ancestors}
     assert root.id in ancestor_ids
@@ -1174,45 +901,28 @@ async def test_get_ancestors_handles_deep_hierarchy(db_session: AsyncSession):
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    
+
     # Create deep hierarchy: level1 -> level2 -> level3 -> level4
-    level1 = await item_repo.create(
-        project_id=project.id,
-        title="Level 1",
-        view="EPIC",
-        item_type="epic"
-    )
+    level1 = await item_repo.create(project_id=str(project.id), title="Level 1", view="EPIC", item_type="epic")
     await db_session.commit()
 
     level2 = await item_repo.create(
-        project_id=project.id,
-        title="Level 2",
-        view="STORY",
-        item_type="story",
-        parent_id=level1.id
+        project_id=str(project.id), title="Level 2", view="STORY", item_type="story", parent_id=str(level1.id)
     )
     await db_session.commit()
 
     level3 = await item_repo.create(
-        project_id=project.id,
-        title="Level 3",
-        view="TASK",
-        item_type="task",
-        parent_id=level2.id
+        project_id=str(project.id), title="Level 3", view="TASK", item_type="task", parent_id=str(level2.id)
     )
     await db_session.commit()
 
     level4 = await item_repo.create(
-        project_id=project.id,
-        title="Level 4",
-        view="TASK",
-        item_type="task",
-        parent_id=level3.id
+        project_id=str(project.id), title="Level 4", view="TASK", item_type="task", parent_id=str(level3.id)
     )
     await db_session.commit()
 
     # Get ancestors of level4
-    ancestors = await item_repo.get_ancestors(level4.id)
+    ancestors = await item_repo.get_ancestors(str(level4.id))
     assert len(ancestors) == 3
     ancestor_ids = {ancestor.id for ancestor in ancestors}
     assert level1.id in ancestor_ids
@@ -1229,16 +939,11 @@ async def test_get_ancestors_empty_for_root_item(db_session: AsyncSession):
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    
-    root = await item_repo.create(
-        project_id=project.id,
-        title="Root",
-        view="EPIC",
-        item_type="epic"
-    )
+
+    root = await item_repo.create(project_id=str(project.id), title="Root", view="EPIC", item_type="epic")
     await db_session.commit()
 
-    ancestors = await item_repo.get_ancestors(root.id)
+    ancestors = await item_repo.get_ancestors(str(root.id))
     assert len(ancestors) == 0
 
 
@@ -1256,43 +961,26 @@ async def test_get_descendants_returns_all_children(db_session: AsyncSession):
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    
+
     # Create hierarchy: parent -> child1, child2 -> grandchild
-    parent = await item_repo.create(
-        project_id=project.id,
-        title="Parent",
-        view="EPIC",
-        item_type="epic"
-    )
+    parent = await item_repo.create(project_id=str(project.id), title="Parent", view="EPIC", item_type="epic")
     await db_session.commit()
 
     child1 = await item_repo.create(
-        project_id=project.id,
-        title="Child 1",
-        view="STORY",
-        item_type="story",
-        parent_id=parent.id
+        project_id=str(project.id), title="Child 1", view="STORY", item_type="story", parent_id=str(parent.id)
     )
     child2 = await item_repo.create(
-        project_id=project.id,
-        title="Child 2",
-        view="STORY",
-        item_type="story",
-        parent_id=parent.id
+        project_id=str(project.id), title="Child 2", view="STORY", item_type="story", parent_id=str(parent.id)
     )
     await db_session.commit()
 
     grandchild = await item_repo.create(
-        project_id=project.id,
-        title="Grandchild",
-        view="TASK",
-        item_type="task",
-        parent_id=child1.id
+        project_id=str(project.id), title="Grandchild", view="TASK", item_type="task", parent_id=str(child1.id)
     )
     await db_session.commit()
 
     # Get descendants of parent
-    descendants = await item_repo.get_descendants(parent.id)
+    descendants = await item_repo.get_descendants(str(parent.id))
     assert len(descendants) == 3
     descendant_ids = {descendant.id for descendant in descendants}
     assert child1.id in descendant_ids
@@ -1309,45 +997,28 @@ async def test_get_descendants_handles_deep_hierarchy(db_session: AsyncSession):
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    
+
     # Create deep hierarchy
-    root = await item_repo.create(
-        project_id=project.id,
-        title="Root",
-        view="EPIC",
-        item_type="epic"
-    )
+    root = await item_repo.create(project_id=str(project.id), title="Root", view="EPIC", item_type="epic")
     await db_session.commit()
 
     level2 = await item_repo.create(
-        project_id=project.id,
-        title="Level 2",
-        view="STORY",
-        item_type="story",
-        parent_id=root.id
+        project_id=str(project.id), title="Level 2", view="STORY", item_type="story", parent_id=str(root.id)
     )
     await db_session.commit()
 
     level3 = await item_repo.create(
-        project_id=project.id,
-        title="Level 3",
-        view="TASK",
-        item_type="task",
-        parent_id=level2.id
+        project_id=str(project.id), title="Level 3", view="TASK", item_type="task", parent_id=str(level2.id)
     )
     await db_session.commit()
 
     level4 = await item_repo.create(
-        project_id=project.id,
-        title="Level 4",
-        view="TASK",
-        item_type="task",
-        parent_id=level3.id
+        project_id=str(project.id), title="Level 4", view="TASK", item_type="task", parent_id=str(level3.id)
     )
     await db_session.commit()
 
     # Get descendants of root
-    descendants = await item_repo.get_descendants(root.id)
+    descendants = await item_repo.get_descendants(str(root.id))
     assert len(descendants) == 3
     descendant_ids = {descendant.id for descendant in descendants}
     assert level2.id in descendant_ids
@@ -1364,16 +1035,11 @@ async def test_get_descendants_empty_for_leaf_item(db_session: AsyncSession):
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    
-    leaf = await item_repo.create(
-        project_id=project.id,
-        title="Leaf",
-        view="TASK",
-        item_type="task"
-    )
+
+    leaf = await item_repo.create(project_id=str(project.id), title="Leaf", view="TASK", item_type="task")
     await db_session.commit()
 
-    descendants = await item_repo.get_descendants(leaf.id)
+    descendants = await item_repo.get_descendants(str(leaf.id))
     assert len(descendants) == 0
 
 
@@ -1391,37 +1057,25 @@ async def test_count_by_status_counts_correctly(db_session: AsyncSession):
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    
+
     # Create items with different statuses
     for i in range(3):
         await item_repo.create(
-            project_id=project.id,
-            title=f"Todo {i}",
-            view="FEATURE",
-            item_type="feature",
-            status="todo"
+            project_id=str(project.id), title=f"Todo {i}", view="FEATURE", item_type="feature", status="todo"
         )
-    
+
     for i in range(2):
         await item_repo.create(
-            project_id=project.id,
-            title=f"Done {i}",
-            view="FEATURE",
-            item_type="feature",
-            status="done"
+            project_id=str(project.id), title=f"Done {i}", view="FEATURE", item_type="feature", status="done"
         )
-    
+
     await item_repo.create(
-        project_id=project.id,
-        title="In Progress",
-        view="FEATURE",
-        item_type="feature",
-        status="in_progress"
+        project_id=str(project.id), title="In Progress", view="FEATURE", item_type="feature", status="in_progress"
     )
     await db_session.commit()
 
     # Count by status
-    counts = await item_repo.count_by_status(project.id)
+    counts = await item_repo.count_by_status(str(project.id))
     assert counts.get("todo") == 3
     assert counts.get("done") == 2
     assert counts.get("in_progress") == 1
@@ -1436,30 +1090,22 @@ async def test_count_by_status_excludes_deleted(db_session: AsyncSession):
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    
+
     # Create items
-    item1 = await item_repo.create(
-        project_id=project.id,
-        title="Todo Item",
-        view="FEATURE",
-        item_type="feature",
-        status="todo"
+    _item1 = await item_repo.create(
+        project_id=str(project.id), title="Todo Item", view="FEATURE", item_type="feature", status="todo"
     )
     item2 = await item_repo.create(
-        project_id=project.id,
-        title="Done Item",
-        view="FEATURE",
-        item_type="feature",
-        status="done"
+        project_id=str(project.id), title="Done Item", view="FEATURE", item_type="feature", status="done"
     )
     await db_session.commit()
 
     # Delete one item
-    await item_repo.delete(item2.id, soft=True)
+    await item_repo.delete(str(item2.id), soft=True)
     await db_session.commit()
 
     # Count should exclude deleted
-    counts = await item_repo.count_by_status(project.id)
+    counts = await item_repo.count_by_status(str(project.id))
     assert counts.get("todo") == 1
     assert counts.get("done", 0) == 0  # Deleted item not counted (use .get with default)
 
@@ -1473,6 +1119,6 @@ async def test_count_by_status_empty_project_returns_empty_dict(db_session: Asyn
     await db_session.commit()
 
     item_repo = ItemRepository(db_session)
-    
-    counts = await item_repo.count_by_status(project.id)
+
+    counts = await item_repo.count_by_status(str(project.id))
     assert counts == {}

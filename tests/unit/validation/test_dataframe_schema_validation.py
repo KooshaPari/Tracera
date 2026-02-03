@@ -12,17 +12,17 @@ import pytest
 
 try:
     from pandera import ValidationError
+
     from tracertm.schemas import (
-        ProjectMetricsSchema,
-        RequirementSchema,
-        TraceabilityLinkSchema,
         validate_project_metrics,
         validate_requirements,
         validate_traceability_links,
     )
+
     HAS_PANDERA = True
 except (ImportError, ModuleNotFoundError):
     HAS_PANDERA = False
+
     # Define mock for testing purposes
     class ValidationError(Exception):
         pass

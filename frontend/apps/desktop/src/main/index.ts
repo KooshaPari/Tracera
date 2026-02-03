@@ -11,9 +11,9 @@ function createWindow() {
 		minWidth: 800,
 		titleBarStyle: "hiddenInset",
 		webPreferences: {
-			preload: path.join(__dirname, "../preload/index.js"),
-			nodeIntegration: false,
 			contextIsolation: true,
+			nodeIntegration: false,
+			preload: path.join(__dirname, "../preload/index.js"),
 			sandbox: true,
 		},
 		width: 1400,

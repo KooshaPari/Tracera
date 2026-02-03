@@ -2,8 +2,9 @@
 Event model for TraceRTM (event sourcing).
 """
 
-from sqlalchemy import ForeignKey, Index, Integer, String
+from typing import Any
 
+from sqlalchemy import ForeignKey, Index, Integer, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -32,11 +33,9 @@ class Event(Base, TimestampMixin):
     entity_type: Mapped[str] = mapped_column(String(50), nullable=False)
     entity_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
 
-    agent_id: Mapped[str | None] = mapped_column(
-        String(255), nullable=True, index=True
-    )
+    agent_id: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
 
-    data: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False)
+    data: Mapped[dict[str, Any]] = mapped_column(JSONType, nullable=False)
 
     __table_args__ = (
         Index("idx_events_project_entity", "project_id", "entity_id"),

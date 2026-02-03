@@ -36,4 +36,4 @@ type InternalIsUnion<T, U = T> =
 		: Result
 	: never; // Should never happen
 
-export {};
+

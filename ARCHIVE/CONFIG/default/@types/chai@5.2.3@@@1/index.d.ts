@@ -370,7 +370,7 @@ declare global {
 
         export interface Keys {
             (...keys: string[]): Assertion;
-            (keys: readonly any[] | Object): Assertion;
+            (keys: readonly any[] | object): Assertion;
         }
 
         export interface Throw {
@@ -391,7 +391,7 @@ declare global {
         }
 
         export interface PropertyChange {
-            (object: Object, property?: string, message?: string): DeltaAssertion;
+            (object: object, property?: string, message?: string): DeltaAssertion;
         }
 
         export interface DeltaAssertion extends Assertion {
@@ -1884,7 +1884,7 @@ declare global {
              * @param keys   Keys to check
              * @param message    Message to display on error.
              */
-            hasAnyKeys<T>(object: T, keys: Array<Object | string> | { [key: string]: any }, message?: string): void;
+            hasAnyKeys<T>(object: T, keys: Array<object | string> | { [key: string]: any }, message?: string): void;
 
             /**
              * Asserts that `object` has all and only all of the `keys` provided.
@@ -1896,7 +1896,7 @@ declare global {
              * @param keys   Keys to check
              * @param message    Message to display on error.
              */
-            hasAllKeys<T>(object: T, keys: Array<Object | string> | { [key: string]: any }, message?: string): void;
+            hasAllKeys<T>(object: T, keys: Array<object | string> | { [key: string]: any }, message?: string): void;
 
             /**
              * Asserts that `object` has all of the `keys` provided but may have more keys not listed.
@@ -1910,7 +1910,7 @@ declare global {
              */
             containsAllKeys<T>(
                 object: T,
-                keys: Array<Object | string> | { [key: string]: any },
+                keys: Array<object | string> | { [key: string]: any },
                 message?: string,
             ): void;
 
@@ -1926,7 +1926,7 @@ declare global {
              */
             doesNotHaveAnyKeys<T>(
                 object: T,
-                keys: Array<Object | string> | { [key: string]: any },
+                keys: Array<object | string> | { [key: string]: any },
                 message?: string,
             ): void;
 
@@ -1942,7 +1942,7 @@ declare global {
              */
             doesNotHaveAllKeys<T>(
                 object: T,
-                keys: Array<Object | string> | { [key: string]: any },
+                keys: Array<object | string> | { [key: string]: any },
                 message?: string,
             ): void;
 
@@ -1958,7 +1958,7 @@ declare global {
              * @param keys   Keys to check
              * @param message    Message to display on error.
              */
-            hasAnyDeepKeys<T>(object: T, keys: Array<Object | string> | { [key: string]: any }, message?: string): void;
+            hasAnyDeepKeys<T>(object: T, keys: Array<object | string> | { [key: string]: any }, message?: string): void;
 
             /**
              * Asserts that `object` has all and only all of the `keys` provided.
@@ -1972,7 +1972,7 @@ declare global {
              * @param keys   Keys to check
              * @param message    Message to display on error.
              */
-            hasAllDeepKeys<T>(object: T, keys: Array<Object | string> | { [key: string]: any }, message?: string): void;
+            hasAllDeepKeys<T>(object: T, keys: Array<object | string> | { [key: string]: any }, message?: string): void;
 
             /**
              * Asserts that `object` contains all of the `keys` provided.
@@ -1988,7 +1988,7 @@ declare global {
              */
             containsAllDeepKeys<T>(
                 object: T,
-                keys: Array<Object | string> | { [key: string]: any },
+                keys: Array<object | string> | { [key: string]: any },
                 message?: string,
             ): void;
 
@@ -2006,7 +2006,7 @@ declare global {
              */
             doesNotHaveAnyDeepKeys<T>(
                 object: T,
-                keys: Array<Object | string> | { [key: string]: any },
+                keys: Array<object | string> | { [key: string]: any },
                 message?: string,
             ): void;
 
@@ -2024,7 +2024,7 @@ declare global {
              */
             doesNotHaveAllDeepKeys<T>(
                 object: T,
-                keys: Array<Object | string> | { [key: string]: any },
+                keys: Array<object | string> | { [key: string]: any },
                 message?: string,
             ): void;
 

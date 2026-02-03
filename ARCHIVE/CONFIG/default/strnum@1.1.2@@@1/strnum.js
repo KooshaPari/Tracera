@@ -1,5 +1,5 @@
 const hexRegex = /^[-+]?0x[a-fA-F0-9]+$/;
-const numRegex = /^([\-\+])?(0*)([0-9]*(\.[0-9]*)?)$/;
+const numRegex = /^([-+])?(0*)([0-9]*(\.[0-9]*)?)$/;
 // const octRegex = /^0x[a-z0-9]+/;
 // const binRegex = /0x[a-z0-9]+/;
 
@@ -8,7 +8,7 @@ const consider = {
     hex :  true,
     // oct: false,
     leadingZeros: true,
-    decimalPoint: "\.",
+    decimalPoint: ".",
     eNotation: true,
     //skipLike: /regex/
 };
@@ -26,7 +26,7 @@ function toNumber(str, options = {}){
     // }else if (options.oct && octRegex.test(str)) {
     //     return Number.parseInt(val, 8);
     }else if (trimmedStr.search(/[eE]/)!== -1) { //eNotation
-        const notation = trimmedStr.match(/^([-\+])?(0*)([0-9]*(\.[0-9]*)?[eE][-\+]?[0-9]+)$/); 
+        const notation = trimmedStr.match(/^([-+])?(0*)([0-9]*(\.[0-9]*)?[eE][-+]?[0-9]+)$/); 
         // +00.123 => [ , '+', '00', '.123', ..
         if(notation){
             // console.log(notation)

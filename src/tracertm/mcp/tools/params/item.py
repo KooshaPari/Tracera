@@ -9,14 +9,17 @@ from fastmcp.exceptions import ToolError
 try:
     from tracertm.mcp.core import mcp
 except Exception:  # pragma: no cover
+
     class _StubMCP:
         def tool(self, *args: Any, **kwargs: Any):
             def decorator(fn):
                 return fn
+
             return decorator
+
     mcp = _StubMCP()  # type: ignore[assignment]
 
-from .common import _wrap, _maybe_select_project, item_tools
+from .common import _call_tool, _maybe_select_project, _wrap, item_tools
 
 
 @mcp.tool(description="Unified item operations")
@@ -52,7 +55,8 @@ async def _item_manage_impl(
     await _maybe_select_project(payload, ctx)
 
     if action == "create":
-        result = await item_tools.create_item(
+        result = await _call_tool(
+            item_tools, "create_item",
             title=payload.get("title"),
             view=payload.get("view"),
             item_type=payload.get("item_type"),
@@ -66,13 +70,15 @@ async def _item_manage_impl(
         )
         return _wrap(result, ctx, action)
     if action == "get":
-        result = await item_tools.get_item(
+        result = await _call_tool(
+            item_tools, "get_item",
             item_id=payload.get("item_id"),
             ctx=ctx,
         )
         return _wrap(result, ctx, action)
     if action == "update":
-        result = await item_tools.update_item(
+        result = await _call_tool(
+            item_tools, "update_item",
             item_id=payload.get("item_id"),
             title=payload.get("title"),
             description=payload.get("description"),
@@ -84,13 +90,15 @@ async def _item_manage_impl(
         )
         return _wrap(result, ctx, action)
     if action == "delete":
-        result = await item_tools.delete_item(
+        result = await _call_tool(
+            item_tools, "delete_item",
             item_id=payload.get("item_id"),
             ctx=ctx,
         )
         return _wrap(result, ctx, action)
     if action == "query":
-        result = await item_tools.query_items(
+        result = await _call_tool(
+            item_tools, "query_items",
             view=payload.get("view"),
             item_type=payload.get("item_type"),
             status=payload.get("status"),
@@ -100,13 +108,15 @@ async def _item_manage_impl(
         )
         return _wrap(result, ctx, action)
     if action == "summarize_view":
-        result = await item_tools.summarize_view(
+        result = await _call_tool(
+            item_tools, "summarize_view",
             view=payload.get("view"),
             ctx=ctx,
         )
         return _wrap(result, ctx, action)
     if action == "bulk_update":
-        result = await item_tools.bulk_update_items(
+        result = await _call_tool(
+            item_tools, "bulk_update_items",
             view=payload.get("view"),
             status=payload.get("status"),
             new_status=payload.get("new_status"),

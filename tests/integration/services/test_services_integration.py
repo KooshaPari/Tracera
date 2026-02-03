@@ -11,13 +11,15 @@ Current Coverage:
 - visualization_service.py: 6.48% -> Target: 80%+
 """
 
+import asyncio
 import csv
 import json
-import pytest
-import pytest_asyncio
-from datetime import datetime
+import pathlib
+from datetime import UTC, datetime, timezone
 from io import StringIO
 
+import pytest
+import pytest_asyncio
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
@@ -28,36 +30,37 @@ from tracertm.models.link import Link
 from tracertm.models.project import Project
 from tracertm.repositories.item_repository import ItemRepository
 from tracertm.repositories.link_repository import LinkRepository
-from tracertm.repositories.project_repository import ProjectRepository
 from tracertm.services.bulk_operation_service import BulkOperationService
 from tracertm.services.export_import_service import ExportImportService
 from tracertm.services.traceability_service import TraceabilityService
 from tracertm.services.visualization_service import VisualizationService
 
-
 # ============================================================
 # FIXTURES
 # ============================================================
 
+
 @pytest.fixture
 def test_project() -> Project:
     """Create a test project using sync session."""
+    import os
+    import tempfile
+
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
-    import tempfile
-    import os
 
     # Create a temporary SQLite database
-    temp_db = tempfile.NamedTemporaryFile(suffix='.db', delete=False)
+    temp_db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
     temp_db.close()
     db_path = temp_db.name
 
     try:
         # Create synchronous engine
-        sync_engine = create_engine(f'sqlite:///{db_path}', echo=False)
+        sync_engine = create_engine(f"sqlite:///{db_path}", echo=False)
 
         # Create tables
         from tracertm.models.base import Base
+
         Base.metadata.create_all(sync_engine)
 
         SessionLocal = sessionmaker(bind=sync_engine, expire_on_commit=False)
@@ -78,29 +81,31 @@ def test_project() -> Project:
 
     finally:
         # Cleanup
-        if os.path.exists(db_path):
-            os.unlink(db_path)
+        if pathlib.Path(db_path).exists():
+            pathlib.Path(db_path).unlink()
 
 
 @pytest.fixture
 def test_items(test_project: Project) -> list[Item]:
     """Create test items across multiple views."""
+    import os
+    import tempfile
+
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
-    import tempfile
-    import os
 
     # Create a temporary SQLite database
-    temp_db = tempfile.NamedTemporaryFile(suffix='.db', delete=False)
+    temp_db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
     temp_db.close()
     db_path = temp_db.name
 
     try:
         # Create synchronous engine
-        sync_engine = create_engine(f'sqlite:///{db_path}', echo=False)
+        sync_engine = create_engine(f"sqlite:///{db_path}", echo=False)
 
         # Create tables
         from tracertm.models.base import Base
+
         Base.metadata.create_all(sync_engine)
 
         SessionLocal = sessionmaker(bind=sync_engine, expire_on_commit=False)
@@ -145,8 +150,8 @@ def test_items(test_project: Project) -> list[Item]:
 
     finally:
         # Cleanup
-        if os.path.exists(db_path):
-            os.unlink(db_path)
+        if pathlib.Path(db_path).exists():
+            pathlib.Path(db_path).unlink()
 
 
 @pytest_asyncio.fixture
@@ -155,33 +160,35 @@ async def test_links(
     test_items: list[Item],
 ) -> list[Link]:
     """Create test links between items."""
+    import os
+    import tempfile
+
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
-    import tempfile
-    import os
 
     # Create a temporary SQLite database
-    temp_db = tempfile.NamedTemporaryFile(suffix='.db', delete=False)
+    temp_db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
     temp_db.close()
     db_path = temp_db.name
-    
+
     try:
         # Create synchronous engine
-        sync_engine = create_engine(f'sqlite:///{db_path}', echo=False)
-        
+        sync_engine = create_engine(f"sqlite:///{db_path}", echo=False)
+
         # Create tables
         from tracertm.models.base import Base
+
         Base.metadata.create_all(sync_engine)
-        
+
         SessionLocal = sessionmaker(bind=sync_engine, expire_on_commit=False)
         session = SessionLocal()
-        
+
         # Add project and items first
         session.add(test_project)
         for item in test_items:
             session.add(item)
         session.commit()
-        
+
         links_repo = LinkRepository(session)
         links = []
 
@@ -215,13 +222,13 @@ async def test_links(
 
         session.commit()
         session.close()
-        
+
         yield links
-        
+
     finally:
-        # Cleanup
-        if os.path.exists(db_path):
-            os.unlink(db_path)
+        # Cleanup (run in thread to avoid ASYNC240)
+        if await asyncio.to_thread(pathlib.Path(db_path).exists):
+            await asyncio.to_thread(pathlib.Path(db_path).unlink)
 
 
 @pytest.fixture
@@ -232,39 +239,42 @@ def sync_db_session():
     This fixture creates a separate sync engine for synchronous services,
     allowing them to operate alongside async tests without conflicts.
     """
+    import os
+    import tempfile
+
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
-    import tempfile
-    import os
 
     # Create a temporary SQLite database
-    temp_db = tempfile.NamedTemporaryFile(suffix='.db', delete=False)
+    temp_db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
     temp_db.close()
     db_path = temp_db.name
-    
+
     try:
         # Create synchronous engine with temporary database
-        sync_engine = create_engine(f'sqlite:///{db_path}', echo=False)
-        
+        sync_engine = create_engine(f"sqlite:///{db_path}", echo=False)
+
         # Create tables
         from tracertm.models.base import Base
+
         Base.metadata.create_all(sync_engine)
-        
+
         SessionLocal = sessionmaker(bind=sync_engine, expire_on_commit=False)
         session = SessionLocal()
-        
+
         yield session
-        
+
         session.close()
     finally:
         # Cleanup
-        if os.path.exists(db_path):
-            os.unlink(db_path)
+        if pathlib.Path(db_path).exists():
+            pathlib.Path(db_path).unlink()
 
 
 # ============================================================
 # BULK OPERATION SERVICE TESTS (30 tests)
 # ============================================================
+
 
 class TestBulkOperationService:
     """Integration tests for BulkOperationService."""
@@ -294,7 +304,9 @@ class TestBulkOperationService:
         assert result["estimated_duration_ms"] == 3 * 10  # 30ms
 
     @pytest.mark.asyncio
-    async def test_bulk_update_preview_by_status(self, test_project: Project, test_items: list[Item], sync_db_session: Session):
+    async def test_bulk_update_preview_by_status(
+        self, test_project: Project, test_items: list[Item], sync_db_session: Session
+    ):
         """
         Given: Items with different statuses
         When: Preview bulk update filtered by status
@@ -302,17 +314,19 @@ class TestBulkOperationService:
         """
         service = BulkOperationService(sync_db_session)
         result = service.bulk_update_preview(
-                project_id=test_project.id,
-                filters={"status": "todo"},
-                updates={"status": "in_progress"},
-                limit=5,
-            )
+            project_id=test_project.id,
+            filters={"status": "todo"},
+            updates={"status": "in_progress"},
+            limit=5,
+        )
 
         assert result["total_count"] == 6  # 6 todo items
         assert len(result["sample_items"]) <= 5
 
     @pytest.mark.asyncio
-    async def test_bulk_update_preview_by_priority(self, test_project: Project, test_items: list[Item], sync_db_session: Session):
+    async def test_bulk_update_preview_by_priority(
+        self, test_project: Project, test_items: list[Item], sync_db_session: Session
+    ):
         """
         Given: Items with different priorities
         When: Preview bulk update filtered by priority
@@ -320,17 +334,19 @@ class TestBulkOperationService:
         """
         service = BulkOperationService(sync_db_session)
         result = service.bulk_update_preview(
-                project_id=test_project.id,
-                filters={"priority": "high"},
-                updates={"owner": "test_agent"},
-                limit=5,
-            )
+            project_id=test_project.id,
+            filters={"priority": "high"},
+            updates={"owner": "test_agent"},
+            limit=5,
+        )
 
         assert result["total_count"] == 5  # 5 high priority items
         assert all(s["new"]["owner"] == "test_agent" for s in result["sample_items"])
 
     @pytest.mark.asyncio
-    async def test_bulk_update_preview_multiple_filters(self, test_project: Project, test_items: list[Item], sync_db_session: Session):
+    async def test_bulk_update_preview_multiple_filters(
+        self, test_project: Project, test_items: list[Item], sync_db_session: Session
+    ):
         """
         Given: Items with various attributes
         When: Preview with multiple filters (view AND status)
@@ -338,16 +354,18 @@ class TestBulkOperationService:
         """
         service = BulkOperationService(sync_db_session)
         result = service.bulk_update_preview(
-                project_id=test_project.id,
-                filters={"view": "TEST", "status": "todo"},
-                updates={"status": "in_progress"},
-                limit=5,
-            )
+            project_id=test_project.id,
+            filters={"view": "TEST", "status": "todo"},
+            updates={"status": "in_progress"},
+            limit=5,
+        )
 
         assert result["total_count"] == 2  # 2 TEST items with todo status
 
     @pytest.mark.asyncio
-    async def test_bulk_update_preview_large_operation_warning(self, test_project: Project, sync_db_session: Session):
+    async def test_bulk_update_preview_large_operation_warning(
+        self, test_project: Project, sync_db_session: Session, db_session: AsyncSession
+    ):
         """
         Given: More than 100 items
         When: Preview bulk update
@@ -367,16 +385,18 @@ class TestBulkOperationService:
 
         service = BulkOperationService(sync_db_session)
         result = service.bulk_update_preview(
-                project_id=test_project.id,
-                filters={"view": "FEATURE"},
-                updates={"status": "done"},
-            )
+            project_id=test_project.id,
+            filters={"view": "FEATURE"},
+            updates={"status": "done"},
+        )
 
         assert result["total_count"] >= 101
         assert any("Large operation" in w for w in result["warnings"])
 
     @pytest.mark.asyncio
-    async def test_bulk_update_preview_mixed_status_warning(self, test_project: Project, test_items: list[Item], sync_db_session: Session):
+    async def test_bulk_update_preview_mixed_status_warning(
+        self, test_project: Project, test_items: list[Item], sync_db_session: Session
+    ):
         """
         Given: Items with different statuses
         When: Preview status update
@@ -384,17 +404,19 @@ class TestBulkOperationService:
         """
         service = BulkOperationService(sync_db_session)
         result = service.bulk_update_preview(
-                project_id=test_project.id,
-                filters={"view": "FEATURE"},
-                updates={"status": "done"},
-                limit=5,
-            )
+            project_id=test_project.id,
+            filters={"view": "FEATURE"},
+            updates={"status": "done"},
+            limit=5,
+        )
 
         # FEATURE items have mixed statuses (todo, in_progress)
         assert any("Mixed statuses" in w for w in result["warnings"])
 
     @pytest.mark.asyncio
-    async def test_bulk_update_preview_no_matches(self, test_project: Project, test_items: list[Item], sync_db_session: Session):
+    async def test_bulk_update_preview_no_matches(
+        self, test_project: Project, test_items: list[Item], sync_db_session: Session
+    ):
         """
         Given: Items in database
         When: Preview with filters that match nothing
@@ -402,10 +424,10 @@ class TestBulkOperationService:
         """
         service = BulkOperationService(sync_db_session)
         result = service.bulk_update_preview(
-                project_id=test_project.id,
-                filters={"view": "NONEXISTENT"},
-                updates={"status": "done"},
-            )
+            project_id=test_project.id,
+            filters={"view": "NONEXISTENT"},
+            updates={"status": "done"},
+        )
 
         assert result["total_count"] == 0
         assert len(result["sample_items"]) == 0
@@ -414,7 +436,9 @@ class TestBulkOperationService:
     # ========== Bulk Update Execution Tests ==========
 
     @pytest.mark.asyncio
-    async def test_bulk_update_items_status(self, test_project: Project, test_items: list[Item], sync_db_session: Session):
+    async def test_bulk_update_items_status(
+        self, test_project: Project, test_items: list[Item], sync_db_session: Session, db_session: AsyncSession
+    ):
         """
         Given: Multiple items with status 'todo'
         When: Execute bulk status update
@@ -422,11 +446,11 @@ class TestBulkOperationService:
         """
         service = BulkOperationService(sync_db_session)
         result = service.bulk_update_items(
-                project_id=test_project.id,
-                filters={"status": "todo"},
-                updates={"status": "in_progress"},
-                agent_id="test_agent",
-            )
+            project_id=test_project.id,
+            filters={"status": "todo"},
+            updates={"status": "in_progress"},
+            agent_id="test_agent",
+        )
 
         assert result["items_updated"] == 6
 
@@ -453,7 +477,9 @@ class TestBulkOperationService:
         assert len(events) == 6
 
     @pytest.mark.asyncio
-    async def test_bulk_update_items_multiple_fields(self, test_project: Project, test_items: list[Item], sync_db_session: Session):
+    async def test_bulk_update_items_multiple_fields(
+        self, test_project: Project, test_items: list[Item], sync_db_session: Session, db_session: AsyncSession
+    ):
         """
         Given: Items to update
         When: Execute bulk update with multiple field changes
@@ -461,14 +487,14 @@ class TestBulkOperationService:
         """
         service = BulkOperationService(sync_db_session)
         result = service.bulk_update_items(
-                project_id=test_project.id,
-                filters={"view": "TEST"},
-                updates={
-                    "status": "done",
-                    "priority": "high",
-                    "owner": "qa_agent",
-                },
-            )
+            project_id=test_project.id,
+            filters={"view": "TEST"},
+            updates={
+                "status": "done",
+                "priority": "high",
+                "owner": "qa_agent",
+            },
+        )
 
         assert result["items_updated"] == 3
 
@@ -496,7 +522,7 @@ class TestBulkOperationService:
         Then: Rolls back all changes
         """
         service = BulkOperationService(sync_db_session)
-        
+
         # Force an error by using invalid project_id
         with pytest.raises(Exception):
             service.bulk_update_items(
@@ -506,7 +532,9 @@ class TestBulkOperationService:
             )
 
     @pytest.mark.asyncio
-    async def test_bulk_update_items_with_title_and_description(self, test_project: Project, test_items: list[Item], sync_db_session: Session):
+    async def test_bulk_update_items_with_title_and_description(
+        self, test_project: Project, test_items: list[Item], sync_db_session: Session, db_session: AsyncSession
+    ):
         """
         Given: Items with various titles
         When: Bulk update title and description
@@ -514,12 +542,12 @@ class TestBulkOperationService:
         """
         service = BulkOperationService(sync_db_session)
         result = service.bulk_update_items(
-                project_id=test_project.id,
-                filters={"view": "CODE"},
-                updates={
-                    "description": "Updated by bulk operation",
-                },
-            )
+            project_id=test_project.id,
+            filters={"view": "CODE"},
+            updates={
+                "description": "Updated by bulk operation",
+            },
+        )
 
         assert result["items_updated"] == 2
 
@@ -540,7 +568,9 @@ class TestBulkOperationService:
     # ========== Bulk Delete Tests ==========
 
     @pytest.mark.asyncio
-    async def test_bulk_delete_items_soft_delete(self, test_project: Project, test_items: list[Item], sync_db_session: Session):
+    async def test_bulk_delete_items_soft_delete(
+        self, test_project: Project, test_items: list[Item], sync_db_session: Session, db_session: AsyncSession
+    ):
         """
         Given: Items to delete
         When: Execute bulk delete
@@ -548,10 +578,10 @@ class TestBulkOperationService:
         """
         service = BulkOperationService(sync_db_session)
         result = service.bulk_delete_items(
-                project_id=test_project.id,
-                filters={"status": "done"},
-                agent_id="cleanup_agent",
-            )
+            project_id=test_project.id,
+            filters={"status": "done"},
+            agent_id="cleanup_agent",
+        )
 
         assert result["items_deleted"] == 3
 
@@ -578,7 +608,9 @@ class TestBulkOperationService:
         assert len(events) == 3
 
     @pytest.mark.asyncio
-    async def test_bulk_delete_items_by_view(self, test_project: Project, test_items: list[Item], sync_db_session: Session):
+    async def test_bulk_delete_items_by_view(
+        self, test_project: Project, test_items: list[Item], sync_db_session: Session
+    ):
         """
         Given: Items in specific view
         When: Bulk delete by view filter
@@ -586,9 +618,9 @@ class TestBulkOperationService:
         """
         service = BulkOperationService(sync_db_session)
         result = service.bulk_delete_items(
-                project_id=test_project.id,
-                filters={"view": "API"},
-            )
+            project_id=test_project.id,
+            filters={"view": "API"},
+        )
 
         assert result["items_deleted"] == 2
 
@@ -600,7 +632,7 @@ class TestBulkOperationService:
         Then: Rolls back all deletions
         """
         service = BulkOperationService(sync_db_session)
-        
+
         with pytest.raises(Exception):
             service.bulk_delete_items(
                 project_id="nonexistent",
@@ -623,10 +655,10 @@ Feature C,FEATURE,feature,in_progress,low"""
 
         service = BulkOperationService(sync_db_session)
         result = service.bulk_create_preview(
-                project_id=test_project.id,
-                csv_data=csv_data,
-                limit=5,
-            )
+            project_id=test_project.id,
+            csv_data=csv_data,
+            limit=5,
+        )
 
         assert result["total_count"] == 3
         assert len(result["sample_items"]) == 3
@@ -644,9 +676,9 @@ Feature C,FEATURE,feature,in_progress,low"""
 
         service = BulkOperationService(sync_db_session)
         result = service.bulk_create_preview(
-                project_id=test_project.id,
-                csv_data=csv_data,
-            )
+            project_id=test_project.id,
+            csv_data=csv_data,
+        )
 
         assert result["total_count"] == 0
         assert "empty" in result["validation_errors"][0].lower()
@@ -663,9 +695,9 @@ Feature A,todo"""
 
         service = BulkOperationService(sync_db_session)
         result = service.bulk_create_preview(
-                project_id=test_project.id,
-                csv_data=csv_data,
-            )
+            project_id=test_project.id,
+            csv_data=csv_data,
+        )
 
         assert len(result["validation_errors"]) > 0
         assert any("Missing required" in e for e in result["validation_errors"])
@@ -682,9 +714,9 @@ Feature A,FEATURE,feature,{invalid json}"""
 
         service = BulkOperationService(sync_db_session)
         result = service.bulk_create_preview(
-                project_id=test_project.id,
-                csv_data=csv_data,
-            )
+            project_id=test_project.id,
+            csv_data=csv_data,
+        )
 
         assert result["invalid_rows_count"] == 1
         assert any("Invalid JSON" in e for e in result["validation_errors"])
@@ -702,9 +734,9 @@ Feature A,FEATURE,feature"""
 
         service = BulkOperationService(sync_db_session)
         result = service.bulk_create_preview(
-                project_id=test_project.id,
-                csv_data=csv_data,
-            )
+            project_id=test_project.id,
+            csv_data=csv_data,
+        )
 
         assert any("Duplicate title" in w for w in result["warnings"])
 
@@ -722,9 +754,9 @@ Feature A,FEATURE,feature"""
 
         service = BulkOperationService(sync_db_session)
         result = service.bulk_create_preview(
-                project_id=test_project.id,
-                csv_data=csv_data,
-            )
+            project_id=test_project.id,
+            csv_data=csv_data,
+        )
 
         assert result["total_count"] == 101
         assert any("Large operation" in w for w in result["warnings"])
@@ -741,9 +773,9 @@ Feature A,FEATURE,feature"""
 
         service = BulkOperationService(sync_db_session)
         result = service.bulk_create_preview(
-                project_id=test_project.id,
-                csv_data=csv_data,
-            )
+            project_id=test_project.id,
+            csv_data=csv_data,
+        )
 
         assert result["total_count"] == 1
         assert len(result["validation_errors"]) == 0
@@ -751,7 +783,9 @@ Feature A,FEATURE,feature"""
     # ========== Bulk Create Execution Tests ==========
 
     @pytest.mark.asyncio
-    async def test_bulk_create_items_valid_csv(self, test_project: Project, sync_db_session: Session):
+    async def test_bulk_create_items_valid_csv(
+        self, test_project: Project, sync_db_session: Session, db_session: AsyncSession
+    ):
         """
         Given: Valid CSV with multiple items
         When: Execute bulk create
@@ -764,10 +798,10 @@ New Code 1,CODE,class,todo,high,agent1"""
 
         service = BulkOperationService(sync_db_session)
         result = service.bulk_create_items(
-                project_id=test_project.id,
-                csv_data=csv_data,
-                agent_id="import_agent",
-            )
+            project_id=test_project.id,
+            csv_data=csv_data,
+            agent_id="import_agent",
+        )
 
         assert result["items_created"] == 3
 
@@ -792,7 +826,9 @@ New Code 1,CODE,class,todo,high,agent1"""
         assert len(events) >= 3
 
     @pytest.mark.asyncio
-    async def test_bulk_create_items_with_metadata(self, test_project: Project, sync_db_session: Session):
+    async def test_bulk_create_items_with_metadata(
+        self, test_project: Project, sync_db_session: Session, db_session: AsyncSession
+    ):
         """
         Given: CSV with JSON metadata
         When: Execute bulk create
@@ -803,9 +839,9 @@ Feature with meta,FEATURE,feature,"{""key"": ""value"", ""priority"": 1}" """
 
         service = BulkOperationService(sync_db_session)
         result = service.bulk_create_items(
-                project_id=test_project.id,
-                csv_data=csv_data,
-            )
+            project_id=test_project.id,
+            csv_data=csv_data,
+        )
 
         assert result["items_created"] == 1
 
@@ -836,15 +872,17 @@ Another Valid,CODE,class"""
 
         service = BulkOperationService(sync_db_session)
         result = service.bulk_create_items(
-                project_id=test_project.id,
-                csv_data=csv_data,
-            )
+            project_id=test_project.id,
+            csv_data=csv_data,
+        )
 
         # Should create 2 items (skip the empty row)
         assert result["items_created"] == 2
 
     @pytest.mark.asyncio
-    async def test_bulk_create_items_rollback_on_error(self, test_project: Project, sync_db_session: Session):
+    async def test_bulk_create_items_rollback_on_error(
+        self, test_project: Project, sync_db_session: Session, db_session: AsyncSession
+    ):
         """
         Given: Bulk create operation
         When: Database error occurs
@@ -862,13 +900,16 @@ Another Valid,CODE,class"""
 # EXPORT/IMPORT SERVICE TESTS (15 tests)
 # ============================================================
 
+
 class TestExportImportService:
     """Integration tests for ExportImportService."""
 
     # ========== Export Tests ==========
 
     @pytest.mark.asyncio
-    async def test_export_to_json(self, test_project: Project, test_items: list[Item], sync_db_session: Session):
+    async def test_export_to_json(
+        self, test_project: Project, test_items: list[Item], sync_db_session: Session, db_session: AsyncSession
+    ):
         """
         Given: Project with items
         When: Export to JSON
@@ -876,10 +917,10 @@ class TestExportImportService:
         """
         service = ExportImportService(db_session)
 
-        result = await service.export_to_json(test_project.id)
+        result = await service.export_to_json(str(test_project.id))
 
         assert result["format"] == "json"
-        assert result["project"]["id"] == test_project.id
+        assert result["project"]["id"] == str(test_project.id)
         assert result["project"]["name"] == test_project.name
         assert result["item_count"] == 10
         assert len(result["items"]) == 10
@@ -893,9 +934,7 @@ class TestExportImportService:
         assert "status" in first_item
 
     @pytest.mark.asyncio
-    async def test_export_to_json_nonexistent_project(
-        self, db_session: AsyncSession
-    ):
+    async def test_export_to_json_nonexistent_project(self, db_session: AsyncSession):
         """
         Given: Nonexistent project ID
         When: Export to JSON
@@ -909,7 +948,9 @@ class TestExportImportService:
         assert "not found" in result["error"].lower()
 
     @pytest.mark.asyncio
-    async def test_export_to_csv(self, test_project: Project, test_items: list[Item], sync_db_session: Session):
+    async def test_export_to_csv(
+        self, test_project: Project, test_items: list[Item], sync_db_session: Session, db_session: AsyncSession
+    ):
         """
         Given: Project with items
         When: Export to CSV
@@ -917,7 +958,7 @@ class TestExportImportService:
         """
         service = ExportImportService(db_session)
 
-        result = await service.export_to_csv(test_project.id)
+        result = await service.export_to_csv(str(test_project.id))
 
         assert result["format"] == "csv"
         assert result["item_count"] == 10
@@ -928,14 +969,17 @@ class TestExportImportService:
         rows = list(reader)
 
         assert len(rows) == 10
-        assert "ID" in reader.fieldnames
-        assert "Title" in reader.fieldnames
-        assert "View" in reader.fieldnames
-        assert "Type" in reader.fieldnames
-        assert "Status" in reader.fieldnames
+        fieldnames = reader.fieldnames or []
+        assert "ID" in fieldnames
+        assert "Title" in fieldnames
+        assert "View" in fieldnames
+        assert "Type" in fieldnames
+        assert "Status" in fieldnames
 
     @pytest.mark.asyncio
-    async def test_export_to_markdown(self, test_project: Project, test_items: list[Item], sync_db_session: Session):
+    async def test_export_to_markdown(
+        self, test_project: Project, test_items: list[Item], sync_db_session: Session, db_session: AsyncSession
+    ):
         """
         Given: Project with items in different views
         When: Export to Markdown
@@ -957,9 +1001,7 @@ class TestExportImportService:
         assert "Implement user authentication" in content
 
     @pytest.mark.asyncio
-    async def test_export_to_markdown_nonexistent_project(
-        self, db_session: AsyncSession
-    ):
+    async def test_export_to_markdown_nonexistent_project(self, db_session: AsyncSession):
         """
         Given: Nonexistent project
         When: Export to Markdown
@@ -990,7 +1032,9 @@ class TestExportImportService:
     # ========== Import Tests ==========
 
     @pytest.mark.asyncio
-    async def test_import_from_json(self, test_project: Project, sync_db_session: Session):
+    async def test_import_from_json(
+        self, test_project: Project, sync_db_session: Session, db_session: AsyncSession
+    ):
         """
         Given: Valid JSON import data
         When: Import from JSON
@@ -1034,7 +1078,9 @@ class TestExportImportService:
         assert len(items) == 2
 
     @pytest.mark.asyncio
-    async def test_import_from_json_invalid_format(self, test_project: Project, sync_db_session: Session):
+    async def test_import_from_json_invalid_format(
+        self, test_project: Project, sync_db_session: Session, db_session: AsyncSession
+    ):
         """
         Given: Invalid JSON data
         When: Import from JSON
@@ -1051,7 +1097,9 @@ class TestExportImportService:
         assert "Invalid JSON" in result["error"]
 
     @pytest.mark.asyncio
-    async def test_import_from_json_missing_items_field(self, test_project: Project, sync_db_session: Session):
+    async def test_import_from_json_missing_items_field(
+        self, test_project: Project, sync_db_session: Session, db_session: AsyncSession
+    ):
         """
         Given: JSON without 'items' field
         When: Import from JSON
@@ -1070,7 +1118,9 @@ class TestExportImportService:
         assert "Missing 'items'" in result["error"]
 
     @pytest.mark.asyncio
-    async def test_import_from_csv(self, test_project: Project, sync_db_session: Session):
+    async def test_import_from_csv(
+        self, test_project: Project, sync_db_session: Session, db_session: AsyncSession
+    ):
         """
         Given: Valid CSV import data
         When: Import from CSV
@@ -1100,7 +1150,9 @@ CSV Import 2,CODE,class,done"""
         assert len(items) == 2
 
     @pytest.mark.asyncio
-    async def test_import_from_csv_invalid_format(self, test_project: Project, sync_db_session: Session):
+    async def test_import_from_csv_invalid_format(
+        self, test_project: Project, sync_db_session: Session, db_session: AsyncSession
+    ):
         """
         Given: Invalid CSV data
         When: Import from CSV
@@ -1109,7 +1161,7 @@ CSV Import 2,CODE,class,done"""
         service = ExportImportService(db_session)
 
         # Malformed CSV
-        csv_data = "Title,View\n\"Unclosed quote"
+        csv_data = 'Title,View\n"Unclosed quote'
 
         result = await service.import_from_csv(
             project_id=test_project.id,
@@ -1120,7 +1172,9 @@ CSV Import 2,CODE,class,done"""
         assert "Invalid CSV" in result["error"]
 
     @pytest.mark.asyncio
-    async def test_import_from_csv_with_errors(self, test_project: Project, sync_db_session: Session):
+    async def test_import_from_csv_with_errors(
+        self, test_project: Project, sync_db_session: Session, db_session: AsyncSession
+    ):
         """
         Given: CSV with some invalid rows
         When: Import from CSV
@@ -1161,13 +1215,16 @@ Valid Item,FEATURE,feature,todo
 # TRACEABILITY SERVICE TESTS (15 tests)
 # ============================================================
 
+
 class TestTraceabilityService:
     """Integration tests for TraceabilityService."""
 
     # ========== Link Creation Tests ==========
 
     @pytest.mark.asyncio
-    async def test_create_link_valid_items(self, test_project: Project, test_items: list[Item], sync_db_session: Session):
+    async def test_create_link_valid_items(
+        self, test_project: Project, test_items: list[Item], sync_db_session: Session, db_session: AsyncSession
+    ):
         """
         Given: Two valid items
         When: Create traceability link
@@ -1176,15 +1233,15 @@ class TestTraceabilityService:
         service = TraceabilityService(db_session)
 
         link = await service.create_link(
-            project_id=test_project.id,
-            source_item_id=test_items[0].id,
-            target_item_id=test_items[3].id,
+            project_id=str(test_project.id),
+            source_item_id=str(test_items[0].id),
+            target_item_id=str(test_items[3].id),
             link_type="implements",
             metadata={"confidence": 0.95},
         )
 
-        assert link.source_item_id == test_items[0].id
-        assert link.target_item_id == test_items[3].id
+        assert link.source_item_id == str(test_items[0].id)
+        assert link.target_item_id == str(test_items[3].id)
         assert link.link_type == "implements"
         assert link.link_metadata["confidence"] == 0.95
 
@@ -1195,7 +1252,9 @@ class TestTraceabilityService:
         assert db_link.id == link.id
 
     @pytest.mark.asyncio
-    async def test_create_link_source_not_found(self, test_project: Project, test_items: list[Item], sync_db_session: Session):
+    async def test_create_link_source_not_found(
+        self, test_project: Project, test_items: list[Item], sync_db_session: Session, db_session: AsyncSession
+    ):
         """
         Given: Nonexistent source item
         When: Create link
@@ -1205,14 +1264,16 @@ class TestTraceabilityService:
 
         with pytest.raises(ValueError, match="Source item.*not found"):
             await service.create_link(
-                project_id=test_project.id,
+                project_id=str(test_project.id),
                 source_item_id="nonexistent",
-                target_item_id=test_items[0].id,
+                target_item_id=str(test_items[0].id),
                 link_type="depends_on",
             )
 
     @pytest.mark.asyncio
-    async def test_create_link_target_not_found(self, test_project: Project, test_items: list[Item], sync_db_session: Session):
+    async def test_create_link_target_not_found(
+        self, test_project: Project, test_items: list[Item], sync_db_session: Session, db_session: AsyncSession
+    ):
         """
         Given: Nonexistent target item
         When: Create link
@@ -1222,8 +1283,8 @@ class TestTraceabilityService:
 
         with pytest.raises(ValueError, match="Target item.*not found"):
             await service.create_link(
-                project_id=test_project.id,
-                source_item_id=test_items[0].id,
+                project_id=str(test_project.id),
+                source_item_id=str(test_items[0].id),
                 target_item_id="nonexistent",
                 link_type="depends_on",
             )
@@ -1246,7 +1307,7 @@ class TestTraceabilityService:
         service = TraceabilityService(db_session)
 
         matrix = await service.generate_matrix(
-            project_id=test_project.id,
+            project_id=str(test_project.id),
             source_view="FEATURE",
             target_view="CODE",
         )
@@ -1265,7 +1326,9 @@ class TestTraceabilityService:
         assert "link_type" in link
 
     @pytest.mark.asyncio
-    async def test_generate_matrix_no_links(self, test_project: Project, test_items: list[Item], sync_db_session: Session):
+    async def test_generate_matrix_no_links(
+        self, test_project: Project, test_items: list[Item], sync_db_session: Session, db_session: AsyncSession
+    ):
         """
         Given: Items with no links between views
         When: Generate matrix
@@ -1274,7 +1337,7 @@ class TestTraceabilityService:
         service = TraceabilityService(db_session)
 
         matrix = await service.generate_matrix(
-            project_id=test_project.id,
+            project_id=str(test_project.id),
             source_view="TEST",
             target_view="API",
         )
@@ -1299,14 +1362,14 @@ class TestTraceabilityService:
 
         # Create links for 1 out of 3 FEATURE items
         await service.create_link(
-            project_id=test_project.id,
-            source_item_id=test_items[0].id,  # FEATURE
-            target_item_id=test_items[3].id,  # CODE
+            project_id=str(test_project.id),
+            source_item_id=str(test_items[0].id),  # FEATURE
+            target_item_id=str(test_items[3].id),  # CODE
             link_type="implements",
         )
 
         matrix = await service.generate_matrix(
-            project_id=test_project.id,
+            project_id=str(test_project.id),
             source_view="FEATURE",
             target_view="CODE",
         )
@@ -1331,7 +1394,7 @@ class TestTraceabilityService:
         service = TraceabilityService(db_session)
 
         matrix = await service.generate_matrix(
-            project_id=test_project.id,
+            project_id=str(test_project.id),
             source_view="FEATURE",
             target_view="CODE",
         )
@@ -1360,11 +1423,11 @@ class TestTraceabilityService:
 
         # Analyze impact of FEATURE item
         analysis = await service.analyze_impact(
-            item_id=test_items[0].id,  # Feature: user auth
+            item_id=str(test_items[0].id),  # Feature: user auth
             max_depth=1,
         )
 
-        assert analysis.item_id == test_items[0].id
+        assert analysis.item_id == str(test_items[0].id)
         assert len(analysis.directly_affected) >= 1
         assert len(analysis.indirectly_affected) == 0
         assert analysis.total_impact_count >= 1
@@ -1388,14 +1451,14 @@ class TestTraceabilityService:
         # Already have FEATURE -> CODE
         # Add CODE -> TEST
         await service.create_link(
-            project_id=test_project.id,
-            source_item_id=test_items[3].id,  # CODE
-            target_item_id=test_items[5].id,  # TEST
+            project_id=str(test_project.id),
+            source_item_id=str(test_items[3].id),  # CODE
+            target_item_id=str(test_items[5].id),  # TEST
             link_type="tested_by",
         )
 
         analysis = await service.analyze_impact(
-            item_id=test_items[0].id,  # FEATURE
+            item_id=str(test_items[0].id),  # FEATURE
             max_depth=2,
         )
 
@@ -1404,9 +1467,7 @@ class TestTraceabilityService:
         assert analysis.total_impact_count >= 1
 
     @pytest.mark.asyncio
-    async def test_analyze_impact_no_links(
-        self, db_session: AsyncSession, test_items: list[Item]
-    ):
+    async def test_analyze_impact_no_links(self, db_session: AsyncSession, test_items: list[Item]):
         """
         Given: Item with no outgoing links
         When: Analyze impact
@@ -1416,7 +1477,7 @@ class TestTraceabilityService:
 
         # Use TEST item which has no outgoing links
         analysis = await service.analyze_impact(
-            item_id=test_items[7].id,  # TEST: integration_test
+            item_id=str(test_items[7].id),  # TEST: integration_test
             max_depth=2,
         )
 
@@ -1440,27 +1501,27 @@ class TestTraceabilityService:
 
         # Create circular links
         link1 = await service.create_link(
-            project_id=test_project.id,
-            source_item_id=test_items[0].id,  # A
-            target_item_id=test_items[1].id,  # B
+            project_id=str(test_project.id),
+            source_item_id=str(test_items[0].id),  # A
+            target_item_id=str(test_items[1].id),  # B
             link_type="depends_on",
         )
         link2 = await service.create_link(
-            project_id=test_project.id,
-            source_item_id=test_items[1].id,  # B
-            target_item_id=test_items[2].id,  # C
+            project_id=str(test_project.id),
+            source_item_id=str(test_items[1].id),  # B
+            target_item_id=str(test_items[2].id),  # C
             link_type="depends_on",
         )
         link3 = await service.create_link(
-            project_id=test_project.id,
-            source_item_id=test_items[2].id,  # C
-            target_item_id=test_items[0].id,  # A (circular)
+            project_id=str(test_project.id),
+            source_item_id=str(test_items[2].id),  # C
+            target_item_id=str(test_items[0].id),  # A (circular)
             link_type="depends_on",
         )
 
         # Should not hang
         analysis = await service.analyze_impact(
-            item_id=test_items[0].id,
+            item_id=str(test_items[0].id),
             max_depth=5,
         )
 
@@ -1483,27 +1544,27 @@ class TestTraceabilityService:
 
         # Create chain: A -> B -> C -> D
         await service.create_link(
-            project_id=test_project.id,
-            source_item_id=test_items[0].id,
-            target_item_id=test_items[1].id,
+            project_id=str(test_project.id),
+            source_item_id=str(test_items[0].id),
+            target_item_id=str(test_items[1].id),
             link_type="depends_on",
         )
         await service.create_link(
-            project_id=test_project.id,
-            source_item_id=test_items[1].id,
-            target_item_id=test_items[2].id,
+            project_id=str(test_project.id),
+            source_item_id=str(test_items[1].id),
+            target_item_id=str(test_items[2].id),
             link_type="depends_on",
         )
         await service.create_link(
-            project_id=test_project.id,
-            source_item_id=test_items[2].id,
-            target_item_id=test_items[3].id,
+            project_id=str(test_project.id),
+            source_item_id=str(test_items[2].id),
+            target_item_id=str(test_items[3].id),
             link_type="depends_on",
         )
 
         # Depth=1 should only get B
         analysis = await service.analyze_impact(
-            item_id=test_items[0].id,
+            item_id=str(test_items[0].id),
             max_depth=1,
         )
 
@@ -1526,21 +1587,21 @@ class TestTraceabilityService:
 
         # Create chain
         await service.create_link(
-            project_id=test_project.id,
-            source_item_id=test_items[0].id,
-            target_item_id=test_items[1].id,
+            project_id=str(test_project.id),
+            source_item_id=str(test_items[0].id),
+            target_item_id=str(test_items[1].id),
             link_type="depends_on",
         )
         await service.create_link(
-            project_id=test_project.id,
-            source_item_id=test_items[1].id,
-            target_item_id=test_items[2].id,
+            project_id=str(test_project.id),
+            source_item_id=str(test_items[1].id),
+            target_item_id=str(test_items[2].id),
             link_type="depends_on",
         )
 
-        visited = {test_items[0].id}
+        visited = {str(test_items[0].id)}
         downstream = await service._get_downstream_items(
-            item_id=test_items[0].id,
+            item_id=str(test_items[0].id),
             visited=visited,
             depth=2,
         )
@@ -1551,6 +1612,7 @@ class TestTraceabilityService:
 # ============================================================
 # VISUALIZATION SERVICE TESTS (12 tests)
 # ============================================================
+
 
 class TestVisualizationService:
     """Integration tests for VisualizationService."""
@@ -1794,26 +1856,29 @@ class TestVisualizationService:
 # EDGE CASES AND ERROR HANDLING (3 tests)
 # ============================================================
 
+
 class TestEdgeCasesAndErrors:
     """Tests for edge cases and error handling across services."""
 
     @pytest.mark.asyncio
-    async def test_bulk_operation_with_deleted_items(self, test_project: Project, test_items: list[Item], sync_db_session: Session):
+    async def test_bulk_operation_with_deleted_items(
+        self, test_project: Project, test_items: list[Item], sync_db_session: Session, db_session: AsyncSession
+    ):
         """
         Given: Some items are soft-deleted
         When: Bulk update
         Then: Only updates non-deleted items
         """
         # Soft delete one item
-        test_items[0].deleted_at = datetime.utcnow()
+        test_items[0].deleted_at = datetime.now(UTC)
         await db_session.commit()
 
         service = BulkOperationService(sync_db_session)
         result = service.bulk_update_items(
-                project_id=test_project.id,
-                filters={"view": "FEATURE"},
-                updates={"status": "done"},
-            )
+            project_id=str(test_project.id),
+            filters={"view": "FEATURE"},
+            updates={"status": "done"},
+        )
 
         # Should update 2 FEATURE items (3rd is deleted)
         assert result["items_updated"] == 2
@@ -1831,14 +1896,16 @@ class TestEdgeCasesAndErrors:
 
         service = ExportImportService(db_session)
 
-        json_result = await service.export_to_json(project.id)
+        json_result = await service.export_to_json(str(project.id))
         assert json_result["item_count"] == 0
 
-        csv_result = await service.export_to_csv(project.id)
+        csv_result = await service.export_to_csv(str(project.id))
         assert csv_result["item_count"] == 0
 
     @pytest.mark.asyncio
-    async def test_traceability_matrix_empty_views(self, test_project: Project, sync_db_session: Session):
+    async def test_traceability_matrix_empty_views(
+        self, test_project: Project, sync_db_session: Session, db_session: AsyncSession
+    ):
         """
         Given: Views with no items
         When: Generate matrix
@@ -1847,7 +1914,7 @@ class TestEdgeCasesAndErrors:
         service = TraceabilityService(db_session)
 
         matrix = await service.generate_matrix(
-            project_id=test_project.id,
+            project_id=str(test_project.id),
             source_view="NONEXISTENT_VIEW",
             target_view="ANOTHER_NONEXISTENT",
         )

@@ -14,9 +14,6 @@ Target Coverage: 85%+ for service-repository interactions
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from tracertm.models.item import Item
-from tracertm.models.link import Link
-from tracertm.models.project import Project
 from tracertm.repositories.item_repository import ItemRepository
 from tracertm.repositories.link_repository import LinkRepository
 from tracertm.repositories.project_repository import ProjectRepository
@@ -34,9 +31,7 @@ async def test_project(db_session: AsyncSession):
     """Create a test project."""
     repo = ProjectRepository(db_session)
     project = await repo.create(
-        name="Service Test Project",
-        description="Project for service integration tests",
-        metadata={"test": True}
+        name="Service Test Project", description="Project for service integration tests", metadata={"test": True}
     )
     await db_session.commit()
     return project
@@ -51,13 +46,13 @@ async def test_items(db_session: AsyncSession, test_project):
     for i in range(5):
         item = await repo.create(
             project_id=test_project.id,
-            title=f"Test Item {i+1}",
+            title=f"Test Item {i + 1}",
             view="FEATURE" if i % 2 == 0 else "REQUIREMENT",
             item_type="feature" if i % 2 == 0 else "requirement",
-            description=f"Description for item {i+1}",
+            description=f"Description for item {i + 1}",
             status="todo" if i % 3 == 0 else ("in_progress" if i % 3 == 1 else "done"),
             priority="high" if i == 0 else ("medium" if i < 3 else "low"),
-            owner=f"user{i}@example.com" if i % 2 == 0 else None
+            owner=f"user{i}@example.com" if i % 2 == 0 else None,
         )
         items.append(item)
 
@@ -82,7 +77,7 @@ async def test_item_creation_and_retrieval(db_session: AsyncSession, test_projec
         view="FEATURE",
         item_type="feature",
         description="Testing service integration",
-        priority="high"
+        priority="high",
     )
     await db_session.commit()
 
@@ -102,11 +97,7 @@ async def test_bulk_item_operations(db_session: AsyncSession, test_project):
     items = []
     for i in range(10):
         item = await item_repo.create(
-            project_id=test_project.id,
-            title=f"Bulk Item {i}",
-            view="FEATURE",
-            item_type="feature",
-            status="todo"
+            project_id=test_project.id, title=f"Bulk Item {i}", view="FEATURE", item_type="feature", status="todo"
         )
         items.append(item)
 
@@ -129,10 +120,7 @@ async def test_item_hierarchy_with_repository(db_session: AsyncSession, test_pro
 
     # Create parent
     parent = await item_repo.create(
-        project_id=test_project.id,
-        title="Parent Feature",
-        view="FEATURE",
-        item_type="feature"
+        project_id=test_project.id, title="Parent Feature", view="FEATURE", item_type="feature"
     )
 
     # Create children
@@ -143,7 +131,7 @@ async def test_item_hierarchy_with_repository(db_session: AsyncSession, test_pro
             title=f"Child Feature {i}",
             view="FEATURE",
             item_type="feature",
-            parent_id=parent.id
+            parent_id=parent.id,
         )
         children.append(child)
 
@@ -153,7 +141,7 @@ async def test_item_hierarchy_with_repository(db_session: AsyncSession, test_pro
         title="Grandchild Feature",
         view="FEATURE",
         item_type="feature",
-        parent_id=children[0].id
+        parent_id=children[0].id,
     )
 
     await db_session.commit()
@@ -175,29 +163,17 @@ async def test_item_status_transitions(db_session: AsyncSession, test_project):
     item_repo = ItemRepository(db_session)
 
     item = await item_repo.create(
-        project_id=test_project.id,
-        title="Status Test Item",
-        view="FEATURE",
-        item_type="feature",
-        status="todo"
+        project_id=test_project.id, title="Status Test Item", view="FEATURE", item_type="feature", status="todo"
     )
     await db_session.commit()
 
     # Transition: todo -> in_progress
-    updated = await item_repo.update(
-        item.id,
-        expected_version=item.version,
-        status="in_progress"
-    )
+    updated = await item_repo.update(item.id, expected_version=item.version, status="in_progress")
     assert updated.status == "in_progress"
     await db_session.commit()
 
     # Transition: in_progress -> done
-    updated = await item_repo.update(
-        updated.id,
-        expected_version=updated.version,
-        status="done"
-    )
+    updated = await item_repo.update(updated.id, expected_version=updated.version, status="done")
     assert updated.status == "done"
 
 
@@ -210,19 +186,16 @@ async def test_item_metadata_operations(db_session: AsyncSession, test_project):
         "assignee": "dev@example.com",
         "story_points": 5,
         "tags": ["urgent", "backend"],
-        "custom": {"nested": "value"}
+        "custom": {"nested": "value"},
     }
 
     item = await item_repo.create(
-        project_id=test_project.id,
-        title="Metadata Item",
-        view="FEATURE",
-        item_type="feature",
-        metadata=metadata
+        project_id=test_project.id, title="Metadata Item", view="FEATURE", item_type="feature", metadata=metadata
     )
     await db_session.commit()
 
     retrieved = await item_repo.get_by_id(item.id)
+    assert retrieved is not None
     assert retrieved.item_metadata == metadata
 
 
@@ -242,7 +215,7 @@ async def test_link_creation_between_items(db_session: AsyncSession, test_items)
         source_item_id=test_items[0].id,
         target_item_id=test_items[1].id,
         link_type="depends_on",
-        link_metadata={"priority": "high"}
+        link_metadata={"priority": "high"},
     )
     await db_session.commit()
 
@@ -264,15 +237,12 @@ async def test_link_graph_construction(db_session: AsyncSession, test_items):
             project_id=project_id,
             source_item_id=test_items[i].id,
             target_item_id=test_items[i + 1].id,
-            link_type="depends_on"
+            link_type="depends_on",
         )
 
     # Add cross-links
     await link_repo.create(
-        project_id=project_id,
-        source_item_id=test_items[0].id,
-        target_item_id=test_items[3].id,
-        link_type="related_to"
+        project_id=project_id, source_item_id=test_items[0].id, target_item_id=test_items[3].id, link_type="related_to"
     )
 
     await db_session.commit()
@@ -293,17 +263,11 @@ async def test_link_navigation_patterns(db_session: AsyncSession, test_items):
 
     # Create bidirectional links
     await link_repo.create(
-        project_id=project_id,
-        source_item_id=test_items[0].id,
-        target_item_id=test_items[1].id,
-        link_type="depends_on"
+        project_id=project_id, source_item_id=test_items[0].id, target_item_id=test_items[1].id, link_type="depends_on"
     )
 
     await link_repo.create(
-        project_id=project_id,
-        source_item_id=test_items[1].id,
-        target_item_id=test_items[2].id,
-        link_type="depends_on"
+        project_id=project_id, source_item_id=test_items[1].id, target_item_id=test_items[2].id, link_type="depends_on"
     )
 
     await db_session.commit()
@@ -335,7 +299,7 @@ async def test_link_type_management(db_session: AsyncSession, test_items):
                 project_id=project_id,
                 source_item_id=test_items[i].id,
                 target_item_id=test_items[i + 1].id,
-                link_type=link_type
+                link_type=link_type,
             )
 
     await db_session.commit()
@@ -362,44 +326,26 @@ async def test_project_items_links_integration(db_session: AsyncSession, test_pr
 
     # Create items
     req1 = await item_repo.create(
-        project_id=test_project.id,
-        title="Requirement 1",
-        view="REQUIREMENT",
-        item_type="requirement",
-        status="done"
+        project_id=test_project.id, title="Requirement 1", view="REQUIREMENT", item_type="requirement", status="done"
     )
 
     feat1 = await item_repo.create(
-        project_id=test_project.id,
-        title="Feature 1",
-        view="FEATURE",
-        item_type="feature",
-        status="in_progress"
+        project_id=test_project.id, title="Feature 1", view="FEATURE", item_type="feature", status="in_progress"
     )
 
     feat2 = await item_repo.create(
-        project_id=test_project.id,
-        title="Feature 2",
-        view="FEATURE",
-        item_type="feature",
-        status="todo"
+        project_id=test_project.id, title="Feature 2", view="FEATURE", item_type="feature", status="todo"
     )
 
     await db_session.commit()
 
     # Create links
     link1 = await link_repo.create(
-        project_id=test_project.id,
-        source_item_id=req1.id,
-        target_item_id=feat1.id,
-        link_type="implements"
+        project_id=test_project.id, source_item_id=req1.id, target_item_id=feat1.id, link_type="implements"
     )
 
     link2 = await link_repo.create(
-        project_id=test_project.id,
-        source_item_id=feat1.id,
-        target_item_id=feat2.id,
-        link_type="depends_on"
+        project_id=test_project.id, source_item_id=feat1.id, target_item_id=feat2.id, link_type="depends_on"
     )
 
     await db_session.commit()
@@ -423,42 +369,21 @@ async def test_cascading_delete_integration(db_session: AsyncSession, test_proje
     link_repo = LinkRepository(db_session)
 
     # Create parent with children
-    parent = await item_repo.create(
-        project_id=test_project.id,
-        title="Parent",
-        view="FEATURE",
-        item_type="feature"
-    )
+    parent = await item_repo.create(project_id=test_project.id, title="Parent", view="FEATURE", item_type="feature")
 
     child1 = await item_repo.create(
-        project_id=test_project.id,
-        title="Child 1",
-        view="FEATURE",
-        item_type="feature",
-        parent_id=parent.id
+        project_id=test_project.id, title="Child 1", view="FEATURE", item_type="feature", parent_id=parent.id
     )
 
     child2 = await item_repo.create(
-        project_id=test_project.id,
-        title="Child 2",
-        view="FEATURE",
-        item_type="feature",
-        parent_id=parent.id
+        project_id=test_project.id, title="Child 2", view="FEATURE", item_type="feature", parent_id=parent.id
     )
 
-    external = await item_repo.create(
-        project_id=test_project.id,
-        title="External",
-        view="FEATURE",
-        item_type="feature"
-    )
+    external = await item_repo.create(project_id=test_project.id, title="External", view="FEATURE", item_type="feature")
 
     # Create links
     await link_repo.create(
-        project_id=test_project.id,
-        source_item_id=child1.id,
-        target_item_id=external.id,
-        link_type="depends_on"
+        project_id=test_project.id, source_item_id=child1.id, target_item_id=external.id, link_type="depends_on"
     )
 
     await db_session.commit()
@@ -489,7 +414,7 @@ async def test_complex_query_patterns(db_session: AsyncSession, test_project):
                 view="FEATURE",
                 item_type="feature",
                 priority=priority,
-                status=status
+                status=status,
             )
 
     await db_session.commit()
@@ -519,34 +444,16 @@ async def test_transaction_boundaries(db_session: AsyncSession, test_project):
     """Test transaction boundaries in service operations."""
     item_repo = ItemRepository(db_session)
 
-    item1 = await item_repo.create(
-        project_id=test_project.id,
-        title="Item 1",
-        view="FEATURE",
-        item_type="feature"
-    )
+    item1 = await item_repo.create(project_id=test_project.id, title="Item 1", view="FEATURE", item_type="feature")
 
-    item2 = await item_repo.create(
-        project_id=test_project.id,
-        title="Item 2",
-        view="FEATURE",
-        item_type="feature"
-    )
+    item2 = await item_repo.create(project_id=test_project.id, title="Item 2", view="FEATURE", item_type="feature")
 
     await db_session.commit()
 
     # Update multiple items in transaction
-    await item_repo.update(
-        item1.id,
-        expected_version=item1.version,
-        title="Updated Item 1"
-    )
+    await item_repo.update(item1.id, expected_version=item1.version, title="Updated Item 1")
 
-    await item_repo.update(
-        item2.id,
-        expected_version=item2.version,
-        title="Updated Item 2"
-    )
+    await item_repo.update(item2.id, expected_version=item2.version, title="Updated Item 2")
 
     await db_session.commit()
 
@@ -554,6 +461,7 @@ async def test_transaction_boundaries(db_session: AsyncSession, test_project):
     found1 = await item_repo.get_by_id(item1.id)
     found2 = await item_repo.get_by_id(item2.id)
 
+    assert found1 is not None and found2 is not None
     assert found1.title == "Updated Item 1"
     assert found2.title == "Updated Item 2"
 
@@ -564,28 +472,15 @@ async def test_transaction_rollback_integration(db_session: AsyncSession, test_p
     item_repo = ItemRepository(db_session)
     link_repo = LinkRepository(db_session)
 
-    item1 = await item_repo.create(
-        project_id=test_project.id,
-        title="Item 1",
-        view="FEATURE",
-        item_type="feature"
-    )
+    item1 = await item_repo.create(project_id=test_project.id, title="Item 1", view="FEATURE", item_type="feature")
 
-    item2 = await item_repo.create(
-        project_id=test_project.id,
-        title="Item 2",
-        view="FEATURE",
-        item_type="feature"
-    )
+    item2 = await item_repo.create(project_id=test_project.id, title="Item 2", view="FEATURE", item_type="feature")
 
     await db_session.commit()
 
     # Start operations but rollback
     link = await link_repo.create(
-        project_id=test_project.id,
-        source_item_id=item1.id,
-        target_item_id=item2.id,
-        link_type="depends_on"
+        project_id=test_project.id, source_item_id=item1.id, target_item_id=item2.id, link_type="depends_on"
     )
 
     await db_session.rollback()
@@ -612,7 +507,7 @@ async def test_invalid_parent_reference(db_session: AsyncSession, test_project):
             title="Orphan",
             view="FEATURE",
             item_type="feature",
-            parent_id="nonexistent-parent"
+            parent_id="nonexistent-parent",
         )
 
 
@@ -626,21 +521,14 @@ async def test_cross_project_parent_reference(db_session: AsyncSession):
     proj2 = await proj_repo.create(name="Project 2")
 
     parent = await item_repo.create(
-        project_id=proj1.id,
-        title="Parent in Project 1",
-        view="FEATURE",
-        item_type="feature"
+        project_id=proj1.id, title="Parent in Project 1", view="FEATURE", item_type="feature"
     )
 
     await db_session.commit()
 
     with pytest.raises(ValueError):
         await item_repo.create(
-            project_id=proj2.id,
-            title="Child in Project 2",
-            view="FEATURE",
-            item_type="feature",
-            parent_id=parent.id
+            project_id=proj2.id, title="Child in Project 2", view="FEATURE", item_type="feature", parent_id=parent.id
         )
 
 
@@ -651,20 +539,12 @@ async def test_empty_metadata_handling(db_session: AsyncSession, test_project):
 
     # None metadata
     item1 = await item_repo.create(
-        project_id=test_project.id,
-        title="Item with None metadata",
-        view="FEATURE",
-        item_type="feature",
-        metadata=None
+        project_id=test_project.id, title="Item with None metadata", view="FEATURE", item_type="feature", metadata=None
     )
 
     # Empty dict metadata
     item2 = await item_repo.create(
-        project_id=test_project.id,
-        title="Item with empty metadata",
-        view="FEATURE",
-        item_type="feature",
-        metadata={}
+        project_id=test_project.id, title="Item with empty metadata", view="FEATURE", item_type="feature", metadata={}
     )
 
     await db_session.commit()
@@ -672,5 +552,6 @@ async def test_empty_metadata_handling(db_session: AsyncSession, test_project):
     found1 = await item_repo.get_by_id(item1.id)
     found2 = await item_repo.get_by_id(item2.id)
 
+    assert found1 is not None and found2 is not None
     assert found1.item_metadata == {}
     assert found2.item_metadata == {}

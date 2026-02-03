@@ -47,7 +47,7 @@ Quick guide to find the right documentation for your needs.
 - Estimated time: 20 minutes
 
 ### Test the Indexes
-**Run**: `/tests/test_performance_indexes.sql`
+**Run**: `/tests/sql/tests/sql/test_performance_indexes.sql`
 - Verify all 23 indexes exist
 - Check index types and columns
 - Monitor usage statistics
@@ -70,7 +70,7 @@ MIGRATION_045_README.md (START HERE)
 │  └─ INDEX_EXAMPLES.md
 │
 └─ Testing
-   └─ /tests/test_performance_indexes.sql
+   └─ /tests/sql/tests/sql/test_performance_indexes.sql
 ```
 
 ---
@@ -80,7 +80,7 @@ MIGRATION_045_README.md (START HERE)
 ### Database Administrator
 1. Read: `/MIGRATION_045_README.md`
 2. Read: `/docs/PERFORMANCE_INDEXES_GUIDE.md` (Maintenance section)
-3. Run: `/tests/test_performance_indexes.sql`
+3. Run: `/tests/sql/tests/sql/test_performance_indexes.sql`
 4. Monitor: Use SQL from `/docs/INDEX_QUICK_REFERENCE.md`
 
 ### Backend Developer
@@ -98,7 +98,7 @@ MIGRATION_045_README.md (START HERE)
 ### Performance Engineer
 1. Read: `/docs/INDEX_ARCHITECTURE.md` (architecture)
 2. Study: `/docs/INDEX_EXAMPLES.md` (metrics)
-3. Use: `/tests/test_performance_indexes.sql` (benchmarking)
+3. Use: `/tests/sql/tests/sql/test_performance_indexes.sql` (benchmarking)
 4. Reference: `/docs/PERFORMANCE_INDEXES_GUIDE.md` (troubleshooting)
 
 ### New Team Member
@@ -141,7 +141,7 @@ MIGRATION_045_README.md (START HERE)
 → `/docs/INDEX_QUICK_REFERENCE.md` (Common Mistakes section)
 
 **Testing procedures?**
-→ `/tests/test_performance_indexes.sql` (SQL script)
+→ `/tests/sql/tests/sql/test_performance_indexes.sql` (SQL script)
 OR `/MIGRATION_045_README.md` (How to Test section)
 
 **Storage impact?**
@@ -158,7 +158,7 @@ OR `/MIGRATION_045_README.md` (How to Test section)
 | PERFORMANCE_INDEXES_GUIDE.md | 20-30 min | Technical details, DBAs |
 | INDEX_ARCHITECTURE.md | 15-20 min | Visual learners, architects |
 | INDEX_EXAMPLES.md | 15-20 min | Understanding impact, examples |
-| test_performance_indexes.sql | 10 min | Hands-on verification |
+| tests/sql/test_performance_indexes.sql | 10 min | Hands-on verification |
 
 **Total time to understand everything: 60-90 minutes**
 
@@ -182,7 +182,7 @@ OR `/MIGRATION_045_README.md` (How to Test section)
 - `/docs/INDEX_QUICK_REFERENCE.md` - Troubleshooting
 
 ### Testing
-- `/tests/test_performance_indexes.sql` - Full test suite
+- `/tests/sql/tests/sql/test_performance_indexes.sql` - Full test suite
 - `/docs/INDEX_EXAMPLES.md` - Testing These Examples
 - `/MIGRATION_045_README.md` - How to Test
 
@@ -225,7 +225,7 @@ Trace Project
 │  └─ INDEX_EXAMPLES.md                    ← Examples
 │
 ├─ tests/
-│  └─ test_performance_indexes.sql        ← Test suite
+│  └─ tests/sql/test_performance_indexes.sql        ← Test suite
 │
 └─ MIGRATION_045_README.md                ← Start here
 ```
@@ -247,7 +247,7 @@ Trace Project
 ### Advanced
 1. Read: PERFORMANCE_INDEXES_GUIDE.md (skip intro)
 2. Focus: INDEX_ARCHITECTURE.md (technical section)
-3. Test: Run test_performance_indexes.sql
+3. Test: Run tests/sql/test_performance_indexes.sql
 4. Monitor: Use monitoring queries from PERFORMANCE_INDEXES_GUIDE.md
 
 ---

@@ -3,11 +3,11 @@ Project model for TraceRTM.
 """
 
 import uuid
-from typing import Any
+from typing import Any, ClassVar
 
 from sqlalchemy import String, Text
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 
 from tracertm.models.base import Base, TimestampMixin
 from tracertm.models.types import JSONType
@@ -26,24 +26,14 @@ class Project(Base, TimestampMixin):
     """
 
     __tablename__ = "projects"
-    __table_args__: dict[str, Any] = {"extend_existing": True}
+    __table_args__: ClassVar[dict[str, Any]] = {"extend_existing": True}
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=generate_uuid
-    )
-    profile_id: Mapped[str | None] = mapped_column(
-        String(36), nullable=True, index=True
-    )
-    account_id: Mapped[str | None] = mapped_column(
-        String(36), nullable=True, index=True
-    )
-    name: Mapped[str] = mapped_column(
-        String(255), nullable=False, index=True
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=generate_uuid)
+    profile_id: Mapped[str | None] = mapped_column(String(36), nullable=True, index=True)
+    account_id: Mapped[str | None] = mapped_column(String(36), nullable=True, index=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    project_metadata: Mapped[dict[str, object]] = mapped_column(
-        "metadata", JSONType, nullable=False, default=dict
-    )
+    project_metadata: Mapped[dict[str, object]] = mapped_column("metadata", JSONType, nullable=False, default=dict)
 
     # Relationships
     # account: Mapped["Account"] = relationship(

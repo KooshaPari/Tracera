@@ -1,5 +1,6 @@
 """Event repository for TraceRTM."""
 
+import uuid
 from datetime import datetime
 from typing import Any
 
@@ -17,29 +18,28 @@ class EventRepository:
 
     async def log(
         self,
-        project_id: str,
+        project_id: str | uuid.UUID,
         event_type: str,
         entity_type: str,
-        entity_id: str,
+        entity_id: str | uuid.UUID,
         data: dict[str, Any],
-        agent_id: str | None = None,
+        agent_id: str | uuid.UUID | None = None,
     ) -> Event:
         """Log an event."""
         # Get next ID by counting existing events
-        result = await self.session.execute(
-            select(Event.id).order_by(Event.id.desc()).limit(1)
-        )
+        result = await self.session.execute(select(Event.id).order_by(Event.id.desc()).limit(1))
         last_id = result.scalar_one_or_none()
         next_id = (last_id or 0) + 1
 
+        agent_id_str = str(agent_id) if isinstance(agent_id, uuid.UUID) else agent_id
         event = Event(
             id=next_id,
-            project_id=project_id,
+            project_id=str(project_id),
             event_type=event_type,
             entity_type=entity_type,
-            entity_id=entity_id,
+            entity_id=str(entity_id),
             data=data,
-            agent_id=agent_id,
+            agent_id=agent_id_str,
         )
         self.session.add(event)
         await self.session.flush()
@@ -53,38 +53,31 @@ class EventRepository:
     ) -> list[Event]:
         """Get all events for an entity."""
         result = await self.session.execute(
-            select(Event)
-            .where(Event.entity_id == entity_id)
-            .order_by(Event.created_at.desc())
-            .limit(limit)
+            select(Event).where(Event.entity_id == entity_id).order_by(Event.created_at.desc()).limit(limit)
         )
         return list(result.scalars().all())
 
     async def get_by_project(
         self,
-        project_id: str,
+        project_id: str | uuid.UUID,
         limit: int = 100,
     ) -> list[Event]:
         """Get all events for a project."""
+        pid = str(project_id) if isinstance(project_id, uuid.UUID) else project_id
         result = await self.session.execute(
-            select(Event)
-            .where(Event.project_id == project_id)
-            .order_by(Event.created_at.desc())
-            .limit(limit)
+            select(Event).where(Event.project_id == pid).order_by(Event.created_at.desc()).limit(limit)
         )
         return list(result.scalars().all())
 
     async def get_by_agent(
         self,
-        agent_id: str,
+        agent_id: str | uuid.UUID,
         limit: int = 100,
     ) -> list[Event]:
         """Get all events by an agent."""
+        agent_id_val = str(agent_id) if isinstance(agent_id, uuid.UUID) else agent_id
         result = await self.session.execute(
-            select(Event)
-            .where(Event.agent_id == agent_id)
-            .order_by(Event.created_at.desc())
-            .limit(limit)
+            select(Event).where(Event.agent_id == agent_id_val).order_by(Event.created_at.desc()).limit(limit)
         )
         return list(result.scalars().all())
 

@@ -6,17 +6,17 @@ graph data loading, visualization rendering, zoom controls, and error handling.
 Coverage target: 80%+ (229 lines total)
 """
 
-import pytest
-from unittest.mock import MagicMock, Mock, patch
+from typing import Any, cast
+from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
+import pytest
+
 try:
-    from textual.app import App
-    from textual.widgets import Static, DataTable, Footer, Header
-    from tracertm.tui.apps.graph import GraphApp, TEXTUAL_AVAILABLE
-    TEXTUAL_AVAILABLE = True
+    from tracertm.tui.apps.graph import TEXTUAL_AVAILABLE, GraphApp
 except ImportError:
     TEXTUAL_AVAILABLE = False
+    GraphApp = None  # type: ignore[assignment,misc]
 
 
 @pytest.mark.skipif(not TEXTUAL_AVAILABLE, reason="Textual not available")
@@ -30,7 +30,7 @@ class TestGraphAppInitialization:
         mock_config.get.return_value = "sqlite:///test.db"
         mock_config_manager.return_value = mock_config
 
-        app = GraphApp()
+        app = cast(Any, GraphApp())
 
         assert app is not None
         assert app.project_id is None
@@ -47,11 +47,11 @@ class TestGraphAppInitialization:
         mock_config.get.return_value = "sqlite:///test.db"
         mock_config_manager.return_value = mock_config
 
-        app = GraphApp()
+        app = cast(Any, GraphApp())
 
         # Compose returns a generator that needs app context
         # Just verify it can be called without error
-        assert hasattr(app, 'compose')
+        assert hasattr(app, "compose")
         assert callable(app.compose)
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
@@ -61,7 +61,7 @@ class TestGraphAppInitialization:
         mock_config.get.return_value = "sqlite:///test.db"
         mock_config_manager.return_value = mock_config
 
-        app = GraphApp()
+        app = cast(Any, GraphApp())
 
         assert len(app.BINDINGS) > 0
         binding_keys = [b.key for b in app.BINDINGS]
@@ -87,7 +87,7 @@ class TestGraphAppDatabaseSetup:
         mock_db = MagicMock()
         mock_db_class.return_value = mock_db
 
-        app = GraphApp()
+        app = cast(Any, GraphApp())
         app.setup_database()
 
         assert app.db is not None
@@ -100,7 +100,7 @@ class TestGraphAppDatabaseSetup:
         mock_config.get.return_value = None
         mock_config_manager.return_value = mock_config
 
-        app = GraphApp()
+        app = cast(Any, GraphApp())
         app.exit = MagicMock()
         app.setup_database()
 
@@ -114,11 +114,11 @@ class TestGraphAppDatabaseSetup:
         mock_config = MagicMock()
         mock_config.get.side_effect = lambda key: {
             "database_url": "sqlite:///test.db",
-            "current_project_id": project_id
+            "current_project_id": project_id,
         }.get(key)
         mock_config_manager.return_value = mock_config
 
-        app = GraphApp()
+        app = cast(Any, GraphApp())
         app.load_project()
 
         assert app.project_id == project_id
@@ -127,13 +127,12 @@ class TestGraphAppDatabaseSetup:
     def test_load_project_no_project(self, mock_config_manager):
         """Test project loading fails when no current project."""
         mock_config = MagicMock()
-        mock_config.get.side_effect = lambda key: {
-            "database_url": "sqlite:///test.db",
-            "current_project_id": None
-        }.get(key)
+        mock_config.get.side_effect = lambda key: {"database_url": "sqlite:///test.db", "current_project_id": None}.get(
+            key
+        )
         mock_config_manager.return_value = mock_config
 
-        app = GraphApp()
+        app = cast(Any, GraphApp())
         app.exit = MagicMock()
         app.load_project()
 
@@ -186,22 +185,18 @@ class TestGraphAppDataLoading:
 
         # Mock item query
         mock_item_query = MagicMock()
-        mock_item_query.filter.return_value.limit.return_value.all.return_value = [
-            mock_item1, mock_item2, mock_item3
-        ]
+        mock_item_query.filter.return_value.limit.return_value.all.return_value = [mock_item1, mock_item2, mock_item3]
 
         # Mock link query
         mock_link_query = MagicMock()
-        mock_link_query.filter.return_value.limit.return_value.all.return_value = [
-            mock_link1, mock_link2
-        ]
+        mock_link_query.filter.return_value.limit.return_value.all.return_value = [mock_link1, mock_link2]
 
         # Setup query side effect to return different queries
         mock_session.query.side_effect = [mock_item_query, mock_link_query]
         mock_session_class.return_value.__enter__.return_value = mock_session
         mock_session_class.return_value.__exit__.return_value = None
 
-        app = GraphApp()
+        app = cast(Any, GraphApp())
         app.db = mock_db
         app.project_id = project_id
 
@@ -232,7 +227,6 @@ class TestGraphAppDataLoading:
         mock_db_class.return_value = mock_db
 
         item1_id = str(uuid4())
-        item2_id = str(uuid4())
         missing_id = str(uuid4())
 
         mock_item1 = MagicMock()
@@ -254,7 +248,7 @@ class TestGraphAppDataLoading:
         mock_session_class.return_value.__enter__.return_value = mock_session
         mock_session_class.return_value.__exit__.return_value = None
 
-        app = GraphApp()
+        app = cast(Any, GraphApp())
         app.db = mock_db
         app.project_id = project_id
 
@@ -269,7 +263,7 @@ class TestGraphAppDataLoading:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = GraphApp()
+        app = cast(Any, GraphApp())
         app.db = None
         app.project_id = None
 
@@ -298,7 +292,7 @@ class TestGraphAppRendering:
         item1_id = str(uuid4())
         item2_id = str(uuid4())
 
-        app = GraphApp()
+        app = cast(Any, GraphApp())
         app.db = mock_db
         app.nodes = {item1_id: (0, 0), item2_id: (20, 5)}
         app.links = [(item1_id, item2_id)]
@@ -309,13 +303,11 @@ class TestGraphAppRendering:
         mock_stats = MagicMock()
 
         def query_side_effect(selector, widget_type=None):
-            if selector == "#graph-canvas":
-                return mock_canvas
-            elif selector == "#link-table":
-                return mock_link_table
-            elif selector == "#graph-stats":
-                return mock_stats
-            return MagicMock()
+            return {
+                "#graph-canvas": mock_canvas,
+                "#link-table": mock_link_table,
+                "#graph-stats": mock_stats,
+            }.get(selector, MagicMock())
 
         app.query_one = MagicMock(side_effect=query_side_effect)
 
@@ -355,7 +347,7 @@ class TestGraphAppRendering:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = GraphApp()
+        app = cast(Any, GraphApp())
         app.nodes = {}
         app.links = []
 
@@ -364,12 +356,11 @@ class TestGraphAppRendering:
         mock_stats = MagicMock()
 
         def query_side_effect(selector, widget_type=None):
-            if selector == "#graph-canvas":
-                return mock_canvas
-            elif selector == "#link-table":
-                return mock_link_table
-            elif selector == "#graph-stats":
-                return mock_stats
+            return {
+                "#graph-canvas": mock_canvas,
+                "#link-table": mock_link_table,
+                "#graph-stats": mock_stats,
+            }.get(selector, MagicMock())
 
         app.query_one = MagicMock(side_effect=query_side_effect)
 
@@ -390,7 +381,7 @@ class TestGraphAppZoomControls:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = GraphApp()
+        app = cast(Any, GraphApp())
         app.zoom = 1.0
         app.render_graph = MagicMock()
 
@@ -405,7 +396,7 @@ class TestGraphAppZoomControls:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = GraphApp()
+        app = cast(Any, GraphApp())
         app.zoom = 5.0  # Already at max
         app.render_graph = MagicMock()
 
@@ -420,7 +411,7 @@ class TestGraphAppZoomControls:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = GraphApp()
+        app = cast(Any, GraphApp())
         app.zoom = 1.2
         app.render_graph = MagicMock()
 
@@ -435,7 +426,7 @@ class TestGraphAppZoomControls:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = GraphApp()
+        app = cast(Any, GraphApp())
         app.zoom = 0.5  # Already at min
         app.render_graph = MagicMock()
 
@@ -455,7 +446,7 @@ class TestGraphAppActions:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = GraphApp()
+        app = cast(Any, GraphApp())
         app.load_graph_data = MagicMock()
         app.render_graph = MagicMock()
 
@@ -470,7 +461,7 @@ class TestGraphAppActions:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = GraphApp()
+        app = cast(Any, GraphApp())
         app.notify = MagicMock()
 
         app.action_help()
@@ -493,7 +484,7 @@ class TestGraphAppCleanup:
         mock_db = MagicMock()
         mock_db_class.return_value = mock_db
 
-        app = GraphApp()
+        app = cast(Any, GraphApp())
         app.db = mock_db
 
         app.on_unmount()
@@ -506,7 +497,7 @@ class TestGraphAppCleanup:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = GraphApp()
+        app = cast(Any, GraphApp())
         app.db = None
 
         # Should not raise error
@@ -536,11 +527,7 @@ class TestGraphAppErrorHandling:
         mock_db.connect.side_effect = Exception("Connection failed")
         mock_db_class.return_value = mock_db
 
-        app = GraphApp()
+        app = cast(Any, GraphApp())
 
-        # Should handle error gracefully
-        try:
+        with pytest.raises(Exception, match=r"Connection failed"):
             app.setup_database()
-        except Exception as e:
-            # Exception is expected and should be logged/handled
-            assert "Connection failed" in str(e)

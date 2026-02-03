@@ -20,7 +20,7 @@ import json
 import tempfile
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 import pytest_asyncio
@@ -29,28 +29,20 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
 # Import ALL models to ensure they're registered with Base.metadata
-from tracertm.models import Base, Item, Link, Project
-from tracertm.models.agent import Agent
-from tracertm.models.agent_event import AgentEvent
-from tracertm.models.agent_lock import AgentLock
-from tracertm.models.event import Event
+from tracertm.models import Base, Item, Link
 from tracertm.storage.conflict_resolver import (
     Conflict,
     ConflictBackup,
     ConflictResolver,
     ConflictStatus,
     ConflictStrategy,
-    EntityType,
     EntityVersion,
-    ResolvedEntity,
     VectorClock,
     compare_versions,
     format_conflict_summary,
 )
 from tracertm.storage.local_storage import (
-    ItemStorage,
     LocalStorageManager,
-    ProjectStorage,
 )
 from tracertm.storage.markdown_parser import (
     ItemData,
@@ -68,18 +60,16 @@ from tracertm.storage.markdown_parser import (
 )
 from tracertm.storage.sync_engine import (
     ChangeDetector,
-    EntityType as SyncEntityType,
     OperationType,
-    QueuedChange,
     SyncEngine,
     SyncQueue,
-    SyncResult,
-    SyncState,
     SyncStateManager,
     SyncStatus,
     exponential_backoff,
 )
-
+from tracertm.storage.sync_engine import (
+    EntityType as SyncEntityType,
+)
 
 # ============================================================================
 # Fixtures
@@ -103,8 +93,7 @@ def temp_project_dir():
 @pytest.fixture
 def storage_manager(temp_storage_dir):
     """Create LocalStorageManager with temporary directory."""
-    manager = LocalStorageManager(base_dir=temp_storage_dir)
-    yield manager
+    return LocalStorageManager(base_dir=temp_storage_dir)
     # Cleanup is handled by temp_storage_dir fixture
 
 
@@ -162,9 +151,7 @@ class TestLocalStorageManagerIntegration:
         session = manager.get_session()
         try:
             # Check tables exist
-            result = session.execute(
-                text("SELECT name FROM sqlite_master WHERE type='table'")
-            )
+            result = session.execute(text("SELECT name FROM sqlite_master WHERE type='table'"))
             tables = {row[0] for row in result}
             assert "projects" in tables
             assert "items" in tables
@@ -248,9 +235,7 @@ class TestLocalStorageManagerIntegration:
         When: register_project called
         Then: Project registered in global database
         """
-        trace_dir, project_id = storage_manager.init_project(
-            temp_project_dir, project_name="RegisterTest"
-        )
+        trace_dir, project_id = storage_manager.init_project(temp_project_dir, project_name="RegisterTest")
 
         registered_id = storage_manager.register_project(temp_project_dir)
         assert registered_id == project_id
@@ -279,9 +264,7 @@ class TestLocalStorageManagerIntegration:
 
         # Create project.yaml without id
         project_yaml = trace_dir / "project.yaml"
-        project_yaml.write_text(
-            yaml.dump({"name": "NoID", "counters": {"epic": 0}})
-        )
+        project_yaml.write_text(yaml.dump({"name": "NoID", "counters": {"epic": 0}}))
 
         project_id = storage_manager.register_project(temp_project_dir)
         assert project_id is not None
@@ -338,9 +321,7 @@ class TestLocalStorageManagerIntegration:
         """
         storage_manager.init_project(temp_project_dir, project_name="Test")
 
-        counter, external_id = storage_manager.increment_project_counter(
-            temp_project_dir, "epic"
-        )
+        counter, external_id = storage_manager.increment_project_counter(temp_project_dir, "epic")
 
         assert counter == 1
         assert external_id == "EPIC-001"
@@ -386,9 +367,7 @@ class TestLocalStorageManagerIntegration:
         When: index_project called
         Then: Items indexed into SQLite database
         """
-        trace_dir, project_id = storage_manager.init_project(
-            temp_project_dir, project_name="IndexTest"
-        )
+        trace_dir, project_id = storage_manager.init_project(temp_project_dir, project_name="IndexTest")
 
         # Create sample markdown file
         epics_dir = trace_dir / "epics"
@@ -433,9 +412,7 @@ Implement user authentication system.
         When: index_project called
         Then: FTS index populated for search
         """
-        trace_dir, project_id = storage_manager.init_project(
-            temp_project_dir, project_name="SearchTest"
-        )
+        trace_dir, project_id = storage_manager.init_project(temp_project_dir, project_name="SearchTest")
 
         # Create item with searchable content
         stories_dir = trace_dir / "stories"
@@ -467,9 +444,7 @@ RESTful API endpoint for user authentication.
         When: search_items called with query
         Then: Matching items returned
         """
-        trace_dir, project_id = storage_manager.init_project(
-            temp_project_dir, project_name="Test"
-        )
+        trace_dir, project_id = storage_manager.init_project(temp_project_dir, project_name="Test")
 
         # Create multiple items
         stories_dir = trace_dir / "stories"
@@ -537,9 +512,7 @@ Test item {i}
         When: clear_sync_queue_entry called
         Then: Item removed from queue
         """
-        storage_manager.queue_sync(
-            entity_type="item", entity_id="test-1", operation="create", payload={}
-        )
+        storage_manager.queue_sync(entity_type="item", entity_id="test-1", operation="create", payload={})
 
         queued = storage_manager.get_sync_queue(limit=10)
         queue_id = queued[0]["id"]
@@ -587,9 +560,7 @@ class TestProjectStorageIntegration:
         Then: Project created in database and filesystem
         """
         project_storage = storage_manager.get_project_storage("GlobalProject")
-        project = project_storage.create_or_update_project(
-            name="GlobalProject", description="Test global projects dir"
-        )
+        project = project_storage.create_or_update_project(name="GlobalProject", description="Test global projects dir")
 
         assert project.name == "GlobalProject"
         assert project.description == "Test global projects dir"
@@ -604,9 +575,7 @@ class TestProjectStorageIntegration:
         When: create_or_update_project called
         Then: Project uses .trace/ directory
         """
-        trace_dir, project_id = storage_manager.init_project(
-            temp_project_dir, project_name="LocalProject"
-        )
+        trace_dir, project_id = storage_manager.init_project(temp_project_dir, project_name="LocalProject")
 
         project_storage = storage_manager.get_project_storage_for_path(temp_project_dir)
         assert project_storage is not None
@@ -619,13 +588,9 @@ class TestProjectStorageIntegration:
         Then: Project updated, not duplicated
         """
         project_storage = storage_manager.get_project_storage("UpdateTest")
-        project1 = project_storage.create_or_update_project(
-            name="UpdateTest", description="Original"
-        )
+        project1 = project_storage.create_or_update_project(name="UpdateTest", description="Original")
 
-        project2 = project_storage.create_or_update_project(
-            name="UpdateTest", description="Updated"
-        )
+        project2 = project_storage.create_or_update_project(name="UpdateTest", description="Updated")
 
         assert project1.id == project2.id
         assert project2.description == "Updated"
@@ -636,9 +601,7 @@ class TestProjectStorageIntegration:
         Then: Project returned
         """
         project_storage = storage_manager.get_project_storage("GetTest")
-        created = project_storage.create_or_update_project(
-            name="GetTest", description="Test"
-        )
+        created = project_storage.create_or_update_project(name="GetTest", description="Test")
 
         retrieved = project_storage.get_project()
         assert retrieved is not None
@@ -665,13 +628,9 @@ class TestItemStorageIntegration:
     @pytest.fixture
     def item_storage(self, temp_project_dir, storage_manager):
         """Create ItemStorage for testing."""
-        trace_dir, project_id = storage_manager.init_project(
-            temp_project_dir, project_name="ItemTest"
-        )
+        trace_dir, project_id = storage_manager.init_project(temp_project_dir, project_name="ItemTest")
         project_storage = storage_manager.get_project_storage_for_path(temp_project_dir)
-        project = project_storage.create_or_update_project(
-            name="ItemTest", description="Test"
-        )
+        project = project_storage.create_or_update_project(name="ItemTest", description="Test")
         return project_storage.get_item_storage(project)
 
     def test_create_item_writes_to_database_and_filesystem(self, item_storage, temp_project_dir):
@@ -719,9 +678,7 @@ class TestItemStorageIntegration:
         session = item_storage.manager.get_session()
         try:
             result = session.execute(
-                text(
-                    "SELECT item_id FROM items_fts WHERE items_fts MATCH :query"
-                ),
+                text("SELECT item_id FROM items_fts WHERE items_fts MATCH :query"),
                 {"query": "xyzabc"},
             )
             rows = result.fetchall()
@@ -740,9 +697,7 @@ class TestItemStorageIntegration:
             external_id="EPIC-001",
         )
 
-        updated = item_storage.update_item(
-            item_id=item.id, title="Updated Title", description="New description"
-        )
+        updated = item_storage.update_item(item_id=item.id, title="Updated Title", description="New description")
 
         assert updated.title == "Updated Title"
         assert updated.description == "New description"
@@ -759,9 +714,7 @@ class TestItemStorageIntegration:
         When: update_item called
         Then: Version incremented automatically
         """
-        item = item_storage.create_item(
-            title="Version Test", item_type="story", external_id="STORY-001"
-        )
+        item = item_storage.create_item(title="Version Test", item_type="story", external_id="STORY-001")
 
         original_version = item.version
 
@@ -776,9 +729,7 @@ class TestItemStorageIntegration:
         When: delete_item called
         Then: Item soft-deleted (deleted_at set)
         """
-        item = item_storage.create_item(
-            title="Delete Test", item_type="task", external_id="TASK-001"
-        )
+        item = item_storage.create_item(title="Delete Test", item_type="task", external_id="TASK-001")
 
         item_storage.delete_item(item.id)
 
@@ -795,9 +746,7 @@ class TestItemStorageIntegration:
         When: delete_item called
         Then: Markdown file deleted
         """
-        item_storage.create_item(
-            title="Delete File Test", item_type="test", external_id="TEST-001"
-        )
+        item_storage.create_item(title="Delete File Test", item_type="test", external_id="TEST-001")
 
         trace_dir = temp_project_dir / ".trace"
         test_file = trace_dir / "tests" / "TEST-001.md"
@@ -828,15 +777,9 @@ class TestItemStorageIntegration:
         When: list_items called with status filter
         Then: Only matching items returned
         """
-        item_storage.create_item(
-            title="Todo 1", item_type="story", external_id="STORY-001", status="todo"
-        )
-        item_storage.create_item(
-            title="In Progress", item_type="story", external_id="STORY-002", status="in_progress"
-        )
-        item_storage.create_item(
-            title="Todo 2", item_type="story", external_id="STORY-003", status="todo"
-        )
+        item_storage.create_item(title="Todo 1", item_type="story", external_id="STORY-001", status="todo")
+        item_storage.create_item(title="In Progress", item_type="story", external_id="STORY-002", status="in_progress")
+        item_storage.create_item(title="Todo 2", item_type="story", external_id="STORY-003", status="todo")
 
         todo_items = item_storage.list_items(status="todo")
         in_progress_items = item_storage.list_items(status="in_progress")
@@ -849,12 +792,8 @@ class TestItemStorageIntegration:
         When: list_items called
         Then: Deleted items excluded
         """
-        item1 = item_storage.create_item(
-            title="Active", item_type="story", external_id="STORY-001"
-        )
-        item2 = item_storage.create_item(
-            title="Deleted", item_type="story", external_id="STORY-002"
-        )
+        item1 = item_storage.create_item(title="Active", item_type="story", external_id="STORY-001")
+        item2 = item_storage.create_item(title="Deleted", item_type="story", external_id="STORY-002")
 
         item_storage.delete_item(item2.id)
 
@@ -867,12 +806,8 @@ class TestItemStorageIntegration:
         When: create_link called
         Then: Link created in database and links.yaml
         """
-        item1 = item_storage.create_item(
-            title="Epic", item_type="epic", external_id="EPIC-001"
-        )
-        item2 = item_storage.create_item(
-            title="Story", item_type="story", external_id="STORY-001"
-        )
+        item1 = item_storage.create_item(title="Epic", item_type="epic", external_id="EPIC-001")
+        item2 = item_storage.create_item(title="Story", item_type="story", external_id="STORY-001")
 
         link = item_storage.create_link(
             source_id=item1.id,
@@ -904,16 +839,10 @@ class TestItemStorageIntegration:
         When: delete_link called
         Then: Link removed from database and links.yaml
         """
-        item1 = item_storage.create_item(
-            title="Item 1", item_type="epic", external_id="EPIC-001"
-        )
-        item2 = item_storage.create_item(
-            title="Item 2", item_type="story", external_id="STORY-001"
-        )
+        item1 = item_storage.create_item(title="Item 1", item_type="epic", external_id="EPIC-001")
+        item2 = item_storage.create_item(title="Item 2", item_type="story", external_id="STORY-001")
 
-        link = item_storage.create_link(
-            source_id=item1.id, target_id=item2.id, link_type="depends_on"
-        )
+        link = item_storage.create_link(source_id=item1.id, target_id=item2.id, link_type="depends_on")
 
         item_storage.delete_link(link.id)
 
@@ -936,15 +865,9 @@ class TestItemStorageIntegration:
         When: list_links called with source_id
         Then: Only links from that source returned
         """
-        item1 = item_storage.create_item(
-            title="Source", item_type="epic", external_id="EPIC-001"
-        )
-        item2 = item_storage.create_item(
-            title="Target 1", item_type="story", external_id="STORY-001"
-        )
-        item3 = item_storage.create_item(
-            title="Target 2", item_type="story", external_id="STORY-002"
-        )
+        item1 = item_storage.create_item(title="Source", item_type="epic", external_id="EPIC-001")
+        item2 = item_storage.create_item(title="Target 1", item_type="story", external_id="STORY-001")
+        item3 = item_storage.create_item(title="Target 2", item_type="story", external_id="STORY-002")
 
         link1 = item_storage.create_link(item1.id, item2.id, "implements")
         link2 = item_storage.create_link(item1.id, item3.id, "implements")
@@ -958,15 +881,9 @@ class TestItemStorageIntegration:
         When: list_links called with target_id
         Then: Only links to that target returned
         """
-        item1 = item_storage.create_item(
-            title="Source 1", item_type="epic", external_id="EPIC-001"
-        )
-        item2 = item_storage.create_item(
-            title="Source 2", item_type="epic", external_id="EPIC-002"
-        )
-        item3 = item_storage.create_item(
-            title="Target", item_type="story", external_id="STORY-001"
-        )
+        item1 = item_storage.create_item(title="Source 1", item_type="epic", external_id="EPIC-001")
+        item2 = item_storage.create_item(title="Source 2", item_type="epic", external_id="EPIC-002")
+        item3 = item_storage.create_item(title="Target", item_type="story", external_id="STORY-001")
 
         item_storage.create_link(item1.id, item3.id, "implements")
         item_storage.create_link(item2.id, item3.id, "implements")
@@ -979,15 +896,9 @@ class TestItemStorageIntegration:
         When: list_links called with link_type
         Then: Only matching links returned
         """
-        item1 = item_storage.create_item(
-            title="Item 1", item_type="epic", external_id="EPIC-001"
-        )
-        item2 = item_storage.create_item(
-            title="Item 2", item_type="story", external_id="STORY-001"
-        )
-        item3 = item_storage.create_item(
-            title="Item 3", item_type="test", external_id="TEST-001"
-        )
+        item1 = item_storage.create_item(title="Item 1", item_type="epic", external_id="EPIC-001")
+        item2 = item_storage.create_item(title="Item 2", item_type="story", external_id="STORY-001")
+        item3 = item_storage.create_item(title="Item 3", item_type="test", external_id="TEST-001")
 
         item_storage.create_link(item1.id, item2.id, "implements")
         item_storage.create_link(item2.id, item3.id, "tests")
@@ -1313,12 +1224,8 @@ class TestSyncEngineIntegration:
         When: enqueue called with same entity/operation
         Then: Entry replaced, not duplicated
         """
-        sync_queue.enqueue(
-            SyncEntityType.ITEM, "item-1", OperationType.UPDATE, {"version": 1}
-        )
-        sync_queue.enqueue(
-            SyncEntityType.ITEM, "item-1", OperationType.UPDATE, {"version": 2}
-        )
+        sync_queue.enqueue(SyncEntityType.ITEM, "item-1", OperationType.UPDATE, {"version": 1})
+        sync_queue.enqueue(SyncEntityType.ITEM, "item-1", OperationType.UPDATE, {"version": 2})
 
         pending = sync_queue.get_pending(limit=10)
         assert len(pending) == 1
@@ -1331,17 +1238,11 @@ class TestSyncEngineIntegration:
         """
         import time
 
-        sync_queue.enqueue(
-            SyncEntityType.ITEM, "item-1", OperationType.CREATE, {}
-        )
+        sync_queue.enqueue(SyncEntityType.ITEM, "item-1", OperationType.CREATE, {})
         time.sleep(0.01)
-        sync_queue.enqueue(
-            SyncEntityType.ITEM, "item-2", OperationType.CREATE, {}
-        )
+        sync_queue.enqueue(SyncEntityType.ITEM, "item-2", OperationType.CREATE, {})
         time.sleep(0.01)
-        sync_queue.enqueue(
-            SyncEntityType.ITEM, "item-3", OperationType.CREATE, {}
-        )
+        sync_queue.enqueue(SyncEntityType.ITEM, "item-3", OperationType.CREATE, {})
 
         pending = sync_queue.get_pending(limit=10)
         assert pending[0].entity_id == "item-1"
@@ -1353,9 +1254,7 @@ class TestSyncEngineIntegration:
         When: remove called
         Then: Entry deleted from queue
         """
-        queue_id = sync_queue.enqueue(
-            SyncEntityType.ITEM, "item-1", OperationType.CREATE, {}
-        )
+        queue_id = sync_queue.enqueue(SyncEntityType.ITEM, "item-1", OperationType.CREATE, {})
 
         sync_queue.remove(queue_id)
 
@@ -1368,9 +1267,7 @@ class TestSyncEngineIntegration:
         Then: All entries removed
         """
         for i in range(5):
-            sync_queue.enqueue(
-                SyncEntityType.ITEM, f"item-{i}", OperationType.CREATE, {}
-            )
+            sync_queue.enqueue(SyncEntityType.ITEM, f"item-{i}", OperationType.CREATE, {})
 
         sync_queue.clear()
 
@@ -1383,9 +1280,7 @@ class TestSyncEngineIntegration:
         Then: Correct count returned
         """
         for i in range(7):
-            sync_queue.enqueue(
-                SyncEntityType.ITEM, f"item-{i}", OperationType.CREATE, {}
-            )
+            sync_queue.enqueue(SyncEntityType.ITEM, f"item-{i}", OperationType.CREATE, {})
 
         count = sync_queue.get_count()
         assert count == 7
@@ -1549,12 +1444,8 @@ class TestConflictResolverIntegration:
         """
         now = datetime.now(UTC)
 
-        local_clock = VectorClock(
-            client_id="client-1", version=5, timestamp=now, parent_version=4
-        )
-        remote_clock = VectorClock(
-            client_id="client-2", version=5, timestamp=now, parent_version=4
-        )
+        local_clock = VectorClock(client_id="client-1", version=5, timestamp=now, parent_version=4)
+        remote_clock = VectorClock(client_id="client-2", version=5, timestamp=now, parent_version=4)
 
         local = EntityVersion(
             entity_id="item-1",
@@ -1585,12 +1476,8 @@ class TestConflictResolverIntegration:
         """
         now = datetime.now(UTC)
 
-        local_clock = VectorClock(
-            client_id="client-1", version=4, timestamp=now - timedelta(hours=1)
-        )
-        remote_clock = VectorClock(
-            client_id="client-1", version=5, timestamp=now
-        )
+        local_clock = VectorClock(client_id="client-1", version=4, timestamp=now - timedelta(hours=1))
+        remote_clock = VectorClock(client_id="client-1", version=5, timestamp=now)
 
         local = EntityVersion(
             entity_id="item-1",
@@ -1616,12 +1503,8 @@ class TestConflictResolverIntegration:
         """
         now = datetime.now(UTC)
 
-        local_clock = VectorClock(
-            client_id="client-1", version=5, timestamp=now
-        )
-        remote_clock = VectorClock(
-            client_id="client-2", version=5, timestamp=now
-        )
+        local_clock = VectorClock(client_id="client-1", version=5, timestamp=now)
+        remote_clock = VectorClock(client_id="client-2", version=5, timestamp=now)
 
         same_hash = "same-content-hash"
 
@@ -1652,12 +1535,8 @@ class TestConflictResolverIntegration:
         now = datetime.now(UTC)
         older = now - timedelta(hours=1)
 
-        local_clock = VectorClock(
-            client_id="client-1", version=5, timestamp=older
-        )
-        remote_clock = VectorClock(
-            client_id="client-2", version=5, timestamp=now
-        )
+        local_clock = VectorClock(client_id="client-1", version=5, timestamp=older)
+        remote_clock = VectorClock(client_id="client-2", version=5, timestamp=now)
 
         local = EntityVersion(
             entity_id="item-1",
@@ -1866,7 +1745,7 @@ class TestConflictResolverIntegration:
         assert (backup_path / "conflict.json").exists()
 
         # Verify content
-        with open(backup_path / "local.json") as f:
+        with Path(backup_path / "local.json").open() as f:
             local_data = json.load(f)
             assert local_data["data"]["title"] == "Local"
 
@@ -1878,21 +1757,13 @@ class TestConflictResolverIntegration:
         now = datetime.now(UTC)
 
         # Create unresolved conflict
-        local1 = EntityVersion(
-            "item-1", "item", {"title": "L1"}, VectorClock("c1", 1, now)
-        )
-        remote1 = EntityVersion(
-            "item-1", "item", {"title": "R1"}, VectorClock("c2", 1, now)
-        )
+        local1 = EntityVersion("item-1", "item", {"title": "L1"}, VectorClock("c1", 1, now))
+        remote1 = EntityVersion("item-1", "item", {"title": "R1"}, VectorClock("c2", 1, now))
         conflict1 = conflict_resolver.detect_conflict(local1, remote1)
 
         # Create and resolve another conflict
-        local2 = EntityVersion(
-            "item-2", "item", {"title": "L2"}, VectorClock("c1", 1, now)
-        )
-        remote2 = EntityVersion(
-            "item-2", "item", {"title": "R2"}, VectorClock("c2", 1, now)
-        )
+        local2 = EntityVersion("item-2", "item", {"title": "L2"}, VectorClock("c1", 1, now))
+        remote2 = EntityVersion("item-2", "item", {"title": "R2"}, VectorClock("c2", 1, now))
         conflict2 = conflict_resolver.detect_conflict(local2, remote2)
         conflict_resolver.resolve(conflict2)
 
@@ -1908,12 +1779,8 @@ class TestConflictResolverIntegration:
         """
         now = datetime.now(UTC)
 
-        local = EntityVersion(
-            "item-1", "item", {"title": "Local"}, VectorClock("c1", 1, now)
-        )
-        remote = EntityVersion(
-            "item-1", "item", {"title": "Remote"}, VectorClock("c2", 1, now)
-        )
+        local = EntityVersion("item-1", "item", {"title": "Local"}, VectorClock("c1", 1, now))
+        remote = EntityVersion("item-1", "item", {"title": "Remote"}, VectorClock("c2", 1, now))
 
         created = conflict_resolver.detect_conflict(local, remote)
         conflict_id = created.id
@@ -1941,12 +1808,8 @@ class TestConflictResolverIntegration:
 
         # Create multiple conflicts
         for i in range(3):
-            local = EntityVersion(
-                f"item-{i}", "item", {"title": f"L{i}"}, VectorClock("c1", 1, now)
-            )
-            remote = EntityVersion(
-                f"item-{i}", "item", {"title": f"R{i}"}, VectorClock("c2", 1, now)
-            )
+            local = EntityVersion(f"item-{i}", "item", {"title": f"L{i}"}, VectorClock("c1", 1, now))
+            remote = EntityVersion(f"item-{i}", "item", {"title": f"R{i}"}, VectorClock("c2", 1, now))
             conflict = conflict_resolver.detect_conflict(local, remote)
 
             # Resolve first conflict
@@ -2031,12 +1894,8 @@ class TestConflictResolverIntegration:
         """
         now = datetime.now(UTC)
 
-        local = EntityVersion(
-            "item-1", "item", {"title": "Local"}, VectorClock("c1", 5, now)
-        )
-        remote = EntityVersion(
-            "item-1", "item", {"title": "Remote"}, VectorClock("c2", 6, now)
-        )
+        local = EntityVersion("item-1", "item", {"title": "Local"}, VectorClock("c1", 5, now))
+        remote = EntityVersion("item-1", "item", {"title": "Remote"}, VectorClock("c2", 6, now))
 
         conflict = Conflict(
             id="conflict-1",
@@ -2124,12 +1983,8 @@ class TestConflictBackupIntegration:
         backup_dir = temp_storage_dir / "backups" / "item" / "test_backup"
         backup_dir.mkdir(parents=True)
 
-        local = EntityVersion(
-            "item-1", "item", {"title": "Local"}, VectorClock("c1", 1, now)
-        )
-        remote = EntityVersion(
-            "item-1", "item", {"title": "Remote"}, VectorClock("c2", 1, now)
-        )
+        local = EntityVersion("item-1", "item", {"title": "Local"}, VectorClock("c1", 1, now))
+        remote = EntityVersion("item-1", "item", {"title": "Remote"}, VectorClock("c2", 1, now))
 
         # Write backup files
         (backup_dir / "local.json").write_text(json.dumps(local.to_dict()))

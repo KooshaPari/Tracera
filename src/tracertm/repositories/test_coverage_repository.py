@@ -2,22 +2,21 @@
 Repository for Test Coverage operations.
 """
 
-from datetime import datetime
-from typing import Any, Optional
 import uuid
+from datetime import UTC, datetime
+from typing import Any
 
-from sqlalchemy import select, func, and_, or_
+from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from tracertm.models.test_coverage import (
-    TestCoverage,
-    CoverageActivity,
-    CoverageType,
-    CoverageStatus,
-)
 from tracertm.models.item import Item
-from tracertm.models.test_case import TestCase
+from tracertm.models.test_coverage import (
+    CoverageActivity,
+    CoverageStatus,
+    CoverageType,
+    TestCoverage,
+)
 
 
 class TestCoverageRepository:
@@ -32,11 +31,11 @@ class TestCoverageRepository:
         test_case_id: str,
         requirement_id: str,
         coverage_type: str = "direct",
-        coverage_percentage: Optional[int] = None,
-        rationale: Optional[str] = None,
-        notes: Optional[str] = None,
-        metadata: Optional[dict[str, Any]] = None,
-        created_by: Optional[str] = None,
+        coverage_percentage: int | None = None,
+        rationale: str | None = None,
+        notes: str | None = None,
+        metadata: dict[str, Any] | None = None,
+        created_by: str | None = None,
     ) -> TestCoverage:
         """Create a new test coverage mapping."""
         coverage = TestCoverage(
@@ -60,7 +59,7 @@ class TestCoverageRepository:
             coverage_id=coverage.id,
             activity_type="created",
             to_value=coverage_type,
-            description=f"Coverage mapping created",
+            description="Coverage mapping created",
             performed_by=created_by,
         )
         self.session.add(activity)
@@ -68,7 +67,7 @@ class TestCoverageRepository:
         await self.session.flush()
         return coverage
 
-    async def get_by_id(self, coverage_id: str) -> Optional[TestCoverage]:
+    async def get_by_id(self, coverage_id: str) -> TestCoverage | None:
         """Get a coverage mapping by ID."""
         result = await self.session.execute(
             select(TestCoverage)
@@ -84,7 +83,7 @@ class TestCoverageRepository:
         self,
         test_case_id: str,
         requirement_id: str,
-    ) -> Optional[TestCoverage]:
+    ) -> TestCoverage | None:
         """Get a coverage mapping by test case and requirement."""
         result = await self.session.execute(
             select(TestCoverage).where(
@@ -99,10 +98,10 @@ class TestCoverageRepository:
     async def list_by_project(
         self,
         project_id: str,
-        coverage_type: Optional[str] = None,
-        status: Optional[str] = None,
-        test_case_id: Optional[str] = None,
-        requirement_id: Optional[str] = None,
+        coverage_type: str | None = None,
+        status: str | None = None,
+        test_case_id: str | None = None,
+        requirement_id: str | None = None,
         skip: int = 0,
         limit: int = 100,
     ) -> tuple[list[TestCoverage], int]:
@@ -169,9 +168,9 @@ class TestCoverageRepository:
     async def update(
         self,
         coverage_id: str,
-        updated_by: Optional[str] = None,
+        updated_by: str | None = None,
         **updates: Any,
-    ) -> Optional[TestCoverage]:
+    ) -> TestCoverage | None:
         """Update a coverage mapping."""
         coverage = await self.get_by_id(coverage_id)
         if not coverage:
@@ -189,14 +188,14 @@ class TestCoverageRepository:
         self,
         coverage_id: str,
         verified_by: str,
-        notes: Optional[str] = None,
-    ) -> Optional[TestCoverage]:
+        notes: str | None = None,
+    ) -> TestCoverage | None:
         """Mark a coverage mapping as verified."""
         coverage = await self.get_by_id(coverage_id)
         if not coverage:
             return None
 
-        coverage.last_verified_at = datetime.utcnow()
+        coverage.last_verified_at = datetime.now(UTC)
         coverage.verified_by = verified_by
         if notes:
             coverage.notes = notes
@@ -219,15 +218,15 @@ class TestCoverageRepository:
         self,
         coverage_id: str,
         test_result: str,
-        tested_at: Optional[datetime] = None,
-    ) -> Optional[TestCoverage]:
+        tested_at: datetime | None = None,
+    ) -> TestCoverage | None:
         """Update the last test result for a coverage mapping."""
         coverage = await self.get_by_id(coverage_id)
         if not coverage:
             return None
 
         coverage.last_test_result = test_result
-        coverage.last_tested_at = tested_at or datetime.utcnow()
+        coverage.last_tested_at = tested_at or datetime.now(UTC)
         coverage.version += 1
 
         await self.session.flush()
@@ -245,7 +244,7 @@ class TestCoverageRepository:
     async def get_traceability_matrix(
         self,
         project_id: str,
-        requirement_view: Optional[str] = None,
+        requirement_view: str | None = None,
     ) -> dict[str, Any]:
         """
         Generate a traceability matrix for a project.
@@ -330,7 +329,7 @@ class TestCoverageRepository:
     async def get_coverage_gaps(
         self,
         project_id: str,
-        requirement_view: Optional[str] = None,
+        requirement_view: str | None = None,
     ) -> dict[str, Any]:
         """
         Find requirements that have no test coverage.
@@ -343,26 +342,31 @@ class TestCoverageRepository:
         requirements = list(req_result.scalars().all())
 
         # Get all covered requirement IDs
-        cov_query = select(TestCoverage.requirement_id).where(
-            and_(
-                TestCoverage.project_id == project_id,
-                TestCoverage.status == CoverageStatus.ACTIVE,
+        cov_query = (
+            select(TestCoverage.requirement_id)
+            .where(
+                and_(
+                    TestCoverage.project_id == project_id,
+                    TestCoverage.status == CoverageStatus.ACTIVE,
+                )
             )
-        ).distinct()
+            .distinct()
+        )
         cov_result = await self.session.execute(cov_query)
-        covered_ids = set(row[0] for row in cov_result)
+        covered_ids = {row[0] for row in cov_result}
 
         # Find uncovered
-        gaps = []
-        for req in requirements:
-            if req.id not in covered_ids:
-                gaps.append({
-                    "requirement_id": req.id,
-                    "requirement_title": req.title,
-                    "requirement_view": req.view,
-                    "requirement_status": req.status,
-                    "priority": req.priority,
-                })
+        gaps = [
+            {
+                "requirement_id": req.id,
+                "requirement_title": req.title,
+                "requirement_view": req.view,
+                "requirement_status": req.status,
+                "priority": req.priority,
+            }
+            for req in requirements
+            if req.id not in covered_ids
+        ]
 
         # Sort by priority
         priority_order = {"critical": 0, "high": 1, "medium": 2, "low": 3}
@@ -372,9 +376,7 @@ class TestCoverageRepository:
             "project_id": project_id,
             "total_requirements": len(requirements),
             "uncovered_count": len(gaps),
-            "coverage_percentage": round(
-                (1 - len(gaps) / len(requirements)) * 100 if requirements else 0, 2
-            ),
+            "coverage_percentage": round((1 - len(gaps) / len(requirements)) * 100 if requirements else 0, 2),
             "gaps": gaps,
         }
 
@@ -408,9 +410,7 @@ class TestCoverageRepository:
     async def get_stats(self, project_id: str) -> dict[str, Any]:
         """Get coverage statistics for a project."""
         # Total coverage mappings
-        total_result = await self.session.execute(
-            select(func.count()).where(TestCoverage.project_id == project_id)
-        )
+        total_result = await self.session.execute(select(func.count()).where(TestCoverage.project_id == project_id))
         total = total_result.scalar() or 0
 
         # By type
@@ -431,12 +431,10 @@ class TestCoverageRepository:
 
         # Unique test cases and requirements
         unique_tests = await self.session.execute(
-            select(func.count(func.distinct(TestCoverage.test_case_id)))
-            .where(TestCoverage.project_id == project_id)
+            select(func.count(func.distinct(TestCoverage.test_case_id))).where(TestCoverage.project_id == project_id)
         )
         unique_reqs = await self.session.execute(
-            select(func.count(func.distinct(TestCoverage.requirement_id)))
-            .where(TestCoverage.project_id == project_id)
+            select(func.count(func.distinct(TestCoverage.requirement_id))).where(TestCoverage.project_id == project_id)
         )
 
         return {

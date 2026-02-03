@@ -16,7 +16,8 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import Any, AsyncGenerator, Literal
+from collections.abc import AsyncGenerator
+from typing import Any, Literal
 
 from fastapi import FastAPI
 from starlette.applications import Starlette
@@ -64,6 +65,7 @@ async def run_http_server(
     log_level: str = "info",
 ) -> None:
     """Standalone MCP is not allowed. MCP runs only as part of the backend (mounted ASGI)."""
+    await asyncio.sleep(0)
     raise RuntimeError(_STANDALONE_DISALLOWED_MSG)
 
 
@@ -145,7 +147,7 @@ async def create_progress_stream(
             "data": {
                 "task_id": task_id,
                 "status": "started",
-            }
+            },
         }
 
         # Stream progress updates
@@ -155,7 +157,7 @@ async def create_progress_stream(
                 "data": {
                     "task_id": task_id,
                     **progress_data,
-                }
+                },
             }
 
         # Send completion event
@@ -164,7 +166,7 @@ async def create_progress_stream(
             "data": {
                 "task_id": task_id,
                 "status": "completed",
-            }
+            },
         }
 
     except asyncio.CancelledError:
@@ -174,7 +176,7 @@ async def create_progress_stream(
             "data": {
                 "task_id": task_id,
                 "status": "cancelled",
-            }
+            },
         }
         raise
 
@@ -186,7 +188,7 @@ async def create_progress_stream(
                 "task_id": task_id,
                 "status": "error",
                 "error": str(e),
-            }
+            },
         }
 
 
@@ -212,10 +214,7 @@ def get_transport_type() -> Literal["http", "streamable-http", "sse"]:
     # Validate transport (stdio not supported)
     valid_transports = ["http", "streamable-http", "sse"]
     if transport not in valid_transports:
-        logger.warning(
-            f"Invalid transport '{transport}', defaulting to 'http'. "
-            f"Valid options: {valid_transports}"
-        )
+        logger.warning(f"Invalid transport '{transport}', defaulting to 'http'. Valid options: {valid_transports}")
         transport = "http"
 
     logger.info(f"Using MCP transport: {transport}")
@@ -227,12 +226,12 @@ def get_transport_type() -> Literal["http", "streamable-http", "sse"]:
 # =============================================================================
 
 __all__ = [
-    "create_standalone_http_app",
-    "run_http_server",
-    "mount_mcp_to_fastapi",
-    "create_progress_stream",
-    "get_transport_type",
     "DEFAULT_HTTP_HOST",
     "DEFAULT_HTTP_PORT",
     "DEFAULT_MCP_PATH",
+    "create_progress_stream",
+    "create_standalone_http_app",
+    "get_transport_type",
+    "mount_mcp_to_fastapi",
+    "run_http_server",
 ]

@@ -177,7 +177,7 @@
    * - "/" (beginning of a comment)
    * - whitespace
    */
-  var reForbiddenIdentifierChars = /[()=,{}\[\]\/\s]/;
+  var reForbiddenIdentifierChars = /[()=,{}[\]/\s]/;
 
   /** Used to match backslashes in property paths. */
   var reEscapeChar = /\\(\\)?/g;
@@ -17078,7 +17078,7 @@
       var checkIteratee = /^(?:filter|find|map|reject)|While$/.test(methodName),
           isTaker = /^(?:head|last)$/.test(methodName),
           lodashFunc = lodash[isTaker ? ('take' + (methodName == 'last' ? 'Right' : '')) : methodName],
-          retUnwrapped = isTaker || /^find/.test(methodName);
+          retUnwrapped = isTaker || methodName.startsWith('find');
 
       if (!lodashFunc) {
         return;

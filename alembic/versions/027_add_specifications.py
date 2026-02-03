@@ -8,10 +8,11 @@ Revises: 026_fix_rls_policies
 Create Date: 2026-01-29 02:00:00.000000
 """
 
-from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.dialects.sqlite import JSON
+
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "027_add_step_definitions"
@@ -27,12 +28,19 @@ def upgrade() -> None:
     op.create_table(
         "step_definitions",
         sa.Column("id", sa.String(36), primary_key=True),
-        sa.Column("project_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False),
+        sa.Column(
+            "project_id",
+            postgresql.UUID(as_uuid=True),
+            sa.ForeignKey("projects.id", ondelete="CASCADE"),
+            nullable=False,
+        ),
         sa.Column("step_number", sa.String(50), nullable=False),
         sa.Column("step_type", sa.String(50), nullable=False),  # given, when, then, and
         sa.Column("pattern", sa.String(500), nullable=False),  # Regex pattern to match steps
         sa.Column("description", sa.Text(), nullable=True),
-        sa.Column("implementation_language", sa.String(50), nullable=False, server_default="python"),  # python, javascript, etc.
+        sa.Column(
+            "implementation_language", sa.String(50), nullable=False, server_default="python"
+        ),  # python, javascript, etc.
         sa.Column("implementation_code", sa.Text(), nullable=False),  # The actual step code
         sa.Column("file_path", sa.String(500), nullable=True),  # Path to implementation file
         sa.Column("line_number", sa.Integer(), nullable=True),  # Line where implementation starts
@@ -49,7 +57,13 @@ def upgrade() -> None:
         sa.Column("version", sa.Integer(), server_default="1", nullable=False),
         sa.Column("metadata", JSON(), nullable=True),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
-        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now(), onupdate=sa.func.now(), nullable=False),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.func.now(),
+            onupdate=sa.func.now(),
+            nullable=False,
+        ),
     )
 
     # Indexes on foreign keys and frequently queried fields

@@ -48,4 +48,4 @@ export declare class ReferenceDot extends React.Component<Props> {
     static renderDot: (option: Props['shape'], props: any) => React.JSX.Element;
     render(): React.JSX.Element;
 }
-export {};
+

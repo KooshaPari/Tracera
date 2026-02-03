@@ -5,6 +5,7 @@ Integration tests for Epic 7: Performance Optimizations (Stories 7.3-7.9).
 import time
 
 import pytest
+
 pytestmark = pytest.mark.integration
 from sqlalchemy.orm import Session
 
@@ -70,7 +71,8 @@ def test_search_performance(large_project_setup):
         # Test search speed
         start_time = time.time()
         items = (
-            session.query(Item)
+            session
+            .query(Item)
             .filter(
                 Item.project_id == project_id,
                 Item.deleted_at.is_(None),
@@ -103,13 +105,13 @@ def test_progress_calculation_performance(large_project_setup):
         # Simple progress calculation (count complete vs total)
         start_time = time.time()
         from sqlalchemy import func
+
         total = (
-            session.query(func.count(Item.id))
-            .filter(Item.project_id == project_id, Item.deleted_at.is_(None))
-            .scalar()
+            session.query(func.count(Item.id)).filter(Item.project_id == project_id, Item.deleted_at.is_(None)).scalar()
         ) or 0
         complete = (
-            session.query(func.count(Item.id))
+            session
+            .query(func.count(Item.id))
             .filter(
                 Item.project_id == project_id,
                 Item.deleted_at.is_(None),

@@ -26,4 +26,4 @@ type StoreImmer<S> = S extends {
     setState(nextStateOrUpdater: SetStateType<A2> | ((state: Draft<SetStateType<A2>>) => void), shouldReplace: true, ...args: SkipTwo<A2>): Sr2;
 } : never : never;
 export declare const immer: Immer;
-export {};
+

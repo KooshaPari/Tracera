@@ -18,7 +18,7 @@ export default function matlab(Prism) {
     keyword:
       /\b(?:NaN|break|case|catch|continue|else|elseif|end|for|function|if|inf|otherwise|parfor|pause|pi|return|switch|try|while)\b/,
     function: /\b(?!\d)\w+(?=\s*\()/,
-    operator: /\.?[*^\/\\']|[+\-:@]|[<>=~]=?|&&?|\|\|?/,
-    punctuation: /\.{3}|[.,;\[\](){}!]/
+    operator: /\.?[*^/\\']|[+\-:@]|[<>=~]=?|&&?|\|\|?/,
+    punctuation: /\.{3}|[.,;[\](){}!]/
   }
 }

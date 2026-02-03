@@ -17,27 +17,28 @@ Target: 100+ tests for comprehensive algorithm coverage
 """
 
 import asyncio
-import pytest
 import time
-from collections import deque
-from unittest.mock import Mock, AsyncMock, MagicMock, patch
-from sqlalchemy.orm import Session
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.exc import OperationalError
-from hypothesis import given, strategies as st, settings, assume
+from unittest.mock import AsyncMock, Mock
 
+import pytest
+from hypothesis import assume, given, settings
+from hypothesis import strategies as st
+from sqlalchemy.exc import OperationalError
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
+
+from tracertm.models.item import Item
+from tracertm.models.link import Link
+from tracertm.services.advanced_analytics_service import AdvancedAnalyticsService
+from tracertm.services.critical_path_service import CriticalPathService
 from tracertm.services.cycle_detection_service import CycleDetectionService
 from tracertm.services.impact_analysis_service import ImpactAnalysisService
 from tracertm.services.shortest_path_service import ShortestPathService
-from tracertm.services.critical_path_service import CriticalPathService
-from tracertm.services.advanced_analytics_service import AdvancedAnalyticsService
-from tracertm.models.link import Link
-from tracertm.models.item import Item
-
 
 # ============================================================================
 # HYPOTHESIS STRATEGIES FOR GRAPH GENERATION
 # ============================================================================
+
 
 @st.composite
 def graph_strategy(draw):
@@ -68,9 +69,7 @@ def dag_strategy(draw):
     # Only add edges from lower to higher numbered nodes (ensures DAG)
     edges = []
     for i in range(num_nodes):
-        for j in range(i + 1, num_nodes):
-            if draw(st.booleans()):
-                edges.append((f"node_{i}", f"node_{j}"))
+        edges.extend((f"node_{i}", f"node_{j}") for j in range(i + 1, num_nodes) if draw(st.booleans()))
 
     return {"nodes": [f"node_{i}" for i in nodes], "edges": edges}
 
@@ -85,9 +84,7 @@ def cyclic_graph_strategy(draw):
     cycle_length = draw(st.integers(min_value=2, max_value=min(num_nodes, 10)))
     cycle_nodes = draw(st.lists(st.sampled_from(nodes), min_size=cycle_length, max_size=cycle_length, unique=True))
 
-    edges = []
-    for i in range(len(cycle_nodes)):
-        edges.append((cycle_nodes[i], cycle_nodes[(i + 1) % len(cycle_nodes)]))
+    edges = [(cycle_nodes[i], cycle_nodes[(i + 1) % len(cycle_nodes)]) for i in range(len(cycle_nodes))]
 
     # Add random additional edges
     num_extra_edges = draw(st.integers(min_value=0, max_value=20))
@@ -102,6 +99,7 @@ def cyclic_graph_strategy(draw):
 # ============================================================================
 # CYCLE DETECTION ALGORITHM TESTS
 # ============================================================================
+
 
 class TestCycleDetectionAlgorithms:
     """Comprehensive tests for cycle detection algorithms."""
@@ -240,10 +238,11 @@ class TestCycleDetectionAlgorithms:
         nodes = ["A", "B", "C", "D"]
         links = []
         for i in range(len(nodes)):
-            for j in range(len(nodes)):
-                if i != j:
-                    links.append(Mock(spec=Link, source_item_id=nodes[i],
-                                    target_item_id=nodes[j], link_type="depends_on"))
+            links.extend(
+                Mock(spec=Link, source_item_id=nodes[i], target_item_id=nodes[j], link_type="depends_on")
+                for j in range(len(nodes))
+                if i != j
+            )
 
         mock_session.query.return_value.filter.return_value.all.return_value = links
 
@@ -350,10 +349,10 @@ class TestCycleDetectionAlgorithms:
     def test_large_cycle_10_nodes(self, service, mock_session):
         """Test large cycle with 10 nodes."""
         nodes = [f"N{i}" for i in range(10)]
-        links = []
-        for i in range(10):
-            links.append(Mock(spec=Link, source_item_id=nodes[i],
-                            target_item_id=nodes[(i + 1) % 10], link_type="depends_on"))
+        links = [
+            Mock(spec=Link, source_item_id=nodes[i], target_item_id=nodes[(i + 1) % 10], link_type="depends_on")
+            for i in range(10)
+        ]
 
         mock_session.query.return_value.filter.return_value.all.return_value = links
 
@@ -364,10 +363,10 @@ class TestCycleDetectionAlgorithms:
     def test_large_cycle_50_nodes(self, service, mock_session):
         """Test large cycle with 50 nodes."""
         nodes = [f"N{i}" for i in range(50)]
-        links = []
-        for i in range(50):
-            links.append(Mock(spec=Link, source_item_id=nodes[i],
-                            target_item_id=nodes[(i + 1) % 50], link_type="depends_on"))
+        links = [
+            Mock(spec=Link, source_item_id=nodes[i], target_item_id=nodes[(i + 1) % 50], link_type="depends_on")
+            for i in range(50)
+        ]
 
         mock_session.query.return_value.filter.return_value.all.return_value = links
 
@@ -481,26 +480,24 @@ class TestCycleDetectionAlgorithms:
 # SHORTEST PATH ALGORITHM TESTS
 # ============================================================================
 
+
 class TestShortestPathAlgorithms:
     """Comprehensive tests for shortest path algorithms (Dijkstra's)."""
 
     @pytest.fixture
     def mock_async_session(self):
         """Create mock async session."""
-        session = Mock(spec=AsyncSession)
-        return session
+        return Mock(spec=AsyncSession)
 
     @pytest.fixture
     def mock_item_repo(self):
         """Create mock item repository."""
-        repo = AsyncMock()
-        return repo
+        return AsyncMock()
 
     @pytest.fixture
     def mock_link_repo(self):
         """Create mock link repository."""
-        repo = AsyncMock()
-        return repo
+        return AsyncMock()
 
     @pytest.fixture
     def service(self, mock_async_session):
@@ -542,8 +539,10 @@ class TestShortestPathAlgorithms:
     async def test_shortest_path_linear_chain(self, service):
         """Test shortest path through linear chain."""
         items = [Mock(spec=Item, id=f"N{i}") for i in range(5)]
-        links = [Mock(spec=Link, source_item_id=f"N{i}", target_item_id=f"N{i+1}",
-                     link_type="depends_on") for i in range(4)]
+        links = [
+            Mock(spec=Link, source_item_id=f"N{i}", target_item_id=f"N{i + 1}", link_type="depends_on")
+            for i in range(4)
+        ]
 
         service.items.get_by_project = AsyncMock(return_value=items)
         service.links.get_by_project = AsyncMock(return_value=links)
@@ -658,6 +657,7 @@ class TestShortestPathAlgorithms:
 # IMPACT ANALYSIS ALGORITHM TESTS
 # ============================================================================
 
+
 class TestImpactAnalysisAlgorithms:
     """Comprehensive tests for impact analysis algorithms (BFS)."""
 
@@ -700,17 +700,19 @@ class TestImpactAnalysisAlgorithms:
             return items.get(item_id)
 
         service.items.get_by_id = get_item
-        service.links.get_by_source = AsyncMock(side_effect=[
-            # Links from A
-            [
-                Mock(spec=Link, source_item_id="A", target_item_id="B", link_type="depends_on"),
-                Mock(spec=Link, source_item_id="A", target_item_id="C", link_type="depends_on"),
-            ],
-            # No links from B
-            [],
-            # No links from C
-            [],
-        ])
+        service.links.get_by_source = AsyncMock(
+            side_effect=[
+                # Links from A
+                [
+                    Mock(spec=Link, source_item_id="A", target_item_id="B", link_type="depends_on"),
+                    Mock(spec=Link, source_item_id="A", target_item_id="C", link_type="depends_on"),
+                ],
+                # No links from B
+                [],
+                # No links from C
+                [],
+            ]
+        )
 
         result = await service.analyze_impact("A", max_depth=10)
 
@@ -734,11 +736,13 @@ class TestImpactAnalysisAlgorithms:
         service.items.get_by_id = get_item
 
         # A -> B -> C
-        service.links.get_by_source = AsyncMock(side_effect=[
-            [Mock(spec=Link, source_item_id="A", target_item_id="B", link_type="depends_on")],
-            [Mock(spec=Link, source_item_id="B", target_item_id="C", link_type="depends_on")],
-            [],
-        ])
+        service.links.get_by_source = AsyncMock(
+            side_effect=[
+                [Mock(spec=Link, source_item_id="A", target_item_id="B", link_type="depends_on")],
+                [Mock(spec=Link, source_item_id="B", target_item_id="C", link_type="depends_on")],
+                [],
+            ]
+        )
 
         result = await service.analyze_impact("A", max_depth=10)
 
@@ -752,8 +756,7 @@ class TestImpactAnalysisAlgorithms:
     async def test_impact_analysis_respects_max_depth(self, service):
         """Test impact analysis respects max depth limit."""
         items = {
-            f"N{i}": Mock(spec=Item, id=f"N{i}", title=f"Node {i}",
-                         view="requirements", status="active")
+            f"N{i}": Mock(spec=Item, id=f"N{i}", title=f"Node {i}", view="requirements", status="active")
             for i in range(5)
         }
 
@@ -766,11 +769,11 @@ class TestImpactAnalysisAlgorithms:
         def get_links(item_id):
             if item_id == "N0":
                 return [Mock(spec=Link, source_item_id="N0", target_item_id="N1", link_type="depends_on")]
-            elif item_id == "N1":
+            if item_id == "N1":
                 return [Mock(spec=Link, source_item_id="N1", target_item_id="N2", link_type="depends_on")]
-            elif item_id == "N2":
+            if item_id == "N2":
                 return [Mock(spec=Link, source_item_id="N2", target_item_id="N3", link_type="depends_on")]
-            elif item_id == "N3":
+            if item_id == "N3":
                 return [Mock(spec=Link, source_item_id="N3", target_item_id="N4", link_type="depends_on")]
             return []
 
@@ -798,11 +801,13 @@ class TestImpactAnalysisAlgorithms:
         service.items.get_by_id = get_item
 
         # C -> B -> A (reverse: find what depends on A)
-        service.links.get_by_target = AsyncMock(side_effect=[
-            [Mock(spec=Link, source_item_id="B", target_item_id="A", link_type="depends_on")],
-            [Mock(spec=Link, source_item_id="C", target_item_id="B", link_type="depends_on")],
-            [],
-        ])
+        service.links.get_by_target = AsyncMock(
+            side_effect=[
+                [Mock(spec=Link, source_item_id="B", target_item_id="A", link_type="depends_on")],
+                [Mock(spec=Link, source_item_id="C", target_item_id="B", link_type="depends_on")],
+                [],
+            ]
+        )
 
         result = await service.analyze_reverse_impact("A", max_depth=10)
 
@@ -823,11 +828,13 @@ class TestImpactAnalysisAlgorithms:
             return items.get(item_id)
 
         service.items.get_by_id = get_item
-        service.links.get_by_source = AsyncMock(side_effect=[
-            [Mock(spec=Link, source_item_id="A", target_item_id="B", link_type="depends_on")],
-            [Mock(spec=Link, source_item_id="B", target_item_id="C", link_type="depends_on")],
-            [],
-        ])
+        service.links.get_by_source = AsyncMock(
+            side_effect=[
+                [Mock(spec=Link, source_item_id="A", target_item_id="B", link_type="depends_on")],
+                [Mock(spec=Link, source_item_id="B", target_item_id="C", link_type="depends_on")],
+                [],
+            ]
+        )
 
         result = await service.analyze_impact("A", max_depth=10)
 
@@ -839,6 +846,7 @@ class TestImpactAnalysisAlgorithms:
 # ============================================================================
 # CRITICAL PATH ALGORITHM TESTS (CPM)
 # ============================================================================
+
 
 class TestCriticalPathAlgorithms:
     """Comprehensive tests for critical path method (CPM) algorithms."""
@@ -872,7 +880,7 @@ class TestCriticalPathAlgorithms:
         """Test critical path in linear chain (all nodes critical)."""
         items = [Mock(spec=Item, id=f"N{i}") for i in range(4)]
         links = [
-            Mock(spec=Link, source_item_id=f"N{i}", target_item_id=f"N{i+1}", link_type="depends_on")
+            Mock(spec=Link, source_item_id=f"N{i}", target_item_id=f"N{i + 1}", link_type="depends_on")
             for i in range(3)
         ]
 
@@ -936,6 +944,7 @@ class TestCriticalPathAlgorithms:
 # ============================================================================
 # ADVANCED ANALYTICS TESTS
 # ============================================================================
+
 
 class TestAdvancedAnalyticsAlgorithms:
     """Comprehensive tests for advanced analytics computations."""
@@ -1008,13 +1017,19 @@ class TestAdvancedAnalyticsAlgorithms:
     async def test_dependency_metrics_calculation(self, service):
         """Test dependency metrics calculation."""
         items = [
-            Mock(spec=Item, outgoing_links=[
-                Mock(spec=Link, link_type="depends_on"),
-                Mock(spec=Link, link_type="depends_on"),
-            ]),
-            Mock(spec=Item, outgoing_links=[
-                Mock(spec=Link, link_type="references"),
-            ]),
+            Mock(
+                spec=Item,
+                outgoing_links=[
+                    Mock(spec=Link, link_type="depends_on"),
+                    Mock(spec=Link, link_type="depends_on"),
+                ],
+            ),
+            Mock(
+                spec=Item,
+                outgoing_links=[
+                    Mock(spec=Link, link_type="references"),
+                ],
+            ),
         ]
         service.items.query = AsyncMock(return_value=items)
 
@@ -1064,6 +1079,7 @@ class TestAdvancedAnalyticsAlgorithms:
 # PERFORMANCE AND STRESS TESTS
 # ============================================================================
 
+
 class TestAlgorithmPerformance:
     """Performance tests for algorithms on large graphs."""
 
@@ -1078,10 +1094,10 @@ class TestAlgorithmPerformance:
 
         # Create large linear chain (no cycle) - reduced to 500 to avoid recursion limit
         nodes = [f"N{i}" for i in range(500)]
-        links = []
-        for i in range(499):
-            links.append(Mock(spec=Link, source_item_id=nodes[i],
-                            target_item_id=nodes[i+1], link_type="depends_on"))
+        links = [
+            Mock(spec=Link, source_item_id=nodes[i], target_item_id=nodes[i + 1], link_type="depends_on")
+            for i in range(499)
+        ]
 
         mock_session.query.return_value.filter.return_value.all.return_value = links
 
@@ -1100,9 +1116,11 @@ class TestAlgorithmPerformance:
         nodes = [f"N{i}" for i in range(100)]
         links = []
         for i in range(100):
-            for j in range(min(5, 100 - i - 1)):  # Each node connects to next 5 nodes
-                links.append(Mock(spec=Link, source_item_id=nodes[i],
-                                target_item_id=nodes[i+j+1], link_type="depends_on"))
+            # Each node connects to next 5 nodes
+            links.extend(
+                Mock(spec=Link, source_item_id=nodes[i], target_item_id=nodes[i + j + 1], link_type="depends_on")
+                for j in range(min(5, 100 - i - 1))
+            )
 
         mock_session.query.return_value.filter.return_value.all.return_value = links
 
@@ -1120,10 +1138,10 @@ class TestAlgorithmPerformance:
 
         # Create large graph
         items = [Mock(spec=Item, id=f"N{i}") for i in range(500)]
-        links = []
-        for i in range(499):
-            links.append(Mock(spec=Link, source_item_id=f"N{i}",
-                            target_item_id=f"N{i+1}", link_type="depends_on"))
+        links = [
+            Mock(spec=Link, source_item_id=f"N{i}", target_item_id=f"N{i + 1}", link_type="depends_on")
+            for i in range(499)
+        ]
 
         service.items.get_by_project = AsyncMock(return_value=items)
         service.links.get_by_project = AsyncMock(return_value=links)
@@ -1143,9 +1161,10 @@ class TestAlgorithmPerformance:
         service = ImpactAnalysisService(mock_session)
 
         # Create binary tree with 7 levels (127 nodes)
-        items = {f"N{i}": Mock(spec=Item, id=f"N{i}", title=f"N{i}",
-                              view="requirements", status="active")
-                for i in range(127)}
+        items = {
+            f"N{i}": Mock(spec=Item, id=f"N{i}", title=f"N{i}", view="requirements", status="active")
+            for i in range(127)
+        }
 
         async def get_item(item_id):
             return items.get(item_id)
@@ -1158,11 +1177,13 @@ class TestAlgorithmPerformance:
             right = 2 * node_idx + 2
             children = []
             if left < 127:
-                children.append(Mock(spec=Link, source_item_id=f"N{node_idx}",
-                                   target_item_id=f"N{left}", link_type="depends_on"))
+                children.append(
+                    Mock(spec=Link, source_item_id=f"N{node_idx}", target_item_id=f"N{left}", link_type="depends_on")
+                )
             if right < 127:
-                children.append(Mock(spec=Link, source_item_id=f"N{node_idx}",
-                                   target_item_id=f"N{right}", link_type="depends_on"))
+                children.append(
+                    Mock(spec=Link, source_item_id=f"N{node_idx}", target_item_id=f"N{right}", link_type="depends_on")
+                )
             return children
 
         service.links.get_by_source = AsyncMock(side_effect=lambda x: get_children(int(x[1:])))
@@ -1179,6 +1200,7 @@ class TestAlgorithmPerformance:
 # PROPERTY-BASED TESTS WITH HYPOTHESIS
 # ============================================================================
 
+
 class TestGraphAlgorithmProperties:
     """Property-based tests for graph algorithms using Hypothesis."""
 
@@ -1193,8 +1215,10 @@ class TestGraphAlgorithmProperties:
         """Property: DAG should never have cycles."""
         service = CycleDetectionService(mock_session)
 
-        links = [Mock(spec=Link, source_item_id=src, target_item_id=tgt, link_type="depends_on")
-                for src, tgt in graph["edges"]]
+        links = [
+            Mock(spec=Link, source_item_id=src, target_item_id=tgt, link_type="depends_on")
+            for src, tgt in graph["edges"]
+        ]
 
         mock_session.query.return_value.filter.return_value.all.return_value = links
 
@@ -1208,8 +1232,10 @@ class TestGraphAlgorithmProperties:
         """Property: Graph with guaranteed cycle should be detected."""
         service = CycleDetectionService(mock_session)
 
-        links = [Mock(spec=Link, source_item_id=src, target_item_id=tgt, link_type="depends_on")
-                for src, tgt in graph["edges"]]
+        links = [
+            Mock(spec=Link, source_item_id=src, target_item_id=tgt, link_type="depends_on")
+            for src, tgt in graph["edges"]
+        ]
 
         mock_session.query.return_value.filter.return_value.all.return_value = links
 
@@ -1225,8 +1251,10 @@ class TestGraphAlgorithmProperties:
 
         service = CycleDetectionService(mock_session)
 
-        links = [Mock(spec=Link, source_item_id=src, target_item_id=tgt, link_type="depends_on")
-                for src, tgt in graph["edges"]]
+        links = [
+            Mock(spec=Link, source_item_id=src, target_item_id=tgt, link_type="depends_on")
+            for src, tgt in graph["edges"]
+        ]
 
         mock_session.query.return_value.filter.return_value.all.return_value = links
 
@@ -1262,6 +1290,7 @@ class TestGraphAlgorithmProperties:
 # EDGE CASE AND BOUNDARY TESTS
 # ============================================================================
 
+
 class TestAlgorithmEdgeCases:
     """Tests for edge cases and boundary conditions."""
 
@@ -1275,7 +1304,9 @@ class TestAlgorithmEdgeCases:
         """Test cycle detection handles database errors gracefully."""
         service = CycleDetectionService(mock_session)
 
-        mock_session.query.return_value.filter.return_value.all.side_effect = OperationalError("", "", "")
+        mock_session.query.return_value.filter.return_value.all.side_effect = OperationalError(
+            "", None, Exception("db error")
+        )
 
         result = service.detect_cycles("proj1", link_type="depends_on")
 
@@ -1288,8 +1319,14 @@ class TestAlgorithmEdgeCases:
 
         # Links reference non-existent items
         links = [
-            Mock(spec=Link, id="link1", source_item_id="A", target_item_id="B",
-                link_type="depends_on", project_id="proj1"),
+            Mock(
+                spec=Link,
+                id="link1",
+                source_item_id="A",
+                target_item_id="B",
+                link_type="depends_on",
+                project_id="proj1",
+            ),
         ]
 
         # Only item A exists
@@ -1307,10 +1344,24 @@ class TestAlgorithmEdgeCases:
         service = CycleDetectionService(mock_session)
 
         items = [
-            Mock(spec=Item, id="A", title="A", view="requirements",
-                item_type="requirement", status="active", deleted_at=None),
-            Mock(spec=Item, id="B", title="B", view="requirements",
-                item_type="requirement", status="active", deleted_at=None),
+            Mock(
+                spec=Item,
+                id="A",
+                title="A",
+                view="requirements",
+                item_type="requirement",
+                status="active",
+                deleted_at=None,
+            ),
+            Mock(
+                spec=Item,
+                id="B",
+                title="B",
+                view="requirements",
+                item_type="requirement",
+                status="active",
+                deleted_at=None,
+            ),
         ]
 
         mock_session.query.return_value.filter.return_value.all.side_effect = [items, []]
@@ -1325,10 +1376,24 @@ class TestAlgorithmEdgeCases:
         service = CycleDetectionService(mock_session)
 
         items = [
-            Mock(spec=Item, id="A", title="A", view="requirements",
-                item_type="requirement", status="active", deleted_at=None),
-            Mock(spec=Item, id="B", title="B", view="requirements",
-                item_type="requirement", status="active", deleted_at=None),
+            Mock(
+                spec=Item,
+                id="A",
+                title="A",
+                view="requirements",
+                item_type="requirement",
+                status="active",
+                deleted_at=None,
+            ),
+            Mock(
+                spec=Item,
+                id="B",
+                title="B",
+                view="requirements",
+                item_type="requirement",
+                status="active",
+                deleted_at=None,
+            ),
         ]
 
         links = [
@@ -1367,10 +1432,10 @@ class TestAlgorithmEdgeCases:
 
         # Create cycle with 500 nodes (reduced from 1000 to avoid recursion limit)
         nodes = [f"N{i}" for i in range(500)]
-        links = []
-        for i in range(500):
-            links.append(Mock(spec=Link, source_item_id=nodes[i],
-                            target_item_id=nodes[(i + 1) % 500], link_type="depends_on"))
+        links = [
+            Mock(spec=Link, source_item_id=nodes[i], target_item_id=nodes[(i + 1) % 500], link_type="depends_on")
+            for i in range(500)
+        ]
 
         mock_session.query.return_value.filter.return_value.all.return_value = links
 
@@ -1393,7 +1458,6 @@ class TestAlgorithmEdgeCases:
         """Test average links per item calculation."""
         # This would be tested via dependency_metrics
         # Already covered in analytics tests
-        pass
 
 
 # ============================================================================

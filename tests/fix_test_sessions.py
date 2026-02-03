@@ -9,7 +9,6 @@ With:
     with refresh_db_session(temp_env) as session:
 """
 
-import re
 from pathlib import Path
 
 # Read the test file
@@ -21,7 +20,7 @@ content = test_file.read_text()
 
 # Find all patterns where we get db then use it in Session
 # We need to be careful not to break the helper function itself or fixture
-lines = content.split('\n')
+lines = content.split("\n")
 new_lines = []
 i = 0
 
@@ -29,19 +28,19 @@ while i < len(lines):
     line = lines[i]
 
     # Skip the helper function definition and fixture
-    if 'def refresh_db_session' in line or 'def temp_env' in line:
+    if "def refresh_db_session" in line or "def temp_env" in line:
         new_lines.append(line)
         i += 1
         continue
 
     # Check if this line has db = temp_env["db"] pattern
-    if 'db = temp_env["db"]' in line and 'def ' not in line:
+    if 'db = temp_env["db"]' in line and "def " not in line:
         # Look ahead for Session(db.engine) pattern within next 3 lines
         found_session = False
         lines_to_skip = 0
 
         for j in range(i + 1, min(i + 4, len(lines))):
-            if 'with Session(db.engine) as session:' in lines[j]:
+            if "with Session(db.engine) as session:" in lines[j]:
                 found_session = True
                 lines_to_skip = j - i
                 break
@@ -49,13 +48,15 @@ while i < len(lines):
         if found_session:
             # Skip the db = temp_env["db"] line
             # Keep any lines in between
-            for k in range(i + 1, i + lines_to_skip):
-                if lines[k].strip() and not lines[k].strip().startswith('#'):
-                    new_lines.append(lines[k])
+            new_lines.extend(
+                lines[k]
+                for k in range(i + 1, i + lines_to_skip)
+                if lines[k].strip() and not lines[k].strip().startswith("#")
+            )
 
             # Replace with refresh_db_session
             indent = len(lines[i + lines_to_skip]) - len(lines[i + lines_to_skip].lstrip())
-            new_lines.append(' ' * indent + 'with refresh_db_session(temp_env) as session:')
+            new_lines.append(" " * indent + "with refresh_db_session(temp_env) as session:")
             i = i + lines_to_skip + 1
             continue
 
@@ -63,7 +64,7 @@ while i < len(lines):
     i += 1
 
 # Write back
-new_content = '\n'.join(new_lines)
+new_content = "\n".join(new_lines)
 test_file.write_text(new_content)
 
 print("Fixed session patterns in test file")

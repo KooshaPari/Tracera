@@ -30,4 +30,4 @@ export declare type _Flatten<L extends List, strict extends Boolean, limit exten
  * ```
  */
 export declare type Flatten<L extends List, strict extends Boolean = 1, limit extends number = number> = L extends unknown ? _Flatten<L, strict, limit> : never;
-export {};
+

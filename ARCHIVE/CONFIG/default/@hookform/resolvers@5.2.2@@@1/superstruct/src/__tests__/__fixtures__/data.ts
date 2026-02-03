@@ -26,7 +26,7 @@ export const schema = object({
   repeatPassword: Password,
   accessToken: optional(union([string(), number()])),
   birthYear: optional(max(min(number(), 1900), 2013)),
-  email: optional(pattern(string(), /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)),
+  email: optional(pattern(string(), /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/)),
   tags: array(string()),
   enabled: boolean(),
   like: optional(array(object({ id: number(), name: size(string(), 4) }))),

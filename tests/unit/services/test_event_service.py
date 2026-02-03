@@ -1,12 +1,13 @@
 """Unit tests for EventService - based on actual implementation."""
 
-import pytest
 from datetime import datetime
-from uuid import uuid4
 from unittest.mock import AsyncMock
+from uuid import uuid4
 
-from tracertm.services.event_service import EventService
+import pytest
+
 from tracertm.models.event import Event
+from tracertm.services.event_service import EventService
 
 pytestmark = pytest.mark.unit
 
@@ -20,8 +21,7 @@ def mock_session():
 @pytest.fixture
 def mock_event_repository():
     """Create a mock event repository."""
-    repo = AsyncMock()
-    return repo
+    return AsyncMock()
 
 
 @pytest.fixture
@@ -69,7 +69,7 @@ class TestEventServiceLogEvent:
             entity_type="item",
             entity_id=test_data["item_id"],
             agent_id=test_data["agent_id"],
-            data={"title": "New Item"}
+            data={"title": "New Item"},
         )
         event_service.events.log = AsyncMock(return_value=mock_event)
 
@@ -98,7 +98,7 @@ class TestEventServiceLogEvent:
             entity_type="project",
             entity_id=test_data["project_id"],
             agent_id=test_data["agent_id"],
-            data={}
+            data={},
         )
         event_service.events.log = AsyncMock(return_value=mock_event)
 
@@ -129,7 +129,7 @@ class TestEventServiceGetItemHistory:
                 entity_type="item",
                 entity_id=test_data["item_id"],
                 agent_id=test_data["agent_id"],
-                data={"title": "Item"}
+                data={"title": "Item"},
             ),
             Event(
                 project_id=test_data["project_id"],
@@ -137,7 +137,7 @@ class TestEventServiceGetItemHistory:
                 entity_type="item",
                 entity_id=test_data["item_id"],
                 agent_id=test_data["agent_id"],
-                data={"status": "done"}
+                data={"status": "done"},
             ),
         ]
         event_service.events.get_by_entity = AsyncMock(return_value=mock_events)
@@ -165,18 +165,11 @@ class TestEventServiceGetItemAtTime:
     @pytest.mark.asyncio
     async def test_get_item_at_time_returns_state(self, event_service, test_data):
         """get_item_at_time returns item state at specific time."""
-        item_state = {
-            "id": test_data["item_id"],
-            "title": "Item at that time",
-            "status": "in_progress"
-        }
+        item_state = {"id": test_data["item_id"], "title": "Item at that time", "status": "in_progress"}
         event_service.events.get_entity_at_time = AsyncMock(return_value=item_state)
 
         target_time = datetime.now()
-        result = await event_service.get_item_at_time(
-            test_data["item_id"],
-            target_time
-        )
+        result = await event_service.get_item_at_time(test_data["item_id"], target_time)
 
         assert result == item_state
         event_service.events.get_entity_at_time.assert_called_once()
@@ -187,9 +180,6 @@ class TestEventServiceGetItemAtTime:
         event_service.events.get_entity_at_time = AsyncMock(return_value=None)
 
         target_time = datetime.now()
-        result = await event_service.get_item_at_time(
-            test_data["item_id"],
-            target_time
-        )
+        result = await event_service.get_item_at_time(test_data["item_id"], target_time)
 
         assert result is None

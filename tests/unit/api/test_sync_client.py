@@ -2,7 +2,7 @@
 Unit tests for TraceRTM sync API client.
 """
 
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import AsyncMock, Mock, patch
 
 import httpx
@@ -17,7 +17,6 @@ from tracertm.api import (
     Conflict,
     ConflictError,
     NetworkError,
-    RateLimitError,
     SyncOperation,
     SyncStatus,
     UploadResult,
@@ -135,7 +134,7 @@ class TestChange:
 
     def test_change_to_dict(self) -> None:
         """Test converting Change to dictionary."""
-        timestamp = datetime.utcnow()
+        timestamp = datetime.now(UTC)
         change = Change(
             entity_type="item",
             entity_id="item-001",
@@ -343,7 +342,7 @@ class TestApiClient:
     @pytest.mark.asyncio
     async def test_download_changes_success(self, api_client: ApiClient) -> None:
         """Test successful download of changes."""
-        since = datetime.utcnow() - timedelta(hours=1)
+        since = datetime.now(UTC) - timedelta(hours=1)
 
         mock_response = Mock()
         mock_response.json.return_value = {
@@ -468,22 +467,24 @@ class TestApiClient:
         client = api_client.client
 
         # Mock asyncio.sleep to avoid actual delays during retry
-        with patch("tracertm.api.sync_client.asyncio.sleep", new_callable=AsyncMock) as mock_sleep:
-            with patch.object(client, "request", new_callable=AsyncMock) as mock_request:
-                # Always return 429 response - will retry 3 times then give up
-                # Since RateLimitError continues (doesn't set last_error),
-                # after exhausting retries it raises ApiError
-                mock_request.return_value = mock_response
+        with (
+            patch("tracertm.api.sync_client.asyncio.sleep", new_callable=AsyncMock) as mock_sleep,
+            patch.object(client, "request", new_callable=AsyncMock) as mock_request,
+        ):
+            # Always return 429 response - will retry 3 times then give up
+            # Since RateLimitError continues (doesn't set last_error),
+            # after exhausting retries it raises ApiError
+            mock_request.return_value = mock_response
 
-                # After max retries with persistent rate limiting, raises ApiError
-                with pytest.raises(ApiError):
-                    await api_client._retry_request("GET", "/api/test")
+            # After max retries with persistent rate limiting, raises ApiError
+            with pytest.raises(ApiError):
+                await api_client._retry_request("GET", "/api/test")
 
-                # Should have attempted the request max_retries times
-                assert mock_request.call_count == api_client.config.max_retries
+            # Should have attempted the request max_retries times
+            assert mock_request.call_count == api_client.config.max_retries
 
-                # Verify sleep was called (but didn't actually wait due to mock)
-                assert mock_sleep.called, "asyncio.sleep should have been called during retry backoff"
+            # Verify sleep was called (but didn't actually wait due to mock)
+            assert mock_sleep.called, "asyncio.sleep should have been called during retry backoff"
 
 
 class TestFullSync:
@@ -501,37 +502,28 @@ class TestFullSync:
             "errors": [],
         }
 
-        download_response = {
-            "changes": [
-                {
-                    "entity_type": "item",
-                    "entity_id": "item-003",
-                    "operation": "update",
-                    "data": {"title": "Remote Update"},
-                    "version": 2,
-                    "timestamp": "2024-01-01T11:00:00",
-                }
-            ]
-        }
+        remote_changes_payload = [
+            Change(
+                entity_type="item",
+                entity_id="item-003",
+                operation=SyncOperation.UPDATE,
+                data={"title": "Remote Update"},
+                version=2,
+            )
+        ]
 
-        with patch.object(api_client, "upload_changes", new_callable=AsyncMock) as mock_upload:
-            with patch.object(api_client, "download_changes", new_callable=AsyncMock) as mock_download:
-                mock_upload.return_value = UploadResult.from_dict(upload_response)
-                mock_download.return_value = [
-                    Change(
-                        entity_type="item",
-                        entity_id="item-003",
-                        operation=SyncOperation.UPDATE,
-                        data={"title": "Remote Update"},
-                        version=2,
-                    )
-                ]
+        with (
+            patch.object(api_client, "upload_changes", new_callable=AsyncMock) as mock_upload,
+            patch.object(api_client, "download_changes", new_callable=AsyncMock) as mock_download,
+        ):
+            mock_upload.return_value = UploadResult.from_dict(upload_response)
+            mock_download.return_value = remote_changes_payload
 
-                upload_result, remote_changes = await api_client.full_sync(
-                    local_changes=sample_changes,
-                    conflict_strategy=ConflictStrategy.LAST_WRITE_WINS,
-                )
+            upload_result, remote_changes = await api_client.full_sync(
+                local_changes=sample_changes,
+                conflict_strategy=ConflictStrategy.LAST_WRITE_WINS,
+            )
 
-                assert len(upload_result.applied) == 2
-                assert len(remote_changes) == 1
-                assert remote_changes[0].entity_id == "item-003"
+            assert len(upload_result.applied) == 2
+            assert len(remote_changes) == 1
+            assert remote_changes[0].entity_id == "item-003"

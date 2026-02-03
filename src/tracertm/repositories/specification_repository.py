@@ -82,9 +82,7 @@ class ADRRepository:
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
 
-    async def get_by_number(
-        self, adr_number: str, project_id: str | None = None
-    ) -> ADR | None:
+    async def get_by_number(self, adr_number: str, project_id: str | None = None) -> ADR | None:
         """Get ADR by ADR number."""
         query = select(ADR).where(ADR.adr_number == adr_number)
 
@@ -113,11 +111,7 @@ class ADRRepository:
 
     async def find_related(self, adr_id: str) -> list[ADR]:
         """Find ADRs related to a given ADR (supersedes/superseded_by/related_adrs)."""
-        query = select(ADR).where(
-            (ADR.id == adr_id)
-            | (ADR.supersedes == adr_id)
-            | (ADR.superseded_by == adr_id)
-        )
+        query = select(ADR).where((ADR.id == adr_id) | (ADR.supersedes == adr_id) | (ADR.superseded_by == adr_id))
         result = await self.session.execute(query)
         return list(result.scalars().all())
 
@@ -192,9 +186,7 @@ class ADRRepository:
         }
 
         if to_status not in valid_transitions.get(from_status, []):
-            raise ValueError(
-                f"Invalid status transition from {from_status} to {to_status}"
-            )
+            raise ValueError(f"Invalid status transition from {from_status} to {to_status}")
 
         adr.status = to_status
         adr.version += 1
@@ -235,14 +227,10 @@ class ADRRepository:
 
     async def count_by_status(self, project_id: str) -> dict[str, int]:
         """Count ADRs by status for a project."""
-        query = (
-            select(ADR.status, func.count(ADR.id))
-            .where(ADR.project_id == project_id)
-            .group_by(ADR.status)
-        )
+        query = select(ADR.status, func.count(ADR.id)).where(ADR.project_id == project_id).group_by(ADR.status)
         result = await self.session.execute(query)
         rows = result.all()
-        return {status: count for status, count in rows}
+        return {r[0]: r[1] for r in rows}
 
 
 class ContractRepository:
@@ -300,9 +288,7 @@ class ContractRepository:
         await self.session.refresh(contract)
         return contract
 
-    async def get_by_id(
-        self, contract_id: str, project_id: str | None = None
-    ) -> Contract | None:
+    async def get_by_id(self, contract_id: str, project_id: str | None = None) -> Contract | None:
         """Get contract by ID, optionally scoped to project."""
         query = select(Contract).where(Contract.id == contract_id)
 
@@ -312,9 +298,7 @@ class ContractRepository:
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
 
-    async def get_by_number(
-        self, contract_number: str, project_id: str | None = None
-    ) -> Contract | None:
+    async def get_by_number(self, contract_number: str, project_id: str | None = None) -> Contract | None:
         """Get contract by contract number."""
         query = select(Contract).where(Contract.contract_number == contract_number)
 
@@ -346,9 +330,7 @@ class ContractRepository:
 
     async def list_by_item(self, item_id: str) -> list[Contract]:
         """List contracts for a specific item."""
-        query = select(Contract).where(Contract.item_id == item_id).order_by(
-            Contract.created_at.desc()
-        )
+        query = select(Contract).where(Contract.item_id == item_id).order_by(Contract.created_at.desc())
         result = await self.session.execute(query)
         return list(result.scalars().all())
 
@@ -427,9 +409,7 @@ class ContractRepository:
         }
 
         if to_status not in valid_transitions.get(from_status, []):
-            raise ValueError(
-                f"Invalid status transition from {from_status} to {to_status}"
-            )
+            raise ValueError(f"Invalid status transition from {from_status} to {to_status}")
 
         contract.status = to_status
         contract.version += 1
@@ -442,9 +422,7 @@ class ContractRepository:
         """Delete contract."""
         from sqlalchemy import delete
 
-        result = await self.session.execute(
-            delete(Contract).where(Contract.id == contract_id)
-        )
+        result = await self.session.execute(delete(Contract).where(Contract.id == contract_id))
         cursor_result = cast(CursorResult, result)
         return cursor_result.rowcount > 0
 
@@ -457,7 +435,7 @@ class ContractRepository:
         )
         result = await self.session.execute(query)
         rows = result.all()
-        return {contract_type: count for contract_type, count in rows}
+        return {r[0]: r[1] for r in rows}
 
 
 class FeatureRepository:
@@ -511,9 +489,7 @@ class FeatureRepository:
         await self.session.refresh(feature)
         return feature
 
-    async def get_by_id(
-        self, feature_id: str, project_id: str | None = None
-    ) -> Feature | None:
+    async def get_by_id(self, feature_id: str, project_id: str | None = None) -> Feature | None:
         """Get feature by ID, optionally scoped to project."""
         query = select(Feature).where(Feature.id == feature_id)
 
@@ -523,9 +499,7 @@ class FeatureRepository:
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
 
-    async def get_by_number(
-        self, feature_number: str, project_id: str | None = None
-    ) -> Feature | None:
+    async def get_by_number(self, feature_number: str, project_id: str | None = None) -> Feature | None:
         """Get feature by feature number."""
         query = select(Feature).where(Feature.feature_number == feature_number)
 
@@ -646,9 +620,7 @@ class FeatureRepository:
         }
 
         if to_status not in valid_transitions.get(from_status, []):
-            raise ValueError(
-                f"Invalid status transition from {from_status} to {to_status}"
-            )
+            raise ValueError(f"Invalid status transition from {from_status} to {to_status}")
 
         feature.status = to_status
         feature.version += 1
@@ -758,9 +730,7 @@ class ScenarioRepository:
         result = await self.session.execute(query)
         return list(result.scalars().all())
 
-    async def find_by_status(
-        self, feature_id: str, status: str, limit: int = 100, offset: int = 0
-    ) -> list[Scenario]:
+    async def find_by_status(self, feature_id: str, status: str, limit: int = 100, offset: int = 0) -> list[Scenario]:
         """Find scenarios by status."""
         query = (
             select(Scenario)
@@ -802,9 +772,7 @@ class ScenarioRepository:
         await self.session.refresh(scenario)
         return scenario
 
-    async def update_pass_rate(
-        self, scenario_id: str, pass_rate: float
-    ) -> Scenario:
+    async def update_pass_rate(self, scenario_id: str, pass_rate: float) -> Scenario:
         """Update scenario pass rate."""
         query = select(Scenario).where(Scenario.id == scenario_id)
         result = await self.session.execute(query)
@@ -846,9 +814,7 @@ class ScenarioRepository:
         }
 
         if to_status not in valid_transitions.get(from_status, []):
-            raise ValueError(
-                f"Invalid status transition from {from_status} to {to_status}"
-            )
+            raise ValueError(f"Invalid status transition from {from_status} to {to_status}")
 
         scenario.status = to_status
         scenario.version += 1
@@ -861,9 +827,7 @@ class ScenarioRepository:
         """Delete scenario."""
         from sqlalchemy import delete
 
-        result = await self.session.execute(
-            delete(Scenario).where(Scenario.id == scenario_id)
-        )
+        result = await self.session.execute(delete(Scenario).where(Scenario.id == scenario_id))
         cursor_result = cast(CursorResult, result)
         return cursor_result.rowcount > 0
 
@@ -876,13 +840,11 @@ class ScenarioRepository:
         )
         result = await self.session.execute(query)
         rows = result.all()
-        return {status: count for status, count in rows}
+        return {r[0]: r[1] for r in rows}
 
     async def get_average_pass_rate(self, feature_id: str) -> float:
         """Get average pass rate for all scenarios in a feature."""
-        query = select(func.avg(Scenario.pass_rate)).where(
-            Scenario.feature_id == feature_id
-        )
+        query = select(func.avg(Scenario.pass_rate)).where(Scenario.feature_id == feature_id)
         result = await self.session.execute(query)
         avg_pass_rate = result.scalar()
         return avg_pass_rate if avg_pass_rate else 0.0

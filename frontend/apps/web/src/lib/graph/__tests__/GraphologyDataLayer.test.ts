@@ -2,14 +2,16 @@
  * GraphologyDataLayer Unit Tests
  */
 
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import type { Node, Edge } from "@xyflow/react";
+import { beforeEach, describe, expect, it } from "vitest";
+
 import {
 	GraphologyDataLayer,
 	createGraphologyDataLayer,
 	getGraphologyDataLayer,
 	resetGraphologyDataLayer,
 } from "../GraphologyDataLayer";
+
+import type { Edge, Node } from "@xyflow/react";
 
 describe("GraphologyDataLayer", () => {
 	let dataLayer: GraphologyDataLayer;
@@ -29,16 +31,16 @@ describe("GraphologyDataLayer", () => {
 		it("should initialize from ReactFlow data", async () => {
 			const nodes: Node[] = [
 				{
-					id: "node1",
-					type: "default",
-					position: { x: 0, y: 0 },
 					data: { label: "Node 1" },
+					id: "node1",
+					position: { x: 0, y: 0 },
+					type: "default",
 				},
 				{
-					id: "node2",
-					type: "default",
-					position: { x: 100, y: 100 },
 					data: { label: "Node 2" },
+					id: "node2",
+					position: { x: 100, y: 100 },
+					type: "default",
 				},
 			];
 
@@ -60,10 +62,10 @@ describe("GraphologyDataLayer", () => {
 		it("should track performance metrics", async () => {
 			const nodes: Node[] = [
 				{
-					id: "node1",
-					type: "default",
-					position: { x: 0, y: 0 },
 					data: { label: "Node 1" },
+					id: "node1",
+					position: { x: 0, y: 0 },
+					type: "default",
 				},
 			];
 
@@ -79,41 +81,41 @@ describe("GraphologyDataLayer", () => {
 	describe("Node Operations", () => {
 		it("should add a node", () => {
 			const node: Node = {
+				data: { color: "#ff0000", label: "Node 1" },
 				id: "node1",
-				type: "default",
 				position: { x: 0, y: 0 },
-				data: { label: "Node 1", color: "#ff0000" },
+				type: "default",
 			};
 
 			dataLayer.addNode(node);
 
 			expect(dataLayer.getGraph().hasNode("node1")).toBe(true);
 			const attrs = dataLayer.getGraph().getNodeAttributes("node1");
-			expect(attrs.label).toBe("Node 1");
-			expect(attrs.color).toBe("#ff0000");
+			expect(attrs["label"]).toBe("Node 1");
+			expect(attrs["color"]).toBe("#ff0000");
 		});
 
 		it("should update existing node", () => {
 			const node: Node = {
-				id: "node1",
-				type: "default",
-				position: { x: 0, y: 0 },
 				data: { label: "Node 1" },
+				id: "node1",
+				position: { x: 0, y: 0 },
+				type: "default",
 			};
 
 			dataLayer.addNode(node);
 			dataLayer.updateNode("node1", { color: "#00ff00" });
 
 			const attrs = dataLayer.getGraph().getNodeAttributes("node1");
-			expect(attrs.color).toBe("#00ff00");
+			expect(attrs["color"]).toBe("#00ff00");
 		});
 
 		it("should remove a node", () => {
 			const node: Node = {
-				id: "node1",
-				type: "default",
-				position: { x: 0, y: 0 },
 				data: { label: "Node 1" },
+				id: "node1",
+				position: { x: 0, y: 0 },
+				type: "default",
 			};
 
 			dataLayer.addNode(node);
@@ -125,9 +127,9 @@ describe("GraphologyDataLayer", () => {
 
 		it("should get node neighbors", async () => {
 			const nodes: Node[] = [
-				{ id: "node1", type: "default", position: { x: 0, y: 0 }, data: {} },
-				{ id: "node2", type: "default", position: { x: 0, y: 0 }, data: {} },
-				{ id: "node3", type: "default", position: { x: 0, y: 0 }, data: {} },
+				{ data: {}, id: "node1", position: { x: 0, y: 0 }, type: "default" },
+				{ data: {}, id: "node2", position: { x: 0, y: 0 }, type: "default" },
+				{ data: {}, id: "node3", position: { x: 0, y: 0 }, type: "default" },
 			];
 
 			const edges: Edge[] = [
@@ -147,26 +149,26 @@ describe("GraphologyDataLayer", () => {
 	describe("Edge Operations", () => {
 		beforeEach(async () => {
 			const nodes: Node[] = [
-				{ id: "node1", type: "default", position: { x: 0, y: 0 }, data: {} },
-				{ id: "node2", type: "default", position: { x: 0, y: 0 }, data: {} },
+				{ data: {}, id: "node1", position: { x: 0, y: 0 }, type: "default" },
+				{ data: {}, id: "node2", position: { x: 0, y: 0 }, type: "default" },
 			];
 			await dataLayer.initialize(nodes, []);
 		});
 
 		it("should add an edge", () => {
 			const edge: Edge = {
+				data: { weight: 5 },
 				id: "edge1",
 				source: "node1",
 				target: "node2",
 				type: "default",
-				data: { weight: 5 },
 			};
 
 			dataLayer.addEdge(edge);
 
 			expect(dataLayer.getGraph().hasEdge("node1", "node2")).toBe(true);
 			const attrs = dataLayer.getGraph().getEdgeAttributes("node1", "node2");
-			expect(attrs.weight).toBe(5);
+			expect(attrs["weight"]).toBe(5);
 		});
 
 		it("should skip edges with missing nodes", () => {
@@ -194,7 +196,7 @@ describe("GraphologyDataLayer", () => {
 			dataLayer.updateEdge("node1", "node2", { weight: 10 });
 
 			const attrs = dataLayer.getGraph().getEdgeAttributes("node1", "node2");
-			expect(attrs.weight).toBe(10);
+			expect(attrs["weight"]).toBe(10);
 		});
 	});
 
@@ -202,26 +204,26 @@ describe("GraphologyDataLayer", () => {
 		it("should convert to ReactFlow format", async () => {
 			const nodes: Node[] = [
 				{
+					data: { color: "#ff0000", label: "Node 1" },
 					id: "node1",
-					type: "custom",
 					position: { x: 100, y: 200 },
-					data: { label: "Node 1", color: "#ff0000" },
+					type: "custom",
 				},
 				{
-					id: "node2",
-					type: "default",
-					position: { x: 300, y: 400 },
 					data: { label: "Node 2" },
+					id: "node2",
+					position: { x: 300, y: 400 },
+					type: "default",
 				},
 			];
 
 			const edges: Edge[] = [
 				{
 					id: "edge1",
+					label: "connects",
 					source: "node1",
 					target: "node2",
 					type: "default",
-					label: "connects",
 				},
 			];
 
@@ -232,12 +234,19 @@ describe("GraphologyDataLayer", () => {
 			expect(result.nodes).toHaveLength(2);
 			expect(result.edges).toHaveLength(1);
 
-			const node1 = result.nodes.find((n) => n.id === "node1");
-			expect(node1?.type).toBe("custom");
-			expect(node1?.position.x).toBe(100);
-			expect(node1?.data.color).toBe("#ff0000");
+			const node1 = result.nodes.find((node) => node.id === "node1");
+			expect(node1).toBeDefined();
+			if (!node1) {
+				throw new Error("Expected node1 to exist.");
+			}
+			expect(node1.type).toBe("custom");
+			expect(node1.position.x).toBe(100);
+			expect(node1.data["color"]).toBe("#ff0000");
 
-			const edge1 = result.edges[0];
+			const [edge1] = result.edges;
+			if (!edge1) {
+				throw new Error("Expected edge1 to exist.");
+			}
 			expect(edge1.source).toBe("node1");
 			expect(edge1.target).toBe("node2");
 			expect(edge1.label).toBe("connects");
@@ -246,34 +255,37 @@ describe("GraphologyDataLayer", () => {
 		it("should preserve all node attributes", async () => {
 			const nodes: Node[] = [
 				{
-					id: "node1",
-					type: "default",
-					position: { x: 0, y: 0 },
 					data: {
-						label: "Node 1",
 						customProp: "value",
+						label: "Node 1",
 						nested: { key: "value" },
 					},
+					id: "node1",
+					position: { x: 0, y: 0 },
+					type: "default",
 				},
 			];
 
 			await dataLayer.initialize(nodes, []);
 
 			const result = dataLayer.toReactFlow();
-			const node1 = result.nodes[0];
+			const [node1] = result.nodes;
+			if (!node1) {
+				throw new Error("Expected node1 to exist.");
+			}
 
-			expect(node1.data.customProp).toBe("value");
-			expect(node1.data.nested).toEqual({ key: "value" });
+			expect(node1.data["customProp"]).toBe("value");
+			expect(node1.data["nested"]).toEqual({ key: "value" });
 		});
 	});
 
 	describe("Layout Computation", () => {
 		beforeEach(async () => {
 			const nodes: Node[] = Array.from({ length: 10 }, (_, i) => ({
-				id: `node${i}`,
-				type: "default",
-				position: { x: 0, y: 0 },
 				data: { label: `Node ${i}` },
+				id: `node${i}`,
+				position: { x: 0, y: 0 },
+				type: "default",
 			}));
 
 			const edges: Edge[] = Array.from({ length: 9 }, (_, i) => ({
@@ -296,8 +308,8 @@ describe("GraphologyDataLayer", () => {
 
 			// Check that positions were updated
 			const node = dataLayer.getGraph().getNodeAttributes("node0");
-			expect(node.x).toBeDefined();
-			expect(node.y).toBeDefined();
+			expect(node["x"]).toBeDefined();
+			expect(node["y"]).toBeDefined();
 		});
 
 		it("should compute circular layout", async () => {
@@ -330,22 +342,22 @@ describe("GraphologyDataLayer", () => {
 	describe("Community Detection", () => {
 		it("should detect communities", async () => {
 			const nodes: Node[] = Array.from({ length: 20 }, (_, i) => ({
-				id: `node${i}`,
-				type: "default",
-				position: { x: 0, y: 0 },
 				data: { label: `Node ${i}` },
+				id: `node${i}`,
+				position: { x: 0, y: 0 },
+				type: "default",
 			}));
 
 			const edges: Edge[] = [];
 			// Create two separate communities
-			for (let i = 0; i < 9; i++) {
+			for (let i = 0; i < 9; i += 1) {
 				edges.push({
 					id: `edge-a-${i}`,
 					source: `node${i}`,
 					target: `node${i + 1}`,
 				});
 			}
-			for (let i = 10; i < 19; i++) {
+			for (let i = 10; i < 19; i += 1) {
 				edges.push({
 					id: `edge-b-${i}`,
 					source: `node${i}`,
@@ -365,9 +377,9 @@ describe("GraphologyDataLayer", () => {
 	describe("Statistics", () => {
 		it("should compute graph statistics", async () => {
 			const nodes: Node[] = [
-				{ id: "node1", type: "default", position: { x: 0, y: 0 }, data: {} },
-				{ id: "node2", type: "default", position: { x: 0, y: 0 }, data: {} },
-				{ id: "node3", type: "default", position: { x: 0, y: 0 }, data: {} },
+				{ data: {}, id: "node1", position: { x: 0, y: 0 }, type: "default" },
+				{ data: {}, id: "node2", position: { x: 0, y: 0 }, type: "default" },
+				{ data: {}, id: "node3", position: { x: 0, y: 0 }, type: "default" },
 			];
 
 			const edges: Edge[] = [
@@ -387,9 +399,9 @@ describe("GraphologyDataLayer", () => {
 
 		it("should get node degree metrics", async () => {
 			const nodes: Node[] = [
-				{ id: "node1", type: "default", position: { x: 0, y: 0 }, data: {} },
-				{ id: "node2", type: "default", position: { x: 0, y: 0 }, data: {} },
-				{ id: "node3", type: "default", position: { x: 0, y: 0 }, data: {} },
+				{ data: {}, id: "node1", position: { x: 0, y: 0 }, type: "default" },
+				{ data: {}, id: "node2", position: { x: 0, y: 0 }, type: "default" },
+				{ data: {}, id: "node3", position: { x: 0, y: 0 }, type: "default" },
 			];
 
 			const edges: Edge[] = [
@@ -411,7 +423,7 @@ describe("GraphologyDataLayer", () => {
 	describe("Import/Export", () => {
 		it("should export to JSON", async () => {
 			const nodes: Node[] = [
-				{ id: "node1", type: "default", position: { x: 0, y: 0 }, data: {} },
+				{ data: {}, id: "node1", position: { x: 0, y: 0 }, type: "default" },
 			];
 
 			await dataLayer.initialize(nodes, []);
@@ -424,7 +436,7 @@ describe("GraphologyDataLayer", () => {
 
 		it("should import from JSON", async () => {
 			const nodes: Node[] = [
-				{ id: "node1", type: "default", position: { x: 0, y: 0 }, data: {} },
+				{ data: {}, id: "node1", position: { x: 0, y: 0 }, type: "default" },
 			];
 
 			await dataLayer.initialize(nodes, []);
@@ -441,7 +453,7 @@ describe("GraphologyDataLayer", () => {
 	describe("Clear", () => {
 		it("should clear the graph", async () => {
 			const nodes: Node[] = [
-				{ id: "node1", type: "default", position: { x: 0, y: 0 }, data: {} },
+				{ data: {}, id: "node1", position: { x: 0, y: 0 }, type: "default" },
 			];
 
 			await dataLayer.initialize(nodes, []);

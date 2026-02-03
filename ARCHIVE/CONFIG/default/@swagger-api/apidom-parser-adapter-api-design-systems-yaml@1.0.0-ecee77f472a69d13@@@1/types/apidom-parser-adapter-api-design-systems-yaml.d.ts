@@ -27,4 +27,4 @@ export declare const namespace: Namespace;
  */
 export declare const parse: (source: string, options?: Record<string, unknown>) => Promise<ParseResultElement>;
 
-export { }
+

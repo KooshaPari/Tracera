@@ -75,9 +75,9 @@ type Jsonify<T> =
 					? J // Then T is Jsonable and its Jsonable value is J
 					: never // Not Jsonable because its toJSON() method does not return JsonValue
 				// Instanced primitives are objects
-				: T extends Number ? number
-				: T extends String ? string
-				: T extends Boolean ? boolean
+				: T extends number ? number
+				: T extends string ? string
+				: T extends boolean ? boolean
 				: T extends Map<any, any> | Set<any> ? {}
 				: T extends TypedArray ? Record<string, number>
 				: T extends any[]

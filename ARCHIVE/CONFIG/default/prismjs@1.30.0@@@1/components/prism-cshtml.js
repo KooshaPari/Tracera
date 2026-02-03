@@ -28,7 +28,7 @@
 	}
 
 	var round = nested(/\((?:[^()'"@/]|<str>|<comment>|<self>)*\)/.source, 2);
-	var square = nested(/\[(?:[^\[\]'"@/]|<str>|<comment>|<self>)*\]/.source, 1);
+	var square = nested(/\[(?:[^[\]'"@/]|<str>|<comment>|<self>)*\]/.source, 1);
 	var curly = nested(/\{(?:[^{}'"@/]|<str>|<comment>|<self>)*\}/.source, 2);
 	var angle = nested(/<(?:[^<>'"@/]|<comment>|<self>)*>/.source, 1);
 
@@ -36,7 +36,7 @@
 		/(?:await\b\s*)?/.source +
 		'(?:' + /(?!await\b)\w+\b/.source + '|' + round + ')' +
 		'(?:' + /[?!]?\.\w+\b/.source + '|' + '(?:' + angle + ')?' + round + '|' + square + ')*' +
-		/(?![?!\.(\[]|<(?!\/))/.source;
+		/(?![?!.([]|<(?!\/))/.source;
 
 	// Note about the above bracket patterns:
 	// They all ignore HTML expressions that might be in the C# code. This is a problem because HTML (like strings and
@@ -57,8 +57,8 @@
 		'["\'][^"\'@]*(?:(?:' + tagAttrInlineCs + ')[^"\'@]*)+["\']' +
 		')';
 
-	var tagAttrs = /(?:\s(?:\s*[^\s>\/=]+(?:\s*=\s*<tagAttrValue>|(?=[\s/>])))+)?/.source.replace(/<tagAttrValue>/, tagAttrValue);
-	var tagContent = /(?!\d)[^\s>\/=$<%]+/.source + tagAttrs + /\s*\/?>/.source;
+	var tagAttrs = /(?:\s(?:\s*[^\s>/=]+(?:\s*=\s*<tagAttrValue>|(?=[\s/>])))+)?/.source.replace(/<tagAttrValue>/, tagAttrValue);
+	var tagContent = /(?!\d)[^\s>/=$<%]+/.source + tagAttrs + /\s*\/?>/.source;
 	var tagRegion =
 		/\B@?/.source +
 		'(?:' +

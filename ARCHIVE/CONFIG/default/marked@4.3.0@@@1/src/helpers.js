@@ -46,7 +46,7 @@ export function unescape(html) {
   });
 }
 
-const caret = /(^|[^\[])\^/g;
+const caret = /(^|[^[])\^/g;
 
 /**
  * @param {string | RegExp} regex

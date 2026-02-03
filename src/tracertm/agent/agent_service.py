@@ -8,7 +8,7 @@ lifecycle events via NATS for real-time monitoring and integration.
 import logging
 import traceback
 from collections.abc import AsyncIterator
-from typing import Any, Optional
+from typing import Any
 
 from tracertm.agent.events import AgentEventPublisher, SessionStatus
 from tracertm.agent.session_store import SessionSandboxStore
@@ -22,7 +22,7 @@ class AgentService:
 
     def __init__(
         self,
-        session_store: Optional[SessionSandboxStore] = None,
+        session_store: SessionSandboxStore | None = None,
         event_bus: Any = None,
         nats_client: Any = None,
     ):
@@ -35,9 +35,9 @@ class AgentService:
     async def get_or_create_session_sandbox(
         self,
         session_id: str,
-        config: Optional[SandboxConfig] = None,
+        config: SandboxConfig | None = None,
         db_session: Any = None,
-    ) -> tuple[Optional[str], bool]:
+    ) -> tuple[str | None, bool]:
         """Return (working_directory path or None, created). Publish session.created event when created."""
         if not (session_id and session_id.strip()):
             return None, False
@@ -80,14 +80,14 @@ class AgentService:
     async def stream_chat_with_sandbox(
         self,
         messages: list[dict],
-        session_id: Optional[str] = None,
+        session_id: str | None = None,
         provider: str = "claude",
-        model: Optional[str] = None,
-        system_prompt: Optional[str] = None,
+        model: str | None = None,
+        system_prompt: str | None = None,
         max_tokens: int = 4096,
         enable_tools: bool = True,
         db_session: Any = None,
-        sandbox_config: Optional[SandboxConfig] = None,
+        sandbox_config: SandboxConfig | None = None,
     ) -> AsyncIterator[str]:
         """Stream chat; if session_id is set, use its sandbox as working_directory."""
         working_directory = None
@@ -152,18 +152,17 @@ class AgentService:
     async def simple_chat_with_sandbox(
         self,
         messages: list[dict],
-        session_id: Optional[str] = None,
+        session_id: str | None = None,
         provider: str = "claude",
-        model: Optional[str] = None,
-        system_prompt: Optional[str] = None,
+        model: str | None = None,
+        system_prompt: str | None = None,
         max_tokens: int = 4096,
         db_session: Any = None,
-        sandbox_config: Optional[SandboxConfig] = None,
+        sandbox_config: SandboxConfig | None = None,
     ) -> str:
         """Non-streaming chat; if session_id is set, use its sandbox as working_directory."""
-        working_directory = None
         if session_id:
-            working_directory, _ = await self.get_or_create_session_sandbox(
+            _working_directory, _ = await self.get_or_create_session_sandbox(
                 session_id, config=sandbox_config, db_session=db_session
             )
 
@@ -178,11 +177,10 @@ class AgentService:
             max_tokens=max_tokens,
         )
 
-
     async def destroy_session(
         self,
         session_id: str,
-        reason: Optional[str] = None,
+        reason: str | None = None,
         db_session: Any = None,
     ) -> None:
         """Destroy session sandbox and publish event."""
@@ -207,8 +205,8 @@ class AgentService:
         session_id: str,
         old_status: SessionStatus,
         new_status: SessionStatus,
-        project_id: Optional[str] = None,
-        details: Optional[dict] = None,
+        project_id: str | None = None,
+        details: dict | None = None,
     ) -> None:
         """Update session status and publish event."""
         if self._event_publisher:
@@ -224,7 +222,7 @@ class AgentService:
                 logger.warning(f"Failed to publish session status change event: {e}")
 
 
-_agent_service: Optional[AgentService] = None
+_agent_service: AgentService | None = None
 
 
 def get_agent_service(nats_client: Any = None) -> AgentService:

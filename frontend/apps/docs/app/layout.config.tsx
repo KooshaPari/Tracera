@@ -9,21 +9,21 @@ export const baseOptions: BaseLayoutProps = {
   githubUrl: 'https://github.com/yourusername/tracertm',
   links: [
     {
-      text: 'Documentation',
-      url: '/docs',
       active: 'nested-url',
       icon: <BookOpenIcon />,
+      text: 'Documentation',
+      url: '/docs',
     },
     {
-      text: 'API',
-      url: '/api',
       active: 'nested-url',
       icon: <CodeIcon />,
+      text: 'API',
+      url: '/api',
     },
     {
+      icon: <HomeIcon />,
       text: 'Home',
       url: '/',
-      icon: <HomeIcon />,
     },
   ],
   nav: {

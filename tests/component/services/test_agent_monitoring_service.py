@@ -25,7 +25,7 @@ def _agent(session, agent_id, last_activity=None, status="active", agent_type="a
 
 
 def test_check_agent_health_classifies_states(sync_session):
-    now = datetime.utcnow()
+    now = datetime.now(datetime.UTC)
     _agent(sync_session, "a-healthy", last_activity=now.isoformat())
     _agent(sync_session, "a-idle", last_activity=(now - timedelta(hours=2)).isoformat())
     _agent(sync_session, "a-stale", last_activity=(now - timedelta(hours=30)).isoformat())
@@ -46,16 +46,14 @@ def test_check_agent_health_returns_empty_for_missing_agent(sync_session):
 
 
 def test_get_alerts_composes_from_metrics_and_errors(sync_session, monkeypatch):
-    now = datetime.utcnow()
+    now = datetime.now(datetime.UTC)
     _agent(sync_session, "a-stale", last_activity=(now - timedelta(hours=25)).isoformat())
 
     # Inject metrics with high conflict rate
     def fake_metrics_service(_session):
         return SimpleNamespace(
             calculate_metrics=lambda project_id, since: {
-                "metrics": [
-                    {"agent_id": "a-stale", "agent_name": "Agent stale", "conflict_rate": 12.5}
-                ]
+                "metrics": [{"agent_id": "a-stale", "agent_name": "Agent stale", "conflict_rate": 12.5}]
             }
         )
 
@@ -70,7 +68,7 @@ def test_get_alerts_composes_from_metrics_and_errors(sync_session, monkeypatch):
         event_type="error",
         entity_type="system",
         entity_id="sys-1",
-        created_at=datetime.utcnow(),
+        created_at=datetime.now(datetime.UTC),
     )
     sync_session.add(error_event)
     sync_session.commit()

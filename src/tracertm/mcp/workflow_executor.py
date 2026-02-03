@@ -6,7 +6,7 @@ Handles elicitation, sampling, middleware, and I/O between main agent and sub-ag
 import asyncio
 import json
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 from fastmcp.client import Client
 
@@ -16,64 +16,57 @@ class WorkflowExecutor:
     Executes workflows using FastMCP Client to invoke sub-agents.
     Provides elicitation, sampling, and middleware support that root clients don't have.
     """
-    
+
     def __init__(self, project_root: Path, agent_name: str):
         self.project_root = project_root
         self.agent_name = agent_name
         self.agent_config_path = self._find_agent_config()
-    
-    def _find_agent_config(self) -> Optional[Path]:
+
+    def _find_agent_config(self) -> Path | None:
         """Find agent configuration file"""
         # Check .bmad/bmm/agents first
         bmm_agents = self.project_root / ".bmad" / "bmm" / "agents" / f"{self.agent_name}.agent.yaml"
         if bmm_agents.exists():
             return bmm_agents
-        
+
         # Check .bmad/core/agents
         core_agents = self.project_root / ".bmad" / "core" / "agents" / f"{self.agent_name}.agent.yaml"
         if core_agents.exists():
             return core_agents
-        
+
         return None
-    
-    async def execute_workflow(
-        self,
-        workflow_command: str,
-        workflow_id: str,
-        auto: bool = False
-    ) -> Dict[str, Any]:
+
+    async def execute_workflow(self, workflow_command: str, workflow_id: str, auto: bool = False) -> dict[str, Any]:
         """
         Execute a workflow by creating a sub-agent MCP server and invoking it via FastMCP Client.
-        
+
         Architecture:
         Main Agent (droid exec) -> MCP Server (bmm_server.py) -> Tool (run_workflow)
         Tool (run_workflow) -> FastMCP Client -> Sub-agent MCP Server -> Sub-agent execution
-        
+
         The sub-agent MCP server provides:
         - Elicitation for user input
         - Sampling for LLM execution
         - Middleware for logging/monitoring
         - Progress reporting
-        
+
         These features are not natively supported by droid exec (root client),
         so we wrap them in a 2nd MCP client layer using FastMCP Client.
         """
         # Create a workflow-specific MCP server that provides FastMCP features
         workflow_server = self._create_workflow_server(workflow_command, workflow_id, auto)
-        
+
         # Use FastMCP Client (2nd layer) to connect to the workflow server
         # This client supports elicitation, sampling, middleware that root clients don't
         client = Client(workflow_server)
-        
+
         async with client:
             # Invoke the workflow execution tool
             # The tool will use elicitation/sampling/middleware internally
-            result = await client.call_tool("execute_workflow", {
-                "workflow_command": workflow_command,
-                "workflow_id": workflow_id,
-                "auto": auto
-            })
-            
+            result = await client.call_tool(
+                "execute_workflow", {"workflow_command": workflow_command, "workflow_id": workflow_id, "auto": auto}
+            )
+
             # Extract result content
             if result.structured_content:
                 content = result.structured_content
@@ -81,13 +74,13 @@ class WorkflowExecutor:
                 content = result.data
             else:
                 content = str(result.content) if result.content else ""
-            
+
             return {
                 "success": True,
                 "content": content,
-                "output_path": None  # Will be set by workflow server
+                "output_path": None,  # Will be set by workflow server
             }
-    
+
     def _create_workflow_server(self, workflow_command: str, workflow_id: str, auto: bool) -> Path:
         """
         Create a temporary FastMCP server script for workflow execution.
@@ -95,7 +88,7 @@ class WorkflowExecutor:
         """
         server_script = self.project_root / ".bmad" / "tmp" / f"workflow_{workflow_id}_server.py"
         server_script.parent.mkdir(parents=True, exist_ok=True)
-        
+
         server_code = f'''#!/usr/bin/env python3
 """
 Temporary workflow execution server for {workflow_id}
@@ -125,7 +118,7 @@ mcp = FastMCP("workflow-{workflow_id}")
 # Add middleware for logging/monitoring
 class WorkflowMiddleware(Middleware):
     """Middleware for workflow execution logging"""
-    
+
     async def on_tool_call(self, ctx: MiddlewareContext, tool_name: str, arguments: Dict[str, Any]):
         print(f'[WORKFLOW] {{tool_name}} called with args: {{arguments}}')
         await ctx.next()
@@ -142,14 +135,14 @@ async def execute_workflow(
 ) -> str:
     """
     Execute a workflow step using FastMCP features (elicitation, sampling, middleware).
-    
+
     This tool is invoked by FastMCP Client from the main agent's MCP server.
     It provides:
     - Elicitation for user input (not supported by droid exec)
     - Sampling for LLM execution with full FastMCP features
     - Middleware for logging and monitoring
     - Progress reporting
-    
+
     Architecture:
     Droid Exec -> MCP Server -> FastMCP Client -> This Server -> Sub-agent execution
     """
@@ -157,7 +150,7 @@ async def execute_workflow(
     current_progress = 0
     await progress.set_total(100)
     await progress.set_message(f"Starting workflow: {{workflow_id}}")
-    
+
     # Elicit user input if needed (unless auto mode)
     # This is a FastMCP feature not available in droid exec
     if not auto:
@@ -169,13 +162,13 @@ async def execute_workflow(
             return f"CANCELLED: Cancelled: {{workflow_id}}"
         elif confirm == "skip":
             return f"SKIPPED:  Skipped: {{workflow_id}}"
-    
+
     increment = 25 - current_progress
     if increment > 0:
         await progress.increment(increment)
         current_progress = 25
     await progress.set_message("Preparing workflow execution...")
-    
+
     # Use sampling to execute workflow with the agent
     # Sampling provides full FastMCP features during LLM execution
     # This allows the sub-agent to use elicitation, progress reporting, etc.
@@ -189,38 +182,34 @@ async def execute_workflow(
             "hints": [{{"name": "claude-sonnet-4.5"}}]
         }}
     )
-    
+
     increment = 100 - current_progress
     if increment > 0:
         await progress.increment(increment)
         current_progress = 100
     await progress.set_message("Complete")
-    
+
     # Extract content from result
     content = result.content if hasattr(result, 'content') else str(result)
-    
+
     return f"OK: Completed {{workflow_id}}\\nResult: {{content}}"
 
 if __name__ == "__main__":
     mcp.run()
 '''
-        
+
         server_script.write_text(server_code)
         server_script.chmod(0o755)
-        
+
         return server_script
 
 
 async def run_workflow_with_sub_agent(
-    project_root: Path,
-    agent_name: str,
-    workflow_command: str,
-    workflow_id: str,
-    auto: bool = False
-) -> Dict[str, Any]:
+    project_root: Path, agent_name: str, workflow_command: str, workflow_id: str, auto: bool = False
+) -> dict[str, Any]:
     """
     Main entry point for executing a workflow with sub-agent support.
-    
+
     This function:
     1. Creates a WorkflowExecutor
     2. Executes the workflow using FastMCP Client
@@ -233,22 +222,18 @@ async def run_workflow_with_sub_agent(
 if __name__ == "__main__":
     # CLI interface for direct testing
     import argparse
-    
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--project-root", type=Path, required=True)
     parser.add_argument("--agent", required=True)
     parser.add_argument("--workflow-command", required=True)
     parser.add_argument("--workflow-id", required=True)
     parser.add_argument("--auto", action="store_true")
-    
+
     args = parser.parse_args()
-    
-    result = asyncio.run(run_workflow_with_sub_agent(
-        args.project_root,
-        args.agent,
-        args.workflow_command,
-        args.workflow_id,
-        args.auto
-    ))
-    
+
+    result = asyncio.run(
+        run_workflow_with_sub_agent(args.project_root, args.agent, args.workflow_command, args.workflow_id, args.auto)
+    )
+
     print(json.dumps(result, indent=2))

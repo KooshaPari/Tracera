@@ -101,7 +101,7 @@
   }
   function assertFn(condition) {
     if (!condition()) {
-      debugger;
+      
       condition();
       onUnexpectedError(new BugIndicatingError("Assertion Failed"));
     }
@@ -1445,7 +1445,7 @@
     }
   }
   function escapeRegExpCharacters(value) {
-    return value.replace(/[\\\{\}\*\+\?\|\^\$\.\[\]\(\)]/g, "\\$&");
+    return value.replace(/[\\{}*+?|^$.[\]()]/g, "\\$&");
   }
   function regExpLeadsToEndlessLoop(regexp) {
     if (regexp.source === "^" || regexp.source === "^$" || regexp.source === "$" || regexp.source === "^\\s*$") {
@@ -1599,7 +1599,7 @@
     }
     static getData() {
       if (!this._data) {
-        this._data = new Set([...Object.values(_InvisibleCharacters.getRawData())].flat());
+        this._data = new Set(Object.values(_InvisibleCharacters.getRawData()).flat());
       }
       return this._data;
     }
@@ -1817,7 +1817,7 @@
     return name[0] === "o" && name[1] === "n" && isUpperAsciiLetter(name.charCodeAt(2));
   }
   function propertyIsDynamicEvent(name) {
-    return /^onDynamic/.test(name) && isUpperAsciiLetter(name.charCodeAt(9));
+    return name.startsWith('onDynamic') && isUpperAsciiLetter(name.charCodeAt(9));
   }
   class WebWorkerServer {
     constructor(postMessage, requestHandlerFactory) {
@@ -19352,7 +19352,7 @@
               result = option_value.concat();
             }
           } else if (typeof option_value === "string") {
-            result = option_value.split(/[^a-zA-Z0-9_\/\-]+/);
+            result = option_value.split(/[^a-zA-Z0-9_/-]+/);
           }
           return result;
         };
@@ -19559,7 +19559,7 @@
           return result;
         };
         InputScanner.prototype.get_literal_regexp = function(literal_string) {
-          return RegExp(literal_string.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&"));
+          return RegExp(literal_string.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&"));
         };
         InputScanner.prototype.peekUntilAfter = function(pattern) {
           var start2 = this.__position;
@@ -19785,7 +19785,7 @@
             } else if (this._ch === "$") {
               this.preserveSingleSpace(isAfterSpace);
               this.print_string(this._ch);
-              var variable = this._input.peekUntilAfter(/[: ,;{}()[\]\/='"]/g);
+              var variable = this._input.peekUntilAfter(/[: ,;{}()[\]/='"]/g);
               if (variable.match(/[ :]$/)) {
                 variable = this.eatString(": ").replace(/\s+$/, "");
                 this.print_string(variable);
@@ -19801,7 +19801,7 @@
                 this.print_string(this._ch + this.eatString("}"));
               } else {
                 this.print_string(this._ch);
-                var variableOrRule = this._input.peekUntilAfter(/[: ,;{}()[\]\/='"]/g);
+                var variableOrRule = this._input.peekUntilAfter(/[: ,;{}()[\]/='"]/g);
                 if (variableOrRule.match(/[ :]$/)) {
                   variableOrRule = this.eatString(": ").replace(/\s+$/, "");
                   this.print_string(variableOrRule);
@@ -20450,7 +20450,7 @@
               result = option_value.concat();
             }
           } else if (typeof option_value === "string") {
-            result = option_value.split(/[^a-zA-Z0-9_\/\-]+/);
+            result = option_value.split(/[^a-zA-Z0-9_/-]+/);
           }
           return result;
         };
@@ -20657,7 +20657,7 @@
           return result;
         };
         InputScanner.prototype.get_literal_regexp = function(literal_string) {
-          return RegExp(literal_string.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&"));
+          return RegExp(literal_string.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&"));
         };
         InputScanner.prototype.peekUntilAfter = function(pattern) {
           var start2 = this.__position;
@@ -21630,7 +21630,7 @@
                 handlebar_starts = 3;
               }
             }
-            this.is_end_tag = this.is_end_tag || this.tag_start_char === "{" && (this.text.length < 3 || /[^#\^]/.test(this.text.charAt(handlebar_starts)));
+            this.is_end_tag = this.is_end_tag || this.tag_start_char === "{" && (this.text.length < 3 || /[^#^]/.test(this.text.charAt(handlebar_starts)));
           }
         };
         Beautifier.prototype._get_tag_open_token = function(raw_token) {
@@ -21908,7 +21908,7 @@
           RAW: BASETOKEN.RAW,
           EOF: BASETOKEN.EOF
         };
-        var directives_core = new Directives(/<\!--/, /-->/);
+        var directives_core = new Directives(/<!--/, /-->/);
         var Tokenizer = function(input_string, options) {
           BaseTokenizer.call(this, input_string, options);
           this._current_tag_name = "";
@@ -21920,8 +21920,8 @@
             single_quote: templatable_reader.until_after(/'/),
             double_quote: templatable_reader.until_after(/"/),
             attribute: templatable_reader.until(/[\n\r\t =>]|\/>/),
-            element_name: templatable_reader.until(/[\n\r\t >\/]/),
-            angular_control_flow_start: pattern_reader.matching(/\@[a-zA-Z]+[^({]*[({]/),
+            element_name: templatable_reader.until(/[\n\r\t >/]/),
+            angular_control_flow_start: pattern_reader.matching(/@[a-zA-Z]+[^({]*[({]/),
             handlebars_comment: pattern_reader.starting_with(/{{!--/).until_after(/--}}/),
             handlebars: pattern_reader.starting_with(/{{/).until_after(/}}/),
             handlebars_open: pattern_reader.until(/[\n\r\t }]/),
@@ -22675,7 +22675,7 @@
     return /\b(w[\w\d+.-]*:\/\/)?[^\s()<>]+(?:\([\w\d]+\)|([^[:punct:]\s]|\/?))/.test(url);
   }
   function getWorkspaceUrl(documentUri, tokenContent, documentContext, base) {
-    if (/^\s*javascript\:/i.test(tokenContent) || /[\n\r]/.test(tokenContent)) {
+    if (/^\s*javascript:/i.test(tokenContent) || /[\n\r]/.test(tokenContent)) {
       return void 0;
     }
     tokenContent = tokenContent.replace(/^\s*/g, "");
@@ -22687,10 +22687,10 @@
       }
       return void 0;
     }
-    if (/^\#/i.test(tokenContent)) {
+    if (tokenContent.startsWith('#')) {
       return documentUri + tokenContent;
     }
-    if (/^\/\//i.test(tokenContent)) {
+    if (tokenContent.startsWith('//')) {
       const pickedScheme = startsWith(documentUri, "https://") ? "https" : "http";
       return pickedScheme + ":" + tokenContent.replace(/^\s*/g, "");
     }
@@ -22882,10 +22882,10 @@
       const id = node.attributes["id"];
       const classes = node.attributes["class"];
       if (id) {
-        name += `#${id.replace(/[\"\']/g, "")}`;
+        name += `#${id.replace(/["']/g, "")}`;
       }
       if (classes) {
-        name += classes.replace(/[\"\']/g, "").split(/\s+/).map((className) => `.${className}`).join("");
+        name += classes.replace(/["']/g, "").split(/\s+/).map((className) => `.${className}`).join("");
       }
     }
     return name || "?";

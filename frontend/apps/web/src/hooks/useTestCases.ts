@@ -177,9 +177,9 @@ async function createTestCase(
 				tags: data["tags"],
 				test_data: data["testData"],
 				test_steps: data["testSteps"]?.map((step) => ({
-					step_number: step.stepNumber,
 					action: step.action,
 					expected_result: step.expectedResult,
+					step_number: step.stepNumber,
 					test_data: step.testData,
 				})),
 				test_type: data["testType"] || "functional",

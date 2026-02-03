@@ -30,4 +30,4 @@ isObject('hello');
 */
 export type UnknownRecord = Record<PropertyKey, unknown>;
 
-export {};
+

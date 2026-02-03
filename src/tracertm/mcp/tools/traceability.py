@@ -12,18 +12,18 @@ from typing import Any
 from fastmcp.exceptions import ToolError
 from sqlalchemy import func
 
+from tracertm.core.database import get_session as get_async_session
 from tracertm.mcp.core import mcp
 from tracertm.mcp.tools.base import (
     get_session,
     require_project,
     wrap_success,
 )
-from tracertm.core.database import get_session as get_async_session
 from tracertm.models.item import Item
 from tracertm.models.link import Link
-from tracertm.services.traceability_service import TraceabilityService
-from tracertm.services.traceability_matrix_service import TraceabilityMatrixService
 from tracertm.services.impact_analysis_service import ImpactAnalysisService
+from tracertm.services.traceability_matrix_service import TraceabilityMatrixService
+from tracertm.services.traceability_service import TraceabilityService
 
 
 @mcp.tool(description="Find coverage gaps between views")
@@ -63,10 +63,10 @@ async def find_gaps(
                 "gap_count": len(gaps),
                 "gaps": [
                     {
-                        "id": item.id,
-                        "external_id": item.external_id,
-                        "title": item.title,
-                        "status": item.status,
+                        "id": item.get("id"),
+                        "external_id": item.get("external_id"),
+                        "title": item.get("title"),
+                        "status": item.get("status"),
                     }
                     for item in gaps
                 ],
@@ -101,11 +101,15 @@ async def get_trace_matrix(
             target_view=target_view.upper() if target_view else None,
         )
 
+        matrix_out = matrix
+        to_dict_fn = getattr(matrix, "to_dict", None)
+        if callable(to_dict_fn):
+            matrix_out = to_dict_fn()
         return wrap_success(
             {
                 "source_view": source_view,
                 "target_view": target_view,
-                "matrix": matrix.to_dict() if hasattr(matrix, "to_dict") else matrix,
+                "matrix": matrix_out,
             },
             "trace_matrix",
             ctx,
@@ -134,23 +138,26 @@ async def analyze_impact(
     if not item_id:
         raise ToolError("item_id is required.")
 
-    project_id = require_project()
+    require_project()  # enforce project context
 
     async with get_async_session() as session:
         service = ImpactAnalysisService(session)
         impact = await service.analyze_impact(
-            project_id=project_id,
             item_id=item_id,
             max_depth=max_depth,
             link_types=link_types,
         )
 
+        impact_out = impact
+        impact_to_dict = getattr(impact, "to_dict", None)
+        if callable(impact_to_dict):
+            impact_out = impact_to_dict()
         return wrap_success(
             {
                 "root_item_id": item_id,
                 "max_depth": max_depth,
                 "link_types": link_types,
-                "impact": impact.to_dict() if hasattr(impact, "to_dict") else impact,
+                "impact": impact_out,
             },
             "impact",
             ctx,
@@ -177,21 +184,24 @@ async def analyze_reverse_impact(
     if not item_id:
         raise ToolError("item_id is required.")
 
-    project_id = require_project()
+    require_project()  # enforce project context
 
     async with get_async_session() as session:
         service = ImpactAnalysisService(session)
         impact = await service.analyze_reverse_impact(
-            project_id=project_id,
             item_id=item_id,
             max_depth=max_depth,
         )
 
+        impact_out = impact
+        impact_to_dict = getattr(impact, "to_dict", None)
+        if callable(impact_to_dict):
+            impact_out = impact_to_dict()
         return wrap_success(
             {
                 "root_item_id": item_id,
                 "max_depth": max_depth,
-                "dependencies": impact.to_dict() if hasattr(impact, "to_dict") else impact,
+                "dependencies": impact_out,
             },
             "reverse_impact",
             ctx,
@@ -199,7 +209,7 @@ async def analyze_reverse_impact(
 
 
 @mcp.tool(description="Get project health metrics")
-async def project_health(
+def project_health(
     ctx: Any | None = None,
 ) -> dict[str, Any]:
     """Get high-level health metrics for the current project.
@@ -212,7 +222,8 @@ async def project_health(
     with get_session() as session:
         # Count items by view
         view_counts = (
-            session.query(Item.view, func.count(Item.id))
+            session
+            .query(Item.view, func.count(Item.id))
             .filter(
                 Item.project_id == project_id,
                 Item.deleted_at.is_(None),
@@ -223,7 +234,8 @@ async def project_health(
 
         # Count items by status
         status_counts = (
-            session.query(Item.status, func.count(Item.id))
+            session
+            .query(Item.status, func.count(Item.id))
             .filter(
                 Item.project_id == project_id,
                 Item.deleted_at.is_(None),
@@ -234,7 +246,8 @@ async def project_health(
 
         # Count links by type
         link_counts = (
-            session.query(Link.link_type, func.count(Link.id))
+            session
+            .query(Link.link_type, func.count(Link.id))
             .filter(Link.project_id == project_id)
             .group_by(Link.link_type)
             .all()
@@ -249,12 +262,13 @@ async def project_health(
 
         # Items without any links
         items_with_links = (
-            session.query(func.count(func.distinct(Link.source_id)))
-            .filter(Link.project_id == project_id)
-            .scalar()
+            session.query(func.count(func.distinct(Link.source_item_id))).filter(Link.project_id == project_id).scalar()
         )
         orphan_count = total_items - (items_with_links or 0)
 
+        by_view: dict[str, int] = {row[0]: row[1] for row in view_counts}
+        by_status: dict[str, int] = {row[0]: row[1] for row in status_counts}
+        by_link_type: dict[str, int] = {row[0]: row[1] for row in link_counts}
         return wrap_success(
             {
                 "project_id": project_id,
@@ -262,9 +276,9 @@ async def project_health(
                 "total_links": total_links,
                 "link_density": round(link_density, 2),
                 "orphan_items": orphan_count,
-                "by_view": {view: count for view, count in view_counts},
-                "by_status": {status: count for status, count in status_counts},
-                "by_link_type": {ltype: count for ltype, count in link_counts},
+                "by_view": by_view,
+                "by_status": by_status,
+                "by_link_type": by_link_type,
             },
             "project_health",
             ctx,
@@ -272,9 +286,9 @@ async def project_health(
 
 
 __all__ = [
-    "find_gaps",
-    "get_trace_matrix",
     "analyze_impact",
     "analyze_reverse_impact",
+    "find_gaps",
+    "get_trace_matrix",
     "project_health",
 ]

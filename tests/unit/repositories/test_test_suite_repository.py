@@ -22,10 +22,11 @@ from uuid import uuid4
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from tracertm.repositories.project_repository import ProjectRepository
+from tracertm.models import test_case as tc_models
+
 # Use module-qualified import to avoid pytest collection issue
 from tracertm.repositories import test_suite_repository as ts_repo
-from tracertm.models import test_case as tc_models
+from tracertm.repositories.project_repository import ProjectRepository
 
 SuiteRepository = ts_repo.TestSuiteRepository
 _TestCaseModel = tc_models.TestCase
@@ -51,7 +52,7 @@ async def test_create_suite_basic(db_session: AsyncSession):
 
     repo = SuiteRepository(db_session)
     suite = await repo.create(
-        project_id=project.id,
+        project_id=str(project.id),
         name="Test Suite",
     )
 
@@ -72,7 +73,7 @@ async def test_create_suite_with_description(db_session: AsyncSession):
 
     repo = SuiteRepository(db_session)
     suite = await repo.create(
-        project_id=project.id,
+        project_id=str(project.id),
         name="Test Suite",
         description="Suite description",
         objective="Suite objective",
@@ -91,11 +92,11 @@ async def test_create_suite_with_hierarchy(db_session: AsyncSession):
     await db_session.commit()
 
     repo = SuiteRepository(db_session)
-    parent = await repo.create(project_id=project.id, name="Parent Suite")
+    parent = await repo.create(project_id=str(project.id), name="Parent Suite")
     await db_session.commit()
 
     child = await repo.create(
-        project_id=project.id,
+        project_id=str(project.id),
         name="Child Suite",
         parent_id=parent.id,
         order_index=1,
@@ -115,7 +116,7 @@ async def test_create_suite_with_classification(db_session: AsyncSession):
 
     repo = SuiteRepository(db_session)
     suite = await repo.create(
-        project_id=project.id,
+        project_id=str(project.id),
         name="Test Suite",
         category="integration",
         tags=["smoke", "critical"],
@@ -135,7 +136,7 @@ async def test_create_suite_with_execution_settings(db_session: AsyncSession):
 
     repo = SuiteRepository(db_session)
     suite = await repo.create(
-        project_id=project.id,
+        project_id=str(project.id),
         name="Test Suite",
         is_parallel_execution=True,
         estimated_duration_minutes=60,
@@ -155,7 +156,7 @@ async def test_create_suite_with_environment(db_session: AsyncSession):
 
     repo = SuiteRepository(db_session)
     suite = await repo.create(
-        project_id=project.id,
+        project_id=str(project.id),
         name="Test Suite",
         required_environment="staging",
         environment_variables={"API_URL": "https://staging.api.com"},
@@ -179,7 +180,7 @@ async def test_create_suite_with_ownership(db_session: AsyncSession):
 
     repo = SuiteRepository(db_session)
     suite = await repo.create(
-        project_id=project.id,
+        project_id=str(project.id),
         name="Test Suite",
         owner="alice@example.com",
         responsible_team="QA Team",
@@ -199,7 +200,7 @@ async def test_create_suite_with_metadata(db_session: AsyncSession):
 
     repo = SuiteRepository(db_session)
     suite = await repo.create(
-        project_id=project.id,
+        project_id=str(project.id),
         name="Test Suite",
         metadata={"custom_field": "custom_value"},
     )
@@ -217,7 +218,7 @@ async def test_create_suite_logs_activity(db_session: AsyncSession):
 
     repo = SuiteRepository(db_session)
     suite = await repo.create(
-        project_id=project.id,
+        project_id=str(project.id),
         name="Test Suite",
         created_by="test_user",
     )
@@ -243,7 +244,7 @@ async def test_get_by_id_found(db_session: AsyncSession):
     await db_session.commit()
 
     repo = SuiteRepository(db_session)
-    created = await repo.create(project_id=project.id, name="Test Suite")
+    created = await repo.create(project_id=str(project.id), name="Test Suite")
     await db_session.commit()
 
     found = await repo.get_by_id(created.id)
@@ -275,7 +276,7 @@ async def test_get_by_number_found(db_session: AsyncSession):
     await db_session.commit()
 
     repo = SuiteRepository(db_session)
-    created = await repo.create(project_id=project.id, name="Test Suite")
+    created = await repo.create(project_id=str(project.id), name="Test Suite")
     await db_session.commit()
 
     found = await repo.get_by_number(created.suite_number)
@@ -306,12 +307,12 @@ async def test_list_by_project_basic(db_session: AsyncSession):
     await db_session.commit()
 
     repo = SuiteRepository(db_session)
-    await repo.create(project_id=project.id, name="Suite 1")
-    await repo.create(project_id=project.id, name="Suite 2")
-    await repo.create(project_id=project.id, name="Suite 3")
+    await repo.create(project_id=str(project.id), name="Suite 1")
+    await repo.create(project_id=str(project.id), name="Suite 2")
+    await repo.create(project_id=str(project.id), name="Suite 3")
     await db_session.commit()
 
-    suites, total = await repo.list_by_project(project_id=project.id)
+    suites, total = await repo.list_by_project(project_id=str(project.id))
     assert len(suites) == 3
     assert total == 3
 
@@ -325,18 +326,18 @@ async def test_list_by_project_filter_by_status(db_session: AsyncSession):
     await db_session.commit()
 
     repo = SuiteRepository(db_session)
-    s1 = await repo.create(project_id=project.id, name="Suite 1")
-    await repo.create(project_id=project.id, name="Suite 2")
+    s1 = await repo.create(project_id=str(project.id), name="Suite 1")
+    await repo.create(project_id=str(project.id), name="Suite 2")
     await db_session.commit()
 
     # Activate one suite
     await repo.transition_status(s1.id, "active")
     await db_session.commit()
 
-    draft_suites, total = await repo.list_by_project(project_id=project.id, status="draft")
+    draft_suites, total = await repo.list_by_project(project_id=str(project.id), status="draft")
     assert len(draft_suites) == 1
 
-    active_suites, total = await repo.list_by_project(project_id=project.id, status="active")
+    active_suites, _total = await repo.list_by_project(project_id=str(project.id), status="active")
     assert len(active_suites) == 1
 
 
@@ -349,11 +350,11 @@ async def test_list_by_project_filter_by_category(db_session: AsyncSession):
     await db_session.commit()
 
     repo = SuiteRepository(db_session)
-    await repo.create(project_id=project.id, name="Suite 1", category="unit")
-    await repo.create(project_id=project.id, name="Suite 2", category="integration")
+    await repo.create(project_id=str(project.id), name="Suite 1", category="unit")
+    await repo.create(project_id=str(project.id), name="Suite 2", category="integration")
     await db_session.commit()
 
-    unit_suites, _ = await repo.list_by_project(project_id=project.id, category="unit")
+    unit_suites, _ = await repo.list_by_project(project_id=str(project.id), category="unit")
     assert len(unit_suites) == 1
     assert unit_suites[0].name == "Suite 1"
 
@@ -367,20 +368,20 @@ async def test_list_by_project_filter_by_parent_id(db_session: AsyncSession):
     await db_session.commit()
 
     repo = SuiteRepository(db_session)
-    parent = await repo.create(project_id=project.id, name="Parent Suite")
+    parent = await repo.create(project_id=str(project.id), name="Parent Suite")
     await db_session.commit()
 
-    await repo.create(project_id=project.id, name="Child 1", parent_id=parent.id)
-    await repo.create(project_id=project.id, name="Child 2", parent_id=parent.id)
-    await repo.create(project_id=project.id, name="Root Suite")
+    await repo.create(project_id=str(project.id), name="Child 1", parent_id=parent.id)
+    await repo.create(project_id=str(project.id), name="Child 2", parent_id=parent.id)
+    await repo.create(project_id=str(project.id), name="Root Suite")
     await db_session.commit()
 
     # Get children
-    children, _ = await repo.list_by_project(project_id=project.id, parent_id=parent.id)
+    children, _ = await repo.list_by_project(project_id=str(project.id), parent_id=parent.id)
     assert len(children) == 2
 
     # Get root suites (no parent)
-    roots, _ = await repo.list_by_project(project_id=project.id, parent_id="")
+    roots, _ = await repo.list_by_project(project_id=str(project.id), parent_id="")
     assert len(roots) == 2  # Parent and Root Suite
 
 
@@ -393,11 +394,11 @@ async def test_list_by_project_filter_by_owner(db_session: AsyncSession):
     await db_session.commit()
 
     repo = SuiteRepository(db_session)
-    await repo.create(project_id=project.id, name="Suite 1", owner="alice")
-    await repo.create(project_id=project.id, name="Suite 2", owner="bob")
+    await repo.create(project_id=str(project.id), name="Suite 1", owner="alice")
+    await repo.create(project_id=str(project.id), name="Suite 2", owner="bob")
     await db_session.commit()
 
-    alice_suites, _ = await repo.list_by_project(project_id=project.id, owner="alice")
+    alice_suites, _ = await repo.list_by_project(project_id=str(project.id), owner="alice")
     assert len(alice_suites) == 1
     assert alice_suites[0].name == "Suite 1"
 
@@ -411,12 +412,12 @@ async def test_list_by_project_search(db_session: AsyncSession):
     await db_session.commit()
 
     repo = SuiteRepository(db_session)
-    await repo.create(project_id=project.id, name="Authentication Tests")
-    await repo.create(project_id=project.id, name="Authorization Tests")
-    await repo.create(project_id=project.id, name="Payment Tests")
+    await repo.create(project_id=str(project.id), name="Authentication Tests")
+    await repo.create(project_id=str(project.id), name="Authorization Tests")
+    await repo.create(project_id=str(project.id), name="Payment Tests")
     await db_session.commit()
 
-    auth_suites, _ = await repo.list_by_project(project_id=project.id, search="Auth")
+    auth_suites, _ = await repo.list_by_project(project_id=str(project.id), search="Auth")
     assert len(auth_suites) == 2
 
 
@@ -430,11 +431,11 @@ async def test_list_by_project_pagination(db_session: AsyncSession):
 
     repo = SuiteRepository(db_session)
     for i in range(10):
-        await repo.create(project_id=project.id, name=f"Suite {i}")
+        await repo.create(project_id=str(project.id), name=f"Suite {i}")
     await db_session.commit()
 
-    page1, total = await repo.list_by_project(project_id=project.id, skip=0, limit=5)
-    page2, _ = await repo.list_by_project(project_id=project.id, skip=5, limit=5)
+    page1, total = await repo.list_by_project(project_id=str(project.id), skip=0, limit=5)
+    page2, _ = await repo.list_by_project(project_id=str(project.id), skip=5, limit=5)
 
     assert len(page1) == 5
     assert len(page2) == 5
@@ -455,7 +456,7 @@ async def test_update_basic_fields(db_session: AsyncSession):
     await db_session.commit()
 
     repo = SuiteRepository(db_session)
-    suite = await repo.create(project_id=project.id, name="Original Name")
+    suite = await repo.create(project_id=str(project.id), name="Original Name")
     await db_session.commit()
 
     updated = await repo.update(
@@ -464,6 +465,7 @@ async def test_update_basic_fields(db_session: AsyncSession):
         description="Updated Description",
     )
 
+    assert updated is not None
     assert updated.name == "Updated Name"
     assert updated.description == "Updated Description"
     assert updated.version == 2
@@ -492,11 +494,12 @@ async def test_transition_status_valid(db_session: AsyncSession):
     await db_session.commit()
 
     repo = SuiteRepository(db_session)
-    suite = await repo.create(project_id=project.id, name="Test Suite")
+    suite = await repo.create(project_id=str(project.id), name="Test Suite")
     await db_session.commit()
 
     # draft -> active is valid
     updated = await repo.transition_status(suite.id, "active")
+    assert updated is not None
     assert updated.status.value == "active"
 
 
@@ -509,7 +512,7 @@ async def test_transition_status_invalid(db_session: AsyncSession):
     await db_session.commit()
 
     repo = SuiteRepository(db_session)
-    suite = await repo.create(project_id=project.id, name="Test Suite")
+    suite = await repo.create(project_id=str(project.id), name="Test Suite")
     await db_session.commit()
 
     # draft -> deprecated is not valid
@@ -535,7 +538,7 @@ async def test_transition_status_logs_activity(db_session: AsyncSession):
     await db_session.commit()
 
     repo = SuiteRepository(db_session)
-    suite = await repo.create(project_id=project.id, name="Test Suite")
+    suite = await repo.create(project_id=str(project.id), name="Test Suite")
     await db_session.commit()
 
     await repo.transition_status(
@@ -547,9 +550,7 @@ async def test_transition_status_logs_activity(db_session: AsyncSession):
     await db_session.commit()
 
     activities = await repo.get_activities(suite.id)
-    status_activity = next(
-        (a for a in activities if a.activity_type == "status_changed"), None
-    )
+    status_activity = next((a for a in activities if a.activity_type == "status_changed"), None)
     assert status_activity is not None
     assert status_activity.from_value == "draft"
     assert status_activity.to_value == "active"
@@ -571,7 +572,7 @@ async def test_add_test_case(db_session: AsyncSession):
     # Create test case
     test_case = _TestCaseModel(
         id=str(uuid4()),
-        project_id=project.id,
+        project_id=str(project.id),
         title="Test Case 1",
         test_case_number=f"TC-{uuid4().hex[:8].upper()}",
     )
@@ -579,7 +580,7 @@ async def test_add_test_case(db_session: AsyncSession):
     await db_session.commit()
 
     repo = SuiteRepository(db_session)
-    suite = await repo.create(project_id=project.id, name="Test Suite")
+    suite = await repo.create(project_id=str(project.id), name="Test Suite")
     await db_session.commit()
 
     assoc = await repo.add_test_case(
@@ -608,7 +609,7 @@ async def test_add_test_case_updates_metrics(db_session: AsyncSession):
     # Create test case
     test_case = _TestCaseModel(
         id=str(uuid4()),
-        project_id=project.id,
+        project_id=str(project.id),
         title="Test Case 1",
         test_case_number=f"TC-{uuid4().hex[:8].upper()}",
     )
@@ -616,13 +617,14 @@ async def test_add_test_case_updates_metrics(db_session: AsyncSession):
     await db_session.commit()
 
     repo = SuiteRepository(db_session)
-    suite = await repo.create(project_id=project.id, name="Test Suite")
+    suite = await repo.create(project_id=str(project.id), name="Test Suite")
     await db_session.commit()
 
     await repo.add_test_case(suite.id, test_case.id)
     await db_session.commit()
 
     updated_suite = await repo.get_by_id(suite.id)
+    assert updated_suite is not None
     assert updated_suite.total_test_cases == 1
 
 
@@ -637,7 +639,7 @@ async def test_remove_test_case(db_session: AsyncSession):
     # Create test case
     test_case = _TestCaseModel(
         id=str(uuid4()),
-        project_id=project.id,
+        project_id=str(project.id),
         title="Test Case 1",
         test_case_number=f"TC-{uuid4().hex[:8].upper()}",
     )
@@ -645,7 +647,7 @@ async def test_remove_test_case(db_session: AsyncSession):
     await db_session.commit()
 
     repo = SuiteRepository(db_session)
-    suite = await repo.create(project_id=project.id, name="Test Suite")
+    suite = await repo.create(project_id=str(project.id), name="Test Suite")
     await db_session.commit()
 
     await repo.add_test_case(suite.id, test_case.id)
@@ -668,7 +670,7 @@ async def test_remove_test_case_not_found(db_session: AsyncSession):
     await db_session.commit()
 
     repo = SuiteRepository(db_session)
-    suite = await repo.create(project_id=project.id, name="Test Suite")
+    suite = await repo.create(project_id=str(project.id), name="Test Suite")
     await db_session.commit()
 
     result = await repo.remove_test_case(suite.id, str(uuid4()))
@@ -686,13 +688,13 @@ async def test_get_test_cases(db_session: AsyncSession):
     # Create test cases
     tc1 = _TestCaseModel(
         id=str(uuid4()),
-        project_id=project.id,
+        project_id=str(project.id),
         title="Test Case 1",
         test_case_number=f"TC-{uuid4().hex[:8].upper()}",
     )
     tc2 = _TestCaseModel(
         id=str(uuid4()),
-        project_id=project.id,
+        project_id=str(project.id),
         title="Test Case 2",
         test_case_number=f"TC-{uuid4().hex[:8].upper()}",
     )
@@ -700,7 +702,7 @@ async def test_get_test_cases(db_session: AsyncSession):
     await db_session.commit()
 
     repo = SuiteRepository(db_session)
-    suite = await repo.create(project_id=project.id, name="Test Suite")
+    suite = await repo.create(project_id=str(project.id), name="Test Suite")
     await db_session.commit()
 
     await repo.add_test_case(suite.id, tc1.id, order_index=0)
@@ -724,13 +726,13 @@ async def test_reorder_test_cases(db_session: AsyncSession):
     # Create test cases
     tc1 = _TestCaseModel(
         id=str(uuid4()),
-        project_id=project.id,
+        project_id=str(project.id),
         title="Test Case 1",
         test_case_number=f"TC-{uuid4().hex[:8].upper()}",
     )
     tc2 = _TestCaseModel(
         id=str(uuid4()),
-        project_id=project.id,
+        project_id=str(project.id),
         title="Test Case 2",
         test_case_number=f"TC-{uuid4().hex[:8].upper()}",
     )
@@ -738,7 +740,7 @@ async def test_reorder_test_cases(db_session: AsyncSession):
     await db_session.commit()
 
     repo = SuiteRepository(db_session)
-    suite = await repo.create(project_id=project.id, name="Test Suite")
+    suite = await repo.create(project_id=str(project.id), name="Test Suite")
     await db_session.commit()
 
     await repo.add_test_case(suite.id, tc1.id, order_index=0)
@@ -752,6 +754,8 @@ async def test_reorder_test_cases(db_session: AsyncSession):
     test_cases = await repo.get_test_cases(suite.id)
     tc1_assoc = next((tc for tc in test_cases if tc.test_case_id == tc1.id), None)
     tc2_assoc = next((tc for tc in test_cases if tc.test_case_id == tc2.id), None)
+    assert tc1_assoc is not None
+    assert tc2_assoc is not None
     assert tc1_assoc.order_index == 1
     assert tc2_assoc.order_index == 0
 
@@ -770,7 +774,7 @@ async def test_delete_suite(db_session: AsyncSession):
     await db_session.commit()
 
     repo = SuiteRepository(db_session)
-    suite = await repo.create(project_id=project.id, name="Test Suite")
+    suite = await repo.create(project_id=str(project.id), name="Test Suite")
     await db_session.commit()
 
     result = await repo.delete(suite.id)
@@ -803,7 +807,7 @@ async def test_get_activities(db_session: AsyncSession):
     await db_session.commit()
 
     repo = SuiteRepository(db_session)
-    suite = await repo.create(project_id=project.id, name="Test Suite")
+    suite = await repo.create(project_id=str(project.id), name="Test Suite")
     await db_session.commit()
 
     await repo.transition_status(suite.id, "active")
@@ -827,16 +831,16 @@ async def test_get_stats(db_session: AsyncSession):
     await db_session.commit()
 
     repo = SuiteRepository(db_session)
-    s1 = await repo.create(project_id=project.id, name="Suite 1", category="unit")
-    await repo.create(project_id=project.id, name="Suite 2", category="unit")
-    await repo.create(project_id=project.id, name="Suite 3", category="integration")
+    s1 = await repo.create(project_id=str(project.id), name="Suite 1", category="unit")
+    await repo.create(project_id=str(project.id), name="Suite 2", category="unit")
+    await repo.create(project_id=str(project.id), name="Suite 3", category="integration")
     await db_session.commit()
 
     # Activate one suite
     await repo.transition_status(s1.id, "active")
     await db_session.commit()
 
-    stats = await repo.get_stats(project.id)
+    stats = await repo.get_stats(str(project.id))
     assert stats["total"] == 3
     assert stats["by_status"]["draft"] == 2
     assert stats["by_status"]["active"] == 1
@@ -853,6 +857,6 @@ async def test_get_stats_empty_project(db_session: AsyncSession):
     await db_session.commit()
 
     repo = SuiteRepository(db_session)
-    stats = await repo.get_stats(project.id)
+    stats = await repo.get_stats(str(project.id))
     assert stats["total"] == 0
     assert stats["total_test_cases"] == 0

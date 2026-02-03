@@ -3,7 +3,8 @@
 from typing import Any
 
 try:
-    from textual.widgets import Tree
+    from textual.widgets import Tree  # type: ignore[import-untyped]
+
     TEXTUAL_AVAILABLE = True
 except ImportError:
     TEXTUAL_AVAILABLE = False
@@ -16,8 +17,6 @@ class ViewSwitcherWidget(Tree):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         if TEXTUAL_AVAILABLE:
             super().__init__("Views", *args, **kwargs)
-        else:
-            pass
 
     def on_mount(self) -> None:
         """Called when widget is mounted - setup views here."""

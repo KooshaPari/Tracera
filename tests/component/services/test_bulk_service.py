@@ -12,10 +12,7 @@ pytestmark = pytest.mark.integration
 async def test_preview_bulk_update_warns_on_large_operation(async_session, monkeypatch):
     service = BulkOperationService(async_session)
 
-    fake_items = [
-        SimpleNamespace(id=f"item-{i}", title=f"Item {i}", status="todo", version=1)
-        for i in range(120)
-    ]
+    fake_items = [SimpleNamespace(id=f"item-{i}", title=f"Item {i}", status="todo", version=1) for i in range(120)]
 
     async def fake_query(project_id, filters):
         return fake_items

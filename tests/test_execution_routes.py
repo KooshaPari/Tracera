@@ -1,30 +1,30 @@
 """Tests for execution API routes."""
 
-import pytest
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import pytest
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.api.routers.execution import (
-    create_execution,
-    list_executions,
-    get_execution,
-    start_execution,
-    complete_execution,
-    list_artifacts,
     add_artifact,
-    get_execution_config,
-    update_execution_config,
+    complete_execution,
+    create_execution,
     generate_vhs_tape,
+    get_execution,
+    get_execution_config,
+    list_artifacts,
+    list_executions,
+    start_execution,
+    update_execution_config,
 )
 from tracertm.schemas.execution import (
-    ExecutionCreate,
-    ExecutionComplete,
-    ExecutionStart,
     ExecutionArtifactCreate,
+    ExecutionComplete,
+    ExecutionCreate,
     ExecutionEnvironmentConfigUpdate,
+    ExecutionStart,
 )
 
 
@@ -49,8 +49,8 @@ def mock_execution():
     mock.execution_type = "playwright"
     mock.trigger_source = "manual"
     mock.status = "pending"
-    mock.created_at = datetime.now(timezone.utc)
-    mock.updated_at = datetime.now(timezone.utc)
+    mock.created_at = datetime.now(UTC)
+    mock.updated_at = datetime.now(UTC)
     mock.started_at = None
     mock.completed_at = None
     mock.duration_ms = None
@@ -72,8 +72,8 @@ def mock_artifact():
     mock.file_path = "/artifacts/screenshot.png"
     mock.file_size = 102400
     mock.mime_type = "image/png"
-    mock.captured_at = datetime.now(timezone.utc)
-    mock.created_at = datetime.now(timezone.utc)
+    mock.captured_at = datetime.now(UTC)
+    mock.created_at = datetime.now(UTC)
     return mock
 
 
@@ -184,9 +184,7 @@ async def test_list_executions_success(mock_db, mock_claims, mock_execution):
         mock_execution2.id = "exec456"
         mock_execution2.project_id = "proj123"
 
-        service.list_by_project = AsyncMock(
-            return_value=[mock_execution, mock_execution2]
-        )
+        service.list_by_project = AsyncMock(return_value=[mock_execution, mock_execution2])
         service.list_artifacts = AsyncMock(return_value=[])
 
         result = await list_executions(
@@ -272,7 +270,9 @@ async def test_get_execution_not_found(mock_db, mock_claims):
                 db=mock_db,
             )
 
-        assert exc_info.value.status_code == 404
+        exc = exc_info.value
+        assert isinstance(exc, HTTPException)
+        assert getattr(exc, "status_code", None) == 404
 
 
 @pytest.mark.asyncio
@@ -296,7 +296,9 @@ async def test_get_execution_forbidden(mock_db, mock_claims):
                 db=mock_db,
             )
 
-        assert exc_info.value.status_code == 403
+        exc = exc_info.value
+        assert isinstance(exc, HTTPException)
+        assert getattr(exc, "status_code", None) == 403
 
 
 # =============================================================================
@@ -352,7 +354,9 @@ async def test_start_execution_wrong_status(mock_db, mock_claims):
                 db=mock_db,
             )
 
-        assert exc_info.value.status_code == 409
+        exc = exc_info.value
+        assert isinstance(exc, HTTPException)
+        assert getattr(exc, "status_code", None) == 409
 
 
 # =============================================================================
@@ -547,4 +551,6 @@ async def test_generate_vhs_tape_no_artifacts(mock_db, mock_claims, mock_executi
                 db=mock_db,
             )
 
-        assert exc_info.value.status_code == 400
+        exc = exc_info.value
+        assert isinstance(exc, HTTPException)
+        assert getattr(exc, "status_code", None) == 400

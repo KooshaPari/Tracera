@@ -75,9 +75,9 @@
 		},
 		'attr-name': /\b[a-z_]\w*(?=\s*=)/i,
 		'boolean': /\b(?:false|no|off|on|true|yes)\b/,
-		'punctuation': /[\[\](){}.,:`]|->/,
+		'punctuation': /[[\](){}.,:`]|->/,
 		'operator': [
-			/[+\-*\/%]|==?=?|[!<>]=?|&&|\|\|?/,
+			/[+\-*/%]|==?=?|[!<>]=?|&&|\|\|?/,
 			/\bis\s+(?:not\s+)?(?:div|even|odd)(?:\s+by)?\b/,
 			/\b(?:and|eq|gt?e|gt|lt?e|lt|mod|neq?|not|or)\b/
 		]

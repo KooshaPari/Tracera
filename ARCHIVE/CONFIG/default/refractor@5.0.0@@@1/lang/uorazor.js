@@ -58,6 +58,6 @@ export default function uorazor(Prism) {
       },
       /[=<>]=?|!=|\*\*?|\/\/?|\?:?|[-+~%|]/
     ],
-    punctuation: /[()\[\]{}:.,]/
+    punctuation: /[()[\]{}:.,]/
   }
 }

@@ -1,9 +1,10 @@
 import asyncio
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta, timezone
 from types import SimpleNamespace
 
 import pytest
 
+from tracertm.storage.conflict_resolver import ConflictStrategy
 from tracertm.storage.local_storage import LocalStorageManager
 from tracertm.storage.sync_engine import (
     EntityType,
@@ -15,7 +16,6 @@ from tracertm.storage.sync_engine import (
     SyncStatus,
     exponential_backoff,
 )
-from tracertm.storage.conflict_resolver import ConflictStrategy
 
 
 class _DummyQueue:
@@ -83,7 +83,7 @@ def _queued(change_id=1, retries=0):
         entity_id="item-1",
         operation=OperationType.CREATE,
         payload={"foo": "bar"},
-        created_at=datetime.utcnow(),
+        created_at=datetime.now(UTC),
         retry_count=retries,
         last_error=None,
     )
@@ -181,8 +181,8 @@ async def test_sync_happy_path_aggregates_counts(tmp_path, monkeypatch):
 
 def test_resolve_conflict_strategies(tmp_path, monkeypatch):
     engine = _engine(tmp_path, monkeypatch)
-    newer = {"updated_at": (datetime.utcnow()).isoformat()}
-    older = {"updated_at": (datetime.utcnow() - timedelta(minutes=1)).isoformat()}
+    newer = {"updated_at": (datetime.now(UTC)).isoformat()}
+    older = {"updated_at": (datetime.now(UTC) - timedelta(minutes=1)).isoformat()}
 
     # last-write-wins picks newer remote
     resolved = engine._resolve_conflict(local_data=older, remote_data=newer)
@@ -224,7 +224,7 @@ async def test_pull_changes_applies_remote_errors_are_collected(tmp_path, monkey
     async def apply(change):
         if change["id"] == "c2":
             raise RuntimeError("fail")
-        return None
+        return
 
     # monkeypatch pull_changes internals
     engine._apply_remote_change = apply  # type: ignore[assignment]

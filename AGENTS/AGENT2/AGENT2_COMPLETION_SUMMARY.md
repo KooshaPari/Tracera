@@ -167,3 +167,9 @@ Agent 2 has successfully completed **Epic 5: Agent Coordination** and **Epic 6: 
 **Total Stories Completed:** 11/11 (Epic 5 & 6), 2/9 (Epic 7 - remaining are optimizations)
 
 **Status:** ✅ **Ready for Integration Testing**
+
+
+## Opinionated Quality Enforcement
+- We want opinionated rules that enforce opinionated styling to a strict degree.
+- This is an exclusively agent/vibecoded project; programmatic enforcement must guard against bad quality and antipatterns.
+- Rather than disables or ignores, fix code properly.

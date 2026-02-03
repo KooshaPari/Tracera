@@ -82,7 +82,7 @@ export default function scss(Prism) {
       alias: 'keyword'
     },
     operator: {
-      pattern: /(\s)(?:[-+*\/%]|[=!]=|<=?|>=?|and|not|or)(?=\s)/,
+      pattern: /(\s)(?:[-+*/%]|[=!]=|<=?|>=?|and|not|or)(?=\s)/,
       lookbehind: true
     }
   })

@@ -8,16 +8,15 @@ This replaces the separate MCP database manager with a unified async engine.
 from __future__ import annotations
 
 import asyncio
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import AsyncGenerator
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 
 from tracertm.config.manager import ConfigManager
 from tracertm.core.context import current_user_id
-
 
 # Singleton async engine (shared with FastAPI)
 _async_engine: AsyncEngine | None = None
@@ -97,14 +96,13 @@ def _convert_to_async_url(database_url: str) -> str:
     """
     if database_url.startswith("sqlite:///"):
         return database_url.replace("sqlite:///", "sqlite+aiosqlite:///", 1)
-    elif database_url.startswith("sqlite://"):
+    if database_url.startswith("sqlite://"):
         return database_url.replace("sqlite://", "sqlite+aiosqlite://", 1)
-    elif database_url.startswith("postgresql://"):
+    if database_url.startswith("postgresql://"):
         # Remove query parameters that asyncpg doesn't support
         base_url = database_url.split("?")[0]
         return base_url.replace("postgresql://", "postgresql+asyncpg://", 1)
-    else:
-        return database_url
+    return database_url
 
 
 @asynccontextmanager
@@ -141,13 +139,12 @@ async def get_mcp_session() -> AsyncGenerator[AsyncSession, None]:
             user_id = current_user_id.get()
             if user_id:
                 config_manager = ConfigManager()
-                database_url = config_manager.get("database_url", "")
+                database_url: str = str(config_manager.get("database_url") or "")
 
                 # Only set RLS for PostgreSQL
-                if "postgres" in database_url:
+                if database_url and "postgres" in database_url:
                     await session.execute(
-                        text("SELECT set_config('app.current_user_id', :user_id, false)"),
-                        {"user_id": user_id}
+                        text("SELECT set_config('app.current_user_id', :user_id, false)"), {"user_id": user_id}
                     )
 
             yield session
@@ -185,21 +182,28 @@ async def get_pool_status() -> dict:
         - overflow: Connections beyond pool_size
         - checked_in: Available connections
     """
+    await asyncio.sleep(0)
     if _async_engine is None:
         return {"status": "not_initialized"}
 
     pool = _async_engine.pool
+    size_fn = getattr(pool, "size", lambda: 0)
+    checkedout_fn = getattr(pool, "checkedout", lambda: 0)
+    overflow_fn = getattr(pool, "overflow", lambda: 0)
+    size = size_fn() if callable(size_fn) else 0
+    checked_out = checkedout_fn() if callable(checkedout_fn) else 0
+    overflow = overflow_fn() if callable(overflow_fn) else 0
     return {
-        "size": pool.size(),
-        "checked_out": pool.checkedout(),
-        "overflow": pool.overflow(),
-        "checked_in": pool.size() - pool.checkedout(),
+        "size": size,
+        "checked_out": checked_out,
+        "overflow": overflow,
+        "checked_in": size - checked_out,
     }
 
 
 __all__ = [
     "get_async_engine",
     "get_mcp_session",
-    "reset_engine",
     "get_pool_status",
+    "reset_engine",
 ]

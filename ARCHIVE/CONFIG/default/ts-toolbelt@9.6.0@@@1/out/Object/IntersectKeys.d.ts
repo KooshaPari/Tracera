@@ -33,4 +33,4 @@ export declare type IntersectKeys<O extends object, O1 extends object, match ext
     '<-extends': IntersectMatch<O, O1, '<-extends'>;
     'equals': IntersectMatch<O, O1, 'equals'>;
 }[match];
-export {};
+

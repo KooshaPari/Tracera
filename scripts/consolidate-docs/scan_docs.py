@@ -10,13 +10,12 @@ import hashlib
 import json
 import re
 from collections import defaultdict
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict, List, Optional
 
 import frontmatter
 from rich.console import Console
-from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn
+from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn
 
 console = Console()
 
@@ -38,34 +37,34 @@ EXCLUDE_PATTERNS = [
 @dataclass
 class DocMetadata:
     """Metadata for a single documentation file."""
+
     path: str
     relative_path: str
     size: int
     lines: int
     content_hash: str
-    title: Optional[str] = None
-    description: Optional[str] = None
-    category: Optional[str] = None
-    audience: Optional[str] = None
-    doc_type: Optional[str] = None
-    frontmatter: Dict = None
-    first_line: Optional[str] = None
-    headings: List[str] = None
-    links: List[str] = None
-    created_date: Optional[str] = None
-    updated_date: Optional[str] = None
+    title: str | None = None
+    description: str | None = None
+    category: str | None = None
+    audience: str | None = None
+    doc_type: str | None = None
+    frontmatter: dict | None = None
+    first_line: str | None = None
+    headings: list[str] | None = None
+    links: list[str] | None = None
+    created_date: str | None = None
+    updated_date: str | None = None
 
 
 def should_exclude(path: Path) -> bool:
     """Check if path should be excluded."""
     path_str = str(path)
-    for pattern in EXCLUDE_PATTERNS:
-        if pattern.replace("**/", "").replace("**", "") in path_str:
-            return True
-    return False
+    return any(
+        pattern.replace("**/", "").replace("**", "") in path_str for pattern in EXCLUDE_PATTERNS
+    )
 
 
-def extract_frontmatter(content: str) -> tuple[Dict, str]:
+def extract_frontmatter(content: str) -> tuple[dict, str]:
     """Extract frontmatter from markdown content."""
     try:
         post = frontmatter.loads(content)
@@ -74,7 +73,7 @@ def extract_frontmatter(content: str) -> tuple[Dict, str]:
         return {}, content
 
 
-def extract_title(content: str) -> Optional[str]:
+def extract_title(content: str) -> str | None:
     """Extract title from first H1 heading or frontmatter."""
     lines = content.split("\n")
     for line in lines[:20]:  # Check first 20 lines
@@ -83,25 +82,24 @@ def extract_title(content: str) -> Optional[str]:
     return None
 
 
-def extract_headings(content: str) -> List[str]:
+def extract_headings(content: str) -> list[str]:
     """Extract all headings from markdown."""
     headings = []
     for line in content.split("\n"):
         if line.startswith("#"):
-            level = len(line) - len(line.lstrip("#"))
             text = line.lstrip("#").strip()
             if text:
                 headings.append(text)
     return headings
 
 
-def extract_links(content: str) -> List[str]:
+def extract_links(content: str) -> list[str]:
     """Extract all internal markdown links."""
     links = []
     # Match [text](path) and [text][ref] patterns
     patterns = [
-        r'\[([^\]]+)\]\(([^)]+)\)',  # [text](path)
-        r'\[([^\]]+)\]\[([^\]]+)\]',  # [text][ref]
+        r"\[([^\]]+)\]\(([^)]+)\)",  # [text](path)
+        r"\[([^\]]+)\]\[([^\]]+)\]",  # [text][ref]
     ]
     for pattern in patterns:
         matches = re.findall(pattern, content)
@@ -113,11 +111,10 @@ def extract_links(content: str) -> List[str]:
     return links
 
 
-def categorize_doc(path: Path, content: str, frontmatter_data: Dict) -> Dict[str, str]:
+def categorize_doc(path: Path, content: str, frontmatter_data: dict) -> dict[str, str]:
     """Categorize document by audience, type, and topic."""
     path_str = str(path).lower()
-    content_lower = content.lower()
-    
+
     # Determine audience
     audience = frontmatter_data.get("audience")
     if not audience:
@@ -129,7 +126,7 @@ def categorize_doc(path: Path, content: str, frontmatter_data: Dict) -> Dict[str
             audience = "api"
         else:
             audience = "unknown"
-    
+
     # Determine doc type
     doc_type = frontmatter_data.get("type")
     if not doc_type:
@@ -149,7 +146,7 @@ def categorize_doc(path: Path, content: str, frontmatter_data: Dict) -> Dict[str
             doc_type = "faq"
         else:
             doc_type = "general"
-    
+
     # Determine category/topic
     category = frontmatter_data.get("category")
     if not category:
@@ -167,7 +164,7 @@ def categorize_doc(path: Path, content: str, frontmatter_data: Dict) -> Dict[str
             category = "architecture"
         else:
             category = "general"
-    
+
     return {
         "audience": audience,
         "type": doc_type,
@@ -175,13 +172,13 @@ def categorize_doc(path: Path, content: str, frontmatter_data: Dict) -> Dict[str
     }
 
 
-def scan_documentation(root_dir: Path = Path.cwd()) -> List[DocMetadata]:
+def scan_documentation(root_dir: Path = Path.cwd()) -> list[DocMetadata]:
     """Scan all markdown files and create inventory."""
     console.print("[bold blue]Scanning documentation files...[/bold blue]")
-    
+
     all_docs = []
     md_files = list(root_dir.rglob("*.md"))
-    
+
     with Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
@@ -190,31 +187,31 @@ def scan_documentation(root_dir: Path = Path.cwd()) -> List[DocMetadata]:
         console=console,
     ) as progress:
         task = progress.add_task("Scanning files...", total=len(md_files))
-        
+
         for md_file in md_files:
             if should_exclude(md_file):
                 progress.update(task, advance=1)
                 continue
-            
+
             try:
                 content = md_file.read_text(encoding="utf-8")
                 content_hash = hashlib.sha256(content.encode()).hexdigest()
-                
+
                 # Extract frontmatter
                 frontmatter_data, content_body = extract_frontmatter(content)
-                
+
                 # Extract metadata
                 title = frontmatter_data.get("title") or extract_title(content_body)
                 description = frontmatter_data.get("description")
-                
+
                 # Categorize
                 categorization = categorize_doc(md_file, content_body, frontmatter_data)
-                
+
                 # Extract additional info
                 headings = extract_headings(content_body)
                 links = extract_links(content_body)
                 first_line = content_body.split("\n")[0] if content_body else None
-                
+
                 doc = DocMetadata(
                     path=str(md_file),
                     relative_path=str(md_file.relative_to(root_dir)),
@@ -233,18 +230,18 @@ def scan_documentation(root_dir: Path = Path.cwd()) -> List[DocMetadata]:
                     created_date=frontmatter_data.get("date") or frontmatter_data.get("created"),
                     updated_date=frontmatter_data.get("updated") or frontmatter_data.get("lastUpdated"),
                 )
-                
+
                 all_docs.append(doc)
                 progress.update(task, advance=1)
-                
+
             except Exception as e:
                 console.print(f"[yellow]Warning: Could not process {md_file}: {e}[/yellow]")
                 progress.update(task, advance=1)
-    
+
     return all_docs
 
 
-def generate_statistics(docs: List[DocMetadata]) -> Dict:
+def generate_statistics(docs: list[DocMetadata]) -> dict:
     """Generate statistics about documentation."""
     stats = {
         "total_files": len(docs),
@@ -256,12 +253,12 @@ def generate_statistics(docs: List[DocMetadata]) -> Dict:
         "with_frontmatter": sum(1 for d in docs if d.frontmatter),
         "with_title": sum(1 for d in docs if d.title),
     }
-    
+
     for doc in docs:
         stats["by_audience"][doc.audience] += 1
         stats["by_type"][doc.doc_type] += 1
         stats["by_category"][doc.category] += 1
-    
+
     return stats
 
 
@@ -270,13 +267,13 @@ def main():
     root_dir = Path.cwd()
     output_dir = root_dir / "consolidation-output"
     output_dir.mkdir(exist_ok=True)
-    
+
     # Scan all documentation
     docs = scan_documentation(root_dir)
-    
+
     # Generate statistics
     stats = generate_statistics(docs)
-    
+
     # Save inventory
     inventory = {
         "metadata": {
@@ -287,24 +284,24 @@ def main():
         "statistics": stats,
         "docs": [asdict(doc) for doc in docs],
     }
-    
+
     inventory_path = output_dir / "docs_inventory.json"
-    with open(inventory_path, "w", encoding="utf-8") as f:
+    with Path(inventory_path).open("w", encoding="utf-8") as f:
         json.dump(inventory, f, indent=2, ensure_ascii=False)
-    
+
     console.print(f"\n[green]✓[/green] Scanned {len(docs)} documentation files")
     console.print(f"[green]✓[/green] Inventory saved to: {inventory_path}")
-    console.print(f"\n[bold]Statistics:[/bold]")
+    console.print("\n[bold]Statistics:[/bold]")
     console.print(f"  Total files: {stats['total_files']}")
     console.print(f"  Total size: {stats['total_size']:,} bytes")
     console.print(f"  Total lines: {stats['total_lines']:,}")
-    console.print(f"\n  By Audience:")
+    console.print("\n  By Audience:")
     for audience, count in sorted(stats["by_audience"].items()):
         console.print(f"    {audience}: {count}")
-    console.print(f"\n  By Type:")
+    console.print("\n  By Type:")
     for doc_type, count in sorted(stats["by_type"].items()):
         console.print(f"    {doc_type}: {count}")
-    console.print(f"\n  By Category:")
+    console.print("\n  By Category:")
     for category, count in sorted(stats["by_category"].items()):
         console.print(f"    {category}: {count}")
 

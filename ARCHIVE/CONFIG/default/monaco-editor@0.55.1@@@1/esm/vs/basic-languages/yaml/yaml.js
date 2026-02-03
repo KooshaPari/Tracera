@@ -170,7 +170,7 @@ const language = {
       // Flow Mapping Key:Value delimiter
       [/:(?= )/, "operators"],
       // Flow Mapping Key:Value key
-      [/(?:".*?"|'.*?'|[^,\{\[]+?)(?=: )/, "type"],
+      [/(?:".*?"|'.*?'|[^,{[]+?)(?=: )/, "type"],
       // Start Flow Style
       { include: "@flowCollections" },
       { include: "@flowScalars" },
@@ -180,7 +180,7 @@ const language = {
       { include: "@flowNumber" },
       // Other value (keyword or string)
       [
-        /[^\},]+/,
+        /[^},]+/,
         {
           cases: {
             "@keywords": "keyword",
@@ -255,15 +255,15 @@ const language = {
     blockStyle: [[/[>|][0-9]*[+-]?$/, "operators", "@multiString"]],
     // Numbers in Flow Collections (terminate with ,]})
     flowNumber: [
-      [/@numberInteger(?=[ \t]*[,\]\}])/, "number"],
-      [/@numberFloat(?=[ \t]*[,\]\}])/, "number.float"],
-      [/@numberOctal(?=[ \t]*[,\]\}])/, "number.octal"],
-      [/@numberHex(?=[ \t]*[,\]\}])/, "number.hex"],
-      [/@numberInfinity(?=[ \t]*[,\]\}])/, "number.infinity"],
-      [/@numberNaN(?=[ \t]*[,\]\}])/, "number.nan"],
-      [/@numberDate(?=[ \t]*[,\]\}])/, "number.date"]
+      [/@numberInteger(?=[ \t]*[,\]}])/, "number"],
+      [/@numberFloat(?=[ \t]*[,\]}])/, "number.float"],
+      [/@numberOctal(?=[ \t]*[,\]}])/, "number.octal"],
+      [/@numberHex(?=[ \t]*[,\]}])/, "number.hex"],
+      [/@numberInfinity(?=[ \t]*[,\]}])/, "number.infinity"],
+      [/@numberNaN(?=[ \t]*[,\]}])/, "number.nan"],
+      [/@numberDate(?=[ \t]*[,\]}])/, "number.date"]
     ],
-    tagHandle: [[/\![^ ]*/, "tag"]],
+    tagHandle: [[/![^ ]*/, "tag"]],
     anchor: [[/[&*][^ ]+/, "namespace"]]
   }
 };

@@ -28,6 +28,6 @@ export default function lua(Prism) {
         lookbehind: true
       }
     ],
-    punctuation: /[\[\](){},;]|\.+|:+/
+    punctuation: /[[\](){},;]|\.+|:+/
   }
 }

@@ -1,0 +1,153 @@
+import type { Project } from "@tracertm/types";
+import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
+
+// SSR-safe storage that only accesses localStorage on the client
+const noopStorage = {
+	getItem: (_key: string) => null,
+	removeItem: (_key: string) => {},
+	setItem: (_key: string, _value: string) => {},
+};
+
+const getStorage = () => {
+	// Check if we're in a browser environment with proper localStorage
+	if (
+		typeof globalThis.window === "undefined" ||
+		typeof localStorage === "undefined" ||
+		typeof localStorage.getItem !== "function"
+	) {
+		return noopStorage;
+	}
+	return localStorage;
+};
+
+interface ProjectState {
+	// Current project
+	currentProjectId: string | null;
+	currentProject: Project | null;
+
+	// Recent projects
+	recentProjects: string[];
+
+	// Project preferences
+	projectSettings: Record<
+		string,
+		{
+			defaultView?: string;
+			pinnedItems?: string[];
+			customFilters?: Record<string, unknown>;
+		}
+	>;
+
+	// Actions
+	setCurrentProject: (project: Project | null) => void;
+	addRecentProject: (projectId: string) => void;
+	setRecentProjects: (projectIds: string[]) => void;
+	getProjectSettings: (projectId: string) => Record<string, unknown>;
+	updateProjectSettings: (
+		projectId: string,
+		settings: Record<string, unknown>,
+	) => void;
+	pinItem: (projectId: string, itemId: string) => void;
+	unpinItem: (projectId: string, itemId: string) => void;
+	clearCurrentProject: () => void;
+}
+
+export const useProjectStore = create<ProjectState>()(
+	persist(
+		(set, get) => ({
+			// Initial state
+			currentProjectId: null,
+			currentProject: null,
+			recentProjects: [],
+			projectSettings: {},
+
+			// Actions
+			setCurrentProject: (project) => {
+				set({
+					currentProject: project,
+					currentProjectId: project?.id || null,
+				});
+				if (project?.id) {
+					get().addRecentProject(project.id);
+				}
+			},
+
+			addRecentProject: (projectId) =>
+				set((state) => {
+					const filtered = state.recentProjects.filter(
+						(id) => id !== projectId,
+					);
+					return {
+						recentProjects: [projectId, ...filtered].slice(0, 10), // Keep last 10
+					};
+				}),
+
+			setRecentProjects: (projectIds) =>
+				set({
+					recentProjects: projectIds.slice(0, 10), // Keep last 10
+				}),
+
+			getProjectSettings: (projectId) => get().projectSettings[projectId] || {},
+
+			updateProjectSettings: (projectId, settings) =>
+				set((state) => ({
+					projectSettings: {
+						...state.projectSettings,
+						[projectId]: {
+							...state.projectSettings[projectId],
+							...settings,
+						},
+					},
+				})),
+
+			pinItem: (projectId, itemId) =>
+				set((state) => {
+					const current = state.projectSettings[projectId] || {};
+					const pinnedItems = current.pinnedItems || [];
+					if (!pinnedItems.includes(itemId)) {
+						return {
+							projectSettings: {
+								...state.projectSettings,
+								[projectId]: {
+									...current,
+									pinnedItems: [...pinnedItems, itemId],
+								},
+							},
+						};
+					}
+					return state;
+				}),
+
+			unpinItem: (projectId, itemId) =>
+				set((state) => {
+					const current = state.projectSettings[projectId] || {};
+					const pinnedItems = current.pinnedItems || [];
+					return {
+						projectSettings: {
+							...state.projectSettings,
+							[projectId]: {
+								...current,
+								pinnedItems: pinnedItems.filter((id) => id !== itemId),
+							},
+						},
+					};
+				}),
+
+			clearCurrentProject: () =>
+				set({
+					currentProject: null,
+					currentProjectId: null,
+				}),
+		}),
+		{
+			name: "tracertm-project-store",
+			partialize: (state) => ({
+				currentProjectId: state.currentProjectId,
+				projectSettings: state.projectSettings,
+				recentProjects: state.recentProjects,
+			}),
+			storage: createJSONStorage(() => getStorage()),
+		},
+	),
+);

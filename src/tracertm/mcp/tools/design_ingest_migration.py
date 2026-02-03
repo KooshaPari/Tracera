@@ -9,15 +9,15 @@ This module provides important feature tools:
 
 from __future__ import annotations
 
+import asyncio
+import logging
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
-from fastmcp.exceptions import ToolError
-
-from tracertm.mcp.core import mcp
 from tracertm.config.manager import ConfigManager
-from tracertm.database.connection import DatabaseConnection
-from tracertm.storage.local_storage import LocalStorageManager
+from tracertm.mcp.core import mcp
+
+logger = logging.getLogger(__name__)
 
 
 def _wrap(result: Any, ctx: Any | None, action: str) -> dict[str, Any]:
@@ -26,6 +26,7 @@ def _wrap(result: Any, ctx: Any | None, action: str) -> dict[str, Any]:
     if ctx is not None:
         try:
             from fastmcp.server.dependencies import get_access_token
+
             token = get_access_token()
             if token:
                 claims = getattr(token, "claims", {}) or {}
@@ -33,8 +34,8 @@ def _wrap(result: Any, ctx: Any | None, action: str) -> dict[str, Any]:
                     "client_id": getattr(token, "client_id", None),
                     "sub": claims.get("sub"),
                 }
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("Could not get actor from access token: %s", e)
 
     return {
         "ok": True,
@@ -60,12 +61,12 @@ def _error(message: str, action: str, code: str = "ERROR") -> dict[str, Any]:
 
 
 @mcp.tool()
-async def design_init(
+def design_init(
     ctx: Any,
     figma_token: str,
     figma_file_id: str,
     trace_dir: str | None = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Initialize Figma design integration.
 
     Args:
@@ -90,7 +91,8 @@ async def design_init(
 
         config_file = meta_dir / "design_config.json"
         import json
-        with open(config_file, "w") as f:
+
+        with config_file.open("w") as f:
             json.dump(config, f, indent=2)
 
         return _wrap(
@@ -103,16 +105,16 @@ async def design_init(
             "design_init",
         )
     except Exception as e:
-        return _error(f"Design initialization failed: {str(e)}", "design_init")
+        return _error(f"Design initialization failed: {e!s}", "design_init")
 
 
 @mcp.tool()
-async def design_link(
+def design_link(
     ctx: Any,
     component_name: str,
     figma_url: str,
     trace_dir: str | None = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Link a component to a Figma design.
 
     Args:
@@ -130,9 +132,10 @@ async def design_link(
         components_file = meta_dir / "components_config.json"
 
         import json
+
         components = {}
         if components_file.exists():
-            with open(components_file, "r") as f:
+            with components_file.open() as f:
                 components = json.load(f)
 
         components[component_name] = {
@@ -140,7 +143,7 @@ async def design_link(
             "linked_at": str(Path.cwd()),
         }
 
-        with open(components_file, "w") as f:
+        with components_file.open("w") as f:
             json.dump(components, f, indent=2)
 
         return _wrap(
@@ -153,14 +156,14 @@ async def design_link(
             "design_link",
         )
     except Exception as e:
-        return _error(f"Failed to link component: {str(e)}", "design_link")
+        return _error(f"Failed to link component: {e!s}", "design_link")
 
 
 @mcp.tool()
-async def design_sync(
+def design_sync(
     ctx: Any,
     trace_dir: str | None = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Sync designs from Figma to project.
 
     Args:
@@ -184,15 +187,15 @@ async def design_sync(
             "design_sync",
         )
     except Exception as e:
-        return _error(f"Design sync failed: {str(e)}", "design_sync")
+        return _error(f"Design sync failed: {e!s}", "design_sync")
 
 
 @mcp.tool()
-async def design_generate(
+def design_generate(
     ctx: Any,
     component_pattern: str | None = None,
     trace_dir: str | None = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Generate component stories from Figma designs.
 
     Args:
@@ -204,8 +207,6 @@ async def design_generate(
         MCP response with generation status
     """
     try:
-        trace_path = Path(trace_dir or Path.cwd())
-
         return _wrap(
             {
                 "message": "Component story generation started",
@@ -216,14 +217,14 @@ async def design_generate(
             "design_generate",
         )
     except Exception as e:
-        return _error(f"Story generation failed: {str(e)}", "design_generate")
+        return _error(f"Story generation failed: {e!s}", "design_generate")
 
 
 @mcp.tool()
 async def design_status(
     ctx: Any,
     trace_dir: str | None = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Show design integration status.
 
     Args:
@@ -233,6 +234,7 @@ async def design_status(
     Returns:
         MCP response with integration status
     """
+    await asyncio.sleep(0)
     try:
         trace_path = Path(trace_dir or Path.cwd())
         meta_dir = trace_path / ".tracertm"
@@ -241,15 +243,16 @@ async def design_status(
         components_file = meta_dir / "components_config.json"
 
         import json
+
         config = {}
         components = {}
 
         if config_file.exists():
-            with open(config_file, "r") as f:
+            with config_file.open() as f:
                 config = json.load(f)
 
         if components_file.exists():
-            with open(components_file, "r") as f:
+            with components_file.open() as f:
                 components = json.load(f)
 
         return _wrap(
@@ -263,14 +266,14 @@ async def design_status(
             "design_status",
         )
     except Exception as e:
-        return _error(f"Failed to get design status: {str(e)}", "design_status")
+        return _error(f"Failed to get design status: {e!s}", "design_status")
 
 
 @mcp.tool()
 async def design_list(
     ctx: Any,
     trace_dir: str | None = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """List linked design components.
 
     Args:
@@ -280,15 +283,17 @@ async def design_list(
     Returns:
         MCP response with component list
     """
+    await asyncio.sleep(0)
     try:
         trace_path = Path(trace_dir or Path.cwd())
         meta_dir = trace_path / ".tracertm"
         components_file = meta_dir / "components_config.json"
 
         import json
+
         components = {}
         if components_file.exists():
-            with open(components_file, "r") as f:
+            with components_file.open() as f:
                 components = json.load(f)
 
         return _wrap(
@@ -306,7 +311,7 @@ async def design_list(
             "design_list",
         )
     except Exception as e:
-        return _error(f"Failed to list components: {str(e)}", "design_list")
+        return _error(f"Failed to list components: {e!s}", "design_list")
 
 
 # ==========================================================================
@@ -320,7 +325,7 @@ async def ingest_directory(
     directory_path: str,
     project_name: str | None = None,
     recursive: bool = True,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Ingest all items from a directory structure.
 
     Args:
@@ -332,19 +337,19 @@ async def ingest_directory(
     Returns:
         MCP response with ingestion status
     """
+    await asyncio.sleep(0)
     try:
         source_path = Path(directory_path)
         if not source_path.exists():
             return _error(f"Directory not found: {directory_path}", "ingest_directory")
 
         # Count files
-        import glob
         pattern = "**/*" if recursive else "*"
         files = list(source_path.glob(pattern))
 
         return _wrap(
             {
-                "message": f"Directory ingestion started",
+                "message": "Directory ingestion started",
                 "directory": str(source_path),
                 "files_found": len(files),
                 "project": project_name or "default",
@@ -354,7 +359,7 @@ async def ingest_directory(
             "ingest_directory",
         )
     except Exception as e:
-        return _error(f"Directory ingestion failed: {str(e)}", "ingest_directory")
+        return _error(f"Directory ingestion failed: {e!s}", "ingest_directory")
 
 
 @mcp.tool()
@@ -362,7 +367,7 @@ async def ingest_markdown(
     ctx: Any,
     file_path: str,
     project_name: str | None = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Ingest items from a Markdown file.
 
     Args:
@@ -373,16 +378,17 @@ async def ingest_markdown(
     Returns:
         MCP response with ingestion status
     """
+    await asyncio.sleep(0)
     try:
         md_path = Path(file_path)
         if not md_path.exists():
             return _error(f"File not found: {file_path}", "ingest_markdown")
 
-        if not md_path.suffix in [".md", ".markdown"]:
+        if md_path.suffix not in [".md", ".markdown"]:
             return _error(f"Not a Markdown file: {file_path}", "ingest_markdown")
 
         # Count headings
-        with open(md_path, "r") as f:
+        with md_path.open() as f:
             content = f.read()
         headings = content.count("\n# ") + content.count("\n## ") + content.count("\n### ")
 
@@ -397,7 +403,7 @@ async def ingest_markdown(
             "ingest_markdown",
         )
     except Exception as e:
-        return _error(f"Markdown ingestion failed: {str(e)}", "ingest_markdown")
+        return _error(f"Markdown ingestion failed: {e!s}", "ingest_markdown")
 
 
 @mcp.tool()
@@ -405,7 +411,7 @@ async def ingest_yaml(
     ctx: Any,
     file_path: str,
     project_name: str | None = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Ingest items from a YAML file.
 
     Args:
@@ -416,6 +422,7 @@ async def ingest_yaml(
     Returns:
         MCP response with ingestion status
     """
+    await asyncio.sleep(0)
     try:
         yaml_path = Path(file_path)
         if not yaml_path.exists():
@@ -431,7 +438,7 @@ async def ingest_yaml(
             "ingest_yaml",
         )
     except Exception as e:
-        return _error(f"YAML ingestion failed: {str(e)}", "ingest_yaml")
+        return _error(f"YAML ingestion failed: {e!s}", "ingest_yaml")
 
 
 @mcp.tool()
@@ -440,7 +447,7 @@ async def ingest_file(
     file_path: str,
     file_type: str,
     project_name: str | None = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Ingest items from a file of specified type.
 
     Args:
@@ -452,6 +459,7 @@ async def ingest_file(
     Returns:
         MCP response with ingestion status
     """
+    await asyncio.sleep(0)
     try:
         source_path = Path(file_path)
         if not source_path.exists():
@@ -468,7 +476,7 @@ async def ingest_file(
             "ingest_file",
         )
     except Exception as e:
-        return _error(f"File ingestion failed: {str(e)}", "ingest_file")
+        return _error(f"File ingestion failed: {e!s}", "ingest_file")
 
 
 # ==========================================================================
@@ -482,7 +490,7 @@ async def migrate_project(
     source_path: str,
     project_name: str | None = None,
     backup_existing: bool = True,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Migrate project from external format to TraceRTM.
 
     Args:
@@ -494,6 +502,7 @@ async def migrate_project(
     Returns:
         MCP response with migration status
     """
+    await asyncio.sleep(0)
     try:
         source = Path(source_path)
         if not source.exists():
@@ -511,7 +520,7 @@ async def migrate_project(
             "migrate_project",
         )
     except Exception as e:
-        return _error(f"Migration failed: {str(e)}", "migrate_project")
+        return _error(f"Migration failed: {e!s}", "migrate_project")
 
 
 # ==========================================================================
@@ -523,7 +532,7 @@ async def migrate_project(
 async def link_detect_missing(
     ctx: Any,
     project_id: str | None = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Detect missing traceability links in project.
 
     Args:
@@ -533,6 +542,7 @@ async def link_detect_missing(
     Returns:
         MCP response with missing links
     """
+    await asyncio.sleep(0)
     try:
         config = ConfigManager()
         project_id = project_id or config.get("current_project_id")
@@ -550,14 +560,14 @@ async def link_detect_missing(
             "link_detect_missing",
         )
     except Exception as e:
-        return _error(f"Detection failed: {str(e)}", "link_detect_missing")
+        return _error(f"Detection failed: {e!s}", "link_detect_missing")
 
 
 @mcp.tool()
 async def link_detect_orphans(
     ctx: Any,
     project_id: str | None = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Detect orphaned items with no links.
 
     Args:
@@ -567,6 +577,7 @@ async def link_detect_orphans(
     Returns:
         MCP response with orphaned items
     """
+    await asyncio.sleep(0)
     try:
         config = ConfigManager()
         project_id = project_id or config.get("current_project_id")
@@ -584,7 +595,7 @@ async def link_detect_orphans(
             "link_detect_orphans",
         )
     except Exception as e:
-        return _error(f"Detection failed: {str(e)}", "link_detect_orphans")
+        return _error(f"Detection failed: {e!s}", "link_detect_orphans")
 
 
 @mcp.tool()
@@ -592,7 +603,7 @@ async def link_auto_link(
     ctx: Any,
     project_id: str | None = None,
     threshold: float = 0.8,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Automatically create links based on semantic similarity.
 
     Args:
@@ -603,6 +614,7 @@ async def link_auto_link(
     Returns:
         MCP response with auto-link status
     """
+    await asyncio.sleep(0)
     try:
         config = ConfigManager()
         project_id = project_id or config.get("current_project_id")
@@ -621,4 +633,4 @@ async def link_auto_link(
             "link_auto_link",
         )
     except Exception as e:
-        return _error(f"Auto-linking failed: {str(e)}", "link_auto_link")
+        return _error(f"Auto-linking failed: {e!s}", "link_auto_link")

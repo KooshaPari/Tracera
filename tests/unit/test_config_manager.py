@@ -61,7 +61,8 @@ class TestConfigManager:
         assert config_path.exists()
 
         import yaml
-        with open(config_path) as f:
+
+        with Path(config_path).open() as f:
             config_data = yaml.safe_load(f)
         assert config_data["default_view"] == "CODE"
 
@@ -182,10 +183,7 @@ class TestConfigManager:
 
         # Test 5: Valid config passes
         valid_config = Config(
-            database_url="postgresql://localhost/test",
-            default_view="FEATURE",
-            output_format="json",
-            max_agents=100
+            database_url="postgresql://localhost/test", default_view="FEATURE", output_format="json", max_agents=100
         )
         assert valid_config.database_url == "postgresql://localhost/test"
         assert valid_config.default_view == "FEATURE"

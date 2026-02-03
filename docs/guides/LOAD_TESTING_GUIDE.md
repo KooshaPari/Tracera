@@ -108,7 +108,7 @@ The workflow (`.github/workflows/load-test.yml`) executes:
 
 #### In GitHub Actions
 - Navigate to Actions → "Load Testing" workflow
-- Download "k6-load-test-results-*" artifact
+- Download "k6-load-tests/results-*" artifact
 - Contains: `results.json`, `results.csv`, `output.log`
 
 ## Performance Regression Detection

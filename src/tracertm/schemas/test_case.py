@@ -1,14 +1,15 @@
 """Pydantic schemas for Test Case management."""
 
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
-class TestCaseStatus(str, Enum):
+class TestCaseStatus(StrEnum):
     """Valid test case statuses."""
+
     DRAFT = "draft"
     REVIEW = "review"
     APPROVED = "approved"
@@ -16,8 +17,9 @@ class TestCaseStatus(str, Enum):
     ARCHIVED = "archived"
 
 
-class TestCaseType(str, Enum):
+class TestCaseType(StrEnum):
     """Types of test cases."""
+
     FUNCTIONAL = "functional"
     INTEGRATION = "integration"
     UNIT = "unit"
@@ -30,16 +32,18 @@ class TestCaseType(str, Enum):
     EXPLORATORY = "exploratory"
 
 
-class TestCasePriority(str, Enum):
+class TestCasePriority(StrEnum):
     """Priority levels for test case execution order."""
+
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
 
 
-class AutomationStatus(str, Enum):
+class AutomationStatus(StrEnum):
     """Automation implementation status."""
+
     NOT_AUTOMATED = "not_automated"
     IN_PROGRESS = "in_progress"
     AUTOMATED = "automated"
@@ -48,6 +52,7 @@ class AutomationStatus(str, Enum):
 
 class TestStep(BaseModel):
     """A single test step."""
+
     step_number: int = Field(..., ge=1)
     action: str = Field(..., min_length=1)
     expected_result: str | None = None
@@ -183,8 +188,7 @@ class TestCaseResponse(BaseModel):
     updated_at: datetime
     deleted_at: datetime | None = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TestCaseListResponse(BaseModel):
@@ -231,8 +235,7 @@ class TestCaseActivityResponse(BaseModel):
     metadata: dict[str, Any]
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TestCaseStats(BaseModel):

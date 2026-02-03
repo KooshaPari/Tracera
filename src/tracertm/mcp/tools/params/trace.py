@@ -9,14 +9,17 @@ from fastmcp.exceptions import ToolError
 try:
     from tracertm.mcp.core import mcp
 except Exception:  # pragma: no cover
+
     class _StubMCP:
         def tool(self, *args: Any, **kwargs: Any):
             def decorator(fn):
                 return fn
+
             return decorator
+
     mcp = _StubMCP()  # type: ignore[assignment]
 
-from .common import _wrap, _maybe_select_project, trace_tools
+from .common import _call_tool, _maybe_select_project, _wrap, trace_tools
 
 
 @mcp.tool(description="Unified traceability analysis")
@@ -41,21 +44,24 @@ async def trace_analyze(
     await _maybe_select_project(payload, ctx)
 
     if kind == "gaps":
-        result = await trace_tools.find_gaps(
+        result = await _call_tool(
+            trace_tools, "find_gaps",
             from_view=payload.get("from_view"),
             to_view=payload.get("to_view"),
             ctx=ctx,
         )
         return _wrap(result, ctx, kind)
     if kind == "trace_matrix":
-        result = await trace_tools.get_trace_matrix(
+        result = await _call_tool(
+            trace_tools, "get_trace_matrix",
             source_view=payload.get("source_view"),
             target_view=payload.get("target_view"),
             ctx=ctx,
         )
         return _wrap(result, ctx, kind)
     if kind == "impact":
-        result = await trace_tools.analyze_impact(
+        result = await _call_tool(
+            trace_tools, "analyze_impact",
             item_id=payload.get("item_id"),
             max_depth=payload.get("max_depth", 5),
             link_types=payload.get("link_types"),
@@ -63,14 +69,15 @@ async def trace_analyze(
         )
         return _wrap(result, ctx, kind)
     if kind == "reverse_impact":
-        result = await trace_tools.analyze_reverse_impact(
+        result = await _call_tool(
+            trace_tools, "analyze_reverse_impact",
             item_id=payload.get("item_id"),
             max_depth=payload.get("max_depth", 5),
             ctx=ctx,
         )
         return _wrap(result, ctx, kind)
     if kind == "project_health":
-        result = await trace_tools.project_health(ctx=ctx)
+        result = await _call_tool(trace_tools, "project_health", ctx=ctx)
         return _wrap(result, ctx, kind)
 
     raise ToolError(f"Unknown trace analysis kind: {kind}")
@@ -91,10 +98,12 @@ async def quality_analyze(
     try:
         from tracertm.mcp.tools import specifications as spec_tools
     except Exception:
+
         class _SpecStub:
             async def analyze_quality(self, **kwargs):
                 raise ToolError("Specification tools unavailable")
+
         spec_tools = _SpecStub()  # type: ignore
 
-    result = await spec_tools.analyze_quality(item_id=payload.get("item_id"))
+    result = await _call_tool(spec_tools, "analyze_quality", item_id=payload.get("item_id"))
     return _wrap(result, ctx, "quality.analyze")

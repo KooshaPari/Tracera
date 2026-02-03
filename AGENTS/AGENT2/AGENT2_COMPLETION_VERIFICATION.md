@@ -180,3 +180,9 @@
 All assigned work for Agent 2 (Epics 5, 6, 7) is complete, tested, and verified.
 
 **Agent 2 Work: COMPLETE ✅**
+
+
+## Opinionated Quality Enforcement
+- We want opinionated rules that enforce opinionated styling to a strict degree.
+- This is an exclusively agent/vibecoded project; programmatic enforcement must guard against bad quality and antipatterns.
+- Rather than disables or ignores, fix code properly.

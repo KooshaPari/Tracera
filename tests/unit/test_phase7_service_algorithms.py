@@ -17,13 +17,7 @@ class TestImpactAnalysisServiceInternals:
     def test_calculate_transitive_closure(self):
         """Test transitive closure calculation."""
         # Graph: 1→2→3, 2→4, 4→5
-        graph = {
-            1: [2],
-            2: [3, 4],
-            3: [],
-            4: [5],
-            5: []
-        }
+        graph = {1: [2], 2: [3, 4], 3: [], 4: [5], 5: []}
 
         def transitive_closure(graph):
             len(graph)
@@ -54,11 +48,11 @@ class TestImpactAnalysisServiceInternals:
             1: {2: 0.8, 3: 0.5},  # Strong impact to 2, weak to 3
             2: {4: 0.7},
             3: {4: 0.3},
-            4: {}
+            4: {},
         }
 
         def weighted_impact(start, graph):
-            impact = dict.fromkeys(graph, 0)
+            impact: dict[int, float] = dict.fromkeys(graph, 0.0)
             impact[start] = 1.0
 
             # BFS with weight accumulation
@@ -72,10 +66,7 @@ class TestImpactAnalysisServiceInternals:
                 visited.add(node)
 
                 for neighbor, weight in graph.get(node, {}).items():
-                    impact[neighbor] = max(
-                        impact[neighbor],
-                        impact[node] * weight
-                    )
+                    impact[neighbor] = max(impact[neighbor], impact[node] * weight)
                     if neighbor not in visited:
                         queue.append(neighbor)
 
@@ -110,65 +101,48 @@ class TestImpactAnalysisServiceInternals:
     def test_identify_impact_levels(self):
         """Test identifying impact severity levels."""
         items = [
-            {'id': 1, 'impact_score': 0.95},
-            {'id': 2, 'impact_score': 0.65},
-            {'id': 3, 'impact_score': 0.35},
-            {'id': 4, 'impact_score': 0.05}
+            {"id": 1, "impact_score": 0.95},
+            {"id": 2, "impact_score": 0.65},
+            {"id": 3, "impact_score": 0.35},
+            {"id": 4, "impact_score": 0.05},
         ]
 
         def categorize_impact(items):
-            categories = {
-                'critical': [],
-                'high': [],
-                'medium': [],
-                'low': []
-            }
+            categories = {"critical": [], "high": [], "medium": [], "low": []}
 
             for item in items:
-                score = item['impact_score']
+                score = item["impact_score"]
                 if score >= 0.8:
-                    categories['critical'].append(item['id'])
+                    categories["critical"].append(item["id"])
                 elif score >= 0.6:
-                    categories['high'].append(item['id'])
+                    categories["high"].append(item["id"])
                 elif score >= 0.3:
-                    categories['medium'].append(item['id'])
+                    categories["medium"].append(item["id"])
                 else:
-                    categories['low'].append(item['id'])
+                    categories["low"].append(item["id"])
 
             return categories
 
         result = categorize_impact(items)
-        assert 1 in result['critical']
-        assert 2 in result['high']
-        assert 3 in result['medium']
-        assert 4 in result['low']
+        assert 1 in result["critical"]
+        assert 2 in result["high"]
+        assert 3 in result["medium"]
+        assert 4 in result["low"]
 
     def test_detect_cascading_failures(self):
         """Test detecting cascading failure scenarios."""
         # Network: critical node is bottleneck
-        graph = {
-            1: [2],
-            2: [3],
-            3: [4, 5, 6],
-            4: [],
-            5: [],
-            6: []
-        }
+        graph = {1: [2], 2: [3], 3: [4, 5, 6], 4: [], 5: [], 6: []}
 
         def find_bottlenecks(graph):
             incoming_count = dict.fromkeys(graph, 0)
             outgoing_count = {n: len(graph[n]) for n in graph}
 
-            for _node, neighbors in graph.items():
+            for neighbors in graph.values():
                 for neighbor in neighbors:
                     incoming_count[neighbor] += 1
 
-            bottlenecks = [
-                n for n in graph
-                if incoming_count[n] > 0 and outgoing_count[n] > 1
-            ]
-
-            return bottlenecks
+            return [n for n in graph if incoming_count[n] > 0 and outgoing_count[n] > 1]
 
         result = find_bottlenecks(graph)
         assert 3 in result  # Node 3 is bottleneck
@@ -176,10 +150,10 @@ class TestImpactAnalysisServiceInternals:
     def test_trace_impact_chain(self):
         """Test tracing complete impact chain."""
         links = [
-            {'source': 1, 'target': 2},
-            {'source': 2, 'target': 3},
-            {'source': 3, 'target': 4},
-            {'source': 2, 'target': 5}
+            {"source": 1, "target": 2},
+            {"source": 2, "target": 3},
+            {"source": 3, "target": 4},
+            {"source": 2, "target": 5},
         ]
 
         def build_chain(start, links):
@@ -187,10 +161,7 @@ class TestImpactAnalysisServiceInternals:
             current = start
 
             while True:
-                next_nodes = [
-                    link['target'] for link in links
-                    if link['source'] == current
-                ]
+                next_nodes = [link["target"] for link in links if link["source"] == current]
                 if not next_nodes:
                     break
                 # Follow first path (greedy)
@@ -210,26 +181,17 @@ class TestShortestPathServiceInternals:
     def test_dijkstra_with_negative_weights(self):
         """Test Dijkstra behavior with negative weights."""
         # Should work with non-negative weights
-        graph = {
-            1: {2: 1, 3: 4},
-            2: {3: 2, 4: 5},
-            3: {4: 1},
-            4: {}
-        }
+        graph = {1: {2: 1, 3: 4}, 2: {3: 2, 4: 5}, 3: {4: 1}, 4: {}}
 
         def dijkstra_detailed(start, end, graph):
-            dist = {n: float('inf') for n in graph}
+            dist = {n: float("inf") for n in graph}
             dist[start] = 0
             visited = set()
 
             while len(visited) < len(graph):
                 # Find min unvisited
-                min_node = min(
-                    (n for n in graph if n not in visited),
-                    key=lambda n: dist[n],
-                    default=None
-                )
-                if min_node is None or dist[min_node] == float('inf'):
+                min_node = min((n for n in graph if n not in visited), key=lambda n: dist[n], default=None)
+                if min_node is None or dist[min_node] == float("inf"):
                     break
 
                 visited.add(min_node)
@@ -246,22 +208,17 @@ class TestShortestPathServiceInternals:
 
     def test_bfs_vs_dijkstra_comparison(self):
         """Test BFS vs Dijkstra on unweighted graph."""
-        graph = {
-            1: [2, 3],
-            2: [4],
-            3: [4],
-            4: []
-        }
+        graph = {1: [2, 3], 2: [4], 3: [4], 4: []}
 
         def bfs_distance(start, graph):
-            dist = {n: float('inf') for n in graph}
+            dist = {n: float("inf") for n in graph}
             dist[start] = 0
             queue = [start]
 
             while queue:
                 node = queue.pop(0)
                 for neighbor in graph.get(node, []):
-                    if dist[neighbor] == float('inf'):
+                    if dist[neighbor] == float("inf"):
                         dist[neighbor] = dist[node] + 1
                         queue.append(neighbor)
 
@@ -272,15 +229,7 @@ class TestShortestPathServiceInternals:
 
     def test_bidirectional_search(self):
         """Test bidirectional shortest path search."""
-        graph = {
-            1: [2, 3],
-            2: [4, 5],
-            3: [6],
-            4: [7],
-            5: [7],
-            6: [7],
-            7: []
-        }
+        graph = {1: [2, 3], 2: [4, 5], 3: [6], 4: [7], 5: [7], 6: [7], 7: []}
 
         def bidi_search(start, end, graph):
             # Forward from start
@@ -309,11 +258,7 @@ class TestShortestPathServiceInternals:
 
     def test_k_shortest_paths(self):
         """Test finding k shortest paths."""
-        graph = {
-            1: {2: 1, 3: 4},
-            2: {3: 2},
-            3: {}
-        }
+        graph = {1: {2: 1, 3: 4}, 2: {3: 2}, 3: {}}
 
         def k_shortest(start, end, k, graph):
             # Simple: find up to k shortest paths
@@ -347,25 +292,22 @@ class TestCacheServiceInternals:
         cache = {}
 
         def set_ttl(key, value, ttl_seconds):
-            cache[key] = {
-                'value': value,
-                'expires': datetime.now() + timedelta(seconds=ttl_seconds)
-            }
+            cache[key] = {"value": value, "expires": datetime.now() + timedelta(seconds=ttl_seconds)}
 
         def get_ttl(key):
             if key not in cache:
                 return None
             item = cache[key]
-            if datetime.now() > item['expires']:
+            if datetime.now() > item["expires"]:
                 del cache[key]
                 return None
-            return item['value']
+            return item["value"]
 
-        set_ttl('temp', 'data', 3600)
-        assert get_ttl('temp') == 'data'
+        set_ttl("temp", "data", 3600)
+        assert get_ttl("temp") == "data"
 
-        set_ttl('expire', 'soon', -1)  # Already expired
-        assert get_ttl('expire') is None
+        set_ttl("expire", "soon", -1)  # Already expired
+        assert get_ttl("expire") is None
 
     def test_lru_cache_ordering(self):
         """Test LRU cache maintains proper ordering."""
@@ -393,21 +335,21 @@ class TestCacheServiceInternals:
                 return list(self.cache.keys())
 
         lru = LRUCache(3)
-        lru.put('a', 1)
-        lru.put('b', 2)
-        lru.put('c', 3)
-        assert lru.keys() == ['a', 'b', 'c']
+        lru.put("a", 1)
+        lru.put("b", 2)
+        lru.put("c", 3)
+        assert lru.keys() == ["a", "b", "c"]
 
-        lru.put('d', 4)  # Should evict 'a'
-        assert lru.keys() == ['b', 'c', 'd']
+        lru.put("d", 4)  # Should evict 'a'
+        assert lru.keys() == ["b", "c", "d"]
 
     def test_cache_invalidation_patterns(self):
         """Test cache invalidation pattern matching."""
         cache = {
-            'user:1': {'name': 'Alice'},
-            'user:2': {'name': 'Bob'},
-            'post:1': {'title': 'Post 1'},
-            'post:2': {'title': 'Post 2'}
+            "user:1": {"name": "Alice"},
+            "user:2": {"name": "Bob"},
+            "post:1": {"title": "Post 1"},
+            "post:2": {"title": "Post 2"},
         }
 
         def invalidate_pattern(pattern):
@@ -416,45 +358,41 @@ class TestCacheServiceInternals:
                 del cache[k]
             return len(keys_to_delete)
 
-        deleted = invalidate_pattern('user:')
+        deleted = invalidate_pattern("user:")
         assert deleted == 2
-        assert 'user:1' not in cache
-        assert 'post:1' in cache
+        assert "user:1" not in cache
+        assert "post:1" in cache
 
     def test_cache_statistics_tracking(self):
         """Test cache hit/miss statistics."""
-        stats = {'hits': 0, 'misses': 0}
-        cache = {'key': 'value'}
+        stats = {"hits": 0, "misses": 0}
+        cache = {"key": "value"}
 
         def access(key):
             if key in cache:
-                stats['hits'] += 1
+                stats["hits"] += 1
                 return cache[key]
-            stats['misses'] += 1
+            stats["misses"] += 1
             return None
 
-        access('key')
-        access('missing')
-        access('key')
+        access("key")
+        access("missing")
+        access("key")
 
-        assert stats['hits'] == 2
-        assert stats['misses'] == 1
+        assert stats["hits"] == 2
+        assert stats["misses"] == 1
 
     def test_cache_warm_preload(self):
         """Test cache warming with preload."""
         cache = {}
-        preload_data = {
-            f'item:{i}': {'id': i, 'data': f'data_{i}'}
-            for i in range(1, 101)
-        }
+        preload_data = {f"item:{i}": {"id": i, "data": f"data_{i}"} for i in range(1, 101)}
 
         def warm_cache():
-            for key, value in preload_data.items():
-                cache[key] = value
+            cache.update(dict(preload_data.items()))
 
         warm_cache()
         assert len(cache) == 100
-        assert cache['item:50']['id'] == 50
+        assert cache["item:50"]["id"] == 50
 
 
 class TestMaterializableViewService:
@@ -463,10 +401,10 @@ class TestMaterializableViewService:
     def test_view_materialization(self):
         """Test materializing a view from data."""
         items = [
-            {'id': 1, 'status': 'active', 'priority': 'high'},
-            {'id': 2, 'status': 'active', 'priority': 'low'},
-            {'id': 3, 'status': 'inactive', 'priority': 'high'},
-            {'id': 4, 'status': 'active', 'priority': 'medium'}
+            {"id": 1, "status": "active", "priority": "high"},
+            {"id": 2, "status": "active", "priority": "low"},
+            {"id": 3, "status": "inactive", "priority": "high"},
+            {"id": 4, "status": "active", "priority": "medium"},
         ]
 
         def materialize_view(items, filters=None):
@@ -478,41 +416,37 @@ class TestMaterializableViewService:
 
             return result
 
-        active_high = materialize_view(items, {'status': 'active', 'priority': 'high'})
+        active_high = materialize_view(items, {"status": "active", "priority": "high"})
         assert len(active_high) == 1
-        assert active_high[0]['id'] == 1
+        assert active_high[0]["id"] == 1
 
     def test_incremental_view_update(self):
         """Test incremental view updates."""
-        view = {
-            'total': 10,
-            'active': 8,
-            'inactive': 2
-        }
+        view = {"total": 10, "active": 8, "inactive": 2}
 
         def update_incrementally(view, operation):
-            if operation == 'add_active':
-                view['total'] += 1
-                view['active'] += 1
-            elif operation == 'deactivate':
-                view['active'] -= 1
-                view['inactive'] += 1
+            if operation == "add_active":
+                view["total"] += 1
+                view["active"] += 1
+            elif operation == "deactivate":
+                view["active"] -= 1
+                view["inactive"] += 1
             return view
 
-        update_incrementally(view, 'add_active')
-        assert view['total'] == 11
-        assert view['active'] == 9
+        update_incrementally(view, "add_active")
+        assert view["total"] == 11
+        assert view["active"] == 9
 
     def test_view_consistency(self):
         """Test view consistency checks."""
-        view = {'total': 10, 'active': 6, 'inactive': 4}
+        view = {"total": 10, "active": 6, "inactive": 4}
 
         def is_consistent(view):
-            return view['total'] == view['active'] + view['inactive']
+            return view["total"] == view["active"] + view["inactive"]
 
         assert is_consistent(view)
 
-        view['active'] = 5
+        view["active"] = 5
         assert not is_consistent(view)
 
 
@@ -524,35 +458,25 @@ class TestTracingAndAuditing:
         audit_log = []
 
         def log_action(action, user, timestamp=None):
-            audit_log.append({
-                'action': action,
-                'user': user,
-                'timestamp': timestamp or datetime.now()
-            })
+            audit_log.append({"action": action, "user": user, "timestamp": timestamp or datetime.now()})
 
-        log_action('create', 'user1')
-        log_action('update', 'user2')
-        log_action('delete', 'user1')
+        log_action("create", "user1")
+        log_action("update", "user2")
+        log_action("delete", "user1")
 
         assert len(audit_log) == 3
-        assert audit_log[0]['action'] == 'create'
+        assert audit_log[0]["action"] == "create"
 
     def test_lineage_tracking(self):
         """Test data lineage tracking."""
-        lineage = {
-            'item_1': {
-                'created_by': 'user1',
-                'modified_by': ['user2', 'user3'],
-                'children': [2, 3]
-            }
-        }
+        lineage = {"item_1": {"created_by": "user1", "modified_by": ["user2", "user3"], "children": [2, 3]}}
 
         def get_lineage(item_id):
-            return lineage.get(f'item_{item_id}')
+            return lineage.get(f"item_{item_id}")
 
         result = get_lineage(1)
-        assert result['created_by'] == 'user1'
-        assert 'user2' in result['modified_by']
+        assert result["created_by"] == "user1"
+        assert "user2" in result["modified_by"]
 
     def test_change_tracking(self):
         """Test change tracking."""
@@ -560,18 +484,18 @@ class TestTracingAndAuditing:
 
         def track_change(item_id, field, old_value, new_value):
             changes.append({
-                'item_id': item_id,
-                'field': field,
-                'old': old_value,
-                'new': new_value,
-                'timestamp': datetime.now()
+                "item_id": item_id,
+                "field": field,
+                "old": old_value,
+                "new": new_value,
+                "timestamp": datetime.now(),
             })
 
-        track_change(1, 'status', 'active', 'inactive')
-        track_change(1, 'priority', 'low', 'high')
+        track_change(1, "status", "active", "inactive")
+        track_change(1, "priority", "low", "high")
 
         assert len(changes) == 2
-        assert changes[0]['field'] == 'status'
+        assert changes[0]["field"] == "status"
 
 
 class TestPerformancePathOptimization:
@@ -579,12 +503,13 @@ class TestPerformancePathOptimization:
 
     def test_query_optimization_path(self):
         """Test query optimization path."""
+
         def optimize_query(query):
             # Push filters down, optimize joins, etc.
             score = 100
-            if 'WHERE' in query:
+            if "WHERE" in query:
                 score += 20
-            if 'INDEX' in query:
+            if "INDEX" in query:
                 score += 30
             return score
 
@@ -595,6 +520,7 @@ class TestPerformancePathOptimization:
 
     def test_cache_hit_prediction(self):
         """Test cache hit prediction."""
+
         def predict_hit_rate(access_pattern):
             # Simple: recent accesses = likely hits
             recent = sum(1 for a in access_pattern[-10:] if a)
@@ -607,19 +533,16 @@ class TestPerformancePathOptimization:
 
     def test_parallel_path_execution(self):
         """Test parallel execution paths."""
+
         def can_parallelize(tasks):
             # Check if tasks are independent
             return all(
-                t1.get('deps', []) == [] or t2['id'] not in t1.get('deps', [])
+                t1.get("deps", []) == [] or t2["id"] not in t1.get("deps", [])
                 for t1 in tasks
                 for t2 in tasks
-                if t1['id'] != t2['id']
+                if t1["id"] != t2["id"]
             )
 
-        independent = [
-            {'id': 1, 'deps': []},
-            {'id': 2, 'deps': []},
-            {'id': 3, 'deps': []}
-        ]
+        independent = [{"id": 1, "deps": []}, {"id": 2, "deps": []}, {"id": 3, "deps": []}]
 
         assert can_parallelize(independent)

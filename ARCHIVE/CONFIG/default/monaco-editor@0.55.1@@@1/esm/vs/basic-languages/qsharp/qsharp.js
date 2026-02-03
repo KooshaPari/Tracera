@@ -230,7 +230,7 @@ const language = {
   ],
   namespaceFollows: ["namespace", "open"],
   importsFollows: ["import"],
-  symbols: /[=><!~?:&|+\-*\/\^%@._]+/,
+  symbols: /[=><!~?:&|+\-*/^%@._]+/,
   escapes: /\\[\s\S]/,
   // The main tokenizer for our languages
   tokenizer: {
@@ -260,10 +260,10 @@ const language = {
       // whitespace
       { include: "@whitespace" },
       // delimiters and operators
-      [/[{}()\[\]]/, "@brackets"],
+      [/[{}()[\]]/, "@brackets"],
       [/@symbols/, { cases: { "@operators": "operator", "@default": "" } }],
       // numbers
-      [/\d*\.\d+([eE][\-+]?\d+)?/, "number.float"],
+      [/\d*\.\d+([eE][-+]?\d+)?/, "number.float"],
       [/\d+/, "number"],
       // delimiter: after number because of .\d floats
       [/[;,.]/, "delimiter"],
@@ -279,7 +279,7 @@ const language = {
     namespace: [
       { include: "@whitespace" },
       [/[A-Za-z]\w*/, "namespace"],
-      [/[\.]/, "delimiter"],
+      [/[.]/, "delimiter"],
       ["", "", "@pop"]
     ],
     imports: [
@@ -287,7 +287,7 @@ const language = {
       [/[A-Za-z]\w*(?=\.)/, "namespace"],
       [/[A-Za-z]\w*/, "identifier"],
       [/\*/, "wildcard"],
-      [/[\.,]/, "delimiter"],
+      [/[.,]/, "delimiter"],
       ["", "", "@pop"]
     ],
     whitespace: [

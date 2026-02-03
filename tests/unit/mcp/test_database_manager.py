@@ -82,6 +82,7 @@ class TestDatabaseManager:
     @pytest.mark.asyncio
     async def test_multiple_sessions(self, db_manager):
         """Test multiple concurrent sessions."""
+
         async def query_db(value: int):
             async with db_manager.session() as session:
                 result = await session.execute(text(f"SELECT {value}"))
@@ -144,6 +145,7 @@ class TestQueryMetrics:
 @pytest.mark.asyncio
 async def test_url_conversion():
     """Test database URL conversion."""
+    await asyncio.sleep(0)
     # PostgreSQL sync -> async
     manager = DatabaseManager("postgresql://user:pass@localhost/db")
     assert manager.database_url == "postgresql+asyncpg://user:pass@localhost/db"

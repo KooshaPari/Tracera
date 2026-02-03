@@ -8,16 +8,14 @@ and state consistency.
 Target: +3-4% coverage (40-55 tests)
 """
 
-import pytest
-import asyncio
-from datetime import datetime, timedelta
-from concurrent.futures import ThreadPoolExecutor
-import json
+from datetime import datetime
 
-from tracertm.models.project import Project
+import pytest
+
+from tracertm.models.event import Event
 from tracertm.models.item import Item
 from tracertm.models.link import Link
-from tracertm.models.event import Event
+from tracertm.models.project import Project
 
 
 class TestEmptyDataHandling:
@@ -58,7 +56,7 @@ class TestEmptyDataHandling:
             view="FEATURE",
             item_type="feature",
             status="todo",
-            item_metadata=None
+            item_metadata=None,
         )
         initialized_db.add(item)
         initialized_db.commit()
@@ -77,7 +75,7 @@ class TestEmptyDataHandling:
             title="",  # Empty title
             view="FEATURE",
             item_type="",  # Empty type
-            status="todo"
+            status="todo",
         )
         initialized_db.add(item)
         initialized_db.commit()
@@ -97,7 +95,7 @@ class TestEmptyDataHandling:
             view="FEATURE",
             item_type="feature",
             status="todo",
-            item_metadata=None
+            item_metadata=None,
         )
         db_with_sample_data.add(item)
         db_with_sample_data.commit()
@@ -131,7 +129,7 @@ class TestLargeDatasetProcessing:
                 title=f"Large Item {i}",
                 view="FEATURE",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             for i in range(100)
         ]
@@ -140,9 +138,7 @@ class TestLargeDatasetProcessing:
             initialized_db.add(item)
         initialized_db.commit()
 
-        count = initialized_db.query(Item).filter(
-            Item.id.startswith("LARGE-")
-        ).count()
+        count = initialized_db.query(Item).filter(Item.id.startswith("LARGE-")).count()
         assert count == 100
 
     @pytest.mark.integration
@@ -160,7 +156,7 @@ class TestLargeDatasetProcessing:
                 title=f"Node {i}",
                 view="FEATURE",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             initialized_db.add(item)
         initialized_db.commit()
@@ -174,7 +170,7 @@ class TestLargeDatasetProcessing:
                     project_id="large-links",
                     source_item_id=f"NODE-{i:03d}",
                     target_item_id=f"NODE-{j:03d}",
-                    link_type="depends_on"
+                    link_type="depends_on",
                 )
                 links.append(link)
 
@@ -182,9 +178,7 @@ class TestLargeDatasetProcessing:
             initialized_db.add(link)
         initialized_db.commit()
 
-        link_count = initialized_db.query(Link).filter_by(
-            project_id="large-links"
-        ).count()
+        link_count = initialized_db.query(Link).filter_by(project_id="large-links").count()
         assert link_count > 50
 
     @pytest.mark.integration
@@ -197,7 +191,7 @@ class TestLargeDatasetProcessing:
                 entity_type="item",
                 entity_id="item-1",
                 agent_id="test-agent",
-                data={"iteration": i}
+                data={"iteration": i},
             )
             for i in range(100)
         ]
@@ -206,18 +200,13 @@ class TestLargeDatasetProcessing:
             db_with_sample_data.add(event)
         db_with_sample_data.commit()
 
-        event_count = db_with_sample_data.query(Event).filter_by(
-            entity_id="item-1"
-        ).count()
+        event_count = db_with_sample_data.query(Event).filter_by(entity_id="item-1").count()
         assert event_count >= 100
 
     @pytest.mark.integration
     def test_large_metadata_json(self, initialized_db):
         """Test handling large metadata JSON."""
-        large_metadata = {
-            f"key_{i}": f"value_{i}" * 100
-            for i in range(100)
-        }
+        large_metadata = {f"key_{i}": f"value_{i}" * 100 for i in range(100)}
 
         item = Item(
             id="LARGE-METADATA",
@@ -226,7 +215,7 @@ class TestLargeDatasetProcessing:
             view="FEATURE",
             item_type="feature",
             status="todo",
-            item_metadata=large_metadata
+            item_metadata=large_metadata,
         )
         initialized_db.add(item)
         initialized_db.commit()
@@ -246,7 +235,7 @@ class TestLargeDatasetProcessing:
                 title=f"Page Item {i}",
                 view="FEATURE",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             initialized_db.add(item)
         initialized_db.commit()
@@ -258,9 +247,7 @@ class TestLargeDatasetProcessing:
 
         for page in range(total_pages):
             offset = page * page_size
-            items = initialized_db.query(Item).filter(
-                Item.id.startswith("PAGE-")
-            ).offset(offset).limit(page_size).all()
+            items = initialized_db.query(Item).filter(Item.id.startswith("PAGE-")).offset(offset).limit(page_size).all()
             all_items.extend(items)
 
         assert len(all_items) == 50
@@ -279,7 +266,7 @@ class TestBoundaryConditions:
             title=long_title,
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         initialized_db.add(item)
         initialized_db.commit()
@@ -298,7 +285,7 @@ class TestBoundaryConditions:
             title="Long ID Test",
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         initialized_db.add(item)
         try:
@@ -311,14 +298,7 @@ class TestBoundaryConditions:
     @pytest.mark.integration
     def test_single_character_fields(self, initialized_db):
         """Test item with single character fields."""
-        item = Item(
-            id="X",
-            project_id="X",
-            title="X",
-            view="X",
-            item_type="X",
-            status="X"
-        )
+        item = Item(id="X", project_id="X", title="X", view="X", item_type="X", status="X")
         initialized_db.add(item)
         try:
             initialized_db.commit()
@@ -339,7 +319,7 @@ class TestBoundaryConditions:
             view="FEATURE",
             item_type="feature",
             status="todo",
-            item_metadata=nested_metadata
+            item_metadata=nested_metadata,
         )
         initialized_db.add(item)
         initialized_db.commit()
@@ -359,14 +339,12 @@ class TestBoundaryConditions:
             entity_id="boundary-date",
             agent_id="test-agent",
             data={},
-            created_at=datetime(1970, 1, 1)
+            created_at=datetime(1970, 1, 1),
         )
         db_with_sample_data.add(event)
         db_with_sample_data.commit()
 
-        result = db_with_sample_data.query(Event).filter_by(
-            entity_id="boundary-date"
-        ).first()
+        result = db_with_sample_data.query(Event).filter_by(entity_id="boundary-date").first()
         assert result is not None
         assert result.created_at.year == 1970
 
@@ -384,7 +362,7 @@ class TestUnicodeAndSpecialCharacters:
             title=unicode_title,
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         initialized_db.add(item)
         initialized_db.commit()
@@ -403,7 +381,7 @@ class TestUnicodeAndSpecialCharacters:
             view="FEATURE",
             item_type="feature",
             status="todo",
-            item_metadata={"emoji": "🎉 🚀 ✨ 💯"}
+            item_metadata={"emoji": "🎉 🚀 ✨ 💯"},
         )
         initialized_db.add(item)
         initialized_db.commit()
@@ -422,7 +400,7 @@ class TestUnicodeAndSpecialCharacters:
             title="Special ID",
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         initialized_db.add(item)
         try:
@@ -442,7 +420,7 @@ class TestUnicodeAndSpecialCharacters:
             title=injection_text,
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         initialized_db.add(item)
         initialized_db.commit()
@@ -462,7 +440,7 @@ class TestUnicodeAndSpecialCharacters:
             title=whitespace_text,
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         initialized_db.add(item)
         initialized_db.commit()
@@ -489,7 +467,7 @@ class TestConcurrentModifications:
             title="Original",
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         sync_db_session.add(item)
         sync_db_session.commit()
@@ -514,26 +492,22 @@ class TestConcurrentModifications:
             project_id="test-project",
             source_item_id="item-1",
             target_item_id="item-2",
-            link_type="implements"
+            link_type="implements",
         )
         link2 = Link(
             id="concurrent-link-2",
             project_id="test-project",
             source_item_id="item-2",
             target_item_id="item-3",
-            link_type="depends_on"
+            link_type="depends_on",
         )
 
         db_with_sample_data.add(link1)
         db_with_sample_data.add(link2)
         db_with_sample_data.commit()
 
-        link1_result = db_with_sample_data.query(Link).filter_by(
-            id="concurrent-link-1"
-        ).first()
-        link2_result = db_with_sample_data.query(Link).filter_by(
-            id="concurrent-link-2"
-        ).first()
+        link1_result = db_with_sample_data.query(Link).filter_by(id="concurrent-link-1").first()
+        link2_result = db_with_sample_data.query(Link).filter_by(id="concurrent-link-2").first()
 
         assert link1_result is not None
         assert link2_result is not None
@@ -551,7 +525,7 @@ class TestConcurrentModifications:
             title="Original",
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         sync_db_session.add(item)
         sync_db_session.commit()
@@ -588,7 +562,7 @@ class TestResourceCleanup:
             title="Orphan",
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         initialized_db.add(item)
         initialized_db.commit()
@@ -620,9 +594,7 @@ class TestStateConsistency:
         """Test item and project relationship consistency."""
         items = initialized_db.query(Item).all()
         for item in items:
-            project = initialized_db.query(Project).filter_by(
-                id=item.project_id
-            ).first()
+            project = initialized_db.query(Project).filter_by(id=item.project_id).first()
             assert project is not None
 
     @pytest.mark.integration
@@ -630,12 +602,8 @@ class TestStateConsistency:
         """Test link and item consistency."""
         links = db_with_sample_data.query(Link).all()
         for link in links:
-            source = db_with_sample_data.query(Item).filter_by(
-                id=link.source_item_id
-            ).first()
-            target = db_with_sample_data.query(Item).filter_by(
-                id=link.target_item_id
-            ).first()
+            source = db_with_sample_data.query(Item).filter_by(id=link.source_item_id).first()
+            target = db_with_sample_data.query(Item).filter_by(id=link.target_item_id).first()
             assert source is not None or target is not None
 
     @pytest.mark.integration
@@ -644,9 +612,7 @@ class TestStateConsistency:
         events = db_with_sample_data.query(Event).all()
         for event in events:
             if event.entity_type == "item":
-                entity = db_with_sample_data.query(Item).filter_by(
-                    id=event.entity_id
-                ).first()
+                entity = db_with_sample_data.query(Item).filter_by(id=event.entity_id).first()
                 # Entity may be deleted, so no assertion needed
             assert event.project_id is not None
 
@@ -662,7 +628,7 @@ class TestStateConsistency:
             view="FEATURE",
             item_type="feature",
             status="todo",
-            item_metadata=original_metadata
+            item_metadata=original_metadata,
         )
         initialized_db.add(item)
         initialized_db.commit()
@@ -688,7 +654,7 @@ class TestStateConsistency:
             title="First",
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         initialized_db.add(item1)
         initialized_db.commit()
@@ -700,7 +666,7 @@ class TestStateConsistency:
             title="Second",
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         initialized_db.add(item2)
 

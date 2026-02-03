@@ -45,7 +45,7 @@ function loadRules(s,schema,instance) {
     return rules;
 }
 
-const regexFromString = regex => new RegExp(regex.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, "\\$&"));
+const regexFromString = regex => new RegExp(regex.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&"));
 
 const ensureRule = (context, rule, shouldAssertion) => {
     try {

@@ -19,4 +19,4 @@ type Example2 = UndefinedFallback<number, string>;
 */
 export type IsUndefined<T> = [T] extends [undefined] ? true : false;
 
-export {};
+

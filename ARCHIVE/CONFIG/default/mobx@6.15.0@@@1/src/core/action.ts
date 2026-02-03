@@ -36,7 +36,7 @@ export function createAction(
     actionName: string,
     fn: Function,
     autoAction: boolean = false,
-    ref?: Object
+    ref?: object
 ): Function {
     if (__DEV__) {
         if (!isFunction(fn)) {

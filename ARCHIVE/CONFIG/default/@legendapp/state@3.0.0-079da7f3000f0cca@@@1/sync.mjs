@@ -322,7 +322,7 @@ function updateMetadata(value$, localState, syncState2, syncOptions, newMetadata
   if (localState.timeoutSaveMetadata) {
     clearTimeout(localState.timeoutSaveMetadata);
   }
-  metadatas.set(value$, { ...metadatas.get(value$) || {}, ...newMetadata });
+  metadatas.set(value$, { ...metadatas.get(value$), ...newMetadata });
   localState.timeoutSaveMetadata = setTimeout(() => {
     updateMetadataImmediate(value$, localState, syncState2, syncOptions, metadatas.get(value$));
   }, 0);

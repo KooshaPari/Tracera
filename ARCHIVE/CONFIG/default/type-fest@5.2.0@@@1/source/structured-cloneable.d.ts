@@ -8,9 +8,9 @@ type StructuredCloneablePrimitive =
 	| boolean
 	| null
 	| undefined
-	| Boolean
-	| Number
-	| String;
+	| boolean
+	| number
+	| string;
 
 type StructuredCloneableData =
 	| ArrayBuffer
@@ -91,4 +91,4 @@ structuredClone(good);
 */
 export type StructuredCloneable = StructuredCloneablePrimitive | StructuredCloneableData | StructuredCloneableCollection;
 
-export {};
+

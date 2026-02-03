@@ -5,11 +5,12 @@ Provides distributed tracing with OTLP export to Jaeger/Tempo.
 
 import logging
 import os
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable, Optional
+from typing import Any
 
 from opentelemetry import trace
-from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter  # type: ignore[import-untyped]
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
@@ -18,14 +19,14 @@ from opentelemetry.trace import Status, StatusCode, Tracer
 logger = logging.getLogger(__name__)
 
 # Global tracer instance
-_tracer: Optional[Tracer] = None
+_tracer: Tracer | None = None
 
 
 def init_tracing(
     service_name: str = "tracertm-python-backend",
     service_version: str = "1.0.0",
-    environment: Optional[str] = None,
-    otlp_endpoint: Optional[str] = None,
+    environment: str | None = None,
+    otlp_endpoint: str | None = None,
 ) -> Tracer:
     """Initialize OpenTelemetry tracing with OTLP exporter.
 
@@ -45,19 +46,16 @@ def init_tracing(
     otlp_endpoint = otlp_endpoint or os.getenv("OTLP_ENDPOINT", "localhost:4317")
 
     logger.info(
-        f"Initializing distributed tracing (service: {service_name}, "
-        f"env: {environment}, endpoint: {otlp_endpoint})"
+        f"Initializing distributed tracing (service: {service_name}, env: {environment}, endpoint: {otlp_endpoint})"
     )
 
     # Create resource with service information
-    resource = Resource.create(
-        {
-            SERVICE_NAME: service_name,
-            "service.version": service_version,
-            "deployment.environment": environment,
-            "library.language": "python",
-        }
-    )
+    resource = Resource.create({
+        SERVICE_NAME: service_name,
+        "service.version": service_version,
+        "deployment.environment": environment,
+        "library.language": "python",
+    })
 
     # Create OTLP exporter
     try:
@@ -106,8 +104,8 @@ def get_tracer() -> Tracer:
 
 
 def trace_method(
-    span_name: Optional[str] = None,
-    attributes: Optional[dict[str, Any]] = None,
+    span_name: str | None = None,
+    attributes: dict[str, Any] | None = None,
 ) -> Callable:
     """Decorator to add tracing to a method.
 
@@ -128,7 +126,7 @@ def trace_method(
         @wraps(func)
         def sync_wrapper(*args: Any, **kwargs: Any) -> Any:
             tracer = get_tracer()
-            name = span_name or f"{func.__module__}.{func.__qualname__}"
+            name = span_name or f"{getattr(func, '__module__', '')}.{getattr(func, '__qualname__', repr(func))}"
 
             with tracer.start_as_current_span(
                 name,
@@ -140,8 +138,8 @@ def trace_method(
                         span.set_attribute(key, value)
 
                 # Add function metadata
-                span.set_attribute("function.name", func.__name__)
-                span.set_attribute("function.module", func.__module__)
+                span.set_attribute("function.name", getattr(func, "__name__", ""))
+                span.set_attribute("function.module", getattr(func, "__module__", ""))
 
                 try:
                     result = func(*args, **kwargs)
@@ -157,7 +155,7 @@ def trace_method(
         @wraps(func)
         async def async_wrapper(*args: Any, **kwargs: Any) -> Any:
             tracer = get_tracer()
-            name = span_name or f"{func.__module__}.{func.__qualname__}"
+            name = span_name or f"{getattr(func, '__module__', '')}.{getattr(func, '__qualname__', repr(func))}"
 
             with tracer.start_as_current_span(
                 name,
@@ -169,8 +167,8 @@ def trace_method(
                         span.set_attribute(key, value)
 
                 # Add function metadata
-                span.set_attribute("function.name", func.__name__)
-                span.set_attribute("function.module", func.__module__)
+                span.set_attribute("function.name", getattr(func, "__name__", ""))
+                span.set_attribute("function.module", getattr(func, "__module__", ""))
 
                 try:
                     result = await func(*args, **kwargs)
@@ -185,14 +183,12 @@ def trace_method(
 
         # Return appropriate wrapper based on function type
         import asyncio
-        import inspect
 
         if asyncio.iscoroutinefunction(func):
             return async_wrapper
-        else:
-            return sync_wrapper
+        return sync_wrapper
 
     return decorator
 
 
-__all__ = ["init_tracing", "get_tracer", "trace_method"]
+__all__ = ["get_tracer", "init_tracing", "trace_method"]

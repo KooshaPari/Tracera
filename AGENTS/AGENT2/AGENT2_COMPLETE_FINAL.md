@@ -195,3 +195,9 @@ tests/integration/test_epic7_performance.py::test_progress_calculation_performan
 
 **Date Completed:** 2025-01-XX  
 **Agent 2 Assignment: COMPLETE ✅**
+
+
+## Opinionated Quality Enforcement
+- We want opinionated rules that enforce opinionated styling to a strict degree.
+- This is an exclusively agent/vibecoded project; programmatic enforcement must guard against bad quality and antipatterns.
+- Rather than disables or ignores, fix code properly.

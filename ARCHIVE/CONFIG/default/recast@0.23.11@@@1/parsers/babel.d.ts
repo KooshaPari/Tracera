@@ -5,4 +5,4 @@ type BabelParser = {
 };
 export declare const parser: BabelParser;
 export declare function parse(source: string, options?: Overrides): import("@babel/parser").ParseResult<import("@babel/types").File>;
-export {};
+

@@ -65,10 +65,10 @@ function main() {
     servers: [{ url: gatewayUrl.replace(/\/$/, ""), description: "Gateway (Caddy)" }],
     paths: mergePaths(goSpec || {}, pythonSpec || {}),
     components: {
-      schemas: { ...(goSpec?.components?.schemas || {}), ...(pythonSpec?.components?.schemas || {}) },
+      schemas: { ...goSpec?.components?.schemas, ...pythonSpec?.components?.schemas },
       securitySchemes: {
-        ...(goSpec?.components?.securitySchemes || {}),
-        ...(pythonSpec?.components?.securitySchemes || {}),
+        ...goSpec?.components?.securitySchemes,
+        ...pythonSpec?.components?.securitySchemes,
       },
     },
     security: base.security || [],

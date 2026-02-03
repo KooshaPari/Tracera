@@ -1,6 +1,13 @@
 # File with fixed mock_db_connection fixture
 # Copy this to test_storage_comprehensive.py to replace the broken fixture
 
+import pytest
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+from tracertm.models.base import Base
+
+
 @pytest.fixture
 def mock_db_connection(temp_dir):
     """Create mock database connection with SQLite - FIXED VERSION."""
@@ -16,6 +23,7 @@ def mock_db_connection(temp_dir):
         def execute(self, *args, **kwargs):
             """Execute SQL with proper text() wrapping for SQLAlchemy 2.0."""
             from sqlalchemy import text as sql_text
+
             with self.engine.connect() as conn:
                 # Wrap string SQL in text() if needed
                 if args and isinstance(args[0], str):

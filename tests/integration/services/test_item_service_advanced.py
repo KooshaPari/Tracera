@@ -14,26 +14,22 @@ Comprehensive integration tests covering:
 Target: 40+ tests with 95%+ coverage of ItemService and ItemRepository
 """
 
-import pytest
 import time
-from datetime import datetime, timezone
-from typing import Any
-from sqlalchemy import create_engine, select, func
-from sqlalchemy.orm import Session, sessionmaker
 
+import pytest
+from sqlalchemy import create_engine, func, select
+from sqlalchemy.orm import sessionmaker
+
+from tracertm.core.concurrency import ConcurrencyError
 from tracertm.models.base import Base
 from tracertm.models.item import Item
 from tracertm.models.link import Link
 from tracertm.models.project import Project
-from tracertm.models.event import Event
 from tracertm.repositories.item_repository import ItemRepository
 from tracertm.services.item_service import (
-    ItemService,
     STATUS_TRANSITIONS,
     VALID_STATUSES,
 )
-from tracertm.core.concurrency import ConcurrencyError
-
 
 pytestmark = pytest.mark.integration
 
@@ -187,18 +183,10 @@ class TestComplexQueries:
         repo = ItemRepository(db_session)
 
         # Get page 1 (items 0-9)
-        page1 = repo.get_by_project(
-            sample_project.id,
-            limit=10,
-            offset=0
-        )
+        page1 = repo.get_by_project(sample_project.id, limit=10, offset=0)
 
         # Get page 2 (items 10-19)
-        page2 = repo.get_by_project(
-            sample_project.id,
-            limit=10,
-            offset=10
-        )
+        page2 = repo.get_by_project(sample_project.id, limit=10, offset=10)
 
         assert len(page1) == 10
         assert len(page2) == 10
@@ -270,11 +258,7 @@ class TestComplexQueries:
         repo = ItemRepository(db_session)
 
         # Query specific view
-        items = repo.get_by_view(
-            sample_project.id,
-            view="FEATURE",
-            include_deleted=False
-        )
+        items = repo.get_by_view(sample_project.id, view="FEATURE")
 
         assert all(item.view == "FEATURE" for item in items)
         assert len(items) == 3  # 3 statuses
@@ -300,10 +284,7 @@ class TestComplexQueries:
         db_session.commit()
 
         # Query items with specific metadata
-        query = (
-            select(Item)
-            .where(Item.project_id == sample_project.id)
-        )
+        query = select(Item).where(Item.project_id == sample_project.id)
         result = db_session.execute(query)
         items = result.scalars().all()
 
@@ -327,11 +308,7 @@ class TestComplexQueries:
         db_session.commit()
 
         # Query and sort
-        query = (
-            select(Item)
-            .where(Item.project_id == sample_project.id)
-            .order_by(Item.priority.desc())
-        )
+        query = select(Item).where(Item.project_id == sample_project.id).order_by(Item.priority.desc())
         result = db_session.execute(query)
         items = result.scalars().all()
 
@@ -339,9 +316,9 @@ class TestComplexQueries:
 
     def test_count_items_by_status(self, db_session, sample_project):
         """Test counting items grouped by status."""
-        for status in ["todo", "todo", "in_progress", "done", "done", "done"]:
+        for i, status in enumerate(["todo", "todo", "in_progress", "done", "done", "done"]):
             item = Item(
-                id=f"count-{status}-{id(item)}",
+                id=f"count-{status}-{i}",
                 project_id=sample_project.id,
                 title=f"Item {status}",
                 view="FEATURE",
@@ -353,9 +330,7 @@ class TestComplexQueries:
 
         # Count by status
         query = (
-            select(Item.status, func.count(Item.id))
-            .where(Item.project_id == sample_project.id)
-            .group_by(Item.status)
+            select(Item.status, func.count(Item.id)).where(Item.project_id == sample_project.id).group_by(Item.status)
         )
         result = db_session.execute(query)
         counts = dict(result.all())
@@ -381,11 +356,7 @@ class TestComplexQueries:
         db_session.commit()
 
         # Query by owner
-        query = (
-            select(Item)
-            .where(Item.project_id == sample_project.id)
-            .where(Item.owner == "alice")
-        )
+        query = select(Item).where(Item.project_id == sample_project.id).where(Item.owner == "alice")
         result = db_session.execute(query)
         items = result.scalars().all()
 
@@ -493,7 +464,7 @@ class TestConcurrentModifications:
         updated = repo.update(
             "meta-update-1",
             expected_version=current_item.version,
-            item_metadata={"key": "new_value", "new_key": "new_value"}
+            item_metadata={"key": "new_value", "new_key": "new_value"},
         )
 
         assert updated.version == 2
@@ -524,7 +495,7 @@ class TestConcurrentModifications:
             expected_version=current_item.version,
             status="in_progress",
             priority="high",
-            owner="alice"
+            owner="alice",
         )
 
         assert updated.version == 2
@@ -620,7 +591,7 @@ class TestConstraintViolations:
                 title="Child Without Parent",
                 view="FEATURE",
                 item_type="feature",
-                parent_id="non-existent-parent"
+                parent_id="non-existent-parent",
             )
 
     def test_parent_must_be_in_same_project(self, db_session):
@@ -651,7 +622,7 @@ class TestConstraintViolations:
                 title="Child in Different Project",
                 view="FEATURE",
                 item_type="feature",
-                parent_id="item-in-proj1"
+                parent_id="item-in-proj1",
             )
 
     def test_update_nonexistent_item_raises(self, db_session, sample_project):
@@ -787,11 +758,7 @@ class TestPerformance:
 
         # Filter by status
         start = time.time()
-        result = repo.get_by_project(
-            sample_project.id,
-            status="done",
-            limit=100
-        )
+        result = repo.get_by_project(sample_project.id, status="done", limit=100)
         elapsed = time.time() - start
 
         assert len(result) == 50
@@ -805,11 +772,7 @@ class TestPerformance:
         start = time.time()
         for i in range(100):
             repo.create(
-                project_id=sample_project.id,
-                title=f"Bulk Item {i}",
-                view="FEATURE",
-                item_type="feature",
-                status="todo"
+                project_id=sample_project.id, title=f"Bulk Item {i}", view="FEATURE", item_type="feature", status="todo"
             )
         elapsed = time.time() - start
 
@@ -1202,17 +1165,14 @@ class TestLinksAndRelationships:
                 id=f"link-{i}",
                 project_id=sample_project.id,
                 source_item_id="link-item-0",
-                target_item_id=f"link-item-{i+1}",
+                target_item_id=f"link-item-{i + 1}",
                 link_type="depends_on",
             )
             db_session.add(link)
         db_session.commit()
 
         # Query links
-        depends_on_links = db_session.query(Link).filter_by(
-            source_item_id="link-item-0",
-            link_type="depends_on"
-        ).all()
+        depends_on_links = db_session.query(Link).filter_by(source_item_id="link-item-0", link_type="depends_on").all()
 
         assert len(depends_on_links) == 2
 
@@ -1334,7 +1294,7 @@ class TestEdgeCases:
             title="测试项 🚀 тест",
             view="FEATURE",
             item_type="feature",
-            description="Description with 日本語 and émojis 🎉"
+            description="Description with 日本語 and émojis 🎉",
         )
 
         assert "测试项" in item.title
@@ -1364,13 +1324,7 @@ class TestEdgeCases:
         """Test creating item with empty metadata."""
         repo = ItemRepository(db_session)
 
-        item = repo.create(
-            project_id=sample_project.id,
-            title="Test",
-            view="FEATURE",
-            item_type="feature",
-            metadata={}
-        )
+        item = repo.create(project_id=sample_project.id, title="Test", view="FEATURE", item_type="feature", metadata={})
 
         assert item.item_metadata == {}
 
@@ -1392,7 +1346,7 @@ class TestEdgeCases:
 
         item = repo.create(
             project_id=sample_project.id,
-            title='Test "quotes" and \'apostrophes\'',
+            title="Test \"quotes\" and 'apostrophes'",
             view="FEATURE",
             item_type="feature",
             owner="user+test@example.com",

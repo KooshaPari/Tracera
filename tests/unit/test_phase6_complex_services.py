@@ -142,11 +142,7 @@ class TestImpactAnalysisAlgorithms:
                     incoming[child].append(node)
 
             # Bottleneck = many incoming, few outgoing
-            bottlenecks = []
-            for node in graph:
-                if len(incoming.get(node, [])) > 1 and len(graph.get(node, [])) > 0:
-                    bottlenecks.append(node)
-            return bottlenecks
+            return [node for node in graph if len(incoming.get(node, [])) > 1 and len(graph.get(node, [])) > 0]
 
         result = find_bottlenecks(graph)
         assert 2 in result
@@ -160,25 +156,19 @@ class TestShortestPathAlgorithms:
         graph = {1: {2: 1, 3: 4}, 2: {3: 2}, 3: {}}
 
         def dijkstra(start, end, graph):
-            distances = {node: float('inf') for node in graph}
+            distances = {node: float("inf") for node in graph}
             distances[start] = 0
             visited = set()
 
             while len(visited) < len(graph):
                 # Find unvisited node with min distance
-                min_node = min(
-                    (n for n in graph if n not in visited),
-                    key=lambda n: distances[n]
-                )
-                if distances[min_node] == float('inf'):
+                min_node = min((n for n in graph if n not in visited), key=lambda n: distances[n])
+                if distances[min_node] == float("inf"):
                     break
                 visited.add(min_node)
 
                 for neighbor, weight in graph.get(min_node, {}).items():
-                    distances[neighbor] = min(
-                        distances[neighbor],
-                        distances[min_node] + weight
-                    )
+                    distances[neighbor] = min(distances[neighbor], distances[min_node] + weight)
 
             return distances[end]
 
@@ -215,7 +205,7 @@ class TestShortestPathAlgorithms:
 
         def floyd_warshall(graph):
             nodes = list(graph.keys())
-            dist = {i: {j: float('inf') for j in nodes} for i in nodes}
+            dist = {i: {j: float("inf") for j in nodes} for i in nodes}
 
             for node in nodes:
                 dist[node][node] = 0
@@ -263,7 +253,7 @@ class TestShortestPathAlgorithms:
 
             # BFS to find farthest node
             def bfs_farthest(start):
-                distances = dict.fromkeys(graph, -1)
+                distances: dict[int, int] = dict.fromkeys(graph, -1)
                 distances[start] = 0
                 queue = [start]
                 max_dist = 0
@@ -293,22 +283,19 @@ class TestCacheServiceAdvanced:
         cache = {}
 
         def set_with_ttl(key, value, ttl_seconds):
-            cache[key] = {
-                'value': value,
-                'expires': datetime.now() + timedelta(seconds=ttl_seconds)
-            }
+            cache[key] = {"value": value, "expires": datetime.now() + timedelta(seconds=ttl_seconds)}
 
         def get_with_ttl(key):
             if key not in cache:
                 return None
             item = cache[key]
-            if datetime.now() > item['expires']:
+            if datetime.now() > item["expires"]:
                 del cache[key]
                 return None
-            return item['value']
+            return item["value"]
 
-        set_with_ttl('key', 'value', 1)
-        assert get_with_ttl('key') == 'value'
+        set_with_ttl("key", "value", 1)
+        assert get_with_ttl("key") == "value"
 
     def test_cache_lru_eviction(self):
         """Test LRU cache eviction."""
@@ -333,17 +320,17 @@ class TestCacheServiceAdvanced:
                     self.cache.popitem(last=False)
 
         lru = LRUCache(2)
-        lru.put('a', 1)
-        lru.put('b', 2)
-        lru.put('c', 3)
+        lru.put("a", 1)
+        lru.put("b", 2)
+        lru.put("c", 3)
 
-        assert lru.get('a') is None  # Evicted
-        assert lru.get('b') == 2
-        assert lru.get('c') == 3
+        assert lru.get("a") is None  # Evicted
+        assert lru.get("b") == 2
+        assert lru.get("c") == 3
 
     def test_cache_invalidation(self):
         """Test cache invalidation patterns."""
-        cache = {'user:1': {'name': 'John'}, 'user:2': {'name': 'Jane'}}
+        cache = {"user:1": {"name": "John"}, "user:2": {"name": "Jane"}}
 
         def invalidate_pattern(cache, pattern):
             keys = [k for k in cache if pattern in k]
@@ -351,7 +338,7 @@ class TestCacheServiceAdvanced:
                 del cache[key]
             return len(keys)
 
-        count = invalidate_pattern(cache, 'user:')
+        count = invalidate_pattern(cache, "user:")
         assert count == 2
         assert len(cache) == 0
 
@@ -360,33 +347,32 @@ class TestCacheServiceAdvanced:
         cache = {}
 
         def warm_cache(data_source):
-            for key, value in data_source.items():
-                cache[key] = value
+            cache.update(dict(data_source.items()))
             return len(cache)
 
-        data = {'a': 1, 'b': 2, 'c': 3}
+        data = {"a": 1, "b": 2, "c": 3}
         count = warm_cache(data)
         assert count == 3
-        assert cache['a'] == 1
+        assert cache["a"] == 1
 
     def test_cache_statistics(self):
         """Test cache hit/miss statistics."""
         cache = {}
-        stats = {'hits': 0, 'misses': 0}
+        stats = {"hits": 0, "misses": 0}
 
         def get_with_stats(key):
             if key in cache:
-                stats['hits'] += 1
+                stats["hits"] += 1
                 return cache[key]
-            stats['misses'] += 1
+            stats["misses"] += 1
             return None
 
-        cache['key'] = 'value'
-        get_with_stats('key')
-        get_with_stats('missing')
+        cache["key"] = "value"
+        get_with_stats("key")
+        get_with_stats("missing")
 
-        assert stats['hits'] == 1
-        assert stats['misses'] == 1
+        assert stats["hits"] == 1
+        assert stats["misses"] == 1
 
 
 class TestAPIEndpointCoverage:
@@ -394,16 +380,8 @@ class TestAPIEndpointCoverage:
 
     def test_item_create_endpoint(self):
         """Test item create endpoint."""
-        payload = {
-            "name": "New Item",
-            "description": "Test",
-            "status": "active"
-        }
-        response = {
-            "id": 1,
-            "name": payload["name"],
-            "created_at": "2025-11-22T10:00:00Z"
-        }
+        payload = {"name": "New Item", "description": "Test", "status": "active"}
+        response: dict[str, int | str] = {"id": 1, "name": payload["name"], "created_at": "2025-11-22T10:00:00Z"}
         assert response["id"] > 0
         assert response["name"] == payload["name"]
 
@@ -454,6 +432,7 @@ class TestAPIEndpointCoverage:
 
     def test_link_create_validation(self):
         """Test link creation validation."""
+
         def validate_link(source, target):
             if source == target:
                 return False, "Self-reference not allowed"
@@ -469,11 +448,7 @@ class TestAPIEndpointCoverage:
 
     def test_bulk_operation(self):
         """Test bulk operations."""
-        items = [
-            {"id": 1, "status": "active"},
-            {"id": 2, "status": "active"},
-            {"id": 3, "status": "active"}
-        ]
+        items = [{"id": 1, "status": "active"}, {"id": 2, "status": "active"}, {"id": 3, "status": "active"}]
 
         def bulk_update(items, updates):
             for item in items:
@@ -490,18 +465,10 @@ class TestAPIEndpointCoverage:
 
     def test_response_transformation(self):
         """Test response transformation."""
-        db_response = {
-            "id": 1,
-            "item_name": "Test",
-            "item_description": "Desc"
-        }
+        db_response = {"id": 1, "item_name": "Test", "item_description": "Desc"}
 
         def transform_response(data):
-            return {
-                "id": data["id"],
-                "name": data["item_name"],
-                "description": data["item_description"]
-            }
+            return {"id": data["id"], "name": data["item_name"], "description": data["item_description"]}
 
         result = transform_response(db_response)
         assert result["name"] == "Test"
@@ -513,26 +480,28 @@ class TestSchemaValidation:
 
     def test_validate_item_schema(self):
         """Test item schema validation."""
+
         def validate_item(data):
-            required = {'id', 'name', 'status'}
+            required = {"id", "name", "status"}
             return all(field in data for field in required)
 
-        valid = {'id': 1, 'name': 'Test', 'status': 'active'}
-        invalid = {'id': 1, 'name': 'Test'}
+        valid = {"id": 1, "name": "Test", "status": "active"}
+        invalid = {"id": 1, "name": "Test"}
 
         assert validate_item(valid)
         assert not validate_item(invalid)
 
     def test_validate_link_schema(self):
         """Test link schema validation."""
+
         def validate_link(data):
-            required = {'source_id', 'target_id', 'link_type'}
+            required = {"source_id", "target_id", "link_type"}
             if not all(field in data for field in required):
                 return False
-            return data['source_id'] != data['target_id']
+            return data["source_id"] != data["target_id"]
 
-        valid = {'source_id': 1, 'target_id': 2, 'link_type': 'depends_on'}
-        invalid = {'source_id': 1, 'target_id': 1, 'link_type': 'depends_on'}
+        valid = {"source_id": 1, "target_id": 2, "link_type": "depends_on"}
+        invalid = {"source_id": 1, "target_id": 1, "link_type": "depends_on"}
 
         assert validate_link(valid)
         assert not validate_link(invalid)
@@ -542,21 +511,21 @@ class TestSchemaValidation:
         import re
 
         def validate_iso_timestamp(ts):
-            pattern = r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$'
+            pattern = r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$"
             return re.match(pattern, ts) is not None
 
-        assert validate_iso_timestamp('2025-11-22T10:00:00Z')
-        assert not validate_iso_timestamp('2025-11-22')
+        assert validate_iso_timestamp("2025-11-22T10:00:00Z")
+        assert not validate_iso_timestamp("2025-11-22")
 
     def test_validate_enums(self):
         """Test enum validation."""
-        valid_statuses = {'active', 'inactive', 'pending'}
+        valid_statuses = {"active", "inactive", "pending"}
 
         def validate_status(status):
             return status in valid_statuses
 
-        assert validate_status('active')
-        assert not validate_status('invalid')
+        assert validate_status("active")
+        assert not validate_status("invalid")
 
 
 class TestDataConsistency:
@@ -564,26 +533,26 @@ class TestDataConsistency:
 
     def test_transactional_operations(self):
         """Test transactional consistency."""
-        data = {'items': {}, 'links': {}}
+        data = {"items": {}, "links": {}}
 
         def create_item_with_link(item_id, target_id):
             try:
-                data['items'][item_id] = {'id': item_id}
-                data['links'][item_id] = target_id
+                data["items"][item_id] = {"id": item_id}
+                data["links"][item_id] = target_id
                 return True
             except Exception:
-                data['items'].pop(item_id, None)
-                data['links'].pop(item_id, None)
+                data["items"].pop(item_id, None)
+                data["links"].pop(item_id, None)
                 return False
 
         success = create_item_with_link(1, 2)
         assert success
-        assert 1 in data['items']
-        assert 1 in data['links']
+        assert 1 in data["items"]
+        assert 1 in data["links"]
 
     def test_orphaned_records(self):
         """Test orphaned record detection."""
-        items = {1: 'Item 1', 2: 'Item 2'}
+        items = {1: "Item 1", 2: "Item 2"}
         links = {1: [2], 2: [3]}
 
         def find_orphans(items, links):
@@ -591,29 +560,24 @@ class TestDataConsistency:
             for targets in links.values():
                 referenced.update(targets)
 
-            orphans = referenced - set(items.keys())
-            return orphans
+            return referenced - set(items.keys())
 
         orphans = find_orphans(items, links)
         assert 3 in orphans
 
     def test_duplicate_detection(self):
         """Test duplicate detection."""
-        items = [
-            {'id': 1, 'name': 'Item 1'},
-            {'id': 2, 'name': 'Item 1'},
-            {'id': 3, 'name': 'Item 2'}
-        ]
+        items = [{"id": 1, "name": "Item 1"}, {"id": 2, "name": "Item 1"}, {"id": 3, "name": "Item 2"}]
 
         def find_duplicates(items):
             names = {}
             duplicates = []
             for item in items:
-                name = item['name']
+                name = item["name"]
                 if name in names:
-                    duplicates.append((names[name], item['id']))
+                    duplicates.append((names[name], item["id"]))
                 else:
-                    names[name] = item['id']
+                    names[name] = item["id"]
             return duplicates
 
         dups = find_duplicates(items)
@@ -621,12 +585,12 @@ class TestDataConsistency:
 
     def test_consistency_checks(self):
         """Test consistency check suite."""
-        data = {'items': {1: 'A', 2: 'B'}, 'links': {1: [2]}}
+        data = {"items": {1: "A", 2: "B"}, "links": {1: [2]}}
 
         def check_consistency(data):
-            items = set(data['items'].keys())
+            items = set(data["items"].keys())
             referenced = set()
-            for targets in data['links'].values():
+            for targets in data["links"].values():
                 referenced.update(targets)
 
             orphans = referenced - items

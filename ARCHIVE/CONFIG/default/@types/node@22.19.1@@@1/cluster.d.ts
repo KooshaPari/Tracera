@@ -574,5 +574,5 @@ declare module "cluster" {
 }
 declare module "node:cluster" {
     export * from "cluster";
-    export { default as default } from "cluster";
+    export { default } from "cluster";
 }

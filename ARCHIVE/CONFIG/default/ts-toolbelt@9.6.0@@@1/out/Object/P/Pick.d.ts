@@ -23,4 +23,4 @@ declare type PickAt<O, Path extends List<Key>> = [
  * ```
  */
 export declare type Pick<O extends object, Path extends List<Key>> = Path extends unknown ? PickAt<O, Path> : never;
-export {};
+

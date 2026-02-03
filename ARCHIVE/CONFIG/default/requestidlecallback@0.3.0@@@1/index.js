@@ -11,7 +11,7 @@
 	var scheduleStart, throttleDelay, lazytimer, lazyraf;
 	var root = typeof window != 'undefined' ?
 		window :
-		typeof global != undefined ?
+		typeof global != "undefined" ?
 			global :
 			this || {};
 	var requestAnimationFrame = root.cancelRequestAnimationFrame && root.requestAnimationFrame || setTimeout;

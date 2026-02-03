@@ -9,11 +9,12 @@ Provides:
 
 from __future__ import annotations
 
-from typing import Any, Sequence
+import asyncio
+from collections.abc import Sequence
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload, joinedload
+from sqlalchemy.orm import joinedload, selectinload
 
 from tracertm.models.item import Item
 from tracertm.models.link import Link
@@ -61,9 +62,9 @@ class QueryOptimizer:
             )
             .options(
                 # Eager load source links (where this item is the source)
-                selectinload(Item.source_links),
+                selectinload(Item.source_links),  # type: ignore[attr-defined]
                 # Eager load target links (where this item is the target)
-                selectinload(Item.target_links),
+                selectinload(Item.target_links),  # type: ignore[attr-defined]
             )
             .limit(limit)
         )
@@ -104,9 +105,9 @@ class QueryOptimizer:
             .where(Link.project_id == project_id)
             .options(
                 # Eager load source item
-                joinedload(Link.source_item),
+                joinedload(Link.source_item),  # type: ignore[attr-defined]
                 # Eager load target item
-                joinedload(Link.target_item),
+                joinedload(Link.target_item),  # type: ignore[attr-defined]
             )
             .limit(limit)
         )
@@ -136,8 +137,8 @@ class QueryOptimizer:
             select(Project)
             .where(Project.id == project_id)
             .options(
-                selectinload(Project.items).selectinload(Item.source_links),
-                selectinload(Project.items).selectinload(Item.target_links),
+                selectinload(Project.items).selectinload(Item.source_links),  # type: ignore[attr-defined]
+                selectinload(Project.items).selectinload(Item.target_links),  # type: ignore[attr-defined]
             )
         )
 
@@ -170,9 +171,9 @@ class QueryOptimizer:
             )
             .options(
                 # Load parent
-                joinedload(Item.parent),
+                joinedload(Item.parent),  # type: ignore[attr-defined]
                 # Load children
-                selectinload(Item.children),
+                selectinload(Item.children),  # type: ignore[attr-defined]
             )
         )
 
@@ -198,13 +199,10 @@ class QueryOptimizer:
         Returns:
             Dictionary mapping item_id -> Item
         """
-        query = (
-            select(Item)
-            .where(
-                Item.id.in_(item_ids),
-                Item.project_id == project_id,
-                Item.deleted_at.is_(None),
-            )
+        query = select(Item).where(
+            Item.id.in_(item_ids),
+            Item.project_id == project_id,
+            Item.deleted_at.is_(None),
         )
 
         result = await session.execute(query)
@@ -241,8 +239,8 @@ class QueryOptimizer:
                 Item.deleted_at.is_(None),
             )
             .options(
-                selectinload(Item.source_links),
-                selectinload(Item.target_links),
+                selectinload(Item.source_links),  # type: ignore[attr-defined]
+                selectinload(Item.target_links),  # type: ignore[attr-defined]
             )
         )
 
@@ -262,8 +260,8 @@ class QueryOptimizer:
             select(Link)
             .where(Link.project_id == project_id)
             .options(
-                joinedload(Link.source_item),
-                joinedload(Link.target_item),
+                joinedload(Link.source_item),  # type: ignore[attr-defined]
+                joinedload(Link.target_item),  # type: ignore[attr-defined]
             )
         )
 
@@ -292,6 +290,7 @@ async def prefetch_relationships(
         relationships: List of relationship names to prefetch
                       (default: ["source_links", "target_links"])
     """
+    await asyncio.sleep(0)
     if not items:
         return
 

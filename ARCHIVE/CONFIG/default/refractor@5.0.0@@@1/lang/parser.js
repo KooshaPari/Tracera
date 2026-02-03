@@ -35,10 +35,10 @@ export default function parser(Prism) {
         }
       },
       escape: {
-        pattern: /\^(?:[$^;@()\[\]{}"':]|#[a-f\d]*)/i,
+        pattern: /\^(?:[$^;@()[\]{}"':]|#[a-f\d]*)/i,
         alias: 'builtin'
       },
-      punctuation: /[\[\](){};]/
+      punctuation: /[[\](){};]/
     }))
     parser = Prism.languages.insertBefore('parser', 'keyword', {
       'parser-comment': {
@@ -63,7 +63,7 @@ export default function parser(Prism) {
           number: /\b(?:0x[a-f\d]+|\d+(?:\.\d*)?(?:e[+-]?\d+)?)\b/i,
           escape: parser.escape,
           operator:
-            /[~+*\/\\%]|!(?:\|\|?|=)?|&&?|\|\|?|==|<[<=]?|>[>=]?|-[fd]?|\b(?:def|eq|ge|gt|in|is|le|lt|ne)\b/,
+            /[~+*/\\%]|!(?:\|\|?|=)?|&&?|\|\|?|==|<[<=]?|>[>=]?|-[fd]?|\b(?:def|eq|ge|gt|in|is|le|lt|ne)\b/,
           punctuation: parser.punctuation
         }
       }

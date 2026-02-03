@@ -25,4 +25,4 @@ export type IfUnknown<T, TypeIfUnknown = true, TypeIfNotUnknown = false> = (
 	IsUnknown<T> extends true ? TypeIfUnknown : TypeIfNotUnknown
 );
 
-export {};
+

@@ -7,9 +7,10 @@ Revises: 038_add_equivalence_links
 Create Date: 2026-01-30
 """
 
-from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
+
+from alembic import op
 
 # revision identifiers, used by Alembic
 revision = "039_add_component_usage"
@@ -95,9 +96,7 @@ def upgrade() -> None:
     op.create_index("ix_component_usage_component_id", "component_usage", ["component_id"])
     op.create_index("ix_component_usage_page_item_id", "component_usage", ["page_item_id"])
     op.create_index("ix_component_usage_file_path", "component_usage", ["file_path"])
-    op.create_index(
-        "ix_component_usage_usage_context", "component_usage", ["usage_context"]
-    )
+    op.create_index("ix_component_usage_usage_context", "component_usage", ["usage_context"])
     op.create_index(
         "ix_component_usage_parent_component_id",
         "component_usage",
@@ -114,13 +113,9 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     """Drop component_usage table."""
-    op.drop_index(
-        "ix_component_usage_component_last_seen", table_name="component_usage"
-    )
+    op.drop_index("ix_component_usage_component_last_seen", table_name="component_usage")
     op.drop_index("ix_component_usage_code_entity_id", table_name="component_usage")
-    op.drop_index(
-        "ix_component_usage_parent_component_id", table_name="component_usage"
-    )
+    op.drop_index("ix_component_usage_parent_component_id", table_name="component_usage")
     op.drop_index("ix_component_usage_usage_context", table_name="component_usage")
     op.drop_index("ix_component_usage_file_path", table_name="component_usage")
     op.drop_index("ix_component_usage_page_item_id", table_name="component_usage")

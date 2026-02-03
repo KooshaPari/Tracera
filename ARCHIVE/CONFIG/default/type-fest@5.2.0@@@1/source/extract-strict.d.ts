@@ -44,4 +44,4 @@ export type ExtractStrict<
 		: never,
 > = Extract<T, U>;
 
-export {};
+

@@ -313,16 +313,16 @@ test.describe("10k Node Baseline Performance", () => {
 		benchmarkResults = {
 			scenarios: {} as any,
 			summary: {
+				blockers: [],
 				overallScore: 0,
 				performanceGrade: "F",
 				readyForProduction: false,
-				blockers: [],
 				recommendations: [],
 			},
 			testEnvironment: {
-				userAgent: "",
-				viewport: { width: 1920, height: 1080 },
 				devicePixelRatio: 1,
+				userAgent: "",
+				viewport: { height: 1080, width: 1920 },
 			},
 			timestamp: new Date().toISOString(),
 		};

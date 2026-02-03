@@ -11,23 +11,23 @@
 		return grammar;
 	};
 	var dataURI = {
-		pattern: /(.)\bdata:[^\/]+\/[^,]+,(?:(?!\1)[\s\S]|\\\1)+(?=\1)/,
+		pattern: /(.)\bdata:[^/]+\/[^,]+,(?:(?!\1)[\s\S]|\\\1)+(?=\1)/,
 		lookbehind: true,
 		inside: {
 			'language-css': {
-				pattern: /(data:[^\/]+\/(?:[^+,]+\+)?css,)[\s\S]+/,
+				pattern: /(data:[^/]+\/(?:[^+,]+\+)?css,)[\s\S]+/,
 				lookbehind: true
 			},
 			'language-javascript': {
-				pattern: /(data:[^\/]+\/(?:[^+,]+\+)?javascript,)[\s\S]+/,
+				pattern: /(data:[^/]+\/(?:[^+,]+\+)?javascript,)[\s\S]+/,
 				lookbehind: true
 			},
 			'language-json': {
-				pattern: /(data:[^\/]+\/(?:[^+,]+\+)?json,)[\s\S]+/,
+				pattern: /(data:[^/]+\/(?:[^+,]+\+)?json,)[\s\S]+/,
 				lookbehind: true
 			},
 			'language-markup': {
-				pattern: /(data:[^\/]+\/(?:[^+,]+\+)?(?:html|xml),)[\s\S]+/,
+				pattern: /(data:[^/]+\/(?:[^+,]+\+)?(?:html|xml),)[\s\S]+/,
 				lookbehind: true
 			}
 		}

@@ -57,4 +57,4 @@ export declare type _ValidPath<O extends object, Path extends List<AKey>> = __Va
  * ```
  */
 export declare type ValidPath<O extends object, Path extends List<AKey>> = O extends unknown ? Path extends unknown ? _ValidPath<O, Path> : never : never;
-export {};
+

@@ -14,7 +14,7 @@
 		pattern: /\{[^{}]*\}/,
 		inside: {
 			'amount': {
-				pattern: /([\{|])[^{}|*%]+/,
+				pattern: /([{|])[^{}|*%]+/,
 				lookbehind: true,
 				alias: 'number',
 			},

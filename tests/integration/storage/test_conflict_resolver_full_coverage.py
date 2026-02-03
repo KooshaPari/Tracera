@@ -16,16 +16,14 @@ Tests all aspects of conflict resolution:
 Target: 86 tests, 100% coverage
 """
 
-import hashlib
 import json
 import tempfile
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Any
 
 import pytest
 from sqlalchemy import create_engine, text
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import sessionmaker
 
 from tracertm.storage.conflict_resolver import (
     Conflict,
@@ -71,7 +69,7 @@ def resolver(temp_db, temp_backup_dir):
 @pytest.fixture
 def base_time():
     """Base timestamp for consistent testing."""
-    return datetime(2024, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
+    return datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC)
 
 
 # ============================================================================
@@ -134,9 +132,7 @@ class TestVectorClockBasic:
 
     def test_vector_clock_serialization(self, base_time):
         """Test to_dict and from_dict."""
-        original = VectorClock(
-            "client-1", 3, base_time, parent_version=2
-        )
+        original = VectorClock("client-1", 3, base_time, parent_version=2)
         data = original.to_dict()
         restored = VectorClock.from_dict(data)
 
@@ -275,6 +271,7 @@ class TestResolverInitialization:
     def test_resolver_creates_backup_dir(self, temp_db):
         """Test resolver creates backup directory on init."""
         import tempfile
+
         with tempfile.TemporaryDirectory() as tmpdir:
             backup_dir = Path(tmpdir) / "new_backups"
             assert not backup_dir.exists()
@@ -294,9 +291,7 @@ class TestResolverInitialization:
         )
 
         # Check that conflicts table was created
-        result = temp_db.execute(
-            text("SELECT name FROM sqlite_master WHERE type='table' AND name='conflicts'")
-        )
+        result = temp_db.execute(text("SELECT name FROM sqlite_master WHERE type='table' AND name='conflicts'"))
         assert result.fetchone() is not None
 
 
@@ -306,12 +301,16 @@ class TestConflictDetection:
     def test_no_conflict_sequential_same_client(self, resolver, base_time):
         """Test no conflict with sequential changes on same client."""
         local = EntityVersion(
-            "item-1", "item", {"title": "V1"},
+            "item-1",
+            "item",
+            {"title": "V1"},
             VectorClock("client-1", 1, base_time),
             "hash1",
         )
         remote = EntityVersion(
-            "item-1", "item", {"title": "V2"},
+            "item-1",
+            "item",
+            {"title": "V2"},
             VectorClock("client-1", 2, base_time + timedelta(seconds=10)),
             "hash2",
         )
@@ -320,12 +319,16 @@ class TestConflictDetection:
     def test_conflict_concurrent_different_content(self, resolver, base_time):
         """Test conflict detection with concurrent changes."""
         local = EntityVersion(
-            "item-1", "item", {"title": "Local"},
+            "item-1",
+            "item",
+            {"title": "Local"},
             VectorClock("client-1", 2, base_time),
             "hash1",
         )
         remote = EntityVersion(
-            "item-1", "item", {"title": "Remote"},
+            "item-1",
+            "item",
+            {"title": "Remote"},
             VectorClock("client-2", 2, base_time),
             "hash2",
         )
@@ -337,12 +340,16 @@ class TestConflictDetection:
     def test_no_conflict_identical_content(self, resolver, base_time):
         """Test no conflict when content is identical."""
         local = EntityVersion(
-            "item-1", "item", {"title": "Same"},
+            "item-1",
+            "item",
+            {"title": "Same"},
             VectorClock("client-1", 2, base_time),
             "same_hash",
         )
         remote = EntityVersion(
-            "item-1", "item", {"title": "Same"},
+            "item-1",
+            "item",
+            {"title": "Same"},
             VectorClock("client-2", 2, base_time),
             "same_hash",
         )
@@ -351,7 +358,9 @@ class TestConflictDetection:
     def test_no_conflict_when_local_is_none(self, resolver, base_time):
         """Test no conflict when local version is None."""
         remote = EntityVersion(
-            "item-1", "item", {"title": "Remote"},
+            "item-1",
+            "item",
+            {"title": "Remote"},
             VectorClock("client-2", 1, base_time),
         )
         assert resolver.detect_conflict(None, remote) is None
@@ -359,7 +368,9 @@ class TestConflictDetection:
     def test_no_conflict_when_remote_is_none(self, resolver, base_time):
         """Test no conflict when remote version is None."""
         local = EntityVersion(
-            "item-1", "item", {"title": "Local"},
+            "item-1",
+            "item",
+            {"title": "Local"},
             VectorClock("client-1", 1, base_time),
         )
         assert resolver.detect_conflict(local, None) is None
@@ -367,12 +378,16 @@ class TestConflictDetection:
     def test_conflict_stored_in_database(self, resolver, base_time):
         """Test that detected conflict is stored in database."""
         local = EntityVersion(
-            "item-1", "item", {"title": "Local"},
+            "item-1",
+            "item",
+            {"title": "Local"},
             VectorClock("client-1", 2, base_time),
             "hash1",
         )
         remote = EntityVersion(
-            "item-1", "item", {"title": "Remote"},
+            "item-1",
+            "item",
+            {"title": "Remote"},
             VectorClock("client-2", 2, base_time),
             "hash2",
         )
@@ -384,12 +399,16 @@ class TestConflictDetection:
     def test_conflict_different_entity_ids(self, resolver, base_time):
         """Test detect_conflict uses local entity_id regardless of remote."""
         local = EntityVersion(
-            "item-1", "item", {"title": "Item 1"},
+            "item-1",
+            "item",
+            {"title": "Item 1"},
             VectorClock("client-1", 2, base_time),
             "hash1",
         )
         remote = EntityVersion(
-            "item-2", "item", {"title": "Item 2"},
+            "item-2",
+            "item",
+            {"title": "Item 2"},
             VectorClock("client-2", 2, base_time),
             "hash2",
         )
@@ -402,11 +421,15 @@ class TestConflictDetection:
     def test_conflict_with_missing_hashes(self, resolver, base_time):
         """Test conflict detection without hashes (uses data comparison)."""
         local = EntityVersion(
-            "item-1", "item", {"title": "Local", "status": "active"},
+            "item-1",
+            "item",
+            {"title": "Local", "status": "active"},
             VectorClock("client-1", 2, base_time),
         )
         remote = EntityVersion(
-            "item-1", "item", {"title": "Remote", "status": "active"},
+            "item-1",
+            "item",
+            {"title": "Remote", "status": "active"},
             VectorClock("client-2", 2, base_time),
         )
         # Different data (title), different clients = conflict
@@ -416,12 +439,16 @@ class TestConflictDetection:
     def test_project_conflict_detection(self, resolver, base_time):
         """Test conflict detection for project entity type."""
         local = EntityVersion(
-            "proj-1", "project", {"name": "Project Local"},
+            "proj-1",
+            "project",
+            {"name": "Project Local"},
             VectorClock("client-1", 2, base_time),
             "hash1",
         )
         remote = EntityVersion(
-            "proj-1", "project", {"name": "Project Remote"},
+            "proj-1",
+            "project",
+            {"name": "Project Remote"},
             VectorClock("client-2", 2, base_time),
             "hash2",
         )
@@ -432,12 +459,16 @@ class TestConflictDetection:
     def test_link_conflict_detection(self, resolver, base_time):
         """Test conflict detection for link entity type."""
         local = EntityVersion(
-            "link-1", "link", {"source": "item-1", "target": "item-2"},
+            "link-1",
+            "link",
+            {"source": "item-1", "target": "item-2"},
             VectorClock("client-1", 2, base_time),
             "hash1",
         )
         remote = EntityVersion(
-            "link-1", "link", {"source": "item-1", "target": "item-3"},
+            "link-1",
+            "link",
+            {"source": "item-1", "target": "item-3"},
             VectorClock("client-2", 2, base_time),
             "hash2",
         )
@@ -456,16 +487,18 @@ class TestResolutionStrategies:
     def test_last_write_wins_local_newer(self, resolver, base_time):
         """Test LAST_WRITE_WINS when local is newer."""
         local = EntityVersion(
-            "item-1", "item", {"title": "Local"},
+            "item-1",
+            "item",
+            {"title": "Local"},
             VectorClock("client-1", 2, base_time + timedelta(seconds=10)),
         )
         remote = EntityVersion(
-            "item-1", "item", {"title": "Remote"},
+            "item-1",
+            "item",
+            {"title": "Remote"},
             VectorClock("client-2", 2, base_time),
         )
-        conflict = Conflict(
-            "conflict-1", "item-1", "item", local, remote
-        )
+        conflict = Conflict("conflict-1", "item-1", "item", local, remote)
         result = resolver.resolve(conflict, ConflictStrategy.LAST_WRITE_WINS)
         assert result.version == local
         assert result.strategy_used == ConflictStrategy.LAST_WRITE_WINS
@@ -473,50 +506,54 @@ class TestResolutionStrategies:
     def test_last_write_wins_remote_newer(self, resolver, base_time):
         """Test LAST_WRITE_WINS when remote is newer."""
         local = EntityVersion(
-            "item-1", "item", {"title": "Local"},
+            "item-1",
+            "item",
+            {"title": "Local"},
             VectorClock("client-1", 2, base_time),
         )
         remote = EntityVersion(
-            "item-1", "item", {"title": "Remote"},
+            "item-1",
+            "item",
+            {"title": "Remote"},
             VectorClock("client-2", 2, base_time + timedelta(seconds=10)),
         )
-        conflict = Conflict(
-            "conflict-1", "item-1", "item", local, remote
-        )
+        conflict = Conflict("conflict-1", "item-1", "item", local, remote)
         result = resolver.resolve(conflict, ConflictStrategy.LAST_WRITE_WINS)
         assert result.version == remote
 
-    def test_last_write_wins_same_timestamp_higher_version(
-        self, resolver, base_time
-    ):
+    def test_last_write_wins_same_timestamp_higher_version(self, resolver, base_time):
         """Test LAST_WRITE_WINS with same timestamp, higher version wins."""
         local = EntityVersion(
-            "item-1", "item", {"title": "Local"},
+            "item-1",
+            "item",
+            {"title": "Local"},
             VectorClock("client-1", 3, base_time),
         )
         remote = EntityVersion(
-            "item-1", "item", {"title": "Remote"},
+            "item-1",
+            "item",
+            {"title": "Remote"},
             VectorClock("client-2", 2, base_time),
         )
-        conflict = Conflict(
-            "conflict-1", "item-1", "item", local, remote
-        )
+        conflict = Conflict("conflict-1", "item-1", "item", local, remote)
         result = resolver.resolve(conflict, ConflictStrategy.LAST_WRITE_WINS)
         assert result.version == local
 
     def test_local_wins_strategy(self, resolver, base_time):
         """Test LOCAL_WINS always picks local."""
         local = EntityVersion(
-            "item-1", "item", {"title": "Local"},
+            "item-1",
+            "item",
+            {"title": "Local"},
             VectorClock("client-1", 1, base_time),
         )
         remote = EntityVersion(
-            "item-1", "item", {"title": "Remote"},
+            "item-1",
+            "item",
+            {"title": "Remote"},
             VectorClock("client-2", 2, base_time + timedelta(seconds=10)),
         )
-        conflict = Conflict(
-            "conflict-1", "item-1", "item", local, remote
-        )
+        conflict = Conflict("conflict-1", "item-1", "item", local, remote)
         result = resolver.resolve(conflict, ConflictStrategy.LOCAL_WINS)
         assert result.version == local
         assert result.strategy_used == ConflictStrategy.LOCAL_WINS
@@ -524,16 +561,18 @@ class TestResolutionStrategies:
     def test_remote_wins_strategy(self, resolver, base_time):
         """Test REMOTE_WINS always picks remote."""
         local = EntityVersion(
-            "item-1", "item", {"title": "Local"},
+            "item-1",
+            "item",
+            {"title": "Local"},
             VectorClock("client-1", 2, base_time + timedelta(seconds=10)),
         )
         remote = EntityVersion(
-            "item-1", "item", {"title": "Remote"},
+            "item-1",
+            "item",
+            {"title": "Remote"},
             VectorClock("client-2", 1, base_time),
         )
-        conflict = Conflict(
-            "conflict-1", "item-1", "item", local, remote
-        )
+        conflict = Conflict("conflict-1", "item-1", "item", local, remote)
         result = resolver.resolve(conflict, ConflictStrategy.REMOTE_WINS)
         assert result.version == remote
         assert result.strategy_used == ConflictStrategy.REMOTE_WINS
@@ -541,32 +580,36 @@ class TestResolutionStrategies:
     def test_manual_strategy_requires_resolve_manual(self, resolver, base_time):
         """Test that MANUAL strategy requires resolve_manual()."""
         local = EntityVersion(
-            "item-1", "item", {"title": "Local"},
+            "item-1",
+            "item",
+            {"title": "Local"},
             VectorClock("client-1", 1, base_time),
         )
         remote = EntityVersion(
-            "item-1", "item", {"title": "Remote"},
+            "item-1",
+            "item",
+            {"title": "Remote"},
             VectorClock("client-2", 1, base_time),
         )
-        conflict = Conflict(
-            "conflict-1", "item-1", "item", local, remote
-        )
+        conflict = Conflict("conflict-1", "item-1", "item", local, remote)
         with pytest.raises(ValueError, match="MANUAL strategy requires"):
             resolver.resolve(conflict, ConflictStrategy.MANUAL)
 
     def test_invalid_strategy_raises_error(self, resolver, base_time):
         """Test that invalid strategy raises error."""
         local = EntityVersion(
-            "item-1", "item", {"title": "Local"},
+            "item-1",
+            "item",
+            {"title": "Local"},
             VectorClock("client-1", 1, base_time),
         )
         remote = EntityVersion(
-            "item-1", "item", {"title": "Remote"},
+            "item-1",
+            "item",
+            {"title": "Remote"},
             VectorClock("client-2", 1, base_time),
         )
-        conflict = Conflict(
-            "conflict-1", "item-1", "item", local, remote
-        )
+        conflict = Conflict("conflict-1", "item-1", "item", local, remote)
         # Should raise ValueError for unknown strategy
         with pytest.raises(ValueError):
             resolver.resolve(conflict, "invalid_strategy")  # type: ignore
@@ -574,16 +617,18 @@ class TestResolutionStrategies:
     def test_resolution_creates_backup(self, resolver, base_time):
         """Test that resolution creates backup."""
         local = EntityVersion(
-            "item-1", "item", {"title": "Local"},
+            "item-1",
+            "item",
+            {"title": "Local"},
             VectorClock("client-1", 1, base_time),
         )
         remote = EntityVersion(
-            "item-1", "item", {"title": "Remote"},
+            "item-1",
+            "item",
+            {"title": "Remote"},
             VectorClock("client-2", 1, base_time),
         )
-        conflict = Conflict(
-            "conflict-1", "item-1", "item", local, remote
-        )
+        conflict = Conflict("conflict-1", "item-1", "item", local, remote)
         result = resolver.resolve(conflict, ConflictStrategy.LOCAL_WINS)
         assert result.version.entity_id == "item-1"
         assert conflict.backup_path is not None
@@ -591,12 +636,16 @@ class TestResolutionStrategies:
     def test_resolution_updates_conflict_status(self, resolver, base_time):
         """Test that resolution updates conflict status."""
         local = EntityVersion(
-            "item-1", "item", {"title": "Local"},
+            "item-1",
+            "item",
+            {"title": "Local"},
             VectorClock("client-1", 1, base_time),
             "hash1",
         )
         remote = EntityVersion(
-            "item-1", "item", {"title": "Remote"},
+            "item-1",
+            "item",
+            {"title": "Remote"},
             VectorClock("client-2", 1, base_time),
             "hash2",
         )
@@ -614,34 +663,36 @@ class TestResolutionStrategies:
     def test_resolved_version_uses_resolved_status(self, resolver, base_time):
         """Test resolved version has correct status."""
         local = EntityVersion(
-            "item-1", "item", {"title": "Local"},
+            "item-1",
+            "item",
+            {"title": "Local"},
             VectorClock("client-1", 2, base_time),
         )
         remote = EntityVersion(
-            "item-1", "item", {"title": "Remote"},
+            "item-1",
+            "item",
+            {"title": "Remote"},
             VectorClock("client-2", 2, base_time),
         )
-        conflict = Conflict(
-            "conflict-1", "item-1", "item", local, remote
-        )
+        conflict = Conflict("conflict-1", "item-1", "item", local, remote)
         result = resolver.resolve(conflict, ConflictStrategy.REMOTE_WINS)
         assert isinstance(result, ResolvedEntity)
 
-    def test_last_write_wins_equal_timestamp_lower_version(
-        self, resolver, base_time
-    ):
+    def test_last_write_wins_equal_timestamp_lower_version(self, resolver, base_time):
         """Test LAST_WRITE_WINS when timestamps equal, lower version loses."""
         local = EntityVersion(
-            "item-1", "item", {"title": "Local"},
+            "item-1",
+            "item",
+            {"title": "Local"},
             VectorClock("client-1", 2, base_time),
         )
         remote = EntityVersion(
-            "item-1", "item", {"title": "Remote"},
+            "item-1",
+            "item",
+            {"title": "Remote"},
             VectorClock("client-2", 3, base_time),  # Higher version
         )
-        conflict = Conflict(
-            "conflict-1", "item-1", "item", local, remote
-        )
+        conflict = Conflict("conflict-1", "item-1", "item", local, remote)
         result = resolver.resolve(conflict, ConflictStrategy.LAST_WRITE_WINS)
         # Remote has higher version, should win
         assert result.version == remote
@@ -658,16 +709,18 @@ class TestManualResolution:
     def test_resolve_manual_basic(self, resolver, base_time):
         """Test basic manual resolution."""
         local = EntityVersion(
-            "item-1", "item", {"title": "Local", "priority": "high"},
+            "item-1",
+            "item",
+            {"title": "Local", "priority": "high"},
             VectorClock("client-1", 2, base_time),
         )
         remote = EntityVersion(
-            "item-1", "item", {"title": "Remote", "status": "done"},
+            "item-1",
+            "item",
+            {"title": "Remote", "status": "done"},
             VectorClock("client-2", 2, base_time),
         )
-        conflict = Conflict(
-            "conflict-1", "item-1", "item", local, remote
-        )
+        conflict = Conflict("conflict-1", "item-1", "item", local, remote)
         merged_data = {
             "title": "Merged",
             "priority": "high",
@@ -680,16 +733,18 @@ class TestManualResolution:
     def test_resolve_manual_increments_version(self, resolver, base_time):
         """Test that manual resolution increments version."""
         local = EntityVersion(
-            "item-1", "item", {"title": "Local"},
+            "item-1",
+            "item",
+            {"title": "Local"},
             VectorClock("client-1", 5, base_time),
         )
         remote = EntityVersion(
-            "item-1", "item", {"title": "Remote"},
+            "item-1",
+            "item",
+            {"title": "Remote"},
             VectorClock("client-2", 3, base_time),
         )
-        conflict = Conflict(
-            "conflict-1", "item-1", "item", local, remote
-        )
+        conflict = Conflict("conflict-1", "item-1", "item", local, remote)
         result = resolver.resolve_manual(conflict, {"title": "Merged"})
         # Should be max(5, 3) + 1 = 6
         assert result.version.vector_clock.version == 6
@@ -697,21 +752,23 @@ class TestManualResolution:
     def test_resolve_manual_records_merger(self, resolver, base_time):
         """Test that manual resolution records who merged."""
         local = EntityVersion(
-            "item-1", "item", {"title": "Local"},
+            "item-1",
+            "item",
+            {"title": "Local"},
             VectorClock("client-1", 1, base_time),
             "hash1",
         )
         remote = EntityVersion(
-            "item-1", "item", {"title": "Remote"},
+            "item-1",
+            "item",
+            {"title": "Remote"},
             VectorClock("client-2", 1, base_time),
             "hash2",
         )
         conflict = resolver.detect_conflict(local, remote)
         assert conflict is not None
 
-        result = resolver.resolve_manual(
-            conflict, {"title": "Merged"}, merged_by="alice"
-        )
+        result = resolver.resolve_manual(conflict, {"title": "Merged"}, merged_by="alice")
         retrieved = resolver.get_conflict(conflict.id)
         assert retrieved is not None
         assert retrieved.metadata["merged_by"] == "alice"
@@ -719,12 +776,16 @@ class TestManualResolution:
     def test_resolve_manual_updates_conflict_status(self, resolver, base_time):
         """Test that manual resolution updates status to RESOLVED_MANUAL."""
         local = EntityVersion(
-            "item-1", "item", {"title": "Local"},
+            "item-1",
+            "item",
+            {"title": "Local"},
             VectorClock("client-1", 1, base_time),
             "hash1",
         )
         remote = EntityVersion(
-            "item-1", "item", {"title": "Remote"},
+            "item-1",
+            "item",
+            {"title": "Remote"},
             VectorClock("client-2", 1, base_time),
             "hash2",
         )
@@ -739,23 +800,26 @@ class TestManualResolution:
     def test_resolve_manual_preserves_backup(self, resolver, base_time):
         """Test that manual resolution creates/uses backup."""
         local = EntityVersion(
-            "item-1", "item", {"title": "Local"},
+            "item-1",
+            "item",
+            {"title": "Local"},
             VectorClock("client-1", 1, base_time),
         )
         remote = EntityVersion(
-            "item-1", "item", {"title": "Remote"},
+            "item-1",
+            "item",
+            {"title": "Remote"},
             VectorClock("client-2", 1, base_time),
         )
-        conflict = Conflict(
-            "conflict-1", "item-1", "item", local, remote
-        )
+        conflict = Conflict("conflict-1", "item-1", "item", local, remote)
         resolver.resolve_manual(conflict, {"title": "Merged"})
         assert conflict.backup_path is not None
 
     def test_resolve_manual_complex_merge(self, resolver, base_time):
         """Test manual resolution with complex data merge."""
         local = EntityVersion(
-            "item-1", "item",
+            "item-1",
+            "item",
             {
                 "title": "Local Title",
                 "tags": ["local"],
@@ -764,7 +828,8 @@ class TestManualResolution:
             VectorClock("client-1", 2, base_time),
         )
         remote = EntityVersion(
-            "item-1", "item",
+            "item-1",
+            "item",
             {
                 "title": "Remote Title",
                 "tags": ["remote"],
@@ -772,9 +837,7 @@ class TestManualResolution:
             },
             VectorClock("client-2", 2, base_time),
         )
-        conflict = Conflict(
-            "conflict-1", "item-1", "item", local, remote
-        )
+        conflict = Conflict("conflict-1", "item-1", "item", local, remote)
         merged_data = {
             "title": "Merged Title",
             "tags": ["local", "remote"],
@@ -788,16 +851,18 @@ class TestManualResolution:
     def test_resolve_manual_empty_data(self, resolver, base_time):
         """Test manual resolution with empty merged data."""
         local = EntityVersion(
-            "item-1", "item", {"title": "Local"},
+            "item-1",
+            "item",
+            {"title": "Local"},
             VectorClock("client-1", 1, base_time),
         )
         remote = EntityVersion(
-            "item-1", "item", {"title": "Remote"},
+            "item-1",
+            "item",
+            {"title": "Remote"},
             VectorClock("client-2", 1, base_time),
         )
-        conflict = Conflict(
-            "conflict-1", "item-1", "item", local, remote
-        )
+        conflict = Conflict("conflict-1", "item-1", "item", local, remote)
         result = resolver.resolve_manual(conflict, {})
         assert result.version.data == {}
 
@@ -813,16 +878,18 @@ class TestConflictDataclass:
     def test_conflict_to_dict(self, base_time):
         """Test Conflict.to_dict() serialization."""
         local = EntityVersion(
-            "item-1", "item", {"title": "Local"},
+            "item-1",
+            "item",
+            {"title": "Local"},
             VectorClock("client-1", 1, base_time),
         )
         remote = EntityVersion(
-            "item-1", "item", {"title": "Remote"},
+            "item-1",
+            "item",
+            {"title": "Remote"},
             VectorClock("client-2", 1, base_time),
         )
-        conflict = Conflict(
-            "conflict-1", "item-1", "item", local, remote
-        )
+        conflict = Conflict("conflict-1", "item-1", "item", local, remote)
         data = conflict.to_dict()
 
         assert data["id"] == "conflict-1"
@@ -849,16 +916,18 @@ class TestBackupAndRecovery:
     def test_create_backup_creates_structure(self, resolver, base_time):
         """Test that backup creates expected directory structure."""
         local = EntityVersion(
-            "item-1", "item", {"title": "Local"},
+            "item-1",
+            "item",
+            {"title": "Local"},
             VectorClock("client-1", 1, base_time),
         )
         remote = EntityVersion(
-            "item-1", "item", {"title": "Remote"},
+            "item-1",
+            "item",
+            {"title": "Remote"},
             VectorClock("client-2", 1, base_time),
         )
-        conflict = Conflict(
-            "conflict-1", "item-1", "item", local, remote
-        )
+        conflict = Conflict("conflict-1", "item-1", "item", local, remote)
         backup_path = resolver.create_backup(conflict)
 
         assert backup_path.exists()
@@ -869,23 +938,25 @@ class TestBackupAndRecovery:
     def test_backup_contains_correct_data(self, resolver, base_time):
         """Test that backup files contain correct data."""
         local = EntityVersion(
-            "item-1", "item", {"title": "Local Title"},
+            "item-1",
+            "item",
+            {"title": "Local Title"},
             VectorClock("client-1", 1, base_time),
         )
         remote = EntityVersion(
-            "item-1", "item", {"title": "Remote Title"},
+            "item-1",
+            "item",
+            {"title": "Remote Title"},
             VectorClock("client-2", 1, base_time),
         )
-        conflict = Conflict(
-            "conflict-1", "item-1", "item", local, remote
-        )
+        conflict = Conflict("conflict-1", "item-1", "item", local, remote)
         backup_path = resolver.create_backup(conflict)
 
-        with open(backup_path / "local.json") as f:
+        with Path(backup_path / "local.json").open() as f:
             local_data = json.load(f)
             assert local_data["data"]["title"] == "Local Title"
 
-        with open(backup_path / "remote.json") as f:
+        with Path(backup_path / "remote.json").open() as f:
             remote_data = json.load(f)
             assert remote_data["data"]["title"] == "Remote Title"
 
@@ -903,7 +974,7 @@ class TestBackupAndRecovery:
             "entity_type": "item",
             "detected_at": "2024-01-01T12:00:00+00:00",
         }
-        with open(backup_path / "conflict.json", "w") as f:
+        with Path(backup_path / "conflict.json").open("w") as f:
             json.dump(conflict_meta, f)
 
         backups = backup_mgr.list_backups()
@@ -917,20 +988,26 @@ class TestBackupAndRecovery:
         # Create item backup
         item_path = temp_backup_dir / "item" / "item-1_test"
         item_path.mkdir(parents=True)
-        with open(item_path / "conflict.json", "w") as f:
-            json.dump({
-                "conflict_id": "item-conflict",
-                "entity_type": "item",
-            }, f)
+        with Path(item_path / "conflict.json").open("w") as f:
+            json.dump(
+                {
+                    "conflict_id": "item-conflict",
+                    "entity_type": "item",
+                },
+                f,
+            )
 
         # Create project backup
         proj_path = temp_backup_dir / "project" / "proj-1_test"
         proj_path.mkdir(parents=True)
-        with open(proj_path / "conflict.json", "w") as f:
-            json.dump({
-                "conflict_id": "proj-conflict",
-                "entity_type": "project",
-            }, f)
+        with Path(proj_path / "conflict.json").open("w") as f:
+            json.dump(
+                {
+                    "conflict_id": "proj-conflict",
+                    "entity_type": "project",
+                },
+                f,
+            )
 
         item_backups = backup_mgr.list_backups(entity_type="item")
         assert len(item_backups) == 1
@@ -945,17 +1022,21 @@ class TestBackupAndRecovery:
         backup_path.mkdir(parents=True)
 
         local_version = EntityVersion(
-            "item-1", "item", {"title": "Local"},
+            "item-1",
+            "item",
+            {"title": "Local"},
             VectorClock("client-1", 1, base_time),
         )
         remote_version = EntityVersion(
-            "item-1", "item", {"title": "Remote"},
+            "item-1",
+            "item",
+            {"title": "Remote"},
             VectorClock("client-2", 1, base_time),
         )
 
-        with open(backup_path / "local.json", "w") as f:
+        with Path(backup_path / "local.json").open("w") as f:
             json.dump(local_version.to_dict(), f)
-        with open(backup_path / "remote.json", "w") as f:
+        with Path(backup_path / "remote.json").open("w") as f:
             json.dump(remote_version.to_dict(), f)
 
         loaded = backup_mgr.load_backup(backup_path)
@@ -984,9 +1065,7 @@ class TestBackupAndRecovery:
         result = backup_mgr.delete_backup(nonexistent)
         assert result is False
 
-    def test_conflict_backup_manager_handles_non_directory_files(
-        self, temp_backup_dir
-    ):
+    def test_conflict_backup_manager_handles_non_directory_files(self, temp_backup_dir):
         """Test that backup manager skips non-directory files."""
         backup_mgr = ConflictBackup(temp_backup_dir)
 
@@ -1040,12 +1119,16 @@ class TestConflictQueries:
         # Create multiple conflicts
         for i in range(3):
             local = EntityVersion(
-                f"item-{i}", "item", {"title": f"Local {i}"},
+                f"item-{i}",
+                "item",
+                {"title": f"Local {i}"},
                 VectorClock("client-1", 1, base_time),
                 f"hash-local-{i}",
             )
             remote = EntityVersion(
-                f"item-{i}", "item", {"title": f"Remote {i}"},
+                f"item-{i}",
+                "item",
+                {"title": f"Remote {i}"},
                 VectorClock("client-2", 1, base_time),
                 f"hash-remote-{i}",
             )
@@ -1058,22 +1141,34 @@ class TestConflictQueries:
         """Test filtering unresolved by entity type."""
         # Create item conflict
         item_local = EntityVersion(
-            "item-1", "item", {"title": "Item"},
-            VectorClock("client-1", 1, base_time), "hash1",
+            "item-1",
+            "item",
+            {"title": "Item"},
+            VectorClock("client-1", 1, base_time),
+            "hash1",
         )
         item_remote = EntityVersion(
-            "item-1", "item", {"title": "Item Remote"},
-            VectorClock("client-2", 1, base_time), "hash2",
+            "item-1",
+            "item",
+            {"title": "Item Remote"},
+            VectorClock("client-2", 1, base_time),
+            "hash2",
         )
 
         # Create project conflict
         proj_local = EntityVersion(
-            "proj-1", "project", {"name": "Project"},
-            VectorClock("client-1", 1, base_time), "hash3",
+            "proj-1",
+            "project",
+            {"name": "Project"},
+            VectorClock("client-1", 1, base_time),
+            "hash3",
         )
         proj_remote = EntityVersion(
-            "proj-1", "project", {"name": "Project Remote"},
-            VectorClock("client-2", 1, base_time), "hash4",
+            "proj-1",
+            "project",
+            {"name": "Project Remote"},
+            VectorClock("client-2", 1, base_time),
+            "hash4",
         )
 
         resolver.detect_conflict(item_local, item_remote)
@@ -1088,12 +1183,18 @@ class TestConflictQueries:
     def test_get_conflict_by_id(self, resolver, base_time):
         """Test retrieving conflict by ID."""
         local = EntityVersion(
-            "item-1", "item", {"title": "Local"},
-            VectorClock("client-1", 1, base_time), "hash1",
+            "item-1",
+            "item",
+            {"title": "Local"},
+            VectorClock("client-1", 1, base_time),
+            "hash1",
         )
         remote = EntityVersion(
-            "item-1", "item", {"title": "Remote"},
-            VectorClock("client-2", 1, base_time), "hash2",
+            "item-1",
+            "item",
+            {"title": "Remote"},
+            VectorClock("client-2", 1, base_time),
+            "hash2",
         )
         conflict = resolver.detect_conflict(local, remote)
 
@@ -1111,12 +1212,18 @@ class TestConflictQueries:
         # Create some conflicts
         for i in range(2):
             local = EntityVersion(
-                f"item-{i}", "item", {"title": f"Local {i}"},
-                VectorClock("client-1", 1, base_time), f"hash-{i}",
+                f"item-{i}",
+                "item",
+                {"title": f"Local {i}"},
+                VectorClock("client-1", 1, base_time),
+                f"hash-{i}",
             )
             remote = EntityVersion(
-                f"item-{i}", "item", {"title": f"Remote {i}"},
-                VectorClock("client-2", 1, base_time), f"hash-r-{i}",
+                f"item-{i}",
+                "item",
+                {"title": f"Remote {i}"},
+                VectorClock("client-2", 1, base_time),
+                f"hash-r-{i}",
             )
             conflict = resolver.detect_conflict(local, remote)
             if i == 0:
@@ -1137,12 +1244,16 @@ class TestConflictQueries:
         # Create conflicts with slight delays
         for i in range(3):
             local = EntityVersion(
-                f"item-{i}", "item", {"title": f"Local {i}"},
+                f"item-{i}",
+                "item",
+                {"title": f"Local {i}"},
                 VectorClock("client-1", 1, base_time + timedelta(seconds=i)),
                 f"hash-{i}",
             )
             remote = EntityVersion(
-                f"item-{i}", "item", {"title": f"Remote {i}"},
+                f"item-{i}",
+                "item",
+                {"title": f"Remote {i}"},
                 VectorClock("client-2", 1, base_time + timedelta(seconds=i)),
                 f"hash-r-{i}",
             )
@@ -1164,12 +1275,18 @@ class TestUnicodeAndContent:
     def test_unicode_titles(self, resolver, base_time):
         """Test conflict with unicode titles."""
         local = EntityVersion(
-            "item-1", "item", {"title": "标题"},
-            VectorClock("client-1", 1, base_time), "hash1",
+            "item-1",
+            "item",
+            {"title": "标题"},
+            VectorClock("client-1", 1, base_time),
+            "hash1",
         )
         remote = EntityVersion(
-            "item-1", "item", {"title": "заголовок"},
-            VectorClock("client-2", 1, base_time), "hash2",
+            "item-1",
+            "item",
+            {"title": "заголовок"},
+            VectorClock("client-2", 1, base_time),
+            "hash2",
         )
         conflict = resolver.detect_conflict(local, remote)
         assert conflict is not None
@@ -1177,12 +1294,18 @@ class TestUnicodeAndContent:
     def test_emoji_content(self, resolver, base_time):
         """Test conflict with emoji content."""
         local = EntityVersion(
-            "item-1", "item", {"status": "✓ Done"},
-            VectorClock("client-1", 1, base_time), "hash1",
+            "item-1",
+            "item",
+            {"status": "✓ Done"},
+            VectorClock("client-1", 1, base_time),
+            "hash1",
         )
         remote = EntityVersion(
-            "item-1", "item", {"status": "🚀 In Progress"},
-            VectorClock("client-2", 1, base_time), "hash2",
+            "item-1",
+            "item",
+            {"status": "🚀 In Progress"},
+            VectorClock("client-2", 1, base_time),
+            "hash2",
         )
         conflict = resolver.detect_conflict(local, remote)
         assert conflict is not None
@@ -1193,12 +1316,18 @@ class TestUnicodeAndContent:
         remote_desc = "Line 1\nModified Line 2\nLine 3"
 
         local = EntityVersion(
-            "item-1", "item", {"description": local_desc},
-            VectorClock("client-1", 1, base_time), "hash1",
+            "item-1",
+            "item",
+            {"description": local_desc},
+            VectorClock("client-1", 1, base_time),
+            "hash1",
         )
         remote = EntityVersion(
-            "item-1", "item", {"description": remote_desc},
-            VectorClock("client-2", 1, base_time), "hash2",
+            "item-1",
+            "item",
+            {"description": remote_desc},
+            VectorClock("client-2", 1, base_time),
+            "hash2",
         )
         conflict = resolver.detect_conflict(local, remote)
         assert conflict is not None
@@ -1206,12 +1335,18 @@ class TestUnicodeAndContent:
     def test_whitespace_only_difference(self, resolver, base_time):
         """Test conflict detection with whitespace differences."""
         local = EntityVersion(
-            "item-1", "item", {"content": "Text with  spaces"},
-            VectorClock("client-1", 1, base_time), "hash1",
+            "item-1",
+            "item",
+            {"content": "Text with  spaces"},
+            VectorClock("client-1", 1, base_time),
+            "hash1",
         )
         remote = EntityVersion(
-            "item-1", "item", {"content": "Text with spaces"},
-            VectorClock("client-2", 1, base_time), "hash2",
+            "item-1",
+            "item",
+            {"content": "Text with spaces"},
+            VectorClock("client-2", 1, base_time),
+            "hash2",
         )
         conflict = resolver.detect_conflict(local, remote)
         # Different content = conflict
@@ -1221,12 +1356,18 @@ class TestUnicodeAndContent:
         """Test handling large content."""
         large_text = "x" * 10000
         local = EntityVersion(
-            "item-1", "item", {"content": large_text},
-            VectorClock("client-1", 1, base_time), "hash1",
+            "item-1",
+            "item",
+            {"content": large_text},
+            VectorClock("client-1", 1, base_time),
+            "hash1",
         )
         remote = EntityVersion(
-            "item-1", "item", {"content": large_text + "y"},
-            VectorClock("client-2", 1, base_time), "hash2",
+            "item-1",
+            "item",
+            {"content": large_text + "y"},
+            VectorClock("client-2", 1, base_time),
+            "hash2",
         )
         conflict = resolver.detect_conflict(local, remote)
         assert conflict is not None
@@ -1243,16 +1384,18 @@ class TestUtilityFunctions:
     def test_format_conflict_summary_basic(self, base_time):
         """Test formatting conflict summary."""
         local = EntityVersion(
-            "item-1", "item", {"title": "Local"},
+            "item-1",
+            "item",
+            {"title": "Local"},
             VectorClock("client-1", 1, base_time),
         )
         remote = EntityVersion(
-            "item-1", "item", {"title": "Remote"},
+            "item-1",
+            "item",
+            {"title": "Remote"},
             VectorClock("client-2", 2, base_time),
         )
-        conflict = Conflict(
-            "test-conflict", "item-1", "item", local, remote
-        )
+        conflict = Conflict("test-conflict", "item-1", "item", local, remote)
         summary = format_conflict_summary(conflict)
 
         assert "item-1" in summary
@@ -1263,16 +1406,18 @@ class TestUtilityFunctions:
     def test_format_conflict_summary_with_timestamps(self, base_time):
         """Test summary includes formatted timestamps."""
         local = EntityVersion(
-            "item-1", "item", {"title": "Local"},
+            "item-1",
+            "item",
+            {"title": "Local"},
             VectorClock("client-1", 1, base_time),
         )
         remote = EntityVersion(
-            "item-1", "item", {"title": "Remote"},
+            "item-1",
+            "item",
+            {"title": "Remote"},
             VectorClock("client-2", 1, base_time + timedelta(hours=1)),
         )
-        conflict = Conflict(
-            "test-conflict", "item-1", "item", local, remote
-        )
+        conflict = Conflict("test-conflict", "item-1", "item", local, remote)
         summary = format_conflict_summary(conflict)
         assert "Local:" in summary
         assert "Remote:" in summary
@@ -1280,11 +1425,15 @@ class TestUtilityFunctions:
     def test_compare_versions_added_fields(self, base_time):
         """Test comparing versions with added fields."""
         local = EntityVersion(
-            "item-1", "item", {"title": "Item"},
+            "item-1",
+            "item",
+            {"title": "Item"},
             VectorClock("client-1", 1, base_time),
         )
         remote = EntityVersion(
-            "item-1", "item", {"title": "Item", "status": "new"},
+            "item-1",
+            "item",
+            {"title": "Item", "status": "new"},
             VectorClock("client-2", 1, base_time),
         )
         diff = compare_versions(local, remote)
@@ -1293,12 +1442,15 @@ class TestUtilityFunctions:
     def test_compare_versions_removed_fields(self, base_time):
         """Test comparing versions with removed fields."""
         local = EntityVersion(
-            "item-1", "item",
+            "item-1",
+            "item",
             {"title": "Item", "priority": "high"},
             VectorClock("client-1", 1, base_time),
         )
         remote = EntityVersion(
-            "item-1", "item", {"title": "Item"},
+            "item-1",
+            "item",
+            {"title": "Item"},
             VectorClock("client-2", 1, base_time),
         )
         diff = compare_versions(local, remote)
@@ -1307,11 +1459,15 @@ class TestUtilityFunctions:
     def test_compare_versions_modified_fields(self, base_time):
         """Test comparing versions with modified fields."""
         local = EntityVersion(
-            "item-1", "item", {"title": "Old Title", "status": "active"},
+            "item-1",
+            "item",
+            {"title": "Old Title", "status": "active"},
             VectorClock("client-1", 1, base_time),
         )
         remote = EntityVersion(
-            "item-1", "item", {"title": "New Title", "status": "active"},
+            "item-1",
+            "item",
+            {"title": "New Title", "status": "active"},
             VectorClock("client-2", 1, base_time),
         )
         diff = compare_versions(local, remote)
@@ -1321,7 +1477,8 @@ class TestUtilityFunctions:
     def test_compare_versions_complex_data(self, base_time):
         """Test comparing complex nested structures."""
         local = EntityVersion(
-            "item-1", "item",
+            "item-1",
+            "item",
             {
                 "metadata": {"author": "alice", "version": 1},
                 "tags": ["a", "b"],
@@ -1329,7 +1486,8 @@ class TestUtilityFunctions:
             VectorClock("client-1", 1, base_time),
         )
         remote = EntityVersion(
-            "item-1", "item",
+            "item-1",
+            "item",
             {
                 "metadata": {"author": "alice", "version": 2},
                 "tags": ["a", "b"],
@@ -1352,13 +1510,15 @@ class TestIntegration:
         """Test complete conflict detection and resolution."""
         # 1. Create conflicting versions
         local = EntityVersion(
-            "item-1", "item",
+            "item-1",
+            "item",
             {"title": "Local Title", "status": "in_progress"},
             VectorClock("client-1", 2, base_time),
             "hash_local",
         )
         remote = EntityVersion(
-            "item-1", "item",
+            "item-1",
+            "item",
             {"title": "Remote Title", "status": "completed"},
             VectorClock("client-2", 2, base_time),
             "hash_remote",
@@ -1380,32 +1540,50 @@ class TestIntegration:
         """Test handling multiple conflicts of different entity types."""
         # Item conflict
         item_local = EntityVersion(
-            "item-1", "item", {"title": "Item"},
-            VectorClock("client-1", 1, base_time), "h1",
+            "item-1",
+            "item",
+            {"title": "Item"},
+            VectorClock("client-1", 1, base_time),
+            "h1",
         )
         item_remote = EntityVersion(
-            "item-1", "item", {"title": "Item Remote"},
-            VectorClock("client-2", 1, base_time), "h2",
+            "item-1",
+            "item",
+            {"title": "Item Remote"},
+            VectorClock("client-2", 1, base_time),
+            "h2",
         )
 
         # Project conflict
         proj_local = EntityVersion(
-            "proj-1", "project", {"name": "Project"},
-            VectorClock("client-1", 1, base_time), "h3",
+            "proj-1",
+            "project",
+            {"name": "Project"},
+            VectorClock("client-1", 1, base_time),
+            "h3",
         )
         proj_remote = EntityVersion(
-            "proj-1", "project", {"name": "Project Remote"},
-            VectorClock("client-2", 1, base_time), "h4",
+            "proj-1",
+            "project",
+            {"name": "Project Remote"},
+            VectorClock("client-2", 1, base_time),
+            "h4",
         )
 
         # Link conflict
         link_local = EntityVersion(
-            "link-1", "link", {"source": "item-1", "target": "item-2"},
-            VectorClock("client-1", 1, base_time), "h5",
+            "link-1",
+            "link",
+            {"source": "item-1", "target": "item-2"},
+            VectorClock("client-1", 1, base_time),
+            "h5",
         )
         link_remote = EntityVersion(
-            "link-1", "link", {"source": "item-1", "target": "item-3"},
-            VectorClock("client-2", 1, base_time), "h6",
+            "link-1",
+            "link",
+            {"source": "item-1", "target": "item-3"},
+            VectorClock("client-2", 1, base_time),
+            "h6",
         )
 
         # Detect all
@@ -1430,12 +1608,16 @@ class TestIntegration:
         conflicts = []
         for i in range(5):
             local = EntityVersion(
-                f"item-{i}", "item", {"title": f"Local {i}"},
+                f"item-{i}",
+                "item",
+                {"title": f"Local {i}"},
                 VectorClock("client-1", 2, base_time),
                 f"h_local_{i}",
             )
             remote = EntityVersion(
-                f"item-{i}", "item", {"title": f"Remote {i}"},
+                f"item-{i}",
+                "item",
+                {"title": f"Remote {i}"},
                 VectorClock("client-2", 2, base_time),
                 f"h_remote_{i}",
             )
@@ -1444,10 +1626,7 @@ class TestIntegration:
 
         # Resolve all
         for i, conflict in enumerate(conflicts):
-            strategy = (
-                ConflictStrategy.LOCAL_WINS if i % 2 == 0
-                else ConflictStrategy.REMOTE_WINS
-            )
+            strategy = ConflictStrategy.LOCAL_WINS if i % 2 == 0 else ConflictStrategy.REMOTE_WINS
             resolver.resolve(conflict, strategy)
 
         unresolved = resolver.list_unresolved()
@@ -1456,7 +1635,8 @@ class TestIntegration:
     def test_concurrent_changes_same_field(self, resolver, base_time):
         """Test conflict when both sides modify same field."""
         local = EntityVersion(
-            "item-1", "item",
+            "item-1",
+            "item",
             {
                 "title": "Local Title",
                 "description": "Unchanged",
@@ -1466,7 +1646,8 @@ class TestIntegration:
             "hash1",
         )
         remote = EntityVersion(
-            "item-1", "item",
+            "item-1",
+            "item",
             {
                 "title": "Remote Title",
                 "description": "Unchanged",

@@ -26,9 +26,7 @@ from tracertm.services.item_service import ItemService
 class TestLoad1000Agents:
     """Load tests for 1000+ concurrent agents."""
 
-    async def test_1000_agents_concurrent_crud(
-        self, db_session, project_factory, item_factory
-    ):
+    async def test_1000_agents_concurrent_crud(self, db_session, project_factory, item_factory):
         """Test 1000 agents performing concurrent CRUD operations."""
         project = await project_factory()
         item_service = ItemService(db_session)
@@ -60,24 +58,24 @@ class TestLoad1000Agents:
             try:
                 # Create item
                 item = await item_service.create_item(
-                    project_id=project.id,
+                    project_id=str(project.id),
                     title=f"Item by agent {agent_idx}",
                     view="FEATURE",
                     item_type="feature",
-                    agent_id=agent.id,
+                    agent_id=str(agent.id),
                 )
                 operations += 1
 
                 # Update item
                 await item_service.update_item(
-                    item_id=item.id,
-                    agent_id=agent.id,
+                    item_id=str(item.id),
+                    agent_id=str(agent.id),
                     title=f"Updated by agent {agent_idx}",
                 )
                 operations += 1
 
                 # Read item
-                await item_service.get_item(project_id=project.id, item_id=item.id)
+                await item_service.get_item(project_id=str(project.id), item_id=str(item.id))
                 operations += 1
 
             except Exception as e:
@@ -98,9 +96,7 @@ class TestLoad1000Agents:
         assert throughput > 100, f"Throughput {throughput} < 100 ops/sec"
         assert errors == 0, f"Errors occurred: {errors}"
 
-    async def test_1000_agents_same_item_updates(
-        self, db_session, project_factory, item_factory
-    ):
+    async def test_1000_agents_same_item_updates(self, db_session, project_factory, item_factory):
         """Test 1000 agents updating the same item (worst case)."""
         project = await project_factory()
         item = await item_factory(project_id=project.id)
@@ -128,8 +124,8 @@ class TestLoad1000Agents:
             agent = agents[agent_idx]
             try:
                 await item_service.update_item(
-                    item_id=item.id,
-                    agent_id=agent.id,
+                    item_id=str(item.id),
+                    agent_id=str(agent.id),
                     title=f"Updated by agent {agent_idx}",
                 )
                 successful_updates += 1
@@ -146,9 +142,7 @@ class TestLoad1000Agents:
         assert conflicts < 1000 * 0.05, "Conflict rate > 5% for same item"
 
     @pytest.mark.benchmark
-    async def test_query_performance_10k_items(
-        self, db_session, project_factory, item_factory
-    ):
+    async def test_query_performance_10k_items(self, db_session, project_factory, item_factory):
         """Test query performance with 10K items."""
         project = await project_factory()
         item_service = ItemService(db_session)

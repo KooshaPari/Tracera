@@ -1,5 +1,5 @@
 const conf = {
-  wordPattern: /(-?\d*\.\d\w*)|([^\`\~\!\@\#\%\^\&\*\(\)\-\=\+\[\{\]\}\\\|\;\:\'\"\,\.\<\>\/\?\s]+)/g,
+  wordPattern: /(-?\d*\.\d\w*)|([^`~!@#%^&*()\-=+[{\]}\\|;:'",.<>/?\s]+)/g,
   comments: {
     lineComment: "//",
     blockComment: ["/*", "*/"]
@@ -58,7 +58,7 @@ const language = {
       [/\/?>/, "delimiter.html", "@pop"],
       [/"([^"]*)"/, "attribute.value"],
       [/'([^']*)'/, "attribute.value"],
-      [/[\w\-]+/, "attribute.name"],
+      [/[\w-]+/, "attribute.name"],
       [/=/, "delimiter"],
       [/[ \t\r\n]+/]
       // whitespace
@@ -70,7 +70,7 @@ const language = {
       [/type/, "attribute.name", "@scriptAfterType"],
       [/"([^"]*)"/, "attribute.value"],
       [/'([^']*)'/, "attribute.value"],
-      [/[\w\-]+/, "attribute.name"],
+      [/[\w-]+/, "attribute.name"],
       [/=/, "delimiter"],
       [
         />/,
@@ -165,7 +165,7 @@ const language = {
       ],
       [/"([^"]*)"/, "attribute.value"],
       [/'([^']*)'/, "attribute.value"],
-      [/[\w\-]+/, "attribute.name"],
+      [/[\w-]+/, "attribute.name"],
       [/=/, "delimiter"],
       [/[ \t\r\n]+/],
       // whitespace
@@ -190,7 +190,7 @@ const language = {
       [/type/, "attribute.name", "@styleAfterType"],
       [/"([^"]*)"/, "attribute.value"],
       [/'([^']*)'/, "attribute.value"],
-      [/[\w\-]+/, "attribute.name"],
+      [/[\w-]+/, "attribute.name"],
       [/=/, "delimiter"],
       [
         />/,
@@ -285,7 +285,7 @@ const language = {
       ],
       [/"([^"]*)"/, "attribute.value"],
       [/'([^']*)'/, "attribute.value"],
-      [/[\w\-]+/, "attribute.name"],
+      [/[\w-]+/, "attribute.name"],
       [/=/, "delimiter"],
       [/[ \t\r\n]+/],
       // whitespace
@@ -344,7 +344,7 @@ const language = {
       ],
       // brackets
       [/[{}]/, "delimiter.bracket.php"],
-      [/[\[\]]/, "delimiter.array.php"],
+      [/[[\]]/, "delimiter.array.php"],
       [/[()]/, "delimiter.parenthesis.php"],
       // whitespace
       [/[ \t\r\n]+/],
@@ -357,10 +357,10 @@ const language = {
       [/"/, "string.php", "@phpDoubleQuoteString"],
       [/'/, "string.php", "@phpSingleQuoteString"],
       // delimiters
-      [/[\+\-\*\%\&\|\^\~\!\=\<\>\/\?\;\:\.\,\@]/, "delimiter.php"],
+      [/[+\-*%&|^~!=<>/?;:.,@]/, "delimiter.php"],
       // numbers
-      [/\d*\d+[eE]([\-+]?\d+)?/, "number.float.php"],
-      [/\d*\.\d+([eE][\-+]?\d+)?/, "number.float.php"],
+      [/\d*\d+[eE]([-+]?\d+)?/, "number.float.php"],
+      [/\d*\.\d+([eE][-+]?\d+)?/, "number.float.php"],
       [/0[xX][0-9a-fA-F']*[0-9a-fA-F]/, "number.hex.php"],
       [/0[0-7']*[0-7]/, "number.octal.php"],
       [/0[bB][0-1']*[0-1]/, "number.binary.php"],

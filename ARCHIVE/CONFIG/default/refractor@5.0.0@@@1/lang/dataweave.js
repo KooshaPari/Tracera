@@ -37,7 +37,7 @@ export default function dataweave(Prism) {
         }
       ],
       regex: {
-        pattern: /\/(?:[^\\\/\r\n]|\\[^\r\n])+\//,
+        pattern: /\/(?:[^\\/\r\n]|\\[^\r\n])+\//,
         greedy: true
       },
       keyword:

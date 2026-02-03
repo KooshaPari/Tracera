@@ -243,7 +243,7 @@ class LanguageConfigurationRegistry extends Disposable {
                 { open: '[', close: ']' },
                 { open: '(', close: ')' },
                 { open: '<', close: '>' },
-                { open: '\"', close: '\"' },
+                { open: '"', close: '"' },
                 { open: '\'', close: '\'' },
                 { open: '`', close: '`' },
             ],

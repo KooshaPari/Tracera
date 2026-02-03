@@ -50,4 +50,4 @@ export declare class ErrorBar extends React.Component<Props> {
     static displayName: string;
     render(): React.JSX.Element;
 }
-export {};
+

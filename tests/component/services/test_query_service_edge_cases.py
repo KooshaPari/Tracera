@@ -13,8 +13,10 @@ Target: 90%+ coverage for query_service.py
 """
 
 import asyncio
+from unittest.mock import AsyncMock
+
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
+
 from tracertm.services.query_service import QueryService
 
 
@@ -39,10 +41,7 @@ class TestQueryServiceConcurrency:
     async def test_concurrent_queries(self, service):
         """Test multiple concurrent query operations."""
         # Execute 10 concurrent queries
-        tasks = [
-            service.search({"criteria": f"query_{i}"})
-            for i in range(10)
-        ]
+        tasks = [service.search({"criteria": f"query_{i}"}) for i in range(10)]
         results = await asyncio.gather(*tasks)
 
         # Verify all complete successfully
@@ -71,6 +70,7 @@ class TestQueryServiceConcurrency:
 
     async def test_query_cancellation(self, service):
         """Test query operation cancellation."""
+
         # Create a long-running task
         async def long_query():
             await asyncio.sleep(10)
@@ -263,10 +263,7 @@ class TestQueryServiceResourceManagement:
 
         # Execute with timeout
         try:
-            result = await asyncio.wait_for(
-                service.search({}),
-                timeout=1.0
-            )
+            result = await asyncio.wait_for(service.search({}), timeout=1.0)
             assert isinstance(result, list)
-        except asyncio.TimeoutError:
+        except TimeoutError:
             pytest.fail("Query timed out unexpectedly")

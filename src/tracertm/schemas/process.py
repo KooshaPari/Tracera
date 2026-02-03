@@ -1,14 +1,15 @@
 """Process schemas for TraceRTM."""
 
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
-class ProcessStatus(str, Enum):
+class ProcessStatus(StrEnum):
     """Valid process lifecycle statuses."""
+
     DRAFT = "draft"
     ACTIVE = "active"
     DEPRECATED = "deprecated"
@@ -16,8 +17,9 @@ class ProcessStatus(str, Enum):
     ARCHIVED = "archived"
 
 
-class ProcessCategory(str, Enum):
+class ProcessCategory(StrEnum):
     """Categories of processes."""
+
     OPERATIONAL = "operational"
     SUPPORT = "support"
     MANAGEMENT = "management"
@@ -152,10 +154,7 @@ class ProcessVersionCreate(BaseModel):
     """Schema for creating a new version of a process."""
 
     version_notes: str | None = None
-    changes: dict[str, Any] | None = Field(
-        None,
-        description="Specific changes to apply to create new version"
-    )
+    changes: dict[str, Any] | None = Field(None, description="Specific changes to apply to create new version")
 
 
 class ProcessActivation(BaseModel):
@@ -233,8 +232,7 @@ class ProcessResponse(BaseModel):
     updated_at: datetime
     deleted_at: datetime | None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ProcessListResponse(BaseModel):
@@ -252,14 +250,15 @@ class ProcessListResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Process Execution schemas
 
-class ExecutionStatus(str, Enum):
+
+class ExecutionStatus(StrEnum):
     """Valid execution statuses."""
+
     PENDING = "pending"
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"

@@ -1,22 +1,20 @@
-import json
-from datetime import datetime, timedelta, UTC
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
-import pytest
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
 
 from tracertm.storage.conflict_resolver import (
+    Conflict,
     ConflictResolver,
     ConflictStrategy,
     EntityVersion,
     VectorClock,
-    Conflict,
 )
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
 
 
 def _make_session(tmp_path: Path) -> Session:
-    engine = create_engine(f"sqlite:///{tmp_path/'conflicts.db'}")
+    engine = create_engine(f"sqlite:///{tmp_path / 'conflicts.db'}")
     return Session(bind=engine)
 
 

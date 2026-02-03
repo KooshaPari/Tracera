@@ -47,7 +47,7 @@ export default function dart(Prism) {
       ],
       keyword: keywords,
       operator:
-        /\bis!|\b(?:as|is)\b|\+\+|--|&&|\|\||<<=?|>>=?|~(?:\/=?)?|[+\-*\/%&^|=!<>]=?|\?/
+        /\bis!|\b(?:as|is)\b|\+\+|--|&&|\|\||<<=?|>>=?|~(?:\/=?)?|[+\-*/%&^|=!<>]=?|\?/
     })
     Prism.languages.insertBefore('dart', 'string', {
       'string-literal': {

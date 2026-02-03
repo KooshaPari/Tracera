@@ -85,7 +85,7 @@
 			{
 				// Matches [* *] nestable block comments, but only supports 1 level of nested comments
 				// /\[\*(?:[^\[*]|\[(?!\*)|\*(?!\])|<self>)*\*\]/
-				pattern: /(^|[^\\])\[\*(?:[^\[*]|\[(?!\*)|\*(?!\])|\[\*(?:[^\[*]|\[(?!\*)|\*(?!\]))*\*\])*\*\]/,
+				pattern: /(^|[^\\])\[\*(?:[^[*]|\[(?!\*)|\*(?!\])|\[\*(?:[^[*]|\[(?!\*)|\*(?!\]))*\*\])*\*\]/,
 				lookbehind: true,
 				greedy: true
 			},
@@ -180,7 +180,7 @@
 
 		'operator': /\+\+?|[!=<>]=?|&&|\|\||[?:*/%-]/,
 
-		'punctuation': /[{}\[\]();,.]/
+		'punctuation': /[{}[\]();,.]/
 	};
 
 	Prism.languages.avs = Prism.languages.avisynth;

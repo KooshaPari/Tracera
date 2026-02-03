@@ -6986,4 +6986,4 @@ declare const WebSocketServerBindingVisitor_base: Class<any[], FixedFieldsVisito
 export declare interface WebSocketServerBindingVisitorOptions extends FixedFieldsVisitorOptions, VisitorOptions {
 }
 
-export { }
+

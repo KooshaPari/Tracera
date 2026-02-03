@@ -4,10 +4,11 @@ Comprehensive rate limiting tests for API endpoints.
 Tests rate limiting mechanisms, throttling, and quota management.
 """
 
-import pytest
 import time
-from datetime import datetime, timedelta
-from unittest.mock import AsyncMock, MagicMock, patch
+from datetime import UTC, datetime, timedelta, timezone
+from unittest.mock import MagicMock, patch
+
+import pytest
 from fastapi.testclient import TestClient
 
 
@@ -32,7 +33,7 @@ class TestBasicRateLimiting:
         client = TestClient(app)
 
         # Make requests under the limit
-        for i in range(5):
+        for _i in range(5):
             try:
                 response = client.get("/api/v1/items", params={"project_id": "test"})
                 # Should not get 429 Too Many Requests
@@ -62,7 +63,7 @@ class TestBasicRateLimiting:
 
             # Try to make many requests
             blocked = False
-            for i in range(20):
+            for _i in range(20):
                 try:
                     response = client.get("/api/v1/items", params={"project_id": "test"})
                     if response.status_code == 429:
@@ -84,11 +85,11 @@ class TestBasicRateLimiting:
 
         with patch("tracertm.api.main.RateLimiter") as mock_limiter:
             limiter = MagicMock()
-            start_time = datetime.utcnow()
+            start_time = datetime.now(UTC)
 
             def check_limit(*args, **kwargs):
                 # Reset after 60 seconds
-                elapsed = (datetime.utcnow() - start_time).total_seconds()
+                elapsed = (datetime.now(UTC) - start_time).total_seconds()
                 return elapsed < 60 or elapsed >= 120
 
             limiter.check_limit.side_effect = check_limit
@@ -96,7 +97,7 @@ class TestBasicRateLimiting:
             mock_limiter.return_value = limiter
 
             # Make requests
-            for i in range(5):
+            for _i in range(5):
                 try:
                     client.get("/api/v1/items", params={"project_id": "test"})
                 except Exception:
@@ -117,7 +118,7 @@ class TestRateLimitHeaders:
             limiter.check_limit.return_value = True
             limiter.get_remaining.return_value = 95
             limiter.get_limit.return_value = 100
-            limiter.get_reset_time.return_value = datetime.utcnow() + timedelta(seconds=60)
+            limiter.get_reset_time.return_value = datetime.now(UTC) + timedelta(seconds=60)
             mock_limiter.return_value = limiter
 
             try:
@@ -152,7 +153,7 @@ class TestRateLimitHeaders:
             try:
                 response = client.get("/api/v1/items", params={"project_id": "test"})
                 if response.status_code == 429:
-                    assert "Retry-After" in response.headers or True
+                    assert True
             except Exception:
                 pass
 
@@ -171,7 +172,7 @@ class TestPerEndpointRateLimits:
             mock_limit.side_effect = lambda method, path: 1000 if method == "GET" else 100
 
             # Should allow many GET requests
-            for i in range(50):
+            for _i in range(50):
                 try:
                     client.get("/api/v1/items", params={"project_id": "test"})
                 except Exception:
@@ -189,7 +190,7 @@ class TestPerEndpointRateLimits:
 
             call_count = 0
             # Should hit limit faster on POST
-            for i in range(20):
+            for _i in range(20):
                 try:
                     response = client.post("/api/v1/items", json={"title": "test"})
                     call_count += 1
@@ -213,7 +214,7 @@ class TestPerEndpointRateLimits:
             mock_limit.side_effect = lambda method, path: 5 if "analysis" in path else 100
 
             # Should have very low limit
-            for i in range(10):
+            for _i in range(10):
                 try:
                     client.get("/api/v1/analysis/cycles/test_project")
                 except Exception:
@@ -243,24 +244,16 @@ class TestPerUserRateLimits:
             mock_limiter.return_value = limiter
 
             # User 1 makes requests
-            for i in range(5):
+            for _i in range(5):
                 try:
-                    client.get(
-                        "/api/v1/items",
-                        params={"project_id": "test"},
-                        headers={"X-User-ID": "user1"}
-                    )
+                    client.get("/api/v1/items", params={"project_id": "test"}, headers={"X-User-ID": "user1"})
                 except Exception:
                     pass
 
             # User 2 should have independent limit
-            for i in range(5):
+            for _i in range(5):
                 try:
-                    client.get(
-                        "/api/v1/items",
-                        params={"project_id": "test"},
-                        headers={"X-User-ID": "user2"}
-                    )
+                    client.get("/api/v1/items", params={"project_id": "test"}, headers={"X-User-ID": "user2"})
                 except Exception:
                     pass
 
@@ -289,7 +282,7 @@ class TestPerUserRateLimits:
             mock_limiter.return_value = limiter
 
             # Make requests and track quota
-            for i in range(10):
+            for _i in range(10):
                 try:
                     client.get("/api/v1/items", params={"project_id": "test"})
                 except Exception:
@@ -324,7 +317,7 @@ class TestIPBasedRateLimiting:
                 mock_limiter.return_value = limiter
 
                 # Make requests from same IP
-                for i in range(15):
+                for _i in range(15):
                     try:
                         client.get("/api/v1/items", params={"project_id": "test"})
                     except Exception:
@@ -355,7 +348,7 @@ class TestIPBasedRateLimiting:
                     mock_ip.return_value = ip
                     client = TestClient(app)
 
-                    for i in range(5):
+                    for _i in range(5):
                         try:
                             client.get("/api/v1/items", params={"project_id": "test"})
                         except Exception:
@@ -394,7 +387,7 @@ class TestRateLimitStrategies:
             mock_limiter.return_value = limiter
 
             # Make requests
-            for i in range(15):
+            for _i in range(15):
                 try:
                     client.get("/api/v1/items", params={"project_id": "test"})
                 except Exception:
@@ -429,7 +422,7 @@ class TestRateLimitStrategies:
             mock_limiter.return_value = limiter
 
             # Make burst of requests
-            for i in range(12):
+            for _i in range(12):
                 try:
                     client.get("/api/v1/items", params={"project_id": "test"})
                 except Exception:
@@ -464,7 +457,7 @@ class TestRateLimitStrategies:
             mock_limiter.return_value = limiter
 
             # Make requests
-            for i in range(15):
+            for _i in range(15):
                 try:
                     client.get("/api/v1/items", params={"project_id": "test"})
                 except Exception:
@@ -533,7 +526,7 @@ class TestRateLimitBypass:
             headers = {"Authorization": f"Bearer {admin_token}"}
 
             # Should allow unlimited requests
-            for i in range(100):
+            for _i in range(100):
                 try:
                     client.get("/api/v1/items", params={"project_id": "test"}, headers=headers)
                 except Exception:
@@ -552,7 +545,7 @@ class TestRateLimitBypass:
                 client = TestClient(app)
 
                 # Should allow unlimited requests
-                for i in range(100):
+                for _i in range(100):
                     try:
                         client.get("/api/v1/items", params={"project_id": "test"})
                     except Exception:

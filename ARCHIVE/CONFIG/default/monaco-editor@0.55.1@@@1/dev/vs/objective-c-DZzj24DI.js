@@ -124,7 +124,7 @@ define("vs/objective-c-DZzj24DI", ["exports"], (function(exports) {
         { include: "@numbers" },
         { include: "@strings" },
         [/[,:;]/, "delimiter"],
-        [/[{}\[\]()<>]/, "@brackets"],
+        [/[{}[\]()<>]/, "@brackets"],
         [
           /[a-zA-Z@#]\w*/,
           {
@@ -148,7 +148,7 @@ define("vs/objective-c-DZzj24DI", ["exports"], (function(exports) {
       numbers: [
         [/0[xX][0-9a-fA-F]*(_?[0-9a-fA-F])*/, "number.hex"],
         [
-          /@decimal((\.@decpart)?([eE][\-+]?@decpart)?)[fF]*/,
+          /@decimal((\.@decpart)?([eE][-+]?@decpart)?)[fF]*/,
           {
             cases: {
               "(\\d)*": "number",

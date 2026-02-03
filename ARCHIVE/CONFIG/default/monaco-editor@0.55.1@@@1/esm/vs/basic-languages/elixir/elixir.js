@@ -25,7 +25,7 @@ const conf = {
     { open: "<<", close: ">>" }
   ],
   indentationRules: {
-    increaseIndentPattern: /^\s*(after|else|catch|rescue|fn|[^#]*(do|<\-|\->|\{|\[|\=))\s*$/,
+    increaseIndentPattern: /^\s*(after|else|catch|rescue|fn|[^#]*(do|<-|->|\{|\[|=))\s*$/,
     decreaseIndentPattern: /^\s*((\}|\])\s*$|(after|else|catch|rescue|end)\b)/
   }
 };
@@ -305,7 +305,7 @@ const language = {
       [/~([a-z]|[A-Z]+)\{/, { token: "@rematch", switchTo: "@sigilStart.$S2.$1.{.}" }],
       [/~([a-z]|[A-Z]+)\[/, { token: "@rematch", switchTo: "@sigilStart.$S2.$1.[.]" }],
       [/~([a-z]|[A-Z]+)\(/, { token: "@rematch", switchTo: "@sigilStart.$S2.$1.(.)" }],
-      [/~([a-z]|[A-Z]+)\</, { token: "@rematch", switchTo: "@sigilStart.$S2.$1.<.>" }],
+      [/~([a-z]|[A-Z]+)</, { token: "@rematch", switchTo: "@sigilStart.$S2.$1.<.>" }],
       [
         /~([a-z]|[A-Z]+)(@sigilSymmetricDelimiter)/,
         { token: "@rematch", switchTo: "@sigilStart.$S2.$1.$2.$2" }
@@ -456,36 +456,36 @@ const language = {
     attributes: [
       // Module @doc* attributes - tokenized as comments
       [
-        /\@(module|type)?doc (~[sS])?"""/,
+        /@(module|type)?doc (~[sS])?"""/,
         {
           token: "comment.block.documentation",
           next: "@doubleQuotedHeredocDocstring"
         }
       ],
       [
-        /\@(module|type)?doc (~[sS])?'''/,
+        /@(module|type)?doc (~[sS])?'''/,
         {
           token: "comment.block.documentation",
           next: "@singleQuotedHeredocDocstring"
         }
       ],
       [
-        /\@(module|type)?doc (~[sS])?"/,
+        /@(module|type)?doc (~[sS])?"/,
         {
           token: "comment.block.documentation",
           next: "@doubleQuotedStringDocstring"
         }
       ],
       [
-        /\@(module|type)?doc (~[sS])?'/,
+        /@(module|type)?doc (~[sS])?'/,
         {
           token: "comment.block.documentation",
           next: "@singleQuotedStringDocstring"
         }
       ],
-      [/\@(module|type)?doc false/, "comment.block.documentation"],
+      [/@(module|type)?doc false/, "comment.block.documentation"],
       // Module attributes
-      [/\@(@variableName)/, "variable"]
+      [/@(@variableName)/, "variable"]
     ],
     doubleQuotedHeredocDocstring: [
       [/"""/, { token: "comment.block.documentation", next: "@pop" }],
@@ -512,7 +512,7 @@ const language = {
       // Bitshift operators (must go before delimiters, so that << >> don't match first)
       [/<<<|>>>/, "operator"],
       // Delimiter pairs
-      [/[()\[\]\{\}]|<<|>>/, "@brackets"],
+      [/[()[\]{}]|<<|>>/, "@brackets"],
       // Triple dot is a valid name (must go before operators, so that .. doesn't match instead)
       [/\.\.\./, "identifier"],
       // Punctuation => (must go before operators, so it's not tokenized as = then >)

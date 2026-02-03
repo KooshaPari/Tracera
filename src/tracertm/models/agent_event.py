@@ -30,20 +30,14 @@ class AgentEvent(Base, TimestampMixin):
 
     __tablename__ = "agent_events"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=generate_event_uuid
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=generate_event_uuid)
     project_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("projects.id"), nullable=False, index=True
     )
-    agent_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("agents.id"), nullable=False, index=True
-    )
+    agent_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("agents.id"), nullable=False, index=True)
 
     # Event details
-    event_type: Mapped[str] = mapped_column(
-        String(50), nullable=False
-    )  # item_created, item_updated, conflict, etc.
+    event_type: Mapped[str] = mapped_column(String(50), nullable=False)  # item_created, item_updated, conflict, etc.
     item_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("items.id"), nullable=True, index=True
     )

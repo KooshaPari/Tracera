@@ -8,7 +8,7 @@ import json
 import logging
 import os
 from collections.abc import AsyncIterator
-from typing import Any, Optional
+from typing import Any
 
 from .ai_tools import TOOLS, execute_tool
 
@@ -17,8 +17,6 @@ logger = logging.getLogger(__name__)
 
 class AIServiceError(Exception):
     """Custom exception for AI service errors."""
-
-    pass
 
 
 # SSE Event Types
@@ -52,26 +50,22 @@ class AIService:
         if self._anthropic_client is None:
             api_key = os.getenv("ANTHROPIC_API_KEY")
             if not api_key:
-                raise AIServiceError(
-                    "ANTHROPIC_API_KEY environment variable is not set"
-                )
+                raise AIServiceError("ANTHROPIC_API_KEY environment variable is not set")
             try:
-                import anthropic
+                import anthropic  # type: ignore[import-not-found]
 
                 self._anthropic_client = anthropic.AsyncAnthropic(api_key=api_key)
-            except ImportError:
-                raise AIServiceError(
-                    "anthropic package is not installed. Run: pip install anthropic"
-                )
+            except ImportError as e:
+                raise AIServiceError("anthropic package is not installed. Run: pip install anthropic") from e
         return self._anthropic_client
 
     async def stream_chat_with_tools(
         self,
         messages: list[dict],
         model: str = "claude-sonnet-4-20250514",
-        system_prompt: Optional[str] = None,
+        system_prompt: str | None = None,
         max_tokens: int = 4096,
-        working_directory: Optional[str] = None,
+        working_directory: str | None = None,
         db_session: Any = None,
         max_tool_iterations: int = 10,
     ) -> AsyncIterator[str]:
@@ -96,13 +90,9 @@ class AIService:
             SSE-formatted strings for streaming to client
         """
         # Convert messages to Anthropic format
-        anthropic_messages = []
-        for msg in messages:
-            if msg["role"] in ("user", "assistant"):
-                anthropic_messages.append({
-                    "role": msg["role"],
-                    "content": msg["content"],
-                })
+        anthropic_messages = [
+            {"role": msg["role"], "content": msg["content"]} for msg in messages if msg["role"] in ("user", "assistant")
+        ]
 
         iteration = 0
 
@@ -136,14 +126,20 @@ class AIService:
                         tool_use_id = block.id
 
                         # Notify client about tool use
-                        yield format_sse(SSEEvent.TOOL_USE_START, {
-                            "tool_name": tool_name,
-                            "tool_use_id": tool_use_id,
-                        })
-                        yield format_sse(SSEEvent.TOOL_USE_INPUT, {
-                            "tool_use_id": tool_use_id,
-                            "input": tool_input,
-                        })
+                        yield format_sse(
+                            SSEEvent.TOOL_USE_START,
+                            {
+                                "tool_name": tool_name,
+                                "tool_use_id": tool_use_id,
+                            },
+                        )
+                        yield format_sse(
+                            SSEEvent.TOOL_USE_INPUT,
+                            {
+                                "tool_use_id": tool_use_id,
+                                "input": tool_input,
+                            },
+                        )
 
                         # Execute the tool
                         tool_result = await execute_tool(
@@ -154,10 +150,13 @@ class AIService:
                         )
 
                         # Send tool result to client
-                        yield format_sse(SSEEvent.TOOL_RESULT, {
-                            "tool_use_id": tool_use_id,
-                            "result": tool_result,
-                        })
+                        yield format_sse(
+                            SSEEvent.TOOL_RESULT,
+                            {
+                                "tool_use_id": tool_use_id,
+                                "result": tool_result,
+                            },
+                        )
 
                         assistant_content.append(block)
 
@@ -165,7 +164,8 @@ class AIService:
                 anthropic_messages.append({
                     "role": "assistant",
                     "content": [
-                        {"type": b.type, "text": b.text} if b.type == "text"
+                        {"type": b.type, "text": b.text}
+                        if b.type == "text"
                         else {"type": "tool_use", "id": b.id, "name": b.name, "input": b.input}
                         for b in assistant_content
                     ],
@@ -208,9 +208,9 @@ class AIService:
         self,
         messages: list[dict],
         model: str = "claude-sonnet-4-20250514",
-        system_prompt: Optional[str] = None,
+        system_prompt: str | None = None,
         max_tokens: int = 4096,
-        working_directory: Optional[str] = None,
+        working_directory: str | None = None,
         db_session: Any = None,
         max_tool_iterations: int = 10,
     ) -> str:
@@ -219,13 +219,9 @@ class AIService:
         Same loop as stream_chat_with_tools but accumulates and returns the last text reply.
         Used by Temporal run_agent_turn for checkpointed agent runs.
         """
-        anthropic_messages = []
-        for msg in messages:
-            if msg["role"] in ("user", "assistant"):
-                anthropic_messages.append({
-                    "role": msg["role"],
-                    "content": msg["content"],
-                })
+        anthropic_messages = [
+            {"role": msg["role"], "content": msg["content"]} for msg in messages if msg["role"] in ("user", "assistant")
+        ]
 
         iteration = 0
         final_text = ""
@@ -255,7 +251,8 @@ class AIService:
                 anthropic_messages.append({
                     "role": "assistant",
                     "content": [
-                        {"type": b.type, "text": b.text} if b.type == "text"
+                        {"type": b.type, "text": b.text}
+                        if b.type == "text"
                         else {"type": "tool_use", "id": b.id, "name": b.name, "input": b.input}
                         for b in assistant_content
                     ],
@@ -292,9 +289,9 @@ class AIService:
         self,
         messages: list[dict],
         model: str = "claude-sonnet-4-20250514",
-        system_prompt: Optional[str] = None,
+        system_prompt: str | None = None,
         max_tokens: int = 4096,
-        working_directory: Optional[str] = None,
+        working_directory: str | None = None,
         db_session: Any = None,
         max_tool_iterations: int = 10,
     ) -> AsyncIterator[str]:
@@ -303,13 +300,9 @@ class AIService:
         This provides real-time streaming of text while still supporting tools.
         """
         # Convert messages to Anthropic format
-        anthropic_messages = []
-        for msg in messages:
-            if msg["role"] in ("user", "assistant"):
-                anthropic_messages.append({
-                    "role": msg["role"],
-                    "content": msg["content"],
-                })
+        anthropic_messages = [
+            {"role": msg["role"], "content": msg["content"]} for msg in messages if msg["role"] in ("user", "assistant")
+        ]
 
         iteration = 0
 
@@ -337,18 +330,20 @@ class AIService:
                                     "name": block.name,
                                     "input_json": "",
                                 }
-                                yield format_sse(SSEEvent.TOOL_USE_START, {
-                                    "tool_name": block.name,
-                                    "tool_use_id": block.id,
-                                })
+                                yield format_sse(
+                                    SSEEvent.TOOL_USE_START,
+                                    {
+                                        "tool_name": block.name,
+                                        "tool_use_id": block.id,
+                                    },
+                                )
 
                         elif event.type == "content_block_delta":
                             delta = event.delta
                             if delta.type == "text_delta":
                                 yield format_sse(SSEEvent.TEXT, {"content": delta.text})
-                            elif delta.type == "input_json_delta":
-                                if current_tool_use:
-                                    current_tool_use["input_json"] += delta.partial_json
+                            elif delta.type == "input_json_delta" and current_tool_use:
+                                current_tool_use["input_json"] += delta.partial_json
 
                         elif event.type == "content_block_stop":
                             if current_tool_use:
@@ -361,10 +356,13 @@ class AIService:
                                 current_tool_use["input"] = tool_input
                                 tool_uses.append(current_tool_use)
 
-                                yield format_sse(SSEEvent.TOOL_USE_INPUT, {
-                                    "tool_use_id": current_tool_use["id"],
-                                    "input": tool_input,
-                                })
+                                yield format_sse(
+                                    SSEEvent.TOOL_USE_INPUT,
+                                    {
+                                        "tool_use_id": current_tool_use["id"],
+                                        "input": tool_input,
+                                    },
+                                )
 
                                 current_tool_use = None
 
@@ -404,10 +402,13 @@ class AIService:
                             db_session=db_session,
                         )
 
-                        yield format_sse(SSEEvent.TOOL_RESULT, {
-                            "tool_use_id": tool_use["id"],
-                            "result": result,
-                        })
+                        yield format_sse(
+                            SSEEvent.TOOL_RESULT,
+                            {
+                                "tool_use_id": tool_use["id"],
+                                "result": result,
+                            },
+                        )
 
                         tool_results.append({
                             "type": "tool_result",
@@ -437,11 +438,11 @@ class AIService:
         self,
         messages: list[dict],
         provider: str = "claude",
-        model: Optional[str] = None,
-        system_prompt: Optional[str] = None,
+        model: str | None = None,
+        system_prompt: str | None = None,
         max_tokens: int = 4096,
         enable_tools: bool = True,
-        working_directory: Optional[str] = None,
+        working_directory: str | None = None,
         db_session: Any = None,
     ) -> AsyncIterator[str]:
         """Stream chat completion from the specified provider.
@@ -503,8 +504,8 @@ class AIService:
         self,
         messages: list[dict],
         provider: str = "claude",
-        model: Optional[str] = None,
-        system_prompt: Optional[str] = None,
+        model: str | None = None,
+        system_prompt: str | None = None,
         max_tokens: int = 4096,
     ) -> str:
         """Non-streaming chat completion (for testing/simple use cases)."""
@@ -528,7 +529,7 @@ class AIService:
 
 
 # Global service instance
-_ai_service: Optional[AIService] = None
+_ai_service: AIService | None = None
 
 
 def get_ai_service() -> AIService:

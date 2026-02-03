@@ -27,9 +27,7 @@ class GhostText {
         }
         const lastPart = this.parts[this.parts.length - 1];
         const cappedLineText = lineText.substr(0, lastPart.column - 1);
-        const text = new TextEdit([
-            ...this.parts.map(p => new TextReplacement(Range.fromPositions(new Position(1, p.column)), p.lines.map(line => line.line).join('\n'))),
-        ]).applyToString(cappedLineText);
+        const text = new TextEdit(this.parts.map(p => new TextReplacement(Range.fromPositions(new Position(1, p.column)), p.lines.map(line => line.line).join('\n')))).applyToString(cappedLineText);
         return text.substring(this.parts[0].column - 1);
     }
     isEmpty() {

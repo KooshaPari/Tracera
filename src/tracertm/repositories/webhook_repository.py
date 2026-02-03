@@ -2,19 +2,19 @@
 Repository for Webhook Integration operations.
 """
 
-from datetime import datetime, timedelta
-from typing import Any, Optional
-import uuid
 import secrets
+import uuid
+from datetime import UTC, datetime, timedelta
+from typing import Any
 
-from sqlalchemy import select, func, and_
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.models.webhook_integration import (
     WebhookIntegration,
     WebhookLog,
-    WebhookStatus,
     WebhookProvider,
+    WebhookStatus,
 )
 
 
@@ -28,18 +28,18 @@ class WebhookRepository:
         self,
         project_id: str,
         name: str,
-        description: Optional[str] = None,
+        description: str | None = None,
         provider: str = "custom",
-        enabled_events: Optional[list[str]] = None,
-        event_filters: Optional[dict[str, Any]] = None,
-        callback_url: Optional[str] = None,
-        callback_headers: Optional[dict[str, str]] = None,
-        default_suite_id: Optional[str] = None,
+        enabled_events: list[str] | None = None,
+        event_filters: dict[str, Any] | None = None,
+        callback_url: str | None = None,
+        callback_headers: dict[str, str] | None = None,
+        default_suite_id: str | None = None,
         rate_limit_per_minute: int = 60,
         auto_create_run: bool = True,
         auto_complete_run: bool = True,
         verify_signatures: bool = True,
-        metadata: Optional[dict[str, Any]] = None,
+        metadata: dict[str, Any] | None = None,
     ) -> WebhookIntegration:
         """Create a new webhook integration."""
         webhook = WebhookIntegration(
@@ -49,7 +49,8 @@ class WebhookRepository:
             description=description,
             provider=WebhookProvider(provider),
             status=WebhookStatus.ACTIVE,
-            enabled_events=enabled_events or [
+            enabled_events=enabled_events
+            or [
                 "test_run_start",
                 "test_run_complete",
                 "test_result_submit",
@@ -69,18 +70,16 @@ class WebhookRepository:
         await self.session.flush()
         return webhook
 
-    async def get_by_id(self, webhook_id: str) -> Optional[WebhookIntegration]:
+    async def get_by_id(self, webhook_id: str) -> WebhookIntegration | None:
         """Get a webhook by ID."""
-        result = await self.session.execute(
-            select(WebhookIntegration).where(WebhookIntegration.id == webhook_id)
-        )
+        result = await self.session.execute(select(WebhookIntegration).where(WebhookIntegration.id == webhook_id))
         return result.scalar_one_or_none()
 
     async def list_by_project(
         self,
         project_id: str,
-        provider: Optional[str] = None,
-        status: Optional[str] = None,
+        provider: str | None = None,
+        status: str | None = None,
         skip: int = 0,
         limit: int = 50,
     ) -> tuple[list[WebhookIntegration], int]:
@@ -110,7 +109,7 @@ class WebhookRepository:
         self,
         webhook_id: str,
         **updates: Any,
-    ) -> Optional[WebhookIntegration]:
+    ) -> WebhookIntegration | None:
         """Update a webhook."""
         webhook = await self.get_by_id(webhook_id)
         if not webhook:
@@ -128,7 +127,7 @@ class WebhookRepository:
         self,
         webhook_id: str,
         status: str,
-    ) -> Optional[WebhookIntegration]:
+    ) -> WebhookIntegration | None:
         """Update webhook status."""
         webhook = await self.get_by_id(webhook_id)
         if not webhook:
@@ -142,7 +141,7 @@ class WebhookRepository:
     async def regenerate_secret(
         self,
         webhook_id: str,
-    ) -> Optional[WebhookIntegration]:
+    ) -> WebhookIntegration | None:
         """Regenerate the webhook secret."""
         webhook = await self.get_by_id(webhook_id)
         if not webhook:
@@ -171,13 +170,10 @@ class WebhookRepository:
         if not webhook:
             return False, 0
 
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
 
         # Reset window if needed
-        if (
-            webhook.last_rate_limit_reset is None
-            or now - webhook.last_rate_limit_reset > timedelta(minutes=1)
-        ):
+        if webhook.last_rate_limit_reset is None or now - webhook.last_rate_limit_reset > timedelta(minutes=1):
             webhook.last_rate_limit_reset = now
             webhook.requests_in_window = 0
 
@@ -194,14 +190,14 @@ class WebhookRepository:
         self,
         webhook_id: str,
         success: bool,
-        error_message: Optional[str] = None,
+        error_message: str | None = None,
     ) -> None:
         """Record a webhook request for statistics."""
         webhook = await self.get_by_id(webhook_id)
         if not webhook:
             return
 
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         webhook.total_requests += 1
         webhook.last_request_at = now
 
@@ -218,18 +214,18 @@ class WebhookRepository:
     async def create_log(
         self,
         webhook_id: str,
-        event_type: Optional[str] = None,
+        event_type: str | None = None,
         http_method: str = "POST",
-        source_ip: Optional[str] = None,
-        user_agent: Optional[str] = None,
-        request_headers: Optional[dict] = None,
-        request_body_preview: Optional[str] = None,
-        payload_size_bytes: Optional[int] = None,
+        source_ip: str | None = None,
+        user_agent: str | None = None,
+        request_headers: dict | None = None,
+        request_body_preview: str | None = None,
+        payload_size_bytes: int | None = None,
         success: bool = False,
         status_code: int = 200,
-        error_message: Optional[str] = None,
-        processing_time_ms: Optional[int] = None,
-        test_run_id: Optional[str] = None,
+        error_message: str | None = None,
+        processing_time_ms: int | None = None,
+        test_run_id: str | None = None,
         results_submitted: int = 0,
     ) -> WebhookLog:
         """Create a webhook log entry."""
@@ -258,8 +254,8 @@ class WebhookRepository:
     async def get_logs(
         self,
         webhook_id: str,
-        success: Optional[bool] = None,
-        event_type: Optional[str] = None,
+        success: bool | None = None,
+        event_type: str | None = None,
         skip: int = 0,
         limit: int = 50,
     ) -> tuple[list[WebhookLog], int]:

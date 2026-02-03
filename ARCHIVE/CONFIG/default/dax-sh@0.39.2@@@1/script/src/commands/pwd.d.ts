@@ -5,4 +5,4 @@ interface PwdFlags {
     logical: boolean;
 }
 export declare function parseArgs(args: string[]): PwdFlags;
-export {};
+

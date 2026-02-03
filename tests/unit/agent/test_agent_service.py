@@ -1,14 +1,16 @@
 """Unit tests for tracertm.agent.agent_service."""
 
-import tempfile
+import asyncio
 import os
+import pathlib
+import tempfile
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
 from tracertm.agent import AgentService, get_agent_service
-from tracertm.agent.session_store import SessionSandboxStore
 from tracertm.agent.sandbox.local_fs import LocalFilesystemSandboxProvider
+from tracertm.agent.session_store import SessionSandboxStore
 from tracertm.agent.types import SandboxConfig
 
 pytestmark = pytest.mark.unit
@@ -35,7 +37,7 @@ class TestAgentServiceGetOrCreateSandbox:
     async def test_get_or_create_returns_path_and_created(self, agent_service):
         path, created = await agent_service.get_or_create_session_sandbox("s1")
         assert path
-        assert os.path.isdir(path)
+        assert await asyncio.to_thread(pathlib.Path(path).is_dir)
         assert created is True
         path2, created2 = await agent_service.get_or_create_session_sandbox("s1")
         assert path == path2
@@ -127,6 +129,7 @@ class TestGetAgentService:
 
     def test_get_agent_service_returns_agent_service(self):
         import tracertm.agent.agent_service as mod
+
         try:
             mod._agent_service = None
             svc = get_agent_service()

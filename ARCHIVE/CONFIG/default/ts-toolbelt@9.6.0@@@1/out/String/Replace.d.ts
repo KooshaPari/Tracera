@@ -11,4 +11,4 @@ declare type _Replace<S extends string, R extends Literal, W extends Literal> = 
  * @param W
  */
 export declare type Replace<S extends string, R extends Literal, W extends Literal> = _Replace<S, R, W> extends infer X ? Cast<X, string> : never;
-export {};
+

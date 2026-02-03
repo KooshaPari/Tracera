@@ -13,7 +13,7 @@ export default function puppet(Prism) {
         // Matches the content of a quoted heredoc string (subject to interpolation)
         {
           pattern:
-            /(@\("([^"\r\n\/):]+)"(?:\/[nrts$uL]*)?\).*(?:\r?\n|\r))(?:.*(?:\r?\n|\r(?!\n)))*?[ \t]*(?:\|[ \t]*)?(?:-[ \t]*)?\2/,
+            /(@\("([^"\r\n/):]+)"(?:\/[nrts$uL]*)?\).*(?:\r?\n|\r))(?:.*(?:\r?\n|\r(?!\n)))*?[ \t]*(?:\|[ \t]*)?(?:-[ \t]*)?\2/,
           lookbehind: true,
           alias: 'string',
           inside: {
@@ -25,7 +25,7 @@ export default function puppet(Prism) {
         // Matches the content of an unquoted heredoc string (no interpolation)
         {
           pattern:
-            /(@\(([^"\r\n\/):]+)(?:\/[nrts$uL]*)?\).*(?:\r?\n|\r))(?:.*(?:\r?\n|\r(?!\n)))*?[ \t]*(?:\|[ \t]*)?(?:-[ \t]*)?\2/,
+            /(@\(([^"\r\n/):]+)(?:\/[nrts$uL]*)?\).*(?:\r?\n|\r))(?:.*(?:\r?\n|\r(?!\n)))*?[ \t]*(?:\|[ \t]*)?(?:-[ \t]*)?\2/,
           lookbehind: true,
           greedy: true,
           alias: 'string',
@@ -36,7 +36,7 @@ export default function puppet(Prism) {
         },
         // Matches the start tag of heredoc strings
         {
-          pattern: /@\("?(?:[^"\r\n\/):]+)"?(?:\/[nrts$uL]*)?\)/,
+          pattern: /@\("?(?:[^"\r\n/):]+)"?(?:\/[nrts$uL]*)?\)/,
           alias: 'string',
           inside: {
             punctuation: {
@@ -55,13 +55,13 @@ export default function puppet(Prism) {
       regex: {
         // Must be prefixed with the keyword "node" or a non-word char
         pattern:
-          /((?:\bnode\s+|[~=\(\[\{,]\s*|[=+]>\s*|^\s*))\/(?:[^\/\\]|\\[\s\S])+\/(?:[imx]+\b|\B)/,
+          /((?:\bnode\s+|[~=([{,]\s*|[=+]>\s*|^\s*))\/(?:[^/\\]|\\[\s\S])+\/(?:[imx]+\b|\B)/,
         lookbehind: true,
         greedy: true,
         inside: {
           // Extended regexes must have the x flag. They can contain single-line comments.
           'extended-regex': {
-            pattern: /^\/(?:[^\/\\]|\\[\s\S])+\/[im]*x[im]*$/,
+            pattern: /^\/(?:[^/\\]|\\[\s\S])+\/[im]*x[im]*$/,
             inside: {
               comment: /#.*/
             }
@@ -112,8 +112,8 @@ export default function puppet(Prism) {
         alias: 'symbol'
       },
       operator:
-        /=[=~>]?|![=~]?|<(?:<\|?|[=~|-])?|>[>=]?|->?|~>|\|>?>?|[*\/%+?]|\b(?:and|in|or)\b/,
-      punctuation: /[\[\]{}().,;]|:+/
+        /=[=~>]?|![=~]?|<(?:<\|?|[=~|-])?|>[>=]?|->?|~>|\|>?>?|[*/%+?]|\b(?:and|in|or)\b/,
+      punctuation: /[[\]{}().,;]|:+/
     }
     var interpolation = [
       {

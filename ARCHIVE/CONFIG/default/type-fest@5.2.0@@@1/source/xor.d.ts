@@ -80,4 +80,4 @@ type G = Xor<never, never>;
 */
 export type Xor<A extends boolean, B extends boolean> = And<Or<A, B>, Not<And<A, B>>>;
 
-export {};
+

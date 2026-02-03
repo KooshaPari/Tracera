@@ -1,19 +1,18 @@
-from typing import List, Optional
-
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from tracertm.api.deps import get_db, auth_guard
+from tracertm.api.deps import auth_guard, get_db
+from tracertm.repositories.event_repository import EventRepository
 from tracertm.schemas.specification import (
+    ContractActivityListResponse,
     ContractCreate,
     ContractRead,
     ContractUpdate,
-    ContractActivityListResponse,
 )
 from tracertm.services.contract_service import ContractService
-from tracertm.repositories.event_repository import EventRepository
 
 router = APIRouter(prefix="/contracts", tags=["Contracts"])
+
 
 @router.post("/", response_model=ContractRead, status_code=201)
 async def create_contract(
@@ -33,6 +32,7 @@ async def create_contract(
         invariants=contract.invariants,
         tags=contract.tags,
     )
+
 
 @router.get("/{contract_id}", response_model=ContractRead)
 async def get_contract(
@@ -73,6 +73,7 @@ async def get_contract_activities(
     ]
     return {"activities": activities}
 
+
 @router.put("/{contract_id}", response_model=ContractRead)
 async def update_contract(
     contract_id: str,
@@ -87,6 +88,7 @@ async def update_contract(
         raise HTTPException(status_code=404, detail="Contract not found")
     return updated_contract
 
+
 @router.delete("/{contract_id}", status_code=204)
 async def delete_contract(
     contract_id: str,
@@ -97,12 +99,12 @@ async def delete_contract(
     success = await service.delete_contract(contract_id)
     if not success:
         raise HTTPException(status_code=404, detail="Contract not found")
-    return None
 
-@router.get("/", response_model=List[ContractRead])
+
+@router.get("/", response_model=list[ContractRead])
 async def list_contracts(
     project_id: str = Query(..., description="Project ID"),
-    item_id: Optional[str] = Query(None, description="Filter by Item ID"),
+    item_id: str | None = Query(None, description="Filter by Item ID"),
     claims: dict = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):

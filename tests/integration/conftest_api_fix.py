@@ -2,11 +2,14 @@
 Fix for API layer test isolation issues.
 This conftest patch implements proper fixture cleanup and test isolation.
 """
-import pytest
-from unittest.mock import patch, MagicMock
+
+import os
+import pathlib
 import sqlite3
 import tempfile
-import os
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 
 @pytest.fixture(autouse=True)
@@ -21,10 +24,10 @@ def reset_mocks():
 def isolated_db_session():
     """Create an isolated database session that resets after each test."""
     # Create a fresh temporary database for each test
-    temp_db = tempfile.NamedTemporaryFile(delete=False, suffix='.db')
+    temp_db = tempfile.NamedTemporaryFile(delete=False, suffix=".db")
     db_path = temp_db.name
     temp_db.close()
-    
+
     try:
         # Initialize database
         conn = sqlite3.connect(db_path)
@@ -33,9 +36,9 @@ def isolated_db_session():
         yield db_path
     finally:
         # Clean up database file after test
-        if os.path.exists(db_path):
+        if pathlib.Path(db_path).exists():
             try:
-                os.unlink(db_path)
+                pathlib.Path(db_path).unlink()
             except:
                 pass
 
@@ -43,7 +46,7 @@ def isolated_db_session():
 @pytest.fixture
 def mock_api_config():
     """Provide a fresh mock API configuration for each test."""
-    with patch('tracertm.api.client.ApiConfig') as mock_config:
+    with patch("tracertm.api.client.ApiConfig") as mock_config:
         config_instance = MagicMock()
         config_instance.base_url = "http://localhost:8000"
         config_instance.api_key = "test-key"
@@ -56,7 +59,7 @@ def mock_api_config():
 @pytest.fixture
 def mock_http_client():
     """Provide a fresh mock HTTP client for each test."""
-    with patch('tracertm.api.client.httpx.Client') as mock_client:
+    with patch("tracertm.api.client.httpx.Client") as mock_client:
         client_instance = MagicMock()
         mock_client.return_value = client_instance
         yield mock_client
@@ -67,16 +70,17 @@ def api_test_isolation():
     """Ensure complete isolation between API tests."""
     # Setup
     import sys
+
     # Clear any cached imports
-    modules_to_clear = [k for k in sys.modules.keys() if 'tracertm.api' in k]
+    modules_to_clear = [k for k in sys.modules if "tracertm.api" in k]
     original_modules = {k: sys.modules.pop(k) for k in modules_to_clear}
-    
+
     yield
-    
+
     # Teardown - restore original state
     for module_name, module in original_modules.items():
         sys.modules[module_name] = module
-    
+
     # Clear any remaining patches
     patch.stopall()
 
@@ -84,6 +88,4 @@ def api_test_isolation():
 # Marker for API tests that need special isolation handling
 def pytest_configure(config):
     """Register custom markers."""
-    config.addinivalue_line(
-        "markers", "api_isolated: mark test as needing API isolation"
-    )
+    config.addinivalue_line("markers", "api_isolated: mark test as needing API isolation")

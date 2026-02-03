@@ -12,16 +12,15 @@ from pathlib import Path
 from uuid import uuid4
 
 import pytest
-from sqlalchemy.orm import Session
 
 from tracertm.models.item import Item
 from tracertm.models.link import Link
 from tracertm.models.project import Project
 
-
 # ============================================================================
 # Metrics Collection and Reporting
 # ============================================================================
+
 
 class PerformanceReporter:
     """Generates detailed performance reports with analysis."""
@@ -31,7 +30,7 @@ class PerformanceReporter:
         self.output_dir.mkdir(exist_ok=True)
         self.metrics = {}
 
-    def record_test(self, test_name: str, duration_ms: float, item_count: int, details: dict = None):
+    def record_test(self, test_name: str, duration_ms: float, item_count: int, details: dict | None = None):
         """Record test metrics."""
         if test_name not in self.metrics:
             self.metrics[test_name] = {
@@ -88,7 +87,7 @@ class PerformanceReporter:
         }
 
         filepath = self.output_dir / filename
-        with open(filepath, "w") as f:
+        with Path(filepath).open("w") as f:
             json.dump(report, f, indent=2)
 
         return filepath
@@ -104,10 +103,7 @@ class PerformanceReporter:
         ]
 
         # Overall summary
-        total_duration = sum(
-            sum(r["duration_ms"] for r in data["runs"])
-            for data in self.metrics.values()
-        )
+        total_duration = sum(sum(r["duration_ms"] for r in data["runs"]) for data in self.metrics.values())
         total_items = sum(data["item_count"] for data in self.metrics.values())
 
         lines.extend([
@@ -115,8 +111,8 @@ class PerformanceReporter:
             "-" * 80,
             f"Total Tests: {len(self.metrics)}",
             f"Total Items Processed: {total_items:,}",
-            f"Total Duration: {total_duration:.2f}ms ({total_duration/1000:.2f}s)",
-            f"Average Per Item: {total_duration/max(total_items, 1):.4f}ms",
+            f"Total Duration: {total_duration:.2f}ms ({total_duration / 1000:.2f}s)",
+            f"Average Per Item: {total_duration / max(total_items, 1):.4f}ms",
             "",
         ])
 
@@ -136,8 +132,8 @@ class PerformanceReporter:
                 f"Test: {test_name}",
                 f"  Items: {data['item_count']}",
                 f"  Runs: {len(runs)}",
-                f"  Duration: {sum(durations):.2f}ms (avg: {sum(durations)/len(durations):.2f}ms)",
-                f"  Per Item: avg={sum(per_items)/len(per_items):.4f}ms, min={min(per_items):.4f}ms, max={max(per_items):.4f}ms",
+                f"  Duration: {sum(durations):.2f}ms (avg: {sum(durations) / len(durations):.2f}ms)",
+                f"  Per Item: avg={sum(per_items) / len(per_items):.4f}ms, min={min(per_items):.4f}ms, max={max(per_items):.4f}ms",
             ])
 
             if data["details"]:
@@ -150,7 +146,7 @@ class PerformanceReporter:
         ])
 
         filepath = self.output_dir / filename
-        with open(filepath, "w") as f:
+        with Path(filepath).open("w") as f:
             f.write("\n".join(lines))
 
         return filepath
@@ -165,6 +161,7 @@ def reporter():
 # ============================================================================
 # Detailed Performance Tests
 # ============================================================================
+
 
 class TestDetailedBulkPerformance:
     """Detailed performance tests with fine-grained metrics."""
@@ -439,14 +436,17 @@ class TestDetailedGraphPerformance:
             visited.add(current_id)
 
             # Query outgoing links
-            outgoing = db_session.query(Link).filter(
-                Link.source_item_id == current_id,
-                Link.project_id == project.id,
-            ).all()
+            outgoing = (
+                db_session
+                .query(Link)
+                .filter(
+                    Link.source_item_id == current_id,
+                    Link.project_id == project.id,
+                )
+                .all()
+            )
 
-            for link in outgoing:
-                if link.target_item_id not in visited:
-                    queue.append(link.target_item_id)
+            queue.extend(link.target_item_id for link in outgoing if link.target_item_id not in visited)
 
         duration_ms = (time.perf_counter() - start) * 1000
         reporter.record_test(
@@ -487,9 +487,7 @@ class TestDetailedQueryPerformance:
         start = time.perf_counter()
 
         # In real scenario, this would be a database range query
-        all_items = db_session.query(Item).filter(
-            Item.project_id == project.id
-        ).all()
+        all_items = db_session.query(Item).filter(Item.project_id == project.id).all()
 
         filtered = [item for item in all_items if 200 <= item.item_metadata.get("score", 0) <= 600]
 
@@ -532,7 +530,7 @@ class TestDetailedQueryPerformance:
                         id=f"link-{i}-{j}",
                         project_id=project.id,
                         source_item_id=f"item-{i}",
-                        target_item_id=f"item-{i+j+1}",
+                        target_item_id=f"item-{i + j + 1}",
                         link_type="depends_on",
                     )
                     links.append(link)
@@ -544,21 +542,16 @@ class TestDetailedQueryPerformance:
         start = time.perf_counter()
 
         # Get items with link counts
-        from sqlalchemy import func, and_
+        from sqlalchemy import and_, func
 
-        item_links = db_session.query(
-            Item.id,
-            Item.title,
-            func.count(Link.id).label("link_count")
-        ).outerjoin(
-            Link,
-            and_(
-                Item.id == Link.source_item_id,
-                Link.project_id == project.id
-            )
-        ).filter(
-            Item.project_id == project.id
-        ).group_by(Item.id).all()
+        item_links = (
+            db_session
+            .query(Item.id, Item.title, func.count(Link.id).label("link_count"))
+            .outerjoin(Link, and_(Item.id == Link.source_item_id, Link.project_id == project.id))
+            .filter(Item.project_id == project.id)
+            .group_by(Item.id)
+            .all()
+        )
 
         duration_ms = (time.perf_counter() - start) * 1000
         reporter.record_test(
@@ -573,15 +566,17 @@ class TestDetailedQueryPerformance:
 # Session Fixture for Detailed Tests
 # ============================================================================
 
+
 @pytest.fixture
 def db_session_for_perf(db_session):
     """Provide database session for performance tests."""
-    yield db_session
+    return db_session
 
 
 # ============================================================================
 # Report Generation Tests
 # ============================================================================
+
 
 def test_generate_performance_reports(reporter):
     """Test that performance reports can be generated."""
@@ -599,7 +594,7 @@ def test_generate_performance_reports(reporter):
     assert text_path.exists()
 
     # Verify JSON structure
-    with open(json_path) as f:
+    with Path(json_path).open() as f:
         data = json.load(f)
         assert "timestamp" in data
         assert "tests" in data

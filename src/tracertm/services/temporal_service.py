@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import os
+from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Any, Iterable
+from typing import Any
 from uuid import uuid4
 
 from temporalio.client import (
@@ -128,13 +129,10 @@ class TemporalService:
         if not workflow_id:
             workflow_id = f"{workflow_name}-{uuid4()}"
 
-        # Map workflow names to workflow classes
+        # Map workflow names to workflow classes (only workflows defined in workflows.py)
         from tracertm.workflows.workflows import (
-            AgentExecutionResumeWorkflow,
-            AgentExecutionWorkflow,
             AgentRunWorkflow,
             AnalysisWorkflow,
-            BulkSnapshotWorkflow,
             GraphDiffWorkflow,
             GraphExportWorkflow,
             GraphSnapshotWorkflow,
@@ -142,17 +140,10 @@ class TemporalService:
             IndexingWorkflow,
             IntegrationRetryWorkflow,
             IntegrationSyncWorkflow,
-            SandboxSnapshotWorkflow,
-            SnapshotCleanupWorkflow,
         )
 
         workflow_map = {
             "AgentRunWorkflow": AgentRunWorkflow,
-            "AgentExecutionWorkflow": AgentExecutionWorkflow,
-            "AgentExecutionResumeWorkflow": AgentExecutionResumeWorkflow,
-            "SandboxSnapshotWorkflow": SandboxSnapshotWorkflow,
-            "BulkSnapshotWorkflow": BulkSnapshotWorkflow,
-            "SnapshotCleanupWorkflow": SnapshotCleanupWorkflow,
             "IndexingWorkflow": IndexingWorkflow,
             "AnalysisWorkflow": AnalysisWorkflow,
             "GraphSnapshotWorkflow": GraphSnapshotWorkflow,
@@ -196,7 +187,7 @@ class TemporalService:
         return ScheduleActionStartWorkflow(
             workflow_name,
             args=list(args),
-            id=workflow_id,
+            id=workflow_id or f"{workflow_name}-{uuid4()}",
             task_queue=task_queue or self.settings.task_queue,
         )
 
@@ -268,15 +259,8 @@ class TemporalService:
         if not self.settings:
             raise ValueError("Temporal not configured")
         client = await self.get_client()
-        schedules: list[dict[str, Any]] = []
-        async for schedule in client.list_schedules(query=query):
-            schedules.append(
-                {
-                    "id": schedule.id,
-                    "memo": schedule.memo,
-                }
-            )
-        return schedules
+        schedules_iter = await client.list_schedules(query=query)
+        return [{"id": schedule.id, "memo": schedule.memo} async for schedule in schedules_iter]
 
     async def list_schedules_summary(self, limit: int = 200) -> dict[str, Any]:
         if not self.settings:
@@ -284,7 +268,8 @@ class TemporalService:
         client = await self.get_client()
         schedules: list[dict[str, Any]] = []
         count = 0
-        async for schedule in client.list_schedules():
+        schedules_iter = await client.list_schedules()
+        async for schedule in schedules_iter:
             schedules.append({"id": schedule.id})
             count += 1
             if count >= limit:
@@ -300,17 +285,15 @@ class TemporalService:
         async for wf in client.list_workflows(limit=limit):
             status = wf.status.name if wf.status else "UNKNOWN"
             status_counts[status] = status_counts.get(status, 0) + 1
-            workflows.append(
-                {
-                    "id": wf.id,
-                    "run_id": wf.run_id,
-                    "workflow_type": wf.workflow_type,
-                    "status": status,
-                    "task_queue": wf.task_queue,
-                    "start_time": wf.start_time.isoformat(),
-                    "close_time": wf.close_time.isoformat() if wf.close_time else None,
-                }
-            )
+            workflows.append({
+                "id": wf.id,
+                "run_id": wf.run_id,
+                "workflow_type": wf.workflow_type,
+                "status": status,
+                "task_queue": wf.task_queue,
+                "start_time": wf.start_time.isoformat(),
+                "close_time": wf.close_time.isoformat() if wf.close_time else None,
+            })
         return {"counts": status_counts, "items": workflows}
 
     async def get_summary(self, workflow_limit: int = 100, schedule_limit: int = 200) -> dict[str, Any]:
@@ -347,7 +330,7 @@ class TemporalService:
 
         # Extract status safely with null checks
         status_name = "unknown"
-        if description.status and hasattr(description.status, 'name') and description.status.name:
+        if description.status and hasattr(description.status, "name") and description.status.name:
             status_name = description.status.name.lower()
 
         result: dict[str, Any] = {
@@ -356,7 +339,7 @@ class TemporalService:
         }
 
         # If workflow is completed, get the result
-        if description.status and hasattr(description.status, 'name') and description.status.name == "COMPLETED":
+        if description.status and hasattr(description.status, "name") and description.status.name == "COMPLETED":
             workflow_result = await handle.result()
             result["result"] = workflow_result
 

@@ -2,6 +2,10 @@
 
 Audit of all lint, format, type-check, test, and build tooling with configs and rulesets; plan to bring each to **full strict depth** (configs, rulesets, and other needed items). Includes research-backed modern options and "upgraded from" context.
 
+**Tool glossary (this repo):**
+- **Tach** — [tach-org/tach](https://github.com/tach-org/tach): Python **module boundary and dependency enforcement** (modular monolith). Config: `tach.toml` at repo root. Runs in **CI** (`.github/workflows/quality.yml`, `.github/workflows/architecture.yml`); not in pre-commit (slow checks moved to CI for &lt;5s pre-commit target). Same family as Ruff/uv (Python tooling).
+- **Turbo** — Vercel’s monorepo task runner; `frontend/turbo.json`; TUI for build/test/typecheck/lint. Orchestration only, not a linter.
+
 ---
 
 ## 0. Research & modern context (2024–2025)
@@ -41,7 +45,7 @@ Audit of all lint, format, type-check, test, and build tooling with configs and 
 
 | Tool / System | Config / Entry | Current strictness | Notes |
 |---------------|----------------|--------------------|--------|
-| **Pre-commit** | `.pre-commit-config.yaml` | Medium | Runs Ruff, mypy, basedpyright, bandit, semgrep, hooks, interrogate, pycln, prettier, gofmt, golangci-lint, biome. `fail_fast: false`. Revs pinned; Semgrep uses `p/security-audit` + `.semgrep.yml`. |
+| **Pre-commit** | `.pre-commit-config.yaml` | Medium (fast only) | Runs Ruff, pycln, prettier, gofmt, biome, pre-commit-hooks. **CI-only (quality.yml):** mypy, basedpyright, bandit, semgrep, interrogate, **Tach**, golangci-lint, pytest. Revs pinned; `fail_fast: true` for &lt;5s target. |
 | **Turbo (TUI)** | `frontend/turbo.json` | N/A | `"ui": "tui"`; tasks for build, test, typecheck, lint. No strictness; orchestrates only. |
 | **Make quality** | `Makefile`, `scripts/run-quality-parallel.sh`, `scripts/quality-report.py` | N/A | Runs quality-go, quality-python, quality-frontend in parallel; report parses logs and `.quality/last-run.json`. |
 | **Process-compose quality** | `process-compose.quality.yaml`, `process-compose.quality-watch.yaml` | N/A | TUI on 18080; runs same suites. |
@@ -50,7 +54,7 @@ Audit of all lint, format, type-check, test, and build tooling with configs and 
 
 | Tool | Config | Current strictness | Gaps / strict options |
 |------|--------|--------------------|------------------------|
-| **Tach** | `tach.toml` (root) | **Strict** | Already has `exact = true`, `forbid_circular_dependencies = true`, `[rules]` with `unused_ignore_directives = "error"`, `require_ignore_directive_reasons = "error"`; pre-commit hook present. Optional: `root_module = "forbid"` or `"dependenciesonly"` if all code in modules; `[[interfaces]]` for public API; `layers` for layering. |
+| **Tach** | `tach.toml` (root) | **Strict** | Already has `exact = true`, `forbid_circular_dependencies = true`, `[rules]` with `unused_ignore_directives = "error"`, `require_ignore_directive_reasons = "error"`. **Runs in CI** (quality.yml, architecture.yml); not in pre-commit (moved to CI for &lt;5s pre-commit target). Optional: re-add Tach to pre-commit for strict local gate; `root_module = "forbid"` or `"dependenciesonly"`; `[[interfaces]]`; `layers`. |
 | **Ruff** | `pyproject.toml` `[tool.ruff]` | Medium | **Strict:** Add RSE, PERF, LOG, S; reduce per-file-ignores; use `extend` for strict base; enable `--preview` in CI if desired. Current: E, W, F, I, B, C4, UP, N, PT, SIM, RUF; ignore E501, B008, SIM105; per-file for `__init__.py`, tests, conftest. |
 | **Ruff format** | `pyproject.toml` `[tool.ruff.format]` | Standard | line-length 120, quote-style double, skip-magic-trailing-comma false. Optional: docstring-code-format. |
 | **Mypy** | `pyproject.toml` `[tool.mypy]` | Strict in principle | **Strict:** Remove or narrow `ignore_errors = true` overrides (api.main, services.*, repositories.*); fix types incrementally. |
@@ -67,7 +71,7 @@ Audit of all lint, format, type-check, test, and build tooling with configs and 
 |------|--------|--------------------|------------------------|
 | **gofmt** | N/A | Standard | `-s -l` in Makefile; `-s -w` in pre-commit. |
 | **go vet** | N/A | Standard | In Makefile. |
-| **golangci-lint** | `backend/.golangci.yml` | High | 18 linters enabled; max-issues-per-linter: 0; test and generated code excluded. No linters disabled for strictness; **Strict:** Enable revive, gocritic, gocyclo, gosec (and optionally funlen, exhaustruct, wrapcheck); set gocyclo.min-complexity, gocritic enabled-checks; keep max-issues-per-linter: 0; limit exclude-rules to generated/tests. Current: 18 linters; test/generated excluded. (Previously: could add more linters  |
+| **golangci-lint** | `backend/.golangci.yml` | High | **Strict:** Enable revive, gocritic, gocyclo, gosec (and optionally funlen, exhaustruct, wrapcheck); set gocyclo.min-complexity, gocritic enabled-checks; keep max-issues-per-linter: 0; limit exclude-rules to generated/tests. Current: 18 linters; test/generated excluded.  |
 | **Buf** | `buf.yaml` | Medium | DEFAULT lint; except FIELD_NO_DEPRECATED, SYNTAX_PROTO3; breaking FILE. **Strict:** Optional tighter breaking rules; document proto conventions. |
 
 ### 1.4 Frontend (TypeScript/React)
@@ -88,12 +92,20 @@ Audit of all lint, format, type-check, test, and build tooling with configs and 
 | **Prettier** | `.prettierrc.json` (root) | Default | Used by pre-commit for yaml, json, markdown. Align with Biome/formatter if needed. |
 | **pre-commit-hooks** | `.pre-commit-config.yaml` | Standard | trailing-whitespace, end-of-file-fixer, check-yaml, check-added-large-files, check-merge-conflict, debug-statements, mixed-line-ending. |
 
+### 1.6 Research notes (for plan phases)
+
+- **Ruff:** Preview mode (`--preview` or `preview = true`) enables experimental rules and fixes; use in CI for strict gate. `extend` lets a strict base config be inherited (e.g. `ruff.toml` strict base, pyproject overrides). Replaces Black, isort, yesqa, eradicate, pyupgrade; 800+ rules; no custom plugins (native only). [Ruff FAQ](https://docs.astral.sh/ruff/faq/).
+- **Oxlint:** Config format aims at ESLint v8 compatibility. Categories: **correctness** (default on), **suspicious**, **pedantic**, **perf**, **style**, **restriction**, **nursery**. Use **extends** for shared configs; **overrides** for per-path (e.g. tests, TS-only). Plugins: unicorn, typescript, oxc, react, import, jest, vitest, jsx-a11y, nextjs. [Oxlint config](https://oxc-project.github.io/docs/guide/usage/linter/config.html).
+- **Biome:** **files.includes** supports negations and **force-ignore** (`!!`) so scanner never indexes output dirs (e.g. `!!**/dist`). **vcs.useIgnoreFile** respects .gitignore. **overrides** for per-path formatter/linter. [Biome configuration](https://biomejs.dev/reference/configuration/).
+- **golangci-lint:** **linters-settings** per linter (e.g. gocyclo.min-complexity, gocritic.enabled-checks, revive.rules, gosec.excludes). For strict: enable revive, gocritic, gocyclo, gosec; tune thresholds; limit exclude-rules to generated/tests. [golangci-lint linters](https://golangci-lint.run/usage/linters/).
+- **Tach:** **root_module** `"forbid"` = strictest (all code must be in explicit modules). **rules**: unused_ignore_directives, require_ignore_directive_reasons, unused_external_dependencies. [Tach configuration](https://docs.gauge.sh/usage/configuration).
+
 ---
 
 ## 2. Gaps Summary (for full strict depth)
 
 1. **Python**
-   - **Tach**: Already at strict depth (exact, forbid_circular_dependencies, rules, pre-commit). Optional: `root_module = "forbid"` or `"dependenciesonly"`; `[[interfaces]]`; `layers`.
+   - **Tach**: Already at strict depth (exact, forbid_circular_dependencies, rules; runs in CI). Optional: re-add Tach to pre-commit for strict local gate; `root_module = "forbid"` or `"dependenciesonly"`; `[[interfaces]]`; `layers`.
    - Ruff: add stricter rule sets (e.g. RSE, PERF, LOG); reduce per-file ignores; consider fail-fast or CI strict profile.
    - Mypy: remove or narrow `ignore_errors = true` overrides so more of codebase is strictly checked.
    - Bandit: raise to HIGH severity / HIGH confidence; add config file for inline skips policy.
@@ -161,6 +173,8 @@ Audit of all lint, format, type-check, test, and build tooling with configs and 
 
 **Deliverables:** Ruff strict profile; mypy overrides reduced; bandit strict; interrogate config in pyproject.
 
+**Phase 2 implementation (done):** Ruff: added RSE, PERF, LOG, S to select; kept minimal ignore list (E501, B008, SIM105); per-file-ignores: __init__.py (F401/F403), src/tracertm/__init__.py (RUF067 for env side-effect), tests/*, conftest.py. Mypy: documented incremental reduction target (comment above ignore_errors override); no modules removed yet to avoid breakage. Bandit: strict via CLI in CI (`bandit -r src/ -l high -i high`); `.bandit` is INI (exclude only; severity/confidence are CLI-only); inline skip policy (`# nosec BXXX` with reason) documented in `docs/reference/QUALITY_QUICK_REFERENCE.md`. Basedpyright: runs in CI only (not pre-commit); paths aligned with mypy (`src/`). Interrogate: fail-under 85 in pyproject and CI; exclude = tests, build, dist, .venv.
+
 ### Phase 3: Go to strict depth
 
 - **3.1** golangci-lint:
@@ -211,9 +225,9 @@ Audit of all lint, format, type-check, test, and build tooling with configs and 
 - [x] **Prettier** config (root or frontend) for pre-commit
 - [x] **Semgrep** custom rules and pre-commit path
 - [x] **Interrogate** `[tool.interrogate]` in pyproject.toml
-- [ ] **Ruff** strict profile (more rules; fewer ignores)
-- [ ] **Mypy** overrides reduced (no ignore_errors for app code)
-- [ ] **Bandit** severity/confidence HIGH; inline skip policy
+- [x] **Ruff** strict profile (more rules; fewer ignores)
+- [ ] **Mypy** overrides reduced (no ignore_errors for app code; target documented, incremental)
+- [x] **Bandit** severity/confidence HIGH; inline skip policy
 - [ ] **golangci-lint** extra linters (revive, gocritic, etc.)
 - [ ] **Buf** breaking/lint rules documented and tightened if needed
 - [ ] **TypeScript** strict in all tsconfigs
@@ -232,7 +246,7 @@ Audit of all lint, format, type-check, test, and build tooling with configs and 
 | Tool | Primary config | Secondary / overrides |
 |------|----------------|------------------------|
 | Pre-commit | `.pre-commit-config.yaml` | — |
-| Tach | `tach.toml` (root) | [docs](https://docs.gauge.sh), [GitHub](https://github.com/tach-org/tach) |
+| Tach | `tach.toml` (root) | CI: quality.yml, architecture.yml; [docs](https://docs.gauge.sh), [GitHub](https://github.com/tach-org/tach) |
 | Ruff | `pyproject.toml` [tool.ruff] | — |
 | Mypy | `pyproject.toml` [tool.mypy] | — |
 | Basedpyright | `pyproject.toml` [tool.basedpyright] | — |

@@ -1,7 +1,7 @@
 """Service for security and compliance."""
 
 import hashlib
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -21,7 +21,7 @@ class SecurityComplianceService:
         return {
             "encryption_enabled": True,
             "status": "Encryption enabled successfully",
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }
 
     def disable_encryption(self) -> dict[str, Any]:
@@ -30,7 +30,7 @@ class SecurityComplianceService:
         return {
             "encryption_enabled": False,
             "status": "Encryption disabled successfully",
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }
 
     def is_encryption_enabled(self) -> bool:
@@ -52,7 +52,7 @@ class SecurityComplianceService:
             "resource": resource,
             "action": action,
             "details": details or {},
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }
 
         self.audit_log.append(event)
@@ -132,12 +132,10 @@ class SecurityComplianceService:
         audit_stats = self.get_audit_stats()
 
         return {
-            "generated_at": datetime.utcnow().isoformat(),
+            "generated_at": datetime.now(UTC).isoformat(),
             "encryption_enabled": self.encryption_enabled,
             "audit_stats": audit_stats,
-            "compliance_status": (
-                "COMPLIANT" if self.encryption_enabled else "NON_COMPLIANT"
-            ),
+            "compliance_status": ("COMPLIANT" if self.encryption_enabled else "NON_COMPLIANT"),
             "recommendations": [
                 "Enable encryption for sensitive data",
                 "Review audit logs regularly",

@@ -5,17 +5,17 @@ Pytest configuration and fixtures
 import asyncio
 import contextlib
 import os
+import tempfile
 from pathlib import Path
 
 import pytest
 import pytest_asyncio
-import tempfile
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy import create_engine
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
-# Force pytest plugins to load
-pytest_plugins = ("pytest_asyncio", "pytest_benchmark.plugin")
+# pytest_asyncio and pytest_benchmark are loaded by root conftest / auto-discovery
+pytest_plugins = ()
 
 try:
     from router import TOOL_REGISTRY, ArchRouter, ToolRegistry
@@ -27,18 +27,18 @@ except ImportError:
 
 # Import models to register them with SQLAlchemy
 try:
-    from tracertm.models.base import Base
     # Import ALL models to ensure they're registered with Base.metadata
     # This is critical - SQLAlchemy only creates tables for imported models
     from tracertm.models.agent import Agent
     from tracertm.models.agent_event import AgentEvent
     from tracertm.models.agent_lock import AgentLock
+    from tracertm.models.base import Base
     from tracertm.models.event import Event
     from tracertm.models.item import Item
     from tracertm.models.link import Link
-    from tracertm.models.project import Project
     from tracertm.models.problem import Problem, ProblemActivity
     from tracertm.models.process import Process, ProcessExecution
+    from tracertm.models.project import Project
 except ImportError:
     Base = None
 
@@ -115,10 +115,11 @@ async def test_db_engine():
                 await conn.run_sync(Base.metadata.drop_all)
         await engine.dispose()
     finally:
-        # Clean up temp file if it was created
+        # Clean up temp file if it was created (run in thread to avoid ASYNC240)
         if not os.getenv("TEST_DATABASE_URL"):
             try:
-                Path(db_url.replace("sqlite+aiosqlite:///", "")).unlink()
+                p = Path(db_url.replace("sqlite+aiosqlite:///", ""))
+                await asyncio.to_thread(p.unlink)
             except Exception:
                 pass
 
@@ -139,12 +140,15 @@ def project_factory(db_session):
     This ensures projects are created using the same code path as production,
     providing more realistic test coverage.
     """
+
     def create_project(name="Test Project", description="Test project", metadata=None):
         from tracertm.models.project import Project
+
         project = Project(name=name, description=description, metadata=metadata or {})
         db_session.add(project)
         db_session.flush()
         return project
+
     return create_project
 
 
@@ -156,38 +160,33 @@ def item_factory(db_session):
     This ensures items are created using the same code path as production,
     providing more realistic test coverage.
     """
-    def create_item(
-        project_id,
-        title="Test Item",
-        view="FEATURE",
-        item_type="feature",
-        status="todo",
-        **kwargs
-    ):
+
+    def create_item(project_id, title="Test Item", view="FEATURE", item_type="feature", status="todo", **kwargs):
         from tracertm.models.item import Item
-        item = Item(
-            project_id=project_id,
-            title=title,
-            view=view,
-            item_type=item_type,
-            status=status,
-            **kwargs
-        )
+
+        item = Item(project_id=project_id, title=title, view=view, item_type=item_type, status=status, **kwargs)
         db_session.add(item)
         db_session.flush()
         return item
+
     return create_item
 
 
 @pytest.fixture
 def router():
     """Create router instance"""
+    if ArchRouter is None:
+        pytest.skip("router module not available")
+    assert ArchRouter is not None  # narrow type after skip
     return ArchRouter()
 
 
 @pytest.fixture
 def registry():
     """Create registry instance"""
+    if ToolRegistry is None or TOOL_REGISTRY is None:
+        pytest.skip("router module not available")
+    assert ToolRegistry is not None and TOOL_REGISTRY is not None  # narrow type after skip
     return ToolRegistry(TOOL_REGISTRY)
 
 
@@ -220,12 +219,14 @@ try:
     from textual.app import App, ComposeResult
     from textual.pilot import Pilot
     from textual.widgets import Static
+
     TEXTUAL_AVAILABLE = True
 except ImportError:
     TEXTUAL_AVAILABLE = False
 
 
 if TEXTUAL_AVAILABLE:
+
     class TextualTestApp(App):
         """
         Test application for mounting widgets in isolation.
@@ -362,7 +363,7 @@ def mounted_widget():
             child._parent = widget
             child.app = app
             # If child has compose, call it too
-            if hasattr(child, 'compose'):
+            if hasattr(child, "compose"):
                 grandchildren = list(child.compose())
                 for gc in grandchildren:
                     gc._parent = child
@@ -379,6 +380,7 @@ def mounted_widget():
 # ============================================================
 # Context Manager Testing Infrastructure
 # ============================================================
+
 
 @pytest.fixture
 def verify_context_cleanup():
@@ -402,6 +404,7 @@ def verify_context_cleanup():
     Args:
         Callable that returns verification function
     """
+
     def _verify(mock_context):
         """
         Verify that __exit__ was called on a context manager mock.
@@ -412,13 +415,14 @@ def verify_context_cleanup():
         Raises:
             AssertionError: If __exit__ was not called
         """
-        if hasattr(mock_context, '__exit__'):
+        if hasattr(mock_context, "__exit__"):
             # Verify __exit__ was called
-            if hasattr(mock_context.__exit__, 'assert_called'):
+            if hasattr(mock_context.__exit__, "assert_called"):
                 mock_context.__exit__.assert_called()
-            elif hasattr(mock_context.__exit__, 'call_count'):
-                assert mock_context.__exit__.call_count > 0, \
+            elif hasattr(mock_context.__exit__, "call_count"):
+                assert mock_context.__exit__.call_count > 0, (
                     "Context manager __exit__ was never called - resource leak detected!"
+                )
 
     return _verify
 
@@ -442,6 +446,7 @@ def verify_async_context_cleanup():
             # Verify __aexit__ was called
             verify_async_context_cleanup(mock_context)
     """
+
     def _verify(mock_context):
         """
         Verify that __aexit__ was called on an async context manager mock.
@@ -452,12 +457,13 @@ def verify_async_context_cleanup():
         Raises:
             AssertionError: If __aexit__ was not called
         """
-        if hasattr(mock_context, '__aexit__'):
+        if hasattr(mock_context, "__aexit__"):
             # Verify __aexit__ was called
-            if hasattr(mock_context.__aexit__, 'assert_called'):
+            if hasattr(mock_context.__aexit__, "assert_called"):
                 mock_context.__aexit__.assert_called()
-            elif hasattr(mock_context.__aexit__, 'call_count'):
-                assert mock_context.__aexit__.call_count > 0, \
+            elif hasattr(mock_context.__aexit__, "call_count"):
+                assert mock_context.__aexit__.call_count > 0, (
                     "Async context manager __aexit__ was never called - resource leak detected!"
+                )
 
     return _verify

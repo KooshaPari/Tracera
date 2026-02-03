@@ -13,9 +13,10 @@ Coverage areas:
 Target: 20-30 integration tests
 """
 
+import uuid
+
 import pytest
 from typer.testing import CliRunner
-import uuid
 
 runner = CliRunner()
 
@@ -24,6 +25,7 @@ runner = CliRunner()
 # CLI → Service Integration Tests
 # =============================================================================
 
+
 class TestCliServiceIntegration:
     """Test CLI command integration with services."""
 
@@ -31,12 +33,7 @@ class TestCliServiceIntegration:
         """Test CLI create command basic flow."""
         from tracertm.cli.commands.item import app
 
-        result = runner.invoke(app, [
-            "create",
-            "Integration Test Item",
-            "--view", "CODE",
-            "--type", "file"
-        ])
+        result = runner.invoke(app, ["create", "Integration Test Item", "--view", "CODE", "--type", "file"])
 
         # Should execute without crashing
         assert result.exit_code in [0, 1, 2]
@@ -48,11 +45,7 @@ class TestCliServiceIntegration:
         test_id_1 = str(uuid.uuid4())
         test_id_2 = str(uuid.uuid4())
 
-        result = runner.invoke(app, [
-            "create",
-            test_id_1,
-            test_id_2
-        ])
+        result = runner.invoke(app, ["create", test_id_1, test_id_2])
 
         # Should execute without crashing
         assert result.exit_code in [0, 1, 2]
@@ -71,6 +64,7 @@ class TestCliServiceIntegration:
 # CLI → Service Data Flow Tests
 # =============================================================================
 
+
 class TestCliServiceDataFlow:
     """Test CLI data flow through services."""
 
@@ -80,12 +74,7 @@ class TestCliServiceDataFlow:
 
         test_name = "Test Item: @#$%^&*() Special Chars 中文"
 
-        result = runner.invoke(app, [
-            "create",
-            test_name,
-            "--view", "CODE",
-            "--type", "file"
-        ])
+        result = runner.invoke(app, ["create", test_name, "--view", "CODE", "--type", "file"])
 
         # Should handle special chars gracefully
         assert result.exit_code in [0, 1, 2]
@@ -96,12 +85,7 @@ class TestCliServiceDataFlow:
 
         long_name = "A" * 500
 
-        result = runner.invoke(app, [
-            "create",
-            long_name,
-            "--view", "CODE",
-            "--type", "file"
-        ])
+        result = runner.invoke(app, ["create", long_name, "--view", "CODE", "--type", "file"])
 
         # Should handle long args gracefully
         assert result.exit_code in [0, 1, 2]
@@ -111,6 +95,7 @@ class TestCliServiceDataFlow:
 # TUI → Service Integration Tests
 # =============================================================================
 
+
 class TestTuiServiceIntegration:
     """Test TUI integration with services."""
 
@@ -118,6 +103,7 @@ class TestTuiServiceIntegration:
         """Test TUI widget can be created."""
         try:
             from tracertm.tui.widgets.item_list import ItemListWidget
+
             widget = ItemListWidget()
             assert widget is not None
         except ImportError:
@@ -126,7 +112,8 @@ class TestTuiServiceIntegration:
     def test_sync_status_widget_creation(self):
         """Test sync status widget creation."""
         try:
-            from tracertm.tui.widgets.sync_status import SyncStatusWidget
+            from tracertm.tui.widgets.sync_status import SyncStatusWidget  # type: ignore[possibly-missing-import]
+
             widget = SyncStatusWidget()
             assert widget is not None
         except ImportError:
@@ -135,7 +122,8 @@ class TestTuiServiceIntegration:
     def test_conflict_panel_widget_creation(self):
         """Test conflict panel widget creation."""
         try:
-            from tracertm.tui.widgets.conflict_panel import ConflictPanel
+            from tracertm.tui.widgets.conflict_panel import ConflictPanel  # type: ignore[possibly-missing-import]
+
             panel = ConflictPanel()
             assert panel is not None
         except ImportError:
@@ -146,12 +134,13 @@ class TestTuiServiceIntegration:
 # API → Service Integration Tests
 # =============================================================================
 
+
 class TestApiServiceIntegration:
     """Test API integration with services."""
 
     def test_api_config_creation(self):
         """Test API config can be created."""
-        from tracertm.api.sync_client import ApiConfig, ApiClient
+        from tracertm.api.sync_client import ApiClient, ApiConfig
 
         config = ApiConfig(base_url="http://localhost:8000")
         client = ApiClient(config)
@@ -159,7 +148,7 @@ class TestApiServiceIntegration:
 
     def test_api_config_with_token(self):
         """Test API config with token."""
-        from tracertm.api.sync_client import ApiConfig, ApiClient
+        from tracertm.api.sync_client import ApiClient, ApiConfig
 
         config = ApiConfig(base_url="http://localhost:8000", token="test-token")
         client = ApiClient(config)
@@ -169,6 +158,7 @@ class TestApiServiceIntegration:
 # =============================================================================
 # Cross-Layer Data Consistency Tests
 # =============================================================================
+
 
 class TestCrossLayerDataConsistency:
     """Test data consistency across UI layers."""
@@ -202,6 +192,7 @@ class TestCrossLayerDataConsistency:
 # Error Handling Edge Cases
 # =============================================================================
 
+
 class TestErrorHandlingEdgeCases:
     """Test error handling in integration scenarios."""
 
@@ -228,6 +219,7 @@ class TestErrorHandlingEdgeCases:
 # Unicode and International Character Tests
 # =============================================================================
 
+
 class TestUnicodeIntegration:
     """Test unicode handling across all layers."""
 
@@ -235,12 +227,7 @@ class TestUnicodeIntegration:
         """Test CLI with Chinese characters."""
         from tracertm.cli.commands.item import app
 
-        result = runner.invoke(app, [
-            "create",
-            "测试项目 Test Project 中文",
-            "--view", "CODE",
-            "--type", "file"
-        ])
+        result = runner.invoke(app, ["create", "测试项目 Test Project 中文", "--view", "CODE", "--type", "file"])
 
         assert result.exit_code in [0, 1, 2]
 
@@ -248,12 +235,9 @@ class TestUnicodeIntegration:
         """Test CLI with Japanese characters."""
         from tracertm.cli.commands.item import app
 
-        result = runner.invoke(app, [
-            "create",
-            "テストプロジェクト Test Project 日本語",
-            "--view", "CODE",
-            "--type", "file"
-        ])
+        result = runner.invoke(
+            app, ["create", "テストプロジェクト Test Project 日本語", "--view", "CODE", "--type", "file"]
+        )
 
         assert result.exit_code in [0, 1, 2]
 
@@ -261,12 +245,7 @@ class TestUnicodeIntegration:
         """Test CLI with Korean characters."""
         from tracertm.cli.commands.item import app
 
-        result = runner.invoke(app, [
-            "create",
-            "테스트 프로젝트 Test Project 한글",
-            "--view", "CODE",
-            "--type", "file"
-        ])
+        result = runner.invoke(app, ["create", "테스트 프로젝트 Test Project 한글", "--view", "CODE", "--type", "file"])
 
         assert result.exit_code in [0, 1, 2]
 
@@ -274,6 +253,7 @@ class TestUnicodeIntegration:
 # =============================================================================
 # Output Formatting Integration Tests
 # =============================================================================
+
 
 class TestOutputFormattingIntegration:
     """Test output formatting across layers."""
@@ -303,22 +283,22 @@ class TestOutputFormattingIntegration:
 # Configuration Integration Tests
 # =============================================================================
 
+
 class TestConfigurationIntegration:
     """Test configuration across layers."""
 
     def test_api_config_variations(self):
         """Test various API configurations."""
-        from tracertm.api.sync_client import ApiConfig, ApiClient
+        from tracertm.api.sync_client import ApiClient, ApiConfig
 
         configs = [
-            {"base_url": "http://localhost:8000"},
-            {"base_url": "http://localhost:8000", "token": "test-token"},
-            {"base_url": "https://localhost:8000", "verify_ssl": False},
-            {"base_url": "http://localhost:8000", "timeout": 60.0},
+            ApiConfig(base_url="http://localhost:8000"),
+            ApiConfig(base_url="http://localhost:8000", token="test-token"),
+            ApiConfig(base_url="https://localhost:8000", verify_ssl=False),
+            ApiConfig(base_url="http://localhost:8000", timeout=60.0),
         ]
 
-        for config_dict in configs:
-            config = ApiConfig(**config_dict)
+        for config in configs:
             client = ApiClient(config)
             assert client is not None
 
@@ -326,6 +306,7 @@ class TestConfigurationIntegration:
 # =============================================================================
 # Search and Query Integration Tests
 # =============================================================================
+
 
 class TestSearchIntegration:
     """Test search functionality across layers."""
@@ -359,6 +340,7 @@ class TestSearchIntegration:
 # Project Management Integration Tests
 # =============================================================================
 
+
 class TestProjectIntegration:
     """Test project management across layers."""
 
@@ -382,11 +364,7 @@ class TestProjectIntegration:
         """Test project initialization with description."""
         from tracertm.cli.commands.project import app
 
-        result = runner.invoke(app, [
-            "init",
-            "test-project-2",
-            "--description", "A test project"
-        ])
+        result = runner.invoke(app, ["init", "test-project-2", "--description", "A test project"])
 
         assert result.exit_code in [0, 1, 2]
 
@@ -394,6 +372,7 @@ class TestProjectIntegration:
 # =============================================================================
 # Stress Testing Integration Tests
 # =============================================================================
+
 
 class TestStressIntegration:
     """Test stress scenarios across layers."""
@@ -403,12 +382,7 @@ class TestStressIntegration:
         from tracertm.cli.commands.item import app
 
         for i in range(5):
-            result = runner.invoke(app, [
-                "create",
-                f"Rapid Test Item {i}",
-                "--view", "CODE",
-                "--type", "file"
-            ])
+            result = runner.invoke(app, ["create", f"Rapid Test Item {i}", "--view", "CODE", "--type", "file"])
             assert result.exit_code in [0, 1, 2]
 
     def test_large_input_handling(self):
@@ -417,12 +391,8 @@ class TestStressIntegration:
 
         large_description = "Description: " + "A" * 1000
 
-        result = runner.invoke(app, [
-            "create",
-            "Large Input Test",
-            "--view", "CODE",
-            "--type", "file",
-            "--description", large_description
-        ])
+        result = runner.invoke(
+            app, ["create", "Large Input Test", "--view", "CODE", "--type", "file", "--description", large_description]
+        )
 
         assert result.exit_code in [0, 1, 2]

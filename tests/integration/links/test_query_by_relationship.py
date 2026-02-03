@@ -4,8 +4,8 @@ Integration tests for Epic 4: Query items by relationship (FR21).
 Tests querying items by their relationships to other items.
 """
 
-
 import pytest
+
 pytestmark = pytest.mark.integration
 from typer.testing import CliRunner
 
@@ -135,4 +135,4 @@ def test_query_by_relationship_with_link_type_filter(runner, temp_project):
     """Test query by relationship with link type filter."""
     # This would test filtering by specific link types
     # e.g., show only items linked via "tests" relationship
-    pass  # Placeholder - would need full item/link setup
+    # Placeholder - would need full item/link setup

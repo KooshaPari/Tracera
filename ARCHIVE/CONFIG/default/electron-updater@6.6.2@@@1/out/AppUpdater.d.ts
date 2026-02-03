@@ -219,4 +219,4 @@ export interface TestOnlyUpdaterOptions {
     platform: ProviderPlatform;
     isUseDifferentialDownload?: boolean;
 }
-export {};
+

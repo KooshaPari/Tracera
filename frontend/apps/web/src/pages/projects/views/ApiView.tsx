@@ -229,9 +229,9 @@ export function ApiView({ projectId }: ApiViewProps) {
 									key={item.id}
 									to="/projects/$projectId/views/$viewType/$itemId"
 									params={{
+										itemId: item.id,
 										projectId,
 										viewType: "api",
-										itemId: item.id,
 									}}
 									className="flex items-center gap-3 border-b last:border-b-0 p-3 hover:bg-muted/50"
 								>

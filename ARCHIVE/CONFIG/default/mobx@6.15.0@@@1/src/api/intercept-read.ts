@@ -30,7 +30,7 @@ export function interceptReads<V>(
     handler: ReadInterceptor<V>
 ): Lambda
 export function interceptReads(
-    object: Object,
+    object: object,
     property: string,
     handler: ReadInterceptor<any>
 ): Lambda

@@ -1,4 +1,5 @@
 """Tests for item retrieval logic."""
+
 import uuid
 from unittest.mock import AsyncMock
 
@@ -11,8 +12,7 @@ from tracertm.services.item_service import ItemService
 @pytest.fixture
 def mock_session():
     """Create a mock database session."""
-    session = AsyncMock()
-    return session
+    return AsyncMock()
 
 
 @pytest.fixture
@@ -32,12 +32,7 @@ class TestItemRetrieval:
         item_id = str(uuid.uuid4())
 
         expected_item = Item(
-            id=item_id,
-            project_id=project_id,
-            title="Test Item",
-            view="FEATURE",
-            item_type="feature",
-            status="todo"
+            id=item_id, project_id=project_id, title="Test Item", view="FEATURE", item_type="feature", status="todo"
         )
 
         # Mock repository behavior
@@ -60,7 +55,7 @@ class TestItemRetrieval:
 
         expected_items = [
             Item(id=str(uuid.uuid4()), title="Item 1", view=view),
-            Item(id=str(uuid.uuid4()), title="Item 2", view=view)
+            Item(id=str(uuid.uuid4()), title="Item 2", view=view),
         ]
 
         # Mock repository behavior
@@ -85,7 +80,7 @@ class TestItemRetrieval:
 
         expected_items = [
             Item(id=str(uuid.uuid4()), title="Item 1", status=status),
-            Item(id=str(uuid.uuid4()), title="Item 2", status=status)
+            Item(id=str(uuid.uuid4()), title="Item 2", status=status),
         ]
 
         # Mock repository behavior
@@ -100,7 +95,7 @@ class TestItemRetrieval:
         item_service.items.get_by_project.assert_called_once()
         # Verify status was passed
         _, kwargs = item_service.items.get_by_project.call_args
-        assert kwargs.get('status') == status
+        assert kwargs.get("status") == status
 
     async def test_list_items_with_view_and_status(self, item_service, mock_session):
         """Test listing items filtered by both view and status."""
@@ -109,9 +104,7 @@ class TestItemRetrieval:
         view = "FEATURE"
         status = "todo"
 
-        expected_items = [
-            Item(id=str(uuid.uuid4()), title="Item 1", view=view, status=status)
-        ]
+        expected_items = [Item(id=str(uuid.uuid4()), title="Item 1", view=view, status=status)]
 
         # Mock repository behavior
         item_service.items.get_by_view = AsyncMock(return_value=expected_items)

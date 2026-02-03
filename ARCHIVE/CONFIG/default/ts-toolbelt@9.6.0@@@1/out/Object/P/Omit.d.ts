@@ -20,4 +20,4 @@ declare type OmitAt<O, Path extends List<Key>> = O extends BuiltIn ? O : Path ex
  * ```
  */
 export declare type Omit<O extends object, Path extends List<Key>> = Path extends unknown ? OmitAt<O, Path> : never;
-export {};
+

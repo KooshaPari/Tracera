@@ -59,7 +59,7 @@ function escape$1(html, encode) {
     }
     return html;
 }
-const caret = /(^|[^\[])\^/g;
+const caret = /(^|[^[])\^/g;
 function edit(regex, opt) {
     let source = typeof regex === 'string' ? regex : regex.source;
     opt = opt || '';
@@ -179,7 +179,7 @@ function findClosingBracket(str, b) {
 function outputLink(cap, link, raw, lexer) {
     const href = link.href;
     const title = link.title ? escape$1(link.title) : null;
-    const text = cap[1].replace(/\\([\[\]])/g, '$1');
+    const text = cap[1].replace(/\\([[\]])/g, '$1');
     if (cap[0].charAt(0) !== '!') {
         lexer.state.inLink = true;
         const token = {
@@ -273,12 +273,12 @@ class _Tokenizer {
         if (cap) {
             let text = cap[2].trim();
             // remove trailing #s
-            if (/#$/.test(text)) {
+            if (text.endsWith('#')) {
                 const trimmed = rtrim(text, '#');
                 if (this.options.pedantic) {
                     text = trimmed.trim();
                 }
-                else if (!trimmed || / $/.test(trimmed)) {
+                else if (!trimmed || trimmed.endsWith(' ')) {
                     // CommonMark requires space before trailing #s
                     text = trimmed.trim();
                 }
@@ -708,9 +708,9 @@ class _Tokenizer {
         const cap = this.rules.inline.link.exec(src);
         if (cap) {
             const trimmedUrl = cap[2].trim();
-            if (!this.options.pedantic && /^</.test(trimmedUrl)) {
+            if (!this.options.pedantic && trimmedUrl.startsWith('<')) {
                 // commonmark requires matching angle brackets
-                if (!(/>$/.test(trimmedUrl))) {
+                if (!(trimmedUrl.endsWith('>'))) {
                     return;
                 }
                 // ending angle bracket cannot be escaped
@@ -744,8 +744,8 @@ class _Tokenizer {
                 title = cap[3] ? cap[3].slice(1, -1) : '';
             }
             href = href.trim();
-            if (/^</.test(href)) {
-                if (this.options.pedantic && !(/>$/.test(trimmedUrl))) {
+            if (href.startsWith('<')) {
+                if (this.options.pedantic && !(trimmedUrl.endsWith('>'))) {
                     // pedantic allows starting angle bracket without ending angle bracket
                     href = href.slice(1);
                 }
@@ -841,7 +841,7 @@ class _Tokenizer {
         if (cap) {
             let text = cap[2].replace(/\n/g, ' ');
             const hasNonSpaceChars = /[^ ]/.test(text);
-            const hasSpaceCharsOnBothEnds = /^ /.test(text) && / $/.test(text);
+            const hasSpaceCharsOnBothEnds = text.startsWith(' ') && text.endsWith(' ');
             if (hasNonSpaceChars && hasSpaceCharsOnBothEnds) {
                 text = text.substring(1, text.length - 1);
             }
@@ -976,7 +976,7 @@ const lheading = edit(/^(?!bull |blockCode|fences|blockquote|heading|html)((?:.|
     .getRegex();
 const _paragraph = /^([^\n]+(?:\n(?!hr|heading|lheading|blockquote|fences|list|html|table| +\n)[^\n]+)*)/;
 const blockText = /^[^\n]+/;
-const _blockLabel = /(?!\s*\])(?:\\.|[^\[\]\\])+/;
+const _blockLabel = /(?!\s*\])(?:\\.|[^[\]\\])+/;
 const def = edit(/^ {0,3}\[(label)\]: *(?:\n *)?([^<\s][^\s]*|<.*?>)(?:(?: +(?:\n *)?| *\n *)(title))? *(?:\n+|$)/)
     .replace('label', _blockLabel)
     .replace('title', /(?:"(?:\\"?|[^"\\])*"|'[^'\n]*(?:\n[^'\n]+)*\n?'|\([^()]*\))/)
@@ -1100,16 +1100,16 @@ const blockPedantic = {
 /**
  * Inline-Level Grammar
  */
-const escape = /^\\([!"#$%&'()*+,\-./:;<=>?@\[\]\\^_`{|}~])/;
+const escape = /^\\([!"#$%&'()*+,\-./:;<=>?@[\]\\^_`{|}~])/;
 const inlineCode = /^(`+)([^`]|[^`][\s\S]*?[^`])\1(?!`)/;
 const br = /^( {2,}|\\)\n(?!\s*$)/;
-const inlineText = /^(`+|[^`])(?:(?= {2,}\n)|[\s\S]*?(?:(?=[\\<!\[`*_]|\b_|$)|[^ ](?= {2,}\n)))/;
+const inlineText = /^(`+|[^`])(?:(?= {2,}\n)|[\s\S]*?(?:(?=[\\<![`*_]|\b_|$)|[^ ](?= {2,}\n)))/;
 // list of unicode punctuation marks, plus any missing characters from CommonMark spec
 const _punctuation = '\\p{P}\\p{S}';
 const punctuation = edit(/^((?![*_])[\spunctuation])/, 'u')
     .replace(/punctuation/g, _punctuation).getRegex();
 // sequences em should skip over [title](link), `code`, <html>
-const blockSkip = /\[[^[\]]*?\]\([^\(\)]*?\)|`[^`]*?`|<[^<>]*?>/g;
+const blockSkip = /\[[^[\]]*?\]\([^()]*?\)|`[^`]*?`|<[^<>]*?>/g;
 const emStrongLDelim = edit(/^(?:\*+(?:((?!\*)[punct])|[^\s*]))|^_+(?:((?!_)[punct])|([^\s_]))/, 'u')
     .replace(/punct/g, _punctuation)
     .getRegex();
@@ -1150,7 +1150,7 @@ const tag = edit('^comment'
     .replace('comment', _inlineComment)
     .replace('attribute', /\s+[a-zA-Z:_][\w.:-]*(?:\s*=\s*"[^"]*"|\s*=\s*'[^']*'|\s*=\s*[^\s"'=<>`]+)?/)
     .getRegex();
-const _inlineLabel = /(?:\[(?:\\.|[^\[\]\\])*\]|\\.|`[^`]*`|[^\[\]\\`])*?/;
+const _inlineLabel = /(?:\[(?:\\.|[^[\]\\])*\]|\\.|`[^`]*`|[^[\]\\`])*?/;
 const link = edit(/^!?\[(label)\]\(\s*(href)(?:\s+(title))?\s*\)/)
     .replace('label', _inlineLabel)
     .replace('href', /<(?:\\.|[^\n<>\\])+>|[^\s\x00-\x1f]*/)
@@ -1209,12 +1209,12 @@ const inlinePedantic = {
 const inlineGfm = {
     ...inlineNormal,
     escape: edit(escape).replace('])', '~|])').getRegex(),
-    url: edit(/^((?:ftp|https?):\/\/|www\.)(?:[a-zA-Z0-9\-]+\.?)+[^\s<]*|^email/, 'i')
+    url: edit(/^((?:ftp|https?):\/\/|www\.)(?:[a-zA-Z0-9-]+\.?)+[^\s<]*|^email/, 'i')
         .replace('email', /[A-Za-z0-9._+-]+(@)[a-zA-Z0-9-_]+(?:\.[a-zA-Z0-9-_]*[a-zA-Z0-9])+(?![-_])/)
         .getRegex(),
     _backpedal: /(?:[^?!.,:;*_'"~()&]+|\([^)]*\)|&(?![a-zA-Z0-9]+;$)|[?!.,:;*_'"~)]+(?!$))+/,
     del: /^(~~?)(?=[^\s~])([\s\S]*?[^\s~])\1(?=[^~]|$)/,
-    text: /^([`~]+|[^`~])(?:(?= {2,}\n)|(?=[a-zA-Z0-9.!#$%&'*+\/=?_`{\|}~-]+@)|[\s\S]*?(?:(?=[\\<!\[`*~_]|\b_|https?:\/\/|ftp:\/\/|www\.|$)|[^ ](?= {2,}\n)|[^a-zA-Z0-9.!#$%&'*+\/=?_`{\|}~-](?=[a-zA-Z0-9.!#$%&'*+\/=?_`{\|}~-]+@)))/,
+    text: /^([`~]+|[^`~])(?:(?= {2,}\n)|(?=[a-zA-Z0-9.!#$%&'*+/=?_`{|}~-]+@)|[\s\S]*?(?:(?=[\\<![`*~_]|\b_|https?:\/\/|ftp:\/\/|www\.|$)|[^ ](?= {2,}\n)|[^a-zA-Z0-9.!#$%&'*+/=?_`{|}~-](?=[a-zA-Z0-9.!#$%&'*+/=?_`{|}~-]+@)))/,
 };
 /**
  * GFM + Line Breaks Inline Grammar

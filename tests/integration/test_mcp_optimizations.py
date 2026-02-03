@@ -16,16 +16,14 @@ import asyncio
 import gzip
 import json
 import os
-from typing import Any
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
-import pytest_asyncio
-
 
 # ============================================================
 # Fixtures
 # ============================================================
+
 
 @pytest.fixture
 def mcp_optimized_env():
@@ -82,12 +80,13 @@ def mcp_baseline_env():
 # Test: Lazy Loading Integration
 # ============================================================
 
+
 class TestLazyLoadingIntegration:
     """Test lazy loading with real tool modules."""
 
     def test_all_tools_accessible_with_lazy_loading(self, mcp_optimized_env):
         """Test that all tools remain accessible with lazy loading."""
-        from tracertm.mcp.registry import register_all_tools, get_registry
+        from tracertm.mcp.registry import get_registry, register_all_tools
 
         register_all_tools()
         registry = get_registry()
@@ -113,9 +112,7 @@ class TestLazyLoadingIntegration:
 
         # Register a tool
         registry.register_tool_loader(
-            "test_functional_tool",
-            "tracertm.mcp.tools.params.project",
-            {"description": "Test functionality"}
+            "test_functional_tool", "tracertm.mcp.tools.params.project", {"description": "Test functionality"}
         )
 
         # Verify not loaded initially
@@ -155,6 +152,7 @@ class TestLazyLoadingIntegration:
 # Test: Streaming Integration
 # ============================================================
 
+
 class TestStreamingIntegration:
     """Test streaming responses in real scenarios."""
 
@@ -170,17 +168,14 @@ class TestStreamingIntegration:
                 chunk = {
                     "chunk": i // chunk_size,
                     "items": [
-                        {"id": f"item-{j}", "title": f"Item {j}"}
-                        for j in range(i, min(i + chunk_size, item_count))
-                    ]
+                        {"id": f"item-{j}", "title": f"Item {j}"} for j in range(i, min(i + chunk_size, item_count))
+                    ],
                 }
-                yield json.dumps(chunk).encode('utf-8')
+                yield json.dumps(chunk).encode("utf-8")
                 await asyncio.sleep(0.01)  # Simulate processing
 
         # Stream 1000 items
-        chunks = []
-        async for chunk in stream_large_dataset(1000):
-            chunks.append(chunk)
+        chunks = [chunk async for chunk in stream_large_dataset(1000)]
 
         assert len(chunks) == 10  # 1000 items / 100 per chunk
         print(f"\n✓ Streamed 1000 items in {len(chunks)} chunks")
@@ -200,8 +195,7 @@ class TestStreamingIntegration:
         error_caught = False
 
         try:
-            async for chunk in stream_with_error():
-                chunks_received.append(chunk)
+            chunks_received.extend([chunk async for chunk in stream_with_error()])
         except ValueError as e:
             error_caught = True
             assert "Simulated streaming error" in str(e)
@@ -215,6 +209,7 @@ class TestStreamingIntegration:
 # ============================================================
 # Test: Compression Integration
 # ============================================================
+
 
 class TestCompressionIntegration:
     """Test compression in real scenarios."""
@@ -233,17 +228,17 @@ class TestCompressionIntegration:
                     "metadata": {
                         "created_by": "user@example.com",
                         "created_at": "2025-01-30T12:00:00Z",
-                        "tags": ["test", "sample", "example"]
-                    }
+                        "tags": ["test", "sample", "example"],
+                    },
                 }
                 for i in range(100)
-            ]
+            ],
         }
 
         # Serialize and compress
         json_data = json.dumps(response)
-        original_size = len(json_data.encode('utf-8'))
-        compressed = gzip.compress(json_data.encode('utf-8'))
+        original_size = len(json_data.encode("utf-8"))
+        compressed = gzip.compress(json_data.encode("utf-8"))
         compressed_size = len(compressed)
 
         # Calculate savings
@@ -260,7 +255,7 @@ class TestCompressionIntegration:
 
         # Text content (should compress well)
         text_content = json.dumps({"data": "test " * 1000})
-        text_compressed = gzip.compress(text_content.encode('utf-8'))
+        text_compressed = gzip.compress(text_content.encode("utf-8"))
         text_ratio = len(text_compressed) / len(text_content)
 
         # Already compressed content (won't compress further)
@@ -279,6 +274,7 @@ class TestCompressionIntegration:
 # Test: Connection Pooling Integration
 # ============================================================
 
+
 class TestConnectionPoolingIntegration:
     """Test connection pooling in real scenarios."""
 
@@ -291,12 +287,8 @@ class TestConnectionPoolingIntegration:
                 self.size = size
                 self.connections = []
                 self.in_use = set()
-                self.stats = {
-                    "acquires": 0,
-                    "releases": 0,
-                    "reuses": 0,
-                    "creates": 0
-                }
+                self.stats = {"acquires": 0, "releases": 0, "reuses": 0, "creates": 0}
+                self._available = asyncio.Event()
 
             async def acquire(self):
                 self.stats["acquires"] += 1
@@ -316,19 +308,22 @@ class TestConnectionPoolingIntegration:
                     self.stats["creates"] += 1
                     return conn
 
-                # Wait for available connection
+                # Wait for available connection (use Event instead of sleep loop)
                 while not any(c not in self.in_use for c in self.connections):
-                    await asyncio.sleep(0.01)
+                    self._available.clear()
+                    await self._available.wait()
 
                 for conn in self.connections:
                     if conn not in self.in_use:
                         self.in_use.add(conn)
                         self.stats["reuses"] += 1
                         return conn
+                return None
 
             async def release(self, conn):
                 self.stats["releases"] += 1
                 self.in_use.discard(conn)
+                self._available.set()
 
         pool = ConnectionPool(size=5)
 
@@ -373,7 +368,7 @@ class TestConnectionPoolingIntegration:
         acquired = []
         errors = 0
 
-        for i in range(5):
+        for _i in range(5):
             try:
                 conn = await pool.acquire()
                 acquired.append(conn)
@@ -390,6 +385,7 @@ class TestConnectionPoolingIntegration:
 # Test: Token Management Integration
 # ============================================================
 
+
 class TestTokenManagementIntegration:
     """Test token usage optimization."""
 
@@ -405,11 +401,7 @@ class TestTokenManagementIntegration:
         # Create paginated response
         response = {
             "items": [{"id": f"item-{i}", "data": "x" * 100} for i in range(safe_page_size)],
-            "pagination": {
-                "page": 1,
-                "page_size": safe_page_size,
-                "total": 1000
-            }
+            "pagination": {"page": 1, "page_size": safe_page_size, "total": 1000},
         }
 
         # Estimate tokens (rough: 4 chars per token)
@@ -424,13 +416,7 @@ class TestTokenManagementIntegration:
         """Test that error messages are token-efficient."""
 
         # Standard error
-        error = {
-            "error": {
-                "code": "VALIDATION_ERROR",
-                "message": "Invalid input",
-                "field": "project_id"
-            }
-        }
+        error = {"error": {"code": "VALIDATION_ERROR", "message": "Invalid input", "field": "project_id"}}
 
         # Verbose error (what we want to avoid)
         verbose_error = {
@@ -442,8 +428,8 @@ class TestTokenManagementIntegration:
                     "value": "invalid-id-12345",
                     "constraints": ["must be UUID", "must exist"],
                     "suggestions": ["Check project list", "Verify ID format"],
-                    "documentation": "https://docs.example.com/errors/validation"
-                }
+                    "documentation": "https://docs.example.com/errors/validation",
+                },
             }
         }
 
@@ -460,6 +446,7 @@ class TestTokenManagementIntegration:
 # ============================================================
 # Test: Feature Flags and Rollback
 # ============================================================
+
 
 class TestFeatureFlagsAndRollback:
     """Test optimization feature flags and rollback capability."""
@@ -522,6 +509,7 @@ class TestFeatureFlagsAndRollback:
 # Test: Regression Prevention
 # ============================================================
 
+
 class TestRegressionPrevention:
     """Test that optimizations don't break existing functionality."""
 
@@ -533,9 +521,7 @@ class TestRegressionPrevention:
 
         # Register a tool
         registry.register_tool_loader(
-            "regression_test_tool",
-            "tracertm.mcp.tools.params.project",
-            {"description": "Test regression"}
+            "regression_test_tool", "tracertm.mcp.tools.params.project", {"description": "Test regression"}
         )
 
         # Verify registration
@@ -551,9 +537,7 @@ class TestRegressionPrevention:
         registry = get_registry()
 
         registry.register_tool_loader(
-            "metadata_test_tool",
-            "tracertm.mcp.tools.params.item",
-            {"description": "Metadata test", "version": "1.0"}
+            "metadata_test_tool", "tracertm.mcp.tools.params.item", {"description": "Metadata test", "version": "1.0"}
         )
 
         metadata = registry.get_tool_metadata("metadata_test_tool")
@@ -583,6 +567,7 @@ class TestRegressionPrevention:
 # Test: Performance Comparison
 # ============================================================
 
+
 class TestPerformanceComparison:
     """Compare performance with and without optimizations."""
 
@@ -594,6 +579,7 @@ class TestPerformanceComparison:
         os.environ.update(mcp_baseline_env)
         start = time.perf_counter()
         from tracertm.mcp.registry import get_registry
+
         registry_baseline = get_registry()
         baseline_time = time.perf_counter() - start
 
@@ -606,6 +592,8 @@ class TestPerformanceComparison:
         # Optimized should be faster (though this is a simple test)
         improvement = ((baseline_time - optimized_time) / baseline_time) * 100
 
-        print(f"\n✓ Startup time: baseline={baseline_time*1000:.2f}ms, "
-              f"optimized={optimized_time*1000:.2f}ms, "
-              f"improvement={improvement:.1f}%")
+        print(
+            f"\n✓ Startup time: baseline={baseline_time * 1000:.2f}ms, "
+            f"optimized={optimized_time * 1000:.2f}ms, "
+            f"improvement={improvement:.1f}%"
+        )

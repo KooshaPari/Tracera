@@ -43,7 +43,7 @@ export default function bison(Prism) {
           pattern: /(^|[^@])\b(?:0x[\da-f]+|\d+)/i,
           lookbehind: true
         },
-        punctuation: /%[%?]|[|:;\[\]<>]/
+        punctuation: /%[%?]|[|:;[\]<>]/
       }
     }
   })

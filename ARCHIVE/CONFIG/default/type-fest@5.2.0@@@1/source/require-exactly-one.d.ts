@@ -45,4 +45,4 @@ type _RequireExactlyOne<ObjectType, KeysType extends keyof ObjectType> =
 		Partial<Record<Exclude<KeysType, Key>, never>>
 	)}[KeysType] & Omit<ObjectType, KeysType>;
 
-export {};
+

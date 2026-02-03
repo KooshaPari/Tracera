@@ -297,7 +297,7 @@ const REPLACERS = [
     // 'js*' will not match 'a.js'
     // 'js/' will not match 'a.js'
     // 'js' will match 'a.js' and 'a.js/'
-    match => /\/$/.test(match)
+    match => match.endsWith('/')
       // foo/ will not match 'foo'
       ? `${match}$`
       // foo matches 'foo' and 'foo/'
@@ -742,7 +742,7 @@ const isPathValid = path =>
 /* istanbul ignore next */
 const setupWindows = () => {
   /* eslint no-control-regex: "off" */
-  const makePosix = str => /^\\\\\?\\/.test(str)
+  const makePosix = str => str.startsWith('\\\\?\\')
   || /["<>|\u0000-\u001F]+/u.test(str)
     ? str
     : str.replace(/\\/g, '/')

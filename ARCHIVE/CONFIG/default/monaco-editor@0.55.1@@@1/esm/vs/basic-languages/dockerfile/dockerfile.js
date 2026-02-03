@@ -91,7 +91,7 @@ const language = {
     ],
     stringBody: [
       [
-        /[^\\\$']/,
+        /[^\\$']/,
         {
           cases: {
             "@eos": { token: "string", next: "@popall" },
@@ -108,7 +108,7 @@ const language = {
     ],
     dblStringBody: [
       [
-        /[^\\\$"]/,
+        /[^\\$"]/,
         {
           cases: {
             "@eos": { token: "string", next: "@popall" },

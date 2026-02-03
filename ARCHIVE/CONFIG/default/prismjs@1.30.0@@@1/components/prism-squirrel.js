@@ -24,7 +24,7 @@ Prism.languages.squirrel = Prism.languages.extend('clike', {
 
 	'number': /\b(?:0x[0-9a-fA-F]+|\d+(?:\.(?:\d+|[eE][+-]?\d+))?)\b/,
 	'operator': /\+\+|--|<=>|<[-<]|>>>?|&&?|\|\|?|[-+*/%!=<>]=?|[~^]|::?/,
-	'punctuation': /[(){}\[\],;.]/
+	'punctuation': /[(){}[\],;.]/
 });
 
 Prism.languages.insertBefore('squirrel', 'string', {

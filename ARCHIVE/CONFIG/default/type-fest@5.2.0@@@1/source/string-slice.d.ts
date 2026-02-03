@@ -36,4 +36,4 @@ export type StringSlice<
 		? Join<R, ''>
 		: never;
 
-export {};
+

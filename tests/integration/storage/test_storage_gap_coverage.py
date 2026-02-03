@@ -16,20 +16,19 @@ Strategy:
 """
 
 import asyncio
-import json
 import tempfile
 import time
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timezone
 from pathlib import Path
-from threading import Thread
-from unittest.mock import MagicMock, Mock, PropertyMock, patch
+from typing import cast
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 import yaml
 from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker
+from watchdog.events import FileSystemEvent
 
-from tracertm.models import Base, Item, Link, Project
+from tracertm.models import Base, Item, Project
 from tracertm.storage.conflict_resolver import ConflictStrategy
 from tracertm.storage.file_watcher import TraceFileWatcher, _TraceEventHandler
 from tracertm.storage.local_storage import ItemStorage, LocalStorageManager, ProjectStorage
@@ -38,16 +37,11 @@ from tracertm.storage.markdown_parser import (
     LinkData,
     _parse_history_table,
     _parse_markdown_body,
-    get_config_path,
-    get_item_path,
-    get_links_path,
     list_items,
     parse_config_yaml,
     parse_item_markdown,
     parse_links_yaml,
-    write_config_yaml,
     write_item_markdown,
-    write_links_yaml,
 )
 from tracertm.storage.sync_engine import (
     ChangeDetector,
@@ -55,13 +49,9 @@ from tracertm.storage.sync_engine import (
     OperationType,
     SyncEngine,
     SyncQueue,
-    SyncState,
-    SyncStateManager,
     SyncStatus,
     exponential_backoff,
 )
-from watchdog.events import FileSystemEvent
-
 
 # ============================================================================
 # Fixtures
@@ -93,10 +83,7 @@ def project_path(temp_base_dir):
 def initialized_project(storage_manager, project_path):
     """Initialize a .trace/ project."""
     trace_dir, project_id = storage_manager.init_project(
-        project_path,
-        project_name="Test Project",
-        description="Test Description",
-        metadata={"key": "value"}
+        project_path, project_name="Test Project", description="Test Description", metadata={"key": "value"}
     )
     return trace_dir, project_id, project_path
 
@@ -185,10 +172,7 @@ class TestLocalStorageManagerEdgeCases:
         test_file = project_path / "test.txt"
         test_file.write_text("test")
 
-        trace_dir, project_id = storage.init_project(
-            test_file,
-            project_name="File Test"
-        )
+        trace_dir, project_id = storage.init_project(test_file, project_name="File Test")
 
         assert trace_dir == project_path / ".trace"
 
@@ -357,13 +341,7 @@ Test description
         # Create initial item
         session = storage.get_session()
         try:
-            item = Item(
-                id="epic-001",
-                project_id=project_id,
-                title="Old Title",
-                item_type="epic",
-                status="todo"
-            )
+            item = Item(id="epic-001", project_id=project_id, title="Old Title", item_type="epic", status="todo")
             session.add(item)
             session.commit()
         finally:
@@ -389,6 +367,7 @@ updated: '2024-01-01T00:00:00'
         session = storage.get_session()
         try:
             item = session.get(Item, "epic-001")
+            assert item is not None
             assert item.title == "New Title"
             assert item.status == "done"
         finally:
@@ -464,7 +443,7 @@ updated: 2024-01-02T00:00:00
         storage = LocalStorageManager(base_dir=temp_base_dir)
 
         # Mock Path.cwd() to return a deep path without .trace/
-        with patch('tracertm.storage.local_storage.Path.cwd') as mock_cwd:
+        with patch("tracertm.storage.local_storage.Path.cwd") as mock_cwd:
             deep_path = temp_base_dir / "a" / "b" / "c" / "d" / "e" / "f" / "g" / "h" / "i" / "j" / "k"
             deep_path.mkdir(parents=True)
             mock_cwd.return_value = deep_path
@@ -505,7 +484,7 @@ updated: 2024-01-02T00:00:00
                 title="Searchable Test Item",
                 description="This is a test description",
                 item_type="epic",
-                status="todo"
+                status="todo",
             )
             session.add(item)
             session.commit()
@@ -516,12 +495,7 @@ updated: 2024-01-02T00:00:00
                 INSERT INTO items_fts (item_id, title, description, item_type)
                 VALUES (:id, :title, :description, :item_type)
                 """),
-                {
-                    "id": item.id,
-                    "title": item.title,
-                    "description": item.description,
-                    "item_type": item.item_type
-                }
+                {"id": item.id, "title": item.title, "description": item.description, "item_type": item.item_type},
             )
             session.commit()
         finally:
@@ -549,7 +523,8 @@ class TestItemStorageEdgeCases:
         session = storage.get_session()
         try:
             project = session.get(Project, project_id)
-            item_storage = ItemStorage(storage, project_storage, project)
+            assert project_storage is not None and project is not None
+            item_storage = ItemStorage(storage, cast(ProjectStorage, project_storage), cast(Project, project))
         finally:
             session.close()
 
@@ -565,23 +540,18 @@ class TestItemStorageEdgeCases:
         session = storage.get_session()
         try:
             project = session.get(Project, project_id)
-            item_storage = ItemStorage(storage, project_storage, project)
+            assert project_storage is not None and project is not None
+            item_storage = ItemStorage(storage, cast(ProjectStorage, project_storage), cast(Project, project))
         finally:
             session.close()
 
         # Create item with initial metadata
         item = item_storage.create_item(
-            title="Test",
-            item_type="epic",
-            external_id="EPIC-001",
-            metadata={"key1": "value1"}
+            title="Test", item_type="epic", external_id="EPIC-001", metadata={"key1": "value1"}
         )
 
         # Update with additional metadata
-        updated = item_storage.update_item(
-            item.id,
-            metadata={"key2": "value2"}
-        )
+        updated = item_storage.update_item(str(item.id), metadata={"key2": "value2"})
 
         assert "key1" in updated.item_metadata
         assert "key2" in updated.item_metadata
@@ -595,7 +565,8 @@ class TestItemStorageEdgeCases:
         session = storage.get_session()
         try:
             project = session.get(Project, project_id)
-            item_storage = ItemStorage(storage, project_storage, project)
+            assert project_storage is not None and project is not None
+            item_storage = ItemStorage(storage, cast(ProjectStorage, project_storage), cast(Project, project))
         finally:
             session.close()
 
@@ -611,16 +582,12 @@ class TestItemStorageEdgeCases:
         session = storage.get_session()
         try:
             project = session.get(Project, project_id)
-            item_storage = ItemStorage(storage, project_storage, project)
+            assert project_storage is not None and project is not None
+            item_storage = ItemStorage(storage, cast(ProjectStorage, project_storage), cast(Project, project))
 
             # Create item without external_id
             item = Item(
-                id="test-no-ext",
-                project_id=project_id,
-                title="Test",
-                item_type="epic",
-                status="todo",
-                item_metadata={}
+                id="test-no-ext", project_id=project_id, title="Test", item_type="epic", status="todo", item_metadata={}
             )
             session.add(item)
             session.commit()
@@ -640,7 +607,8 @@ class TestItemStorageEdgeCases:
         session = storage.get_session()
         try:
             project = session.get(Project, project_id)
-            item_storage = ItemStorage(storage, project_storage, project)
+            assert project_storage is not None and project is not None
+            item_storage = ItemStorage(storage, cast(ProjectStorage, project_storage), cast(Project, project))
         finally:
             session.close()
 
@@ -656,15 +624,10 @@ class TestItemStorageEdgeCases:
         session = storage.get_session()
         try:
             project = session.get(Project, project_id)
-            item_storage = ItemStorage(storage, project_storage, project)
+            assert project_storage is not None and project is not None
+            item_storage = ItemStorage(storage, cast(ProjectStorage, project_storage), cast(Project, project))
 
-            item = Item(
-                id="test",
-                project_id=project_id,
-                title="Test",
-                item_type="epic",
-                status="todo"
-            )
+            item = Item(id="test", project_id=project_id, title="Test", item_type="epic", status="todo")
         finally:
             session.close()
 
@@ -680,11 +643,13 @@ class TestItemStorageEdgeCases:
         session = storage.get_session()
         try:
             project = session.get(Project, project_id)
-            item_storage = ItemStorage(storage, project_storage, project)
+            assert project_storage is not None and project is not None
+            item_storage = ItemStorage(storage, cast(ProjectStorage, project_storage), cast(Project, project))
         finally:
             session.close()
 
         # Unknown type defaults to project_dir
+        assert project_storage is not None
         path = item_storage._get_item_path("unknown", "TEST-001")
         assert path.parent == project_storage.project_dir
 
@@ -718,7 +683,7 @@ class TestMarkdownParserEdgeCases:
             components=["Button", "Input"],
             screens=["Login", "Dashboard"],
             implements=["EPIC-001", "STORY-002"],
-            custom_fields={"custom": "value"}
+            custom_fields={"custom": "value"},
         )
 
         fm = item.to_frontmatter_dict()
@@ -751,7 +716,7 @@ class TestMarkdownParserEdgeCases:
             figma_file_key="file-key",
             figma_node_id="node-123",
             components=["Button", "Input"],
-            screens=["Login"]
+            screens=["Login"],
         )
 
         body = item.to_markdown_body()
@@ -773,7 +738,7 @@ class TestMarkdownParserEdgeCases:
             external_id="WIRE-002",
             item_type="wireframe",
             status="done",
-            figma_url="https://figma.com/file/123"
+            figma_url="https://figma.com/file/123",
         )
 
         body = item.to_markdown_body()
@@ -791,8 +756,8 @@ class TestMarkdownParserEdgeCases:
             title="Test",
             history=[
                 {"version": "1", "date": "2024-01-01", "author": "user1", "changes": "Initial"},
-                {"version": "2", "date": "2024-01-02", "author": "user2", "changes": "Updated"}
-            ]
+                {"version": "2", "date": "2024-01-02", "author": "user2", "changes": "Updated"},
+            ],
         )
 
         body = item.to_markdown_body()
@@ -832,12 +797,7 @@ type: epic
 
     def test_write_item_markdown_missing_required_fields(self, temp_base_dir):
         """Test writing ItemData with missing fields."""
-        item = ItemData(
-            id="",
-            external_id="",
-            item_type="",
-            status=""
-        )
+        item = ItemData(id="", external_id="", item_type="", status="")
 
         with pytest.raises(ValueError, match="missing required fields"):
             write_item_markdown(item, temp_base_dir / "test.md")
@@ -960,7 +920,7 @@ class TestSyncEngineEdgeCases:
         async def raise_error():
             raise RuntimeError("Test error")
 
-        engine.detect_and_queue_changes = raise_error
+        engine.detect_and_queue_changes = raise_error  # type: ignore[assignment]
 
         result = await engine.sync()
 
@@ -975,19 +935,11 @@ class TestSyncEngineEdgeCases:
         engine = SyncEngine(db_connection, mock_api_client, mock_storage, max_retries=3)
 
         # Add item with high retry count
-        queue_id = engine.queue.enqueue(
-            EntityType.ITEM,
-            "test-001",
-            OperationType.CREATE,
-            {"title": "Test"}
-        )
+        queue_id = engine.queue.enqueue(EntityType.ITEM, "test-001", OperationType.CREATE, {"title": "Test"})
 
         # Manually set high retry count
         with db_connection.engine.connect() as conn:
-            conn.execute(
-                text("UPDATE sync_queue SET retry_count = 5 WHERE id = :id"),
-                {"id": queue_id}
-            )
+            conn.execute(text("UPDATE sync_queue SET retry_count = 5 WHERE id = :id"), {"id": queue_id})
             conn.commit()
 
         result = await engine.process_queue()
@@ -1004,15 +956,10 @@ class TestSyncEngineEdgeCases:
         async def fail_upload(change):
             return False
 
-        engine._upload_change = fail_upload
+        engine._upload_change = fail_upload  # type: ignore[assignment]
 
         # Queue change
-        engine.queue.enqueue(
-            EntityType.ITEM,
-            "test-001",
-            OperationType.CREATE,
-            {"title": "Test"}
-        )
+        engine.queue.enqueue(EntityType.ITEM, "test-001", OperationType.CREATE, {"title": "Test"})
 
         result = await engine.process_queue()
 
@@ -1029,12 +976,12 @@ class TestSyncEngineEdgeCases:
         async def raise_error(change):
             raise RuntimeError("Apply error")
 
-        engine._apply_remote_change = raise_error
+        engine._apply_remote_change = raise_error  # type: ignore[assignment]
 
         # Provide changes
-        with patch.object(engine, 'pull_changes') as mock_pull:
+        with patch.object(engine, "pull_changes") as mock_pull:
             # Manually test the error path
-            result = await engine.pull_changes(since=datetime.utcnow())
+            result = await engine.pull_changes(since=datetime.now(UTC))
             # Default implementation has empty changes, so success
             assert result.success is True
 
@@ -1042,10 +989,7 @@ class TestSyncEngineEdgeCases:
         """Test conflict resolution with LAST_WRITE_WINS."""
         mock_storage = MagicMock()
         engine = SyncEngine(
-            db_connection,
-            mock_api_client,
-            mock_storage,
-            conflict_strategy=ConflictStrategy.LAST_WRITE_WINS
+            db_connection, mock_api_client, mock_storage, conflict_strategy=ConflictStrategy.LAST_WRITE_WINS
         )
 
         local_data = {"id": "1", "title": "Local", "updated_at": "2024-01-01T00:00:00"}
@@ -1059,12 +1003,7 @@ class TestSyncEngineEdgeCases:
     def test_resolve_conflict_local_wins(self, db_connection, mock_api_client):
         """Test conflict resolution with LOCAL_WINS."""
         mock_storage = MagicMock()
-        engine = SyncEngine(
-            db_connection,
-            mock_api_client,
-            mock_storage,
-            conflict_strategy=ConflictStrategy.LOCAL_WINS
-        )
+        engine = SyncEngine(db_connection, mock_api_client, mock_storage, conflict_strategy=ConflictStrategy.LOCAL_WINS)
 
         local_data = {"id": "1", "title": "Local"}
         remote_data = {"id": "1", "title": "Remote"}
@@ -1076,10 +1015,7 @@ class TestSyncEngineEdgeCases:
         """Test conflict resolution with REMOTE_WINS."""
         mock_storage = MagicMock()
         engine = SyncEngine(
-            db_connection,
-            mock_api_client,
-            mock_storage,
-            conflict_strategy=ConflictStrategy.REMOTE_WINS
+            db_connection, mock_api_client, mock_storage, conflict_strategy=ConflictStrategy.REMOTE_WINS
         )
 
         local_data = {"id": "1", "title": "Local"}
@@ -1091,12 +1027,7 @@ class TestSyncEngineEdgeCases:
     def test_resolve_conflict_manual(self, db_connection, mock_api_client):
         """Test conflict resolution with MANUAL strategy."""
         mock_storage = MagicMock()
-        engine = SyncEngine(
-            db_connection,
-            mock_api_client,
-            mock_storage,
-            conflict_strategy=ConflictStrategy.MANUAL
-        )
+        engine = SyncEngine(db_connection, mock_api_client, mock_storage, conflict_strategy=ConflictStrategy.MANUAL)
 
         local_data = {"id": "1", "title": "Local"}
         remote_data = {"id": "1", "title": "Remote"}
@@ -1108,7 +1039,6 @@ class TestSyncEngineEdgeCases:
     @pytest.mark.asyncio
     async def test_exponential_backoff(self):
         """Test exponential backoff utility function."""
-        import time
 
         start = time.time()
         await exponential_backoff(0, initial_delay=0.01, max_delay=1.0)
@@ -1239,7 +1169,7 @@ class TestFileWatcherEdgeCases:
                 title="Old Title",
                 item_type="epic",
                 status="todo",
-                item_metadata={"external_id": "EPIC-UPDATE"}
+                item_metadata={"external_id": "EPIC-UPDATE"},
             )
             session.add(item)
             session.commit()
@@ -1266,6 +1196,7 @@ status: done
         session = storage.get_session()
         try:
             item = session.get(Item, "epic-update")
+            assert item is not None
             assert item.status == "done"
         finally:
             session.close()
@@ -1456,10 +1387,7 @@ class TestChangeDetectorEdgeCases:
 
     def test_detect_changes_in_directory_not_exists(self, temp_base_dir):
         """Test detect_changes_in_directory with non-existent directory."""
-        changes = ChangeDetector.detect_changes_in_directory(
-            temp_base_dir / "nonexistent",
-            {}
-        )
+        changes = ChangeDetector.detect_changes_in_directory(temp_base_dir / "nonexistent", {})
         assert changes == []
 
     def test_detect_changes_new_files(self, temp_base_dir):
@@ -1511,7 +1439,7 @@ class TestAdditionalEdgeCases:
             target="TGT-001",
             link_type="implements",
             created=datetime(2024, 1, 1),
-            metadata={"key": "value"}
+            metadata={"key": "value"},
         )
 
         data = link.to_dict()
@@ -1526,7 +1454,7 @@ class TestAdditionalEdgeCases:
             target="TGT-002",
             link_type="tests",
             created=datetime(2024, 1, 1),
-            metadata={}
+            metadata={},
         )
 
         data = link.to_dict()
@@ -1540,7 +1468,7 @@ class TestAdditionalEdgeCases:
             "target": "TGT-003",
             "type": "depends_on",
             "created": "2024-01-01T00:00:00Z",
-            "metadata": {}
+            "metadata": {},
         }
 
         link = LinkData.from_dict(data)
@@ -1551,12 +1479,10 @@ class TestAdditionalEdgeCases:
         trace_dir, project_id, project_path = initialized_project
         storage = LocalStorageManager(base_dir=trace_dir.parent.parent)
         project_storage = storage.get_project_storage_for_path(project_path)
+        assert project_storage is not None
 
         # Update with new description
-        updated = project_storage.create_or_update_project(
-            name="Test Project",
-            description="Updated Description"
-        )
+        updated = project_storage.create_or_update_project(name="Test Project", description="Updated Description")
 
         assert updated.description == "Updated Description"
 
@@ -1566,12 +1492,7 @@ class TestAdditionalEdgeCases:
 
         initial_count = queue.get_count()
 
-        queue.enqueue(
-            EntityType.ITEM,
-            "test-001",
-            OperationType.CREATE,
-            {"title": "Test"}
-        )
+        queue.enqueue(EntityType.ITEM, "test-001", OperationType.CREATE, {"title": "Test"})
 
         assert queue.get_count() == initial_count + 1
 
@@ -1579,12 +1500,7 @@ class TestAdditionalEdgeCases:
         """Test SyncQueue.clear removes all entries."""
         queue = SyncQueue(db_connection)
 
-        queue.enqueue(
-            EntityType.ITEM,
-            "test-001",
-            OperationType.CREATE,
-            {"title": "Test"}
-        )
+        queue.enqueue(EntityType.ITEM, "test-001", OperationType.CREATE, {"title": "Test"})
 
         queue.clear()
 
@@ -1596,12 +1512,7 @@ class TestAdditionalEdgeCases:
         mock_storage = MagicMock()
         engine = SyncEngine(db_connection, mock_api_client, mock_storage)
 
-        engine.queue.enqueue(
-            EntityType.ITEM,
-            "test-001",
-            OperationType.CREATE,
-            {"title": "Test"}
-        )
+        engine.queue.enqueue(EntityType.ITEM, "test-001", OperationType.CREATE, {"title": "Test"})
 
         await engine.clear_queue()
 
@@ -1613,7 +1524,7 @@ class TestAdditionalEdgeCases:
         mock_storage = MagicMock()
         engine = SyncEngine(db_connection, mock_api_client, mock_storage)
 
-        engine.state_manager.update_last_sync(datetime.utcnow())
+        engine.state_manager.update_last_sync(datetime.now(UTC))
         engine.state_manager.update_status(SyncStatus.ERROR)
 
         await engine.reset_sync_state()
@@ -1637,11 +1548,7 @@ class TestAdditionalEdgeCases:
         mock_storage = MagicMock()
         engine = SyncEngine(db_connection, mock_api_client, mock_storage)
 
-        clock = engine.create_vector_clock(
-            client_id="client-001",
-            version=1,
-            parent_version=0
-        )
+        clock = engine.create_vector_clock(client_id="client-001", version=1, parent_version=0)
 
         assert clock.client_id == "client-001"
         assert clock.version == 1

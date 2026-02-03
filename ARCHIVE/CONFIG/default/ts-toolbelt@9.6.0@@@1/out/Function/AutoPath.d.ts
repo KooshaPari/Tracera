@@ -66,4 +66,4 @@ declare type _AutoPath<A, P extends string, D extends string, SP extends List<In
  * ```
  */
 export declare type AutoPath<O extends any, P extends string, D extends string = '.'> = _AutoPath<O, P, D>;
-export {};
+

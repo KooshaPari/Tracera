@@ -351,7 +351,7 @@ const language = {
   predeclared_type_aliases,
   predeclared_intrinsics,
   operators,
-  symbols: /[!%&*+\-\.\/:;<=>^|_~,]+/,
+  symbols: /[!%&*+\-./:;<=>^|_~,]+/,
   tokenizer: {
     root: [
       [directive_re, "keyword", "@directive"],
@@ -374,7 +374,7 @@ const language = {
       ],
       { include: "@commentOrSpace" },
       { include: "@numbers" },
-      [/[{}()\[\]]/, "@brackets"],
+      [/[{}()[\]]/, "@brackets"],
       ["@", "annotation", "@attribute"],
       [
         /@symbols/,
@@ -394,13 +394,13 @@ const language = {
     ],
     blockComment: [
       // Soak up uninteresting text: anything except * or /
-      [/[^\/*]+/, "comment"],
+      [/[^/*]+/, "comment"],
       // Recognize the start of a nested block comment.
       [/\/\*/, "comment", "@push"],
       // Recognize the end of a nested block comment.
       [/\*\//, "comment", "@pop"],
       // Recognize insignificant * and /
-      [/[\/*]/, "comment"]
+      [/[/*]/, "comment"]
     ],
     attribute: [
       // For things like '@fragment' both '@' and 'fragment'

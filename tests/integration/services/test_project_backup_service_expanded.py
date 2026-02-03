@@ -12,19 +12,17 @@ expanding coverage for:
 Target: +5% coverage on ProjectBackupService module
 """
 
+from datetime import UTC, datetime, timezone
+
 import pytest
-from datetime import datetime
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from tracertm.models.base import Base
-from tracertm.models.project import Project
 from tracertm.models.item import Item
 from tracertm.models.link import Link
-from tracertm.models.event import Event
-from tracertm.models.agent import Agent
-
+from tracertm.models.project import Project
 from tracertm.services.project_backup_service import ProjectBackupService
 
 pytestmark = pytest.mark.integration
@@ -82,7 +80,7 @@ def sample_project(sync_db_session):
             id=f"sample-link-{i}",
             project_id="sample-proj",
             source_item_id=f"sample-item-{i}",
-            target_item_id=f"sample-item-{i+1}",
+            target_item_id=f"sample-item-{i + 1}",
             link_type="depends_on" if i % 2 == 0 else "relates_to",
         )
         sync_db_session.add(link)
@@ -169,7 +167,9 @@ class TestBackupProjectMetadataPreservation:
         sync_db_session.commit()
 
         # Active item
-        item1 = Item(id="active-item", project_id="delete-test-proj", title="Active", view="FEATURE", item_type="feature")
+        item1 = Item(
+            id="active-item", project_id="delete-test-proj", title="Active", view="FEATURE", item_type="feature"
+        )
         # Soft-deleted item
         item2 = Item(
             id="deleted-item",
@@ -178,7 +178,7 @@ class TestBackupProjectMetadataPreservation:
             view="FEATURE",
             item_type="feature",
         )
-        item2.deleted_at = datetime.utcnow()
+        item2.deleted_at = datetime.now(UTC)
         sync_db_session.add_all([item1, item2])
         sync_db_session.commit()
 
@@ -210,7 +210,7 @@ class TestRestoreProjectWorkflows:
         """Test restore with custom project name."""
         backup_data = {
             "version": "1.0",
-            "backup_date": datetime.utcnow().isoformat(),
+            "backup_date": datetime.now(UTC).isoformat(),
             "project": {
                 "id": "orig-id",
                 "name": "Original Name",
@@ -231,7 +231,7 @@ class TestRestoreProjectWorkflows:
         """Test restore uses backup project name when no custom name provided."""
         backup_data = {
             "version": "1.0",
-            "backup_date": datetime.utcnow().isoformat(),
+            "backup_date": datetime.now(UTC).isoformat(),
             "project": {
                 "id": "orig-id",
                 "name": "Backup Name",
@@ -252,7 +252,7 @@ class TestRestoreProjectWorkflows:
         """Test that restore preserves project metadata from backup."""
         backup_data = {
             "version": "1.0",
-            "backup_date": datetime.utcnow().isoformat(),
+            "backup_date": datetime.now(UTC).isoformat(),
             "project": {
                 "id": "orig-id",
                 "name": "Project",
@@ -295,7 +295,7 @@ class TestRestoreProjectWorkflows:
         """Test restore with parent-child item relationships."""
         backup_data = {
             "version": "1.0",
-            "backup_date": datetime.utcnow().isoformat(),
+            "backup_date": datetime.now(UTC).isoformat(),
             "project": {
                 "id": "parent-proj",
                 "name": "Parent Project",
@@ -337,15 +337,15 @@ class TestRestoreProjectWorkflows:
         items = sync_db_session.query(Item).filter(Item.project_id == new_project_id).all()
         assert len(items) == 2
 
-        child = [i for i in items if i.title == "Child"][0]
-        parent = [i for i in items if i.title == "Parent"][0]
+        child = next(i for i in items if i.title == "Child")
+        parent = next(i for i in items if i.title == "Parent")
         assert child.parent_id == parent.id
 
     def test_restore_preserves_links_between_items(self, sync_db_session):
         """Test restore preserves links between restored items."""
         backup_data = {
             "version": "1.0",
-            "backup_date": datetime.utcnow().isoformat(),
+            "backup_date": datetime.now(UTC).isoformat(),
             "project": {
                 "id": "link-proj",
                 "name": "Link Project",
@@ -409,7 +409,7 @@ class TestRestoreProjectWorkflows:
 
         backup_data = {
             "version": "1.0",
-            "backup_date": datetime.utcnow().isoformat(),
+            "backup_date": datetime.now(UTC).isoformat(),
             "project": {
                 "id": "orig-id",
                 "name": "Same Name",
@@ -480,8 +480,8 @@ class TestCloneProjectVariations:
             include_items=True,
         )
 
-        original_ids = set(i.id for i in sync_db_session.query(Item).filter(Item.project_id == "sample-proj").all())
-        cloned_ids = set(i.id for i in sync_db_session.query(Item).filter(Item.project_id == cloned_id).all())
+        original_ids = {i.id for i in sync_db_session.query(Item).filter(Item.project_id == "sample-proj").all()}
+        cloned_ids = {i.id for i in sync_db_session.query(Item).filter(Item.project_id == cloned_id).all()}
 
         # IDs should be different
         assert original_ids.isdisjoint(cloned_ids)
@@ -568,7 +568,7 @@ class TestTemplateOperations:
         assert template1_id is not None
         assert template2_id is not None
         assert template3_id is not None
-        assert len(set([template1_id, template2_id, template3_id])) == 3
+        assert len({template1_id, template2_id, template3_id}) == 3
 
     def test_list_templates_returns_only_templates(self, sync_db_session):
         """Test that list_templates returns only marked templates."""

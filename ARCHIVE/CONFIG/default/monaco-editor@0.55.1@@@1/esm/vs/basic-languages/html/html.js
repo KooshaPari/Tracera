@@ -91,7 +91,7 @@ const EMPTY_ELEMENTS = [
   "wbr"
 ];
 const conf = {
-  wordPattern: /(-?\d*\.\d\w*)|([^\`\~\!\@\$\^\&\*\(\)\=\+\[\{\]\}\\\|\;\:\'\"\,\.\<\>\/\s]+)/g,
+  wordPattern: /(-?\d*\.\d\w*)|([^`~!@$^&*()=+[{\]}\\|;:'",.<>/\s]+)/g,
   comments: {
     blockComment: ["<!--", "-->"]
   },
@@ -151,11 +151,11 @@ const language = {
     root: [
       [/<!DOCTYPE/, "metatag", "@doctype"],
       [/<!--/, "comment", "@comment"],
-      [/(<)((?:[\w\-]+:)?[\w\-]+)(\s*)(\/>)/, ["delimiter", "tag", "", "delimiter"]],
+      [/(<)((?:[\w-]+:)?[\w-]+)(\s*)(\/>)/, ["delimiter", "tag", "", "delimiter"]],
       [/(<)(script)/, ["delimiter", { token: "tag", next: "@script" }]],
       [/(<)(style)/, ["delimiter", { token: "tag", next: "@style" }]],
-      [/(<)((?:[\w\-]+:)?[\w\-]+)/, ["delimiter", { token: "tag", next: "@otherTag" }]],
-      [/(<\/)((?:[\w\-]+:)?[\w\-]+)/, ["delimiter", { token: "tag", next: "@otherTag" }]],
+      [/(<)((?:[\w-]+:)?[\w-]+)/, ["delimiter", { token: "tag", next: "@otherTag" }]],
+      [/(<\/)((?:[\w-]+:)?[\w-]+)/, ["delimiter", { token: "tag", next: "@otherTag" }]],
       [/</, "delimiter"],
       [/[^<]+/]
       // text
@@ -173,7 +173,7 @@ const language = {
       [/\/?>/, "delimiter", "@pop"],
       [/"([^"]*)"/, "attribute.value"],
       [/'([^']*)'/, "attribute.value"],
-      [/[\w\-]+/, "attribute.name"],
+      [/[\w-]+/, "attribute.name"],
       [/=/, "delimiter"],
       [/[ \t\r\n]+/]
       // whitespace
@@ -184,7 +184,7 @@ const language = {
       [/type/, "attribute.name", "@scriptAfterType"],
       [/"([^"]*)"/, "attribute.value"],
       [/'([^']*)'/, "attribute.value"],
-      [/[\w\-]+/, "attribute.name"],
+      [/[\w-]+/, "attribute.name"],
       [/=/, "delimiter"],
       [
         />/,
@@ -269,7 +269,7 @@ const language = {
       ],
       [/"([^"]*)"/, "attribute.value"],
       [/'([^']*)'/, "attribute.value"],
-      [/[\w\-]+/, "attribute.name"],
+      [/[\w-]+/, "attribute.name"],
       [/=/, "delimiter"],
       [/[ \t\r\n]+/],
       // whitespace
@@ -286,7 +286,7 @@ const language = {
       [/type/, "attribute.name", "@styleAfterType"],
       [/"([^"]*)"/, "attribute.value"],
       [/'([^']*)'/, "attribute.value"],
-      [/[\w\-]+/, "attribute.name"],
+      [/[\w-]+/, "attribute.name"],
       [/=/, "delimiter"],
       [
         />/,
@@ -357,7 +357,7 @@ const language = {
       ],
       [/"([^"]*)"/, "attribute.value"],
       [/'([^']*)'/, "attribute.value"],
-      [/[\w\-]+/, "attribute.name"],
+      [/[\w-]+/, "attribute.name"],
       [/=/, "delimiter"],
       [/[ \t\r\n]+/],
       // whitespace

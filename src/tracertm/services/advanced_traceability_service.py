@@ -1,5 +1,6 @@
 """Advanced traceability service for multi-level analysis."""
 
+import uuid
 from dataclasses import dataclass
 from typing import Any
 
@@ -40,11 +41,13 @@ class AdvancedTraceabilityService:
 
     async def find_all_paths(
         self,
-        source_id: str,
-        target_id: str,
+        source_id: str | uuid.UUID,
+        target_id: str | uuid.UUID,
         max_depth: int = 10,
     ) -> list[TraceabilityPath]:
         """Find all paths between two items."""
+        source_id = str(source_id)
+        target_id = str(target_id)
         paths = []
         visited = set()
 
@@ -66,15 +69,16 @@ class AdvancedTraceabilityService:
             # Get outgoing links
             links = await self.links.get_by_source(current)
             for link in links:
-                if link.target_item_id not in visited:
-                    visited.add(link.target_item_id)
+                tid = str(link.target_item_id)
+                if tid not in visited:
+                    visited.add(tid)
                     await dfs(
-                        link.target_item_id,
+                        tid,
                         target,
-                        [*path, link.target_item_id],
+                        [*path, tid],
                         depth + 1,
                     )
-                    visited.remove(link.target_item_id)
+                    visited.remove(tid)
 
         await dfs(source_id, target_id, [source_id], 0)
         return paths
@@ -84,19 +88,19 @@ class AdvancedTraceabilityService:
         project_id: str,
     ) -> dict[str, set[str]]:
         """Compute transitive closure of all links."""
-        # Get all items
+        # Get all items; use str ids so closure keys are str
         items = await self.items.query(project_id, {})
-        closure: dict[str, set[str]] = {item.id: set() for item in items}
+        closure: dict[str, set[str]] = {str(item.id): set() for item in items}
 
         # For each item, find all reachable items
         for item in items:
             visited: set[str] = set()
-            item_id = item.id  # Capture loop variable
+            item_key = str(item.id)
 
             async def dfs(
                 current_id: str,
                 visited_set: set[str] = visited,
-                item_key: str = item_id,
+                closure_key: str = item_key,
             ) -> None:
                 if current_id in visited_set:
                     return
@@ -104,24 +108,26 @@ class AdvancedTraceabilityService:
 
                 links = await self.links.get_by_source(current_id)
                 for link in links:
-                    closure[item_key].add(link.target_item_id)
-                    await dfs(link.target_item_id, visited_set, item_key)
+                    tid = str(link.target_item_id)
+                    closure[closure_key].add(tid)
+                    await dfs(tid, visited_set, closure_key)
 
-            await dfs(item.id)
+            await dfs(str(item.id))
 
         return closure
 
     async def bidirectional_impact(
         self,
-        entity_id: str,
+        entity_id: str | uuid.UUID,
     ) -> dict[str, Any]:
         """Analyze impact in both directions."""
+        eid = str(entity_id) if isinstance(entity_id, uuid.UUID) else entity_id
         # Forward impact (what does this affect)
-        forward_links = await self.links.get_by_source(entity_id)
+        forward_links = await self.links.get_by_source(eid)
         forward_impact = [link.target_item_id for link in forward_links]
 
         # Backward impact (what affects this)
-        backward_links = await self.links.get_by_target(entity_id)
+        backward_links = await self.links.get_by_target(eid)
         backward_impact = [link.source_item_id for link in backward_links]
 
         return {
@@ -183,18 +189,19 @@ class AdvancedTraceabilityService:
 
                 links = await self.links.get_by_source(current_id)
                 for link in links:
-                    if link.target_item_id not in visited_set:
-                        await dfs(link.target_item_id, path.copy(), visited_set, rec_stack_set)
-                    elif link.target_item_id in rec_stack_set:
+                    tid = str(link.target_item_id)
+                    if tid not in visited_set:
+                        await dfs(tid, path.copy(), visited_set, rec_stack_set)
+                    elif tid in rec_stack_set:
                         # Found cycle
-                        cycle_start = path.index(link.target_item_id)
-                        cycle = [*path[cycle_start:], link.target_item_id]
+                        cycle_start = path.index(tid)
+                        cycle = [*path[cycle_start:], tid]
                         if cycle not in cycles:
                             cycles.append(cycle)
 
                 rec_stack_set.remove(current_id)
 
             if item_id not in visited:
-                await dfs(item_id, [])
+                await dfs(str(item_id), [])
 
         return cycles

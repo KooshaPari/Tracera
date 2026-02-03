@@ -253,7 +253,7 @@ describe("Authentication API", () => {
 			expect(result).toEqual(mockUser);
 		});
 
-		it("should return null on 401 (not authenticated)", async () => {
+		it("should return undefined on 401 (not authenticated)", async () => {
 			const apiError = new ApiError(401, "Unauthorized", {
 				message: "Not authenticated",
 			});
@@ -262,7 +262,7 @@ describe("Authentication API", () => {
 
 			const result = await authApi.getCurrentUser();
 
-			expect(result).toBeNull();
+			expect(result).toBeUndefined();
 		});
 
 		it("should throw on server errors (not 401)", async () => {

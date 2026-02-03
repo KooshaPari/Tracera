@@ -6475,11 +6475,11 @@
             interpolate: /\{\{=([\s\S]+?)\}\}/g,
             encode: /\{\{!([\s\S]+?)\}\}/g,
             use: /\{\{#([\s\S]+?)\}\}/g,
-            useParams: /(^|[^\w$])def(?:\.|\[[\'\"])([\w$\.]+)(?:[\'\"]\])?\s*\:\s*([\w$\.]+|\"[^\"]+\"|\'[^\']+\'|\{[^\}]+\})/g,
-            define: /\{\{##\s*([\w\.$]+)\s*(\:|=)([\s\S]+?)#\}\}/g,
+            useParams: /(^|[^\w$])def(?:\.|\[['"])([\w$.]+)(?:['"]\])?\s*:\s*([\w$.]+|"[^"]+"|'[^']+'|\{[^}]+\})/g,
+            define: /\{\{##\s*([\w.$]+)\s*(:|=)([\s\S]+?)#\}\}/g,
             defineParams: /^\s*([\w$]+):([\s\S]+)/,
             conditional: /\{\{\?(\?)?\s*([\s\S]*?)\s*\}\}/g,
-            iterate: /\{\{~\s*(?:\}\}|([\s\S]+?)\s*\:\s*([\w$]+)\s*(?:\:\s*([\w$]+))?\s*\}\})/g,
+            iterate: /\{\{~\s*(?:\}\}|([\s\S]+?)\s*:\s*([\w$]+)\s*(?::\s*([\w$]+))?\s*\}\})/g,
             varname: 'it',
             strip: true,
             append: true,
@@ -6529,7 +6529,7 @@
             '"': '&#34;',
             '\'': '&#39;',
             '/': '&#47;'
-          }, matchHTML = doNotSkipEncoded ? /[&<>"'\/]/g : /&(?!#?\w+;)|<|>|"|'|\//g;
+          }, matchHTML = doNotSkipEncoded ? /[&<>"'/]/g : /&(?!#?\w+;)|<|>|"|'|\//g;
           return function(code) {
             return code ? code.toString().replace(matchHTML, function(m3) {
               return encodeHTMLRules[m3] || m3;
@@ -7963,7 +7963,7 @@
       return matchesTag(vNode, expression) && matchesClasses(vNode, expression) && matchesAttributes(vNode, expression) && matchesId(vNode, expression) && matchesPseudos(vNode, expression);
     }
     var escapeRegExp = function() {
-      var from = /(?=[\-\[\]{}()*+?.\\\^$|,#\s])/g;
+      var from = /(?=[-[\]{}()*+?.\\^$|,#\s])/g;
       var to2 = '\\';
       return function(string) {
         return string.replace(from, to2);
@@ -10124,7 +10124,7 @@
       return false;
     }
     var focus_disabled_default = focusDisabled;
-    var angularSkipLinkRegex = /^\/\#/;
+    var angularSkipLinkRegex = /^\/#/;
     var angularRouterLinkRegex = /^#[!/]/;
     function _isCurrentPageLink(anchor) {
       var _window$location;
@@ -13367,7 +13367,7 @@
       return /[\u1D00-\u1D7F\u1D80-\u1DBF\u1DC0-\u1DFF\u20A0-\u20CF\u20D0-\u20FF\u2100-\u214F\u2150-\u218F\u2190-\u21FF\u2200-\u22FF\u2300-\u23FF\u2400-\u243F\u2440-\u245F\u2460-\u24FF\u2500-\u257F\u2580-\u259F\u25A0-\u25FF\u2600-\u26FF\u2700-\u27BF\uE000-\uF8FF]/g;
     }
     function getPunctuationRegExp() {
-      return /[\u2000-\u206F\u2E00-\u2E7F\\'!"#$%&\xa3\xa2\xa5\xa7\u20ac()*+,\-.\/:;<=>?@\[\]^_`{|}~\xb1]/g;
+      return /[\u2000-\u206F\u2E00-\u2E7F\\'!"#$%&\xa3\xa2\xa5\xa7\u20ac()*+,\-./:;<=>?@[\]^_`{|}~\xb1]/g;
     }
     function getSupplementaryPrivateUseRegExp() {
       return /[\uDB80-\uDBBF][\uDC00-\uDFFF]/g;
@@ -14441,10 +14441,10 @@
       if (parts) {
         var args = [];
         parts[2].replace(/\/?\s*([-\w.]+(?:%|deg)?)/g, function($0, arg) {
-          if (/%$/.test(arg)) {
+          if (arg.endsWith('%')) {
             arg = new Number(arg.slice(0, -1) / 100);
             arg.type = '<percentage>';
-          } else if (/deg$/.test(arg)) {
+          } else if (arg.endsWith('deg')) {
             arg = new Number(+arg.slice(0, -3));
             arg.type = '<angle>';
             arg.unit = 'deg';
@@ -17946,13 +17946,13 @@
         parser2.href = node.getAttribute(attribute);
       }
       var protocol = [ 'https:', 'ftps:' ].includes(parser2.protocol) ? parser2.protocol.replace(/s:$/, ':') : parser2.protocol;
-      var parserPathname = /^\//.test(parser2.pathname) ? parser2.pathname : '/'.concat(parser2.pathname);
+      var parserPathname = parser2.pathname.startsWith('/') ? parser2.pathname : '/'.concat(parser2.pathname);
       var _getPathnameOrFilenam = getPathnameOrFilename(parserPathname), pathname = _getPathnameOrFilenam.pathname, filename = _getPathnameOrFilenam.filename;
       return {
         protocol: protocol,
         hostname: parser2.hostname,
         port: getPort(parser2.port),
-        pathname: /\/$/.test(pathname) ? pathname : ''.concat(pathname, '/'),
+        pathname: pathname.endsWith('/') ? pathname : ''.concat(pathname, '/'),
         search: getSearchPairs(parser2.search),
         hash: getHashRoute(parser2.hash),
         filename: filename

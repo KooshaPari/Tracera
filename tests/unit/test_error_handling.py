@@ -5,7 +5,6 @@ Story 1.6: Error Handling & User-Friendly Messages
 Test Cases: TC-1.6.1 to TC-1.6.7
 """
 
-
 from tracertm.cli.errors import (
     ConfigurationError,
     DatabaseConnectionError,
@@ -32,18 +31,14 @@ class TestErrorHandling:
         """
         # PostgreSQL connection error
         pg_error = DatabaseConnectionError(
-            "postgresql://localhost:5432/testdb",
-            Exception("could not connect to server")
+            "postgresql://localhost:5432/testdb", Exception("could not connect to server")
         )
 
         assert "Failed to connect to database" in pg_error.message
-        assert "PostgreSQL is running" in pg_error.suggestion
+        assert "PostgreSQL is running" in (pg_error.suggestion or "")
 
         # SQLite permission error
-        sqlite_error = DatabaseConnectionError(
-            "sqlite:///test.db",
-            Exception("unable to open database file")
-        )
+        sqlite_error = DatabaseConnectionError("sqlite:///test.db", Exception("unable to open database file"))
 
         assert "Failed to connect to database" in sqlite_error.message
         assert pg_error.suggestion is not None
@@ -60,7 +55,7 @@ class TestErrorHandling:
 
         assert "Invalid configuration for 'database_url'" in error.message
         assert "must start with 'postgresql://'" in error.message
-        assert "rtm config set database_url" in error.suggestion
+        assert "rtm config set database_url" in (error.suggestion or "")
 
     def test_missing_project_error(self):
         """
@@ -73,12 +68,12 @@ class TestErrorHandling:
         # Specific project not found
         error1 = ProjectNotFoundError("myproject")
         assert "Project 'myproject' not found" in error1.message
-        assert "rtm project list" in error1.suggestion
+        assert error1.suggestion is not None and "rtm project list" in error1.suggestion
 
         # No current project
         error2 = ProjectNotFoundError()
         assert "No current project set" in error2.message
-        assert "rtm project init" in error2.suggestion
+        assert error2.suggestion is not None and "rtm project init" in error2.suggestion
 
     def test_permission_error(self):
         """
@@ -92,7 +87,7 @@ class TestErrorHandling:
 
         assert "Permission denied to write" in error.message
         assert "/path/to/file" in error.message
-        assert "permissions" in error.suggestion.lower()
+        assert error.suggestion is not None and "permissions" in error.suggestion.lower()
 
     def test_disk_space_error(self):
         """
@@ -106,7 +101,7 @@ class TestErrorHandling:
 
         assert "Insufficient disk space" in error.message
         assert "100MB" in error.message
-        assert "Free up disk space" in error.suggestion
+        assert error.suggestion is not None and "Free up disk space" in error.suggestion
 
     def test_network_error(self):
         """
@@ -120,7 +115,7 @@ class TestErrorHandling:
 
         assert "Network error during database sync" in error.message
         assert "connection timeout" in error.message
-        assert "network connection" in error.suggestion.lower()
+        assert error.suggestion is not None and "network connection" in error.suggestion.lower()
 
     def test_user_friendly_error_messages(self):
         """

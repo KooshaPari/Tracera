@@ -1,5 +1,5 @@
 // Disable automatic exports.
-export {};
+
 
 interface MapLike<Key, Value> {
     entries: () => Array<[Key, Value]>;

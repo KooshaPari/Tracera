@@ -5,17 +5,14 @@ Revises: 006_add_uuid_constraints, 009_add_test_suites_runs, 047_add_workflow_sc
 Create Date: 2026-01-31 02:49:59.781495
 
 """
-from typing import Sequence, Union
 
-from alembic import op
-import sqlalchemy as sa
-
+from collections.abc import Sequence
 
 # revision identifiers, used by Alembic.
-revision: str = 'd0fa574bb4f6'
-down_revision: Union[str, None] = ('006_add_uuid_constraints', '009_add_test_suites_runs', '047_add_workflow_schedules')
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+revision: str = "d0fa574bb4f6"
+down_revision: str | tuple[str, ...] | None = ("006_add_uuid_constraints", "009_add_test_suites_runs", "047_add_workflow_schedules")
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
@@ -24,4 +21,3 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     pass
-

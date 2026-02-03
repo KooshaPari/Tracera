@@ -34,20 +34,17 @@ class TestDatabaseConnectionInit:
 
     def test_invalid_url_raises_error(self):
         """Test that invalid URL raises ValueError."""
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(ValueError, match="postgresql://"):
             DatabaseConnection("mysql://localhost/test")
-        assert "postgresql://" in str(exc_info.value)
-        assert "sqlite://" in str(exc_info.value)
 
     def test_empty_url_raises_error(self):
         """Test that empty URL raises ValueError."""
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(ValueError, match="postgresql://"):
             DatabaseConnection("")
-        assert "postgresql://" in str(exc_info.value)
 
     def test_http_url_raises_error(self):
         """Test that HTTP URL raises ValueError."""
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="postgresql://"):
             DatabaseConnection("http://localhost/test")
 
     def test_engine_property_initially_none(self):

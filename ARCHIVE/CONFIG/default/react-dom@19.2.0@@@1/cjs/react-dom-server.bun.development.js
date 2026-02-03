@@ -2471,7 +2471,7 @@ function pushStartGenericElement(target, props, tag) {
     ? (target.push(escapeTextForBrowser(tag)), null)
     : tag;
 }
-var VALID_TAG_REGEX = /^[a-zA-Z][a-zA-Z:_\.\-\d]*$/,
+var VALID_TAG_REGEX = /^[a-zA-Z][a-zA-Z:_.\-\d]*$/,
   validatedTagCache = new Map();
 function startChunkForTag(tag) {
   var tagStartChunk = validatedTagCache.get(tag);

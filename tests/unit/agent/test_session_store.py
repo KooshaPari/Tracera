@@ -1,19 +1,22 @@
 """Unit tests for tracertm.agent.session_store."""
 
-import tempfile
+import asyncio
 import os
-from unittest.mock import AsyncMock, MagicMock
+import pathlib
+import tempfile
+from datetime import UTC, datetime, timezone
+from unittest.mock import AsyncMock
 
 import pytest
 
+from tracertm.agent.sandbox.local_fs import LocalFilesystemSandboxProvider
 from tracertm.agent.session_store import (
+    AGENT_SESSION_CACHE_PREFIX,
     SessionSandboxStore,
     SessionSandboxStoreDB,
     _agent_session_cache_key,
-    AGENT_SESSION_CACHE_PREFIX,
 )
-from tracertm.agent.sandbox.local_fs import LocalFilesystemSandboxProvider
-from tracertm.agent.types import SandboxConfig, SandboxMetadata, SandboxStatus
+from tracertm.agent.types import SandboxMetadata, SandboxStatus
 
 pytestmark = pytest.mark.unit
 
@@ -44,7 +47,7 @@ class TestSessionSandboxStore:
         path, created = await store.get_or_create("session-1")
         assert created is True
         assert path
-        assert os.path.isdir(path)
+        assert await asyncio.to_thread(pathlib.Path(path).is_dir)
         assert "session-1" in path
 
     @pytest.mark.asyncio
@@ -73,7 +76,7 @@ class TestSessionSandboxStore:
         store._store["session-x"] = SandboxMetadata(
             sandbox_id="session-x",
             status=SandboxStatus.READY,
-            created_at=__import__("datetime").datetime.utcnow(),
+            created_at=datetime.now(UTC),
             sandbox_root="/tmp/x",
         )
         out = store.delete("session-x")
@@ -98,7 +101,7 @@ class TestSessionSandboxStoreDB:
         path, created = await store.get_or_create("session-db1", db_session=None)
         assert created is True
         assert path
-        assert os.path.isdir(path)
+        assert await asyncio.to_thread(pathlib.Path(path).is_dir)
 
     @pytest.mark.asyncio
     async def test_get_or_create_with_cache_miss_then_provider(self, base_dir):

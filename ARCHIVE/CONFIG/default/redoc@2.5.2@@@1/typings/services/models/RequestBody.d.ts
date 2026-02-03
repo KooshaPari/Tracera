@@ -14,4 +14,4 @@ export declare class RequestBodyModel {
     content?: MediaContentModel;
     constructor({ parser, infoOrRef, options, isEvent }: RequestBodyProps);
 }
-export {};
+

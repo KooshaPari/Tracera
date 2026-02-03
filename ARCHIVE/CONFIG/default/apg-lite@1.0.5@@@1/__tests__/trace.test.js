@@ -84,8 +84,8 @@ test('test the trace display for rules and UDTs', () => {
   expect(data['u_office']).toBe('501');
   expect(data['subscriber']).toBe('1234');
   const str = parser.trace.displayTrace();
-  expect(/\|M\|\[RNM\(phone\-number\)\]/.test(str)).toBe(true);
-  expect(/\|M\|\[RNM\(area\-code\)\]/.test(str)).toBe(true);
+  expect(/\|M\|\[RNM\(phone-number\)\]/.test(str)).toBe(true);
+  expect(/\|M\|\[RNM\(area-code\)\]/.test(str)).toBe(true);
   expect(/\|M\|\[UDT\(u_office\)\]/.test(str)).toBe(true);
   expect(/\|M\|\[RNM\(subscriber\)\]/.test(str)).toBe(true);
 });

@@ -145,7 +145,7 @@
 			}()),
 			tokens: {
 				'gradient': {
-					pattern: /(?:\b|\B-[a-z]{1,10}-)(?:repeating-)?(?:linear|radial)-gradient\((?:(?:hsl|rgb)a?\(.+?\)|[^\)])+\)/gi,
+					pattern: /(?:\b|\B-[a-z]{1,10}-)(?:repeating-)?(?:linear|radial)-gradient\((?:(?:hsl|rgb)a?\(.+?\)|[^)])+\)/gi,
 					inside: {
 						'function': /[\w-]+(?=\()/,
 						'punctuation': /[(),]/

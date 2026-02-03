@@ -7,42 +7,61 @@ cause "Component already exists" when server.py loads the params modules.
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+import asyncio
 import gzip
 import json
-import yaml
-import subprocess
+import re
+import subprocess  # noqa: S404
+from collections.abc import Awaitable, Callable
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
+import yaml
 from fastmcp.exceptions import ToolError
 
 try:
     from tracertm.mcp.core import mcp
 except Exception:  # pragma: no cover - test fallback when FastMCP isn't available
+
     class _StubMCP:
         def tool(self, *args: Any, **kwargs: Any):
             def decorator(fn):
                 return fn
+
             return decorator
 
     mcp = _StubMCP()  # type: ignore[assignment]
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+
+from tracertm.api.client import TraceRTMClient
 from tracertm.config.manager import ConfigManager
 from tracertm.database.connection import DatabaseConnection
+from tracertm.services.progress_service import ProgressService
+from tracertm.services.stateless_ingestion_service import StatelessIngestionService
+from tracertm.storage.conflict_resolver import ConflictStrategy as StorageConflictStrategy
+from tracertm.storage.file_watcher import TraceFileWatcher
 from tracertm.storage.local_storage import LocalStorageManager
 from tracertm.storage.sync_engine import SyncEngine
-from tracertm.storage.conflict_resolver import ConflictStrategy as StorageConflictStrategy
-from tracertm.api.client import TraceRTMClient
-from tracertm.services.stateless_ingestion_service import StatelessIngestionService
-from tracertm.services.progress_service import ProgressService
-from tracertm.storage.file_watcher import TraceFileWatcher
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+
+# Table names from sqlite_master or backup JSON; must be identifier-safe for S608
+_TABLE_NAME_RE = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_]*$")
+
+
+def _safe_table_name(name: str) -> str:
+    if not _TABLE_NAME_RE.match(name):
+        raise ToolError(f"Invalid table name: {name!r}")
+    return name
+
 
 # Import tool modules (tolerate missing FastMCP deps in tests)
 try:
     from tracertm.mcp.tools import core_tools as core
 except Exception:  # pragma: no cover - test fallback
+
     async def _core_unavailable(*_args: Any, **_kwargs: Any):
+        await asyncio.sleep(0)
         raise ToolError("MCP core tools are unavailable in this environment.")
 
     class _CoreStub:
@@ -54,15 +73,15 @@ except Exception:  # pragma: no cover - test fallback
 try:
     from tracertm.mcp.tools import specifications as spec_tools
 except Exception:  # pragma: no cover - test fallback
+
     class _SpecStub:
         pass
 
     spec_tools = _SpecStub()  # type: ignore[assignment]
+from tracertm.cli.commands import design as design_module
 from tracertm.cli.commands import export as export_cmd
 from tracertm.cli.commands import import_cmd as import_cmd_module
 from tracertm.cli.commands import saved_queries as saved_queries_module
-from tracertm.cli.commands import test as test_module
-from tracertm.cli.commands import design as design_module
 from tracertm.models.agent import Agent
 from tracertm.models.event import Event
 from tracertm.models.item import Item
@@ -110,6 +129,12 @@ def _wrap(result: Any, ctx: Any | None, action: str) -> dict[str, Any]:
     }
 
 
+async def _call_tool(mod: Any, tool_name: str, **kwargs: Any) -> Any:
+    """Invoke a tool by name on a module (handles FunctionTool/callable from @mcp.tool())."""
+    fn = getattr(mod, tool_name)
+    return await cast(Callable[..., Awaitable[Any]], fn)(**kwargs)  # type: ignore[call-non-callable]
+
+
 def _get_access_token_from_ctx() -> Any | None:
     try:
         from fastmcp.server.dependencies import get_access_token
@@ -151,9 +176,9 @@ async def _maybe_select_project(payload: dict[str, Any], ctx: Any | None) -> Non
     if project_id:
         payload["project_id"] = project_id
         try:
-            await project_tools.select_project(project_id=project_id, ctx=ctx)
+            await _call_tool(project_tools, "select_project", project_id=project_id, ctx=ctx)
         except TypeError:
-            await project_tools.select_project(project_id=project_id)
+            await _call_tool(project_tools, "select_project", project_id=project_id)
 
 
 def _build_sync_engine() -> SyncEngine:
@@ -182,7 +207,7 @@ def _build_sync_engine() -> SyncEngine:
 
     return SyncEngine(
         db_connection=db_connection,
-        api_client=api_client,
+        api_client=cast(TraceRTMClient, api_client),
         storage_manager=storage_manager,
         conflict_strategy=conflict_strategy,
     )
@@ -197,16 +222,17 @@ def _parse_since(value: str | None) -> datetime | None:
     try:
         if value.endswith("h"):
             hours = int(value[:-1])
-            return datetime.utcnow() - timedelta(hours=hours)
+            return datetime.now(UTC) - timedelta(hours=hours)
         if value.endswith("d"):
             days = int(value[:-1])
-            return datetime.utcnow() - timedelta(days=days)
+            return datetime.now(UTC) - timedelta(days=days)
     except Exception:
         return None
     return None
 
 
 async def _get_async_session() -> AsyncSession:
+    await asyncio.sleep(0)
     config = ConfigManager()
     database_url = config.get("database_url")
     if not database_url:
@@ -233,23 +259,26 @@ async def project_manage(
     action = action.lower()
 
     if action == "create":
-        result = await project_tools.create_project(
-            name=payload.get("name"),
+        result = await _call_tool(
+            project_tools, "create_project",
+            name=(payload.get("name") or ""),
             description=payload.get("description"),
             ctx=ctx,
         )
         return _wrap(result, ctx, action)
     if action == "list":
-        result = await project_tools.list_projects(ctx=ctx)
+        result = await _call_tool(project_tools, "list_projects", ctx=ctx)
         return _wrap(result, ctx, action)
     if action == "select":
-        result = await project_tools.select_project(
+        result = await _call_tool(
+            project_tools, "select_project",
             project_id=payload.get("project_id"),
             ctx=ctx,
         )
         return _wrap(result, ctx, action)
     if action == "snapshot":
-        result = await project_tools.snapshot_project(
+        result = await _call_tool(
+            project_tools, "snapshot_project",
             project_id=payload.get("project_id"),
             label=payload.get("label"),
             ctx=ctx,
@@ -278,7 +307,8 @@ async def _item_manage_impl(
     await _maybe_select_project(payload, ctx)
 
     if action == "create":
-        result = await item_tools.create_item(
+        result = await _call_tool(
+            item_tools, "create_item",
             title=payload.get("title"),
             view=payload.get("view"),
             item_type=payload.get("item_type"),
@@ -292,13 +322,15 @@ async def _item_manage_impl(
         )
         return _wrap(result, ctx, action)
     if action == "get":
-        result = await item_tools.get_item(
+        result = await _call_tool(
+            item_tools, "get_item",
             item_id=payload.get("item_id"),
             ctx=ctx,
         )
         return _wrap(result, ctx, action)
     if action == "update":
-        result = await item_tools.update_item(
+        result = await _call_tool(
+            item_tools, "update_item",
             item_id=payload.get("item_id"),
             title=payload.get("title"),
             description=payload.get("description"),
@@ -310,13 +342,15 @@ async def _item_manage_impl(
         )
         return _wrap(result, ctx, action)
     if action == "delete":
-        result = await item_tools.delete_item(
+        result = await _call_tool(
+            item_tools, "delete_item",
             item_id=payload.get("item_id"),
             ctx=ctx,
         )
         return _wrap(result, ctx, action)
     if action == "query":
-        result = await item_tools.query_items(
+        result = await _call_tool(
+            item_tools, "query_items",
             view=payload.get("view"),
             item_type=payload.get("item_type"),
             status=payload.get("status"),
@@ -326,13 +360,15 @@ async def _item_manage_impl(
         )
         return _wrap(result, ctx, action)
     if action == "summarize_view":
-        result = await item_tools.summarize_view(
+        result = await _call_tool(
+            item_tools, "summarize_view",
             view=payload.get("view"),
             ctx=ctx,
         )
         return _wrap(result, ctx, action)
     if action == "bulk_update":
-        result = await item_tools.bulk_update_items(
+        result = await _call_tool(
+            item_tools, "bulk_update_items",
             view=payload.get("view"),
             status=payload.get("status"),
             new_status=payload.get("new_status"),
@@ -354,7 +390,8 @@ async def link_manage(
     await _maybe_select_project(payload, ctx)
 
     if action == "create":
-        result = await link_tools.create_link(
+        result = await _call_tool(
+            link_tools, "create_link",
             source_id=payload.get("source_id"),
             target_id=payload.get("target_id"),
             link_type=payload.get("link_type"),
@@ -363,7 +400,8 @@ async def link_manage(
         )
         return _wrap(result, ctx, action)
     if action == "list":
-        result = await link_tools.list_links(
+        result = await _call_tool(
+            link_tools, "list_links",
             item_id=payload.get("item_id"),
             link_type=payload.get("link_type"),
             limit=payload.get("limit", 50),
@@ -371,7 +409,8 @@ async def link_manage(
         )
         return _wrap(result, ctx, action)
     if action == "show":
-        result = await link_tools.show_links(
+        result = await _call_tool(
+            link_tools, "show_links",
             item_id=payload.get("item_id"),
             view=payload.get("view"),
             ctx=ctx,
@@ -392,21 +431,24 @@ async def trace_analyze(
     await _maybe_select_project(payload, ctx)
 
     if kind == "gaps":
-        result = await trace_tools.find_gaps(
+        result = await _call_tool(
+            trace_tools, "find_gaps",
             from_view=payload.get("from_view"),
             to_view=payload.get("to_view"),
             ctx=ctx,
         )
         return _wrap(result, ctx, kind)
     if kind == "trace_matrix":
-        result = await trace_tools.get_trace_matrix(
+        result = await _call_tool(
+            trace_tools, "get_trace_matrix",
             source_view=payload.get("source_view"),
             target_view=payload.get("target_view"),
             ctx=ctx,
         )
         return _wrap(result, ctx, kind)
     if kind == "impact":
-        result = await trace_tools.analyze_impact(
+        result = await _call_tool(
+            trace_tools, "analyze_impact",
             item_id=payload.get("item_id"),
             max_depth=payload.get("max_depth", 5),
             link_types=payload.get("link_types"),
@@ -414,14 +456,15 @@ async def trace_analyze(
         )
         return _wrap(result, ctx, kind)
     if kind == "reverse_impact":
-        result = await trace_tools.analyze_reverse_impact(
+        result = await _call_tool(
+            trace_tools, "analyze_reverse_impact",
             item_id=payload.get("item_id"),
             max_depth=payload.get("max_depth", 5),
             ctx=ctx,
         )
         return _wrap(result, ctx, kind)
     if kind == "project_health":
-        result = await trace_tools.project_health(ctx=ctx)
+        result = await _call_tool(trace_tools, "project_health", ctx=ctx)
         return _wrap(result, ctx, kind)
 
     raise ToolError(f"Unknown trace analysis kind: {kind}")
@@ -438,10 +481,11 @@ async def graph_analyze(
     await _maybe_select_project(payload, ctx)
 
     if kind == "detect_cycles":
-        result = await graph_tools.detect_cycles(ctx=ctx)
+        result = await _call_tool(graph_tools, "detect_cycles", ctx=ctx)
         return _wrap(result, ctx, kind)
     if kind == "shortest_path":
-        result = await graph_tools.shortest_path(
+        result = await _call_tool(
+            graph_tools, "shortest_path",
             source_id=payload.get("source_id"),
             target_id=payload.get("target_id"),
             ctx=ctx,
@@ -465,7 +509,8 @@ async def spec_manage(
 
     if kind == "adr":
         if action == "create":
-            result = await spec_tools.create_adr(
+            result = await _call_tool(
+                spec_tools, "create_adr",
                 project_id=payload.get("project_id"),
                 title=payload.get("title"),
                 context=payload.get("context"),
@@ -477,14 +522,16 @@ async def spec_manage(
             )
             return _wrap(result, ctx, f"{kind}.{action}")
         if action == "list":
-            result = await spec_tools.list_adrs(
+            result = await _call_tool(
+                spec_tools, "list_adrs",
                 project_id=payload.get("project_id"),
                 status=payload.get("status"),
             )
             return _wrap(result, ctx, f"{kind}.{action}")
 
     if kind == "contract" and action == "create":
-        result = await spec_tools.create_contract(
+        result = await _call_tool(
+            spec_tools, "create_contract",
             project_id=payload.get("project_id"),
             item_id=payload.get("item_id"),
             title=payload.get("title"),
@@ -494,9 +541,10 @@ async def spec_manage(
         return _wrap(result, ctx, f"{kind}.{action}")
 
     if kind == "feature" and action == "create":
-        result = await spec_tools.create_feature(
+        result = await _call_tool(
+            spec_tools, "create_feature",
             project_id=payload.get("project_id"),
-            name=payload.get("name"),
+            name=(payload.get("name") or ""),
             description=payload.get("description"),
             as_a=payload.get("as_a"),
             i_want=payload.get("i_want"),
@@ -505,7 +553,8 @@ async def spec_manage(
         return _wrap(result, ctx, f"{kind}.{action}")
 
     if kind == "scenario" and action == "create":
-        result = await spec_tools.create_scenario(
+        result = await _call_tool(
+            spec_tools, "create_scenario",
             feature_id=payload.get("feature_id"),
             title=payload.get("title"),
             gherkin_text=payload.get("gherkin_text"),
@@ -520,7 +569,7 @@ async def quality_analyze(
     ctx: Any | None = None,
 ) -> dict[str, Any]:
     payload = payload or {}
-    result = await spec_tools.analyze_quality(item_id=payload.get("item_id"))
+    result = await _call_tool(spec_tools, "analyze_quality", item_id=payload.get("item_id"))
     return _wrap(result, ctx, "quality.analyze")
 
 
@@ -537,6 +586,7 @@ async def _config_manage_impl(
     payload: dict[str, Any] | None,
     ctx: Any | None,
 ) -> dict[str, Any]:
+    await asyncio.sleep(0)
     payload = payload or {}
     action = action.lower()
     config = ConfigManager()
@@ -554,7 +604,7 @@ async def _config_manage_impl(
             raise ToolError("key is required for config get.")
         config_path = config.projects_dir / project_id / "config.yaml" if project_id else config.config_path
         if config_path.exists():
-            with open(config_path) as handle:
+            with config_path.open() as handle:
                 stored = yaml.safe_load(handle) or {}
             if key in stored:
                 return _wrap({"key": key, "value": stored.get(key)}, ctx, action)
@@ -646,6 +696,7 @@ async def export_manage(
     payload: dict[str, Any] | None = None,
     ctx: Any | None = None,
 ) -> dict[str, Any]:
+    await asyncio.sleep(0)
     payload = payload or {}
     action = action.lower()
     format_map = {
@@ -684,6 +735,7 @@ async def import_manage(
     payload: dict[str, Any] | None = None,
     ctx: Any | None = None,
 ) -> dict[str, Any]:
+    await asyncio.sleep(0)
     payload = payload or {}
     action = action.lower()
     project_name = payload.get("project_name")
@@ -699,6 +751,7 @@ async def import_manage(
                 return json.loads(content)
             except json.JSONDecodeError:
                 import yaml
+
                 return yaml.safe_load(content)
         if path:
             file_path = Path(path)
@@ -706,6 +759,7 @@ async def import_manage(
                 raise ToolError(f"File not found: {path}")
             if file_path.suffix.lower() in {".yaml", ".yml"}:
                 import yaml
+
                 return yaml.safe_load(file_path.read_text(encoding="utf-8"))
             return json.loads(file_path.read_text(encoding="utf-8"))
         raise ToolError("Provide data, content, or path for import.")
@@ -753,6 +807,7 @@ async def ingest_manage(
     payload: dict[str, Any] | None = None,
     ctx: Any | None = None,
 ) -> dict[str, Any]:
+    await asyncio.sleep(0)
     payload = payload or {}
     action = action.lower()
     file_path = payload.get("path")
@@ -779,11 +834,7 @@ async def ingest_manage(
                 raise ToolError(f"Directory not found: {file_path}")
             recursive = bool(payload.get("recursive", True))
             patterns = {".md", ".mdx", ".yaml", ".yml"}
-            files = (
-                directory.rglob("*")
-                if recursive
-                else directory.iterdir()
-            )
+            files = directory.rglob("*") if recursive else directory.iterdir()
             results = []
             for path in files:
                 if path.is_file() and path.suffix.lower() in patterns:
@@ -811,6 +862,7 @@ async def backup_manage(
     payload: dict[str, Any] | None = None,
     ctx: Any | None = None,
 ) -> dict[str, Any]:
+    await asyncio.sleep(0)
     payload = payload or {}
     action = action.lower()
 
@@ -822,26 +874,25 @@ async def backup_manage(
         compress = bool(payload.get("compress", True))
 
         if not output:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
             suffix = ".json.gz" if compress else ".json"
             output = f"tracertm_backup_{timestamp}{suffix}"
 
         backup_data: dict[str, Any] = {
             "version": "1.0",
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "project_id": project_id,
             "tables": {},
         }
 
         with storage.get_session() as session:
-            result = session.execute(
-                "SELECT name FROM sqlite_master WHERE type='table'"
-            )
+            result = session.execute(text("SELECT name FROM sqlite_master WHERE type='table'"))
             tables = [row[0] for row in result]
             for table in tables:
                 if table.startswith("alembic"):
                     continue
-                rows = session.execute(f"SELECT * FROM {table}").all()
+                safe_table = _safe_table_name(table)
+                rows = session.execute(text(f"SELECT * FROM {safe_table}")).all()  # noqa: S608
                 records = [dict(row._mapping) for row in rows]
                 for row in records:
                     for key, value in row.items():
@@ -876,12 +927,13 @@ async def backup_manage(
 
         with storage.get_session() as session:
             for table, rows in backup_data["tables"].items():
-                session.execute(f"DELETE FROM {table}")
+                safe_name = _safe_table_name(table)
+                session.execute(text(f"DELETE FROM {safe_name}"))  # noqa: S608
                 for row in rows:
-                    columns = ", ".join(row.keys())
-                    placeholders = ", ".join([f":{k}" for k in row.keys()])
+                    columns = ", ".join(row)
+                    placeholders = ", ".join([f":{k}" for k in row])
                     session.execute(
-                        f"INSERT INTO {table} ({columns}) VALUES ({placeholders})",
+                        text(f"INSERT INTO {safe_name} ({columns}) VALUES ({placeholders})"),  # noqa: S608
                         row,
                     )
             session.commit()
@@ -896,6 +948,7 @@ async def watch_manage(
     payload: dict[str, Any] | None = None,
     ctx: Any | None = None,
 ) -> dict[str, Any]:
+    await asyncio.sleep(0)
     payload = payload or {}
     action = action.lower()
 
@@ -940,6 +993,7 @@ async def db_manage(
     payload: dict[str, Any] | None = None,
     ctx: Any | None = None,
 ) -> dict[str, Any]:
+    await asyncio.sleep(0)
     from tracertm.database.connection import DatabaseConnection
 
     payload = payload or {}
@@ -991,6 +1045,7 @@ async def agents_manage(
     payload: dict[str, Any] | None = None,
     ctx: Any | None = None,
 ) -> dict[str, Any]:
+    await asyncio.sleep(0)
     payload = payload or {}
     action = action.lower()
     config = ConfigManager()
@@ -1052,7 +1107,7 @@ async def agents_manage(
 
         if action == "metrics":
             agent_id = payload.get("agent_id")
-            since_date = _parse_since(payload.get("since")) or datetime.utcnow() - timedelta(hours=24)
+            since_date = _parse_since(payload.get("since")) or datetime.now(UTC) - timedelta(hours=24)
             query = session.query(Event).filter(
                 Event.project_id == project_id,
                 Event.created_at >= since_date,
@@ -1070,22 +1125,20 @@ async def agents_manage(
                 total_ops = len(agent_events)
                 successful_ops = sum(1 for e in agent_events if e.event_type != "conflict_detected")
                 conflicts = sum(1 for e in agent_events if e.event_type == "conflict_detected")
-                hours_float = (datetime.utcnow() - since_date).total_seconds() / 3600
+                hours_float = (datetime.now(UTC) - since_date).total_seconds() / 3600
                 ops_per_hour = total_ops / hours_float if hours_float > 0 else 0
                 success_rate = (successful_ops / total_ops * 100) if total_ops else 0
                 conflict_rate = (conflicts / total_ops * 100) if total_ops else 0
                 agent = session.query(Agent).filter(Agent.id == aid).first()
-                metrics_list.append(
-                    {
-                        "agent_id": str(aid),
-                        "agent_name": agent.name if agent else str(aid)[:8],
-                        "total_operations": total_ops,
-                        "operations_per_hour": round(ops_per_hour, 2),
-                        "success_rate": round(success_rate, 2),
-                        "conflict_rate": round(conflict_rate, 2),
-                        "conflicts": conflicts,
-                    }
-                )
+                metrics_list.append({
+                    "agent_id": str(aid),
+                    "agent_name": agent.name if agent else str(aid)[:8],
+                    "total_operations": total_ops,
+                    "operations_per_hour": round(ops_per_hour, 2),
+                    "success_rate": round(success_rate, 2),
+                    "conflict_rate": round(conflict_rate, 2),
+                    "conflicts": conflicts,
+                })
 
             return _wrap({"metrics": metrics_list}, ctx, action)
 
@@ -1100,7 +1153,8 @@ async def agents_manage(
             workloads = []
             for agent in agents:
                 items = (
-                    session.query(Item)
+                    session
+                    .query(Item)
                     .filter(
                         Item.project_id == project_id,
                         Item.owner == agent.id,
@@ -1111,16 +1165,14 @@ async def agents_manage(
                 status_counts: dict[str, int] = {}
                 for item in items:
                     status_counts[item.status] = status_counts.get(item.status, 0) + 1
-                workloads.append(
-                    {
-                        "agent_id": str(agent.id),
-                        "agent_name": agent.name,
-                        "todo": status_counts.get("todo", 0),
-                        "in_progress": status_counts.get("in_progress", 0),
-                        "blocked": status_counts.get("blocked", 0),
-                        "total": len(items),
-                    }
-                )
+                workloads.append({
+                    "agent_id": str(agent.id),
+                    "agent_name": agent.name,
+                    "todo": status_counts.get("todo", 0),
+                    "in_progress": status_counts.get("in_progress", 0),
+                    "blocked": status_counts.get("blocked", 0),
+                    "total": len(items),
+                })
             return _wrap({"workloads": workloads}, ctx, action)
 
         if action == "health":
@@ -1137,7 +1189,7 @@ async def agents_manage(
                 if agent.last_activity_at:
                     try:
                         last_activity = datetime.fromisoformat(agent.last_activity_at.replace("Z", "+00:00"))
-                        hours_since = (datetime.utcnow() - last_activity.replace(tzinfo=None)).total_seconds() / 3600
+                        hours_since = (datetime.now(UTC) - last_activity.replace(tzinfo=None)).total_seconds() / 3600
                         if hours_since < 1:
                             health = "healthy"
                         elif hours_since < 24:
@@ -1148,15 +1200,13 @@ async def agents_manage(
                         health = "unknown"
                 else:
                     health = "no_activity"
-                healths.append(
-                    {
-                        "agent_id": str(agent.id),
-                        "agent_name": agent.name,
-                        "status": agent.status or "active",
-                        "last_activity_at": agent.last_activity_at,
-                        "health": health,
-                    }
-                )
+                healths.append({
+                    "agent_id": str(agent.id),
+                    "agent_name": agent.name,
+                    "status": agent.status or "active",
+                    "last_activity_at": agent.last_activity_at,
+                    "health": health,
+                })
             return _wrap({"health": healths}, ctx, action)
 
     raise ToolError(f"Unknown agents action: {action}")
@@ -1167,6 +1217,7 @@ async def progress_manage(
     payload: dict[str, Any] | None = None,
     ctx: Any | None = None,
 ) -> dict[str, Any]:
+    await asyncio.sleep(0)
     payload = payload or {}
     action = action.lower()
     config = ConfigManager()
@@ -1181,11 +1232,7 @@ async def progress_manage(
             item_id = payload.get("item_id")
             view = payload.get("view")
             if item_id:
-                item = (
-                    session.query(Item)
-                    .filter(Item.id.like(f"{item_id}%"), Item.project_id == project_id)
-                    .first()
-                )
+                item = session.query(Item).filter(Item.id.like(f"{item_id}%"), Item.project_id == project_id).first()
                 if not item:
                     raise ToolError(f"Item not found: {item_id}")
                 completion = service.calculate_completion(item.id)
@@ -1201,7 +1248,8 @@ async def progress_manage(
                 )
             if view:
                 items = (
-                    session.query(Item)
+                    session
+                    .query(Item)
                     .filter(
                         Item.project_id == project_id,
                         Item.view == view.upper(),
@@ -1210,25 +1258,15 @@ async def progress_manage(
                     .all()
                 )
                 avg_completion = (
-                    sum(service.calculate_completion(item.id) for item in items) / len(items)
-                    if items
-                    else 0
+                    sum(service.calculate_completion(item.id) for item in items) / len(items) if items else 0
                 )
                 return _wrap(
                     {"view": view, "items": len(items), "average_completion": avg_completion},
                     ctx,
                     action,
                 )
-            items = (
-                session.query(Item)
-                .filter(Item.project_id == project_id, Item.deleted_at.is_(None))
-                .all()
-            )
-            avg_completion = (
-                sum(service.calculate_completion(item.id) for item in items) / len(items)
-                if items
-                else 0
-            )
+            items = session.query(Item).filter(Item.project_id == project_id, Item.deleted_at.is_(None)).all()
+            avg_completion = sum(service.calculate_completion(item.id) for item in items) / len(items) if items else 0
             return _wrap({"items": len(items), "average_completion": avg_completion}, ctx, action)
 
         if action == "blocked":
@@ -1249,7 +1287,7 @@ async def progress_manage(
 
         if action == "report":
             days = int(payload.get("days", 30))
-            end_date = datetime.utcnow()
+            end_date = datetime.now(UTC)
             start_date = end_date - timedelta(days=days)
             report = service.generate_progress_report(project_id, start_date, end_date)
             return _wrap(report, ctx, action)
@@ -1270,6 +1308,7 @@ async def _saved_queries_manage_impl(
     payload: dict[str, Any] | None,
     ctx: Any | None,
 ) -> dict[str, Any]:
+    await asyncio.sleep(0)
     payload = payload or {}
     action = action.lower()
 
@@ -1314,8 +1353,8 @@ async def _saved_queries_manage_impl(
 
 async def test_manage(
     action: str,
-    payload: dict[str, Any] | None = None,
-    ctx: Any | None = None,
+    payload: dict[str, Any] | None = None,  # noqa: PT028
+    ctx: Any | None = None,  # noqa: PT028
 ) -> dict[str, Any]:
     return await _test_manage_impl(action, payload, ctx)
 
@@ -1325,6 +1364,7 @@ async def _test_manage_impl(
     payload: dict[str, Any] | None,
     ctx: Any | None,
 ) -> dict[str, Any]:
+    await asyncio.sleep(0)
     from tracertm.cli.commands.test.discovery import TestDiscovery
     from tracertm.cli.commands.test.runner import TestRunner
 
@@ -1383,6 +1423,7 @@ async def tui_manage(
     payload: dict[str, Any] | None = None,
     ctx: Any | None = None,
 ) -> dict[str, Any]:
+    await asyncio.sleep(0)
     payload = payload or {}
     action = action.lower()
 
@@ -1414,7 +1455,7 @@ async def tui_manage(
         if not spawn:
             return _wrap({"command": " ".join(cmd), "spawned": False}, ctx, action)
 
-        process = subprocess.Popen(cmd)
+        process = subprocess.Popen(cmd)  # noqa: S603
         return _wrap({"command": " ".join(cmd), "spawned": True, "pid": process.pid}, ctx, action)
 
     raise ToolError(f"Unknown tui action: {action}")
@@ -1488,6 +1529,8 @@ async def chaos_manage(
     engine = getattr(session, "_tracertm_engine", None)
     try:
         service = ChaosModeService(session)
+        # Narrow type for actions that require project_id
+        pid: str = project_id if isinstance(project_id, str) else str(project_id or "")
 
         if action == "explode":
             file_path = payload.get("path")
@@ -1495,7 +1538,7 @@ async def chaos_manage(
             if not file_path:
                 raise ToolError("path is required for explode.")
             content = Path(file_path).read_text(encoding="utf-8")
-            items_created = await service.explode_file(content, project_id, view)
+            items_created = await service.explode_file(content, pid, view)
             await session.commit()
             return _wrap({"items_created": items_created}, ctx, action)
 
@@ -1504,16 +1547,16 @@ async def chaos_manage(
             if not reason:
                 raise ToolError("reason is required for crash.")
             item_ids = payload.get("item_ids") or []
-            result = await service.track_scope_crash(project_id, reason, item_ids)
+            result = await service.track_scope_crash(pid, str(reason), item_ids)
             await session.commit()
             return _wrap(result, ctx, action)
 
         if action == "zombies":
             days_inactive = int(payload.get("days_inactive", 30))
             cleanup = bool(payload.get("cleanup", False))
-            result = await service.detect_zombies(project_id, days_inactive)
+            result = await service.detect_zombies(pid, days_inactive)
             if cleanup:
-                deleted = await service.cleanup_zombies(project_id, days_inactive)
+                deleted = await service.cleanup_zombies(pid, days_inactive)
                 result["deleted"] = deleted
                 await session.commit()
             return _wrap(result, ctx, action)
@@ -1523,7 +1566,7 @@ async def chaos_manage(
             description = payload.get("description")
             if not name:
                 raise ToolError("name is required for snapshot.")
-            result = await service.create_snapshot(project_id, name, description)
+            result = await service.create_snapshot(pid, str(name), description)
             await session.commit()
             return _wrap(result, ctx, action)
 
@@ -1544,6 +1587,7 @@ async def design_manage(
     payload: dict[str, Any] | None = None,
     ctx: Any | None = None,
 ) -> dict[str, Any]:
+    await asyncio.sleep(0)
     payload = payload or {}
     action = action.lower()
     path = payload.get("path")
@@ -1563,7 +1607,7 @@ async def design_manage(
         components_config = dict(design_module.COMPONENTS_YAML_TEMPLATE)
         metadata = components_config.get("metadata")
         if isinstance(metadata, dict):
-            metadata["created_at"] = datetime.now().isoformat()
+            metadata["created_at"] = datetime.now(UTC).isoformat()
         design_module._save_components_config(trace_dir, components_config)
         return _wrap({"initialized": True}, ctx, action)
 
@@ -1582,7 +1626,7 @@ async def design_manage(
             "figma_file_key": file_key,
             "figma_node_id": node_id,
             "figma_url": figma_url,
-            "linked_at": datetime.now().isoformat(),
+            "linked_at": datetime.now(UTC).isoformat(),
         }
         design_module._save_designs_config(trace_dir, designs_config)
 
@@ -1635,9 +1679,7 @@ async def design_manage(
         components_list = components_config.get("components", [])
         filter_status = payload.get("status")
         if filter_status:
-            components_list = [
-                c for c in components_list if c.get("sync_status") == filter_status
-            ]
+            components_list = [c for c in components_list if c.get("sync_status") == filter_status]
         return _wrap({"components": components_list}, ctx, action)
 
     if action == "sync":
@@ -1648,14 +1690,14 @@ async def design_manage(
         designs_config = design_module._load_designs_config(trace_dir)
         components_config = design_module._load_components_config(trace_dir)
         if direction in ("pull", "both"):
-            subprocess.run(["bun", "run", "figma:pull"], cwd=Path.cwd())
+            subprocess.run(["bun", "run", "figma:pull"], cwd=Path.cwd())  # noqa: S603 S607
         if direction in ("push", "both"):
-            subprocess.run(["bun", "run", "figma:push"], cwd=Path.cwd())
-        designs_config["last_sync"] = datetime.now().isoformat()
+            subprocess.run(["bun", "run", "figma:push"], cwd=Path.cwd())  # noqa: S603 S607
+        designs_config["last_sync"] = datetime.now(UTC).isoformat()
         design_module._save_designs_config(trace_dir, designs_config)
         for component in components_config.get("components", []):
             component["sync_status"] = "synced"
-            component["last_synced"] = datetime.now().isoformat()
+            component["last_synced"] = datetime.now(UTC).isoformat()
         design_module._save_components_config(trace_dir, components_config)
         return _wrap({"synced": True, "direction": direction}, ctx, action)
 
@@ -1676,7 +1718,7 @@ async def design_manage(
             subprocess.run(
                 ["bun", "run", "storybook:generate", comp_name, "--template", template],
                 cwd=Path.cwd(),
-            )
+            )  # noqa: S603 S607
             comp["has_story"] = True
             generated.append(comp_name)
         design_module._save_components_config(trace_dir, components_config)
@@ -1695,7 +1737,9 @@ async def design_manage(
         if not figma_file_key or not figma_token:
             raise ToolError("Figma credentials not configured.")
         components_list = components_config.get("components", [])
-        target_components = components_list if all_components else [c for c in components_list if c.get("name") == component]
+        target_components = (
+            components_list if all_components else [c for c in components_list if c.get("name") == component]
+        )
         exported = []
         for comp in target_components:
             if not comp.get("has_story"):
@@ -1712,7 +1756,7 @@ async def design_manage(
                     figma_token,
                 ],
                 cwd=Path.cwd(),
-            )
+            )  # noqa: S603 S607  # noqa: S603 S607
             exported.append(comp.get("name"))
         return _wrap({"exported": exported}, ctx, action)
 

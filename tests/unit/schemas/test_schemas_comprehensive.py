@@ -499,5 +499,5 @@ class TestEventResponseSchema:
             "agent_id": "agent-012",
             "timestamp": datetime.now(),
         }
-        response = EventResponse(**data)
+        response = EventResponse.model_validate(data)
         assert response.item_id is None

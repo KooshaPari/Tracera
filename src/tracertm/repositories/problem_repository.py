@@ -82,13 +82,9 @@ class ProblemRepository:
 
         return problem
 
-    async def get_by_id(
-        self, problem_id: str, project_id: str | None = None
-    ) -> Problem | None:
+    async def get_by_id(self, problem_id: str, project_id: str | None = None) -> Problem | None:
         """Get problem by ID, optionally scoped to project."""
-        query = select(Problem).where(
-            Problem.id == problem_id, Problem.deleted_at.is_(None)
-        )
+        query = select(Problem).where(Problem.id == problem_id, Problem.deleted_at.is_(None))
 
         if project_id:
             query = query.where(Problem.project_id == project_id)
@@ -96,13 +92,9 @@ class ProblemRepository:
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
 
-    async def get_by_number(
-        self, problem_number: str, project_id: str | None = None
-    ) -> Problem | None:
+    async def get_by_number(self, problem_number: str, project_id: str | None = None) -> Problem | None:
         """Get problem by problem number."""
-        query = select(Problem).where(
-            Problem.problem_number == problem_number, Problem.deleted_at.is_(None)
-        )
+        query = select(Problem).where(Problem.problem_number == problem_number, Problem.deleted_at.is_(None))
 
         if project_id:
             query = query.where(Problem.project_id == project_id)
@@ -219,9 +211,7 @@ class ProblemRepository:
         }
 
         if to_status not in valid_transitions.get(from_status, []):
-            raise ValueError(
-                f"Invalid status transition from {from_status} to {to_status}"
-            )
+            raise ValueError(f"Invalid status transition from {from_status} to {to_status}")
 
         problem.status = to_status
         problem.version += 1
@@ -406,13 +396,10 @@ class ProblemRepository:
             problem.deleted_at = datetime.now(UTC)
             await self.session.flush()
             return True
-        else:
-            from sqlalchemy import delete
+        from sqlalchemy import delete
 
-            result = await self.session.execute(
-                delete(Problem).where(Problem.id == problem_id)
-            )
-            return result.rowcount > 0
+        result = await self.session.execute(delete(Problem).where(Problem.id == problem_id))
+        return getattr(result, "rowcount", 0) > 0
 
     async def count_by_status(self, project_id: str) -> dict[str, int]:
         """Count problems by status for a project."""
@@ -426,7 +413,7 @@ class ProblemRepository:
         )
 
         result = await self.session.execute(query)
-        return dict(result.all())
+        return {r[0]: r[1] for r in result.all()}
 
     async def count_by_priority(self, project_id: str) -> dict[str, int]:
         """Count problems by priority for a project."""
@@ -440,11 +427,9 @@ class ProblemRepository:
         )
 
         result = await self.session.execute(query)
-        return dict(result.all())
+        return {r[0]: r[1] for r in result.all()}
 
-    async def get_activities(
-        self, problem_id: str, limit: int = 50
-    ) -> list[ProblemActivity]:
+    async def get_activities(self, problem_id: str, limit: int = 50) -> list[ProblemActivity]:
         """Get activity log for a problem."""
         query = (
             select(ProblemActivity)

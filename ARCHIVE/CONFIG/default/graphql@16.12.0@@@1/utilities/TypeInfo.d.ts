@@ -64,4 +64,4 @@ export declare function visitWithTypeInfo(
   typeInfo: TypeInfo,
   visitor: ASTVisitor,
 ): ASTVisitor;
-export {};
+

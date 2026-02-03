@@ -28,4 +28,4 @@ type CreateStore = {
     <T>(): <Mos extends [StoreMutatorIdentifier, unknown][] = []>(initializer: StateCreator<T, [], Mos>) => Mutate<StoreApi<T>, Mos>;
 };
 export declare const createStore: CreateStore;
-export {};
+

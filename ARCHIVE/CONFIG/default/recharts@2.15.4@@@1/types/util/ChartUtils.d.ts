@@ -111,7 +111,7 @@ export declare const isCategoricalAxis: (layout: LayoutType | PolarLayoutType, a
  * @param {boolean} syncWithTicks  Synchronize grid lines with ticks or not
  * @return {Array}                 Coordinates
  */
-export declare const getCoordinatesOfGrid: (ticks: Array<TickItem>, minValue: number, maxValue: number, syncWithTicks: Boolean) => number[];
+export declare const getCoordinatesOfGrid: (ticks: Array<TickItem>, minValue: number, maxValue: number, syncWithTicks: boolean) => number[];
 /**
  * Get the ticks of an axis
  * @param  {Object}  axis The configuration of an axis

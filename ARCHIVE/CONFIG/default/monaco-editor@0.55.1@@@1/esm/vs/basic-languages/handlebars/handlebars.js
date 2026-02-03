@@ -91,7 +91,7 @@ const EMPTY_ELEMENTS = [
   "wbr"
 ];
 const conf = {
-  wordPattern: /(-?\d*\.\d\w*)|([^\`\~\!\@\$\^\&\*\(\)\=\+\[\{\]\}\\\|\;\:\'\"\,\.\<\>\/\s]+)/g,
+  wordPattern: /(-?\d*\.\d\w*)|([^`~!@$^&*()=+[{\]}\\|;:'",.<>/\s]+)/g,
   comments: {
     blockComment: ["{{!--", "--}}"]
   },
@@ -198,7 +198,7 @@ const language = {
       [/\/?>/, "delimiter.html", "@pop"],
       [/"([^"]*)"/, "attribute.value"],
       [/'([^']*)'/, "attribute.value"],
-      [/[\w\-]+/, "attribute.name"],
+      [/[\w-]+/, "attribute.name"],
       [/=/, "delimiter"],
       [/[ \t\r\n]+/]
       // whitespace
@@ -216,7 +216,7 @@ const language = {
       [/type/, "attribute.name", "@scriptAfterType"],
       [/"([^"]*)"/, "attribute.value"],
       [/'([^']*)'/, "attribute.value"],
-      [/[\w\-]+/, "attribute.name"],
+      [/[\w-]+/, "attribute.name"],
       [/=/, "delimiter"],
       [
         />/,
@@ -311,7 +311,7 @@ const language = {
       ],
       [/"([^"]*)"/, "attribute.value"],
       [/'([^']*)'/, "attribute.value"],
-      [/[\w\-]+/, "attribute.name"],
+      [/[\w-]+/, "attribute.name"],
       [/=/, "delimiter"],
       [/[ \t\r\n]+/],
       // whitespace
@@ -342,7 +342,7 @@ const language = {
       [/type/, "attribute.name", "@styleAfterType"],
       [/"([^"]*)"/, "attribute.value"],
       [/'([^']*)'/, "attribute.value"],
-      [/[\w\-]+/, "attribute.name"],
+      [/[\w-]+/, "attribute.name"],
       [/=/, "delimiter"],
       [
         />/,
@@ -437,7 +437,7 @@ const language = {
       ],
       [/"([^"]*)"/, "attribute.value"],
       [/'([^']*)'/, "attribute.value"],
-      [/[\w\-]+/, "attribute.name"],
+      [/[\w-]+/, "attribute.name"],
       [/=/, "delimiter"],
       [/[ \t\r\n]+/],
       // whitespace

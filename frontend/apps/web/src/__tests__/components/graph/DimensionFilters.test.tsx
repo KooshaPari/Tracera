@@ -33,9 +33,9 @@ const mockDimensionFilters: DimensionFilter[] = [
 const mockItems = [
 	{
 		dimensions: {
-			maturity: "implemented",
 			complexity: "simple",
 			coverage: 85,
+			maturity: "implemented",
 			risk: "low",
 		},
 		id: "item-1",
@@ -44,9 +44,9 @@ const mockItems = [
 	},
 	{
 		dimensions: {
-			maturity: "draft",
 			complexity: "moderate",
 			coverage: 50,
+			maturity: "draft",
 			risk: "medium",
 		},
 		id: "item-2",
@@ -55,9 +55,9 @@ const mockItems = [
 	},
 	{
 		dimensions: {
-			maturity: "verified",
 			complexity: "complex",
 			coverage: 95,
+			maturity: "verified",
 			risk: "high",
 		},
 		id: "item-3",

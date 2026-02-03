@@ -3,6 +3,7 @@ Integration tests for Epic 5: Conflict Resolution (Story 5.5).
 """
 
 import pytest
+
 pytestmark = pytest.mark.integration
 from sqlalchemy.orm import Session
 
@@ -57,6 +58,7 @@ def test_conflict_detection(temp_project_setup):
 
         # Create item and simulate conflicts
         from tracertm.models.item import Item
+
         item = Item(
             project_id=project_id,
             title="Test Item",
@@ -86,6 +88,7 @@ def test_conflict_resolution_strategies(temp_project_setup):
 
         # Create item
         from tracertm.models.item import Item
+
         item = Item(
             project_id=project_id,
             title="Test Item",

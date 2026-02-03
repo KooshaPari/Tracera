@@ -34,7 +34,7 @@ define("vs/xml-fSKCG6nN", ["exports", "./editor.api-CykLys8L"], (function(export
     tokenPostfix: ".xml",
     ignoreCase: true,
     // Useful regular expressions
-    qualifiedName: /(?:[\w\.\-]+:)?[\w\.\-]+/,
+    qualifiedName: /(?:[\w.-]+:)?[\w.-]+/,
     tokenizer: {
       root: [
         [/[^<&]+/, ""],
@@ -49,9 +49,9 @@ define("vs/xml-fSKCG6nN", ["exports", "./editor.api-CykLys8L"], (function(export
         // Meta tags - instruction
         [/(<\?)(@qualifiedName)/, [{ token: "delimiter" }, { token: "metatag", next: "@tag" }]],
         // Meta tags - declaration
-        [/(<\!)(@qualifiedName)/, [{ token: "delimiter" }, { token: "metatag", next: "@tag" }]],
+        [/(<!)(@qualifiedName)/, [{ token: "delimiter" }, { token: "metatag", next: "@tag" }]],
         // CDATA
-        [/<\!\[CDATA\[/, { token: "delimiter.cdata", next: "@cdata" }],
+        [/<!\[CDATA\[/, { token: "delimiter.cdata", next: "@cdata" }],
         [/&\w+;/, "string.escape"]
       ],
       cdata: [
@@ -63,7 +63,7 @@ define("vs/xml-fSKCG6nN", ["exports", "./editor.api-CykLys8L"], (function(export
         [/[ \t\r\n]+/, ""],
         [/(@qualifiedName)(\s*=\s*)("[^"]*"|'[^']*')/, ["attribute.name", "", "attribute.value"]],
         [
-          /(@qualifiedName)(\s*=\s*)("[^">?\/]*|'[^'>?\/]*)(?=[\?\/]\>)/,
+          /(@qualifiedName)(\s*=\s*)("[^">?/]*|'[^'>?/]*)(?=[?/]>)/,
           ["attribute.name", "", "attribute.value"]
         ],
         [/(@qualifiedName)(\s*=\s*)("[^">]*|'[^'>]*)/, ["attribute.name", "", "attribute.value"]],
@@ -77,10 +77,10 @@ define("vs/xml-fSKCG6nN", ["exports", "./editor.api-CykLys8L"], (function(export
         [/<!--/, { token: "comment", next: "@comment" }]
       ],
       comment: [
-        [/[^<\-]+/, "comment.content"],
+        [/[^<-]+/, "comment.content"],
         [/-->/, { token: "comment", next: "@pop" }],
         [/<!--/, "comment.content.invalid"],
-        [/[<\-]/, "comment.content"]
+        [/[<-]/, "comment.content"]
       ]
     }
   };

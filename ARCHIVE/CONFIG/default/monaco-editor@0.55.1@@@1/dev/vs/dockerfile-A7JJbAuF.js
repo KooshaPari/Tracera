@@ -93,7 +93,7 @@ define("vs/dockerfile-A7JJbAuF", ["exports"], (function(exports) {
       ],
       stringBody: [
         [
-          /[^\\\$']/,
+          /[^\\$']/,
           {
             cases: {
               "@eos": { token: "string", next: "@popall" },
@@ -110,7 +110,7 @@ define("vs/dockerfile-A7JJbAuF", ["exports"], (function(exports) {
       ],
       dblStringBody: [
         [
-          /[^\\\$"]/,
+          /[^\\$"]/,
           {
             cases: {
               "@eos": { token: "string", next: "@popall" },

@@ -62,9 +62,7 @@ class TUIService:
         """Get component by name."""
         return self.components.get(name)
 
-    def list_components(
-        self, component_type: UIComponentType | None = None
-    ) -> list[UIComponent]:
+    def list_components(self, component_type: UIComponentType | None = None) -> list[UIComponent]:
         """List all components, optionally filtered by type."""
         components = list(self.components.values())
 
@@ -73,9 +71,7 @@ class TUIService:
 
         return components
 
-    def update_component_data(
-        self, name: str, data: dict[str, Any]
-    ) -> UIComponent | None:
+    def update_component_data(self, name: str, data: dict[str, Any]) -> UIComponent | None:
         """Update component data."""
         component = self.get_component(name)
         if component:
@@ -138,7 +134,7 @@ class TUIService:
 
     def get_ui_stats(self) -> dict[str, Any]:
         """Get UI statistics."""
-        by_type: dict[UIComponentType, list[UIComponent]] = {}
+        by_type: dict[str, int] = {}
         for component in self.components.values():
             comp_type = component.component_type.value
             by_type[comp_type] = by_type.get(comp_type, 0) + 1
@@ -159,13 +155,12 @@ class TUIService:
         widgets: list[str],
     ) -> UIComponent:
         """Create a dashboard with multiple widgets."""
-        dashboard = self.register_component(
+        return self.register_component(
             name=name,
             component_type=UIComponentType.DASHBOARD,
             title=title,
             data={"widgets": widgets},
         )
-        return dashboard
 
     def create_table(
         self,
@@ -175,10 +170,9 @@ class TUIService:
         rows: list[dict[str, Any]],
     ) -> UIComponent:
         """Create a table component."""
-        table = self.register_component(
+        return self.register_component(
             name=name,
             component_type=UIComponentType.TABLE,
             title=title,
             data={"columns": columns, "rows": rows},
         )
-        return table

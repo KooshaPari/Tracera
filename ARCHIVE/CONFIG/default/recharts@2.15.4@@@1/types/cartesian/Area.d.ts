@@ -135,4 +135,4 @@ export declare class Area extends PureComponent<Props, State> {
     renderArea(needClip: boolean, clipPathId: string): React.JSX.Element;
     render(): React.JSX.Element;
 }
-export {};
+

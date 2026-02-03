@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import os
 import time
 from dataclasses import dataclass
@@ -14,6 +15,8 @@ try:
     from workos import WorkOSClient
 except Exception:  # pragma: no cover - optional for environments without WorkOS
     WorkOSClient = None  # type: ignore[assignment]
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -90,23 +93,22 @@ def verify_access_token(token: str) -> dict[str, Any]:
     try:
         # Decode header without verification to get algorithm
         unverified_header = jwt.get_unverified_header(token)
-        algorithm = unverified_header.get('alg', 'RS256')
+        algorithm = unverified_header.get("alg", "RS256")
     except Exception as e:
         # If header parsing fails, log and default to RS256
         # This should rarely happen with valid tokens
-        import logging
-        logging.warning(f"Failed to parse JWT header for algorithm: {e}. Defaulting to RS256.")
-        algorithm = 'RS256'
-    
+        logger.warning("Failed to parse JWT header for algorithm: %s. Defaulting to RS256.", e)
+        algorithm = "RS256"
+
     # Ensure algorithm is a string and in the allowed list
     if not isinstance(algorithm, str):
-        algorithm = 'RS256'
-    
+        algorithm = "RS256"
+
     # Common algorithms for JWKs (RS256, ES256, etc.)
-    allowed_algorithms = ['RS256', 'RS384', 'RS512', 'ES256', 'ES384', 'ES512', 'PS256', 'PS384', 'PS512']
+    allowed_algorithms = ["RS256", "RS384", "RS512", "ES256", "ES384", "ES512", "PS256", "PS384", "PS512"]
     if algorithm not in allowed_algorithms:
         # If algorithm from header is not standard, default to RS256
-        algorithm = 'RS256'
+        algorithm = "RS256"
 
     # Decode token - disable issuer/audience verification in PyJWT since we'll verify manually
     # This allows us to handle WorkOS AuthKit issuer format flexibility
@@ -120,27 +122,28 @@ def verify_access_token(token: str) -> dict[str, Any]:
     # Manual issuer verification - accept WorkOS AuthKit issuer formats
     token_issuer = decoded.get("iss")
     expected_issuer = settings.issuer
-    
+
     if expected_issuer and token_issuer:
         token_issuer_str = str(token_issuer).rstrip("/")
         expected_issuer_str = str(expected_issuer).rstrip("/")
-        
+
         # Accept exact match or if token issuer matches WorkOS AuthKit patterns:
         # - https://api.workos.com/user_management/{client_id} (actual format)
         # - https://api.workos.com/ (documented format, or custom auth domain)
         api_base = settings.api_base_url.rstrip("/")
         matches = (
-            token_issuer_str == expected_issuer_str or
-            token_issuer_str.startswith(f"{api_base}/user_management/") or
-            token_issuer_str == f"{api_base}/"
+            token_issuer_str == expected_issuer_str
+            or token_issuer_str.startswith(f"{api_base}/user_management/")
+            or token_issuer_str == f"{api_base}/"
         )
-        
+
         if not matches:
             from jwt.exceptions import InvalidIssuerError
+
             raise InvalidIssuerError(
                 f"Invalid issuer. Expected {expected_issuer} (or {api_base}/user_management/{{client_id}}), got {token_issuer}"
             )
-    
+
     # Manual audience verification
     token_audience = decoded.get("aud")
     if settings.audience and token_audience:
@@ -148,9 +151,11 @@ def verify_access_token(token: str) -> dict[str, Any]:
         if isinstance(token_audience, list):
             if settings.audience not in token_audience:
                 from jwt.exceptions import InvalidAudienceError
+
                 raise InvalidAudienceError(f"Invalid audience. Expected {settings.audience}, got {token_audience}")
         elif token_audience != settings.audience:
             from jwt.exceptions import InvalidAudienceError
+
             raise InvalidAudienceError(f"Invalid audience. Expected {settings.audience}, got {token_audience}")
 
     return decoded

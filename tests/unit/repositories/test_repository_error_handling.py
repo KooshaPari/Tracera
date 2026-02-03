@@ -5,7 +5,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.core.concurrency import ConcurrencyError
 from tracertm.repositories.agent_repository import AgentRepository
-from tracertm.repositories.event_repository import EventRepository
 from tracertm.repositories.item_repository import ItemRepository
 from tracertm.repositories.link_repository import LinkRepository
 from tracertm.repositories.project_repository import ProjectRepository
@@ -44,7 +43,7 @@ async def test_item_update_nonexistent(db_session: AsyncSession):
     """Test updating non-existent item raises error."""
     item_repo = ItemRepository(db_session)
 
-    with pytest.raises(ValueError) as exc_info:
+    with pytest.raises(ValueError, match=r"not found") as exc_info:
         await item_repo.update("nonexistent-id", expected_version=1, title="Test")
 
     assert "not found" in str(exc_info.value)
@@ -59,7 +58,7 @@ async def test_item_create_with_invalid_parent(db_session: AsyncSession):
 
     item_repo = ItemRepository(db_session)
 
-    with pytest.raises(ValueError) as exc_info:
+    with pytest.raises(ValueError, match=r"not found") as exc_info:
         await item_repo.create(
             project_id=project.id,
             title="Test Item",
@@ -87,7 +86,7 @@ async def test_item_create_with_parent_from_different_project(db_session: AsyncS
         item_type="feature",
     )
 
-    with pytest.raises(ValueError) as exc_info:
+    with pytest.raises(ValueError, match=r"not in same project") as exc_info:
         await item_repo.create(
             project_id=project2.id,
             title="Child Item",
@@ -105,7 +104,7 @@ async def test_agent_update_status_nonexistent(db_session: AsyncSession):
     """Test updating status of non-existent agent raises error."""
     agent_repo = AgentRepository(db_session)
 
-    with pytest.raises(ValueError) as exc_info:
+    with pytest.raises(ValueError, match=r"not found") as exc_info:
         await agent_repo.update_status("nonexistent-id", "inactive")
 
     assert "not found" in str(exc_info.value)
@@ -117,7 +116,7 @@ async def test_agent_update_activity_nonexistent(db_session: AsyncSession):
     """Test updating activity of non-existent agent raises error."""
     agent_repo = AgentRepository(db_session)
 
-    with pytest.raises(ValueError) as exc_info:
+    with pytest.raises(ValueError, match=r"not found") as exc_info:
         await agent_repo.update_activity("nonexistent-id")
 
     assert "not found" in str(exc_info.value)

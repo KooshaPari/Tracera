@@ -22,7 +22,7 @@ const [commands, flags] = argv.reduce((acc, arg) => {
     return acc
   }
 
-  if (!/^-/.test(arg)) {
+  if (!arg.startsWith('-')) {
     acc[0].push(arg)
     return acc
   }

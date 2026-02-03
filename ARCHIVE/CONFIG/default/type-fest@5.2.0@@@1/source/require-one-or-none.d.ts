@@ -46,4 +46,4 @@ type _RequireOneOrNone<ObjectType, KeysType extends keyof ObjectType> = (
 	| RequireNone<KeysType>
 ) & Omit<ObjectType, KeysType>; // Ignore unspecified keys.
 
-export {};
+

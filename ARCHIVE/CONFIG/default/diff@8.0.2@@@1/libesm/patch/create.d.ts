@@ -96,5 +96,5 @@ export declare function createPatch(fileName: string, oldStr: string, newStr: st
 export declare function createPatch(fileName: string, oldStr: string, newStr: string, oldHeader: string | undefined, newHeader: string | undefined, options: CreatePatchOptionsNonabortable & CreatePatchCallbackOptionNonabortable): undefined;
 export declare function createPatch(fileName: string, oldStr: string, newStr: string, oldHeader: string | undefined, newHeader: string | undefined, options: CreatePatchOptionsAbortable): string | undefined;
 export declare function createPatch(fileName: string, oldStr: string, newStr: string, oldHeader?: string, newHeader?: string, options?: CreatePatchOptionsNonabortable): string;
-export {};
+
 //# sourceMappingURL=create.d.ts.map

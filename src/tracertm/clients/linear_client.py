@@ -1,7 +1,7 @@
 """Linear API client using GraphQL with wait+retry."""
 
-from datetime import datetime
-from typing import Any, Optional
+from datetime import UTC, datetime, timezone
+from typing import Any
 
 import httpx
 from tenacity import (
@@ -15,8 +15,6 @@ from tenacity import (
 class LinearClientError(Exception):
     """Base exception for Linear client errors."""
 
-    pass
-
 
 class LinearRateLimitError(LinearClientError):
     """Rate limit exceeded."""
@@ -29,13 +27,9 @@ class LinearRateLimitError(LinearClientError):
 class LinearAuthError(LinearClientError):
     """Authentication error."""
 
-    pass
-
 
 class LinearNotFoundError(LinearClientError):
     """Resource not found."""
-
-    pass
 
 
 class LinearClient:
@@ -60,7 +54,7 @@ class LinearClient:
         """
         self.api_key = api_key
         self.timeout = timeout
-        self._client: Optional[httpx.AsyncClient] = None
+        self._client: httpx.AsyncClient | None = None
 
     async def _get_client(self) -> httpx.AsyncClient:
         """Get or create HTTP client."""
@@ -84,10 +78,9 @@ class LinearClient:
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, min=1, max=10),
         retry=retry_if_exception(
-            lambda e: isinstance(e, (httpx.NetworkError, httpx.TimeoutException))
-            or (
-                isinstance(e, httpx.HTTPStatusError)
-                and e.response.status_code >= 500
+            lambda e: (
+                isinstance(e, (httpx.NetworkError, httpx.TimeoutException))
+                or (isinstance(e, httpx.HTTPStatusError) and e.response.status_code >= 500)
             )
         ),
         reraise=True,
@@ -121,7 +114,7 @@ class LinearClient:
             reset_at = None
             if reset_after:
                 try:
-                    reset_at = datetime.fromtimestamp(float(reset_after))
+                    reset_at = datetime.fromtimestamp(float(reset_after), tz=UTC)
                 except (ValueError, TypeError):
                     pass
             raise LinearRateLimitError(reset_at)
@@ -271,7 +264,7 @@ class LinearClient:
         if team_id:
             filter_parts.append(f'team: {{ id: {{ eq: "{team_id}" }} }}')
         if state_filter:
-            filter_parts.append(f'state: {{ type: {{ eq: {state_filter} }} }}')
+            filter_parts.append(f"state: {{ type: {{ eq: {state_filter} }} }}")
 
         filter_str = ", ".join(filter_parts)
         filter_arg = f"filter: {{ {filter_str} }}" if filter_parts else ""
@@ -400,37 +393,6 @@ class LinearClient:
         team_key = parts[0]
         issue_number = int(parts[1])
 
-        query = """
-        query($teamKey: String!, $number: Float!) {
-            issue(id: $teamKey, number: $number) {
-                id
-                identifier
-                title
-                description
-                priority
-                priorityLabel
-                estimate
-                url
-                createdAt
-                updatedAt
-                state {
-                    id
-                    name
-                    type
-                }
-                assignee {
-                    id
-                    name
-                    email
-                }
-                team {
-                    id
-                    key
-                    name
-                }
-            }
-        }
-        """
         # This doesn't quite work - Linear needs different approach
         # Use search instead
         search_query = """
@@ -718,8 +680,7 @@ class LinearClient:
             """
             result = await self._query(query, {"teamId": team_id})
             return result.get("team", {}).get("labels", {}).get("nodes", [])
-        else:
-            query = """
+        query = """
             query {
                 issueLabels(first: 100) {
                     nodes {
@@ -735,8 +696,8 @@ class LinearClient:
                 }
             }
             """
-            result = await self._query(query)
-            return result.get("issueLabels", {}).get("nodes", [])
+        result = await self._query(query)
+        return result.get("issueLabels", {}).get("nodes", [])
 
     # ==================== WEBHOOKS ====================
 

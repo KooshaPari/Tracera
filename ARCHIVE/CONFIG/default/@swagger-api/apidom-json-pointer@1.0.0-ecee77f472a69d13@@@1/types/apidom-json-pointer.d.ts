@@ -71,4 +71,4 @@ export { XMLTranslator }
 
 export * from "@swaggerexpert/json-pointer";
 
-export { }
+

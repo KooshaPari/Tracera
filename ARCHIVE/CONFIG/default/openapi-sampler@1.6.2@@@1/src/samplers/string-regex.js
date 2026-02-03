@@ -195,7 +195,7 @@ export function regexSample(pattern) {
 
   // Deal with single wildcards
   const SINGLE_CHAR_REG =
-    /([.A-Za-z0-9])(?:\{(\d+)(?:\,(\d+)|)\}|(\?|\*|\+))(?![^[]*]|[^{]*})/;
+    /([.A-Za-z0-9])(?:\{(\d+)(?:,(\d+)|)\}|(\?|\*|\+))(?![^[]*]|[^{]*})/;
   let token = pattern.match(SINGLE_CHAR_REG);
   while (token != null) {
     const quantifierMin = token[2];
@@ -217,7 +217,7 @@ export function regexSample(pattern) {
 
   const SINGLE_RANGE_REG = /(\d-\d|\w-\w|\d|\w|[-!@#$&()`.+,/"])/;
   const RANGE_ALPHANUMEMRIC_REG =
-    /\[(\^|)(-|)(.+?)\](?:\{(\d+)(?:\,(\d+)|)\}|(\?|\*|\+)|)/;
+    /\[(\^|)(-|)(.+?)\](?:\{(\d+)(?:,(\d+)|)\}|(\?|\*|\+)|)/;
   // Deal with character classes with quantifiers `[a-z0-9]{min[, max]}`
   token = pattern.match(RANGE_ALPHANUMEMRIC_REG);
   while (token != null) {
@@ -325,7 +325,7 @@ export function regexSample(pattern) {
     token = pattern.match(RANGE_ALPHANUMEMRIC_REG);
   }
 
-  const RANGE_REP_REG = /(.)\{(\d+)\,(\d+)\}/;
+  const RANGE_REP_REG = /(.)\{(\d+),(\d+)\}/;
   // Deal with quantifier ranges `{min,max}`
   token = pattern.match(RANGE_REP_REG);
   while (token != null) {

@@ -28,4 +28,4 @@ export declare type _Repeat<A extends any, N extends number, L extends List = []
  * ```
  */
 export declare type Repeat<A extends any, N extends number, L extends List = []> = N extends unknown ? L extends unknown ? _Repeat<A, N, L> : never : never;
-export {};
+

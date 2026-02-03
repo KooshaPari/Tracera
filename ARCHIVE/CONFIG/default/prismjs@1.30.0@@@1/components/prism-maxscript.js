@@ -26,7 +26,7 @@
 					/^/.source +
 					'|' +
 					// operators and other language constructs
-					/[;=<>+\-*/^({\[]/.source +
+					/[;=<>+\-*/^({[]/.source +
 					'|' +
 					// keywords as part of statements
 					/\b(?:and|by|case|catch|collect|do|else|if|in|not|or|return|then|to|try|where|while|with)\b/.source
@@ -85,7 +85,7 @@
 		},
 
 		'operator': /[-+*/<>=!]=?|[&^?]|#(?!\()/,
-		'punctuation': /[()\[\]{}.:,;]|#(?=\()|\\$/m
+		'punctuation': /[()[\]{}.:,;]|#(?=\()|\\$/m
 	};
 
 }(Prism));

@@ -12,10 +12,9 @@ Tests cover:
 - Rollback on error, hierarchical relationships
 """
 
-import json
 import tempfile
 from pathlib import Path
-from uuid import uuid4
+from typing import Any
 
 import pytest
 import yaml
@@ -36,7 +35,7 @@ class TestMarkdownIngestion:
 ### Story: Email Validation
 Content about email validation."""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -45,18 +44,18 @@ Content about email validation."""
             service = StatelessIngestionService(db_session)
             result = service.ingest_markdown(file_path, validate=True)
 
-            assert result['items_created'] == 3
-            assert result['links_created'] >= 0
-            assert 'project_id' in result
-            assert result['file_path'] == file_path
+            assert result["items_created"] == 3
+            assert result["links_created"] >= 0
+            assert "project_id" in result
+            assert result["file_path"] == file_path
 
             # Verify items created
             items = db_session.query(Item).all()
             assert len(items) == 3
             titles = {item.title for item in items}
-            assert 'Epic: User Management' in titles
-            assert 'Feature: User Registration' in titles
-            assert 'Story: Email Validation' in titles
+            assert "Epic: User Management" in titles
+            assert "Feature: User Registration" in titles
+            assert "Story: Email Validation" in titles
         finally:
             Path(file_path).unlink()
 
@@ -76,7 +75,7 @@ type_mapping:
 ## Authentication Endpoints
 Content here."""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -85,12 +84,12 @@ Content here."""
             service = StatelessIngestionService(db_session)
             result = service.ingest_markdown(file_path)
 
-            assert result['items_created'] == 2
+            assert result["items_created"] == 2
             # The project should be created; check by finding it in the database
             projects = db_session.query(Project).all()
             assert len(projects) >= 1
             # At least one project should exist
-            assert any(p.name == 'API Gateway' for p in projects) or projects[0].name is not None
+            assert any(p.name == "API Gateway" for p in projects) or projects[0].name is not None
         finally:
             Path(file_path).unlink()
 
@@ -103,7 +102,7 @@ See [Section B](#section-b) for details.
 ## Section B
 Content for section B."""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -112,7 +111,7 @@ Content for section B."""
             service = StatelessIngestionService(db_session)
             result = service.ingest_markdown(file_path)
 
-            assert result['items_created'] == 3
+            assert result["items_created"] == 3
             links = db_session.query(Link).all()
             assert len(links) >= 0
         finally:
@@ -126,7 +125,7 @@ Content for section B."""
 ### Story
 [Link](http://example.com)"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -135,10 +134,10 @@ Content for section B."""
             service = StatelessIngestionService(db_session)
             result = service.ingest_markdown(file_path, dry_run=True)
 
-            assert result['dry_run'] is True
-            assert result['headers_found'] == 4
-            assert result['links_found'] == 1
-            assert result['would_create_items'] == 4
+            assert result["dry_run"] is True
+            assert result["headers_found"] == 4
+            assert result["links_found"] == 1
+            assert result["would_create_items"] == 4
 
             # Verify nothing was created
             items = db_session.query(Item).all()
@@ -148,14 +147,14 @@ Content for section B."""
 
     def test_ingest_markdown_invalid_extension(self, db_session):
         """Test markdown ingestion with invalid file extension."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f:
-            f.write('# Test')
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
+            f.write("# Test")
             f.flush()
             file_path = f.name
 
         try:
             service = StatelessIngestionService(db_session)
-            with pytest.raises(ValueError, match='Invalid file extension'):
+            with pytest.raises(ValueError, match="Invalid file extension"):
                 service.ingest_markdown(file_path, validate=True)
         finally:
             Path(file_path).unlink()
@@ -164,7 +163,7 @@ Content for section B."""
         """Test markdown ingestion with non-existent file."""
         service = StatelessIngestionService(db_session)
         with pytest.raises(FileNotFoundError):
-            service.ingest_markdown('/nonexistent/file.md')
+            service.ingest_markdown("/nonexistent/file.md")
 
     def test_ingest_markdown_deep_hierarchy(self, db_session):
         """Test markdown with deep header hierarchy."""
@@ -176,7 +175,7 @@ Content for section B."""
 ###### H6
 More content."""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -185,13 +184,13 @@ More content."""
             service = StatelessIngestionService(db_session)
             result = service.ingest_markdown(file_path)
 
-            assert result['items_created'] == 6
+            assert result["items_created"] == 6
             items = db_session.query(Item).all()
             item_types = {item.item_type for item in items}
-            assert 'epic' in item_types
-            assert 'feature' in item_types
-            assert 'story' in item_types
-            assert 'task' in item_types
+            assert "epic" in item_types
+            assert "feature" in item_types
+            assert "story" in item_types
+            assert "task" in item_types
         finally:
             Path(file_path).unlink()
 
@@ -208,7 +207,7 @@ type_mapping:
 ## Design 2
 ### Implementation 3"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -237,7 +236,7 @@ type_mapping:
 ### Header 3
 Content after gaps."""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -246,7 +245,7 @@ Content after gaps."""
             service = StatelessIngestionService(db_session)
             result = service.ingest_markdown(file_path)
 
-            assert result['items_created'] == 3
+            assert result["items_created"] == 3
             items = db_session.query(Item).all()
             assert len(items) == 3
         finally:
@@ -261,7 +260,7 @@ Content here.
 ## Second Section
 More content."""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -270,7 +269,7 @@ More content."""
             service = StatelessIngestionService(db_session)
             result = service.ingest_markdown(file_path)
 
-            assert result['items_created'] == 3
+            assert result["items_created"] == 3
             project = db_session.query(Project).first()
             assert project is not None
         finally:
@@ -279,25 +278,25 @@ More content."""
     def test_ingest_markdown_with_existing_project(self, db_session):
         """Test markdown ingestion with existing project."""
         # Create project first
-        project = Project(id='existing-proj', name='Existing Project')
+        project = Project(id="existing-proj", name="Existing Project")
         db_session.add(project)
         db_session.commit()
 
         content = """# New Feature
 ## Sub Feature"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
 
         try:
             service = StatelessIngestionService(db_session)
-            result = service.ingest_markdown(file_path, project_id='existing-proj')
+            result = service.ingest_markdown(file_path, project_id="existing-proj")
 
-            assert result['project_id'] == 'existing-proj'
-            assert result['items_created'] == 2
-            items = db_session.query(Item).filter_by(project_id='existing-proj').all()
+            assert result["project_id"] == "existing-proj"
+            assert result["items_created"] == 2
+            items = db_session.query(Item).filter_by(project_id="existing-proj").all()
             assert len(items) == 2
         finally:
             Path(file_path).unlink()
@@ -306,15 +305,15 @@ More content."""
         """Test markdown ingestion with non-existent project ID."""
         content = """# Test"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
 
         try:
             service = StatelessIngestionService(db_session)
-            with pytest.raises(ValueError, match='Project not found'):
-                service.ingest_markdown(file_path, project_id='nonexistent')
+            with pytest.raises(ValueError, match="Project not found"):
+                service.ingest_markdown(file_path, project_id="nonexistent")
         finally:
             Path(file_path).unlink()
 
@@ -322,7 +321,7 @@ More content."""
         """Test markdown ingestion with validation disabled."""
         content = """# Test Header"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -331,7 +330,7 @@ More content."""
             service = StatelessIngestionService(db_session)
             result = service.ingest_markdown(file_path, validate=False)
 
-            assert result['items_created'] >= 1
+            assert result["items_created"] >= 1
         finally:
             Path(file_path).unlink()
 
@@ -344,7 +343,7 @@ Paragraph 2.
 ## Subsection
 Subsection content."""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -355,7 +354,7 @@ Subsection content."""
 
             items = db_session.query(Item).all()
             # Find item for "Section"
-            section_item = next((i for i in items if 'Section' == i.title), None)
+            section_item = next((i for i in items if i.title == "Section"), None)
             assert section_item is not None
             assert section_item.description  # Should have content
         finally:
@@ -378,7 +377,7 @@ project: React App
 ## Alert Component
 <Alert severity="error">Error message</Alert>"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.mdx', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".mdx", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -389,7 +388,7 @@ project: React App
             # through the ingest_mdx wrapper
             try:
                 result = service.ingest_mdx(file_path)
-                assert 'jsx_components_created' in result
+                assert "jsx_components_created" in result
             except ValueError as e:
                 # If MDX isn't fully supported, that's ok - test the structure exists
                 if "Invalid file extension" in str(e):
@@ -407,7 +406,7 @@ project: React App
 <Component>Content</Component>
 <Another/>"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.mdx', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".mdx", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -416,22 +415,22 @@ project: React App
             service = StatelessIngestionService(db_session)
             result = service.ingest_mdx(file_path, dry_run=True)
 
-            assert result['dry_run'] is True
-            assert result['headers_found'] >= 1
-            assert 'jsx_components_found' in result
+            assert result["dry_run"] is True
+            assert result["headers_found"] >= 1
+            assert "jsx_components_found" in result
         finally:
             Path(file_path).unlink()
 
     def test_ingest_mdx_invalid_extension(self, db_session):
         """Test MDX with invalid file extension."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
-            f.write('# Test')
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+            f.write("# Test")
             f.flush()
             file_path = f.name
 
         try:
             service = StatelessIngestionService(db_session)
-            with pytest.raises(ValueError, match='Invalid file extension'):
+            with pytest.raises(ValueError, match="Invalid file extension"):
                 service.ingest_mdx(file_path, validate=True)
         finally:
             Path(file_path).unlink()
@@ -440,7 +439,7 @@ project: React App
         """Test MDX with non-existent file."""
         service = StatelessIngestionService(db_session)
         with pytest.raises(FileNotFoundError):
-            service.ingest_mdx('/nonexistent/file.mdx')
+            service.ingest_mdx("/nonexistent/file.mdx")
 
     def test_ingest_mdx_multiple_components(self, db_session):
         """Test MDX with multiple JSX components."""
@@ -450,7 +449,7 @@ project: React App
 <Card title="Card 2">Content 2</Card>
 <Badge count="5">Badge</Badge>"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.mdx', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".mdx", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -459,7 +458,7 @@ project: React App
             service = StatelessIngestionService(db_session)
             try:
                 result = service.ingest_mdx(file_path)
-                items = db_session.query(Item).filter_by(view='CODE').all()
+                items = db_session.query(Item).filter_by(view="CODE").all()
                 # May have CODE items from MDX components
                 assert len(items) >= 0
             except ValueError as e:
@@ -473,13 +472,13 @@ project: React App
 
     def test_ingest_mdx_with_existing_project(self, db_session):
         """Test MDX ingestion with existing project."""
-        project = Project(id='mdx-proj', name='MDX Project')
+        project = Project(id="mdx-proj", name="MDX Project")
         db_session.add(project)
         db_session.commit()
 
         content = """<Button>Test</Button>"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.mdx', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".mdx", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -487,8 +486,8 @@ project: React App
         try:
             service = StatelessIngestionService(db_session)
             try:
-                result = service.ingest_mdx(file_path, project_id='mdx-proj')
-                assert result['project_id'] == 'mdx-proj'
+                result = service.ingest_mdx(file_path, project_id="mdx-proj")
+                assert result["project_id"] == "mdx-proj"
             except ValueError as e:
                 # MDX validation acceptable
                 if "Invalid file extension" in str(e):
@@ -512,7 +511,7 @@ sections:
   frontend:
     description: Frontend app"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -521,9 +520,9 @@ sections:
             service = StatelessIngestionService(db_session)
             result = service.ingest_yaml(file_path)
 
-            assert result['format'] == 'yaml'
-            assert result['items_created'] >= 2
-            assert 'project_id' in result
+            assert result["format"] == "yaml"
+            assert result["items_created"] >= 2
+            assert "project_id" in result
         finally:
             Path(file_path).unlink()
 
@@ -552,7 +551,7 @@ components:
         name:
           type: string"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -561,14 +560,14 @@ components:
             service = StatelessIngestionService(db_session)
             result = service.ingest_yaml(file_path)
 
-            assert result['format'] == 'openapi'
-            assert result['schemas_created'] == 1
-            assert result['endpoints_created'] >= 1
-            assert result['items_created'] >= 2
+            assert result["format"] == "openapi"
+            assert result["schemas_created"] == 1
+            assert result["endpoints_created"] >= 1
+            assert result["items_created"] >= 2
 
             items = db_session.query(Item).all()
-            schema_items = [i for i in items if i.item_type == 'schema']
-            endpoint_items = [i for i in items if i.item_type == 'endpoint']
+            schema_items = [i for i in items if i.item_type == "schema"]
+            endpoint_items = [i for i in items if i.item_type == "endpoint"]
             assert len(schema_items) >= 1
             assert len(endpoint_items) >= 1
         finally:
@@ -603,7 +602,7 @@ components:
         name:
           type: string"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -612,7 +611,7 @@ components:
             service = StatelessIngestionService(db_session)
             result = service.ingest_yaml(file_path)
 
-            assert result['format'] == 'openapi'
+            assert result["format"] == "openapi"
             links = db_session.query(Link).all()
             assert len(links) >= 2  # Request and response links
         finally:
@@ -639,7 +638,7 @@ components:
     Item:
       type: object"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -648,10 +647,10 @@ components:
             service = StatelessIngestionService(db_session)
             result = service.ingest_yaml(file_path, dry_run=True)
 
-            assert result['dry_run'] is True
-            assert result['format'] == 'openapi'
-            assert result['endpoints_found'] == 3
-            assert result['schemas_found'] == 2
+            assert result["dry_run"] is True
+            assert result["format"] == "openapi"
+            assert result["endpoints_found"] == 3
+            assert result["schemas_found"] == 2
         finally:
             Path(file_path).unlink()
 
@@ -686,7 +685,7 @@ traceability:
     rule: "Must implement password reset for auth"
 """
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -695,9 +694,9 @@ traceability:
             service = StatelessIngestionService(db_session)
             result = service.ingest_yaml(file_path)
 
-            assert result['format'] == 'bmad'
-            assert result['requirements_created'] == 2
-            assert result['links_created'] >= 2
+            assert result["format"] == "bmad"
+            assert result["requirements_created"] == 2
+            assert result["links_created"] >= 2
         finally:
             Path(file_path).unlink()
 
@@ -711,7 +710,7 @@ traceability:
   - id: REQ-003
     title: Feature 3"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -720,9 +719,9 @@ traceability:
             service = StatelessIngestionService(db_session)
             result = service.ingest_yaml(file_path, dry_run=True)
 
-            assert result['dry_run'] is True
-            assert result['format'] == 'bmad'
-            assert result['requirements_found'] == 3
+            assert result["dry_run"] is True
+            assert result["format"] == "bmad"
+            assert result["requirements_found"] == 3
         finally:
             Path(file_path).unlink()
 
@@ -732,14 +731,14 @@ traceability:
   - list without proper format
     - bad indentation"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
 
         try:
             service = StatelessIngestionService(db_session)
-            with pytest.raises(ValueError, match='Invalid YAML'):
+            with pytest.raises(ValueError, match="Invalid YAML"):
                 service.ingest_yaml(file_path)
         finally:
             Path(file_path).unlink()
@@ -750,14 +749,14 @@ traceability:
 - item2
 - item3"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
 
         try:
             service = StatelessIngestionService(db_session)
-            with pytest.raises(ValueError, match='YAML root must be a dictionary'):
+            with pytest.raises(ValueError, match="YAML root must be a dictionary"):
                 service.ingest_yaml(file_path)
         finally:
             Path(file_path).unlink()
@@ -777,7 +776,7 @@ level1:
     - title: Item 2
       description: Second item"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -786,7 +785,7 @@ level1:
             service = StatelessIngestionService(db_session)
             result = service.ingest_yaml(file_path)
 
-            assert result['format'] == 'yaml'
+            assert result["format"] == "yaml"
             items = db_session.query(Item).all()
             assert len(items) >= 5
         finally:
@@ -794,14 +793,14 @@ level1:
 
     def test_ingest_yaml_invalid_extension(self, db_session):
         """Test YAML with invalid file extension."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f:
-            f.write('name: test')
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
+            f.write("name: test")
             f.flush()
             file_path = f.name
 
         try:
             service = StatelessIngestionService(db_session)
-            with pytest.raises(ValueError, match='Invalid file extension'):
+            with pytest.raises(ValueError, match="Invalid file extension"):
                 service.ingest_yaml(file_path, validate=True)
         finally:
             Path(file_path).unlink()
@@ -810,11 +809,11 @@ level1:
         """Test YAML with non-existent file."""
         service = StatelessIngestionService(db_session)
         with pytest.raises(FileNotFoundError):
-            service.ingest_yaml('/nonexistent/file.yaml')
+            service.ingest_yaml("/nonexistent/file.yaml")
 
     def test_ingest_yaml_with_existing_project(self, db_session):
         """Test YAML ingestion with existing project."""
-        project = Project(id='yaml-proj', name='YAML Project')
+        project = Project(id="yaml-proj", name="YAML Project")
         db_session.add(project)
         db_session.commit()
 
@@ -823,16 +822,16 @@ items:
   item1:
     description: Test"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
 
         try:
             service = StatelessIngestionService(db_session)
-            result = service.ingest_yaml(file_path, project_id='yaml-proj')
+            result = service.ingest_yaml(file_path, project_id="yaml-proj")
 
-            assert result['project_id'] == 'yaml-proj'
+            assert result["project_id"] == "yaml-proj"
         finally:
             Path(file_path).unlink()
 
@@ -847,7 +846,7 @@ section2:
     - item1
     - item2"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -856,9 +855,9 @@ section2:
             service = StatelessIngestionService(db_session)
             result = service.ingest_yaml(file_path, dry_run=True)
 
-            assert result['dry_run'] is True
-            assert result['format'] == 'yaml'
-            assert 'items_found' in result
+            assert result["dry_run"] is True
+            assert result["format"] == "yaml"
+            assert "items_found" in result
         finally:
             Path(file_path).unlink()
 
@@ -875,7 +874,7 @@ section2:
       target: R-2
       type: traces_to"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -886,7 +885,7 @@ section2:
 
             # The alternative structure uses "spec" wrapper which may be detected as generic YAML
             # Both bmad and yaml formats are acceptable
-            assert result['format'] in ['bmad', 'yaml']
+            assert result["format"] in ["bmad", "yaml"]
             items = db_session.query(Item).all()
             # Should have created items
             assert len(items) >= 2
@@ -915,7 +914,7 @@ requirements:
     title: Login Endpoint
     type: endpoint"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -939,27 +938,27 @@ class TestErrorHandling:
         """Test error handling for missing markdown file."""
         service = StatelessIngestionService(db_session)
         with pytest.raises(FileNotFoundError):
-            service.ingest_markdown('/missing/file.md')
+            service.ingest_markdown("/missing/file.md")
 
     def test_yaml_file_not_found(self, db_session):
         """Test error handling for missing YAML file."""
         service = StatelessIngestionService(db_session)
         with pytest.raises(FileNotFoundError):
-            service.ingest_yaml('/missing/file.yaml')
+            service.ingest_yaml("/missing/file.yaml")
 
     def test_invalid_yaml_syntax(self, db_session):
         """Test YAML with invalid syntax."""
         content = """invalid: [syntax
   broken list"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
 
         try:
             service = StatelessIngestionService(db_session)
-            with pytest.raises(ValueError, match='Invalid YAML'):
+            with pytest.raises(ValueError, match="Invalid YAML"):
                 service.ingest_yaml(file_path)
         finally:
             Path(file_path).unlink()
@@ -968,7 +967,7 @@ class TestErrorHandling:
         """Test markdown with non-existent project ID."""
         content = """# Test"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -976,7 +975,7 @@ class TestErrorHandling:
         try:
             service = StatelessIngestionService(db_session)
             with pytest.raises(ValueError):
-                service.ingest_markdown(file_path, project_id='invalid-id')
+                service.ingest_markdown(file_path, project_id="invalid-id")
         finally:
             Path(file_path).unlink()
 
@@ -993,7 +992,7 @@ team: backend
 
 # Feature"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1005,8 +1004,8 @@ team: backend
             items = db_session.query(Item).all()
             assert len(items) >= 1
             item = items[0]
-            assert 'source_file' in item.item_metadata
-            assert 'header_level' in item.item_metadata
+            assert "source_file" in item.item_metadata
+            assert "header_level" in item.item_metadata
         finally:
             Path(file_path).unlink()
 
@@ -1024,7 +1023,7 @@ components:
         id:
           type: integer"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1033,12 +1032,12 @@ components:
             service = StatelessIngestionService(db_session)
             result = service.ingest_yaml(file_path)
 
-            items = db_session.query(Item).filter_by(item_type='schema').all()
+            items = db_session.query(Item).filter_by(item_type="schema").all()
             assert len(items) >= 1
             schema = items[0]
-            assert 'schema_name' in schema.item_metadata
-            assert 'schema_type' in schema.item_metadata
-            assert 'openapi_schema' in schema.item_metadata
+            assert "schema_name" in schema.item_metadata
+            assert "schema_type" in schema.item_metadata
+            assert "openapi_schema" in schema.item_metadata
         finally:
             Path(file_path).unlink()
 
@@ -1054,7 +1053,7 @@ requirements:
     owner: alice
     tags: [feature, important]"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1066,10 +1065,10 @@ requirements:
             items = db_session.query(Item).all()
             assert len(items) >= 1
             item = items[0]
-            assert 'requirement_id' in item.item_metadata
-            assert 'priority' in item.item_metadata
-            assert 'owner' in item.item_metadata
-            assert 'tags' in item.item_metadata
+            assert "requirement_id" in item.item_metadata
+            assert "priority" in item.item_metadata
+            assert "owner" in item.item_metadata
+            assert "tags" in item.item_metadata
         finally:
             Path(file_path).unlink()
 
@@ -1087,7 +1086,7 @@ class TestLargeFileHandling:
 
         content = "\n".join(lines)
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1096,7 +1095,7 @@ class TestLargeFileHandling:
             service = StatelessIngestionService(db_session)
             result = service.ingest_markdown(file_path)
 
-            assert result['items_created'] == 101
+            assert result["items_created"] == 101
             items = db_session.query(Item).all()
             assert len(items) == 101
         finally:
@@ -1106,13 +1105,11 @@ class TestLargeFileHandling:
         """Test ingestion of large YAML structure."""
         yaml_dict = {"name": "LargeProject"}
         for i in range(50):
-            yaml_dict[f"section_{i}"] = {
-                f"item_{j}": f"value_{j}" for j in range(5)
-            }
+            yaml_dict[f"section_{i}"] = {f"item_{j}": f"value_{j}" for j in range(5)}
 
         content = yaml.dump(yaml_dict)
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1129,32 +1126,24 @@ class TestLargeFileHandling:
 
     def test_large_openapi_spec(self, db_session):
         """Test ingestion of large OpenAPI specification."""
-        spec = {
+        spec: dict[str, Any] = {
             "openapi": "3.0.0",
             "info": {"title": "Large API"},
             "paths": {},
-            "components": {"schemas": {}}
+            "components": {"schemas": {}},
         }
 
         # Add 50 endpoints
         for i in range(50):
-            spec["paths"][f"/resource{i}"] = {
-                "get": {
-                    "operationId": f"getResource{i}",
-                    "summary": f"Get resource {i}"
-                }
-            }
+            spec["paths"][f"/resource{i}"] = {"get": {"operationId": f"getResource{i}", "summary": f"Get resource {i}"}}
 
         # Add 50 schemas
         for i in range(50):
-            spec["components"]["schemas"][f"Model{i}"] = {
-                "type": "object",
-                "properties": {"id": {"type": "integer"}}
-            }
+            spec["components"]["schemas"][f"Model{i}"] = {"type": "object", "properties": {"id": {"type": "integer"}}}
 
         content = yaml.dump(spec)
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1163,8 +1152,8 @@ class TestLargeFileHandling:
             service = StatelessIngestionService(db_session)
             result = service.ingest_yaml(file_path)
 
-            assert result['format'] == 'openapi'
-            assert result['items_created'] >= 100
+            assert result["format"] == "openapi"
+            assert result["items_created"] >= 100
         finally:
             Path(file_path).unlink()
 
@@ -1181,7 +1170,7 @@ Details about task.
 ## Task
 Different details."""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1193,7 +1182,7 @@ Different details."""
             # Both should be created with unique IDs
             items = db_session.query(Item).all()
             assert len(items) == 3
-            task_items = [i for i in items if i.title == 'Task']
+            task_items = [i for i in items if i.title == "Task"]
             assert len(task_items) == 2
             assert task_items[0].id != task_items[1].id
         finally:
@@ -1210,7 +1199,7 @@ requirements:
   - id: REQ-002
     title: Second"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1240,7 +1229,7 @@ Content
 ### Story 2
 Content"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1250,9 +1239,9 @@ Content"""
             result = service.ingest_markdown(file_path)
 
             items = db_session.query(Item).all()
-            epic = next((i for i in items if i.item_type == 'epic'), None)
-            features = [i for i in items if i.item_type == 'feature']
-            stories = [i for i in items if i.item_type == 'story']
+            epic = next((i for i in items if i.item_type == "epic"), None)
+            features = [i for i in items if i.item_type == "feature"]
+            stories = [i for i in items if i.item_type == "story"]
 
             assert epic is not None
             assert len(features) == 2
@@ -1274,7 +1263,7 @@ requirements:
     parent_id: REQ-001
     depends_on: [REQ-001]"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1284,8 +1273,8 @@ requirements:
             result = service.ingest_yaml(file_path)
 
             items = db_session.query(Item).all()
-            parent = next((i for i in items if i.title == 'Parent Requirement'), None)
-            child = next((i for i in items if i.title == 'Child Requirement'), None)
+            parent = next((i for i in items if i.title == "Parent Requirement"), None)
+            child = next((i for i in items if i.title == "Child Requirement"), None)
 
             assert parent is not None
             assert child is not None
@@ -1307,7 +1296,7 @@ section1:
     item1: value
     item2: value"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1317,7 +1306,7 @@ section1:
             result = service.ingest_yaml(file_path)
 
             items = db_session.query(Item).all()
-            section_items = [i for i in items if i.title == 'section1']
+            section_items = [i for i in items if i.title == "section1"]
             assert len(section_items) >= 1
         finally:
             Path(file_path).unlink()
@@ -1330,17 +1319,17 @@ class TestViewAssignment:
         """Test markdown items get correct view."""
         content = """# Feature"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
 
         try:
             service = StatelessIngestionService(db_session)
-            result = service.ingest_markdown(file_path, view='DESIGN')
+            result = service.ingest_markdown(file_path, view="DESIGN")
 
             items = db_session.query(Item).all()
-            assert all(i.view == 'DESIGN' for i in items)
+            assert all(i.view == "DESIGN" for i in items)
         finally:
             Path(file_path).unlink()
 
@@ -1358,7 +1347,7 @@ components:
     User:
       type: object"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1368,7 +1357,7 @@ components:
             result = service.ingest_yaml(file_path)
 
             items = db_session.query(Item).all()
-            assert all(i.view == 'API' for i in items)
+            assert all(i.view == "API" for i in items)
         finally:
             Path(file_path).unlink()
 
@@ -1394,7 +1383,7 @@ requirements:
     title: API
     type: endpoint"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1406,7 +1395,7 @@ requirements:
             items = db_session.query(Item).all()
             views = {i.title: i.view for i in items}
             # Views should match type assignments
-            assert 'Requirement' in views
+            assert "Requirement" in views
         finally:
             Path(file_path).unlink()
 
@@ -1440,7 +1429,7 @@ components:
     User:
       type: object"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1452,7 +1441,7 @@ components:
             links = db_session.query(Link).all()
             assert len(links) >= 2  # Request and response links
             link_types = {link.link_type for link in links}
-            assert 'uses' in link_types or 'returns' in link_types
+            assert "uses" in link_types or "returns" in link_types
         finally:
             Path(file_path).unlink()
 
@@ -1477,7 +1466,7 @@ traceability:
     target: TEST-001
     type: tested_by"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1488,7 +1477,7 @@ traceability:
 
             links = db_session.query(Link).all()
             link_types = {link.link_type for link in links}
-            assert 'traces_to' in link_types or 'tested_by' in link_types
+            assert "traces_to" in link_types or "tested_by" in link_types
         finally:
             Path(file_path).unlink()
 
@@ -1503,7 +1492,7 @@ Reference to [Main](#main) section.
 ## Other
 More content."""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1529,7 +1518,7 @@ status: in_progress
 
 # Feature"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1564,7 +1553,7 @@ requirements:
     title: Requirement 3
     status: done"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1575,9 +1564,9 @@ requirements:
 
             items = db_session.query(Item).all()
             statuses = {i.title: i.status for i in items}
-            assert statuses.get('Requirement 1') == 'todo'
-            assert statuses.get('Requirement 2') == 'in_progress'
-            assert statuses.get('Requirement 3') == 'done'
+            assert statuses.get("Requirement 1") == "todo"
+            assert statuses.get("Requirement 2") == "in_progress"
+            assert statuses.get("Requirement 3") == "done"
         finally:
             Path(file_path).unlink()
 
@@ -1590,7 +1579,7 @@ class TestYMLAlternativeExtension:
         content = """name: Project
 description: Test"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1599,8 +1588,8 @@ description: Test"""
             service = StatelessIngestionService(db_session)
             result = service.ingest_yaml(file_path)
 
-            assert result['file_path'] == file_path
-            assert result['format'] == 'yaml'
+            assert result["file_path"] == file_path
+            assert result["format"] == "yaml"
         finally:
             Path(file_path).unlink()
 
@@ -1614,7 +1603,7 @@ paths:
     get:
       operationId: test"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1623,7 +1612,7 @@ paths:
             service = StatelessIngestionService(db_session)
             result = service.ingest_yaml(file_path)
 
-            assert result['format'] == 'openapi'
+            assert result["format"] == "openapi"
         finally:
             Path(file_path).unlink()
 
@@ -1636,7 +1625,7 @@ class TestVersionTracking:
         content = """# Feature
 ## Task"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1658,7 +1647,7 @@ class TestMarkdownAlternativeExtension:
         """Test .markdown file extension."""
         content = """# Test"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.markdown', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".markdown", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1667,7 +1656,7 @@ class TestMarkdownAlternativeExtension:
             service = StatelessIngestionService(db_session)
             result = service.ingest_markdown(file_path, validate=True)
 
-            assert result['items_created'] >= 1
+            assert result["items_created"] >= 1
         finally:
             Path(file_path).unlink()
 
@@ -1692,7 +1681,7 @@ paths:
       operationId: updateItem
       summary: Update item"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1701,7 +1690,7 @@ paths:
             service = StatelessIngestionService(db_session)
             result = service.ingest_yaml(file_path)
 
-            links = db_session.query(Link).filter_by(link_type='related_to').all()
+            links = db_session.query(Link).filter_by(link_type="related_to").all()
             assert len(links) >= 2  # Should have links between methods
         finally:
             Path(file_path).unlink()
@@ -1714,7 +1703,7 @@ class TestProjectCreationAndManagement:
         """Test project is created with filename as name."""
         content = """# Test"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', prefix='my_project_', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", prefix="my_project_", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1737,7 +1726,7 @@ description: Custom description
 
 # Test"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1763,7 +1752,7 @@ project: SharedProject
 
 # Feature 1"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content1)
             f.flush()
             file_path1 = f.name
@@ -1771,7 +1760,7 @@ project: SharedProject
         try:
             service = StatelessIngestionService(db_session)
             result1 = service.ingest_markdown(file_path1)
-            project_id_1 = result1['project_id']
+            project_id_1 = result1["project_id"]
 
             # Ingest another file with same project name
             content2 = """---
@@ -1780,14 +1769,14 @@ project: SharedProject
 
 # Feature 2"""
 
-            with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f2:
+            with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f2:
                 f2.write(content2)
                 f2.flush()
                 file_path2 = f2.name
 
             try:
                 result2 = service.ingest_markdown(file_path2)
-                project_id_2 = result2['project_id']
+                project_id_2 = result2["project_id"]
 
                 # Projects should exist
                 projects = db_session.query(Project).all()
@@ -1811,7 +1800,7 @@ class TestSpecialCharacters:
 ## Task: Handle "Quotes" & 'Apostrophes'
 ### Story: Test (Parentheses) [Brackets]"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1823,7 +1812,7 @@ class TestSpecialCharacters:
             items = db_session.query(Item).all()
             assert len(items) == 3
             titles = {item.title for item in items}
-            assert any('@' in title or '!' in title for title in titles)
+            assert any("@" in title or "!" in title for title in titles)
         finally:
             Path(file_path).unlink()
 
@@ -1836,7 +1825,7 @@ items:
     title: 第一部分
     description: Première section"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False, encoding="utf-8") as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1858,7 +1847,7 @@ class TestEmptyAndMinimalFiles:
         """Test empty YAML file handling."""
         content = """{}"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1868,7 +1857,7 @@ class TestEmptyAndMinimalFiles:
             result = service.ingest_yaml(file_path)
 
             # Should still create a project
-            assert 'project_id' in result
+            assert "project_id" in result
         finally:
             Path(file_path).unlink()
 
@@ -1876,7 +1865,7 @@ class TestEmptyAndMinimalFiles:
         """Test minimal markdown file."""
         content = """# Header"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1885,19 +1874,22 @@ class TestEmptyAndMinimalFiles:
             service = StatelessIngestionService(db_session)
             result = service.ingest_markdown(file_path)
 
-            assert result['items_created'] == 1
+            assert result["items_created"] == 1
         finally:
             Path(file_path).unlink()
 
 
-@pytest.mark.parametrize("headers,expected_count", [
-    ("# H1\n## H2\n### H3", 3),
-    ("# H1\n# H1b\n## H2", 3),
-    ("## H2\n### H3\n#### H4\n# H1", 4),
-])
+@pytest.mark.parametrize(
+    ("headers", "expected_count"),
+    [
+        ("# H1\n## H2\n### H3", 3),
+        ("# H1\n# H1b\n## H2", 3),
+        ("## H2\n### H3\n#### H4\n# H1", 4),
+    ],
+)
 def test_various_markdown_structures(db_session, headers, expected_count):
     """Test various markdown header structures."""
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
         f.write(headers)
         f.flush()
         file_path = f.name
@@ -1906,21 +1898,27 @@ def test_various_markdown_structures(db_session, headers, expected_count):
         service = StatelessIngestionService(db_session)
         result = service.ingest_markdown(file_path)
 
-        assert result['items_created'] == expected_count
+        assert result["items_created"] == expected_count
     finally:
         Path(file_path).unlink()
 
 
-@pytest.mark.parametrize("yaml_content,expected_items", [
-    ("""name: P1""", 0),
-    ("""name: P2
+@pytest.mark.parametrize(
+    ("yaml_content", "expected_items"),
+    [
+        ("""name: P1""", 0),
+        (
+            """name: P2
 items:
   i1: v1
-  i2: v2""", 1),
-])
+  i2: v2""",
+            1,
+        ),
+    ],
+)
 def test_various_yaml_structures(db_session, yaml_content, expected_items):
     """Test various YAML structures."""
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
         f.write(yaml_content)
         f.flush()
         file_path = f.name
@@ -1931,7 +1929,7 @@ def test_various_yaml_structures(db_session, yaml_content, expected_items):
 
         # Generic YAML structure creates items for top-level keys and nested dicts
         # name is metadata, not a dict entry, so no items created from it
-        assert result['items_created'] >= expected_items
+        assert result["items_created"] >= expected_items
     finally:
         Path(file_path).unlink()
 
@@ -1944,7 +1942,7 @@ class TestEdgeCasesAndMissingCoverage:
         content = """[Link 1](http://example.com)
 [Link 2](http://example.com)"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1953,7 +1951,7 @@ class TestEdgeCasesAndMissingCoverage:
             service = StatelessIngestionService(db_session)
             result = service.ingest_markdown(file_path)
 
-            assert 'items_created' in result
+            assert "items_created" in result
         finally:
             Path(file_path).unlink()
 
@@ -1967,7 +1965,7 @@ components:
     Model:
       type: object"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -1976,8 +1974,8 @@ components:
             service = StatelessIngestionService(db_session)
             result = service.ingest_yaml(file_path)
 
-            assert result['format'] == 'openapi'
-            assert result['schemas_created'] >= 1
+            assert result["format"] == "openapi"
+            assert result["schemas_created"] >= 1
         finally:
             Path(file_path).unlink()
 
@@ -1993,7 +1991,7 @@ paths:
     x-custom:
       custom: value"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -2003,7 +2001,7 @@ paths:
             result = service.ingest_yaml(file_path)
 
             # x- methods should be skipped
-            items = db_session.query(Item).filter_by(item_type='endpoint').all()
+            items = db_session.query(Item).filter_by(item_type="endpoint").all()
             assert len(items) == 1
         finally:
             Path(file_path).unlink()
@@ -2019,7 +2017,7 @@ requirements:
   - title: Requirement 2
     description: Also no ID"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -2028,7 +2026,7 @@ requirements:
             service = StatelessIngestionService(db_session)
             result = service.ingest_yaml(file_path)
 
-            assert result['requirements_created'] == 2
+            assert result["requirements_created"] == 2
             items = db_session.query(Item).all()
             # Should have generated IDs for requirements
             assert len(items) == 2
@@ -2047,7 +2045,7 @@ requirements:
     title: Second
     depends_on: REQ-1"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -2056,7 +2054,7 @@ requirements:
             service = StatelessIngestionService(db_session)
             result = service.ingest_yaml(file_path)
 
-            links = db_session.query(Link).filter_by(link_type='depends_on').all()
+            links = db_session.query(Link).filter_by(link_type="depends_on").all()
             assert len(links) >= 1
         finally:
             Path(file_path).unlink()
@@ -2072,7 +2070,7 @@ items:
   - title: Item 3
     description: Third item"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -2098,7 +2096,7 @@ def hello():
 
 More content."""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -2121,7 +2119,7 @@ Content here.
 ## Related
 Related content."""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -2130,7 +2128,7 @@ Related content."""
             service = StatelessIngestionService(db_session)
             result = service.ingest_markdown(file_path)
 
-            assert result['items_created'] >= 2
+            assert result["items_created"] >= 2
         finally:
             Path(file_path).unlink()
 
@@ -2147,7 +2145,7 @@ paths:
         '200':
           description: OK"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -2156,7 +2154,7 @@ paths:
             service = StatelessIngestionService(db_session)
             result = service.ingest_yaml(file_path)
 
-            items = db_session.query(Item).filter_by(item_type='endpoint').all()
+            items = db_session.query(Item).filter_by(item_type="endpoint").all()
             assert len(items) >= 1
             # Description should use operation_id as summary
             assert items[0].description is not None
@@ -2188,7 +2186,7 @@ components:
     Data:
       type: object"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -2197,7 +2195,7 @@ components:
             service = StatelessIngestionService(db_session)
             result = service.ingest_yaml(file_path)
 
-            links = db_session.query(Link).filter_by(link_type='uses').all()
+            links = db_session.query(Link).filter_by(link_type="uses").all()
             # Should have links for multiple content types
             assert len(links) >= 2
         finally:
@@ -2211,7 +2209,7 @@ config:
   timeout: 30
   env: production"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -2221,7 +2219,7 @@ config:
             result = service.ingest_yaml(file_path)
 
             # String values don't create items, only dicts
-            assert 'items_created' in result
+            assert "items_created" in result
         finally:
             Path(file_path).unlink()
 
@@ -2236,7 +2234,7 @@ config:
 ### Level 3 New
 # Back to Level 1"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -2276,7 +2274,7 @@ traceability:
     target: D-1
     type: implemented_by"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -2297,7 +2295,7 @@ traceability:
 ## Method: `authenticate()`
 Implementation using `bcrypt`."""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name
@@ -2326,7 +2324,7 @@ paths:
 components:
   schemas: {}"""
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(content)
             f.flush()
             file_path = f.name

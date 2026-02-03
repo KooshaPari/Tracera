@@ -27,8 +27,8 @@ This guide covers the comprehensive load testing suite for TraceRTM, designed to
 
 ```bash
 # Run the installation script
-chmod +x scripts/install_k6.sh
-./scripts/install_k6.sh
+chmod +x scripts/shell/install_k6.sh
+./scripts/shell/install_k6.sh
 
 # Verify installation
 k6 version
@@ -74,8 +74,8 @@ curl http://localhost:8000/health
 Execute the complete test suite:
 
 ```bash
-chmod +x scripts/run_load_tests.sh
-./scripts/run_load_tests.sh
+chmod +x scripts/shell/run_load_tests.sh
+./scripts/shell/run_load_tests.sh
 ```
 
 This runs:
@@ -86,38 +86,38 @@ This runs:
 5. WebSocket connections test
 6. End-to-end scenario test
 
-Results are saved to `load-test-results/` and an HTML report is generated.
+Results are saved to `load-tests/results/` and an HTML report is generated.
 
 ### Run Individual Tests
 
 **Go Items CRUD**:
 ```bash
-k6 run --out json=load-test-results/go-items.json load-tests/go-items.js
+k6 run --out json=load-tests/results/go-items.json load-tests/go-items.js
 ```
 
 **Go Graph Operations**:
 ```bash
-k6 run --out json=load-test-results/go-graph.json load-tests/go-graph.js
+k6 run --out json=load-tests/results/go-graph.json load-tests/go-graph.js
 ```
 
 **Python Specification Analytics**:
 ```bash
-k6 run --out json=load-test-results/python-specs.json load-tests/python-specs.js
+k6 run --out json=load-tests/results/python-specs.json load-tests/python-specs.js
 ```
 
 **Python AI Streaming**:
 ```bash
-k6 run --out json=load-test-results/python-ai.json load-tests/python-ai.js
+k6 run --out json=load-tests/results/python-ai.json load-tests/python-ai.js
 ```
 
 **WebSocket Connections**:
 ```bash
-k6 run --out json=load-test-results/websocket.json load-tests/websocket.js
+k6 run --out json=load-tests/results/websocket.json load-tests/websocket.js
 ```
 
 **End-to-End Scenario**:
 ```bash
-k6 run --out json=load-test-results/e2e-scenario.json load-tests/e2e-scenario.js
+k6 run --out json=load-tests/results/e2e-scenario.json load-tests/e2e-scenario.js
 ```
 
 ### Custom Configuration
@@ -138,7 +138,7 @@ k6 run load-tests/go-items.js
 After running tests, open the generated HTML report:
 
 ```bash
-open load-test-results/report.html
+open load-tests/results/report.html
 ```
 
 The report includes:
@@ -481,13 +481,13 @@ jobs:
           sudo apt-get install k6
 
       - name: Run load tests
-        run: ./scripts/run_load_tests.sh
+        run: ./scripts/shell/run_load_tests.sh
 
       - name: Upload results
         uses: actions/upload-artifact@v3
         with:
-          name: load-test-results
-          path: load-test-results/
+          name: load-tests/results
+          path: load-tests/results/
 ```
 
 ## Advanced Topics

@@ -26,18 +26,11 @@ const knownKeywords = [
 ]
 
 // Order is important, newer first!
-const schemaDrafts = [
-  ...['draft/next'], // not recommended to use, might change / break in an unexpected way
-  ...['draft/2020-12', 'draft/2019-09'], // new
-  ...['draft-07', 'draft-06', 'draft-04', 'draft-03'], // historic
-]
+const schemaDrafts = ['draft/next', 'draft/2020-12', 'draft/2019-09', 'draft-07', 'draft-06', 'draft-04', 'draft-03']
 const schemaVersions = schemaDrafts.map((draft) => `https://json-schema.org/${draft}/schema`)
 
 const vocab2019 = ['core', 'applicator', 'validation', 'meta-data', 'format', 'content']
-const vocab2020 = [
-  ...['core', 'applicator', 'unevaluated', 'validation'],
-  ...['meta-data', 'format-annotation', 'format-assertion', 'content'],
-]
+const vocab2020 = ['core', 'applicator', 'unevaluated', 'validation', 'meta-data', 'format-annotation', 'format-assertion', 'content']
 const knownVocabularies = [
   ...vocab2019.map((v) => `https://json-schema.org/draft/2019-09/vocab/${v}`),
   ...vocab2020.map((v) => `https://json-schema.org/draft/2020-12/vocab/${v}`),

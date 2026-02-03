@@ -264,4 +264,4 @@ type InternalPaths<T, Options extends Required<PathsOptions>> =
 			: never
 		: never;
 
-export {};
+

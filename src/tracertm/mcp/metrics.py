@@ -16,12 +16,11 @@ from typing import Any
 
 from fastmcp.server.middleware import Middleware, MiddlewareContext
 from prometheus_client import (
-    Counter,
-    Histogram,
-    Gauge,
-    generate_latest,
-    REGISTRY,
     CollectorRegistry,
+    Counter,
+    Gauge,
+    Histogram,
+    generate_latest,
 )
 
 logger = logging.getLogger(__name__)
@@ -131,6 +130,7 @@ class MetricsMiddleware(Middleware):
 
         try:
             import json
+
             return len(json.dumps(obj, default=str).encode("utf-8"))
         except Exception:
             return 0
@@ -160,7 +160,9 @@ class MetricsMiddleware(Middleware):
 
         try:
             # Execute tool
-            await ctx.next()
+            next_fn = getattr(ctx, "next", None)
+            if next_fn is not None and callable(next_fn):
+                await next_fn()
 
             # Track success metrics
             elapsed = time.time() - start_time
@@ -236,17 +238,17 @@ def track_auth_failure(failure_type: str) -> None:
 
 
 __all__ = [
+    "MetricsExporter",
+    "MetricsMiddleware",
+    "active_tool_calls",
+    "auth_failures_total",
     "mcp_registry",
-    "tool_duration_seconds",
+    "rate_limit_hits_total",
     "tool_calls_total",
+    "tool_duration_seconds",
     "tool_errors_total",
     "tool_payload_size_bytes",
     "tool_response_size_bytes",
-    "active_tool_calls",
-    "rate_limit_hits_total",
-    "auth_failures_total",
-    "MetricsMiddleware",
-    "MetricsExporter",
-    "track_rate_limit_hit",
     "track_auth_failure",
+    "track_rate_limit_hit",
 ]

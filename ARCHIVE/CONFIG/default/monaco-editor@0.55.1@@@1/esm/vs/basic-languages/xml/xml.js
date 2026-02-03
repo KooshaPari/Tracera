@@ -106,7 +106,7 @@ const language = {
   tokenPostfix: ".xml",
   ignoreCase: true,
   // Useful regular expressions
-  qualifiedName: /(?:[\w\.\-]+:)?[\w\.\-]+/,
+  qualifiedName: /(?:[\w.-]+:)?[\w.-]+/,
   tokenizer: {
     root: [
       [/[^<&]+/, ""],
@@ -121,9 +121,9 @@ const language = {
       // Meta tags - instruction
       [/(<\?)(@qualifiedName)/, [{ token: "delimiter" }, { token: "metatag", next: "@tag" }]],
       // Meta tags - declaration
-      [/(<\!)(@qualifiedName)/, [{ token: "delimiter" }, { token: "metatag", next: "@tag" }]],
+      [/(<!)(@qualifiedName)/, [{ token: "delimiter" }, { token: "metatag", next: "@tag" }]],
       // CDATA
-      [/<\!\[CDATA\[/, { token: "delimiter.cdata", next: "@cdata" }],
+      [/<!\[CDATA\[/, { token: "delimiter.cdata", next: "@cdata" }],
       [/&\w+;/, "string.escape"]
     ],
     cdata: [
@@ -135,7 +135,7 @@ const language = {
       [/[ \t\r\n]+/, ""],
       [/(@qualifiedName)(\s*=\s*)("[^"]*"|'[^']*')/, ["attribute.name", "", "attribute.value"]],
       [
-        /(@qualifiedName)(\s*=\s*)("[^">?\/]*|'[^'>?\/]*)(?=[\?\/]\>)/,
+        /(@qualifiedName)(\s*=\s*)("[^">?/]*|'[^'>?/]*)(?=[?/]>)/,
         ["attribute.name", "", "attribute.value"]
       ],
       [/(@qualifiedName)(\s*=\s*)("[^">]*|'[^'>]*)/, ["attribute.name", "", "attribute.value"]],
@@ -149,10 +149,10 @@ const language = {
       [/<!--/, { token: "comment", next: "@comment" }]
     ],
     comment: [
-      [/[^<\-]+/, "comment.content"],
+      [/[^<-]+/, "comment.content"],
       [/-->/, { token: "comment", next: "@pop" }],
       [/<!--/, "comment.content.invalid"],
-      [/[<\-]/, "comment.content"]
+      [/[<-]/, "comment.content"]
     ]
   }
 };

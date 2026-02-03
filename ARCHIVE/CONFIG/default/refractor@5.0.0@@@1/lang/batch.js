@@ -77,9 +77,9 @@ export default function batch(Prism) {
             keyword: /^set\b/i,
             string: string,
             parameter: parameter,
-            variable: [variable, /\w+(?=(?:[*\/%+\-&^|]|<<|>>)?=)/],
+            variable: [variable, /\w+(?=(?:[*/%+\-&^|]|<<|>>)?=)/],
             number: number,
-            operator: /[*\/%+\-&^|]=?|<<=?|>>=?|[!~_=]/,
+            operator: /[*/%+\-&^|]=?|<<=?|>>=?|[!~_=]/,
             punctuation: /[()',]/
           }
         },

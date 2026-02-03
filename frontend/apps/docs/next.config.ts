@@ -26,8 +26,8 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 60,
     remotePatterns: [
       {
-        protocol: 'https',
         hostname: 'api.tracertm.com',
+        protocol: 'https',
       },
     ],
     unoptimized: process.env.NODE_ENV === 'development',
@@ -66,31 +66,31 @@ const nextConfig: NextConfig = {
           cacheGroups: {
             // Separate React into its own chunk
             react: {
-              test: /[\\/]node_modules[\\/](react|react-dom|scheduler)[\\/]/,
               name: 'react',
               priority: 40,
               reuseExistingChunk: true,
+              test: /[\\/]node_modules[\\/](react|react-dom|scheduler)[\\/]/,
             },
             // Fumadocs libraries
             fumadocs: {
-              test: /[\\/]node_modules[\\/](fumadocs-ui|fumadocs-core|fumadocs-openapi|fumadocs-mdx)[\\/]/,
               name: 'fumadocs',
               priority: 35,
               reuseExistingChunk: true,
+              test: /[\\/]node_modules[\\/](fumadocs-ui|fumadocs-core|fumadocs-openapi|fumadocs-mdx)[\\/]/,
             },
             // Lucide icons
             lucide: {
-              test: /[\\/]node_modules[\\/]lucide-react[\\/]/,
               name: 'lucide-icons',
               priority: 25,
               reuseExistingChunk: true,
+              test: /[\\/]node_modules[\\/]lucide-react[\\/]/,
             },
             // Common vendor libraries
             vendor: {
-              test: /[\\/]node_modules[\\/]/,
               name: 'vendor',
               priority: 20,
               reuseExistingChunk: true,
+              test: /[\\/]node_modules[\\/]/,
             },
           },
           chunks: 'all',

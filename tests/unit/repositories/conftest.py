@@ -5,6 +5,7 @@ Provides async session fixtures with proper SQLite async support.
 """
 
 import asyncio
+import logging
 import os
 import tempfile
 from pathlib import Path
@@ -14,75 +15,91 @@ import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-# Import models to register them with SQLAlchemy
-from tracertm.models.base import Base
-from tracertm.models.agent import Agent
-from tracertm.models.agent_event import AgentEvent
-from tracertm.models.agent_lock import AgentLock
-from tracertm.models.event import Event
-from tracertm.models.item import Item
-from tracertm.models.link import Link
-from tracertm.models.project import Project
-# Additional models required for Link repository tests
-from tracertm.models.graph import Graph
-from tracertm.models.view import View
-from tracertm.models.item_view import ItemView
-# Additional models for other repositories
-from tracertm.models.workflow_run import WorkflowRun
-from tracertm.models.requirement_quality import RequirementQuality
-# Test-related models
-from tracertm.models.test_run import TestRun, TestResult, TestRunActivity
-from tracertm.models.test_case import TestCase, TestCaseActivity
-from tracertm.models.test_suite import TestSuite, TestSuiteTestCase, TestSuiteActivity
-# Problem model
-from tracertm.models.problem import Problem, ProblemActivity
-# Process model
-from tracertm.models.process import Process, ProcessExecution
-# Test coverage model
-from tracertm.models.test_coverage import TestCoverage, CoverageActivity
-# Specification models
-from tracertm.models.specification import ADR, Contract, Feature, Scenario
-# Item Specification models (enhanced spec types)
-from tracertm.models.item_spec import (
-    RequirementSpec,
-    TestSpec,
-    EpicSpec,
-    UserStorySpec,
-    TaskSpec,
-    DefectSpec,
-)
-# Webhook models
-from tracertm.models.webhook_integration import WebhookIntegration, WebhookLog
-# Execution models
-from tracertm.models.execution import Execution, ExecutionArtifact
-from tracertm.models.execution_config import ExecutionEnvironmentConfig
 # Account models
 from tracertm.models.account import Account
 from tracertm.models.account_user import AccountUser
-# GitHub Project model
-from tracertm.models.github_project import GitHubProject
-# Linear App model
-from tracertm.models.linear_app import LinearAppInstallation
-# GitHub App Installation model
-from tracertm.models.github_app_installation import GitHubAppInstallation
-# Integration models
-from tracertm.models.integration import (
-    IntegrationCredential,
-    IntegrationMapping,
-    IntegrationSyncQueue,
-    IntegrationSyncLog,
-    IntegrationConflict,
-    IntegrationRateLimit,
-)
+from tracertm.models.agent import Agent
+from tracertm.models.agent_event import AgentEvent
+from tracertm.models.agent_lock import AgentLock
+
+# Import models to register them with SQLAlchemy
+from tracertm.models.base import Base
+
 # Blockchain models
 from tracertm.models.blockchain import (
-    VersionBlock,
-    VersionChainIndex,
     Baseline,
     BaselineItem,
     MerkleProofCache,
     SpecEmbedding,
+    VersionBlock,
+    VersionChainIndex,
 )
+from tracertm.models.event import Event
+
+# Execution models
+from tracertm.models.execution import Execution, ExecutionArtifact
+from tracertm.models.execution_config import ExecutionEnvironmentConfig
+
+# GitHub App Installation model
+from tracertm.models.github_app_installation import GitHubAppInstallation
+
+# GitHub Project model
+from tracertm.models.github_project import GitHubProject
+
+# Additional models required for Link repository tests
+from tracertm.models.graph import Graph
+
+# Integration models
+from tracertm.models.integration import (
+    IntegrationConflict,
+    IntegrationCredential,
+    IntegrationMapping,
+    IntegrationRateLimit,
+    IntegrationSyncLog,
+    IntegrationSyncQueue,
+)
+from tracertm.models.item import Item
+
+# Item Specification models (enhanced spec types)
+from tracertm.models.item_spec import (
+    DefectSpec,
+    EpicSpec,
+    RequirementSpec,
+    TaskSpec,
+    TestSpec,
+    UserStorySpec,
+)
+from tracertm.models.item_view import ItemView
+
+# Linear App model
+from tracertm.models.linear_app import LinearAppInstallation
+from tracertm.models.link import Link
+
+# Problem model
+from tracertm.models.problem import Problem, ProblemActivity
+
+# Process model
+from tracertm.models.process import Process, ProcessExecution
+from tracertm.models.project import Project
+from tracertm.models.requirement_quality import RequirementQuality
+
+# Specification models
+from tracertm.models.specification import ADR, Contract, Feature, Scenario
+from tracertm.models.test_case import TestCase, TestCaseActivity
+
+# Test coverage model
+from tracertm.models.test_coverage import CoverageActivity, TestCoverage
+
+# Test-related models
+from tracertm.models.test_run import TestResult, TestRun, TestRunActivity
+from tracertm.models.test_suite import TestSuite, TestSuiteActivity, TestSuiteTestCase
+from tracertm.models.view import View
+
+# Webhook models
+from tracertm.models.webhook_integration import WebhookIntegration, WebhookLog
+
+# Additional models for other repositories
+from tracertm.models.workflow_run import WorkflowRun
 
 
 @pytest_asyncio.fixture(scope="function")
@@ -99,9 +116,8 @@ async def async_session_factory():
     temp_path = None
     if db_url is None:
         # Create a temporary file-based database
-        temp_db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
-        temp_path = temp_db.name
-        temp_db.close()
+        with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as temp_db:
+            temp_path = temp_db.name
         db_url = f"sqlite+aiosqlite:///{temp_path}"
 
     # Create engine
@@ -131,12 +147,12 @@ async def async_session_factory():
             await conn.run_sync(Base.metadata.drop_all)
         await engine.dispose()
     finally:
-        # Clean up temp file if it was created
+        # Clean up temp file if it was created (run in thread to avoid ASYNC240)
         if temp_path:
             try:
-                Path(temp_path).unlink()
-            except Exception:
-                pass
+                await asyncio.to_thread(Path(temp_path).unlink)
+            except Exception as e:
+                logging.getLogger(__name__).debug("Cleanup temp path %s: %s", temp_path, e)
 
 
 @pytest_asyncio.fixture(scope="function")
@@ -188,6 +204,7 @@ async def default_graph(db_session: AsyncSession, project_with_graph):
     """
     Get the default graph from a project_with_graph fixture.
     """
+    await asyncio.sleep(0)
     return project_with_graph["graph"]
 
 
@@ -217,13 +234,14 @@ async def link_test_setup(db_session: AsyncSession):
 
     Use this fixture in link tests to ensure graphs are created automatically.
     """
+    await asyncio.sleep(0)
     from tracertm.repositories.project_repository import ProjectRepository
 
     original_create = ProjectRepository.create
 
     async def create_with_graph(self, **kwargs):
         project = await original_create(self, **kwargs)
-        await create_default_graph_for_project(self.session, project.id)
+        await create_default_graph_for_project(self.session, str(project.id))
         return project
 
     ProjectRepository.create = create_with_graph

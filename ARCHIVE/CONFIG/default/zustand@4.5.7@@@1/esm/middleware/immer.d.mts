@@ -22,4 +22,4 @@ type StoreImmer<S> = S extends {
     setState(nextStateOrUpdater: T | Partial<T> | ((state: Draft<T>) => void), shouldReplace?: boolean | undefined, ...a: SkipTwo<A>): Sr;
 } : never : never;
 export declare const immer: Immer;
-export {};
+

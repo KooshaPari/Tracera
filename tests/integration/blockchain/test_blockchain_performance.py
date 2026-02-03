@@ -9,6 +9,7 @@ Tests:
 """
 
 import time
+
 import pytest
 import pytest_asyncio
 
@@ -108,10 +109,7 @@ class TestHashingPerformance:
 
     def test_content_hash_throughput(self, version_repo):
         """Test throughput of content hash computation."""
-        contents = [
-            {"id": f"item-{i}", "name": f"Item {i}", "value": i}
-            for i in range(1000)
-        ]
+        contents = [{"id": f"item-{i}", "name": f"Item {i}", "value": i} for i in range(1000)]
 
         start = time.perf_counter()
         hashes = [version_repo.compute_content_hash(c) for c in contents]
@@ -127,10 +125,7 @@ class TestHashingPerformance:
         items = [(f"item-{i:04d}", f"hash-{i:04d}") for i in range(10000)]
 
         start = time.perf_counter()
-        hashes = [
-            baseline_repo.compute_leaf_hash(item_id, content_hash)
-            for item_id, content_hash in items
-        ]
+        hashes = [baseline_repo.compute_leaf_hash(item_id, content_hash) for item_id, content_hash in items]
         elapsed = time.perf_counter() - start
 
         assert len(hashes) == 10000
@@ -139,7 +134,7 @@ class TestHashingPerformance:
 
     def test_block_hash_throughput(self, version_repo):
         """Test throughput of block hash computation."""
-        from datetime import datetime, UTC
+        from datetime import UTC, datetime
 
         timestamp = datetime.now(UTC)
 
@@ -177,10 +172,7 @@ class TestDatabasePerformance:
         """Test creating baseline with 500 items."""
         repo = BaselineRepository()
 
-        items = [
-            (f"ITEM-{i:04d}", "requirement", f"hash-{i:04d}")
-            for i in range(500)
-        ]
+        items = [(f"ITEM-{i:04d}", "requirement", f"hash-{i:04d}") for i in range(500)]
 
         start = time.perf_counter()
         baseline = await repo.create_baseline(
@@ -234,6 +226,7 @@ class TestDatabasePerformance:
 
         # Verify chain length
         chain = await repo.get_chain_index(db_session, "PERF-001", "performance")
+        assert chain is not None
         assert chain.chain_length == 100
 
         # Should complete in under 10 seconds
@@ -350,11 +343,9 @@ class TestMemoryUsage:
         # For n=100, log2(100) ≈ 7
         # For n=1000, log2(1000) ≈ 10
         # For n=10000, log2(10000) ≈ 14
-        for i, (size, length) in enumerate(zip(sizes, proof_lengths)):
+        for _i, (size, length) in enumerate(zip(sizes, proof_lengths, strict=False)):
             expected_max = math.ceil(math.log2(size)) + 1
-            assert length <= expected_max, (
-                f"Proof length {length} for {size} items exceeds expected max {expected_max}"
-            )
+            assert length <= expected_max, f"Proof length {length} for {size} items exceeds expected max {expected_max}"
 
     def test_tree_structure_size_reasonable(self, baseline_repo):
         """Test that tree structure size is reasonable."""
@@ -397,7 +388,7 @@ class TestScalabilityLimits:
 
     def test_hash_computation_stress(self, version_repo):
         """Stress test hash computation with 10000 operations."""
-        from datetime import datetime, UTC
+        from datetime import UTC, datetime
 
         timestamp = datetime.now(UTC)
 

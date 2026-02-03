@@ -15,7 +15,8 @@ import hashlib
 import json
 import time
 from collections import OrderedDict
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 
 class CacheEntry:
@@ -130,21 +131,12 @@ class QueryCache:
                 self._cache.clear()
             else:
                 # Find and remove entries matching prefix
-                to_remove = [
-                    key
-                    for key in self._cache.keys()
-                    if key.startswith(prefix)
-                ]
+                to_remove = [key for key in self._cache if key.startswith(prefix)]
                 for key in to_remove:
                     del self._cache[key]
 
     async def get_or_compute(
-        self,
-        prefix: str,
-        compute_fn: Callable[..., Any],
-        ttl: int | None = None,
-        *args,
-        **kwargs
+        self, prefix: str, compute_fn: Callable[..., Any], ttl: int | None = None, *args, **kwargs
     ) -> Any:
         """Get from cache or compute and cache the result.
 
@@ -176,12 +168,7 @@ class QueryCache:
     async def cleanup_expired(self):
         """Remove all expired entries."""
         async with self._lock:
-            now = time.time()
-            to_remove = [
-                key
-                for key, entry in self._cache.items()
-                if entry.is_expired()
-            ]
+            to_remove = [key for key, entry in self._cache.items() if entry.is_expired()]
             for key in to_remove:
                 del self._cache[key]
 
@@ -225,9 +212,9 @@ def invalidate_cache(prefix: str | None = None):
     # Run in event loop
     loop = asyncio.get_event_loop()
     if loop.is_running():
-        asyncio.create_task(cache.invalidate(prefix))
+        _ = asyncio.create_task(cache.invalidate(prefix))  # noqa: RUF006 fire-and-forget
     else:
         asyncio.run(cache.invalidate(prefix))
 
 
-__all__ = ["QueryCache", "CacheEntry", "get_query_cache", "invalidate_cache"]
+__all__ = ["CacheEntry", "QueryCache", "get_query_cache", "invalidate_cache"]

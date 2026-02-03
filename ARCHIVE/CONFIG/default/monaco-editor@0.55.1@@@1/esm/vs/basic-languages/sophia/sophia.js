@@ -113,7 +113,7 @@ const language = {
     ">>>="
   ],
   // we include these common regular expressions
-  symbols: /[=><!~?:&|+\-*\/\^%]+/,
+  symbols: /[=><!~?:&|+\-*/^%]+/,
   escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
   integersuffix: /(ll|LL|u|U|l|L)?(ll|LL|u|U|l|L)?/,
   floatsuffix: /[fFlL]?/,
@@ -139,7 +139,7 @@ const language = {
       //DataTypes
       [/int\d*/, "keyword"],
       // delimiters and operators
-      [/[{}()\[\]]/, "@brackets"],
+      [/[{}()[\]]/, "@brackets"],
       [/[<>](?!@symbols)/, "@brackets"],
       [
         /@symbols/,
@@ -151,8 +151,8 @@ const language = {
         }
       ],
       // numbers
-      [/\d*\d+[eE]([\-+]?\d+)?(@floatsuffix)/, "number.float"],
-      [/\d*\.\d+([eE][\-+]?\d+)?(@floatsuffix)/, "number.float"],
+      [/\d*\d+[eE]([-+]?\d+)?(@floatsuffix)/, "number.float"],
+      [/\d*\.\d+([eE][-+]?\d+)?(@floatsuffix)/, "number.float"],
       [/0[xX][0-9a-fA-F']*[0-9a-fA-F](@integersuffix)/, "number.hex"],
       [/0[0-7']*[0-7](@integersuffix)/, "number.octal"],
       [/0[bB][0-1']*[0-1](@integersuffix)/, "number.binary"],
@@ -176,15 +176,15 @@ const language = {
       [/\/\/.*$/, "comment"]
     ],
     comment: [
-      [/[^\/*]+/, "comment"],
+      [/[^/*]+/, "comment"],
       [/\*\//, "comment", "@pop"],
-      [/[\/*]/, "comment"]
+      [/[/*]/, "comment"]
     ],
     //Identical copy of comment above, except for the addition of .doc
     doccomment: [
-      [/[^\/*]+/, "comment.doc"],
+      [/[^/*]+/, "comment.doc"],
       [/\*\//, "comment.doc", "@pop"],
-      [/[\/*]/, "comment.doc"]
+      [/[/*]/, "comment.doc"]
     ],
     string: [
       [/[^\\"]+/, "string"],

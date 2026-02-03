@@ -1,7 +1,6 @@
 """E2E-like flows for state/progress commands with lightweight fakes."""
 
 import contextlib
-from collections import Counter
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -42,8 +41,7 @@ class _DummySession:
 
     def first(self):
         if self._last_model == "Project":
-            proj = MagicMock(id="proj-1", name="Project One", description="desc", created_at=None, updated_at=None)
-            return proj
+            return MagicMock(id="proj-1", name="Project One", description="desc", created_at=None, updated_at=None)
         return None
 
     def all(self):
@@ -72,9 +70,11 @@ def _storage_session_ctx():
 
 @pytest.mark.e2e
 def test_state_show_with_view():
-    with patch("tracertm.cli.commands.state.ConfigManager") as cfg, patch(
-        "tracertm.cli.commands.state.DatabaseConnection"
-    ) as db, patch("tracertm.cli.commands.state.Session", return_value=_DummySession()):
+    with (
+        patch("tracertm.cli.commands.state.ConfigManager") as cfg,
+        patch("tracertm.cli.commands.state.DatabaseConnection") as db,
+        patch("tracertm.cli.commands.state.Session", return_value=_DummySession()),
+    ):
         cfg_inst = MagicMock()
         cfg_inst.get.side_effect = lambda key: "proj-1" if key == "current_project_id" else "sqlite:///tmp.db"
         cfg.return_value = cfg_inst
@@ -89,9 +89,11 @@ def test_state_show_with_view():
 
 @pytest.mark.e2e
 def test_progress_show_overall():
-    with patch("tracertm.cli.commands.progress.ConfigManager") as cfg, patch(
-        "tracertm.cli.commands.progress._get_storage_manager"
-    ) as sm, patch("tracertm.cli.commands.progress.ProgressService") as ps:
+    with (
+        patch("tracertm.cli.commands.progress.ConfigManager") as cfg,
+        patch("tracertm.cli.commands.progress._get_storage_manager") as sm,
+        patch("tracertm.cli.commands.progress.ProgressService") as ps,
+    ):
         cfg_inst = MagicMock()
         cfg_inst.get.side_effect = lambda key: "proj-1" if key == "current_project_id" else None
         cfg.return_value = cfg_inst
@@ -127,9 +129,11 @@ def test_state_missing_project_exits():
 
 @pytest.mark.e2e
 def test_progress_item_not_found():
-    with patch("tracertm.cli.commands.progress.ConfigManager") as cfg, patch(
-        "tracertm.cli.commands.progress._get_storage_manager"
-    ) as sm, patch("tracertm.cli.commands.progress.ProgressService") as ps:
+    with (
+        patch("tracertm.cli.commands.progress.ConfigManager") as cfg,
+        patch("tracertm.cli.commands.progress._get_storage_manager") as sm,
+        patch("tracertm.cli.commands.progress.ProgressService") as ps,
+    ):
         cfg_inst = MagicMock()
         cfg_inst.get.side_effect = lambda key: "proj-1" if key == "current_project_id" else None
         cfg.return_value = cfg_inst
@@ -148,9 +152,11 @@ def test_progress_item_not_found():
 
 @pytest.mark.e2e
 def test_progress_view_branch():
-    with patch("tracertm.cli.commands.progress.ConfigManager") as cfg, patch(
-        "tracertm.cli.commands.progress._get_storage_manager"
-    ) as sm, patch("tracertm.cli.commands.progress.ProgressService") as ps:
+    with (
+        patch("tracertm.cli.commands.progress.ConfigManager") as cfg,
+        patch("tracertm.cli.commands.progress._get_storage_manager") as sm,
+        patch("tracertm.cli.commands.progress.ProgressService") as ps,
+    ):
         cfg_inst = MagicMock()
         cfg_inst.get.side_effect = lambda key: "proj-1" if key == "current_project_id" else None
         cfg.return_value = cfg_inst

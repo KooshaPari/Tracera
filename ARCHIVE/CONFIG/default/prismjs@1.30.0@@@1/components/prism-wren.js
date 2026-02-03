@@ -70,7 +70,7 @@ Prism.languages.wren = {
 	'function': /\b[a-z_]\w*(?=\s*[({])/i,
 
 	'operator': /<<|>>|[=!<>]=?|&&|\|\||[-+*/%~^&|?:]|\.{2,3}/,
-	'punctuation': /[\[\](){}.,;]/,
+	'punctuation': /[[\](){}.,;]/,
 };
 
 Prism.languages.wren['string-literal'] = {

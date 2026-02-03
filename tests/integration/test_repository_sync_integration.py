@@ -14,6 +14,7 @@ Target Coverage: 90%+ for repository layer
 
 import pytest
 from sqlalchemy.orm import Session
+
 from tracertm.models.item import Item
 from tracertm.models.link import Link
 from tracertm.models.project import Project
@@ -29,9 +30,7 @@ pytestmark = pytest.mark.integration
 def test_project_create_and_retrieve(db_session: Session):
     """Test creating and retrieving a project."""
     project = Project(
-        name="Test Project",
-        description="Test description",
-        project_metadata={"env": "test", "version": "1.0"}
+        name="Test Project", description="Test description", project_metadata={"env": "test", "version": "1.0"}
     )
     db_session.add(project)
     db_session.commit()
@@ -71,6 +70,7 @@ def test_project_update(db_session: Session):
 
     # Verify
     found = db_session.query(Project).filter_by(id=project.id).first()
+    assert found is not None
     assert found.name == "Updated"
     assert found.description == "Updated desc"
 
@@ -88,6 +88,7 @@ def test_project_update_metadata(db_session: Session):
 
     # Verify
     found = db_session.query(Project).filter_by(id=project.id).first()
+    assert found is not None
     assert found.project_metadata == {"version": 2, "env": "prod"}
 
 
@@ -126,7 +127,7 @@ def test_item_create_and_retrieve(db_session: Session):
         item_type="feature",
         description="Test description",
         status="todo",
-        priority="high"
+        priority="high",
     )
     db_session.add(item)
     db_session.commit()
@@ -146,13 +147,7 @@ def test_item_create_multiple_in_project(db_session: Session):
 
     items = []
     for i in range(5):
-        item = Item(
-            project_id=project.id,
-            title=f"Item {i}",
-            view="FEATURE",
-            item_type="feature",
-            status="todo"
-        )
+        item = Item(project_id=project.id, title=f"Item {i}", view="FEATURE", item_type="feature", status="todo")
         items.append(item)
 
     db_session.add_all(items)
@@ -166,13 +161,7 @@ def test_item_create_multiple_in_project(db_session: Session):
 def test_item_update_status(db_session: Session):
     """Test updating item status."""
     project = Project(name="Project")
-    item = Item(
-        project_id=project.id,
-        title="Item",
-        view="FEATURE",
-        item_type="feature",
-        status="todo"
-    )
+    item = Item(project_id=project.id, title="Item", view="FEATURE", item_type="feature", status="todo")
     db_session.add_all([project, item])
     db_session.commit()
 
@@ -182,19 +171,14 @@ def test_item_update_status(db_session: Session):
 
     # Verify
     found = db_session.query(Item).filter_by(id=item.id).first()
+    assert found is not None
     assert found.status == "in_progress"
 
 
 def test_item_update_priority(db_session: Session):
     """Test updating item priority."""
     project = Project(name="Project")
-    item = Item(
-        project_id=project.id,
-        title="Item",
-        view="FEATURE",
-        item_type="feature",
-        priority="medium"
-    )
+    item = Item(project_id=project.id, title="Item", view="FEATURE", item_type="feature", priority="medium")
     db_session.add_all([project, item])
     db_session.commit()
 
@@ -204,6 +188,7 @@ def test_item_update_priority(db_session: Session):
 
     # Verify
     found = db_session.query(Item).filter_by(id=item.id).first()
+    assert found is not None
     assert found.priority == "high"
 
 
@@ -211,30 +196,20 @@ def test_item_with_metadata(db_session: Session):
     """Test item with metadata."""
     project = Project(name="Project")
     metadata = {"assigned_to": "dev@example.com", "epic": "auth"}
-    item = Item(
-        project_id=project.id,
-        title="Item",
-        view="FEATURE",
-        item_type="feature",
-        item_metadata=metadata
-    )
+    item = Item(project_id=project.id, title="Item", view="FEATURE", item_type="feature", item_metadata=metadata)
     db_session.add_all([project, item])
     db_session.commit()
 
     # Verify
     found = db_session.query(Item).filter_by(id=item.id).first()
+    assert found is not None
     assert found.item_metadata == metadata
 
 
 def test_item_delete(db_session: Session):
     """Test deleting an item."""
     project = Project(name="Project")
-    item = Item(
-        project_id=project.id,
-        title="Item",
-        view="FEATURE",
-        item_type="feature"
-    )
+    item = Item(project_id=project.id, title="Item", view="FEATURE", item_type="feature")
     db_session.add_all([project, item])
     db_session.commit()
 
@@ -260,26 +235,13 @@ def test_link_create_and_retrieve(db_session: Session):
     db_session.add(project)
     db_session.commit()
 
-    item1 = Item(
-        project_id=project.id,
-        title="Item 1",
-        view="FEATURE",
-        item_type="feature"
-    )
-    item2 = Item(
-        project_id=project.id,
-        title="Item 2",
-        view="FEATURE",
-        item_type="feature"
-    )
+    item1 = Item(project_id=project.id, title="Item 1", view="FEATURE", item_type="feature")
+    item2 = Item(project_id=project.id, title="Item 2", view="FEATURE", item_type="feature")
     db_session.add_all([item1, item2])
     db_session.commit()
 
     link = Link(
-        source_item_id=item1.id,
-        target_item_id=item2.id,
-        link_type="depends_on",
-        link_metadata={"priority": "high"}
+        source_item_id=item1.id, target_item_id=item2.id, link_type="depends_on", link_metadata={"priority": "high"}
     )
     db_session.add(link)
     db_session.commit()
@@ -300,12 +262,7 @@ def test_link_create_multiple(db_session: Session):
 
     items = []
     for i in range(4):
-        item = Item(
-            project_id=project.id,
-            title=f"Item {i}",
-            view="FEATURE",
-            item_type="feature"
-        )
+        item = Item(project_id=project.id, title=f"Item {i}", view="FEATURE", item_type="feature")
         items.append(item)
 
     db_session.add_all(items)
@@ -314,11 +271,7 @@ def test_link_create_multiple(db_session: Session):
     # Create chain: 0->1->2->3
     links = []
     for i in range(len(items) - 1):
-        link = Link(
-            source_item_id=items[i].id,
-            target_item_id=items[i+1].id,
-            link_type="depends_on"
-        )
+        link = Link(source_item_id=items[i].id, target_item_id=items[i + 1].id, link_type="depends_on")
         links.append(link)
 
     db_session.add_all(links)
@@ -335,26 +288,12 @@ def test_link_query_by_source(db_session: Session):
     db_session.add(project)
     db_session.commit()
 
-    item1 = Item(
-        project_id=project.id,
-        title="Item 1",
-        view="FEATURE",
-        item_type="feature"
-    )
-    item2 = Item(
-        project_id=project.id,
-        title="Item 2",
-        view="FEATURE",
-        item_type="feature"
-    )
+    item1 = Item(project_id=project.id, title="Item 1", view="FEATURE", item_type="feature")
+    item2 = Item(project_id=project.id, title="Item 2", view="FEATURE", item_type="feature")
     db_session.add_all([item1, item2])
     db_session.commit()
 
-    link = Link(
-        source_item_id=item1.id,
-        target_item_id=item2.id,
-        link_type="depends_on"
-    )
+    link = Link(source_item_id=item1.id, target_item_id=item2.id, link_type="depends_on")
     db_session.add(link)
     db_session.commit()
 
@@ -370,26 +309,12 @@ def test_link_query_by_target(db_session: Session):
     db_session.add(project)
     db_session.commit()
 
-    item1 = Item(
-        project_id=project.id,
-        title="Item 1",
-        view="FEATURE",
-        item_type="feature"
-    )
-    item2 = Item(
-        project_id=project.id,
-        title="Item 2",
-        view="FEATURE",
-        item_type="feature"
-    )
+    item1 = Item(project_id=project.id, title="Item 1", view="FEATURE", item_type="feature")
+    item2 = Item(project_id=project.id, title="Item 2", view="FEATURE", item_type="feature")
     db_session.add_all([item1, item2])
     db_session.commit()
 
-    link = Link(
-        source_item_id=item1.id,
-        target_item_id=item2.id,
-        link_type="depends_on"
-    )
+    link = Link(source_item_id=item1.id, target_item_id=item2.id, link_type="depends_on")
     db_session.add(link)
     db_session.commit()
 
@@ -405,26 +330,12 @@ def test_link_delete(db_session: Session):
     db_session.add(project)
     db_session.commit()
 
-    item1 = Item(
-        project_id=project.id,
-        title="Item 1",
-        view="FEATURE",
-        item_type="feature"
-    )
-    item2 = Item(
-        project_id=project.id,
-        title="Item 2",
-        view="FEATURE",
-        item_type="feature"
-    )
+    item1 = Item(project_id=project.id, title="Item 1", view="FEATURE", item_type="feature")
+    item2 = Item(project_id=project.id, title="Item 2", view="FEATURE", item_type="feature")
     db_session.add_all([item1, item2])
     db_session.commit()
 
-    link = Link(
-        source_item_id=item1.id,
-        target_item_id=item2.id,
-        link_type="depends_on"
-    )
+    link = Link(source_item_id=item1.id, target_item_id=item2.id, link_type="depends_on")
     db_session.add(link)
     db_session.commit()
 
@@ -450,27 +361,17 @@ def test_item_parent_child_relationship(db_session: Session):
     db_session.add(project)
     db_session.commit()
 
-    parent = Item(
-        project_id=project.id,
-        title="Parent",
-        view="FEATURE",
-        item_type="feature"
-    )
+    parent = Item(project_id=project.id, title="Parent", view="FEATURE", item_type="feature")
     db_session.add(parent)
     db_session.commit()
 
-    child = Item(
-        project_id=project.id,
-        title="Child",
-        view="FEATURE",
-        item_type="feature",
-        parent_id=parent.id
-    )
+    child = Item(project_id=project.id, title="Child", view="FEATURE", item_type="feature", parent_id=parent.id)
     db_session.add(child)
     db_session.commit()
 
     # Verify relationship
     found_child = db_session.query(Item).filter_by(id=child.id).first()
+    assert found_child is not None
     assert found_child.parent_id == parent.id
 
 
@@ -481,18 +382,8 @@ def test_item_project_isolation(db_session: Session):
     db_session.add_all([proj1, proj2])
     db_session.commit()
 
-    item1 = Item(
-        project_id=proj1.id,
-        title="Item 1",
-        view="FEATURE",
-        item_type="feature"
-    )
-    item2 = Item(
-        project_id=proj2.id,
-        title="Item 2",
-        view="FEATURE",
-        item_type="feature"
-    )
+    item1 = Item(project_id=proj1.id, title="Item 1", view="FEATURE", item_type="feature")
+    item2 = Item(project_id=proj2.id, title="Item 2", view="FEATURE", item_type="feature")
     db_session.add_all([item1, item2])
     db_session.commit()
 
@@ -538,6 +429,7 @@ def test_transaction_rollback(db_session: Session):
 
     # Verify original state
     found = db_session.query(Project).filter_by(id=project.id).first()
+    assert found is not None
     assert found.name == "Original Name"
 
 
@@ -555,11 +447,7 @@ def test_query_items_by_status(db_session: Session):
     for status in ["todo", "in_progress", "done"]:
         for i in range(2):
             item = Item(
-                project_id=project.id,
-                title=f"{status} Item {i}",
-                view="FEATURE",
-                item_type="feature",
-                status=status
+                project_id=project.id, title=f"{status} Item {i}", view="FEATURE", item_type="feature", status=status
             )
             db_session.add(item)
 
@@ -583,11 +471,7 @@ def test_query_items_by_priority(db_session: Session):
 
     for priority in ["high", "medium", "low"]:
         item = Item(
-            project_id=project.id,
-            title=f"{priority} Item",
-            view="FEATURE",
-            item_type="feature",
-            priority=priority
+            project_id=project.id, title=f"{priority} Item", view="FEATURE", item_type="feature", priority=priority
         )
         db_session.add(item)
 
@@ -611,12 +495,7 @@ def test_query_items_by_view(db_session: Session):
 
     views = ["FEATURE", "REQUIREMENT", "BUG"]
     for view in views:
-        item = Item(
-            project_id=project.id,
-            title=f"{view} Item",
-            view=view,
-            item_type=view.lower()
-        )
+        item = Item(project_id=project.id, title=f"{view} Item", view=view, item_type=view.lower())
         db_session.add(item)
 
     db_session.commit()
@@ -643,17 +522,13 @@ def test_query_items_with_multiple_filters(db_session: Session):
         view="FEATURE",
         item_type="feature",
         status="todo",
-        priority="high"
+        priority="high",
     )
     db_session.add(item)
     db_session.commit()
 
     # Query with multiple filters
-    found = db_session.query(Item).filter_by(
-        status="todo",
-        priority="high",
-        view="FEATURE"
-    ).all()
+    found = db_session.query(Item).filter_by(status="todo", priority="high", view="FEATURE").all()
 
     assert len(found) >= 1
     assert found[0].status == "todo"
@@ -672,12 +547,7 @@ def test_count_items_by_project(db_session: Session):
     db_session.commit()
 
     for i in range(5):
-        item = Item(
-            project_id=project.id,
-            title=f"Item {i}",
-            view="FEATURE",
-            item_type="feature"
-        )
+        item = Item(project_id=project.id, title=f"Item {i}", view="FEATURE", item_type="feature")
         db_session.add(item)
 
     db_session.commit()
@@ -693,23 +563,13 @@ def test_count_links_by_source(db_session: Session):
     db_session.add(project)
     db_session.commit()
 
-    item1 = Item(
-        project_id=project.id,
-        title="Item 1",
-        view="FEATURE",
-        item_type="feature"
-    )
+    item1 = Item(project_id=project.id, title="Item 1", view="FEATURE", item_type="feature")
     db_session.add(item1)
     db_session.commit()
 
     # Create multiple links from item1
     for i in range(3):
-        item = Item(
-            project_id=project.id,
-            title=f"Item {i}",
-            view="FEATURE",
-            item_type="feature"
-        )
+        item = Item(project_id=project.id, title=f"Item {i}", view="FEATURE", item_type="feature")
         db_session.add(item)
 
     db_session.commit()
@@ -718,11 +578,7 @@ def test_count_links_by_source(db_session: Session):
     target_items = db_session.query(Item).filter(Item.id != item1.id).all()
 
     for target in target_items:
-        link = Link(
-            source_item_id=item1.id,
-            target_item_id=target.id,
-            link_type="depends_on"
-        )
+        link = Link(source_item_id=item1.id, target_item_id=target.id, link_type="depends_on")
         db_session.add(link)
 
     db_session.commit()

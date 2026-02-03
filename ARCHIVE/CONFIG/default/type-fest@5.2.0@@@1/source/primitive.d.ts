@@ -12,4 +12,4 @@ export type Primitive =
 	| symbol
 	| bigint;
 
-export {};
+

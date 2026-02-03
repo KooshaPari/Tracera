@@ -116,4 +116,4 @@ export type SetParameterType<Function_ extends (...arguments_: any[]) => unknown
 		)
 		: Function_;	// This part should be unreachable
 
-export {};
+

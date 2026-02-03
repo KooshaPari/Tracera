@@ -80,4 +80,4 @@ export type _ReadonlyObjectDeep<ObjectType extends object> = {
 	readonly [KeyType in keyof ObjectType]: ReadonlyDeep<ObjectType[KeyType]>
 };
 
-export {};
+

@@ -105,4 +105,4 @@ type DelimiterCasedPropertiesArrayDeep<
 							? ReadonlyArray<_DelimiterCasedPropertiesDeep<U, Delimiter, Options>>
 							: never;
 
-export {};
+

@@ -38,4 +38,4 @@ export declare type _ListOf<O extends object> = __ListOf<O> extends infer X ? Ca
  * ```
  */
 export declare type ListOf<O extends object> = O extends unknown ? _ListOf<O> : never;
-export {};
+

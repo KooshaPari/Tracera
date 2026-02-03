@@ -2,14 +2,13 @@
 Test Suite model for organizing test cases into hierarchical collections.
 """
 
-from datetime import datetime
-from enum import Enum
-from typing import Optional
+import uuid
+from datetime import UTC, datetime
+from enum import StrEnum
 
 from sqlalchemy import (
     Boolean,
     DateTime,
-    Enum as SQLEnum,
     ForeignKey,
     Index,
     Integer,
@@ -17,10 +16,11 @@ from sqlalchemy import (
     Text,
     event,
 )
+from sqlalchemy import (
+    Enum as SQLEnum,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
-import uuid
 
 from tracertm.models.base import Base, TimestampMixin
 from tracertm.models.types import JSONType
@@ -31,8 +31,9 @@ def generate_uuid() -> str:
     return str(uuid.uuid4())
 
 
-class TestSuiteStatus(str, Enum):
+class TestSuiteStatus(StrEnum):
     """Status of a test suite."""
+
     DRAFT = "draft"
     ACTIVE = "active"
     DEPRECATED = "deprecated"
@@ -55,8 +56,8 @@ class TestSuite(Base, TimestampMixin):
 
     # Basic info
     name: Mapped[str] = mapped_column(String(500), nullable=False)
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    objective: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    objective: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Status
     status: Mapped[TestSuiteStatus] = mapped_column(
@@ -64,38 +65,38 @@ class TestSuite(Base, TimestampMixin):
     )
 
     # Hierarchy
-    parent_id: Mapped[Optional[str]] = mapped_column(
+    parent_id: Mapped[str | None] = mapped_column(
         String(36), ForeignKey("test_suites.id", ondelete="SET NULL"), nullable=True
     )
     order_index: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
     # Categorization
-    category: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
-    tags: Mapped[Optional[list]] = mapped_column(JSONType, nullable=True)
+    category: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    tags: Mapped[list | None] = mapped_column(JSONType, nullable=True)
 
     # Execution settings
     is_parallel_execution: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    estimated_duration_minutes: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    estimated_duration_minutes: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     # Environment requirements
-    required_environment: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    environment_variables: Mapped[Optional[dict]] = mapped_column(JSONType, nullable=True)
-    setup_instructions: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    teardown_instructions: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    required_environment: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    environment_variables: Mapped[dict | None] = mapped_column(JSONType, nullable=True)
+    setup_instructions: Mapped[str | None] = mapped_column(Text, nullable=True)
+    teardown_instructions: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Ownership
-    owner: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    responsible_team: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    owner: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    responsible_team: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     # Metrics
     total_test_cases: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     automated_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    last_run_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
-    last_run_result: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
-    pass_rate: Mapped[Optional[float]] = mapped_column(nullable=True)
+    last_run_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_run_result: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    pass_rate: Mapped[float | None] = mapped_column(nullable=True)
 
     # Extensible metadata
-    suite_metadata: Mapped[Optional[dict]] = mapped_column(JSONType, nullable=True)
+    suite_metadata: Mapped[dict | None] = mapped_column(JSONType, nullable=True)
 
     # Optimistic locking
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
@@ -103,9 +104,7 @@ class TestSuite(Base, TimestampMixin):
     # Relationships
     parent = relationship("TestSuite", remote_side=[id], back_populates="children")
     children = relationship("TestSuite", back_populates="parent", cascade="all, delete-orphan")
-    test_case_associations = relationship(
-        "TestSuiteTestCase", back_populates="suite", cascade="all, delete-orphan"
-    )
+    test_case_associations = relationship("TestSuiteTestCase", back_populates="suite", cascade="all, delete-orphan")
 
     __table_args__ = (
         Index("ix_test_suites_project_id", "project_id"),
@@ -126,9 +125,7 @@ class TestSuiteTestCase(Base, TimestampMixin):
     __tablename__ = "test_suite_test_cases"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
-    suite_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("test_suites.id", ondelete="CASCADE"), nullable=False
-    )
+    suite_id: Mapped[str] = mapped_column(String(36), ForeignKey("test_suites.id", ondelete="CASCADE"), nullable=False)
     test_case_id: Mapped[str] = mapped_column(
         String(36), ForeignKey("test_cases.id", ondelete="CASCADE"), nullable=False
     )
@@ -138,8 +135,8 @@ class TestSuiteTestCase(Base, TimestampMixin):
 
     # Optional overrides for this suite context
     is_mandatory: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
-    skip_reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    custom_parameters: Mapped[Optional[dict]] = mapped_column(JSONType, nullable=True)
+    skip_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    custom_parameters: Mapped[dict | None] = mapped_column(JSONType, nullable=True)
 
     # Relationships
     suite = relationship("TestSuite", back_populates="test_case_associations")
@@ -158,18 +155,14 @@ class TestSuiteActivity(Base):
     __tablename__ = "test_suite_activities"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
-    suite_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("test_suites.id", ondelete="CASCADE"), nullable=False
-    )
+    suite_id: Mapped[str] = mapped_column(String(36), ForeignKey("test_suites.id", ondelete="CASCADE"), nullable=False)
     activity_type: Mapped[str] = mapped_column(String(100), nullable=False)
-    from_value: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    to_value: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    performed_by: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    activity_metadata: Mapped[Optional[dict]] = mapped_column(JSONType, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, default=datetime.utcnow
-    )
+    from_value: Mapped[str | None] = mapped_column(Text, nullable=True)
+    to_value: Mapped[str | None] = mapped_column(Text, nullable=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    performed_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    activity_metadata: Mapped[dict | None] = mapped_column(JSONType, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC))
 
     __table_args__ = (
         Index("ix_test_suite_activities_suite_id", "suite_id"),
@@ -184,5 +177,6 @@ def generate_suite_number(mapper, connection, target):
     """Generate a sequential suite number before insert."""
     if not target.suite_number:
         import uuid
+
         short_id = str(uuid.uuid4())[:8].upper()
         target.suite_number = f"TS-{short_id}"

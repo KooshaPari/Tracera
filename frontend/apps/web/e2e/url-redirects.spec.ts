@@ -15,17 +15,17 @@ test.describe("URL Redirects - Backward Compatibility", () => {
 			if (itemId === "valid-item-123") {
 				await route.fulfill({
 					body: JSON.stringify({
-						id: "valid-item-123",
-						project_id: "project-456",
-						view: "FEATURE",
-						type: "epic",
-						title: "Test Item",
-						description: "Test description",
-						status: "todo",
-						priority: "high",
-						version: 1,
 						created_at: "2024-01-01T00:00:00Z",
+						description: "Test description",
+						id: "valid-item-123",
+						priority: "high",
+						project_id: "project-456",
+						status: "todo",
+						title: "Test Item",
+						type: "epic",
 						updated_at: "2024-01-01T00:00:00Z",
+						version: 1,
+						view: "FEATURE",
 					}),
 					contentType: "application/json",
 					status: 200,
@@ -47,10 +47,10 @@ test.describe("URL Redirects - Backward Compatibility", () => {
 				body: JSON.stringify({
 					items: [
 						{
+							created_at: "2024-01-01T00:00:00Z",
+							description: "Test project description",
 							id: "project-456",
 							name: "Test Project",
-							description: "Test project description",
-							created_at: "2024-01-01T00:00:00Z",
 							updated_at: "2024-01-01T00:00:00Z",
 						},
 					],

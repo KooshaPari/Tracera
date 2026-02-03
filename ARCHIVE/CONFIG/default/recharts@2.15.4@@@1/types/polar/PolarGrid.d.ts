@@ -17,4 +17,4 @@ export declare const PolarGrid: {
     ({ cx, cy, innerRadius, outerRadius, gridType, radialLines, ...props }: Props): React.JSX.Element;
     displayName: string;
 };
-export {};
+

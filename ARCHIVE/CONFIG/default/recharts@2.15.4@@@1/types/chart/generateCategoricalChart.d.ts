@@ -95,7 +95,7 @@ export interface CategoricalChartProps {
     tabIndex?: number;
 }
 export declare const generateCategoricalChart: ({ chartName, GraphicalChild, defaultTooltipEventType, validateTooltipEventTypes, axisComponents, legendContent, formatAxisMap, defaultProps, }: CategoricalChartOptions) => React.ForwardRefExoticComponent<CategoricalChartProps & React.RefAttributes<{
-    readonly eventEmitterSymbol: Symbol;
+    readonly eventEmitterSymbol: symbol;
     clipPathId: string;
     accessibilityManager: AccessibilityManager;
     throttleTriggeredAfterMouseMove: DebouncedFunc<(e: MousePointer) => any>;
@@ -133,7 +133,7 @@ export declare const generateCategoricalChart: ({ chartName, GraphicalChild, def
     addListener(): void;
     removeListener(): void;
     handleLegendBBoxUpdate: (box: DOMRect | null) => void;
-    handleReceiveSyncEvent: (cId: number | string, data: CategoricalChartState, emitter: Symbol) => void;
+    handleReceiveSyncEvent: (cId: number | string, data: CategoricalChartState, emitter: symbol) => void;
     handleBrushChange: ({ startIndex, endIndex }: {
         startIndex: number;
         endIndex: number;
@@ -298,4 +298,4 @@ export declare const generateCategoricalChart: ({ chartName, GraphicalChild, def
     componentWillUpdate?(nextProps: Readonly<CategoricalChartProps>, nextState: Readonly<CategoricalChartState>, nextContext: any): void;
     UNSAFE_componentWillUpdate?(nextProps: Readonly<CategoricalChartProps>, nextState: Readonly<CategoricalChartState>, nextContext: any): void;
 }>>;
-export {};
+

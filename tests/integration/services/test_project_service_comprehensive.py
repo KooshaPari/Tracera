@@ -20,28 +20,24 @@ Tests for:
 150+ tests with 95%+ coverage and 3-5% coverage increase.
 """
 
-import pytest
-import tempfile
 import asyncio
-import concurrent.futures
-from datetime import datetime, timedelta
-from uuid import uuid4
-from pathlib import Path
-from typing import List
-import threading
+import tempfile
 import time
+from datetime import datetime
+from pathlib import Path
+from uuid import uuid4
 
-from sqlalchemy import create_engine, select, String
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+import pytest
+from sqlalchemy import create_engine, select
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from tracertm.models.base import Base
-from tracertm.models.project import Project
+from tracertm.models.event import Event
 from tracertm.models.item import Item
 from tracertm.models.link import Link
-from tracertm.models.event import Event
+from tracertm.models.project import Project
 from tracertm.repositories.project_repository import ProjectRepository
-
 
 pytestmark = pytest.mark.integration
 
@@ -73,6 +69,7 @@ def db_session(test_db):
 @pytest.fixture(scope="function")
 def project_repo(db_session):
     """Create a sync ProjectRepository wrapper."""
+
     class SyncProjectRepository:
         def __init__(self, session: Session):
             self.session = session
@@ -98,7 +95,9 @@ def project_repo(db_session):
         def get_all(self) -> list[Project]:
             return self.session.query(Project).all()
 
-        def update(self, project_id: str, name: str | None = None, description: str | None = None, metadata: dict | None = None) -> Project | None:
+        def update(
+            self, project_id: str, name: str | None = None, description: str | None = None, metadata: dict | None = None
+        ) -> Project | None:
             project = self.get_by_id(project_id)
             if not project:
                 return None
@@ -136,15 +135,13 @@ async def async_db():
     yield engine
 
     await engine.dispose()
-    Path(db_path).unlink(missing_ok=True)
+    await asyncio.to_thread(lambda: Path(db_path).unlink(missing_ok=True))
 
 
 @pytest.fixture
 async def async_session(async_db):
     """Create an async database session."""
-    async_session_factory = async_sessionmaker(
-        async_db, class_=AsyncSession, expire_on_commit=False
-    )
+    async_session_factory = async_sessionmaker(async_db, class_=AsyncSession, expire_on_commit=False)
     async with async_session_factory() as session:
         yield session
 
@@ -241,10 +238,7 @@ class TestSettingsPersistence:
     """Test settings and metadata persistence."""
 
     def test_persist_project_settings(self, project_repo):
-        metadata = {
-            "schema_version": "1.0",
-            "settings": {"auto_backup": True, "notification_level": "high"}
-        }
+        metadata = {"schema_version": "1.0", "settings": {"auto_backup": True, "notification_level": "high"}}
         created = project_repo.create("Settings Test", metadata=metadata)
         retrieved = project_repo.get_by_id(created.id)
         assert retrieved.project_metadata == metadata
@@ -263,10 +257,10 @@ class TestSettingsPersistence:
             "owner": "team-a",
             "settings": {
                 "notification": {"email": True, "slack": False, "frequency": "daily"},
-                "permissions": ["read", "write", "delete"]
+                "permissions": ["read", "write", "delete"],
             },
             "tags": ["production", "critical"],
-            "config": {"retry_count": 3, "timeout_seconds": 30}
+            "config": {"retry_count": 3, "timeout_seconds": 30},
         }
         project = project_repo.create("Complex Metadata Test", metadata=metadata)
         assert project.project_metadata["owner"] == "team-a"
@@ -304,7 +298,7 @@ class TestSchemaVersioning:
         project = project_repo.create("Migration Test", metadata={"schema_version": "1.0"})
         migrations = [
             {"from": "1.0", "to": "1.1", "date": "2024-01-01"},
-            {"from": "1.1", "to": "2.0", "date": "2024-01-15"}
+            {"from": "1.1", "to": "2.0", "date": "2024-01-15"},
         ]
         updated = project_repo.update(project.id, metadata={"schema_version": "2.0", "migrations": migrations})
         assert updated.project_metadata["schema_version"] == "2.0"
@@ -317,8 +311,22 @@ class TestProjectIsolation:
     def test_items_isolated_to_project(self, db_session, project_repo):
         project1 = project_repo.create("Isolation Test 1")
         project2 = project_repo.create("Isolation Test 2")
-        item1 = Item(id=str(uuid4()), project_id=project1.id, title="Item in P1", view="FEATURE", item_type="feature", status="todo")
-        item2 = Item(id=str(uuid4()), project_id=project2.id, title="Item in P2", view="FEATURE", item_type="feature", status="todo")
+        item1 = Item(
+            id=str(uuid4()),
+            project_id=project1.id,
+            title="Item in P1",
+            view="FEATURE",
+            item_type="feature",
+            status="todo",
+        )
+        item2 = Item(
+            id=str(uuid4()),
+            project_id=project2.id,
+            title="Item in P2",
+            view="FEATURE",
+            item_type="feature",
+            status="todo",
+        )
         db_session.add(item1)
         db_session.add(item2)
         db_session.commit()
@@ -330,13 +338,31 @@ class TestProjectIsolation:
     def test_links_isolated_to_project(self, db_session, project_repo):
         project1 = project_repo.create("Link Isolation 1")
         project2 = project_repo.create("Link Isolation 2")
-        item1a = Item(id=str(uuid4()), project_id=project1.id, title="Item 1A", view="FEATURE", item_type="feature", status="todo")
-        item1b = Item(id=str(uuid4()), project_id=project1.id, title="Item 1B", view="FEATURE", item_type="feature", status="todo")
-        item2a = Item(id=str(uuid4()), project_id=project2.id, title="Item 2A", view="FEATURE", item_type="feature", status="todo")
+        item1a = Item(
+            id=str(uuid4()), project_id=project1.id, title="Item 1A", view="FEATURE", item_type="feature", status="todo"
+        )
+        item1b = Item(
+            id=str(uuid4()), project_id=project1.id, title="Item 1B", view="FEATURE", item_type="feature", status="todo"
+        )
+        item2a = Item(
+            id=str(uuid4()), project_id=project2.id, title="Item 2A", view="FEATURE", item_type="feature", status="todo"
+        )
         db_session.add_all([item1a, item1b, item2a])
         db_session.commit()
-        link1 = Link(id=str(uuid4()), project_id=project1.id, source_item_id=item1a.id, target_item_id=item1b.id, link_type="depends_on")
-        link2 = Link(id=str(uuid4()), project_id=project2.id, source_item_id=item2a.id, target_item_id=item2a.id, link_type="self_reference")
+        link1 = Link(
+            id=str(uuid4()),
+            project_id=project1.id,
+            source_item_id=item1a.id,
+            target_item_id=item1b.id,
+            link_type="depends_on",
+        )
+        link2 = Link(
+            id=str(uuid4()),
+            project_id=project2.id,
+            source_item_id=item2a.id,
+            target_item_id=item2a.id,
+            link_type="self_reference",
+        )
         db_session.add_all([link1, link2])
         db_session.commit()
         result = db_session.execute(select(Link).where(Link.project_id == project1.id))
@@ -346,8 +372,22 @@ class TestProjectIsolation:
     def test_events_isolated_to_project(self, db_session, project_repo):
         project1 = project_repo.create("Event Isolation 1")
         project2 = project_repo.create("Event Isolation 2")
-        event1 = Event(project_id=project1.id, event_type="item_created", entity_type="item", entity_id="item-1", agent_id="agent-1", data={"title": "Test"})
-        event2 = Event(project_id=project2.id, event_type="item_created", entity_type="item", entity_id="item-2", agent_id="agent-1", data={"title": "Test 2"})
+        event1 = Event(
+            project_id=project1.id,
+            event_type="item_created",
+            entity_type="item",
+            entity_id="item-1",
+            agent_id="agent-1",
+            data={"title": "Test"},
+        )
+        event2 = Event(
+            project_id=project2.id,
+            event_type="item_created",
+            entity_type="item",
+            entity_id="item-2",
+            agent_id="agent-1",
+            data={"title": "Test 2"},
+        )
         db_session.add_all([event1, event2])
         db_session.commit()
         result = db_session.execute(select(Event).where(Event.project_id == project1.id))
@@ -358,10 +398,24 @@ class TestProjectIsolation:
         project1 = project_repo.create("Query Filter 1")
         project2 = project_repo.create("Query Filter 2")
         for i in range(3):
-            item = Item(id=f"p1-item-{i}", project_id=project1.id, title=f"P1 Item {i}", view="FEATURE", item_type="feature", status="todo")
+            item = Item(
+                id=f"p1-item-{i}",
+                project_id=project1.id,
+                title=f"P1 Item {i}",
+                view="FEATURE",
+                item_type="feature",
+                status="todo",
+            )
             db_session.add(item)
         for i in range(2):
-            item = Item(id=f"p2-item-{i}", project_id=project2.id, title=f"P2 Item {i}", view="FEATURE", item_type="feature", status="todo")
+            item = Item(
+                id=f"p2-item-{i}",
+                project_id=project2.id,
+                title=f"P2 Item {i}",
+                view="FEATURE",
+                item_type="feature",
+                status="todo",
+            )
             db_session.add(item)
         db_session.commit()
         result = db_session.execute(select(Item).where(Item.project_id == project1.id))
@@ -377,8 +431,12 @@ class TestDeletionCascades:
 
     def test_delete_project_cascades_items(self, db_session, project_repo):
         project = project_repo.create("Cascade Items Test")
-        item1 = Item(id=str(uuid4()), project_id=project.id, title="Item 1", view="FEATURE", item_type="feature", status="todo")
-        item2 = Item(id=str(uuid4()), project_id=project.id, title="Item 2", view="FEATURE", item_type="feature", status="todo")
+        item1 = Item(
+            id=str(uuid4()), project_id=project.id, title="Item 1", view="FEATURE", item_type="feature", status="todo"
+        )
+        item2 = Item(
+            id=str(uuid4()), project_id=project.id, title="Item 2", view="FEATURE", item_type="feature", status="todo"
+        )
         db_session.add_all([item1, item2])
         db_session.commit()
         result = db_session.execute(select(Item).where(Item.project_id == project.id))
@@ -393,11 +451,21 @@ class TestDeletionCascades:
 
     def test_delete_project_cascades_links(self, db_session, project_repo):
         project = project_repo.create("Cascade Links Test")
-        item1 = Item(id=str(uuid4()), project_id=project.id, title="Item 1", view="FEATURE", item_type="feature", status="todo")
-        item2 = Item(id=str(uuid4()), project_id=project.id, title="Item 2", view="FEATURE", item_type="feature", status="todo")
+        item1 = Item(
+            id=str(uuid4()), project_id=project.id, title="Item 1", view="FEATURE", item_type="feature", status="todo"
+        )
+        item2 = Item(
+            id=str(uuid4()), project_id=project.id, title="Item 2", view="FEATURE", item_type="feature", status="todo"
+        )
         db_session.add_all([item1, item2])
         db_session.commit()
-        link = Link(id=str(uuid4()), project_id=project.id, source_item_id=item1.id, target_item_id=item2.id, link_type="depends_on")
+        link = Link(
+            id=str(uuid4()),
+            project_id=project.id,
+            source_item_id=item1.id,
+            target_item_id=item2.id,
+            link_type="depends_on",
+        )
         db_session.add(link)
         db_session.commit()
         result = db_session.execute(select(Link).where(Link.project_id == project.id))
@@ -411,8 +479,22 @@ class TestDeletionCascades:
 
     def test_delete_project_cascades_events(self, db_session, project_repo):
         project = project_repo.create("Cascade Events Test")
-        event1 = Event(project_id=project.id, event_type="item_created", entity_type="item", entity_id="item-1", agent_id="agent-1", data={})
-        event2 = Event(project_id=project.id, event_type="item_updated", entity_type="item", entity_id="item-1", agent_id="agent-1", data={})
+        event1 = Event(
+            project_id=project.id,
+            event_type="item_created",
+            entity_type="item",
+            entity_id="item-1",
+            agent_id="agent-1",
+            data={},
+        )
+        event2 = Event(
+            project_id=project.id,
+            event_type="item_updated",
+            entity_type="item",
+            entity_id="item-1",
+            agent_id="agent-1",
+            data={},
+        )
         db_session.add_all([event1, event2])
         db_session.commit()
         result = db_session.execute(select(Event).where(Event.project_id == project.id))
@@ -427,8 +509,12 @@ class TestDeletionCascades:
     def test_cascade_preserves_other_projects(self, db_session, project_repo):
         project1 = project_repo.create("Keep Project 1")
         project2 = project_repo.create("Keep Project 2")
-        item1 = Item(id=str(uuid4()), project_id=project1.id, title="Item 1", view="FEATURE", item_type="feature", status="todo")
-        item2 = Item(id=str(uuid4()), project_id=project2.id, title="Item 2", view="FEATURE", item_type="feature", status="todo")
+        item1 = Item(
+            id=str(uuid4()), project_id=project1.id, title="Item 1", view="FEATURE", item_type="feature", status="todo"
+        )
+        item2 = Item(
+            id=str(uuid4()), project_id=project2.id, title="Item 2", view="FEATURE", item_type="feature", status="todo"
+        )
         db_session.add_all([item1, item2])
         db_session.commit()
         db_session.delete(project1)
@@ -537,12 +623,7 @@ class TestProjectMetadataEdgeCases:
         assert project.project_metadata["disabled"] is False
 
     def test_nested_array_metadata(self, project_repo):
-        metadata = {
-            "levels": [
-                {"name": "level1", "items": [1, 2, 3]},
-                {"name": "level2", "items": [4, 5, 6]}
-            ]
-        }
+        metadata = {"levels": [{"name": "level1", "items": [1, 2, 3]}, {"name": "level2", "items": [4, 5, 6]}]}
         project = project_repo.create("Nested Arrays", metadata=metadata)
         assert len(project.project_metadata["levels"]) == 2
         assert project.project_metadata["levels"][0]["items"] == [1, 2, 3]
@@ -583,12 +664,25 @@ class TestProjectDeletionEdgeCases:
         project = project_repo.create("Complex Relations Test")
         items = []
         for i in range(5):
-            item = Item(id=f"item-{i}", project_id=project.id, title=f"Item {i}", view="FEATURE", item_type="feature", status="todo")
+            item = Item(
+                id=f"item-{i}",
+                project_id=project.id,
+                title=f"Item {i}",
+                view="FEATURE",
+                item_type="feature",
+                status="todo",
+            )
             items.append(item)
             db_session.add(item)
         db_session.commit()
         for i in range(4):
-            link = Link(id=f"link-{i}", project_id=project.id, source_item_id=items[i].id, target_item_id=items[i+1].id, link_type="depends_on")
+            link = Link(
+                id=f"link-{i}",
+                project_id=project.id,
+                source_item_id=items[i].id,
+                target_item_id=items[i + 1].id,
+                link_type="depends_on",
+            )
             db_session.add(link)
         db_session.commit()
         # Verify complex relations exist
@@ -678,15 +772,7 @@ class TestProjectCreationValidation:
 
     def test_create_project_preserves_metadata_structure(self, project_repo):
         """Test that metadata structure is preserved exactly."""
-        metadata = {
-            "deeply": {
-                "nested": {
-                    "structure": {
-                        "with": ["multiple", "arrays", {"and": "dicts"}]
-                    }
-                }
-            }
-        }
+        metadata = {"deeply": {"nested": {"structure": {"with": ["multiple", "arrays", {"and": "dicts"}]}}}}
         project = project_repo.create("Nested", metadata=metadata)
         assert project.project_metadata["deeply"]["nested"]["structure"]["with"][2]["and"] == "dicts"
 
@@ -738,11 +824,7 @@ class TestProjectUpdateAdvanced:
 
     def test_update_only_name_preserves_description_metadata(self, project_repo):
         """Test updating only name preserves other fields."""
-        created = project_repo.create(
-            "Original",
-            description="Test description",
-            metadata={"key": "value"}
-        )
+        created = project_repo.create("Original", description="Test description", metadata={"key": "value"})
         updated = project_repo.update(created.id, name="New Name")
         assert updated.name == "New Name"
         assert updated.description == "Test description"
@@ -750,11 +832,7 @@ class TestProjectUpdateAdvanced:
 
     def test_update_only_description_preserves_others(self, project_repo):
         """Test updating only description preserves other fields."""
-        created = project_repo.create(
-            "Name",
-            description="Original description",
-            metadata={"data": "important"}
-        )
+        created = project_repo.create("Name", description="Original description", metadata={"data": "important"})
         updated = project_repo.update(created.id, description="New description")
         assert updated.name == "Name"
         assert updated.description == "New description"
@@ -762,15 +840,8 @@ class TestProjectUpdateAdvanced:
 
     def test_update_only_metadata_preserves_others(self, project_repo):
         """Test updating only metadata preserves other fields."""
-        created = project_repo.create(
-            "Name",
-            description="Description",
-            metadata={"old": "value"}
-        )
-        updated = project_repo.update(
-            created.id,
-            metadata={"new": "value"}
-        )
+        created = project_repo.create("Name", description="Description", metadata={"old": "value"})
+        updated = project_repo.update(created.id, metadata={"new": "value"})
         assert updated.name == "Name"
         assert updated.description == "Description"
         assert updated.project_metadata["new"] == "value"
@@ -778,12 +849,7 @@ class TestProjectUpdateAdvanced:
     def test_update_all_fields_simultaneously(self, project_repo):
         """Test updating all fields at once."""
         created = project_repo.create("Old", "Old desc", {"old": "data"})
-        updated = project_repo.update(
-            created.id,
-            name="New",
-            description="New desc",
-            metadata={"new": "data"}
-        )
+        updated = project_repo.update(created.id, name="New", description="New desc", metadata={"new": "data"})
         assert updated.name == "New"
         assert updated.description == "New desc"
         assert updated.project_metadata["new"] == "data"
@@ -796,11 +862,7 @@ class TestProjectUpdateAdvanced:
 
     def test_update_with_none_values_unchanged(self, project_repo):
         """Test that None values in update don't modify fields."""
-        created = project_repo.create(
-            "Original",
-            description="Keep this",
-            metadata={"keep": "this"}
-        )
+        created = project_repo.create("Original", description="Keep this", metadata={"keep": "this"})
         updated = project_repo.update(created.id, name=None)
         assert updated.name == "Original"
         assert updated.description == "Keep this"
@@ -819,12 +881,7 @@ class TestProjectUpdateAdvanced:
 
     def test_update_to_very_large_metadata(self, project_repo):
         """Test updating with very large metadata structure."""
-        large_metadata = {
-            f"key_{i}": {
-                "nested": [j for j in range(100)]
-            }
-            for i in range(50)
-        }
+        large_metadata = {f"key_{i}": {"nested": list(range(100))} for i in range(50)}
         created = project_repo.create("Large Meta")
         updated = project_repo.update(created.id, metadata=large_metadata)
         assert len(updated.project_metadata) == 50
@@ -913,15 +970,8 @@ class TestProjectSettingsAndConfiguration:
     def test_settings_nested_structure(self, project_repo):
         """Test nested settings structure."""
         settings = {
-            "notifications": {
-                "email": True,
-                "slack": False,
-                "frequency": "daily"
-            },
-            "display": {
-                "theme": "dark",
-                "columns": ["name", "status", "owner"]
-            }
+            "notifications": {"email": True, "slack": False, "frequency": "daily"},
+            "display": {"theme": "dark", "columns": ["name", "status", "owner"]},
         }
         project = project_repo.create("Settings", metadata=settings)
         assert project.project_metadata["notifications"]["email"] is True
@@ -929,14 +979,7 @@ class TestProjectSettingsAndConfiguration:
 
     def test_settings_with_defaults(self, project_repo):
         """Test settings with default values."""
-        defaults = {
-            "version": "1.0",
-            "defaults": {
-                "item_status": "todo",
-                "priority": "medium",
-                "assignee": None
-            }
-        }
+        defaults = {"version": "1.0", "defaults": {"item_status": "todo", "priority": "medium", "assignee": None}}
         project = project_repo.create("Defaults", metadata=defaults)
         assert project.project_metadata["defaults"]["item_status"] == "todo"
 
@@ -944,10 +987,7 @@ class TestProjectSettingsAndConfiguration:
         """Test overriding settings."""
         original = {"setting": "default"}
         project = project_repo.create("Override", metadata=original)
-        updated = project_repo.update(
-            project.id,
-            metadata={"setting": "overridden"}
-        )
+        updated = project_repo.update(project.id, metadata={"setting": "overridden"})
         assert updated.project_metadata["setting"] == "overridden"
 
     def test_settings_with_array_values(self, project_repo):
@@ -955,7 +995,7 @@ class TestProjectSettingsAndConfiguration:
         settings = {
             "allowed_statuses": ["todo", "in_progress", "done", "blocked"],
             "allowed_priorities": ["low", "medium", "high", "critical"],
-            "team_members": ["alice", "bob", "charlie"]
+            "team_members": ["alice", "bob", "charlie"],
         }
         project = project_repo.create("ArraySettings", metadata=settings)
         assert len(project.project_metadata["allowed_statuses"]) == 4
@@ -981,10 +1021,7 @@ class TestProjectIntegrationWorkflows:
 
         # Update
         updated = project_repo.update(
-            original_id,
-            name="Updated",
-            description="After update",
-            metadata={"version": "2"}
+            original_id, name="Updated", description="After update", metadata={"version": "2"}
         )
 
         # Retrieve
@@ -1010,19 +1047,12 @@ class TestProjectIntegrationWorkflows:
     def test_project_lifecycle_complete(self, db_session, project_repo):
         """Test complete project lifecycle."""
         # Create
-        project = project_repo.create(
-            "Lifecycle Test",
-            description="Initial description",
-            metadata={"stage": "alpha"}
-        )
+        project = project_repo.create("Lifecycle Test", description="Initial description", metadata={"stage": "alpha"})
         project_id = project.id
 
         # Update multiple times
         for stage in ["beta", "rc", "stable"]:
-            project_repo.update(
-                project_id,
-                metadata={"stage": stage}
-            )
+            project_repo.update(project_id, metadata={"stage": stage})
 
         # Verify final state
         final = project_repo.get_by_id(project_id)
@@ -1039,19 +1069,12 @@ class TestProjectIntegrationWorkflows:
         # Create multiple projects
         projects = []
         for i in range(5):
-            p = project_repo.create(
-                f"Bulk {i}",
-                description=f"Description {i}",
-                metadata={"index": i}
-            )
+            p = project_repo.create(f"Bulk {i}", description=f"Description {i}", metadata={"index": i})
             projects.append(p)
 
         # Update all
         for p in projects:
-            project_repo.update(
-                p.id,
-                metadata={"status": "updated"}
-            )
+            project_repo.update(p.id, metadata={"status": "updated"})
 
         # Verify all updated
         all_projects = project_repo.get_all()
@@ -1076,9 +1099,7 @@ class TestProjectConcurrency:
             project_repo.create(f"Project {i}")
 
         # Rapid sequential reads
-        results = []
-        for _ in range(10):
-            results.append(project_repo.get_all())
+        results = [project_repo.get_all() for _ in range(10)]
 
         assert all(len(r) == 5 for r in results)
 
@@ -1149,7 +1170,7 @@ class TestProjectEdgeCasesAndErrors:
             "bool": True,
             "null": None,
             "array": [1, "two", 3.0],
-            "object": {"nested": "value"}
+            "object": {"nested": "value"},
         }
         project = project_repo.create("Mixed Types", metadata=metadata)
         assert isinstance(project.project_metadata["string"], str)

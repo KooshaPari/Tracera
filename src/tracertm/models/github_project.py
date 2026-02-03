@@ -2,14 +2,19 @@
 GitHub Project model for linking TraceRTM projects to GitHub Projects v2.
 """
 
-from sqlalchemy import Boolean, ForeignKey, Index, String
-from typing import Any, Optional
+from __future__ import annotations
 
+from typing import TYPE_CHECKING, Any
+
+from sqlalchemy import Boolean, ForeignKey, Index, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from tracertm.models.base import Base, TimestampMixin, generate_uuid
 from tracertm.models.types import JSONType
+
+if TYPE_CHECKING:
+    from tracertm.models.project import Project
 
 
 class GitHubProject(Base, TimestampMixin):
@@ -26,30 +31,26 @@ class GitHubProject(Base, TimestampMixin):
         Index("ix_github_projects_github_project", "github_project_id"),
     )
 
-    id: Mapped[str] = mapped_column(
-        String(36), primary_key=True, default=generate_uuid
-    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
     project_id: Mapped[str] = mapped_column(
         UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False
     )
-    
+
     # GitHub repository info
     github_repo_id: Mapped[int] = mapped_column(nullable=False, index=True)
     github_repo_owner: Mapped[str] = mapped_column(String(255), nullable=False)
     github_repo_name: Mapped[str] = mapped_column(String(255), nullable=False)
-    
+
     # GitHub Project v2 info
     github_project_id: Mapped[str] = mapped_column(UUID(as_uuid=True), nullable=False, index=True)
     github_project_number: Mapped[int] = mapped_column(nullable=False)
-    
+
     # Sync configuration
     auto_sync: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
-    sync_config: Mapped[dict[str, Any]] = mapped_column(
-        JSONType, nullable=False, default=dict
-    )
-    
+    sync_config: Mapped[dict[str, Any]] = mapped_column(JSONType, nullable=False, default=dict)
+
     # Relationships
-    project: Mapped["Project"] = relationship("Project")
+    project: Mapped[Project] = relationship("Project")
 
     def __repr__(self) -> str:
         return f"<GitHubProject(id={self.id!r}, project_id={self.project_id!r}, github_project_id={self.github_project_id!r})>"

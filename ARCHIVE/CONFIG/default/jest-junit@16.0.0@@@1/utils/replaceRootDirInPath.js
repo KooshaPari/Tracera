@@ -5,7 +5,7 @@ const path = require('path');
 
 module.exports = {
   replaceRootDirInPath : (rootDir,filePath) => {
-    if (!/^<rootDir>/.test(filePath)) {
+    if (!filePath.startsWith('<rootDir>')) {
       return filePath;
     }
 

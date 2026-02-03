@@ -13,25 +13,22 @@ Coverage areas:
 Target: 30-40 edge case tests for TUI polish
 """
 
+import logging
+
 import pytest
-from datetime import datetime, timedelta, timezone
-from unittest.mock import MagicMock, Mock, patch, PropertyMock
-import asyncio
 
 try:
-    from textual.widgets import DataTable, Static, Button, Label, Tree
-    from textual.containers import Container
-    from textual.app import ComposeResult
-    from tracertm.tui.widgets.item_list import ItemListWidget, TEXTUAL_AVAILABLE as ITEM_LIST_AVAILABLE
-    from tracertm.tui.widgets.conflict_panel import ConflictPanel, TEXTUAL_AVAILABLE as CONFLICT_AVAILABLE
-    from tracertm.tui.widgets.sync_status import (
-        SyncStatusWidget,
-        CompactSyncStatus,
-        TEXTUAL_AVAILABLE as SYNC_STATUS_AVAILABLE
-    )
-    from tracertm.tui.widgets.graph_view import GraphViewWidget, TEXTUAL_AVAILABLE as GRAPH_VIEW_AVAILABLE
-    from tracertm.tui.widgets.state_display import StateDisplayWidget, TEXTUAL_AVAILABLE as STATE_DISPLAY_AVAILABLE
-    from tracertm.tui.widgets.view_switcher import ViewSwitcherWidget, TEXTUAL_AVAILABLE as VIEW_SWITCHER_AVAILABLE
+    from tracertm.tui.widgets.conflict_panel import TEXTUAL_AVAILABLE as CONFLICT_AVAILABLE
+    from tracertm.tui.widgets.conflict_panel import ConflictPanel  # type: ignore[possibly-missing-import]
+    from tracertm.tui.widgets.item_list import TEXTUAL_AVAILABLE as ITEM_LIST_AVAILABLE
+    from tracertm.tui.widgets.item_list import ItemListWidget
+    from tracertm.tui.widgets.state_display import TEXTUAL_AVAILABLE as STATE_DISPLAY_AVAILABLE
+    from tracertm.tui.widgets.state_display import StateDisplayWidget
+    from tracertm.tui.widgets.sync_status import TEXTUAL_AVAILABLE as SYNC_STATUS_AVAILABLE
+    from tracertm.tui.widgets.sync_status import SyncStatusWidget  # type: ignore[possibly-missing-import]
+    from tracertm.tui.widgets.view_switcher import TEXTUAL_AVAILABLE as VIEW_SWITCHER_AVAILABLE
+    from tracertm.tui.widgets.view_switcher import ViewSwitcherWidget
+
     TEXTUAL_AVAILABLE = True
 except ImportError:
     TEXTUAL_AVAILABLE = False
@@ -40,6 +37,7 @@ except ImportError:
 # =============================================================================
 # Widget State Transition Edge Cases
 # =============================================================================
+
 
 @pytest.mark.skipif(not TEXTUAL_AVAILABLE or not SYNC_STATUS_AVAILABLE, reason="Textual not available")
 class TestSyncStatusWidgetStateTransitions:
@@ -52,9 +50,8 @@ class TestSyncStatusWidgetStateTransitions:
         try:
             widget = SyncStatusWidget()
             assert widget is not None
-        except Exception:
-            # Widget may require dependencies
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget may require dependencies: %s", e)
 
     def test_sync_status_from_syncing_to_error(self):
         """Test transition from syncing to error state."""
@@ -62,16 +59,16 @@ class TestSyncStatusWidgetStateTransitions:
             widget = SyncStatusWidget()
             # Should handle state changes
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_sync_status_from_error_to_idle(self):
         """Test transition from error back to idle state."""
         try:
             widget = SyncStatusWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_sync_status_rapid_state_changes(self):
         """Test rapid state transitions (stress test)."""
@@ -79,8 +76,8 @@ class TestSyncStatusWidgetStateTransitions:
             widget = SyncStatusWidget()
             # Should handle rapid changes
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
 
 @pytest.mark.skipif(not TEXTUAL_AVAILABLE or not CONFLICT_AVAILABLE, reason="Textual not available")
@@ -93,37 +90,38 @@ class TestConflictPanelStateTransitions:
         try:
             panel = ConflictPanel()
             assert panel is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_conflict_panel_with_multiple_conflicts(self):
         """Test conflict panel with multiple conflicts."""
         try:
             panel = ConflictPanel()
             assert panel is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_conflict_panel_with_no_conflicts(self):
         """Test conflict panel when empty."""
         try:
             panel = ConflictPanel()
             assert panel is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_conflict_panel_adding_conflicts_dynamically(self):
         """Test adding conflicts to panel after initialization."""
         try:
             panel = ConflictPanel()
             assert panel is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
 
 # =============================================================================
 # Widget Rendering with Edge Case Data
 # =============================================================================
+
 
 @pytest.mark.skipif(not TEXTUAL_AVAILABLE or not ITEM_LIST_AVAILABLE, reason="Textual not available")
 class TestItemListWidgetRenderingEdgeCases:
@@ -136,8 +134,8 @@ class TestItemListWidgetRenderingEdgeCases:
             widget = ItemListWidget()
             assert widget is not None
             # Widget should handle long names
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_render_with_unicode_item_names(self):
         """Test rendering items with unicode characters."""
@@ -145,24 +143,24 @@ class TestItemListWidgetRenderingEdgeCases:
             widget = ItemListWidget()
             # Should render unicode properly
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_render_with_special_characters(self):
         """Test rendering items with special characters."""
         try:
             widget = ItemListWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_render_with_empty_item_list(self):
         """Test rendering empty item list."""
         try:
             widget = ItemListWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_render_with_very_large_item_list(self):
         """Test rendering with 1000+ items."""
@@ -170,16 +168,16 @@ class TestItemListWidgetRenderingEdgeCases:
             widget = ItemListWidget()
             # Should handle large lists efficiently
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_render_with_null_values(self):
         """Test rendering items with None/null values."""
         try:
             widget = ItemListWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
 
 @pytest.mark.skipif(not TEXTUAL_AVAILABLE or not SYNC_STATUS_AVAILABLE, reason="Textual not available")
@@ -191,53 +189,54 @@ class TestSyncStatusWidgetRenderingEdgeCases:
         try:
             widget = SyncStatusWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_render_with_very_large_sync_count(self):
         """Test rendering when syncing thousands of items."""
         try:
             widget = SyncStatusWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_render_with_very_long_sync_time(self):
         """Test rendering with extremely long sync duration."""
         try:
             widget = SyncStatusWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_render_with_zero_sync_duration(self):
         """Test rendering when sync is instantaneous."""
         try:
             widget = SyncStatusWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_render_with_unicode_status_message(self):
         """Test rendering with unicode in status message."""
         try:
             widget = SyncStatusWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_render_with_very_long_status_message(self):
         """Test rendering with 1000+ character status message."""
         try:
             widget = SyncStatusWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
 
 # =============================================================================
 # User Interaction Edge Cases
 # =============================================================================
+
 
 @pytest.mark.skipif(not TEXTUAL_AVAILABLE or not ITEM_LIST_AVAILABLE, reason="Textual not available")
 class TestItemListWidgetInteractionEdgeCases:
@@ -248,48 +247,48 @@ class TestItemListWidgetInteractionEdgeCases:
         try:
             widget = ItemListWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_select_nonexistent_row(self):
         """Test selecting row that doesn't exist."""
         try:
             widget = ItemListWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_rapid_selection_changes(self):
         """Test rapid selection changes (stress test)."""
         try:
             widget = ItemListWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_click_on_column_header(self):
         """Test clicking on column header for sorting."""
         try:
             widget = ItemListWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_scroll_past_end(self):
         """Test scrolling past end of list."""
         try:
             widget = ItemListWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_scroll_before_beginning(self):
         """Test scrolling before beginning of list."""
         try:
             widget = ItemListWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
 
 @pytest.mark.skipif(not TEXTUAL_AVAILABLE or not CONFLICT_AVAILABLE, reason="Textual not available")
@@ -301,37 +300,38 @@ class TestConflictPanelInteractionEdgeCases:
         try:
             panel = ConflictPanel()
             assert panel is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_rapid_button_clicks(self):
         """Test rapid clicks on action buttons."""
         try:
             panel = ConflictPanel()
             assert panel is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_select_different_conflicts_rapidly(self):
         """Test rapidly switching between conflicts."""
         try:
             panel = ConflictPanel()
             assert panel is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_input_invalid_conflict_selection(self):
         """Test selecting invalid conflict index."""
         try:
             panel = ConflictPanel()
             assert panel is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
 
 # =============================================================================
 # Theme Application and Styling Edge Cases
 # =============================================================================
+
 
 @pytest.mark.skipif(not TEXTUAL_AVAILABLE, reason="Textual not available")
 class TestWidgetThemeApplicationEdgeCases:
@@ -342,16 +342,16 @@ class TestWidgetThemeApplicationEdgeCases:
         try:
             widget = SyncStatusWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_apply_theme_with_invalid_css(self):
         """Test applying theme with invalid CSS syntax."""
         try:
             widget = SyncStatusWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_toggle_between_light_and_dark_theme(self):
         """Test switching between light and dark themes."""
@@ -359,37 +359,38 @@ class TestWidgetThemeApplicationEdgeCases:
             widget = SyncStatusWidget()
             # Should handle theme changes
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_apply_high_contrast_theme(self):
         """Test applying high contrast accessibility theme."""
         try:
             widget = SyncStatusWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_apply_custom_color_scheme(self):
         """Test applying custom color scheme."""
         try:
             widget = SyncStatusWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_style_with_extreme_font_sizes(self):
         """Test styling with very small and very large font sizes."""
         try:
             widget = SyncStatusWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
 
 # =============================================================================
 # Window Resize and Responsive Behavior
 # =============================================================================
+
 
 @pytest.mark.skipif(not TEXTUAL_AVAILABLE or not ITEM_LIST_AVAILABLE, reason="Textual not available")
 class TestWidgetResizeEdgeCases:
@@ -400,69 +401,70 @@ class TestWidgetResizeEdgeCases:
         try:
             widget = ItemListWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_resize_to_very_small_height(self):
         """Test resizing widget to very small height."""
         try:
             widget = ItemListWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_resize_to_single_character_width(self):
         """Test resizing to 1 character width."""
         try:
             widget = ItemListWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_resize_to_single_line_height(self):
         """Test resizing to 1 line height."""
         try:
             widget = ItemListWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_rapid_resize_operations(self):
         """Test rapid resize operations (stress test)."""
         try:
             widget = ItemListWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_resize_then_restore_original_size(self):
         """Test resizing and then restoring to original size."""
         try:
             widget = ItemListWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_render_with_very_wide_console(self):
         """Test rendering on extremely wide console (1000+ chars)."""
         try:
             widget = ItemListWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_render_with_very_tall_console(self):
         """Test rendering on extremely tall console (1000+ lines)."""
         try:
             widget = ItemListWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
 
 # =============================================================================
 # Widget Composition and Nesting Edge Cases
 # =============================================================================
+
 
 @pytest.mark.skipif(not TEXTUAL_AVAILABLE or not VIEW_SWITCHER_AVAILABLE, reason="Textual not available")
 class TestWidgetCompositionEdgeCases:
@@ -473,29 +475,30 @@ class TestWidgetCompositionEdgeCases:
         try:
             switcher = ViewSwitcherWidget()
             assert switcher is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_view_switcher_with_empty_view_list(self):
         """Test view switcher with no views."""
         try:
             switcher = ViewSwitcherWidget()
             assert switcher is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_nested_containers_deeply(self):
         """Test deeply nested container hierarchy (10+ levels)."""
         try:
             widget = ViewSwitcherWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
 
 # =============================================================================
 # Widget Lifecycle and Cleanup
 # =============================================================================
+
 
 @pytest.mark.skipif(not TEXTUAL_AVAILABLE, reason="Textual not available")
 class TestWidgetLifecycleEdgeCases:
@@ -506,37 +509,38 @@ class TestWidgetLifecycleEdgeCases:
         try:
             widget = SyncStatusWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_multiple_widget_lifecycle_cycles(self):
         """Test multiple mount/unmount cycles."""
         try:
             widget = SyncStatusWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_widget_cleanup_on_error(self):
         """Test widget cleanup when error occurs."""
         try:
             widget = SyncStatusWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_dispose_widget_with_active_tasks(self):
         """Test disposing widget with pending async tasks."""
         try:
             widget = SyncStatusWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
 
 # =============================================================================
 # Text Formatting and Display Edge Cases
 # =============================================================================
+
 
 @pytest.mark.skipif(not TEXTUAL_AVAILABLE or not STATE_DISPLAY_AVAILABLE, reason="Textual not available")
 class TestStateDisplayWidgetFormattingEdgeCases:
@@ -547,45 +551,46 @@ class TestStateDisplayWidgetFormattingEdgeCases:
         try:
             widget = StateDisplayWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_display_state_with_very_long_string(self):
         """Test displaying 1000+ character state."""
         try:
             widget = StateDisplayWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_display_state_with_unicode_characters(self):
         """Test displaying state with unicode."""
         try:
             widget = StateDisplayWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_display_state_with_special_characters(self):
         """Test displaying state with special chars."""
         try:
             widget = StateDisplayWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_display_state_with_ansi_codes(self):
         """Test displaying state with ANSI color codes."""
         try:
             widget = StateDisplayWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
 
 # =============================================================================
 # Data Table Edge Cases
 # =============================================================================
+
 
 @pytest.mark.skipif(not TEXTUAL_AVAILABLE or not ITEM_LIST_AVAILABLE, reason="Textual not available")
 class TestItemListDataTableEdgeCases:
@@ -596,45 +601,46 @@ class TestItemListDataTableEdgeCases:
         try:
             widget = ItemListWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_datatable_with_single_column(self):
         """Test data table with only 1 column."""
         try:
             widget = ItemListWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_datatable_with_empty_rows(self):
         """Test data table with no rows."""
         try:
             widget = ItemListWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_datatable_cell_with_newlines(self):
         """Test data table cell containing newlines."""
         try:
             widget = ItemListWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_datatable_cell_overflow(self):
         """Test data table cell with content larger than cell."""
         try:
             widget = ItemListWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
 
 # =============================================================================
 # Widget Accessibility Edge Cases
 # =============================================================================
+
 
 @pytest.mark.skipif(not TEXTUAL_AVAILABLE, reason="Textual not available")
 class TestWidgetAccessibilityEdgeCases:
@@ -645,21 +651,21 @@ class TestWidgetAccessibilityEdgeCases:
         try:
             widget = SyncStatusWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_screen_reader_text_generation(self):
         """Test screen reader text/aria labels."""
         try:
             widget = SyncStatusWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)
 
     def test_high_contrast_rendering(self):
         """Test rendering in high contrast mode."""
         try:
             widget = SyncStatusWidget()
             assert widget is not None
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("Widget init failed: %s", e)

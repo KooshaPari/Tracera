@@ -32,7 +32,7 @@ export default function maxscript(Prism) {
             (/^/.source +
               '|' +
               // operators and other language constructs
-              /[;=<>+\-*/^({\[]/.source +
+              /[;=<>+\-*/^({[]/.source +
               '|' +
               // keywords as part of statements
               /\b(?:and|by|case|catch|collect|do|else|if|in|not|or|return|then|to|try|where|while|with)\b/
@@ -92,7 +92,7 @@ export default function maxscript(Prism) {
         alias: 'constant'
       },
       operator: /[-+*/<>=!]=?|[&^?]|#(?!\()/,
-      punctuation: /[()\[\]{}.:,;]|#(?=\()|\\$/m
+      punctuation: /[()[\]{}.:,;]|#(?=\()|\\$/m
     }
   })(Prism)
 }

@@ -4,10 +4,12 @@ import asyncio
 import json
 import logging
 import os
-from typing import Any, Callable, Optional
+from pathlib import Path
+from collections.abc import Awaitable, Callable
+from typing import Any
 
 import nats
-from nats.aio.client import Client as NATS
+from nats.aio.client import Client as NATS  # noqa: N814
 from nats.js import JetStreamContext
 
 logger = logging.getLogger(__name__)
@@ -25,7 +27,7 @@ class NATSClient:
     SUBJECT_PREFIX = "tracertm.bridge"
     STREAM_NAME = "TRACERTM_BRIDGE"
 
-    def __init__(self, url: Optional[str] = None, creds_path: Optional[str] = None) -> None:
+    def __init__(self, url: str | None = None, creds_path: str | None = None) -> None:
         """
         Initialize NATS client.
 
@@ -36,8 +38,8 @@ class NATSClient:
         self.url = url or os.getenv("NATS_URL", "nats://localhost:4222")
         self.creds_path = creds_path or os.getenv("NATS_CREDS_PATH")
 
-        self._nc: Optional[NATS] = None
-        self._js: Optional[JetStreamContext] = None
+        self._nc: NATS | None = None
+        self._js: JetStreamContext | None = None
         self._subscriptions: dict[str, Any] = {}
         self._message_tasks: list[asyncio.Task[None]] = []
 
@@ -56,7 +58,7 @@ class NATSClient:
             }
 
             # Add credentials if provided
-            if self.creds_path and os.path.exists(self.creds_path):
+            if self.creds_path and Path(self.creds_path).exists():
                 options["user_credentials"] = self.creds_path
                 logger.info(f"Connecting to NATS with credentials: {self.creds_path}")
             else:
@@ -92,12 +94,12 @@ class NATSClient:
             }
 
             try:
-                await self._js.add_stream(**stream_config)
+                await self._js.add_stream(**stream_config)  # type: ignore[arg-type]
                 logger.info(f"Created JetStream stream: {self.STREAM_NAME}")
-            except nats.errors.Error as e:
+            except Exception as e:
                 # Stream might already exist, try to update it
                 if "already in use" in str(e) or "stream name already in use" in str(e):
-                    await self._js.update_stream(**stream_config)
+                    await self._js.update_stream(**stream_config)  # type: ignore[arg-type]
                     logger.info(f"Updated JetStream stream: {self.STREAM_NAME}")
                 else:
                     raise
@@ -146,10 +148,7 @@ class NATSClient:
             # Publish to JetStream
             payload = json.dumps(event).encode("utf-8")
             ack = await self._js.publish(subject, payload)
-            logger.debug(
-                f"Published event {event_type} to {subject} "
-                f"(stream={ack.stream}, seq={ack.seq})"
-            )
+            logger.debug(f"Published event {event_type} to {subject} (stream={ack.stream}, seq={ack.seq})")
         except Exception as e:
             logger.error(f"Failed to publish event to {subject}: {e}")
             raise
@@ -158,7 +157,7 @@ class NATSClient:
         self,
         subject_pattern: str,
         durable_name: str,
-        callback: Callable[[dict[str, Any]], None],
+        callback: Callable[[dict[str, Any]], Awaitable[None] | None],
     ) -> None:
         """
         Subscribe to events with a durable JetStream consumer.
@@ -166,7 +165,7 @@ class NATSClient:
         Args:
             subject_pattern: Subject pattern to subscribe to (e.g., "tracertm.bridge.go.*.item.created")
             durable_name: Durable consumer name (must be unique per subscriber)
-            callback: Async callback function to handle events
+            callback: Sync or async callback function to handle events
         """
         if not self._js:
             raise RuntimeError("Not connected to NATS")
@@ -190,7 +189,9 @@ class NATSClient:
                     async for msg in psub.messages:
                         try:
                             event = json.loads(msg.data.decode("utf-8"))
-                            await callback(event)
+                            result = callback(event)
+                            if asyncio.iscoroutine(result):
+                                await result
                             await msg.ack()
                         except json.JSONDecodeError as e:
                             logger.error(f"Failed to decode event: {e}")

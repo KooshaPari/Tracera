@@ -4,8 +4,8 @@ Integration tests for Epic 7: Progress Tracking (FR68-FR73).
 Tests progress calculation, blocked items, stalled items, velocity, and reports.
 """
 
-
 import pytest
+
 pytestmark = pytest.mark.integration
 from typer.testing import CliRunner
 

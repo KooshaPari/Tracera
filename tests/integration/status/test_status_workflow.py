@@ -3,6 +3,7 @@ Integration tests for Epic 2: Status Workflow (Story 2.7, FR13).
 """
 
 import pytest
+
 pytestmark = pytest.mark.integration
 from sqlalchemy.orm import Session
 

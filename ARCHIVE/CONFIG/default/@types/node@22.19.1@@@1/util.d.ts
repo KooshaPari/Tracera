@@ -2128,7 +2128,7 @@ declare module "util/types" {
      * ```
      * @since v10.4.0
      */
-    function isBigIntObject(object: unknown): object is BigInt;
+    function isBigIntObject(object: unknown): object is bigint;
     /**
      * Returns `true` if the value is a `BigUint64Array` instance.
      *
@@ -2153,7 +2153,7 @@ declare module "util/types" {
      * ```
      * @since v10.0.0
      */
-    function isBooleanObject(object: unknown): object is Boolean;
+    function isBooleanObject(object: unknown): object is boolean;
     /**
      * Returns `true` if the value is any boxed primitive object, e.g. created
      * by `new Boolean()`, `new String()` or `Object(Symbol())`.
@@ -2169,7 +2169,7 @@ declare module "util/types" {
      * ```
      * @since v10.11.0
      */
-    function isBoxedPrimitive(object: unknown): object is String | Number | BigInt | Boolean | Symbol;
+    function isBoxedPrimitive(object: unknown): object is string | number | bigint | boolean | symbol;
     /**
      * Returns `true` if the value is a built-in [`DataView`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DataView) instance.
      *
@@ -2421,7 +2421,7 @@ declare module "util/types" {
      * ```
      * @since v10.0.0
      */
-    function isNumberObject(object: unknown): object is Number;
+    function isNumberObject(object: unknown): object is number;
     /**
      * Returns `true` if the value is a built-in [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise).
      *
@@ -2499,7 +2499,7 @@ declare module "util/types" {
      * ```
      * @since v10.0.0
      */
-    function isStringObject(object: unknown): object is String;
+    function isStringObject(object: unknown): object is string;
     /**
      * Returns `true` if the value is a symbol object, created
      * by calling `Object()` on a `Symbol` primitive.
@@ -2511,7 +2511,7 @@ declare module "util/types" {
      * ```
      * @since v10.0.0
      */
-    function isSymbolObject(object: unknown): object is Symbol;
+    function isSymbolObject(object: unknown): object is symbol;
     /**
      * Returns `true` if the value is a built-in [`TypedArray`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray) instance.
      *

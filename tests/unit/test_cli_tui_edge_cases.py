@@ -11,11 +11,8 @@ Target: Additional +0.5-1% coverage
 """
 
 import os
-from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from unittest.mock import patch
 from uuid import uuid4
-
-import pytest
 
 
 class TestCommandLineArgumentEdgeCases:
@@ -109,7 +106,7 @@ class TestFilePathEdgeCases:
         paths = [
             "/home/user/file.md",
             "/etc/config.yml",
-            "/tmp/temp.txt",
+            "/var/tmp/example.txt",  # avoid /tmp for S108
         ]
         for path in paths:
             assert path.startswith("/")
@@ -266,6 +263,7 @@ class TestEnvironmentVariableEdgeCases:
         long_value = "x" * 100000
         with patch.dict(os.environ, {"TEST_VAR": long_value}):
             value = os.environ.get("TEST_VAR")
+            assert value is not None
             assert len(value) == 100000
 
     def test_env_var_unicode_value(self):

@@ -56,9 +56,9 @@ describe(ProjectDetailView, () => {
 	it("renders project detail with tabs", () => {
 		vi.mocked(useProject).mockReturnValue({
 			data: {
+				description: "Test description",
 				id: "proj-1",
 				name: "Test Project",
-				description: "Test description",
 			},
 			error: null,
 			isError: false,
@@ -181,17 +181,17 @@ describe(ProjectDetailView, () => {
 				items: [
 					{
 						id: "item-1",
-						type: "feature",
-						title: "Feature 1",
-						status: "todo",
 						priority: "high",
+						status: "todo",
+						title: "Feature 1",
+						type: "feature",
 					},
 					{
 						id: "item-2",
-						type: "requirement",
-						title: "Requirement 1",
-						status: "in_progress",
 						priority: "medium",
+						status: "in_progress",
+						title: "Requirement 1",
+						type: "requirement",
 					},
 				],
 				total: 2,

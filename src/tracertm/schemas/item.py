@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ItemCreate(BaseModel):
@@ -45,5 +45,4 @@ class ItemResponse(BaseModel):
     updated_at: datetime
     deleted_at: str | None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

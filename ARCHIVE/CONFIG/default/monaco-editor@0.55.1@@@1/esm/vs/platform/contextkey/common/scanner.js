@@ -18,7 +18,7 @@ function hintDidYouMean(...meant) {
     }
 }
 const hintDidYouForgetToOpenOrCloseQuote = localize(1696, "Did you forget to open or close the quote?");
-const hintDidYouForgetToEscapeSlash = localize(1697, "Did you forget to escape the '/' (slash) character? Put two backslashes before it to escape, e.g., '\\\\/\'.");
+const hintDidYouForgetToEscapeSlash = localize(1697, "Did you forget to escape the '/' (slash) character? Put two backslashes before it to escape, e.g., '\\\\/'.");
 /**
  * A simple scanner for context keys.
  *
@@ -42,7 +42,7 @@ class Scanner {
         this._tokens = [];
         this._errors = [];
         // u - unicode, y - sticky // TODO@ulugbekna: we accept double quotes as part of the string rather than as a delimiter (to preserve old parser's behavior)
-        this.stringRe = /[a-zA-Z0-9_<>\-\./\\:\*\?\+\[\]\^,#@;"%\$\p{L}-]+/uy;
+        this.stringRe = /[a-zA-Z0-9_<>\-./\\:*?+[\]^,#@;"%$\p{L}-]+/uy;
     }
     static getLexeme(token) {
         switch (token.type) {

@@ -11,6 +11,7 @@ try:
     from textual.binding import Binding
     from textual.containers import Container, Horizontal, Vertical
     from textual.widgets import DataTable, Footer, Header, Input, Static, Tree
+
     TEXTUAL_AVAILABLE = True
 except ImportError:
     TEXTUAL_AVAILABLE = False
@@ -21,26 +22,37 @@ except ImportError:
         from textual.containers import Container, Horizontal, Vertical
         from textual.widgets import DataTable, Footer, Header, Input, Static, Tree
     else:
+
         class App:
             pass
+
         class ComposeResult:
             pass
+
         class Container:
             pass
+
         class Header:
             pass
+
         class Footer:
             pass
+
         class DataTable:
             pass
+
         class Tree:
             pass
+
         class Static:
             pass
+
         class Input:
             pass
+
         class Binding:
             pass
+
 
 from sqlalchemy.orm import Session
 
@@ -49,6 +61,7 @@ from tracertm.database.connection import DatabaseConnection
 from tracertm.models.item import Item
 
 if TEXTUAL_AVAILABLE:
+
     class BrowserApp(App):
         """Item browser TUI application."""
 
@@ -139,12 +152,18 @@ if TEXTUAL_AVAILABLE:
 
             with Session(self.db.engine) as session:
                 # Get root items (no parent)
-                root_items = session.query(Item).filter(
-                    Item.project_id == self.project_id,
-                    Item.view == self.current_view,
-                    Item.parent_id.is_(None),
-                    Item.deleted_at.is_(None),
-                ).order_by(Item.title).all()
+                root_items = (
+                    session
+                    .query(Item)
+                    .filter(
+                        Item.project_id == self.project_id,
+                        Item.view == self.current_view,
+                        Item.parent_id.is_(None),
+                        Item.deleted_at.is_(None),
+                    )
+                    .order_by(Item.title)
+                    .all()
+                )
 
                 for item in root_items:
                     node = item_tree.root.add(item.title, data=item.id)
@@ -152,11 +171,17 @@ if TEXTUAL_AVAILABLE:
 
         def _add_children(self, session: Session, parent_node, parent_id: str) -> None:
             """Recursively add children to tree."""
-            children = session.query(Item).filter(
-                Item.project_id == self.project_id,
-                Item.parent_id == parent_id,
-                Item.deleted_at.is_(None),
-            ).order_by(Item.title).all()
+            children = (
+                session
+                .query(Item)
+                .filter(
+                    Item.project_id == self.project_id,
+                    Item.parent_id == parent_id,
+                    Item.deleted_at.is_(None),
+                )
+                .order_by(Item.title)
+                .all()
+            )
 
             for child in children:
                 child_node = parent_node.add(child.title, data=child.id)
@@ -186,10 +211,10 @@ if TEXTUAL_AVAILABLE:
 [bold]ID:[/bold] {item.id}
 
 [bold]Description:[/bold]
-{item.description or 'No description'}
+{item.description or "No description"}
 
 [bold]Metadata:[/bold]
-{item.item_metadata or '{}'}
+{item.item_metadata or "{}"}
                 """.strip()
 
                 item_details = self.query_one("#item-details", Static)
@@ -198,7 +223,6 @@ if TEXTUAL_AVAILABLE:
         def on_input_changed(self, event: Input.Changed) -> None:
             """Handle filter input change."""
             # TODO: Implement filtering
-            pass
 
         def action_refresh(self) -> None:
             """Refresh tree."""
@@ -218,11 +242,18 @@ if TEXTUAL_AVAILABLE:
             if self.db:
                 self.db.close()
 
+
 if not TEXTUAL_AVAILABLE:
+
     class BrowserApp:  # type: ignore[no-redef]
         """Placeholder when Textual is not installed."""
 
+        project_id: str | None
+        db: DatabaseConnection | None
+        current_view: str
+        selected_item_id: str | None
+        config_manager: object
+        BINDINGS: ClassVar[list]
+
         def __init__(self) -> None:
-            raise ImportError(
-                "Textual is required for TUI. Install with: pip install textual"
-            )
+            raise ImportError("Textual is required for TUI. Install with: pip install textual")

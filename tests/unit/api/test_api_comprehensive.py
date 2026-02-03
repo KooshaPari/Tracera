@@ -10,10 +10,9 @@ Tests all API client functionality including:
 Coverage target: 90%+ for entire API module
 """
 
-import asyncio
 import json
-from datetime import datetime, timedelta
-from unittest.mock import AsyncMock, MagicMock, Mock, call, patch
+from datetime import datetime
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import httpx
 import pytest
@@ -36,7 +35,6 @@ from tracertm.api.sync_client import (
     SyncStatus,
     UploadResult,
 )
-
 
 # ============================================================
 # TraceRTMClient Tests
@@ -741,12 +739,11 @@ class TestTraceRTMClientExportImport:
             ],
         }
 
-        with patch("tracertm.api.client.Item"):
-            with patch("tracertm.api.client.Link"):
-                result = client.import_data(data)
+        with patch("tracertm.api.client.Item"), patch("tracertm.api.client.Link"):
+            result = client.import_data(data)
 
-                assert result["items_created"] == 1
-                assert result["links_created"] == 1
+            assert result["items_created"] == 1
+            assert result["links_created"] == 1
 
     def test_import_data_empty(self, client, mock_session):
         """Test importing empty data."""
@@ -769,13 +766,12 @@ class TestTraceRTMClientBatchOperations:
             {"title": "Batch 3", "view": "test", "type": "test"},
         ]
 
-        with patch("tracertm.api.client.Item"):
-            with patch("tracertm.api.client.Event"):
-                result = client.batch_create_items(items_data)
+        with patch("tracertm.api.client.Item"), patch("tracertm.api.client.Event"):
+            result = client.batch_create_items(items_data)
 
-                assert result["items_created"] == 3
-                # Commit is called twice: once for items, once for logging event
-                assert mock_session.commit.call_count == 2
+            assert result["items_created"] == 3
+            # Commit is called twice: once for items, once for logging event
+            assert mock_session.commit.call_count == 2
 
     def test_batch_create_items_rollback_on_error(self, client, mock_session):
         """Test batch create rolls back on error."""
@@ -791,10 +787,7 @@ class TestTraceRTMClientBatchOperations:
 
     def test_batch_update_items(self, client, mock_session):
         """Test batch updating multiple items."""
-        mock_items = [
-            MagicMock(id=f"item-{i}", title=f"Old {i}", version=1)
-            for i in range(3)
-        ]
+        mock_items = [MagicMock(id=f"item-{i}", title=f"Old {i}", version=1) for i in range(3)]
 
         call_count = [0]
 
@@ -812,10 +805,7 @@ class TestTraceRTMClientBatchOperations:
 
         mock_session.query.side_effect = create_query_chain
 
-        updates = [
-            {"item_id": f"item-{i}", "title": f"Updated {i}", "status": "done"}
-            for i in range(3)
-        ]
+        updates = [{"item_id": f"item-{i}", "title": f"Updated {i}", "status": "done"} for i in range(3)]
 
         with patch("tracertm.api.client.Event"):
             result = client.batch_update_items(updates)
@@ -924,19 +914,16 @@ class TestTraceRTMClientAgentActivity:
             if "Agent" in str(model):
                 mock.filter.return_value.all.return_value = mock_agents
             else:
-                mock.filter.return_value.order_by.return_value.limit.return_value.all.return_value = (
-                    []
-                )
+                mock.filter.return_value.order_by.return_value.limit.return_value.all.return_value = []
             return mock
 
         mock_session.query.side_effect = query_side_effect
 
-        with patch("tracertm.api.client.Agent"):
-            with patch("tracertm.api.client.Event"):
-                result = client.get_all_agents_activity(limit=10)
+        with patch("tracertm.api.client.Agent"), patch("tracertm.api.client.Event"):
+            result = client.get_all_agents_activity(limit=10)
 
-                assert "agent-1" in result
-                assert "agent-2" in result
+            assert "agent-1" in result
+            assert "agent-2" in result
 
     def test_get_assigned_items(self, client, mock_session):
         """Test getting items assigned to agent."""
@@ -1456,9 +1443,7 @@ class TestApiClientRetryLogic:
         api_client.config.max_retries = 2
 
         mock_http_client = AsyncMock()
-        mock_http_client.request = AsyncMock(
-            side_effect=httpx.NetworkError("Connection failed")
-        )
+        mock_http_client.request = AsyncMock(side_effect=httpx.NetworkError("Connection failed"))
         api_client._client = mock_http_client
 
         with pytest.raises(NetworkError, match="Network error after"):
@@ -1996,19 +1981,7 @@ class TestApiIntegration:
         """Test all exported names can be imported."""
         from tracertm.api import (
             ApiClient,
-            ApiConfig,
-            ApiError,
-            AuthenticationError,
-            Change,
-            Conflict,
-            ConflictError,
-            ConflictStrategy,
-            NetworkError,
-            RateLimitError,
-            SyncOperation,
-            SyncStatus,
             TraceRTMClient,
-            UploadResult,
         )
 
         # All imports successful

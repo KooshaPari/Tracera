@@ -32,9 +32,7 @@ class TestEventReplay:
             max_size=10,
         ),
     )
-    async def test_event_replay_produces_identical_state(
-        self, db_session, project_factory, titles, statuses
-    ):
+    async def test_event_replay_produces_identical_state(self, db_session, project_factory, titles, statuses):
         """Test that replaying events produces identical state."""
         project = project_factory()
         event_service = EventSourcingService(db_session)
@@ -81,9 +79,7 @@ class TestEventReplay:
         num_events=st.integers(min_value=1, max_value=100),
         replay_point=st.integers(min_value=0, max_value=50),
     )
-    async def test_temporal_query_at_any_point(
-        self, db_session, project_factory, num_events, replay_point
-    ):
+    async def test_temporal_query_at_any_point(self, db_session, project_factory, num_events, replay_point):
         """Test temporal queries return correct state at any point."""
         project = project_factory()
         event_service = EventSourcingService(db_session)
@@ -123,9 +119,7 @@ class TestEventReplay:
             assert "title" in state_at_point
             assert "status" in state_at_point
 
-    async def test_no_data_loss_during_replay(
-        self, db_session, project_factory, item_factory
-    ):
+    async def test_no_data_loss_during_replay(self, db_session, project_factory, item_factory):
         """Test no data is lost during event replay."""
         project = project_factory()
         item = item_factory(project_id=project.id)
@@ -156,9 +150,7 @@ class TestEventReplay:
         for original, replayed in zip(events_created, replayed_events, strict=False):
             assert original.data == replayed.data
 
-    async def test_deterministic_state_reconstruction(
-        self, db_session, project_factory, item_factory
-    ):
+    async def test_deterministic_state_reconstruction(self, db_session, project_factory, item_factory):
         """Test state reconstruction is deterministic."""
         project = project_factory()
         item = item_factory(project_id=project.id)

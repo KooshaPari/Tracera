@@ -12,11 +12,10 @@ from __future__ import annotations
 
 import json
 from typing import Any
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 from starlette.testclient import TestClient
-
 
 # ============================================================================
 # Fixtures
@@ -47,21 +46,13 @@ def test_http_client(mock_fastmcp):
 @pytest.fixture
 def valid_jsonrpc_request() -> dict[str, Any]:
     """Return a valid JSON-RPC 2.0 request."""
-    return {
-        "jsonrpc": "2.0",
-        "method": "tools/list",
-        "params": {},
-        "id": 1
-    }
+    return {"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}
 
 
 @pytest.fixture
 def valid_auth_headers() -> dict[str, str]:
     """Return valid authorization headers."""
-    return {
-        "Authorization": "Bearer test-token",
-        "Content-Type": "application/json"
-    }
+    return {"Authorization": "Bearer test-token", "Content-Type": "application/json"}
 
 
 # ============================================================================
@@ -81,27 +72,16 @@ class TestJSONRPCFormat:
     def test_jsonrpc_request_validation(self):
         """Test JSON-RPC request validation."""
         # Missing jsonrpc field
-        invalid = {
-            "method": "tools/list",
-            "id": 1
-        }
+        invalid = {"method": "tools/list", "id": 1}
         assert "jsonrpc" not in invalid
 
         # Invalid jsonrpc version
-        invalid_version = {
-            "jsonrpc": "1.0",
-            "method": "tools/list",
-            "id": 1
-        }
+        invalid_version = {"jsonrpc": "1.0", "method": "tools/list", "id": 1}
         assert invalid_version["jsonrpc"] != "2.0"
 
     def test_jsonrpc_response_format(self):
         """Test JSON-RPC response format."""
-        response = {
-            "jsonrpc": "2.0",
-            "result": {"tools": []},
-            "id": 1
-        }
+        response = {"jsonrpc": "2.0", "result": {"tools": []}, "id": 1}
 
         assert response["jsonrpc"] == "2.0"
         assert "result" in response or "error" in response
@@ -109,14 +89,7 @@ class TestJSONRPCFormat:
 
     def test_jsonrpc_error_response_format(self):
         """Test JSON-RPC error response format."""
-        error_response = {
-            "jsonrpc": "2.0",
-            "error": {
-                "code": -32600,
-                "message": "Invalid Request"
-            },
-            "id": None
-        }
+        error_response = {"jsonrpc": "2.0", "error": {"code": -32600, "message": "Invalid Request"}, "id": None}
 
         assert error_response["jsonrpc"] == "2.0"
         assert "error" in error_response
@@ -125,11 +98,7 @@ class TestJSONRPCFormat:
 
     def test_jsonrpc_notification_format(self):
         """Test JSON-RPC notification (no id field)."""
-        notification = {
-            "jsonrpc": "2.0",
-            "method": "notifications/progress",
-            "params": {"progress": 50, "total": 100}
-        }
+        notification = {"jsonrpc": "2.0", "method": "notifications/progress", "params": {"progress": 50, "total": 100}}
 
         assert "id" not in notification
         assert notification["jsonrpc"] == "2.0"
@@ -219,24 +188,13 @@ class TestHTTPErrorHandling:
 
     def test_invalid_method_returns_404(self):
         """Test that invalid method returns 404."""
-        request = {
-            "jsonrpc": "2.0",
-            "method": "invalid/method",
-            "id": 1
-        }
+        request = {"jsonrpc": "2.0", "method": "invalid/method", "id": 1}
 
         assert request["method"] == "invalid/method"
 
     def test_server_error_returns_500(self):
         """Test that server errors return 500."""
-        error_response = {
-            "jsonrpc": "2.0",
-            "error": {
-                "code": -32603,
-                "message": "Internal error"
-            },
-            "id": 1
-        }
+        error_response = {"jsonrpc": "2.0", "error": {"code": -32603, "message": "Internal error"}, "id": 1}
 
         assert error_response["error"]["code"] == -32603
 
@@ -247,14 +205,7 @@ class TestHTTPErrorHandling:
 
     def test_validation_error_returns_400(self):
         """Test that validation errors return 400."""
-        error = {
-            "jsonrpc": "2.0",
-            "error": {
-                "code": -32602,
-                "message": "Invalid params"
-            },
-            "id": 1
-        }
+        error = {"jsonrpc": "2.0", "error": {"code": -32602, "message": "Invalid params"}, "id": 1}
 
         assert error["error"]["code"] == -32602
 
@@ -280,13 +231,8 @@ class TestMCPHTTPMethods:
         request = {
             "jsonrpc": "2.0",
             "method": "tools/call",
-            "params": {
-                "name": "project_manage",
-                "arguments": {
-                    "action": "list"
-                }
-            },
-            "id": 2
+            "params": {"name": "project_manage", "arguments": {"action": "list"}},
+            "id": 2,
         }
 
         assert request["method"] == "tools/call"
@@ -295,12 +241,7 @@ class TestMCPHTTPMethods:
 
     def test_resources_list_method(self):
         """Test resources/list method."""
-        request = {
-            "jsonrpc": "2.0",
-            "method": "resources/list",
-            "params": {},
-            "id": 3
-        }
+        request = {"jsonrpc": "2.0", "method": "resources/list", "params": {}, "id": 3}
 
         assert request["method"] == "resources/list"
 
@@ -309,10 +250,8 @@ class TestMCPHTTPMethods:
         request = {
             "jsonrpc": "2.0",
             "method": "resources/read",
-            "params": {
-                "uri": "tracertm://project/test-id"
-            },
-            "id": 4
+            "params": {"uri": "tracertm://project/test-id"},
+            "id": 4,
         }
 
         assert request["method"] == "resources/read"
@@ -320,12 +259,7 @@ class TestMCPHTTPMethods:
 
     def test_prompts_list_method(self):
         """Test prompts/list method."""
-        request = {
-            "jsonrpc": "2.0",
-            "method": "prompts/list",
-            "params": {},
-            "id": 5
-        }
+        request = {"jsonrpc": "2.0", "method": "prompts/list", "params": {}, "id": 5}
 
         assert request["method"] == "prompts/list"
 
@@ -334,13 +268,8 @@ class TestMCPHTTPMethods:
         request = {
             "jsonrpc": "2.0",
             "method": "prompts/get",
-            "params": {
-                "name": "analyze_requirements",
-                "arguments": {
-                    "item_id": "test-123"
-                }
-            },
-            "id": 6
+            "params": {"name": "analyze_requirements", "arguments": {"item_id": "test-123"}},
+            "id": 6,
         }
 
         assert request["method"] == "prompts/get"
@@ -368,17 +297,14 @@ class TestSSEStreaming:
 
     def test_sse_cache_control(self):
         """Test SSE cache control headers."""
-        headers = {
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive"
-        }
+        headers = {"Cache-Control": "no-cache", "Connection": "keep-alive"}
 
         assert headers["Cache-Control"] == "no-cache"
         assert headers["Connection"] == "keep-alive"
 
     def test_sse_event_format(self):
         """Test SSE event format."""
-        event = "data: {\"type\": \"progress\", \"value\": 50}\n\n"
+        event = 'data: {"type": "progress", "value": 50}\n\n'
 
         assert event.startswith("data: ")
         assert event.endswith("\n\n")
@@ -408,12 +334,7 @@ class TestHTTPRequestFlow:
     def test_complete_request_cycle(self):
         """Test complete request/response cycle."""
         # 1. Client sends request
-        request = {
-            "jsonrpc": "2.0",
-            "method": "tools/list",
-            "params": {},
-            "id": 1
-        }
+        request = {"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}
 
         # 2. Server validates request
         assert request["jsonrpc"] == "2.0"
@@ -422,12 +343,8 @@ class TestHTTPRequestFlow:
         # 3. Server processes request
         response = {
             "jsonrpc": "2.0",
-            "result": {
-                "tools": [
-                    {"name": "project_manage", "description": "Manage projects"}
-                ]
-            },
-            "id": request["id"]
+            "result": {"tools": [{"name": "project_manage", "description": "Manage projects"}]},
+            "id": request["id"],
         }
 
         # 4. Client receives response
@@ -437,21 +354,10 @@ class TestHTTPRequestFlow:
     def test_error_request_cycle(self):
         """Test error handling in request cycle."""
         # 1. Client sends invalid request
-        request = {
-            "jsonrpc": "2.0",
-            "method": "invalid_method",
-            "id": 1
-        }
+        request = {"jsonrpc": "2.0", "method": "invalid_method", "id": 1}
 
         # 2. Server returns error
-        response = {
-            "jsonrpc": "2.0",
-            "error": {
-                "code": -32601,
-                "message": "Method not found"
-            },
-            "id": request["id"]
-        }
+        response = {"jsonrpc": "2.0", "error": {"code": -32601, "message": "Method not found"}, "id": request["id"]}
 
         assert "error" in response
         assert response["error"]["code"] == -32601
@@ -470,7 +376,7 @@ class TestHTTPMiddleware:
         cors_headers = {
             "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-            "Access-Control-Allow-Headers": "Authorization, Content-Type"
+            "Access-Control-Allow-Headers": "Authorization, Content-Type",
         }
 
         assert "Access-Control-Allow-Origin" in cors_headers
@@ -489,9 +395,7 @@ class TestHTTPMiddleware:
 
     def test_timing_middleware(self):
         """Test request timing middleware."""
-        headers = {
-            "X-Response-Time": "123ms"
-        }
+        headers = {"X-Response-Time": "123ms"}
 
         assert "X-Response-Time" in headers
 
@@ -550,9 +454,7 @@ class TestHTTPPerformance:
 
     def test_response_compression(self):
         """Test response compression."""
-        headers = {
-            "Accept-Encoding": "gzip, deflate"
-        }
+        headers = {"Accept-Encoding": "gzip, deflate"}
 
         assert "gzip" in headers["Accept-Encoding"]
 

@@ -12,18 +12,13 @@ Tests performance-critical paths:
 Target: +2% coverage on performance-sensitive paths
 """
 
-import pytest
-import time
 import asyncio
 import json
-from typing import Any
-from unittest.mock import AsyncMock, MagicMock, patch
-from datetime import datetime, timezone
+import time
+from unittest.mock import AsyncMock, MagicMock
 
+import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from tracertm.models.item import Item
-from tracertm.models.project import Project
 
 
 @pytest.fixture
@@ -58,14 +53,15 @@ class TestMemoryEfficiency:
     def test_json_serialization_large_payload(self):
         """Test JSON serialization for large payload."""
         # Create large payload (10KB)
-        items = []
-        for i in range(100):
-            items.append({
+        items = [
+            {
                 "id": f"item-{i:04d}",
                 "title": f"Item {i}",
                 "description": f"Description {i}" * 10,
-                "metadata": {f"field_{j}": f"value_{j}" for j in range(10)}
-            })
+                "metadata": {f"field_{j}": f"value_{j}" for j in range(10)},
+            }
+            for i in range(100)
+        ]
 
         start_time = time.time()
         json_str = json.dumps({"items": items})
@@ -84,10 +80,7 @@ class TestMemoryEfficiency:
         # Iterate over 1000 items
         total = 0
         for i in range(1000):
-            item = {
-                "id": f"item-{i:04d}",
-                "data": f"data-{i}" * 5
-            }
+            item = {"id": f"item-{i:04d}", "data": f"data-{i}" * 5}
             total += len(str(item))
 
         snapshot_after = tracemalloc.take_snapshot()
@@ -100,26 +93,13 @@ class TestMemoryEfficiency:
         import tracemalloc
 
         # Create source data
-        items = []
-        for i in range(500):
-            items.append({
-                "id": f"item-{i:04d}",
-                "title": f"Item {i}",
-                "value": i * 100
-            })
+        items = [{"id": f"item-{i:04d}", "title": f"Item {i}", "value": i * 100} for i in range(500)]
 
         tracemalloc.start()
         snapshot_before = tracemalloc.take_snapshot()
 
         # Transform data
-        transformed = [
-            {
-                "id": item["id"],
-                "title": item["title"].upper(),
-                "value": item["value"] * 2
-            }
-            for item in items
-        ]
+        transformed = [{"id": item["id"], "title": item["title"].upper(), "value": item["value"] * 2} for item in items]
 
         snapshot_after = tracemalloc.take_snapshot()
         tracemalloc.stop()
@@ -167,17 +147,14 @@ class TestMemoryEfficiency:
         def item_generator(count: int):
             """Generate items lazily."""
             for i in range(count):
-                yield {
-                    "id": f"item-{i:04d}",
-                    "data": f"data-{i}" * 10
-                }
+                yield {"id": f"item-{i:04d}", "data": f"data-{i}" * 10}
 
         tracemalloc.start()
         snapshot_before = tracemalloc.take_snapshot()
 
         # Consume generator
         count = 0
-        for item in item_generator(1000):
+        for _item in item_generator(1000):
             count += 1
             if count > 100:
                 break
@@ -196,10 +173,7 @@ class TestAPIPerformance:
         """Test API request/response cycle."""
         request_payload = {
             "project_id": "proj-001",
-            "items": [
-                {"title": f"Item {i}", "status": "todo"}
-                for i in range(100)
-            ]
+            "items": [{"title": f"Item {i}", "status": "todo"} for i in range(100)],
         }
 
         # Simulate request/response
@@ -224,6 +198,7 @@ class TestAPIPerformance:
     @pytest.mark.asyncio
     async def test_api_throughput(self):
         """Test API throughput (requests/second)."""
+
         async def handle_request(req_id: int):
             """Handle API request."""
             request = {"id": req_id, "data": f"request-{req_id}"}
@@ -231,9 +206,7 @@ class TestAPIPerformance:
             return {"id": req_id, "status": "ok"}
 
         start_time = time.time()
-        results = await asyncio.gather(*[
-            handle_request(i) for i in range(100)
-        ])
+        results = await asyncio.gather(*[handle_request(i) for i in range(100)])
         elapsed = time.time() - start_time
 
         throughput = len(results) / elapsed
@@ -243,14 +216,15 @@ class TestAPIPerformance:
     async def test_large_response_handling(self):
         """Test handling of large API responses."""
         # Create large response
-        large_items = []
-        for i in range(1000):
-            large_items.append({
+        large_items = [
+            {
                 "id": f"item-{i:04d}",
                 "title": f"Item {i}",
                 "description": f"Description {i}" * 10,
-                "metadata": {f"field_{j}": f"value_{j}" for j in range(20)}
-            })
+                "metadata": {f"field_{j}": f"value_{j}" for j in range(20)},
+            }
+            for i in range(1000)
+        ]
 
         response = json.dumps({"items": large_items})
 
@@ -268,10 +242,7 @@ class TestAPIPerformance:
 
         async def batch_request(batch_num: int):
             """Process batch of requests."""
-            items = [
-                {"id": f"batch-{batch_num}-item-{i}", "value": i}
-                for i in range(batch_size)
-            ]
+            items = [{"id": f"batch-{batch_num}-item-{i}", "value": i} for i in range(batch_size)]
             await asyncio.sleep(0.02)
             return len(items)
 
@@ -286,6 +257,7 @@ class TestAPIPerformance:
     @pytest.mark.asyncio
     async def test_concurrent_api_requests(self):
         """Test concurrent API requests."""
+
         async def api_call(call_id: int):
             """Make API call."""
             # Simulate request
@@ -295,8 +267,7 @@ class TestAPIPerformance:
             await asyncio.sleep(0.05)
 
             # Simulate response
-            response = {"result": f"response-{call_id}"}
-            return response
+            return {"result": f"response-{call_id}"}
 
         start_time = time.time()
         responses = await asyncio.gather(*[api_call(i) for i in range(50)])
@@ -344,22 +315,16 @@ class TestAPIPerformance:
     @pytest.mark.asyncio
     async def test_pagination_api(self):
         """Test pagination API performance."""
+
         async def fetch_page(page: int, page_size: int = 100):
             """Fetch single page."""
             items = [
-                {
-                    "id": f"item-{page * page_size + i:04d}",
-                    "title": f"Item {page * page_size + i}"
-                }
+                {"id": f"item-{page * page_size + i:04d}", "title": f"Item {page * page_size + i}"}
                 for i in range(page_size)
             ]
 
             await asyncio.sleep(0.01)  # Simulate DB query
-            return {
-                "page": page,
-                "items": items,
-                "total": 10000
-            }
+            return {"page": page, "items": items, "total": 10000}
 
         start_time = time.time()
         pages = await asyncio.gather(*[fetch_page(i) for i in range(10)])
@@ -372,27 +337,20 @@ class TestAPIPerformance:
     @pytest.mark.asyncio
     async def test_data_aggregation_performance(self):
         """Test data aggregation performance."""
+
         async def fetch_items(category: int):
             """Fetch items in category."""
-            items = [
-                {"id": f"cat-{category}-item-{i}", "value": i}
-                for i in range(100)
-            ]
+            items = [{"id": f"cat-{category}-item-{i}", "value": i} for i in range(100)]
             await asyncio.sleep(0.01)
             return items
 
         # Fetch from 10 categories concurrently
         start_time = time.time()
-        all_items = await asyncio.gather(*[
-            fetch_items(i) for i in range(10)
-        ])
+        all_items = await asyncio.gather(*[fetch_items(i) for i in range(10)])
         elapsed = time.time() - start_time
 
         # Aggregate
-        total_value = sum(
-            sum(item["value"] for item in items)
-            for items in all_items
-        )
+        total_value = sum(sum(item["value"] for item in items) for items in all_items)
 
         assert total_value > 0
         assert elapsed < 0.5
@@ -406,7 +364,7 @@ class TestAPIPerformance:
                 "id": f"item-{i:04d}",
                 "status": ["todo", "in_progress", "done"][i % 3],
                 "priority": ["low", "medium", "high"][i % 3],
-                "value": i
+                "value": i,
             }
             for i in range(10000)
         ]
@@ -414,10 +372,7 @@ class TestAPIPerformance:
         start_time = time.time()
 
         # Filter items
-        filtered = [
-            item for item in items
-            if item["status"] == "todo" and item["priority"] == "high"
-        ]
+        filtered = [item for item in items if item["status"] == "todo" and item["priority"] == "high"]
 
         elapsed = time.time() - start_time
 
@@ -430,16 +385,7 @@ class TestSerializationPerformance:
 
     def test_json_encode_decode(self):
         """Test JSON encode/decode performance."""
-        data = {
-            "items": [
-                {
-                    "id": f"item-{i:04d}",
-                    "title": f"Item {i}",
-                    "data": list(range(10))
-                }
-                for i in range(500)
-            ]
-        }
+        data = {"items": [{"id": f"item-{i:04d}", "title": f"Item {i}", "data": list(range(10))} for i in range(500)]}
 
         start_time = time.time()
         encoded = json.dumps(data)
@@ -452,10 +398,7 @@ class TestSerializationPerformance:
     def test_dict_vs_dataclass_serialization(self):
         """Test dict vs dataclass serialization."""
         # Dict version
-        dict_data = [
-            {"id": f"item-{i}", "title": f"Title {i}"}
-            for i in range(1000)
-        ]
+        dict_data = [{"id": f"item-{i}", "title": f"Title {i}"} for i in range(1000)]
 
         start_time = time.time()
         dict_json = json.dumps(dict_data)
@@ -469,13 +412,7 @@ class TestSerializationPerformance:
         data = {
             "project": {
                 "id": "proj-001",
-                "items": [
-                    {
-                        "id": f"item-{i}",
-                        "links": [f"link-{j}" for j in range(5)]
-                    }
-                    for i in range(100)
-                ]
+                "items": [{"id": f"item-{i}", "links": [f"link-{j}" for j in range(5)]} for i in range(100)],
             }
         }
 

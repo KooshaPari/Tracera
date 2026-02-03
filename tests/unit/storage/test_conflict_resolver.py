@@ -7,12 +7,12 @@ backup creation, and conflict history management.
 
 import json
 import tempfile
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 from tracertm.storage.conflict_resolver import (
     Conflict,
@@ -62,12 +62,12 @@ class TestVectorClock:
         clock1 = VectorClock(
             client_id="client-1",
             version=1,
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
         )
         clock2 = VectorClock(
             client_id="client-1",
             version=2,
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
         )
 
         assert clock1.happens_before(clock2)
@@ -75,7 +75,7 @@ class TestVectorClock:
 
     def test_happens_before_different_clients(self):
         """Test happens_before for different clients using timestamps."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         clock1 = VectorClock(
             client_id="client-1",
             version=1,
@@ -92,7 +92,7 @@ class TestVectorClock:
 
     def test_is_concurrent(self):
         """Test concurrent clocks detection."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         clock1 = VectorClock(
             client_id="client-1",
             version=2,
@@ -112,7 +112,7 @@ class TestVectorClock:
         clock = VectorClock(
             client_id="client-1",
             version=5,
-            timestamp=datetime(2024, 1, 1, 12, 0, 0, tzinfo=timezone.utc),
+            timestamp=datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC),
             parent_version=4,
         )
 
@@ -144,7 +144,7 @@ class TestEntityVersion:
         clock = VectorClock(
             client_id="client-1",
             version=1,
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
         )
 
         version = EntityVersion(
@@ -169,7 +169,7 @@ class TestConflictDetection:
 
     def test_no_conflict_sequential_changes(self, resolver):
         """Test no conflict when changes are sequential."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         local = EntityVersion(
             entity_id="item-1",
@@ -190,7 +190,7 @@ class TestConflictDetection:
 
     def test_conflict_concurrent_changes(self, resolver):
         """Test conflict when changes are concurrent."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         local = EntityVersion(
             entity_id="item-1",
@@ -215,7 +215,7 @@ class TestConflictDetection:
 
     def test_no_conflict_same_content(self, resolver):
         """Test no conflict when content is identical."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         local = EntityVersion(
             entity_id="item-1",
@@ -242,7 +242,7 @@ class TestConflictResolution:
 
     def test_last_write_wins_local_newer(self, resolver):
         """Test last-write-wins with local version newer."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         local = EntityVersion(
             entity_id="item-1",
@@ -273,7 +273,7 @@ class TestConflictResolution:
 
     def test_last_write_wins_remote_newer(self, resolver):
         """Test last-write-wins with remote version newer."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         local = EntityVersion(
             entity_id="item-1",
@@ -304,7 +304,7 @@ class TestConflictResolution:
 
     def test_local_wins_strategy(self, resolver):
         """Test local-wins always picks local."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         local = EntityVersion(
             entity_id="item-1",
@@ -334,7 +334,7 @@ class TestConflictResolution:
 
     def test_remote_wins_strategy(self, resolver):
         """Test remote-wins always picks remote."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         local = EntityVersion(
             entity_id="item-1",
@@ -364,7 +364,7 @@ class TestConflictResolution:
 
     def test_manual_resolution(self, resolver):
         """Test manual conflict resolution."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         local = EntityVersion(
             entity_id="item-1",
@@ -403,7 +403,7 @@ class TestConflictResolution:
 
     def test_manual_strategy_requires_merged_content(self, resolver):
         """Test that MANUAL strategy requires resolve_manual()."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         local = EntityVersion(
             entity_id="item-1",
@@ -436,7 +436,7 @@ class TestConflictBackup:
 
     def test_create_backup(self, resolver):
         """Test backup creation."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         local = EntityVersion(
             entity_id="item-1",
@@ -468,11 +468,11 @@ class TestConflictBackup:
         assert (backup_path / "conflict.json").exists()
 
         # Verify content
-        with open(backup_path / "local.json") as f:
+        with Path(backup_path / "local.json").open() as f:
             local_data = json.load(f)
             assert local_data["data"]["title"] == "Local"
 
-        with open(backup_path / "remote.json") as f:
+        with Path(backup_path / "remote.json").open() as f:
             remote_data = json.load(f)
             assert remote_data["data"]["title"] == "Remote"
 
@@ -491,7 +491,7 @@ class TestConflictBackup:
             "detected_at": "2024-01-01T12:00:00+00:00",
         }
 
-        with open(item_dir / "conflict.json", "w") as f:
+        with Path(item_dir / "conflict.json").open("w") as f:
             json.dump(conflict_meta, f)
 
         backups = backup_mgr.list_backups()
@@ -511,20 +511,20 @@ class TestConflictBackup:
             entity_id="item-1",
             entity_type="item",
             data={"title": "Local"},
-            vector_clock=VectorClock("client-1", 1, datetime.now(timezone.utc)),
+            vector_clock=VectorClock("client-1", 1, datetime.now(UTC)),
         )
 
         remote_version = EntityVersion(
             entity_id="item-1",
             entity_type="item",
             data={"title": "Remote"},
-            vector_clock=VectorClock("client-2", 1, datetime.now(timezone.utc)),
+            vector_clock=VectorClock("client-2", 1, datetime.now(UTC)),
         )
 
-        with open(backup_path / "local.json", "w") as f:
+        with Path(backup_path / "local.json").open("w") as f:
             json.dump(local_version.to_dict(), f)
 
-        with open(backup_path / "remote.json", "w") as f:
+        with Path(backup_path / "remote.json").open("w") as f:
             json.dump(remote_version.to_dict(), f)
 
         loaded = backup_mgr.load_backup(backup_path)
@@ -540,7 +540,7 @@ class TestConflictQueries:
 
     def test_list_unresolved(self, resolver):
         """Test listing unresolved conflicts."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         # Create and store conflicts
         for i in range(3):
@@ -567,7 +567,7 @@ class TestConflictQueries:
 
     def test_list_unresolved_by_type(self, resolver):
         """Test filtering unresolved by entity type."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         # Create item conflict
         item_local = EntityVersion(
@@ -614,7 +614,7 @@ class TestConflictQueries:
 
     def test_get_conflict_stats(self, resolver):
         """Test conflict statistics."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         # Create and resolve conflicts
         for i in range(2):
@@ -650,7 +650,7 @@ class TestUtilities:
 
     def test_format_conflict_summary(self):
         """Test conflict summary formatting."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         local = EntityVersion(
             entity_id="item-1",
@@ -691,7 +691,7 @@ class TestUtilities:
                 "status": "active",
                 "priority": "high",
             },
-            vector_clock=VectorClock("client-1", 1, datetime.now(timezone.utc)),
+            vector_clock=VectorClock("client-1", 1, datetime.now(UTC)),
         )
 
         remote = EntityVersion(
@@ -702,7 +702,7 @@ class TestUtilities:
                 "status": "active",
                 "owner": "user-1",
             },
-            vector_clock=VectorClock("client-2", 1, datetime.now(timezone.utc)),
+            vector_clock=VectorClock("client-2", 1, datetime.now(UTC)),
         )
 
         diff = compare_versions(local, remote)

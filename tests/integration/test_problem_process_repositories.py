@@ -1,7 +1,8 @@
 """Integration tests for Problem and Process repositories."""
 
-import pytest
 from uuid import uuid4
+
+import pytest
 
 from tracertm.models.project import Project
 from tracertm.repositories.problem_repository import ProblemRepository
@@ -25,7 +26,7 @@ async def test_problem_repository_crud(async_db_session):
 
     # Create a problem
     problem = await repo.create(
-        project_id=project.id,
+        project_id=str(project.id),
         title="Repository Test Problem",
         description="Testing the repository layer",
         impact_level="high",
@@ -50,15 +51,15 @@ async def test_problem_repository_crud(async_db_session):
     assert updated.status == "in_investigation"
 
     # List all for project
-    problems = await repo.list_all(project_id=project.id)
+    problems = await repo.list_all(project_id=str(project.id))
     assert len(problems) == 1
     assert problems[0].id == problem.id
 
     # List with filters
-    problems = await repo.list_all(project_id=project.id, status="in_investigation")
+    problems = await repo.list_all(project_id=str(project.id), status="in_investigation")
     assert len(problems) == 1
 
-    problems = await repo.list_all(project_id=project.id, status="closed")
+    problems = await repo.list_all(project_id=str(project.id), status="closed")
     assert len(problems) == 0
 
 
@@ -78,14 +79,14 @@ async def test_problem_repository_stats(async_db_session):
 
     # Create multiple problems with different statuses
     await repo.create(
-        project_id=project.id,
+        project_id=str(project.id),
         title="Open Problem 1",
         impact_level="critical",
         urgency="high",
         priority="critical",
     )
     await repo.create(
-        project_id=project.id,
+        project_id=str(project.id),
         title="Open Problem 2",
         impact_level="high",
         urgency="medium",
@@ -94,7 +95,7 @@ async def test_problem_repository_stats(async_db_session):
 
     # Create closed problem
     closed_problem = await repo.create(
-        project_id=project.id,
+        project_id=str(project.id),
         title="Closed Problem",
         impact_level="low",
         urgency="low",
@@ -103,8 +104,8 @@ async def test_problem_repository_stats(async_db_session):
     await repo.update(closed_problem.id, closed_problem.version, status="closed")
 
     # Get stats
-    status_counts = await repo.count_by_status(project.id)
-    priority_counts = await repo.count_by_priority(project.id)
+    status_counts = await repo.count_by_status(str(project.id))
+    priority_counts = await repo.count_by_priority(str(project.id))
 
     assert status_counts["open"] == 2
     assert status_counts["closed"] == 1
@@ -129,7 +130,7 @@ async def test_process_repository_crud(async_db_session):
 
     # Create a process
     process = await repo.create(
-        project_id=project.id,
+        project_id=str(project.id),
         name="Repository Test Process",
         description="Testing the process repository layer",
         category="operational",
@@ -146,8 +147,8 @@ async def test_process_repository_crud(async_db_session):
     assert process.process_number is not None
     assert process.name == "Repository Test Process"
     assert process.status == "draft"  # Default status
-    assert len(process.stages) == 2
-    assert len(process.swimlanes) == 1
+    assert len(process.stages or []) == 2
+    assert len(process.swimlanes or []) == 1
 
     # Get by ID
     fetched = await repo.get_by_id(process.id)
@@ -160,15 +161,15 @@ async def test_process_repository_crud(async_db_session):
     assert updated.status == "active"
 
     # List all for project
-    processes = await repo.list_all(project_id=project.id)
+    processes = await repo.list_all(project_id=str(project.id))
     assert len(processes) == 1
     assert processes[0].id == process.id
 
     # List with filters
-    processes = await repo.list_all(project_id=project.id, status="active")
+    processes = await repo.list_all(project_id=str(project.id), status="active")
     assert len(processes) == 1
 
-    processes = await repo.list_all(project_id=project.id, status="archived")
+    processes = await repo.list_all(project_id=str(project.id), status="archived")
     assert len(processes) == 0
 
 
@@ -188,28 +189,28 @@ async def test_process_repository_stats(async_db_session):
 
     # Create multiple processes
     p1 = await repo.create(
-        project_id=project.id,
+        project_id=str(project.id),
         name="Active Process 1",
         category="operational",
     )
     await repo.update(p1.id, p1.version, status="active")
 
     p2 = await repo.create(
-        project_id=project.id,
+        project_id=str(project.id),
         name="Active Process 2",
         category="support",
     )
     await repo.update(p2.id, p2.version, status="active")
 
     await repo.create(
-        project_id=project.id,
+        project_id=str(project.id),
         name="Draft Process",
         category="operational",
     )
 
     # Get stats
-    status_counts = await repo.count_by_status(project.id)
-    category_counts = await repo.count_by_category(project.id)
+    status_counts = await repo.count_by_status(str(project.id))
+    category_counts = await repo.count_by_category(str(project.id))
 
     assert status_counts["active"] == 2
     assert status_counts["draft"] == 1

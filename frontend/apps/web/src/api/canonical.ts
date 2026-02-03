@@ -90,18 +90,14 @@ const useCanonicalConcepts = (
 	const baseOptions = {
 		enabled: Boolean(projectId),
 		queryFn: async (): Promise<CanonicalConcept[]> =>
-			handleApiResponse(
+			await handleApiResponse(
 				apiGet("/api/v1/projects/{projectId}/concepts", {
 					params: { path: { projectId } },
 				}),
 			),
 		queryKey: canonicalQueryKeys.list(projectId),
 	};
-
-	let mergedOptions = baseOptions;
-	if (options) {
-		mergedOptions = { ...baseOptions, ...options };
-	}
+	const mergedOptions = Object.assign({}, baseOptions, options);
 
 	return useQuery(mergedOptions);
 };
@@ -113,18 +109,14 @@ const useCanonicalConcept = (
 	const baseOptions = {
 		enabled: Boolean(conceptId),
 		queryFn: async (): Promise<CanonicalConcept> =>
-			handleApiResponse(
+			await handleApiResponse(
 				apiGet("/api/v1/concepts/{conceptId}", {
 					params: { path: { conceptId } },
 				}),
 			),
 		queryKey: canonicalQueryKeys.detail(conceptId),
 	};
-
-	let mergedOptions = baseOptions;
-	if (options) {
-		mergedOptions = { ...baseOptions, ...options };
-	}
+	const mergedOptions = Object.assign({}, baseOptions, options);
 
 	return useQuery(mergedOptions);
 };
@@ -139,7 +131,7 @@ const useCreateCanonicalConcept = (
 	const queryClient = useQueryClient();
 	const baseOptions = {
 		mutationFn: async (input: CreateCanonicalConceptInput) =>
-			handleApiResponse(
+			await handleApiResponse(
 				apiPost("/api/v1/projects/{projectId}/concepts", {
 					body: {
 						category: input.category,
@@ -151,16 +143,12 @@ const useCreateCanonicalConcept = (
 				}),
 			),
 		onSuccess: async (data: CanonicalConcept) => {
-			queryClient.invalidateQueries({
+			await queryClient.invalidateQueries({
 				queryKey: canonicalQueryKeys.list(data.projectId),
 			});
 		},
 	};
-
-	let mergedOptions = baseOptions;
-	if (options) {
-		mergedOptions = { ...baseOptions, ...options };
-	}
+	const mergedOptions = Object.assign({}, baseOptions, options);
 
 	return useMutation(mergedOptions);
 };
@@ -182,7 +170,7 @@ const useUpdateCanonicalConcept = (
 			conceptId: string;
 			data: UpdateCanonicalConceptInput;
 		}) =>
-			handleApiResponse(
+			await handleApiResponse(
 				apiPut("/api/v1/concepts/{conceptId}", {
 					body: {
 						category: input.data.category,
@@ -194,19 +182,17 @@ const useUpdateCanonicalConcept = (
 				}),
 			),
 		onSuccess: async (data: CanonicalConcept) => {
-			queryClient.invalidateQueries({
-				queryKey: canonicalQueryKeys.detail(data.id),
-			});
-			queryClient.invalidateQueries({
-				queryKey: canonicalQueryKeys.lists(),
-			});
+			await Promise.all([
+				queryClient.invalidateQueries({
+					queryKey: canonicalQueryKeys.detail(data.id),
+				}),
+				queryClient.invalidateQueries({
+					queryKey: canonicalQueryKeys.lists(),
+				}),
+			]);
 		},
 	};
-
-	let mergedOptions = baseOptions;
-	if (options) {
-		mergedOptions = { ...baseOptions, ...options };
-	}
+	const mergedOptions = Object.assign({}, baseOptions, options);
 
 	return useMutation(mergedOptions);
 };
@@ -217,22 +203,18 @@ const useDeleteCanonicalConcept = (
 	const queryClient = useQueryClient();
 	const baseOptions = {
 		mutationFn: async (conceptId: string) =>
-			handleApiResponse(
+			await handleApiResponse(
 				apiDelete("/api/v1/concepts/{conceptId}", {
 					params: { path: { conceptId } },
 				}),
 			),
 		onSuccess: async () => {
-			queryClient.invalidateQueries({
+			await queryClient.invalidateQueries({
 				queryKey: canonicalQueryKeys.lists(),
 			});
 		},
 	};
-
-	let mergedOptions = baseOptions;
-	if (options) {
-		mergedOptions = { ...baseOptions, ...options };
-	}
+	const mergedOptions = Object.assign({}, baseOptions, options);
 
 	return useMutation(mergedOptions);
 };
@@ -244,18 +226,14 @@ const useCanonicalProjections = (
 	const baseOptions = {
 		enabled: Boolean(conceptId),
 		queryFn: async (): Promise<CanonicalProjection[]> =>
-			handleApiResponse(
+			await handleApiResponse(
 				apiGet("/api/v1/concepts/{conceptId}/projections", {
 					params: { path: { conceptId } },
 				}),
 			),
 		queryKey: canonicalQueryKeys.projections(conceptId),
 	};
-
-	let mergedOptions = baseOptions;
-	if (options) {
-		mergedOptions = { ...baseOptions, ...options };
-	}
+	const mergedOptions = Object.assign({}, baseOptions, options);
 
 	return useQuery(mergedOptions);
 };
@@ -278,23 +256,19 @@ const useCreateCanonicalProjection = (
 			itemId: string;
 			confidence?: number;
 		}) =>
-			handleApiResponse(
+			await handleApiResponse(
 				apiPost("/api/v1/concepts/{conceptId}/projections", {
 					body: { confidence: input.confidence, itemId: input.itemId },
 					params: { path: { conceptId: input.conceptId } },
 				}),
 			),
 		onSuccess: async (data: CanonicalProjection) => {
-			queryClient.invalidateQueries({
+			await queryClient.invalidateQueries({
 				queryKey: canonicalQueryKeys.projections(data.conceptId),
 			});
 		},
 	};
-
-	let mergedOptions = baseOptions;
-	if (options) {
-		mergedOptions = { ...baseOptions, ...options };
-	}
+	const mergedOptions = Object.assign({}, baseOptions, options);
 
 	return useMutation(mergedOptions);
 };
@@ -316,7 +290,7 @@ const useDeleteCanonicalProjection = (
 			conceptId: string;
 			projectionId: string;
 		}): Promise<void> =>
-			handleApiResponse(
+			await handleApiResponse(
 				apiDelete("/api/v1/concepts/{conceptId}/projections/{projectionId}", {
 					params: {
 						path: { conceptId: input.conceptId, projectionId: input.projectionId },
@@ -327,16 +301,12 @@ const useDeleteCanonicalProjection = (
 			_result: void,
 			variables: { conceptId: string; projectionId: string },
 		) => {
-			queryClient.invalidateQueries({
+			await queryClient.invalidateQueries({
 				queryKey: canonicalQueryKeys.projections(variables.conceptId),
 			});
 		},
 	};
-
-	let mergedOptions = baseOptions;
-	if (options) {
-		mergedOptions = { ...baseOptions, ...options };
-	}
+	const mergedOptions = Object.assign({}, baseOptions, options);
 
 	return useMutation(mergedOptions);
 };
@@ -348,18 +318,14 @@ const usePivotTargets = (
 	const baseOptions = {
 		enabled: Boolean(itemId),
 		queryFn: async (): Promise<PivotTarget[]> =>
-			handleApiResponse(
+			await handleApiResponse(
 				apiGet("/api/v1/items/{itemId}/pivot-targets", {
 					params: { path: { itemId } },
 				}),
 			),
 		queryKey: canonicalQueryKeys.pivots(itemId),
 	};
-
-	let mergedOptions = baseOptions;
-	if (options) {
-		mergedOptions = { ...baseOptions, ...options };
-	}
+	const mergedOptions = Object.assign({}, baseOptions, options);
 
 	return useQuery(mergedOptions);
 };
@@ -377,7 +343,7 @@ const usePivotItem = (
 			itemId: string;
 			conceptId: string;
 		}): Promise<void> =>
-			handleApiResponse(
+			await handleApiResponse(
 				apiPost("/api/v1/items/{itemId}/pivot", {
 					body: { conceptId: input.conceptId },
 					params: { path: { itemId: input.itemId } },
@@ -387,16 +353,12 @@ const usePivotItem = (
 			_result: void,
 			variables: { itemId: string; conceptId: string },
 		) => {
-			queryClient.invalidateQueries({
+			await queryClient.invalidateQueries({
 				queryKey: canonicalQueryKeys.pivots(variables.itemId),
 			});
 		},
 	};
-
-	let mergedOptions = baseOptions;
-	if (options) {
-		mergedOptions = { ...baseOptions, ...options };
-	}
+	const mergedOptions = Object.assign({}, baseOptions, options);
 
 	return useMutation(mergedOptions);
 };

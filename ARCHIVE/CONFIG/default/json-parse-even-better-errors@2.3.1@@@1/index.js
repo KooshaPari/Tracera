@@ -68,7 +68,7 @@ const kNewline = Symbol.for('newline')
 // things other than objects and arrays aren't indented, so ignore those
 // Important: in both of these regexps, the $1 capture group is the newline
 // or undefined, and the $2 capture group is the indent, or undefined.
-const formatRE = /^\s*[{\[]((?:\r?\n)+)([\s\t]*)/
+const formatRE = /^\s*[{[]((?:\r?\n)+)([\s\t]*)/
 const emptyRE = /^(?:\{\}|\[\])((?:\r?\n)+)?$/
 
 const parseJson = (txt, reviver, context) => {

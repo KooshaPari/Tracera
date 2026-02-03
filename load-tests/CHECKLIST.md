@@ -11,17 +11,17 @@ Use this checklist to verify your load testing setup is complete and ready to us
 
 ## Installation
 
-- [ ] Run `./scripts/install_k6.sh`
+- [ ] Run `./scripts/shell/install_k6.sh`
 - [ ] Verify with `k6 version`
 - [ ] Check all scripts are executable: `ls -l scripts/*.sh`
 
 ## File Verification
 
 ### Scripts
-- [ ] `scripts/install_k6.sh` exists and is executable
-- [ ] `scripts/run_load_tests.sh` exists and is executable
-- [ ] `scripts/generate_load_test_report.py` exists and is executable
-- [ ] `scripts/validate_load_tests.sh` exists and is executable
+- [ ] `scripts/shell/install_k6.sh` exists and is executable
+- [ ] `scripts/shell/run_load_tests.sh` exists and is executable
+- [ ] `scripts/python/generate_load_test_report.py` exists and is executable
+- [ ] `scripts/shell/validate_load_tests.sh` exists and is executable
 
 ### Test Files
 - [ ] `load-tests/smoke-test.js` exists
@@ -44,7 +44,7 @@ Use this checklist to verify your load testing setup is complete and ready to us
 
 ### Directories
 - [ ] `load-tests/` directory exists
-- [ ] `load-test-results/` directory exists
+- [ ] `load-tests/results/` directory exists
 - [ ] `docs/testing/` directory exists
 
 ## Service Verification
@@ -56,7 +56,7 @@ Use this checklist to verify your load testing setup is complete and ready to us
 
 ## Quick Test
 
-- [ ] Run validation: `./scripts/validate_load_tests.sh`
+- [ ] Run validation: `./scripts/shell/validate_load_tests.sh`
 - [ ] Run smoke test: `k6 run load-tests/smoke-test.js`
 - [ ] Verify smoke test passes (all checks green)
 - [ ] No connection errors
@@ -70,11 +70,11 @@ Use this checklist to verify your load testing setup is complete and ready to us
 
 ## Full Suite Test
 
-- [ ] Run `./scripts/run_load_tests.sh`
+- [ ] Run `./scripts/shell/run_load_tests.sh`
 - [ ] Wait for completion (~30 minutes)
-- [ ] Check `load-test-results/` for JSON files
-- [ ] Verify `load-test-results/report.html` generated
-- [ ] Open HTML report: `open load-test-results/report.html`
+- [ ] Check `load-tests/results/` for JSON files
+- [ ] Verify `load-tests/results/report.html` generated
+- [ ] Open HTML report: `open load-tests/results/report.html`
 - [ ] Review all test results
 
 ## Performance Targets
@@ -101,7 +101,7 @@ If any items fail, check:
 
 ### k6 Not Installed
 ```bash
-./scripts/install_k6.sh
+./scripts/shell/install_k6.sh
 k6 version
 ```
 
@@ -153,7 +153,7 @@ After completing this checklist:
 - **Quick Start**: `LOAD_TESTING_QUICK_START.md`
 - **Full Guide**: `docs/testing/load_testing_guide.md`
 - **Index**: `LOAD_TESTING_INDEX.md`
-- **Validation**: `./scripts/validate_load_tests.sh`
+- **Validation**: `./scripts/shell/validate_load_tests.sh`
 
 ## Status
 

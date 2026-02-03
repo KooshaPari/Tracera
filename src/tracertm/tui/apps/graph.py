@@ -12,6 +12,7 @@ try:
     from textual.containers import Container, Horizontal, Vertical
     from textual.geometry import Region
     from textual.widgets import DataTable, Footer, Header, Static
+
     TEXTUAL_AVAILABLE = True
 except ImportError:
     TEXTUAL_AVAILABLE = False
@@ -23,24 +24,34 @@ except ImportError:
         from textual.geometry import Region
         from textual.widgets import DataTable, Footer, Header, Static
     else:
+
         class App:
             pass
+
         class ComposeResult:
             pass
+
         class Container:
             pass
+
         class Header:
             pass
+
         class Footer:
             pass
+
         class Static:
             pass
+
         class DataTable:
             pass
+
         class Binding:
             pass
+
         class Region:
             pass
+
 
 from sqlalchemy.orm import Session
 
@@ -50,6 +61,7 @@ from tracertm.models.item import Item
 from tracertm.models.link import Link
 
 if TEXTUAL_AVAILABLE:
+
     class GraphApp(App):
         """Graph visualization TUI application."""
 
@@ -136,10 +148,16 @@ if TEXTUAL_AVAILABLE:
 
             with Session(self.db.engine) as session:
                 # Get items
-                items = session.query(Item).filter(
-                    Item.project_id == self.project_id,
-                    Item.deleted_at.is_(None),
-                ).limit(50).all()  # Limit for performance
+                items = (
+                    session
+                    .query(Item)
+                    .filter(
+                        Item.project_id == self.project_id,
+                        Item.deleted_at.is_(None),
+                    )
+                    .limit(50)
+                    .all()
+                )  # Limit for performance
 
                 # Simple layout: grid
                 cols = int(len(items) ** 0.5) + 1
@@ -149,9 +167,7 @@ if TEXTUAL_AVAILABLE:
                     self.nodes[item.id] = (x, y)
 
                 # Get links
-                links = session.query(Link).filter(
-                    Link.project_id == self.project_id
-                ).limit(100).all()
+                links = session.query(Link).filter(Link.project_id == self.project_id).limit(100).all()
 
                 self.links = [
                     (link.source_item_id, link.target_item_id)
@@ -177,10 +193,12 @@ if TEXTUAL_AVAILABLE:
                     source = session.query(Item).filter(Item.id == source_id).first()
                     target = session.query(Item).filter(Item.id == target_id).first()
                     if source and target:
-                        link = session.query(Link).filter(
-                            Link.source_item_id == source_id,
-                            Link.target_item_id == target_id
-                        ).first()
+                        link = (
+                            session
+                            .query(Link)
+                            .filter(Link.source_item_id == source_id, Link.target_item_id == target_id)
+                            .first()
+                        )
                         link_type = link.link_type if link else "unknown"
                         link_table.add_row(
                             source.title[:30],
@@ -190,11 +208,7 @@ if TEXTUAL_AVAILABLE:
 
             # Update stats
             stats = self.query_one("#graph-stats", Static)
-            stats.update(
-                f"Nodes: {len(self.nodes)}\n"
-                f"Links: {len(self.links)}\n"
-                f"Zoom: {self.zoom:.1f}x"
-            )
+            stats.update(f"Nodes: {len(self.nodes)}\nLinks: {len(self.links)}\nZoom: {self.zoom:.1f}x")
 
             # Simple graph visualization
             graph_text = "Graph Visualization\n"
@@ -227,11 +241,31 @@ if TEXTUAL_AVAILABLE:
             if self.db:
                 self.db.close()
 
+
 if not TEXTUAL_AVAILABLE:
+
     class GraphApp:  # type: ignore[no-redef]
         """Placeholder when Textual is not installed."""
 
+        project_id: str | None
+        db: DatabaseConnection | None
+        nodes: dict[str, tuple[int, int]]
+        links: list[tuple[str, str]]
+        zoom: float
+        config_manager: object
+        BINDINGS: ClassVar[list]
+
         def __init__(self) -> None:
-            raise ImportError(
-                "Textual is required for TUI. Install with: pip install textual"
-            )
+            raise ImportError("Textual is required for TUI. Install with: pip install textual")
+
+        def setup_database(self) -> None: ...
+        def load_graph_data(self) -> None: ...
+        def render_graph(self) -> None: ...
+        def on_unmount(self) -> None: ...
+        def action_zoom_in(self) -> None: ...
+        def action_zoom_out(self) -> None: ...
+        def action_refresh(self) -> None: ...
+        def action_help(self) -> None: ...
+        def query_one(self, selector: str, widget_type: type | None = None) -> object: ...
+        def notify(self, message: str, *args: object, **kwargs: object) -> None: ...
+        def exit(self, *args: object, **kwargs: object) -> None: ...

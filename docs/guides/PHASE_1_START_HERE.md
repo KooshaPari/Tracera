@@ -31,7 +31,7 @@ Phase 1 is the **Setup & Infrastructure** phase of the documentation migration. 
 ### 2. Understand the Current State
 
 **What's Already Done:**
-- ✅ Fumadocs project initialized at `docs-site/`
+- ✅ Fumadocs project initialized at `docs/site/`
 - ✅ Next.js 16 + React 19 configured
 - ✅ Tailwind CSS + Radix UI ready
 - ✅ Search API endpoint created
@@ -89,7 +89,7 @@ cat PHASE_1_EXECUTION_CHECKLIST.md
 ### Step 2: Start Task 1
 
 ```bash
-cd docs-site
+cd docs/site
 npm install
 npm run dev
 # Visit http://localhost:3000
@@ -224,7 +224,7 @@ After Phase 1, you should have:
 cat PHASE_1_EXECUTION_CHECKLIST.md
 
 # 2. Start Task 1
-cd docs-site
+cd docs/site
 npm install
 npm run dev
 

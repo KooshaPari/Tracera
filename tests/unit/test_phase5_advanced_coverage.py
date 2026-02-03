@@ -15,67 +15,43 @@ class TestAPIEndpointValidation:
 
     def test_item_create_payload_validation(self):
         """Test item creation payload."""
-        payload = {
-            "name": "Test Item",
-            "description": "Test Description",
-            "status": "active"
-        }
+        payload = {"name": "Test Item", "description": "Test Description", "status": "active"}
         assert "name" in payload
         assert payload["name"] == "Test Item"
 
     def test_item_list_query_parameters(self):
         """Test item list query parameters."""
-        params = {
-            "skip": 0,
-            "limit": 10,
-            "status": "active"
-        }
+        params: dict[str, int | str] = {"skip": 0, "limit": 10, "status": "active"}
         assert params["skip"] >= 0
         assert params["limit"] > 0
 
     def test_item_update_partial_payload(self):
         """Test partial update payload."""
-        payload = {
-            "description": "Updated Description"
-        }
+        payload = {"description": "Updated Description"}
         # Partial update should work
         assert "description" in payload
         assert "id" not in payload  # ID not in payload
 
     def test_item_delete_success_response(self):
         """Test delete success response."""
-        response = {
-            "success": True,
-            "message": "Item deleted"
-        }
+        response = {"success": True, "message": "Item deleted"}
         assert response["success"]
 
     def test_link_create_validation(self):
         """Test link creation payload."""
-        payload = {
-            "source_id": 1,
-            "target_id": 2,
-            "link_type": "depends_on"
-        }
+        payload: dict[str, int | str] = {"source_id": 1, "target_id": 2, "link_type": "depends_on"}
         assert payload["source_id"] > 0
         assert payload["target_id"] > 0
 
     def test_link_invalid_self_reference(self):
         """Test invalid self-referencing link."""
-        payload = {
-            "source_id": 1,
-            "target_id": 1,
-            "link_type": "depends_on"
-        }
+        payload = {"source_id": 1, "target_id": 1, "link_type": "depends_on"}
         # Should detect self-reference
         assert payload["source_id"] == payload["target_id"]
 
     def test_project_init_payload(self):
         """Test project initialization."""
-        payload = {
-            "name": "Test Project",
-            "description": "Test"
-        }
+        payload = {"name": "Test Project", "description": "Test"}
         assert len(payload["name"]) > 0
 
     def test_project_switch_validation(self):
@@ -86,56 +62,36 @@ class TestAPIEndpointValidation:
 
     def test_backup_create_response(self):
         """Test backup creation response."""
-        response = {
-            "backup_id": "backup-123",
-            "timestamp": "2025-11-22T10:00:00Z",
-            "items_count": 42
-        }
+        response: dict[str, str | int] = {"backup_id": "backup-123", "timestamp": "2025-11-22T10:00:00Z", "items_count": 42}
         assert "backup_id" in response
         assert response["items_count"] >= 0
 
     def test_restore_from_backup_payload(self):
         """Test restore payload."""
-        payload = {
-            "backup_id": "backup-123",
-            "force": False
-        }
+        payload = {"backup_id": "backup-123", "force": False}
         assert isinstance(payload["force"], bool)
 
     def test_config_set_validation(self):
         """Test config set."""
-        payload = {
-            "key": "api_key",
-            "value": "secret-value"
-        }
+        payload = {"key": "api_key", "value": "secret-value"}
         assert len(payload["key"]) > 0
         assert len(payload["value"]) > 0
 
     def test_config_get_response(self):
         """Test config get response."""
-        response = {
-            "key": "api_key",
-            "value": "secret-value"
-        }
+        response = {"key": "api_key", "value": "secret-value"}
         assert "key" in response
         assert "value" in response
 
     def test_error_response_structure(self):
         """Test error response structure."""
-        error_response = {
-            "error": "Invalid request",
-            "code": 400,
-            "details": "Missing required field: name"
-        }
+        error_response: dict[str, str | int] = {"error": "Invalid request", "code": 400, "details": "Missing required field: name"}
         assert "error" in error_response
         assert error_response["code"] >= 400
 
     def test_validation_error_array(self):
         """Test validation error array."""
-        errors = [
-            {"field": "name", "message": "Required"},
-            {"field": "email", "message": "Invalid format"}
-        ]
+        errors = [{"field": "name", "message": "Required"}, {"field": "email", "message": "Invalid format"}]
         assert len(errors) > 0
         assert all("field" in e for e in errors)
 
@@ -227,6 +183,7 @@ class TestServiceMethodCoverage:
 
     def test_query_builder_pattern(self):
         """Test query builder pattern."""
+
         class QueryBuilder:
             def __init__(self):
                 self.filters = []
@@ -249,7 +206,7 @@ class TestServiceMethodCoverage:
         limit = 10
         skip = (page - 1) * limit
 
-        result = data[skip:skip + limit]
+        result = data[skip : skip + limit]
         assert len(result) == 10
         assert result[0] == 10
 
@@ -273,10 +230,7 @@ class TestWorkflowIntegration:
         item_service = Mock()
         link_service = Mock()
 
-        item_service.create = Mock(side_effect=[
-            {"id": 1, "name": "Item 1"},
-            {"id": 2, "name": "Item 2"}
-        ])
+        item_service.create = Mock(side_effect=[{"id": 1, "name": "Item 1"}, {"id": 2, "name": "Item 2"}])
         link_service.create = Mock(return_value={"id": 1, "source_id": 1, "target_id": 2})
 
         item1 = item_service.create(name="Item 1")
@@ -337,6 +291,7 @@ class TestDataValidationPatterns:
 
     def test_required_field_validation(self):
         """Test required field validation."""
+
         def validate_required(data, required_fields):
             missing = [f for f in required_fields if f not in data]
             return len(missing) == 0
@@ -347,6 +302,7 @@ class TestDataValidationPatterns:
 
     def test_type_validation(self):
         """Test type validation."""
+
         def validate_types(data, schema):
             for field, expected_type in schema.items():
                 if field not in data:
@@ -361,6 +317,7 @@ class TestDataValidationPatterns:
 
     def test_range_validation(self):
         """Test range validation."""
+
         def validate_range(value, min_val=0, max_val=100):
             return min_val <= value <= max_val
 
@@ -370,6 +327,7 @@ class TestDataValidationPatterns:
 
     def test_string_length_validation(self):
         """Test string length validation."""
+
         def validate_length(string, min_len=1, max_len=255):
             return min_len <= len(string) <= max_len
 
@@ -379,6 +337,7 @@ class TestDataValidationPatterns:
 
     def test_enum_validation(self):
         """Test enum validation."""
+
         def validate_enum(value, allowed):
             return value in allowed
 
@@ -393,12 +352,13 @@ class TestDataValidationPatterns:
         def validate_pattern(value, pattern):
             return re.match(pattern, value) is not None
 
-        email_pattern = r'^[^@]+@[^@]+\.[^@]+$'
+        email_pattern = r"^[^@]+@[^@]+\.[^@]+$"
         assert validate_pattern("user@example.com", email_pattern)
         assert not validate_pattern("invalid-email", email_pattern)
 
     def test_nested_object_validation(self):
         """Test nested object validation."""
+
         def has_nested_field(data, path):
             parts = path.split(".")
             current = data
@@ -415,6 +375,7 @@ class TestDataValidationPatterns:
 
     def test_array_validation(self):
         """Test array validation."""
+
         def validate_array(arr, min_items=0, max_items=None):
             if not isinstance(arr, list):
                 return False
@@ -432,6 +393,7 @@ class TestErrorHandlingPatterns:
 
     def test_graceful_degradation(self):
         """Test graceful degradation."""
+
         def get_value_with_fallback(data, key, fallback=None):
             try:
                 return data[key]
@@ -443,6 +405,7 @@ class TestErrorHandlingPatterns:
 
     def test_retry_pattern(self):
         """Test retry pattern."""
+
         def retry(func, max_attempts=3, delay=0):
             attempts = 0
             while attempts < max_attempts:
@@ -481,6 +444,7 @@ class TestErrorHandlingPatterns:
 
     def test_circuit_breaker_pattern(self):
         """Test circuit breaker pattern."""
+
         class CircuitBreaker:
             def __init__(self, failure_threshold=3):
                 self.failures = 0

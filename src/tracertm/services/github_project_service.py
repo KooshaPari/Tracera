@@ -2,12 +2,10 @@
 Service for GitHub Projects auto-linking and synchronization.
 """
 
-from typing import Optional
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from tracertm.repositories.github_project_repository import GitHubProjectRepository
 from tracertm.clients.github_client import GitHubClient
+from tracertm.repositories.github_project_repository import GitHubProjectRepository
 
 
 class GitHubProjectService:
@@ -49,7 +47,7 @@ class GitHubProjectService:
 
         for project in projects:
             # Check if project is already linked
-            existing = await self.repo.get_by_id(project.get("id"))
+            existing = await self.repo.get_by_id(str(project.get("id") or ""))
             if existing and existing.project_id == project_id:
                 linked_projects.append({
                     "id": existing.id,
@@ -65,7 +63,7 @@ class GitHubProjectService:
                 github_repo_id=github_repo_id,
                 github_repo_owner=github_repo_owner,
                 github_repo_name=github_repo_name,
-                github_project_id=project.get("id"),
+                github_project_id=str(project.get("id") or ""),
                 github_project_number=project.get("number", 0),
                 auto_sync=True,
             )

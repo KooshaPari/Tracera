@@ -34,7 +34,7 @@ for (const arg of process.argv.slice(2)) {
     dashdash = true
   else if (arg === '--manual')
     manual = true
-  else if (/^-h/.test(arg) || /^--help/.test(arg)) {
+  else if (arg.startsWith('-h') || arg.startsWith('--help')) {
     console.log(usage())
     process.exit(0)
   } else if (arg === '-v' || arg === '--version') {
@@ -42,7 +42,7 @@ for (const arg of process.argv.slice(2)) {
     process.exit(0)
   } else if (arg === '-p' || arg === '--print') {
     print = true
-  } else if (/^-m/.test(arg) || /^--mode=/.test(arg)) {
+  } else if (arg.startsWith('-m') || arg.startsWith('--mode=')) {
     const mode = parseInt(arg.replace(/^(-m|--mode=)/, ''), 8)
     if (isNaN(mode)) {
       console.error(`invalid mode argument: ${arg}\nMust be an octal number.`)

@@ -399,3 +399,9 @@ All deferred items documented in [DEFERRED_WORK/INDEX.md](../DEFERRED_WORK/INDEX
 **Status:** ✅ All phases complete, 11 items deferred
 **Framework:** BMad Method Module (BMM)
 **Next:** Complete deferred work and close Phase 5
+
+
+## Opinionated Quality Enforcement
+- We want opinionated rules that enforce opinionated styling to a strict degree.
+- This is an exclusively agent/vibecoded project; programmatic enforcement must guard against bad quality and antipatterns.
+- Rather than disables or ignores, fix code properly.

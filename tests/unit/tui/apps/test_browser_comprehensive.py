@@ -6,14 +6,17 @@ tree navigation, item display, filtering, and error handling.
 Coverage target: 80%+ (221 lines total)
 """
 
-import pytest
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
+import pytest
+
 try:
-    from textual.app import App
-    from textual.widgets import Tree, Static, Input, Footer, Header
-    from tracertm.tui.apps.browser import BrowserApp, TEXTUAL_AVAILABLE
+    from textual.app import App  # type: ignore[unresolved-import]
+    from textual.widgets import Footer, Header, Input, Static, Tree  # type: ignore[unresolved-import]
+
+    from tracertm.tui.apps.browser import TEXTUAL_AVAILABLE, BrowserApp  # type: ignore[possibly-missing-import]
+
     TEXTUAL_AVAILABLE = True
 except ImportError:
     TEXTUAL_AVAILABLE = False
@@ -50,7 +53,7 @@ class TestBrowserAppInitialization:
 
         # Compose returns a generator that needs app context
         # Just verify it can be called without error
-        assert hasattr(app, 'compose')
+        assert hasattr(app, "compose")
         assert callable(app.compose)
 
     @patch("tracertm.tui.apps.browser.ConfigManager")
@@ -112,7 +115,7 @@ class TestBrowserAppDatabaseSetup:
         mock_config = MagicMock()
         mock_config.get.side_effect = lambda key: {
             "database_url": "sqlite:///test.db",
-            "current_project_id": project_id
+            "current_project_id": project_id,
         }.get(key)
         mock_config_manager.return_value = mock_config
 
@@ -125,10 +128,9 @@ class TestBrowserAppDatabaseSetup:
     def test_load_project_no_project(self, mock_config_manager):
         """Test project loading fails when no current project."""
         mock_config = MagicMock()
-        mock_config.get.side_effect = lambda key: {
-            "database_url": "sqlite:///test.db",
-            "current_project_id": None
-        }.get(key)
+        mock_config.get.side_effect = lambda key: {"database_url": "sqlite:///test.db", "current_project_id": None}.get(
+            key
+        )
         mock_config_manager.return_value = mock_config
 
         app = BrowserApp()

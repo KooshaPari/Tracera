@@ -77,8 +77,8 @@ export default function pascaligo(Prism) {
         /\b\d+(?:\.\d+)?(?:e[+-]?\d+)?(?:mtz|n)?/i
       ],
       operator:
-        /->|=\/=|\.\.|\*\*|:=|<[<=>]?|>[>=]?|[+\-*\/]=?|[@^=|]|\b(?:and|mod|or)\b/,
-      punctuation: /\(\.|\.\)|[()\[\]:;,.{}]/
+        /->|=\/=|\.\.|\*\*|:=|<[<=>]?|>[>=]?|[+\-*/]=?|[@^=|]|\b(?:and|mod|or)\b/,
+      punctuation: /\(\.|\.\)|[()[\]:;,.{}]/
     })
     var classNameInside = [
       'comment',

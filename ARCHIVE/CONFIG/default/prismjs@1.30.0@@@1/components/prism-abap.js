@@ -25,7 +25,7 @@ Prism.languages.abap = {
 	adjacent to operands.
 	*/
 	'operator': {
-		pattern: /(\s)(?:\*\*?|<[=>]?|>=?|\?=|[-+\/=])(?=\s)/,
+		pattern: /(\s)(?:\*\*?|<[=>]?|>=?|\?=|[-+/=])(?=\s)/,
 		lookbehind: true
 	},
 	'string-operator': {

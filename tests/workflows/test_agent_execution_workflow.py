@@ -3,11 +3,12 @@
 Tests workflow execution, checkpoint creation, and session resumability.
 """
 
-import pytest
-from datetime import datetime, timezone
+import tempfile
+from pathlib import Path
 from uuid import uuid4
 
-from tracertm.models.agent_checkpoint import AgentCheckpoint
+import pytest
+
 from tracertm.models.agent_session import AgentSession
 from tracertm.services.checkpoint_service import CheckpointService
 
@@ -22,7 +23,7 @@ class TestCheckpointService:
         session_id = f"test-session-{uuid4()}"
         session = AgentSession(
             session_id=session_id,
-            sandbox_root=f"/tmp/sandboxes/{session_id}",
+            sandbox_root=str(Path(tempfile.gettempdir()) / "sandboxes" / session_id),
         )
         db_session.add(session)
         await db_session.flush()
@@ -48,7 +49,9 @@ class TestCheckpointService:
         assert checkpoint.session_id == session_id
         assert checkpoint.turn_number == 1
         assert checkpoint.state_snapshot == state
-        assert checkpoint.checkpoint_metadata["model"] == "claude-sonnet-4-20250514"
+        meta = checkpoint.checkpoint_metadata
+        assert meta is not None
+        assert meta["model"] == "claude-sonnet-4-20250514"
         assert checkpoint.description == "Test checkpoint"
         assert checkpoint.sandbox_snapshot_s3_key is not None
 
@@ -59,7 +62,7 @@ class TestCheckpointService:
         session_id = f"test-session-{uuid4()}"
         session = AgentSession(
             session_id=session_id,
-            sandbox_root=f"/tmp/sandboxes/{session_id}",
+            sandbox_root=str(Path(tempfile.gettempdir()) / "sandboxes" / session_id),
         )
         db_session.add(session)
         await db_session.flush()
@@ -88,7 +91,7 @@ class TestCheckpointService:
         session_id = f"test-session-{uuid4()}"
         session = AgentSession(
             session_id=session_id,
-            sandbox_root=f"/tmp/sandboxes/{session_id}",
+            sandbox_root=str(Path(tempfile.gettempdir()) / "sandboxes" / session_id),
         )
         db_session.add(session)
         await db_session.flush()
@@ -117,7 +120,7 @@ class TestCheckpointService:
         session_id = f"test-session-{uuid4()}"
         session = AgentSession(
             session_id=session_id,
-            sandbox_root=f"/tmp/sandboxes/{session_id}",
+            sandbox_root=str(Path(tempfile.gettempdir()) / "sandboxes" / session_id),
         )
         db_session.add(session)
         await db_session.flush()
@@ -147,7 +150,7 @@ class TestCheckpointService:
         session_id = f"test-session-{uuid4()}"
         session = AgentSession(
             session_id=session_id,
-            sandbox_root=f"/tmp/sandboxes/{session_id}",
+            sandbox_root=str(Path(tempfile.gettempdir()) / "sandboxes" / session_id),
         )
         db_session.add(session)
         await db_session.flush()
@@ -183,7 +186,7 @@ class TestCheckpointService:
         session_id = f"test-session-{uuid4()}"
         session = AgentSession(
             session_id=session_id,
-            sandbox_root=f"/tmp/sandboxes/{session_id}",
+            sandbox_root=str(Path(tempfile.gettempdir()) / "sandboxes" / session_id),
         )
         db_session.add(session)
         await db_session.flush()
@@ -214,7 +217,7 @@ class TestCheckpointService:
         session_id = f"test-session-{uuid4()}"
         session = AgentSession(
             session_id=session_id,
-            sandbox_root=f"/tmp/sandboxes/{session_id}",
+            sandbox_root=str(Path(tempfile.gettempdir()) / "sandboxes" / session_id),
         )
         db_session.add(session)
         await db_session.flush()

@@ -13,20 +13,23 @@ Target: 90%+ coverage for progress_service.py
 """
 
 import asyncio
+from datetime import UTC, datetime, timedelta, timezone
+from unittest.mock import MagicMock
+
 import pytest
-from datetime import datetime, timedelta
-from unittest.mock import AsyncMock, MagicMock, patch, Mock
 from sqlalchemy.orm import Session
 
 # Import both the stub and real service
 try:
     from tracertm.services.progress_tracking_service import ProgressTrackingService
+
     HAS_STUB = True
 except ImportError:
     HAS_STUB = False
 
 try:
     from tracertm.services.progress_service import ProgressService
+
     HAS_REAL = True
 except ImportError:
     HAS_REAL = False
@@ -336,8 +339,7 @@ class TestStalledItemTracking:
     @pytest.fixture
     def mock_session(self):
         """Create mock session."""
-        session = MagicMock(spec=Session)
-        return session
+        return MagicMock(spec=Session)
 
     @pytest.fixture
     def real_service(self, mock_session):
@@ -368,7 +370,7 @@ class TestStalledItemTracking:
         mock_item.id = "stalled_item"
         mock_item.title = "Stalled Item"
         mock_item.status = "in_progress"
-        mock_item.updated_at = datetime.utcnow() - timedelta(days=10)
+        mock_item.updated_at = datetime.now(UTC) - timedelta(days=10)
 
         mock_query = MagicMock()
         mock_query.filter.return_value.all.return_value = [mock_item]
@@ -386,8 +388,7 @@ class TestVelocityCalculations:
     @pytest.fixture
     def mock_session(self):
         """Create mock session."""
-        session = MagicMock(spec=Session)
-        return session
+        return MagicMock(spec=Session)
 
     @pytest.fixture
     def real_service(self, mock_session):
@@ -446,12 +447,9 @@ class TestProgressServiceValidation:
         service = ProgressTrackingService(MagicMock())
 
         try:
-            result = await asyncio.wait_for(
-                service.progress(),
-                timeout=1.0
-            )
+            result = await asyncio.wait_for(service.progress(), timeout=1.0)
             assert "progress" in result
-        except asyncio.TimeoutError:
+        except TimeoutError:
             pytest.fail("Progress query timed out unexpectedly")
 
     async def test_progress_performance_baseline(self):
@@ -462,6 +460,7 @@ class TestProgressServiceValidation:
         service = ProgressTrackingService(MagicMock())
 
         import time
+
         start = time.time()
         await service.progress()
         duration = time.time() - start

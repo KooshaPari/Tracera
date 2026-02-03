@@ -8,9 +8,10 @@ Revises: 039_add_component_usage
 Create Date: 2026-01-30
 """
 
-from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
+
+from alembic import op
 
 # revision identifiers, used by Alembic
 revision = "040_add_design_token_refs"
@@ -88,16 +89,12 @@ def upgrade() -> None:
 
     # Create indexes
     op.create_index("ix_design_token_refs_project_id", "design_token_refs", ["project_id"])
-    op.create_index(
-        "ix_design_token_refs_component_id", "design_token_refs", ["component_id"]
-    )
+    op.create_index("ix_design_token_refs_component_id", "design_token_refs", ["component_id"])
     op.create_index("ix_design_token_refs_item_id", "design_token_refs", ["item_id"])
     op.create_index("ix_design_token_refs_token_type", "design_token_refs", ["token_type"])
     op.create_index("ix_design_token_refs_token_path", "design_token_refs", ["token_path"])
     op.create_index("ix_design_token_refs_token_name", "design_token_refs", ["token_name"])
-    op.create_index(
-        "ix_design_token_refs_figma_style_id", "design_token_refs", ["figma_style_id"]
-    )
+    op.create_index("ix_design_token_refs_figma_style_id", "design_token_refs", ["figma_style_id"])
     op.create_index("ix_design_token_refs_sync_status", "design_token_refs", ["sync_status"])
     # Composite indexes
     op.create_index(
@@ -114,20 +111,14 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     """Drop design_token_refs table."""
-    op.drop_index(
-        "ix_design_token_refs_component_type", table_name="design_token_refs"
-    )
+    op.drop_index("ix_design_token_refs_component_type", table_name="design_token_refs")
     op.drop_index("ix_design_token_refs_project_type", table_name="design_token_refs")
     op.drop_index("ix_design_token_refs_sync_status", table_name="design_token_refs")
-    op.drop_index(
-        "ix_design_token_refs_figma_style_id", table_name="design_token_refs"
-    )
+    op.drop_index("ix_design_token_refs_figma_style_id", table_name="design_token_refs")
     op.drop_index("ix_design_token_refs_token_name", table_name="design_token_refs")
     op.drop_index("ix_design_token_refs_token_path", table_name="design_token_refs")
     op.drop_index("ix_design_token_refs_token_type", table_name="design_token_refs")
     op.drop_index("ix_design_token_refs_item_id", table_name="design_token_refs")
-    op.drop_index(
-        "ix_design_token_refs_component_id", table_name="design_token_refs"
-    )
+    op.drop_index("ix_design_token_refs_component_id", table_name="design_token_refs")
     op.drop_index("ix_design_token_refs_project_id", table_name="design_token_refs")
     op.drop_table("design_token_refs")

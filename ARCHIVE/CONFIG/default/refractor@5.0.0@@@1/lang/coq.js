@@ -26,7 +26,7 @@ export default function coq(Prism) {
       attribute: [
         {
           pattern: RegExp(
-            /#\[(?:[^\[\]("]|"(?:[^"]|"")*"(?!")|\((?!\*)|<comment>)*\]/.source.replace(
+            /#\[(?:[^[\]("]|"(?:[^"]|"")*"(?!")|\((?!\*)|<comment>)*\]/.source.replace(
               /<comment>/g,
               function () {
                 return commentSource
@@ -61,7 +61,7 @@ export default function coq(Prism) {
       },
       operator:
         /\/\\|\\\/|\.{2,3}|:{1,2}=|\*\*|[-=]>|<(?:->?|[+:=>]|<:)|>(?:=|->)|\|[-|]?|[-!%&*+/<=>?@^~']/,
-      punctuation: /\.\(|`\(|@\{|`\{|\{\||\[=|:>|[:.,;(){}\[\]]/
+      punctuation: /\.\(|`\(|@\{|`\{|\{\||\[=|:>|[:.,;(){}[\]]/
     }
   })(Prism)
 }

@@ -85,13 +85,9 @@ class ProcessRepository:
         await self.session.refresh(process)
         return process
 
-    async def get_by_id(
-        self, process_id: str, project_id: str | None = None
-    ) -> Process | None:
+    async def get_by_id(self, process_id: str, project_id: str | None = None) -> Process | None:
         """Get process by ID, optionally scoped to project."""
-        query = select(Process).where(
-            Process.id == process_id, Process.deleted_at.is_(None)
-        )
+        query = select(Process).where(Process.id == process_id, Process.deleted_at.is_(None))
 
         if project_id:
             query = query.where(Process.project_id == project_id)
@@ -99,13 +95,9 @@ class ProcessRepository:
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
 
-    async def get_by_number(
-        self, process_number: str, project_id: str | None = None
-    ) -> Process | None:
+    async def get_by_number(self, process_number: str, project_id: str | None = None) -> Process | None:
         """Get process by process number."""
-        query = select(Process).where(
-            Process.process_number == process_number, Process.deleted_at.is_(None)
-        )
+        query = select(Process).where(Process.process_number == process_number, Process.deleted_at.is_(None))
 
         if project_id:
             query = query.where(Process.project_id == project_id)
@@ -137,7 +129,7 @@ class ProcessRepository:
         if owner:
             query = query.where(Process.owner == owner)
         if active_only:
-            query = query.where(Process.is_active_version == True)
+            query = query.where(Process.is_active_version)
 
         query = query.order_by(Process.created_at.desc()).limit(limit).offset(offset)
         result = await self.session.execute(query)
@@ -240,7 +232,7 @@ class ProcessRepository:
             Process.project_id == process.project_id,
             Process.name == process.name,
             Process.id != process_id,
-            Process.is_active_version == True,
+            Process.is_active_version,
         )
         result = await self.session.execute(deactivate_query)
         for other in result.scalars().all():
@@ -294,13 +286,10 @@ class ProcessRepository:
             process.deleted_at = datetime.now(UTC)
             await self.session.flush()
             return True
-        else:
-            from sqlalchemy import delete
+        from sqlalchemy import delete
 
-            result = await self.session.execute(
-                delete(Process).where(Process.id == process_id)
-            )
-            return result.rowcount > 0
+        result = await self.session.execute(delete(Process).where(Process.id == process_id))
+        return getattr(result, "rowcount", 0) > 0
 
     async def count_by_status(self, project_id: str) -> dict[str, int]:
         """Count processes by status for a project."""
@@ -314,7 +303,7 @@ class ProcessRepository:
         )
 
         result = await self.session.execute(query)
-        return dict(result.all())
+        return {r[0]: r[1] for r in result.all()}
 
     async def count_by_category(self, project_id: str) -> dict[str, int]:
         """Count processes by category for a project."""
@@ -328,7 +317,7 @@ class ProcessRepository:
         )
 
         result = await self.session.execute(query)
-        return dict(result.all())
+        return {r[0]: r[1] for r in result.all()}
 
     # Process Execution methods
 
@@ -378,9 +367,7 @@ class ProcessRepository:
         if status:
             query = query.where(ProcessExecution.status == status)
 
-        query = (
-            query.order_by(ProcessExecution.created_at.desc()).limit(limit).offset(offset)
-        )
+        query = query.order_by(ProcessExecution.created_at.desc()).limit(limit).offset(offset)
         result = await self.session.execute(query)
         return list(result.scalars().all())
 

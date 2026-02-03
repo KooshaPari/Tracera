@@ -2,9 +2,8 @@
 
 import re
 import uuid
-from typing import List
 
-UUID_REGEX = re.compile(r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$')
+UUID_REGEX = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
 
 
 def validate_uuid(id_str: str) -> None:
@@ -58,7 +57,7 @@ def is_valid_uuid(id_str: str) -> bool:
         return False
 
 
-def validate_uuids(id_strs: List[str]) -> None:
+def validate_uuids(id_strs: list[str]) -> None:
     """Validate multiple UUIDs, raise ValueError on first invalid
 
     Args:

@@ -13,22 +13,23 @@ Usage:
 
 import random
 import time
-from locust import HttpUser, TaskSet, task, constant
+
+from locust import HttpUser, TaskSet, constant, task  # type: ignore[import-untyped,import-not-found]
 
 
 class UserBehavior(TaskSet):
     """Define user behavior and tasks."""
-    
+
     def on_start(self):
         """Called when a user is spawned."""
         self.project_id = "load-test-proj"
         self.item_ids = []
         self.link_ids = []
-    
+
     # ============================================================
     # Item Operations
     # ============================================================
-    
+
     @task(3)
     def create_item(self):
         """Create a new item."""
@@ -42,32 +43,25 @@ class UserBehavior(TaskSet):
             "status": "todo",
             "priority": random.choice(["low", "medium", "high"]),
         }
-        
-        with self.client.post(
-            "/api/items",
-            json=payload,
-            catch_response=True
-        ) as response:
+
+        with self.client.post("/api/items", json=payload, catch_response=True) as response:
             if response.status_code == 201:
                 self.item_ids.append(item_id)
                 response.success()
             else:
                 response.failure(f"Failed with status {response.status_code}")
-    
+
     @task(2)
     def read_item(self):
         """Read an item."""
         if self.item_ids:
             item_id = random.choice(self.item_ids)
-            with self.client.get(
-                f"/api/items/{item_id}",
-                catch_response=True
-            ) as response:
+            with self.client.get(f"/api/items/{item_id}", catch_response=True) as response:
                 if response.status_code == 200:
                     response.success()
                 else:
                     response.failure(f"Failed with status {response.status_code}")
-    
+
     @task(2)
     def update_item(self):
         """Update an item."""
@@ -77,35 +71,28 @@ class UserBehavior(TaskSet):
                 "status": random.choice(["todo", "in_progress", "done"]),
                 "priority": random.choice(["low", "medium", "high"]),
             }
-            
-            with self.client.put(
-                f"/api/items/{item_id}",
-                json=payload,
-                catch_response=True
-            ) as response:
+
+            with self.client.put(f"/api/items/{item_id}", json=payload, catch_response=True) as response:
                 if response.status_code == 200:
                     response.success()
                 else:
                     response.failure(f"Failed with status {response.status_code}")
-    
+
     @task(1)
     def delete_item(self):
         """Delete an item."""
         if self.item_ids:
             item_id = self.item_ids.pop(0)
-            with self.client.delete(
-                f"/api/items/{item_id}",
-                catch_response=True
-            ) as response:
+            with self.client.delete(f"/api/items/{item_id}", catch_response=True) as response:
                 if response.status_code == 200:
                     response.success()
                 else:
                     response.failure(f"Failed with status {response.status_code}")
-    
+
     # ============================================================
     # Query Operations
     # ============================================================
-    
+
     @task(2)
     def list_items(self):
         """List items with pagination."""
@@ -114,42 +101,34 @@ class UserBehavior(TaskSet):
             "limit": 20,
             "offset": random.randint(0, 100),
         }
-        
-        with self.client.get(
-            "/api/items",
-            params=params,
-            catch_response=True
-        ) as response:
+
+        with self.client.get("/api/items", params=params, catch_response=True) as response:
             if response.status_code == 200:
                 response.success()
             else:
                 response.failure(f"Failed with status {response.status_code}")
-    
+
     @task(1)
     def search_items(self):
         """Search items by query."""
         search_terms = ["feature", "bug", "test", "requirement"]
         query = random.choice(search_terms)
-        
+
         params = {
             "project_id": self.project_id,
             "q": query,
         }
-        
-        with self.client.get(
-            "/api/items/search",
-            params=params,
-            catch_response=True
-        ) as response:
+
+        with self.client.get("/api/items/search", params=params, catch_response=True) as response:
             if response.status_code == 200:
                 response.success()
             else:
                 response.failure(f"Failed with status {response.status_code}")
-    
+
     # ============================================================
     # Link Operations
     # ============================================================
-    
+
     @task(2)
     def create_link(self):
         """Create a link between items."""
@@ -157,7 +136,7 @@ class UserBehavior(TaskSet):
             link_id = f"link-{int(time.time() * 1000)}-{random.randint(0, 10000)}"
             source_id = random.choice(self.item_ids)
             target_id = random.choice(self.item_ids)
-            
+
             if source_id != target_id:
                 payload = {
                     "id": link_id,
@@ -166,30 +145,22 @@ class UserBehavior(TaskSet):
                     "target_id": target_id,
                     "link_type": random.choice(["depends_on", "related_to", "blocks"]),
                 }
-                
-                with self.client.post(
-                    "/api/links",
-                    json=payload,
-                    catch_response=True
-                ) as response:
+
+                with self.client.post("/api/links", json=payload, catch_response=True) as response:
                     if response.status_code == 201:
                         self.link_ids.append(link_id)
                         response.success()
                     else:
                         response.failure(f"Failed with status {response.status_code}")
-    
+
     @task(1)
     def list_links(self):
         """List links for a project."""
         params = {
             "project_id": self.project_id,
         }
-        
-        with self.client.get(
-            "/api/links",
-            params=params,
-            catch_response=True
-        ) as response:
+
+        with self.client.get("/api/links", params=params, catch_response=True) as response:
             if response.status_code == 200:
                 response.success()
             else:
@@ -198,20 +169,20 @@ class UserBehavior(TaskSet):
 
 class TraceUser(HttpUser):
     """Simulated user for load testing."""
-    
+
     tasks = [UserBehavior]
     wait_time = constant(0.5)  # Wait 500ms between tasks
 
 
 class HighLoadUser(HttpUser):
     """High-intensity load user."""
-    
+
     tasks = [UserBehavior]
     wait_time = constant(0.1)  # Wait 100ms between tasks
 
 
 class LowLoadUser(HttpUser):
     """Low-intensity load user."""
-    
+
     tasks = [UserBehavior]
     wait_time = constant(2.0)  # Wait 2s between tasks

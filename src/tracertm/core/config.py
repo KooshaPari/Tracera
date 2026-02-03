@@ -54,7 +54,7 @@ class Config(BaseModel):
             config.save(config_path)
             return config
 
-        with open(config_path) as f:
+        with config_path.open() as f:
             data = yaml.safe_load(f)
 
         return cls(**data)
@@ -66,7 +66,7 @@ class Config(BaseModel):
 
         config_path.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(config_path, "w") as f:
+        with config_path.open("w") as f:
             yaml.dump(self.model_dump(), f, default_flow_style=False)
 
 

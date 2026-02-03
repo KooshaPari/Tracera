@@ -50,4 +50,4 @@ export declare class ReferenceArea extends React.Component<Props> {
     static renderRect: (option: ReferenceAreaProps['shape'], props: any) => React.JSX.Element;
     render(): React.JSX.Element;
 }
-export {};
+

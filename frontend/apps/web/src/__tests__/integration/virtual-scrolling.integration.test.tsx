@@ -27,8 +27,8 @@ describe("Virtual Scrolling Integration Tests", () => {
 			// Not entire table
 
 			const scrollEvent = {
-				newVisibleRange: { start: 100, end: 120 },
-				previousVisibleRange: { start: 0, end: 20 },
+				newVisibleRange: { end: 120, start: 100 },
+				previousVisibleRange: { end: 20, start: 0 },
 				rowsToUpdate: 20,
 				totalRowsInDataset: 1000,
 			};

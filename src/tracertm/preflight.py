@@ -6,8 +6,8 @@ import logging
 import os
 import socket
 import time
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable
 from urllib.parse import urlparse
 
 logger = logging.getLogger(__name__)
@@ -94,9 +94,13 @@ def _http_check(url: str, path: str, timeout: float) -> PreflightResult:
 
     base = url.rstrip("/")
     full_url = f"{base}{path}"
+    parsed = urlparse(full_url)
+    scheme = (parsed.scheme or "").lower()
+    if scheme not in ("http", "https"):
+        return PreflightResult(full_url, False, "only http/https URLs allowed", True)
     try:
-        req = urllib.request.Request(full_url, method="GET")
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
+        req = urllib.request.Request(full_url, method="GET")  # noqa: S310 scheme validated above
+        with urllib.request.urlopen(req, timeout=timeout) as resp:  # noqa: S310 scheme validated above
             if 200 <= resp.status < 300:
                 return PreflightResult(full_url, True, "ok", True)
             return PreflightResult(full_url, False, f"status {resp.status}", True)
@@ -163,13 +167,9 @@ def run_preflight(
             continue
         if not check.url:
             if check.required:
-                failures.append(
-                    PreflightResult(check.name, False, "missing url", check.required)
-                )
+                failures.append(PreflightResult(check.name, False, "missing url", check.required))
             else:
-                logger.debug(
-                    "[%s] optional check '%s' missing URL", service_name, check.name
-                )
+                logger.debug("[%s] optional check '%s' missing URL", service_name, check.name)
             continue
 
         if check.kind == "env":
@@ -203,6 +203,83 @@ def run_preflight(
     if failures and strict:
         messages = ", ".join(f.name for f in failures)
         raise RuntimeError(f"Preflight failed for: {messages}")
+
+
+def run_preflight_with_results(
+    service_name: str,
+    checks: Iterable[PreflightCheck],
+    strict: bool = False,
+    exclude_names: Iterable[str] | None = None,
+    max_attempts: int | None = PREFLIGHT_MAX_ATTEMPTS,
+) -> tuple[bool, list[PreflightResult]]:
+    """Run preflight checks and return (all_passed, list of results).
+
+    Does not raise; callers can format failures with format_preflight_failures().
+    max_attempts: retries per check (default 3); use None for indefinite retry.
+    """
+    exclude = set(exclude_names or ())
+    all_results: list[PreflightResult] = []
+    failures: list[PreflightResult] = []
+
+    for check in checks:
+        if check.name in exclude:
+            continue
+        if not check.url:
+            res = PreflightResult(check.name, False, "missing url", check.required)
+            all_results.append(res)
+            if check.required:
+                failures.append(res)
+            else:
+                logger.debug("[%s] optional check '%s' missing URL", service_name, check.name)
+            continue
+
+        if check.kind == "env":
+            result = _env_check(check.name, check.url)
+        elif check.kind == "http":
+            result = run_single_check_with_retry(
+                check,
+                max_attempts=max_attempts,
+                initial_delay=PREFLIGHT_INITIAL_DELAY,
+                backoff=PREFLIGHT_BACKOFF,
+                backoff_max=PREFLIGHT_BACKOFF_MAX_SECONDS,
+            )
+        else:
+            result = run_single_check_with_retry(
+                check,
+                max_attempts=max_attempts,
+                initial_delay=PREFLIGHT_INITIAL_DELAY,
+                backoff=PREFLIGHT_BACKOFF,
+                backoff_max=PREFLIGHT_BACKOFF_MAX_SECONDS,
+            )
+
+        # Normalize result name to check.name so callers get "neo4j" not "neo4j://localhost:7687"
+        normalized = PreflightResult(check.name, result.ok, result.message, result.required)
+        all_results.append(normalized)
+        if not normalized.ok:
+            if check.required:
+                failures.append(normalized)
+            else:
+                logger.debug("[%s] %s failed: %s", service_name, check.name, result.message)
+        else:
+            logger.info("[%s] %s ok", service_name, check.name)
+
+    passed = len(failures) == 0
+    if failures and strict:
+        # Caller asked for strict: still return so they can print details
+        pass
+    return passed, all_results
+
+
+def format_preflight_failures(results: list[PreflightResult]) -> str:
+    """Format failed preflight results for display (no need to run 'rtm dev check')."""
+    failed = [r for r in results if not r.ok]
+    if not failed:
+        return ""
+    lines = ["Service preflight failed:", ""]
+    lines.extend(f"  • {r.name}: {r.message}" for r in failed)
+    lines.append("")
+    lines.append("Fix the service issues above and try again.")
+    return "\n".join(lines)
 
 
 def _default_port_for_url(url: str) -> int | None:

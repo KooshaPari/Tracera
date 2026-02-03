@@ -5,14 +5,14 @@ Webhook Service for processing inbound webhooks.
 import hashlib
 import hmac
 import time
-from datetime import datetime
-from typing import Any, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from tracertm.repositories.webhook_repository import WebhookRepository
-from tracertm.repositories.test_run_repository import TestRunRepository
 from tracertm.models.webhook_integration import WebhookStatus
+from tracertm.repositories.test_run_repository import TestRunRepository
+from tracertm.repositories.webhook_repository import WebhookRepository
 
 
 class WebhookService:
@@ -20,8 +20,8 @@ class WebhookService:
 
     def __init__(self, session: AsyncSession):
         self.session = session
-        self.webhook_repo = WebhookRepository(session)
-        self.test_run_repo = TestRunRepository(session)
+        self.webhook_repo: WebhookRepository = WebhookRepository(session)
+        self.test_run_repo: TestRunRepository = TestRunRepository(session)
 
     def verify_signature(
         self,
@@ -72,10 +72,10 @@ class WebhookService:
         webhook_id: str,
         payload: dict[str, Any],
         raw_payload: bytes,
-        signature: Optional[str] = None,
-        headers: Optional[dict[str, str]] = None,
-        source_ip: Optional[str] = None,
-        user_agent: Optional[str] = None,
+        signature: str | None = None,
+        headers: dict[str, str] | None = None,
+        source_ip: str | None = None,
+        user_agent: str | None = None,
     ) -> dict[str, Any]:
         """
         Process an inbound webhook request.
@@ -271,7 +271,7 @@ class WebhookService:
         payload: dict[str, Any],
     ) -> dict[str, Any]:
         """Handle create_run action."""
-        name = payload.get("name", f"CI/CD Run - {datetime.utcnow().isoformat()}")
+        name = payload.get("name", f"CI/CD Run - {datetime.now(UTC).isoformat()}")
         run = await self.test_run_repo.create(
             project_id=webhook.project_id,
             name=name,
@@ -301,7 +301,7 @@ class WebhookService:
         if not run_id:
             raise ValueError("run_id is required")
 
-        run = await self.test_run_repo.start_run(
+        run = await self.test_run_repo.start(
             run_id,
             executed_by=payload.get("executed_by"),
         )
@@ -327,7 +327,7 @@ class WebhookService:
             create_result = await self._handle_create_run(
                 webhook,
                 {
-                    "name": f"Auto-created run - {datetime.utcnow().isoformat()}",
+                    "name": f"Auto-created run - {datetime.now(UTC).isoformat()}",
                     "build_number": payload.get("build_number"),
                     "branch": payload.get("branch"),
                     "commit_sha": payload.get("commit_sha"),
@@ -335,7 +335,7 @@ class WebhookService:
             )
             run_id = create_result["run_id"]
             # Auto-start the run
-            await self.test_run_repo.start_run(run_id)
+            await self.test_run_repo.start(run_id)
 
         if not run_id:
             raise ValueError("run_id is required or auto_create_run must be enabled")
@@ -344,7 +344,7 @@ class WebhookService:
         if not test_case_id:
             raise ValueError("test_case_id is required")
 
-        result = await self.test_run_repo.submit_result(
+        result = await self.test_run_repo.add_result(
             run_id=run_id,
             test_case_id=test_case_id,
             status=payload.get("status", "passed"),
@@ -379,14 +379,14 @@ class WebhookService:
             create_result = await self._handle_create_run(
                 webhook,
                 {
-                    "name": f"Auto-created run - {datetime.utcnow().isoformat()}",
+                    "name": f"Auto-created run - {datetime.now(UTC).isoformat()}",
                     "build_number": payload.get("build_number"),
                     "branch": payload.get("branch"),
                     "commit_sha": payload.get("commit_sha"),
                 },
             )
             run_id = create_result["run_id"]
-            await self.test_run_repo.start_run(run_id)
+            await self.test_run_repo.start(run_id)
 
         if not run_id:
             raise ValueError("run_id is required or auto_create_run must be enabled")
@@ -398,9 +398,12 @@ class WebhookService:
         # Submit each result
         submitted = 0
         for result_data in results:
-            await self.test_run_repo.submit_result(
+            test_case_id = result_data.get("test_case_id")
+            if not test_case_id:
+                continue
+            await self.test_run_repo.add_result(
                 run_id=run_id,
-                test_case_id=result_data.get("test_case_id"),
+                test_case_id=test_case_id,
                 status=result_data.get("status", "passed"),
                 executed_by=result_data.get("executed_by"),
                 actual_result=result_data.get("actual_result"),
@@ -413,8 +416,8 @@ class WebhookService:
 
         # Auto-complete run if enabled
         run = await self.test_run_repo.get_by_id(run_id)
-        if run and webhook.auto_complete_run and payload.get("complete", False):
-            await self.test_run_repo.complete_run(run_id)
+        if run and webhook.auto_complete_run and payload.get("complete"):
+            await self.test_run_repo.complete(run_id)
 
         return {
             "run_id": run_id,
@@ -432,7 +435,7 @@ class WebhookService:
         if not run_id:
             raise ValueError("run_id is required")
 
-        run = await self.test_run_repo.complete_run(
+        run = await self.test_run_repo.complete(
             run_id,
             failure_summary=payload.get("failure_summary"),
             notes=payload.get("notes"),

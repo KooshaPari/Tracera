@@ -3,7 +3,7 @@ Pydantic schemas for Webhook Integrations.
 """
 
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -12,29 +12,29 @@ class WebhookCreate(BaseModel):
     """Schema for creating a webhook integration."""
 
     name: str = Field(..., min_length=1, max_length=255, description="Webhook name")
-    description: Optional[str] = Field(default=None, description="Description")
+    description: str | None = Field(default=None, description="Description")
     provider: str = Field(
         default="custom",
         description="Provider: github_actions, gitlab_ci, jenkins, azure_devops, circleci, travis_ci, custom",
     )
-    enabled_events: Optional[list[str]] = Field(
+    enabled_events: list[str] | None = Field(
         default=None,
         description="List of enabled event types",
     )
-    event_filters: Optional[dict[str, Any]] = Field(
+    event_filters: dict[str, Any] | None = Field(
         default=None,
         description="Event filtering rules",
     )
-    callback_url: Optional[str] = Field(
+    callback_url: str | None = Field(
         default=None,
         max_length=1000,
         description="URL to send callbacks to",
     )
-    callback_headers: Optional[dict[str, str]] = Field(
+    callback_headers: dict[str, str] | None = Field(
         default=None,
         description="Headers to include in callbacks",
     )
-    default_suite_id: Optional[str] = Field(
+    default_suite_id: str | None = Field(
         default=None,
         description="Default test suite ID for results",
     )
@@ -56,7 +56,7 @@ class WebhookCreate(BaseModel):
         default=True,
         description="Require HMAC signature verification",
     )
-    metadata: Optional[dict[str, Any]] = Field(
+    metadata: dict[str, Any] | None = Field(
         default=None,
         description="Extensible metadata",
     )
@@ -65,18 +65,18 @@ class WebhookCreate(BaseModel):
 class WebhookUpdate(BaseModel):
     """Schema for updating a webhook integration."""
 
-    name: Optional[str] = Field(default=None, min_length=1, max_length=255)
-    description: Optional[str] = None
-    enabled_events: Optional[list[str]] = None
-    event_filters: Optional[dict[str, Any]] = None
-    callback_url: Optional[str] = Field(default=None, max_length=1000)
-    callback_headers: Optional[dict[str, str]] = None
-    default_suite_id: Optional[str] = None
-    rate_limit_per_minute: Optional[int] = Field(default=None, ge=1, le=1000)
-    auto_create_run: Optional[bool] = None
-    auto_complete_run: Optional[bool] = None
-    verify_signatures: Optional[bool] = None
-    metadata: Optional[dict[str, Any]] = None
+    name: str | None = Field(default=None, min_length=1, max_length=255)
+    description: str | None = None
+    enabled_events: list[str] | None = None
+    event_filters: dict[str, Any] | None = None
+    callback_url: str | None = Field(default=None, max_length=1000)
+    callback_headers: dict[str, str] | None = None
+    default_suite_id: str | None = None
+    rate_limit_per_minute: int | None = Field(default=None, ge=1, le=1000)
+    auto_create_run: bool | None = None
+    auto_complete_run: bool | None = None
+    verify_signatures: bool | None = None
+    metadata: dict[str, Any] | None = None
 
 
 class WebhookResponse(BaseModel):
@@ -85,16 +85,16 @@ class WebhookResponse(BaseModel):
     id: str
     project_id: str
     name: str
-    description: Optional[str] = None
+    description: str | None = None
     provider: str
     status: str
     webhook_secret: str
-    api_key: Optional[str] = None
-    enabled_events: Optional[list[str]] = None
-    event_filters: Optional[dict[str, Any]] = None
-    callback_url: Optional[str] = None
-    callback_headers: Optional[dict[str, str]] = None
-    default_suite_id: Optional[str] = None
+    api_key: str | None = None
+    enabled_events: list[str] | None = None
+    event_filters: dict[str, Any] | None = None
+    callback_url: str | None = None
+    callback_headers: dict[str, str] | None = None
+    default_suite_id: str | None = None
     rate_limit_per_minute: int
     auto_create_run: bool
     auto_complete_run: bool
@@ -103,11 +103,11 @@ class WebhookResponse(BaseModel):
     total_requests: int
     successful_requests: int
     failed_requests: int
-    last_request_at: Optional[datetime] = None
-    last_success_at: Optional[datetime] = None
-    last_failure_at: Optional[datetime] = None
-    last_error_message: Optional[str] = None
-    webhook_metadata: Optional[dict[str, Any]] = None
+    last_request_at: datetime | None = None
+    last_success_at: datetime | None = None
+    last_failure_at: datetime | None = None
+    last_error_message: str | None = None
+    webhook_metadata: dict[str, Any] | None = None
     version: int
     created_at: datetime
     updated_at: datetime
@@ -139,18 +139,18 @@ class WebhookLogResponse(BaseModel):
     id: str
     webhook_id: str
     request_id: str
-    event_type: Optional[str] = None
+    event_type: str | None = None
     http_method: str
-    source_ip: Optional[str] = None
-    user_agent: Optional[str] = None
-    request_headers: Optional[dict[str, Any]] = None
-    request_body_preview: Optional[str] = None
-    payload_size_bytes: Optional[int] = None
+    source_ip: str | None = None
+    user_agent: str | None = None
+    request_headers: dict[str, Any] | None = None
+    request_body_preview: str | None = None
+    payload_size_bytes: int | None = None
     success: bool
     status_code: int
-    error_message: Optional[str] = None
-    processing_time_ms: Optional[int] = None
-    test_run_id: Optional[str] = None
+    error_message: str | None = None
+    processing_time_ms: int | None = None
+    test_run_id: str | None = None
     results_submitted: int
     created_at: datetime
 
@@ -186,11 +186,11 @@ class InboundWebhookPayload(BaseModel):
         ...,
         description="Action: create_run, start_run, submit_result, bulk_results, complete_run",
     )
-    timestamp: Optional[str] = Field(
+    timestamp: str | None = Field(
         default=None,
         description="ISO8601 timestamp",
     )
-    payload: Optional[dict[str, Any]] = Field(
+    payload: dict[str, Any] | None = Field(
         default=None,
         description="Action-specific payload",
     )
@@ -199,45 +199,45 @@ class InboundWebhookPayload(BaseModel):
 class CreateRunPayload(BaseModel):
     """Payload for create_run action."""
 
-    name: Optional[str] = None
-    description: Optional[str] = None
-    suite_id: Optional[str] = None
-    environment: Optional[str] = None
-    build_number: Optional[str] = None
-    build_url: Optional[str] = None
-    branch: Optional[str] = None
-    commit_sha: Optional[str] = None
-    initiated_by: Optional[str] = None
-    external_run_id: Optional[str] = None
+    name: str | None = None
+    description: str | None = None
+    suite_id: str | None = None
+    environment: str | None = None
+    build_number: str | None = None
+    build_url: str | None = None
+    branch: str | None = None
+    commit_sha: str | None = None
+    initiated_by: str | None = None
+    external_run_id: str | None = None
 
 
 class StartRunPayload(BaseModel):
     """Payload for start_run action."""
 
     run_id: str
-    executed_by: Optional[str] = None
+    executed_by: str | None = None
 
 
 class SubmitResultPayload(BaseModel):
     """Payload for submit_result action."""
 
-    run_id: Optional[str] = None
+    run_id: str | None = None
     test_case_id: str
     status: str = Field(default="passed")
-    executed_by: Optional[str] = None
-    actual_result: Optional[str] = None
-    failure_reason: Optional[str] = None
-    error_message: Optional[str] = None
-    stack_trace: Optional[str] = None
-    duration_seconds: Optional[float] = None
-    screenshots: Optional[list[str]] = None
-    logs_url: Optional[str] = None
-    notes: Optional[str] = None
+    executed_by: str | None = None
+    actual_result: str | None = None
+    failure_reason: str | None = None
+    error_message: str | None = None
+    stack_trace: str | None = None
+    duration_seconds: float | None = None
+    screenshots: list[str] | None = None
+    logs_url: str | None = None
+    notes: str | None = None
     is_flaky: bool = False
     # Optional for auto-create
-    build_number: Optional[str] = None
-    branch: Optional[str] = None
-    commit_sha: Optional[str] = None
+    build_number: str | None = None
+    branch: str | None = None
+    commit_sha: str | None = None
 
 
 class BulkResultItem(BaseModel):
@@ -245,35 +245,35 @@ class BulkResultItem(BaseModel):
 
     test_case_id: str
     status: str = Field(default="passed")
-    executed_by: Optional[str] = None
-    actual_result: Optional[str] = None
-    failure_reason: Optional[str] = None
-    error_message: Optional[str] = None
-    duration_seconds: Optional[float] = None
+    executed_by: str | None = None
+    actual_result: str | None = None
+    failure_reason: str | None = None
+    error_message: str | None = None
+    duration_seconds: float | None = None
     is_flaky: bool = False
 
 
 class BulkResultsPayload(BaseModel):
     """Payload for bulk_results action."""
 
-    run_id: Optional[str] = None
+    run_id: str | None = None
     results: list[BulkResultItem]
     complete: bool = Field(
         default=False,
         description="Auto-complete run after submitting results",
     )
     # Optional for auto-create
-    build_number: Optional[str] = None
-    branch: Optional[str] = None
-    commit_sha: Optional[str] = None
+    build_number: str | None = None
+    branch: str | None = None
+    commit_sha: str | None = None
 
 
 class CompleteRunPayload(BaseModel):
     """Payload for complete_run action."""
 
     run_id: str
-    failure_summary: Optional[str] = None
-    notes: Optional[str] = None
+    failure_summary: str | None = None
+    notes: str | None = None
 
 
 class InboundWebhookResponse(BaseModel):
@@ -281,6 +281,6 @@ class InboundWebhookResponse(BaseModel):
 
     success: bool
     message: str
-    data: Optional[dict[str, Any]] = None
-    error: Optional[str] = None
-    rate_limit_remaining: Optional[int] = None
+    data: dict[str, Any] | None = None
+    error: str | None = None
+    rate_limit_remaining: int | None = None

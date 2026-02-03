@@ -1,9 +1,10 @@
 """Test tool registration performance improvements."""
 
-import time
 import importlib
 import sys
+import time
 from pathlib import Path
+
 import pytest
 
 # Add src to path for imports
@@ -16,42 +17,46 @@ def test_split_modules_import_faster_than_monolith():
     """Verify that split modules import faster than the monolithic param.py."""
 
     # Remove any cached imports
-    modules_to_remove = [k for k in sys.modules.keys() if 'tracertm.mcp' in k]
+    modules_to_remove = [k for k in sys.modules if "tracertm.mcp" in k]
     for mod in modules_to_remove:
         del sys.modules[mod]
 
     # Measure time to import monolithic param.py
     start_monolith = time.perf_counter()
     try:
-        from tracertm.mcp.tools import param  # noqa: F401
+        from tracertm.mcp.tools import param
+
         monolith_time = time.perf_counter() - start_monolith
     except Exception as e:
         pytest.skip(f"Could not import param.py: {e}")
 
     # Remove imports again
-    modules_to_remove = [k for k in sys.modules.keys() if 'tracertm.mcp' in k]
+    modules_to_remove = [k for k in sys.modules if "tracertm.mcp" in k]
     for mod in modules_to_remove:
         del sys.modules[mod]
 
     # Measure time to import split modules
     start_split = time.perf_counter()
     try:
-        from tracertm.mcp.tools.params import project  # noqa: F401
-        from tracertm.mcp.tools.params import item  # noqa: F401
-        from tracertm.mcp.tools.params import link  # noqa: F401
-        from tracertm.mcp.tools.params import trace  # noqa: F401
-        from tracertm.mcp.tools.params import graph  # noqa: F401
-        from tracertm.mcp.tools.params import specification  # noqa: F401
-        from tracertm.mcp.tools.params import config  # noqa: F401
-        from tracertm.mcp.tools.params import storage  # noqa: F401
-        from tracertm.mcp.tools.params import io_operations  # noqa: F401
-        from tracertm.mcp.tools.params import database  # noqa: F401
+        from tracertm.mcp.tools.params import (
+            config,
+            database,
+            graph,
+            io_operations,
+            item,
+            link,
+            project,
+            specification,
+            storage,
+            trace,
+        )
+
         split_time = time.perf_counter() - start_split
     except Exception as e:
         pytest.skip(f"Could not import split modules: {e}")
 
-    print(f"\nMonolithic param.py: {monolith_time*1000:.2f}ms")
-    print(f"Split modules: {split_time*1000:.2f}ms")
+    print(f"\nMonolithic param.py: {monolith_time * 1000:.2f}ms")
+    print(f"Split modules: {split_time * 1000:.2f}ms")
     print(f"Improvement: {((monolith_time - split_time) / monolith_time * 100):.1f}%")
 
     # We expect at least some improvement, though exact % may vary
@@ -117,17 +122,15 @@ def test_individual_module_imports():
 
 def test_tool_functions_exist():
     """Verify that tool functions are properly exported from modules."""
-    from tracertm.mcp.tools.params import project
-    from tracertm.mcp.tools.params import item
-    from tracertm.mcp.tools.params import link
+    from tracertm.mcp.tools.params import item, link, project
 
-    assert hasattr(project, 'project_manage')
+    assert hasattr(project, "project_manage")
     assert callable(project.project_manage)
 
-    assert hasattr(item, 'item_manage')
+    assert hasattr(item, "item_manage")
     assert callable(item.item_manage)
 
-    assert hasattr(link, 'link_manage')
+    assert hasattr(link, "link_manage")
     assert callable(link.link_manage)
 
 
@@ -137,11 +140,11 @@ def test_server_import_performance(benchmark):
 
     def import_server():
         # Remove cached imports
-        modules_to_remove = [k for k in sys.modules.keys() if 'tracertm.mcp.server' in k]
+        modules_to_remove = [k for k in sys.modules if "tracertm.mcp.server" in k]
         for mod in modules_to_remove:
             del sys.modules[mod]
 
-        import tracertm.mcp.server  # noqa: F401
+        import tracertm.mcp.server
 
     # Run benchmark
     result = benchmark(import_server)

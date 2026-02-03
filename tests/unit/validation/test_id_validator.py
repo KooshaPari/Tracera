@@ -1,13 +1,12 @@
 """Tests for UUID validation utilities"""
 
 import pytest
-import uuid
 
 from tracertm.validation.id_validator import (
-    validate_uuid,
-    normalize_uuid,
     generate_uuid,
     is_valid_uuid,
+    normalize_uuid,
+    validate_uuid,
     validate_uuids,
 )
 
@@ -109,7 +108,7 @@ class TestGenerateUUID:
     def test_generates_proper_format(self):
         """Should generate UUID in proper format"""
         generated = generate_uuid()
-        parts = generated.split('-')
+        parts = generated.split("-")
         assert len(parts) == 5
         assert len(parts[0]) == 8
         assert len(parts[1]) == 4

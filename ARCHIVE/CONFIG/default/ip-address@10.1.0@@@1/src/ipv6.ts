@@ -771,7 +771,7 @@ export class Address6 {
 
     let infix = '';
 
-    if (!/:$/.test(correct)) {
+    if (!correct.endsWith(':')) {
       infix = ':';
     }
 

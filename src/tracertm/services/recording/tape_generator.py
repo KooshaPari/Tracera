@@ -7,7 +7,6 @@ VHS (charmbracelet/vhs) uses declarative .tape files to record terminal sessions
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional
 
 
 @dataclass
@@ -212,7 +211,7 @@ class TapeFileGenerator:
 
     # === Text Input ===
 
-    def type(self, text: str, speed: Optional[str] = None) -> "TapeFileGenerator":
+    def type(self, text: str, speed: str | None = None) -> "TapeFileGenerator":
         """Type text into the terminal.
 
         Args:
@@ -359,8 +358,8 @@ class TapeFileGenerator:
 
     def wait(
         self,
-        pattern: Optional[str] = None,
-        timeout: Optional[str] = None,
+        pattern: str | None = None,
+        timeout: str | None = None,
         search_screen: bool = False,
     ) -> "TapeFileGenerator":
         """Wait for pattern to appear.
@@ -477,7 +476,7 @@ class TapeFileGenerator:
     def run_command(
         self,
         command: str,
-        wait_pattern: Optional[str] = None,
+        wait_pattern: str | None = None,
         wait_seconds: float = 1.0,
     ) -> "TapeFileGenerator":
         """Type command, press enter, and wait.
@@ -557,7 +556,8 @@ class TapeFileGenerator:
         Sets: bash shell, 14pt font, 960x540, Dracula theme, 30fps.
         """
         return (
-            self.set_shell("bash")
+            self
+            .set_shell("bash")
             .set_font_size(14)
             .set_width(960)
             .set_height(540)
@@ -572,7 +572,8 @@ class TapeFileGenerator:
         Sets: bash shell, 14pt font, 1200x600, Catppuccin Frappe theme, 30fps.
         """
         return (
-            self.set_shell("bash")
+            self
+            .set_shell("bash")
             .set_font_size(14)
             .set_width(1200)
             .set_height(600)
@@ -588,7 +589,8 @@ class TapeFileGenerator:
         Good for smaller file sizes.
         """
         return (
-            self.set_shell("bash")
+            self
+            .set_shell("bash")
             .set_font_size(12)
             .set_width(640)
             .set_height(360)

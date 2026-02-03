@@ -9,16 +9,15 @@ Revises: 052_add_agent_sessions
 Create Date: 2026-01-31
 
 """
-from typing import Sequence, Union
+
+from collections.abc import Sequence
 
 from alembic import op
-from sqlalchemy import text
-
 
 revision: str = "053_add_test_suites_runs_if_not_exists"
-down_revision: Union[str, None] = "052_add_agent_sessions"
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | None = "052_add_agent_sessions"
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:

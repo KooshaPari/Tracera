@@ -7,7 +7,7 @@ Handles communication with the backend API for synchronization of local changes.
 import asyncio
 import hashlib
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 from typing import Any
 
@@ -89,7 +89,7 @@ class Change:
     operation: SyncOperation
     data: dict[str, Any]
     version: int = 1
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(UTC))
     client_id: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
@@ -116,7 +116,7 @@ class Conflict:
     remote_version: int
     local_data: dict[str, Any]
     remote_data: dict[str, Any]
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "Conflict":
@@ -129,7 +129,7 @@ class Conflict:
             remote_version=data["remote_version"],
             local_data=data["local_data"],
             remote_data=data["remote_data"],
-            timestamp=datetime.fromisoformat(data.get("timestamp", datetime.utcnow().isoformat())),
+            timestamp=datetime.fromisoformat(data.get("timestamp", datetime.now(UTC).isoformat())),
         )
 
 
@@ -195,13 +195,9 @@ class ApiError(Exception):
 class AuthenticationError(ApiError):
     """Authentication failed."""
 
-    pass
-
 
 class NetworkError(ApiError):
     """Network connection error."""
-
-    pass
 
 
 class RateLimitError(ApiError):
@@ -256,7 +252,7 @@ class ApiClient:
         import os
         import platform
 
-        data = f"{platform.node()}-{os.getpid()}-{datetime.utcnow().isoformat()}"
+        data = f"{platform.node()}-{os.getpid()}-{datetime.now(UTC).isoformat()}"
         return hashlib.sha256(data.encode()).hexdigest()[:16]
 
     @property
@@ -387,11 +383,11 @@ class ApiClient:
                 # Don't retry auth errors
                 raise
 
-            # Exponential backoff with jitter
+            # Exponential backoff with jitter (not crypto-sensitive)
             if attempt < self.config.max_retries - 1:
                 import random
 
-                jitter = random.uniform(0, 0.1 * delay)
+                jitter = random.uniform(0, 0.1 * delay)  # noqa: S311
                 sleep_time = min(delay + jitter, self.config.retry_backoff_max)
                 logger.debug(f"Retrying in {sleep_time:.2f}s...")
                 await asyncio.sleep(sleep_time)
@@ -400,14 +396,13 @@ class ApiClient:
         # All retries failed
         if isinstance(last_error, (httpx.TimeoutException, httpx.NetworkError)):
             raise NetworkError(f"Network error after {self.config.max_retries} retries: {last_error}")
-        elif isinstance(last_error, httpx.HTTPStatusError):
+        if isinstance(last_error, httpx.HTTPStatusError):
             raise ApiError(
                 f"HTTP error after {self.config.max_retries} retries: {last_error}",
                 status_code=last_error.response.status_code,
                 response_data=last_error.response.json() if last_error.response.content else {},
             )
-        else:
-            raise ApiError(f"Request failed after {self.config.max_retries} retries: {last_error}")
+        raise ApiError(f"Request failed after {self.config.max_retries} retries: {last_error}")
 
     async def health_check(self) -> bool:
         """
@@ -464,7 +459,7 @@ class ApiClient:
                 conflicts: list[Conflict] = [
                     Conflict.from_dict(c) if isinstance(c, dict) else c
                     for c in conflicts_raw
-                    if isinstance(c, dict) or isinstance(c, Conflict)
+                    if isinstance(c, (dict, Conflict))
                 ]
                 raise ConflictError("Sync conflicts detected", conflicts=conflicts) from exc
             raise
@@ -494,21 +489,18 @@ class ApiClient:
         response = await self._retry_request("GET", "/api/sync/changes", params=params)
         data = response.json()
 
-        changes = []
-        for change_data in data.get("changes", []):
-            changes.append(
-                Change(
-                    entity_type=change_data["entity_type"],
-                    entity_id=change_data["entity_id"],
-                    operation=SyncOperation(change_data["operation"]),
-                    data=change_data["data"],
-                    version=change_data.get("version", 1),
-                    timestamp=datetime.fromisoformat(change_data["timestamp"]),
-                    client_id=change_data.get("client_id"),
-                )
+        return [
+            Change(
+                entity_type=change_data["entity_type"],
+                entity_id=change_data["entity_id"],
+                operation=SyncOperation(change_data["operation"]),
+                data=change_data["data"],
+                version=change_data.get("version", 1),
+                timestamp=datetime.fromisoformat(change_data["timestamp"]),
+                client_id=change_data.get("client_id"),
             )
-
-        return changes
+            for change_data in data.get("changes", [])
+        ]
 
     async def resolve_conflict(
         self,
@@ -612,7 +604,7 @@ class ApiClient:
             upload_result = await self.upload_changes(local_changes, last_sync)
 
         # Download remote changes
-        download_since = last_sync or datetime.utcnow() - timedelta(days=30)
+        download_since = last_sync or datetime.now(UTC) - timedelta(days=30)
         remote_changes = await self.download_changes(download_since, project_id)
 
         return upload_result, remote_changes

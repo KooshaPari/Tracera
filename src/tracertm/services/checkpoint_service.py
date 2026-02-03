@@ -6,8 +6,7 @@ Provides CRUD operations for conversation checkpoints with database persistence.
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
-from typing import Any, Optional
+from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -23,7 +22,7 @@ class CheckpointService:
     Handles checkpoint creation, retrieval, and cleanup for agent sessions.
     """
 
-    def __init__(self, db_session: Optional[AsyncSession] = None):
+    def __init__(self, db_session: AsyncSession | None = None):
         """Initialize checkpoint service.
 
         Args:
@@ -76,9 +75,7 @@ class CheckpointService:
                 )
             )
             if existing.scalar_one_or_none():
-                raise ValueError(
-                    f"Checkpoint already exists for session {session_id} turn {turn_number}"
-                )
+                raise ValueError(f"Checkpoint already exists for session {session_id} turn {turn_number}")
 
             # Prepare S3 key (Phase 4 will implement actual MinIO upload)
             s3_key = f"sandboxes/{session_id}/snapshots/snapshot-turn-{turn_number}.tar.gz"
@@ -101,10 +98,7 @@ class CheckpointService:
             if self._owns_session:
                 await db.commit()
 
-            logger.info(
-                f"Created checkpoint {checkpoint.id} for session {session_id} "
-                f"at turn {turn_number}"
-            )
+            logger.info(f"Created checkpoint {checkpoint.id} for session {session_id} at turn {turn_number}")
 
             return checkpoint
 
@@ -117,7 +111,7 @@ class CheckpointService:
     async def load_latest_checkpoint(
         self,
         session_id: str,
-    ) -> Optional[AgentCheckpoint]:
+    ) -> AgentCheckpoint | None:
         """Load most recent checkpoint for session.
 
         Args:
@@ -138,10 +132,7 @@ class CheckpointService:
             checkpoint = result.scalar_one_or_none()
 
             if checkpoint:
-                logger.info(
-                    f"Loaded latest checkpoint for session {session_id}: "
-                    f"turn {checkpoint.turn_number}"
-                )
+                logger.info(f"Loaded latest checkpoint for session {session_id}: turn {checkpoint.turn_number}")
             else:
                 logger.info(f"No checkpoints found for session {session_id}")
 
@@ -155,7 +146,7 @@ class CheckpointService:
         self,
         session_id: str,
         turn_number: int,
-    ) -> Optional[AgentCheckpoint]:
+    ) -> AgentCheckpoint | None:
         """Load checkpoint for specific turn.
 
         Args:
@@ -177,13 +168,9 @@ class CheckpointService:
             checkpoint = result.scalar_one_or_none()
 
             if checkpoint:
-                logger.info(
-                    f"Loaded checkpoint for session {session_id} turn {turn_number}"
-                )
+                logger.info(f"Loaded checkpoint for session {session_id} turn {turn_number}")
             else:
-                logger.info(
-                    f"No checkpoint found for session {session_id} turn {turn_number}"
-                )
+                logger.info(f"No checkpoint found for session {session_id} turn {turn_number}")
 
             return checkpoint
 
@@ -216,9 +203,7 @@ class CheckpointService:
             )
             checkpoints = list(result.scalars().all())
 
-            logger.info(
-                f"Listed {len(checkpoints)} checkpoints for session {session_id}"
-            )
+            logger.info(f"Listed {len(checkpoints)} checkpoints for session {session_id}")
 
             return checkpoints
 
@@ -241,9 +226,7 @@ class CheckpointService:
         db = await self._get_session()
 
         try:
-            result = await db.execute(
-                select(AgentCheckpoint).where(AgentCheckpoint.id == checkpoint_id)
-            )
+            result = await db.execute(select(AgentCheckpoint).where(AgentCheckpoint.id == checkpoint_id))
             checkpoint = result.scalar_one_or_none()
 
             if not checkpoint:
@@ -293,9 +276,7 @@ class CheckpointService:
             to_delete = all_checkpoints[keep_count:]
 
             if not to_delete:
-                logger.info(
-                    f"No checkpoints to clean up for session {session_id}"
-                )
+                logger.info(f"No checkpoints to clean up for session {session_id}")
                 return 0
 
             # Delete old checkpoints
@@ -305,9 +286,7 @@ class CheckpointService:
             if self._owns_session:
                 await db.commit()
 
-            logger.info(
-                f"Cleaned up {len(to_delete)} old checkpoints for session {session_id}"
-            )
+            logger.info(f"Cleaned up {len(to_delete)} old checkpoints for session {session_id}")
 
             return len(to_delete)
 
@@ -332,11 +311,7 @@ class CheckpointService:
         db = await self._get_session()
 
         try:
-            result = await db.execute(
-                select(AgentCheckpoint).where(
-                    AgentCheckpoint.session_id == session_id
-                )
-            )
+            result = await db.execute(select(AgentCheckpoint).where(AgentCheckpoint.session_id == session_id))
             checkpoints = list(result.scalars().all())
 
             if not checkpoints:
@@ -354,9 +329,7 @@ class CheckpointService:
                 "total_checkpoints": len(checkpoints),
                 "latest_turn": max(turns),
                 "oldest_turn": min(turns),
-                "latest_checkpoint_at": max(
-                    cp.created_at for cp in checkpoints
-                ).isoformat(),
+                "latest_checkpoint_at": max(cp.created_at for cp in checkpoints).isoformat(),
             }
 
         except Exception as e:
@@ -370,11 +343,11 @@ class CheckpointService:
 
 
 # Global service instance
-_checkpoint_service: Optional[CheckpointService] = None
+_checkpoint_service: CheckpointService | None = None
 
 
 def get_checkpoint_service(
-    db_session: Optional[AsyncSession] = None,
+    db_session: AsyncSession | None = None,
 ) -> CheckpointService:
     """Get or create global checkpoint service instance.
 

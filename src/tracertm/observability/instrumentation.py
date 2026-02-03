@@ -30,7 +30,7 @@ def instrument_app(app: "FastAPI") -> None:
         app: FastAPI application instance
     """
     try:
-        from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+        from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor  # type: ignore[import-untyped]
 
         FastAPIInstrumentor.instrument_app(app)
         logger.info("✅ FastAPI instrumentation enabled")
@@ -53,7 +53,7 @@ def instrument_database(engine: "AsyncEngine") -> None:
         engine: SQLAlchemy async engine instance
     """
     try:
-        from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
+        from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor  # type: ignore[import-untyped]
 
         # Instrument the engine
         SQLAlchemyInstrumentor().instrument(
@@ -81,7 +81,7 @@ def instrument_http_client() -> None:
     - Request duration
     """
     try:
-        from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor
+        from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor  # type: ignore[import-untyped]
 
         HTTPXClientInstrumentor().instrument()
         logger.info("✅ HTTPX client instrumentation enabled")
@@ -89,7 +89,7 @@ def instrument_http_client() -> None:
         logger.debug("HTTPX instrumentation not available")
 
     try:
-        from opentelemetry.instrumentation.requests import RequestsInstrumentor
+        from opentelemetry.instrumentation.requests import RequestsInstrumentor  # type: ignore[import-untyped]
 
         RequestsInstrumentor().instrument()
         logger.info("✅ Requests client instrumentation enabled")
@@ -106,7 +106,7 @@ def instrument_redis() -> None:
     - Command duration
     """
     try:
-        from opentelemetry.instrumentation.redis import RedisInstrumentor
+        from opentelemetry.instrumentation.redis import RedisInstrumentor  # type: ignore[import-untyped]
 
         RedisInstrumentor().instrument()
         logger.info("✅ Redis instrumentation enabled")
@@ -128,9 +128,9 @@ def instrument_all() -> None:
 
 
 __all__ = [
+    "instrument_all",
     "instrument_app",
     "instrument_database",
     "instrument_http_client",
     "instrument_redis",
-    "instrument_all",
 ]

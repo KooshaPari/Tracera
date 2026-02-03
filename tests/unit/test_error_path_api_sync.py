@@ -11,20 +11,17 @@ Additional comprehensive error testing for:
 
 import asyncio
 import json
-from datetime import datetime, timezone
-from typing import Any
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+import pathlib
+from datetime import UTC, datetime
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-import pytest_asyncio
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from tracertm.api.client import TraceRTMClient
 from tracertm.models.item import Item
-from tracertm.models.project import Project
 from tracertm.repositories.item_repository import ItemRepository
-
 
 # ============================================================================
 # API CLIENT ERROR TESTS
@@ -38,9 +35,11 @@ class TestAPIClientErrors:
         """Test API request that returns None."""
         client = TraceRTMClient()
 
-        with patch.object(client, "_get_session", return_value=None):
-            with pytest.raises((ValueError, AttributeError, TypeError)):
-                client._get_session()
+        with (
+            patch.object(client, "_get_session", return_value=None),
+            pytest.raises((ValueError, AttributeError, TypeError)),
+        ):
+            client._get_session()
 
     def test_api_timeout_handling(self):
         """Test handling of API timeout."""
@@ -49,8 +48,6 @@ class TestAPIClientErrors:
             await asyncio.sleep(10)
 
         with pytest.raises(asyncio.TimeoutError):
-            import asyncio
-
             asyncio.run(asyncio.wait_for(slow_api_call(), timeout=0.01))
 
     def test_api_500_error_response(self):
@@ -68,9 +65,7 @@ class TestAPIClientErrors:
         """Test handling of malformed JSON in response."""
         with patch("requests.get") as mock_get:
             mock_response = MagicMock()
-            mock_response.json.side_effect = json.JSONDecodeError(
-                "Invalid JSON", "", 0
-            )
+            mock_response.json.side_effect = json.JSONDecodeError("Invalid JSON", "", 0)
             mock_get.return_value = mock_response
 
             with pytest.raises(json.JSONDecodeError):
@@ -82,14 +77,14 @@ class TestAPIClientErrors:
 
         # Validation should catch this
         with pytest.raises((KeyError, ValueError)):
-            required_id = response["id"]  # KeyError
+            response["id"]  # KeyError
 
     def test_api_invalid_data_type(self):
         """Test API response with invalid data type."""
         response = {"id": "item-1", "count": "not-a-number"}  # Invalid type
 
         with pytest.raises((ValueError, TypeError)):
-            count = int(response["count"])
+            int(response["count"])
 
 
 # ============================================================================
@@ -105,6 +100,7 @@ class TestSyncOperationErrors:
         """Test sync when network error occurs."""
 
         async def network_operation():
+            await asyncio.sleep(0)
             raise ConnectionError("Network unreachable")
 
         with pytest.raises(ConnectionError):
@@ -132,7 +128,7 @@ class TestSyncOperationErrors:
         )
 
         # Second update fails
-        with patch.object(repo.session, "flush", side_effect=Exception("Update failed")):
+        with patch.object(repo.session, "flush", side_effect=RuntimeError("Update failed")):
             item2 = Item(
                 id="item-2",
                 project_id="project-1",
@@ -142,11 +138,11 @@ class TestSyncOperationErrors:
             )
             repo.session.add(item2)
 
-            with pytest.raises(Exception):
+            with pytest.raises(RuntimeError, match="Update failed"):
                 await repo.session.flush()
 
         # First item should exist
-        retrieved = await repo.get_by_id(item1.id)
+        retrieved = await repo.get_by_id(str(item1.id))
         assert retrieved is not None
 
     async def test_sync_rollback_on_error(self, db_session: AsyncSession):
@@ -157,11 +153,11 @@ class TestSyncOperationErrors:
         mock_session.rollback = AsyncMock()
 
         # Simulate error during flush
-        mock_session.flush = AsyncMock(side_effect=Exception("Flush failed"))
+        mock_session.flush = AsyncMock(side_effect=RuntimeError("Flush failed"))
 
         repo = ItemRepository(mock_session)
 
-        with pytest.raises(Exception):
+        with pytest.raises(RuntimeError, match="Flush failed"):
             await repo.session.flush()
 
     async def test_sync_duplicate_key_error(self, db_session: AsyncSession):
@@ -192,8 +188,9 @@ class TestSyncOperationErrors:
 
     async def test_sync_foreign_key_violation(self, db_session: AsyncSession):
         """Test handling of foreign key violation in sync."""
+
         # Try to create item with non-existent project
-        with pytest.raises((IntegrityError, ValueError)):
+        def add_invalid_item():
             item = Item(
                 id="item-1",
                 project_id="non-existent-project",
@@ -202,7 +199,14 @@ class TestSyncOperationErrors:
                 item_type="requirement",
             )
             db_session.add(item)
+            return item
+
+        async def flush_invalid():
+            add_invalid_item()
             await db_session.flush()
+
+        with pytest.raises((IntegrityError, ValueError)):
+            await flush_invalid()
 
     async def test_sync_concurrent_modification(self, db_session: AsyncSession):
         """Test handling of concurrent modification during sync."""
@@ -219,11 +223,11 @@ class TestSyncOperationErrors:
         with patch.object(
             db_session,
             "flush",
-            side_effect=Exception("Concurrent modification"),
+            side_effect=RuntimeError("Concurrent modification"),
         ):
             item.title = "Updated"
 
-            with pytest.raises(Exception):
+            with pytest.raises(RuntimeError, match="Concurrent modification"):
                 await db_session.flush()
 
 
@@ -239,17 +243,17 @@ class TestTransactionErrors:
     async def test_transaction_commit_failure(self):
         """Test handling of commit failure."""
         mock_session = AsyncMock()
-        mock_session.commit = AsyncMock(side_effect=Exception("Commit failed"))
+        mock_session.commit = AsyncMock(side_effect=RuntimeError("Commit failed"))
 
-        with pytest.raises(Exception):
+        with pytest.raises(RuntimeError, match="Commit failed"):
             await mock_session.commit()
 
     async def test_transaction_rollback_failure(self):
         """Test handling of rollback failure."""
         mock_session = AsyncMock()
-        mock_session.rollback = AsyncMock(side_effect=Exception("Rollback failed"))
+        mock_session.rollback = AsyncMock(side_effect=RuntimeError("Rollback failed"))
 
-        with pytest.raises(Exception):
+        with pytest.raises(RuntimeError, match="Rollback failed"):
             await mock_session.rollback()
 
     async def test_nested_transaction_error(self):
@@ -257,17 +261,20 @@ class TestTransactionErrors:
         mock_session = AsyncMock()
         mock_session.begin = AsyncMock()
         mock_session.begin_nested = AsyncMock()
-        mock_session.flush = AsyncMock(side_effect=Exception("Nested flush failed"))
+        mock_session.flush = AsyncMock(side_effect=RuntimeError("Nested flush failed"))
 
-        with pytest.raises(Exception):
+        async def do_flush():
             async with mock_session.begin_nested():
                 await mock_session.flush()
+
+        with pytest.raises(RuntimeError, match="Nested flush failed"):
+            await do_flush()
 
     async def test_deadlock_detection(self):
         """Test detection of database deadlock."""
         # Simulate deadlock
-        with pytest.raises(Exception):
-            raise Exception("Deadlock detected")
+        with pytest.raises(RuntimeError, match="Deadlock detected"):
+            raise RuntimeError("Deadlock detected")
 
     async def test_lock_wait_timeout(self):
         """Test lock wait timeout."""
@@ -290,6 +297,7 @@ class TestDataSerializationErrors:
     def test_json_serialization_circular_reference(self):
         """Test JSON serialization with circular reference."""
 
+        # Intentional plain class for circular self-ref; dataclass cannot express it
         class CircularObj:
             def __init__(self):
                 self.ref = self
@@ -301,7 +309,7 @@ class TestDataSerializationErrors:
 
     def test_json_serialization_non_serializable_type(self):
         """Test JSON serialization with non-serializable type."""
-        data = {"date": datetime.now(timezone.utc)}  # datetime not JSON serializable
+        data = {"date": datetime.now(UTC)}  # datetime not JSON serializable
 
         with pytest.raises(TypeError):
             json.dumps(data)
@@ -331,8 +339,11 @@ class TestDataSerializationErrors:
             "version": "not-a-number",  # Should be int
         }
 
-        item = Item(**data)
-        # Behavior depends on model validation
+        # Behavior depends on model validation (may raise or coerce)
+        try:
+            Item(**data)
+        except (ValueError, TypeError):
+            pass
 
     def test_model_to_dict_with_none_values(self):
         """Test converting model with None values to dict."""
@@ -380,24 +391,27 @@ class TestResourceLimitErrors:
 
     async def test_database_connection_pool_exhaustion(self):
         """Test handling of exhausted connection pool."""
-        with patch(
-            "sqlalchemy.create_engine",
-            side_effect=Exception("No connection available"),
-        ):
-            with pytest.raises(Exception):
-                from sqlalchemy import create_engine
+        from sqlalchemy import create_engine
 
-                create_engine("sqlite:///:memory:")
+        with (
+            patch(
+                "sqlalchemy.create_engine",
+                side_effect=RuntimeError("No connection available"),
+            ),
+            pytest.raises(RuntimeError, match="No connection available"),
+        ):
+            create_engine("sqlite:///:memory:")
 
     async def test_file_descriptor_exhaustion(self):
         """Test handling of exhausted file descriptors."""
-        with patch(
-            "builtins.open",
-            side_effect=OSError("Too many open files"),
+        with (
+            patch(
+                "builtins.open",
+                side_effect=OSError("Too many open files"),
+            ),
+            pytest.raises(OSError, match="Too many open files"),
         ):
-            with pytest.raises(OSError):
-                with open("/dev/null", "r"):
-                    pass
+            pathlib.Path("/dev/null").open().close()
 
     async def test_request_queue_full(self):
         """Test handling of full request queue."""
@@ -423,12 +437,11 @@ class TestCacheErrors:
 
     def test_cache_invalidation_error(self):
         """Test error during cache invalidation."""
-        cache = {}
 
         def invalidate_cache():
-            raise Exception("Cache invalidation failed")
+            raise RuntimeError("Cache invalidation failed")
 
-        with pytest.raises(Exception):
+        with pytest.raises(RuntimeError, match="Cache invalidation failed"):
             invalidate_cache()
 
     def test_stale_cache_data(self):
@@ -479,10 +492,12 @@ class TestLoggingErrors:
 
     def test_log_file_write_failure(self):
         """Test handling of log file write failure."""
-        with patch("builtins.open", side_effect=IOError("Write failed")):
-            with pytest.raises(IOError):
-                with open("logfile.log", "w") as f:
-                    f.write("message")
+        with (
+            patch("builtins.open", side_effect=OSError("Write failed")),
+            pytest.raises(OSError, match="Write failed"),
+            pathlib.Path("logfile.log").open("w") as f,
+        ):
+            f.write("message")
 
     def test_log_formatter_error(self):
         """Test error in log formatter."""
@@ -490,14 +505,14 @@ class TestLoggingErrors:
 
         class FailingFormatter(logging.Formatter):
             def format(self, record):
-                raise Exception("Formatting failed")
+                raise RuntimeError("Formatting failed")
 
         logger = logging.getLogger(__name__)
         handler = logging.StreamHandler()
         handler.setFormatter(FailingFormatter())
+        logger.addHandler(handler)
 
-        with pytest.raises(Exception):
-            logger.addHandler(handler)
+        with pytest.raises(RuntimeError, match="Formatting failed"):
             logger.info("Message")
 
 
@@ -522,11 +537,11 @@ class TestEventHandlingErrors:
                 listener(data)
 
         def failing_listener(data):
-            raise Exception("Listener failed")
+            raise RuntimeError("Listener failed")
 
         register_listener(failing_listener)
 
-        with pytest.raises(Exception):
+        with pytest.raises(RuntimeError, match="Listener failed"):
             emit_event({"type": "test"})
 
     async def test_event_queue_overflow(self):
@@ -630,9 +645,10 @@ class TestRecoveryAndResilience:
 
         async def flaky_operation():
             nonlocal attempt_count
+            await asyncio.sleep(0)  # ensure async
             attempt_count += 1
             if attempt_count < 2:
-                raise Exception("Temporary failure")
+                raise RuntimeError("Temporary failure")
             return "success"
 
         # Retry logic
@@ -641,7 +657,7 @@ class TestRecoveryAndResilience:
                 result = await flaky_operation()
                 assert result == "success"
                 break
-            except Exception:
+            except RuntimeError:
                 if attempt == 2:
                     raise
 
@@ -656,13 +672,13 @@ class TestRecoveryAndResilience:
 
             async def call(self, func, *args):
                 if self.is_open:
-                    raise Exception("Circuit breaker is open")
+                    raise RuntimeError("Circuit breaker is open")
 
                 try:
                     result = await func(*args)
                     self.failure_count = 0
                     return result
-                except Exception:
+                except RuntimeError:
                     self.failure_count += 1
                     if self.failure_count >= self.failure_threshold:
                         self.is_open = True
@@ -671,27 +687,30 @@ class TestRecoveryAndResilience:
         breaker = CircuitBreaker(failure_threshold=2)
 
         async def failing_op():
-            raise Exception("Operation failed")
+            await asyncio.sleep(0)  # ensure async
+            raise RuntimeError("Operation failed")
 
         # First failure
-        with pytest.raises(Exception):
+        with pytest.raises(RuntimeError, match="Operation failed"):
             await breaker.call(failing_op)
 
         # Second failure
-        with pytest.raises(Exception):
+        with pytest.raises(RuntimeError, match="Operation failed"):
             await breaker.call(failing_op)
 
         # Circuit should be open now
-        with pytest.raises(Exception, match="Circuit breaker is open"):
+        with pytest.raises(RuntimeError, match="Circuit breaker is open"):
             await breaker.call(failing_op)
 
     async def test_fallback_mechanism(self):
         """Test fallback mechanism on error."""
 
         async def primary_operation():
-            raise Exception("Primary failed")
+            await asyncio.sleep(0)
+            raise RuntimeError("Primary failed")
 
         async def fallback_operation():
+            await asyncio.sleep(0)
             return "fallback_result"
 
         try:

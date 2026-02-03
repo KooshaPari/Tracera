@@ -42,7 +42,7 @@ A comment before a mixin usage prevents the latter to be properly highlighted.
       }
     },
     property: /(?:@\{[\w-]+\}|[\w-])+(?:\+_?)?(?=\s*:)/,
-    operator: /[+\-*\/]/
+    operator: /[+\-*/]/
   })
   Prism.languages.insertBefore('less', 'property', {
     variable: [

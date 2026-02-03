@@ -31,4 +31,4 @@ export type WritableKeysOf<Type extends object> =
 		? Exclude<keyof Type, ReadonlyKeysOf<Type>>
 		: never; // Should never happen
 
-export {};
+

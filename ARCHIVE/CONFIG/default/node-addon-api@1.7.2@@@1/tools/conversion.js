@@ -42,13 +42,13 @@ if (disable != "--disable" && dir != "--disable") {
       [ /([ ]*)'dependencies': \[/g, '$1\'dependencies\': [\n$1  \'<!(node -p "require(\\\'node-addon-api\\\').gyp")\','],
       [ /([ ]*)"dependencies": \[/g, '$1"dependencies": [\n$1  "<!(node -p \'require(\\\"node-addon-api\\\").gyp\')",'],
       [ /[ ]*("|')<!\(node -e ("|'|\\"|\\')require\(("|'|\\"|\\')nan("|'|\\"|\\')\)("|'|\\"|\\')\)("|')(,|)[\r\n]/g, '' ],
-      [ /([ ]*)("|')target_name("|'): ("|')(.+?)("|'),/g, '$1$2target_name$2: $4$5$6,\n      $2cflags!$2: [ $2-fno-exceptions$2 ],\n      $2cflags_cc!$2: [ $2-fno-exceptions$2 ],\n      $2defines$2: [ $2NAPI_DISABLE_CPP_EXCEPTIONS$2 ],\n      $2conditions$2: [\n        [\'OS==\"win\"\', { $2defines$2: [ $2_HAS_EXCEPTIONS=1$2 ] }]\n      ]' ],
+      [ /([ ]*)("|')target_name("|'): ("|')(.+?)("|'),/g, '$1$2target_name$2: $4$5$6,\n      $2cflags!$2: [ $2-fno-exceptions$2 ],\n      $2cflags_cc!$2: [ $2-fno-exceptions$2 ],\n      $2defines$2: [ $2NAPI_DISABLE_CPP_EXCEPTIONS$2 ],\n      $2conditions$2: [\n        [\'OS=="win"\', { $2defines$2: [ $2_HAS_EXCEPTIONS=1$2 ] }]\n      ]' ],
     ]
   };
 }
 
 var SourceFileOperations = [
-  [ /Nan::SetMethod\(target,[\s]*\"(.*)\"[\s]*,[\s]*([^)]+)\)/g, 'exports.Set(Napi::String::New(env, \"$1\"), Napi::Function::New(env, $2))' ],
+  [ /Nan::SetMethod\(target,[\s]*"(.*)"[\s]*,[\s]*([^)]+)\)/g, 'exports.Set(Napi::String::New(env, "$1"), Napi::Function::New(env, $2))' ],
 
   [ /v8::Local<v8::FunctionTemplate>\s+(\w+)\s*=\s*Nan::New<FunctionTemplate>\([\w\d:]+\);(?:\w+->Reset\(\1\))?\s+\1->SetClassName\(Nan::String::New\("(\w+)"\)\);/g, 'Napi::Function $1 = DefineClass(env, "$2", {' ],
   [ /Local<FunctionTemplate>\s+(\w+)\s*=\s*Nan::New<FunctionTemplate>\([\w\d:]+\);\s+(\w+)\.Reset\((\1)\);\s+\1->SetClassName\((Nan::String::New|Nan::New<(v8::)*String>)\("(.+?)"\)\);/g, 'Napi::Function $1 = DefineClass(env, "$6", {'],
@@ -92,7 +92,7 @@ var SourceFileOperations = [
   [ /Nan::MakeCallback\(([^,]+),[\s\\]+([^,]+),/gm, '$2.MakeCallback($1,' ],
 
   [ /class\s+(\w+)\s*:\s*public\s+Nan::ObjectWrap/g, 'class $1 : public Napi::ObjectWrap<$1>' ],
-  [ /(\w+)\(([^\)]*)\)\s*:\s*Nan::ObjectWrap\(\)\s*(,)?/gm, '$1($2) : Napi::ObjectWrap<$1>()$3' ],
+  [ /(\w+)\(([^)]*)\)\s*:\s*Nan::ObjectWrap\(\)\s*(,)?/gm, '$1($2) : Napi::ObjectWrap<$1>()$3' ],
 
   // HandleOKCallback to OnOK
   [ /HandleOKCallback/g, 'OnOK' ],
@@ -105,7 +105,7 @@ var SourceFileOperations = [
 
   // ex. Nan::New<Number>(info[0]) to Napi::Number::New(info[0])
   [ /Nan::New<(v8::)*Integer>\((.+?)\)/g, 'Napi::Number::New(env, $2)' ],
-  [ /Nan::New\(([0-9\.]+)\)/g, 'Napi::Number::New(env, $1)' ],
+  [ /Nan::New\(([0-9.]+)\)/g, 'Napi::Number::New(env, $1)' ],
   [ /Nan::New<(v8::)*String>\("(.+?)"\)/g, 'Napi::String::New(env, "$2")' ],
   [ /Nan::New\("(.+?)"\)/g, 'Napi::String::New(env, "$1")' ],
   [ /Nan::New<(v8::)*(.+?)>\(\)/g, 'Napi::$2::New(env)' ],
@@ -188,7 +188,7 @@ var SourceFileOperations = [
   [ /Nan::Equals\(([^,]+),/g, '$1.StrictEquals(' ],
 
 
-  [ /(.+)->Set\(/g, '$1.Set\(' ],
+  [ /(.+)->Set\(/g, '$1.Set(' ],
 
 
   [ /Nan::Callback/g, 'Napi::FunctionReference' ],
@@ -236,7 +236,7 @@ var SourceFileOperations = [
   [ /Local<(Value|Boolean|String|Number|Object|Array|Symbol|External|Function)>/g, 'Napi::$1' ],
 
   // Declare an env in helper functions that take a Napi::Value
-  [ /(\w+)\(Napi::Value (\w+)(,\s*[^\()]+)?\)\s*{\n*([ ]*)/gm, '$1(Napi::Value $2$3) {\n$4Napi::Env env = $2.Env();\n$4' ],
+  [ /(\w+)\(Napi::Value (\w+)(,\s*[^()]+)?\)\s*{\n*([ ]*)/gm, '$1(Napi::Value $2$3) {\n$4Napi::Env env = $2.Env();\n$4' ],
 
   // delete #include <node.h> and/or <v8.h>
   [ /#include +(<|")(?:node|nan).h("|>)/g, "#include $1napi.h$2\n#include $1uv.h$2" ],

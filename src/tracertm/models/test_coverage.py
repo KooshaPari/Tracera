@@ -2,23 +2,23 @@
 Test Coverage model for tracking test-to-requirement traceability.
 """
 
-from datetime import datetime
-from enum import Enum
-from typing import Optional
+import uuid as uuid_module
+from datetime import UTC, datetime
+from enum import StrEnum
 
 from sqlalchemy import (
     DateTime,
-    Enum as SQLEnum,
     ForeignKey,
     Index,
     Integer,
     String,
     Text,
 )
+from sqlalchemy import (
+    Enum as SQLEnum,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
-import uuid as uuid_module
 
 from tracertm.models.base import Base, TimestampMixin
 from tracertm.models.types import JSONType
@@ -29,16 +29,18 @@ def generate_uuid() -> str:
     return str(uuid_module.uuid4())
 
 
-class CoverageType(str, Enum):
+class CoverageType(StrEnum):
     """Type of coverage relationship."""
+
     DIRECT = "direct"  # Test directly tests the requirement
     PARTIAL = "partial"  # Test partially covers the requirement
     INDIRECT = "indirect"  # Test indirectly verifies requirement
     REGRESSION = "regression"  # Test is for regression testing
 
 
-class CoverageStatus(str, Enum):
+class CoverageStatus(StrEnum):
     """Status of the coverage mapping."""
+
     ACTIVE = "active"
     DEPRECATED = "deprecated"
     NEEDS_REVIEW = "needs_review"
@@ -76,23 +78,23 @@ class TestCoverage(Base, TimestampMixin):
     )
 
     # Coverage percentage (0-100) for partial coverage
-    coverage_percentage: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    coverage_percentage: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     # Rationale for the coverage mapping
-    rationale: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    rationale: Mapped[str | None] = mapped_column(Text, nullable=True)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Verification tracking
-    last_verified_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
-    verified_by: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    last_test_result: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)  # passed/failed/etc
-    last_tested_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    verified_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    last_test_result: Mapped[str | None] = mapped_column(String(50), nullable=True)  # passed/failed/etc
+    last_tested_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     # Personnel
-    created_by: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    created_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     # Extensible metadata
-    coverage_metadata: Mapped[Optional[dict]] = mapped_column(JSONType, nullable=True)
+    coverage_metadata: Mapped[dict | None] = mapped_column(JSONType, nullable=True)
 
     # Optimistic locking
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
@@ -122,14 +124,12 @@ class CoverageActivity(Base):
         String(36), ForeignKey("test_coverages.id", ondelete="CASCADE"), nullable=False
     )
     activity_type: Mapped[str] = mapped_column(String(100), nullable=False)
-    from_value: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    to_value: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    performed_by: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    activity_metadata: Mapped[Optional[dict]] = mapped_column(JSONType, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, default=datetime.utcnow
-    )
+    from_value: Mapped[str | None] = mapped_column(Text, nullable=True)
+    to_value: Mapped[str | None] = mapped_column(Text, nullable=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    performed_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    activity_metadata: Mapped[dict | None] = mapped_column(JSONType, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC))
 
     __table_args__ = (
         Index("ix_coverage_activities_coverage_id", "coverage_id"),

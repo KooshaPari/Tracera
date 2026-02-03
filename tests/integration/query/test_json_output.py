@@ -7,6 +7,7 @@ Tests --json flag on various commands.
 import json
 
 import pytest
+
 pytestmark = pytest.mark.integration
 from typer.testing import CliRunner
 

@@ -44,7 +44,7 @@ class TestCompleteErrorPaths:
 
     def test_empty_dict_handling(self):
         """Test empty dict handling."""
-        dicts = [{}, {'a': 1}, {}, {'b': 2}]
+        dicts = [{}, {"a": 1}, {}, {"b": 2}]
         filtered = [d for d in dicts if d]
         assert len(filtered) == 2
 
@@ -59,9 +59,9 @@ class TestCompleteErrorPaths:
 
     def test_key_error_handling(self):
         """Test key error handling."""
-        data = {'a': 1, 'b': 2}
+        data = {"a": 1, "b": 2}
         try:
-            value = data['c']
+            value = data["c"]
         except KeyError:
             value = None
         assert value is None
@@ -78,7 +78,7 @@ class TestCompleteErrorPaths:
     def test_type_error_handling(self):
         """Test type error handling."""
         try:
-            result = "string" + 5
+            result = "string" + 5  # type: ignore[operator]
         except TypeError:
             result = None
         assert result is None
@@ -121,14 +121,14 @@ class TestAllBoundaryConditions:
 
     def test_very_deep_nesting(self):
         """Test deep nesting."""
-        nested = {'a': {'b': {'c': {'d': {'e': 'value'}}}}}
-        assert nested['a']['b']['c']['d']['e'] == 'value'
+        nested = {"a": {"b": {"c": {"d": {"e": "value"}}}}}
+        assert nested["a"]["b"]["c"]["d"]["e"] == "value"
 
     def test_circular_reference_safe(self):
         """Test circular reference handling."""
         obj = {}
-        obj['self'] = obj
-        assert obj['self'] is obj
+        obj["self"] = obj
+        assert obj["self"] is obj
 
     def test_unicode_boundary(self):
         """Test unicode boundary."""
@@ -138,7 +138,7 @@ class TestAllBoundaryConditions:
     def test_null_byte_in_string(self):
         """Test null byte in string."""
         s = "test\x00data"
-        assert '\x00' in s
+        assert "\x00" in s
 
 
 class TestAllOperationCombinations:
@@ -176,9 +176,9 @@ class TestAllOperationCombinations:
 
     def test_power_operations(self):
         """Test power."""
-        assert 2 ** 3 == 8
-        assert 2 ** 0 == 1
-        assert 2 ** -1 == 0.5
+        assert 2**3 == 8
+        assert 2**0 == 1
+        assert 2**-1 == 0.5
 
     def test_bitwise_and(self):
         """Test bitwise AND."""
@@ -246,12 +246,12 @@ class TestAllComparisonCombinations:
     def test_in_operator(self):
         """Test in."""
         assert 1 in [1, 2, 3]
-        assert 'a' in 'abc'
+        assert "a" in "abc"
 
     def test_not_in_operator(self):
         """Test not in."""
         assert 4 not in [1, 2, 3]
-        assert 'd' not in 'abc'
+        assert "d" not in "abc"
 
 
 class TestAllLoopPatterns:
@@ -306,8 +306,7 @@ class TestAllLoopPatterns:
         """Test nested loops."""
         result = []
         for i in range(2):
-            for j in range(2):
-                result.append((i, j))
+            result.extend((i, j) for j in range(2))
         assert len(result) == 4
 
     def test_list_comprehension_simple(self):
@@ -508,57 +507,57 @@ class TestAllDictOperations:
 
     def test_dict_get(self):
         """Test get."""
-        d = {'a': 1}
-        assert d.get('a') == 1
-        assert d.get('b') is None
+        d = {"a": 1}
+        assert d.get("a") == 1
+        assert d.get("b") is None
 
     def test_dict_keys(self):
         """Test keys."""
-        d = {'a': 1, 'b': 2}
-        assert list(d.keys()) == ['a', 'b']
+        d = {"a": 1, "b": 2}
+        assert list(d.keys()) == ["a", "b"]
 
     def test_dict_values(self):
         """Test values."""
-        d = {'a': 1, 'b': 2}
+        d = {"a": 1, "b": 2}
         assert sorted(d.values()) == [1, 2]
 
     def test_dict_items(self):
         """Test items."""
-        d = {'a': 1}
-        assert list(d.items()) == [('a', 1)]
+        d = {"a": 1}
+        assert list(d.items()) == [("a", 1)]
 
     def test_dict_update(self):
         """Test update."""
-        d = {'a': 1}
-        d.update({'b': 2})
-        assert d == {'a': 1, 'b': 2}
+        d = {"a": 1}
+        d.update({"b": 2})
+        assert d == {"a": 1, "b": 2}
 
     def test_dict_pop(self):
         """Test pop."""
-        d = {'a': 1, 'b': 2}
-        value = d.pop('a')
+        d = {"a": 1, "b": 2}
+        value = d.pop("a")
         assert value == 1
-        assert d == {'b': 2}
+        assert d == {"b": 2}
 
     def test_dict_clear(self):
         """Test clear."""
-        d = {'a': 1, 'b': 2}
+        d = {"a": 1, "b": 2}
         d.clear()
         assert d == {}
 
     def test_dict_copy(self):
         """Test copy."""
-        d1 = {'a': 1}
+        d1 = {"a": 1}
         d2 = d1.copy()
-        d2['b'] = 2
-        assert d1 == {'a': 1}
+        d2["b"] = 2
+        assert d1 == {"a": 1}
 
     def test_dict_setdefault(self):
         """Test setdefault."""
-        d = {'a': 1}
-        result = d.setdefault('b', 2)
+        d = {"a": 1}
+        result = d.setdefault("b", 2)
         assert result == 2
-        assert d == {'a': 1, 'b': 2}
+        assert d == {"a": 1, "b": 2}
 
 
 class TestAllFunctionPatterns:
@@ -566,68 +565,90 @@ class TestAllFunctionPatterns:
 
     def test_function_no_args(self):
         """Test function with no args."""
+
         def func():
             return "result"
+
         assert func() == "result"
 
     def test_function_with_args(self):
         """Test function with args."""
+
         def func(a, b):
             return a + b
+
         assert func(1, 2) == 3
 
     def test_function_with_default(self):
         """Test function with default."""
+
         def func(a, b=2):
             return a + b
+
         assert func(1) == 3
         assert func(1, 3) == 4
 
     def test_function_with_kwargs(self):
         """Test function with kwargs."""
+
         def func(**kwargs):
             return kwargs
+
         result = func(a=1, b=2)
-        assert result == {'a': 1, 'b': 2}
+        assert result == {"a": 1, "b": 2}
 
     def test_function_with_varargs(self):
         """Test function with varargs."""
+
         def func(*args):
             return sum(args)
+
         assert func(1, 2, 3) == 6
 
     def test_function_return_multiple(self):
         """Test function returning multiple."""
+
         def func():
             return 1, 2, 3
+
         a, b, c = func()
         assert (a, b, c) == (1, 2, 3)
 
     def test_function_none_return(self):
         """Test function returning None."""
+
         def func():
             pass
+
         assert func() is None
 
     def test_lambda_function(self):
         """Test lambda."""
+
         def func(x):
             return x * 2
+
         assert func(5) == 10
 
     def test_nested_function(self):
         """Test nested function."""
+
         def outer():
             def inner():
                 return "result"
+
             return inner()
+
         assert outer() == "result"
 
     def test_function_with_closure(self):
         """Test closure."""
+
         def outer(x):
             def inner(y):
                 return x + y
+
             return inner
+
         func = outer(5)
         assert func(3) == 8

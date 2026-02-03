@@ -33,7 +33,7 @@ const mockEquivalenceLink: EquivalenceLink = {
 	id: "link-1",
 	sourceItemId: "item-1",
 	status: "confirmed",
-	strategies: [{ strategy: "explicit_annotation", confidence: 0.95 }],
+	strategies: [{ confidence: 0.95, strategy: "explicit_annotation" }],
 	targetItemId: "item-2",
 } as any;
 
@@ -42,7 +42,7 @@ const mockSuggestedLink: EquivalenceLink = {
 	id: "link-2",
 	sourceItemId: "item-1",
 	status: "suggested",
-	strategies: [{ strategy: "semantic_similarity", confidence: 0.75 }],
+	strategies: [{ confidence: 0.75, strategy: "semantic_similarity" }],
 	targetItemId: "item-3",
 } as any;
 

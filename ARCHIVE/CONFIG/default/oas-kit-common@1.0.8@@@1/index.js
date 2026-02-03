@@ -64,7 +64,7 @@ function hash(s) {
 }
 
 String.prototype.toCamelCase = function camelize() {
-    return this.toLowerCase().replace(/[-_ \/\.](.)/g, function (match, group1) {
+    return this.toLowerCase().replace(/[-_ /.](.)/g, function (match, group1) {
         return group1.toUpperCase();
     });
 }
@@ -110,7 +110,7 @@ const httpMethods = [
 function sanitise(s) {
     s = s.replace('[]','Array');
     let components = s.split('/');
-    components[0] = components[0].replace(/[^A-Za-z0-9_\-\.]+|\s+/gm, '_');
+    components[0] = components[0].replace(/[^A-Za-z0-9_\-.]+|\s+/gm, '_');
     return components.join('/');
 }
 

@@ -13,7 +13,7 @@
 		'comment': comment,
 
 		'section': {
-			pattern: /^\[[^\n\r\[\]]*\](?=[ \t]*$)/m,
+			pattern: /^\[[^\n\r[\]]*\](?=[ \t]*$)/m,
 			greedy: true,
 			inside: {
 				'punctuation': /^\[|\]$/,

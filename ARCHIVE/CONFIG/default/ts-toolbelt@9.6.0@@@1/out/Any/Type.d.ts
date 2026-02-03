@@ -21,4 +21,4 @@ declare const id: unique symbol;
 export declare type Type<A extends any, Id extends Key> = {
     [id]: Id;
 } & A;
-export {};
+

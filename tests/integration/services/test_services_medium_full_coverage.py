@@ -15,39 +15,28 @@ Target: 350+ tests, 100% coverage each
 Timeline: Week 4-6 (parallel with Phase 1)
 """
 
-import asyncio
-import csv
-import json
+from datetime import UTC, datetime, timezone
+
 import pytest
 import pytest_asyncio
-from datetime import datetime
-from io import StringIO
-from typing import Any
-
 from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from tracertm.models.base import Base
-from tracertm.models.project import Project
+from tracertm.models.event import Event
 from tracertm.models.item import Item
 from tracertm.models.link import Link
-from tracertm.models.event import Event
-
-from tracertm.services.item_service import ItemService, STATUS_TRANSITIONS, VALID_STATUSES
-from tracertm.services.bulk_operation_service import BulkOperationService
-from tracertm.services.cycle_detection_service import CycleDetectionService
-from tracertm.services.chaos_mode_service import ChaosModeService
-from tracertm.services.view_service import ViewService
-from tracertm.services.project_backup_service import ProjectBackupService
-from tracertm.services.impact_analysis_service import ImpactAnalysisService
+from tracertm.models.project import Project
 from tracertm.services.advanced_traceability_service import AdvancedTraceabilityService
-
-from tracertm.repositories.item_repository import ItemRepository
-from tracertm.repositories.link_repository import LinkRepository
-from tracertm.repositories.project_repository import ProjectRepository
-from tracertm.repositories.event_repository import EventRepository
+from tracertm.services.bulk_operation_service import BulkOperationService
+from tracertm.services.chaos_mode_service import ChaosModeService
+from tracertm.services.cycle_detection_service import CycleDetectionService
+from tracertm.services.impact_analysis_service import ImpactAnalysisService
+from tracertm.services.item_service import STATUS_TRANSITIONS, VALID_STATUSES, ItemService
+from tracertm.services.project_backup_service import ProjectBackupService
+from tracertm.services.view_service import ViewService
 
 pytestmark = pytest.mark.integration
 
@@ -55,6 +44,7 @@ pytestmark = pytest.mark.integration
 # ============================================================
 # SYNC FIXTURES (for sync services)
 # ============================================================
+
 
 @pytest.fixture(scope="function")
 def sync_db_session():
@@ -179,6 +169,7 @@ def sync_items_with_links(sync_db_session, sync_project):
 # ASYNC FIXTURES (for async services)
 # ============================================================
 
+
 @pytest_asyncio.fixture(scope="function")
 async def async_db_session():
     """Create an asynchronous database session."""
@@ -192,9 +183,7 @@ async def async_db_session():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-    AsyncSessionLocal = async_sessionmaker(
-        engine, class_=AsyncSession, expire_on_commit=False
-    )
+    AsyncSessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
     async with AsyncSessionLocal() as session:
         yield session
@@ -286,6 +275,7 @@ async def async_items_with_links(async_db_session, async_project):
 # ITEM SERVICE TESTS (CRUD AND QUERIES) - ASYNC
 # ============================================================
 
+
 @pytest.mark.asyncio
 class TestItemServiceCreate:
     """Test ItemService create operations."""
@@ -362,7 +352,7 @@ class TestItemServiceCreate:
             view="FEATURE",
             item_type="story",
             agent_id="test-agent",
-            parent_id=parent.id,
+            parent_id=str(parent.id),
         )
 
         assert child.parent_id == parent.id
@@ -381,6 +371,7 @@ class TestItemServiceCreate:
 
         # Verify event was logged
         from sqlalchemy import select
+
         query = select(Event).filter(
             Event.entity_id == item.id,
             Event.event_type == "item_created",
@@ -579,11 +570,11 @@ class TestItemServiceCreate:
             item_type="function",
             description="Full description",
             status="in_progress",
-            parent_id=parent.id,
+            parent_id=str(parent.id),
             metadata={"key": "value"},
             owner="owner@example.com",
             priority="high",
-            link_to=[parent.id],
+            link_to=[str(parent.id)],
             link_type="depends_on",
             agent_id="full-test-agent",
         )
@@ -605,7 +596,8 @@ class TestItemServiceRead:
         service = ItemService(async_db_session)
         items, _ = async_items_with_links
 
-        retrieved = await service.get_item(async_project.id, items[0].id)
+        retrieved = await service.get_item(str(async_project.id), str(items[0].id))
+        assert retrieved is not None
         assert retrieved.id == items[0].id
         assert retrieved.title == items[0].title
 
@@ -661,7 +653,9 @@ class TestItemServiceRead:
         assert all(item.status == "todo" for item in items)
         assert len(items) >= 1
 
-    async def test_list_items_with_view_and_status_filter(self, async_db_session, async_project, async_items_with_links):
+    async def test_list_items_with_view_and_status_filter(
+        self, async_db_session, async_project, async_items_with_links
+    ):
         """Test listing items with both view and status filters."""
         service = ItemService(async_db_session)
 
@@ -765,12 +759,12 @@ class TestItemServiceRead:
                 title=f"Child {i}",
                 view="FEATURE",
                 item_type="story",
-                parent_id=parent.id,
+                parent_id=str(parent.id),
             )
             async_db_session.add(child)
         await async_db_session.commit()
 
-        children = await service.get_children(parent.id)
+        children = await service.get_children(str(parent.id))
         assert len(children) == 3
 
     async def test_get_children_no_children(self, async_db_session, async_project):
@@ -816,7 +810,7 @@ class TestItemServiceRead:
             title="Child",
             view="FEATURE",
             item_type="task",
-            parent_id=parent.id,
+            parent_id=str(parent.id),
         )
         async_db_session.add_all([grandparent, parent, child])
         await async_db_session.commit()
@@ -1051,6 +1045,7 @@ class TestItemServiceUpdate:
 
                 # Reset for next iteration
                 item = await service.items.get_by_id(f"status-test-{current_status}")
+                assert item is not None
                 await service.items.update(
                     f"status-test-{current_status}",
                     expected_version=item.version,
@@ -1268,7 +1263,7 @@ class TestItemServiceDelete:
             title="Child",
             view="FEATURE",
             item_type="story",
-            parent_id=parent.id,
+            parent_id=str(parent.id),
         )
         async_db_session.add_all([parent, child])
         await async_db_session.commit()
@@ -1285,22 +1280,18 @@ class TestItemServiceProgress:
     @pytest.mark.skip(reason="Service calls get_children with wrong signature")
     async def test_get_item_progress_no_children(self, async_db_session, async_project):
         """Test progress calculation for item with no children."""
-        pass
 
     @pytest.mark.skip(reason="Service calls get_children with wrong signature")
     async def test_get_item_progress_with_children(self, async_db_session, async_project):
         """Test progress calculation with children."""
-        pass
 
     @pytest.mark.skip(reason="Service calls get_children with wrong signature")
     async def test_get_item_progress_all_done(self, async_db_session, async_project):
         """Test progress when all children are done."""
-        pass
 
     @pytest.mark.skip(reason="Service calls get_children with wrong signature")
     async def test_get_item_progress_none_done(self, async_db_session, async_project):
         """Test progress when no children are done."""
-        pass
 
     async def test_get_item_progress_not_found(self, async_db_session, async_project):
         """Test progress for non-existent item."""
@@ -1339,6 +1330,7 @@ class TestItemServiceRelationships:
 # BULK OPERATION SERVICE TESTS (SYNC)
 # ============================================================
 
+
 class TestBulkOperationService:
     """Test BulkOperationService."""
 
@@ -1367,7 +1359,7 @@ class TestBulkOperationService:
         )
 
         assert preview["total_count"] >= 0
-        assert ("sample_items" in preview or "samples" in preview)
+        assert "sample_items" in preview or "samples" in preview
         assert "warnings" in preview
 
     def test_bulk_update_preview_large_operation_warning(self, sync_db_session, sync_project):
@@ -1450,6 +1442,7 @@ class TestBulkOperationService:
 # ============================================================
 # CYCLE DETECTION SERVICE TESTS (SYNC)
 # ============================================================
+
 
 class TestCycleDetectionService:
     """Test CycleDetectionService."""
@@ -1558,7 +1551,7 @@ class TestCycleDetectionService:
                 id=f"complex-link-{i}",
                 project_id=sync_project.id,
                 source_item_id=f"complex-item-{i}",
-                target_item_id=f"complex-item-{i+1}",
+                target_item_id=f"complex-item-{i + 1}",
                 link_type="depends_on",
             )
             sync_db_session.add(link)
@@ -1588,6 +1581,7 @@ class TestCycleDetectionServiceAsync:
 # ============================================================
 # CHAOS MODE SERVICE TESTS (ASYNC)
 # ============================================================
+
 
 @pytest.mark.asyncio
 class TestChaosModeService:
@@ -1716,6 +1710,7 @@ class TestChaosModeService:
 # VIEW SERVICE TESTS (ASYNC)
 # ============================================================
 
+
 class TestViewService:
     """Test ViewService."""
 
@@ -1740,6 +1735,7 @@ class TestViewService:
 # ============================================================
 # PROJECT BACKUP SERVICE TESTS (SYNC)
 # ============================================================
+
 
 class TestProjectBackupService:
     """Test ProjectBackupService."""
@@ -1806,7 +1802,7 @@ class TestProjectBackupService:
 
         backup_data = {
             "version": "1.0",
-            "backup_date": datetime.utcnow().isoformat(),
+            "backup_date": datetime.now(UTC).isoformat(),
             "project": {
                 "id": "orig-project",
                 "name": "Original Project",
@@ -1835,9 +1831,7 @@ class TestProjectBackupService:
         assert new_project_id is not None
 
         # Verify project was created
-        project = sync_db_session.query(Project).filter(
-            Project.id == new_project_id
-        ).first()
+        project = sync_db_session.query(Project).filter(Project.id == new_project_id).first()
         assert project is not None
         assert project.name == "Restored Project"
 
@@ -1855,9 +1849,7 @@ class TestProjectBackupService:
         assert cloned_id is not None
 
         # Verify cloned project exists
-        cloned = sync_db_session.query(Project).filter(
-            Project.id == cloned_id
-        ).first()
+        cloned = sync_db_session.query(Project).filter(Project.id == cloned_id).first()
         assert cloned is not None
         assert cloned.name == "Cloned Project"
 
@@ -1873,9 +1865,7 @@ class TestProjectBackupService:
         assert template_id is not None
 
         # Verify template metadata
-        template = sync_db_session.query(Project).filter(
-            Project.id == template_id
-        ).first()
+        template = sync_db_session.query(Project).filter(Project.id == template_id).first()
         assert template is not None
         if template.project_metadata:
             assert template.project_metadata.get("is_template") == True
@@ -1924,9 +1914,7 @@ class TestProjectBackupService:
             include_items=False,
         )
 
-        cloned = sync_db_session.query(Project).filter(
-            Project.id == cloned_id
-        ).first()
+        cloned = sync_db_session.query(Project).filter(Project.id == cloned_id).first()
         assert cloned is not None
         assert cloned.name == "Clone Target"
 
@@ -1934,6 +1922,7 @@ class TestProjectBackupService:
 # ============================================================
 # IMPACT ANALYSIS SERVICE TESTS (ASYNC)
 # ============================================================
+
 
 @pytest.mark.asyncio
 class TestImpactAnalysisService:
@@ -1973,7 +1962,7 @@ class TestImpactAnalysisService:
                 id=f"chain-link-{i}",
                 project_id=async_project.id,
                 source_item_id=f"chain-item-{i}",
-                target_item_id=f"chain-item-{i+1}",
+                target_item_id=f"chain-item-{i + 1}",
                 link_type="depends_on",
             )
             async_db_session.add(link)
@@ -2015,6 +2004,7 @@ class TestImpactAnalysisService:
 # ============================================================
 # ADVANCED TRACEABILITY SERVICE TESTS (ASYNC)
 # ============================================================
+
 
 @pytest.mark.asyncio
 class TestAdvancedTraceabilityService:
@@ -2069,6 +2059,7 @@ class TestAdvancedTraceabilityService:
 # EDGE CASES AND ERROR HANDLING
 # ============================================================
 
+
 class TestEdgeCasesAndErrorHandling:
     """Test edge cases and error handling."""
 
@@ -2107,6 +2098,7 @@ class TestEdgeCasesAndErrorHandling:
 # ============================================================
 # INTEGRATION TESTS (CROSS-SERVICE)
 # ============================================================
+
 
 class TestCrossServiceIntegration:
     """Test interactions between multiple services."""
@@ -2158,9 +2150,7 @@ class TestCrossServiceIntegration:
         )
 
         # Verify restoration
-        restored = new_session.query(Project).filter(
-            Project.id == new_project_id
-        ).first()
+        restored = new_session.query(Project).filter(Project.id == new_project_id).first()
         assert restored is not None
 
     @pytest.mark.asyncio
@@ -2181,6 +2171,7 @@ class TestCrossServiceIntegration:
 # ============================================================
 # PERFORMANCE TESTS
 # ============================================================
+
 
 class TestPerformance:
     """Test performance characteristics."""
@@ -2203,6 +2194,7 @@ class TestPerformance:
         service = BulkOperationService(sync_db_session)
 
         import time
+
         start = time.time()
         preview = service.bulk_update_preview(
             sync_project.id,

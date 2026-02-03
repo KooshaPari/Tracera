@@ -4,7 +4,7 @@ Pydantic configuration schema for TraceRTM.
 
 from typing import Literal
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 ViewType = Literal["FEATURE", "CODE", "WIREFRAME", "API", "TEST", "DATABASE", "ROADMAP", "PROGRESS"]
 OutputFormat = Literal["table", "json", "yaml", "csv"]
@@ -68,7 +68,7 @@ class Config(BaseModel):
             return v
 
         # Allow PostgreSQL (production) and SQLite (testing/development)
-        if not (v.startswith("postgresql://") or v.startswith("sqlite:///")):
+        if not v.startswith(("postgresql://", "sqlite:///")):
             raise ValueError("Database URL must start with 'postgresql://' or 'sqlite:///'")
 
         return v
@@ -77,13 +77,12 @@ class Config(BaseModel):
     @classmethod
     def validate_api_url(cls, v: str) -> str:
         """Validate API URL format."""
-        if not (v.startswith("http://") or v.startswith("https://")):
+        if not v.startswith(("http://", "https://")):
             raise ValueError("API URL must start with 'http://' or 'https://'")
 
         return v.rstrip("/")
 
-    class Config:
-        """Pydantic config."""
-
-        validate_assignment = True
-        extra = "forbid"
+    model_config = ConfigDict(
+        validate_assignment=True,
+        extra="forbid",
+    )

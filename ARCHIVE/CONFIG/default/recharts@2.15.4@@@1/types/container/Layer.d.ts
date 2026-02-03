@@ -5,4 +5,4 @@ interface LayerProps {
 }
 export type Props = SVGAttributes<SVGGElement> & LayerProps;
 export declare const Layer: React.ForwardRefExoticComponent<React.SVGAttributes<SVGGElement> & LayerProps & React.RefAttributes<SVGGElement>>;
-export {};
+

@@ -139,7 +139,7 @@ export const GlobalFiltering: TableFeature = {
     }
 
     table.getGlobalFilterFn = () => {
-      const { globalFilterFn: globalFilterFn } = table.options
+      const { globalFilterFn } = table.options
 
       return isFunction(globalFilterFn)
         ? globalFilterFn

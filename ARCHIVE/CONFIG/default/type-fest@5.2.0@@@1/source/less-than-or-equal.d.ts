@@ -21,4 +21,4 @@ export type LessThanOrEqual<A extends number, B extends number> = number extends
 	? never
 	: GreaterThan<A, B> extends true ? false : true;
 
-export {};
+

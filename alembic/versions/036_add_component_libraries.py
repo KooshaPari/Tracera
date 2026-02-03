@@ -8,9 +8,10 @@ Revises: 035_add_perspective_configs
 Create Date: 2026-01-30
 """
 
-from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
+
+from alembic import op
 
 # revision identifiers, used by Alembic
 revision = "036_add_component_libraries"
@@ -21,7 +22,7 @@ depends_on = None
 
 def upgrade() -> None:
     """Create component_libraries and library_components tables."""
-    
+
     # Create component_libraries table
     op.create_table(
         "component_libraries",
@@ -57,7 +58,7 @@ def upgrade() -> None:
         # Constraints
         sa.UniqueConstraint("project_id", "slug", name="uq_component_libraries_project_slug"),
     )
-    
+
     # Create library_components table
     op.create_table(
         "library_components",
@@ -113,16 +114,30 @@ def upgrade() -> None:
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
         sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
     )
-    
+
     # Foreign keys for library_components
-    op.create_foreign_key("fk_library_components_parent", "library_components", "library_components", ["parent_id"], ["id"], ondelete="SET NULL")
-    op.create_foreign_key("fk_library_components_code", "library_components", "code_entities", ["code_entity_id"], ["id"], ondelete="SET NULL")
-    
+    op.create_foreign_key(
+        "fk_library_components_parent",
+        "library_components",
+        "library_components",
+        ["parent_id"],
+        ["id"],
+        ondelete="SET NULL",
+    )
+    op.create_foreign_key(
+        "fk_library_components_code",
+        "library_components",
+        "code_entities",
+        ["code_entity_id"],
+        ["id"],
+        ondelete="SET NULL",
+    )
+
     # Indexes for component_libraries
     op.create_index("ix_component_libraries_project_id", "component_libraries", ["project_id"])
     op.create_index("ix_component_libraries_source", "component_libraries", ["source"])
     op.create_index("ix_component_libraries_sync_status", "component_libraries", ["sync_status"])
-    
+
     # Indexes for library_components
     op.create_index("ix_library_components_library_id", "library_components", ["library_id"])
     op.create_index("ix_library_components_project_id", "library_components", ["project_id"])
@@ -146,10 +161,9 @@ def downgrade() -> None:
     op.drop_constraint("fk_library_components_code", "library_components", type_="foreignkey")
     op.drop_constraint("fk_library_components_parent", "library_components", type_="foreignkey")
     op.drop_table("library_components")
-    
+
     # Drop component_libraries
     op.drop_index("ix_component_libraries_sync_status", table_name="component_libraries")
     op.drop_index("ix_component_libraries_source", table_name="component_libraries")
     op.drop_index("ix_component_libraries_project_id", table_name="component_libraries")
     op.drop_table("component_libraries")
-

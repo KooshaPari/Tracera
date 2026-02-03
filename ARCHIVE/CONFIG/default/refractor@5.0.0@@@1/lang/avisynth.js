@@ -109,7 +109,7 @@ export default function avisynth(Prism) {
           // Matches [* *] nestable block comments, but only supports 1 level of nested comments
           // /\[\*(?:[^\[*]|\[(?!\*)|\*(?!\])|<self>)*\*\]/
           pattern:
-            /(^|[^\\])\[\*(?:[^\[*]|\[(?!\*)|\*(?!\])|\[\*(?:[^\[*]|\[(?!\*)|\*(?!\]))*\*\])*\*\]/,
+            /(^|[^\\])\[\*(?:[^[*]|\[(?!\*)|\*(?!\])|\[\*(?:[^[*]|\[(?!\*)|\*(?!\]))*\*\])*\*\]/,
           lookbehind: true,
           greedy: true
         },
@@ -193,7 +193,7 @@ export default function avisynth(Prism) {
       number:
         /\B\$(?:[\da-f]{6}|[\da-f]{8})\b|(?:(?:\b|\B-)\d+(?:\.\d*)?\b|\B\.\d+\b)/i,
       operator: /\+\+?|[!=<>]=?|&&|\|\||[?:*/%-]/,
-      punctuation: /[{}\[\]();,.]/
+      punctuation: /[{}[\]();,.]/
     }
     Prism.languages.avs = Prism.languages.avisynth
   })(Prism)

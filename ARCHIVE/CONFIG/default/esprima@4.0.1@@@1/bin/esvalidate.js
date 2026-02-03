@@ -160,7 +160,7 @@ function run(fname, content) {
 
             syntax.errors.forEach(function (error) {
                 var msg = error.message;
-                msg = msg.replace(/^Line\ [0-9]*\:\ /, '');
+                msg = msg.replace(/^Line [0-9]*: /, '');
                 console.log('  <testcase name="Line ' + error.lineNumber + ': ' + msg + '" ' +
                     ' time="0">');
                 console.log('    <error type="SyntaxError" message="' + error.message + '">' +
@@ -175,7 +175,7 @@ function run(fname, content) {
 
             syntax.errors.forEach(function (error) {
                 var msg = error.message;
-                msg = msg.replace(/^Line\ [0-9]*\:\ /, '');
+                msg = msg.replace(/^Line [0-9]*: /, '');
                 msg = fname + ':' + error.lineNumber + ': ' + msg;
                 console.log(msg);
                 ++count;
@@ -194,7 +194,7 @@ function run(fname, content) {
             console.log(' </testcase>');
             console.log('</testsuite>');
         } else {
-            console.log(fname + ':' + e.lineNumber + ': ' + e.message.replace(/^Line\ [0-9]*\:\ /, ''));
+            console.log(fname + ':' + e.lineNumber + ': ' + e.message.replace(/^Line [0-9]*: /, ''));
         }
     }
 }

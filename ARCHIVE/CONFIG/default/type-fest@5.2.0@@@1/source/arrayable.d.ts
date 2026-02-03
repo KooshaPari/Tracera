@@ -28,4 +28,4 @@ export type Arrayable<T> =
 // TODO: Use `readonly T[]` when this issue is resolved: https://github.com/microsoft/TypeScript/issues/17002
 	| T[];
 
-export {};
+

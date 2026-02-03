@@ -26,7 +26,7 @@
 		/<\/?(?:[\w.:-]+(?:<S>+(?:[\w.:$-]+(?:=(?:"(?:\\[\s\S]|[^\\"])*"|'(?:\\[\s\S]|[^\\'])*'|[^\s{'"/>=]+|<BRACES>))?|<SPREAD>))*<S>*\/?)?>/.source
 	);
 
-	Prism.languages.jsx.tag.inside['tag'].pattern = /^<\/?[^\s>\/]*/;
+	Prism.languages.jsx.tag.inside['tag'].pattern = /^<\/?[^\s>/]*/;
 	Prism.languages.jsx.tag.inside['attr-value'].pattern = /=(?!\{)(?:"(?:\\[\s\S]|[^\\"])*"|'(?:\\[\s\S]|[^\\'])*'|[^\s'">]+)/;
 	Prism.languages.jsx.tag.inside['tag'].inside['class-name'] = /^[A-Z]\w*(?:\.[A-Z]\w*)*$/;
 	Prism.languages.jsx.tag.inside['comment'] = javascript['comment'];

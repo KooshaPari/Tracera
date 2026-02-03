@@ -2,8 +2,6 @@
 
 import json
 
-import pytest
-
 from tracertm.mcp.tools.response_optimizer import (
     ResponseFormat,
     format_error,
@@ -50,7 +48,9 @@ class TestResponseFormat:
         large_data = {"items": [{"id": str(i), "title": f"Item {i}"} for i in range(100)]}
 
         result = format_response(
-            large_data, compress=True, compress_threshold=100  # Low threshold
+            large_data,
+            compress=True,
+            compress_threshold=100,  # Low threshold
         )
 
         assert result.get("compressed") is True
@@ -63,7 +63,9 @@ class TestResponseFormat:
         small_data = {"id": "123"}
 
         result = format_response(
-            small_data, compress=True, compress_threshold=1000  # High threshold
+            small_data,
+            compress=True,
+            compress_threshold=1000,  # High threshold
         )
 
         # Should return data without compression
@@ -75,9 +77,7 @@ class TestErrorFormatting:
 
     def test_lean_error(self):
         """Test lean error format."""
-        result = format_error(
-            "Test error", action="test", format_mode=ResponseFormat.LEAN
-        )
+        result = format_error("Test error", action="test", format_mode=ResponseFormat.LEAN)
 
         assert result["ok"] is False
         assert result["error"] == "Test error"

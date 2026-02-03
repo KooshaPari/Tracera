@@ -139,4 +139,4 @@ export declare class Line extends PureComponent<Props, State> {
     renderCurve(needClip: boolean, clipPathId: string): React.JSX.Element;
     render(): React.JSX.Element;
 }
-export {};
+

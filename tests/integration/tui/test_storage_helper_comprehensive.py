@@ -16,20 +16,17 @@ Coverage areas:
 Target: 45+ tests, 95%+ coverage
 """
 
-import asyncio
-import functools
-import os
-import tempfile
-import threading
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from pathlib import Path
 from threading import Thread
-from unittest.mock import AsyncMock, MagicMock, Mock, call, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
 from tracertm.cli.storage_helper import (
+    _human_time_delta,
+    _trigger_sync,
     format_item_for_display,
     format_items_table,
     format_link_for_display,
@@ -41,11 +38,8 @@ from tracertm.cli.storage_helper import (
     reset_storage_manager,
     show_sync_status,
     with_sync,
-    _human_time_delta,
-    _trigger_sync,
 )
 from tracertm.models import Item, Link, Project
-
 
 # ============================================================================
 # SINGLETON PATTERN TESTS (5 tests)
@@ -59,7 +53,7 @@ class TestSingletonPattern:
         """Test that get_storage_manager returns the same instance."""
         reset_storage_manager()
 
-        with patch('tracertm.cli.storage_helper.ConfigManager') as mock_config:
+        with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
             mock_config.return_value.get.return_value = str(tmp_path)
 
             manager1 = get_storage_manager()
@@ -71,7 +65,7 @@ class TestSingletonPattern:
         """Test that storage manager initializes only once."""
         reset_storage_manager()
 
-        with patch('tracertm.cli.storage_helper.ConfigManager') as mock_config:
+        with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
             mock_config.return_value.get.return_value = str(tmp_path)
 
             manager = get_storage_manager()
@@ -85,13 +79,13 @@ class TestSingletonPattern:
         """Test that reset_storage_manager clears the singleton."""
         reset_storage_manager()
 
-        with patch('tracertm.cli.storage_helper.ConfigManager'):
+        with patch("tracertm.cli.storage_helper.ConfigManager"):
             manager1 = get_storage_manager()
             assert manager1 is not None
 
             reset_storage_manager()
             # After reset, new manager should be created
-            with patch('tracertm.cli.storage_helper.ConfigManager'):
+            with patch("tracertm.cli.storage_helper.ConfigManager"):
                 manager2 = get_storage_manager()
                 # They should be different instances (created in different calls)
                 # But we can't compare directly as different sessions are created
@@ -102,7 +96,7 @@ class TestSingletonPattern:
         reset_storage_manager()
         custom_dir = tmp_path / "custom_storage"
 
-        with patch('tracertm.cli.storage_helper.ConfigManager') as mock_config:
+        with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
             mock_config.return_value.get.return_value = str(custom_dir)
 
             manager = get_storage_manager()
@@ -112,12 +106,12 @@ class TestSingletonPattern:
         """Test that storage manager uses default directory when not configured."""
         reset_storage_manager()
 
-        with patch('tracertm.cli.storage_helper.ConfigManager') as mock_config:
+        with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
             mock_config.return_value.get.return_value = None
 
-            with patch.object(Path, 'home', return_value=tmp_path):
+            with patch.object(Path, "home", return_value=tmp_path):
                 manager = get_storage_manager()
-                assert manager.base_dir == tmp_path / '.tracertm'
+                assert manager.base_dir == tmp_path / ".tracertm"
 
 
 # ============================================================================
@@ -132,7 +126,7 @@ class TestSessionManagement:
         """Test that storage manager creates database sessions."""
         reset_storage_manager()
 
-        with patch('tracertm.cli.storage_helper.ConfigManager') as mock_config:
+        with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
             mock_config.return_value.get.return_value = str(tmp_path)
 
             manager = get_storage_manager()
@@ -145,7 +139,7 @@ class TestSessionManagement:
         """Test that storage manager creates database file."""
         reset_storage_manager()
 
-        with patch('tracertm.cli.storage_helper.ConfigManager') as mock_config:
+        with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
             mock_config.return_value.get.return_value = str(tmp_path)
 
             manager = get_storage_manager()
@@ -156,7 +150,7 @@ class TestSessionManagement:
         """Test that multiple sessions from same manager are independent."""
         reset_storage_manager()
 
-        with patch('tracertm.cli.storage_helper.ConfigManager') as mock_config:
+        with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
             mock_config.return_value.get.return_value = str(tmp_path)
 
             manager = get_storage_manager()
@@ -172,7 +166,7 @@ class TestSessionManagement:
         """Test that storage manager initializes database schema."""
         reset_storage_manager()
 
-        with patch('tracertm.cli.storage_helper.ConfigManager') as mock_config:
+        with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
             mock_config.return_value.get.return_value = str(tmp_path)
 
             manager = get_storage_manager()
@@ -180,6 +174,7 @@ class TestSessionManagement:
 
             # Check that tables were created
             from sqlalchemy import inspect
+
             inspector = inspect(manager.engine)
             tables = inspector.get_table_names()
 
@@ -192,7 +187,7 @@ class TestSessionManagement:
         """Test that get_sync_queue returns a list."""
         reset_storage_manager()
 
-        with patch('tracertm.cli.storage_helper.ConfigManager') as mock_config:
+        with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
             mock_config.return_value.get.return_value = str(tmp_path)
 
             manager = get_storage_manager()
@@ -204,7 +199,7 @@ class TestSessionManagement:
         """Test that get_sync_state returns state value."""
         reset_storage_manager()
 
-        with patch('tracertm.cli.storage_helper.ConfigManager') as mock_config:
+        with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
             mock_config.return_value.get.return_value = str(tmp_path)
 
             manager = get_storage_manager()
@@ -230,7 +225,7 @@ class TestConcurrentAccess:
 
         def get_manager():
             try:
-                with patch('tracertm.cli.storage_helper.ConfigManager') as mock_config:
+                with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
                     mock_config.return_value.get.return_value = str(tmp_path)
                     managers.append(get_storage_manager())
             except Exception as e:
@@ -253,7 +248,7 @@ class TestConcurrentAccess:
         """Test concurrent session creation from single manager."""
         reset_storage_manager()
 
-        with patch('tracertm.cli.storage_helper.ConfigManager') as mock_config:
+        with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
             mock_config.return_value.get.return_value = str(tmp_path)
 
             manager = get_storage_manager()
@@ -280,7 +275,7 @@ class TestConcurrentAccess:
         reset_storage_manager()
         results = []
 
-        with patch('tracertm.cli.storage_helper.ConfigManager') as mock_config:
+        with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
             mock_config.return_value.get.return_value = str(tmp_path)
 
             manager = get_storage_manager()
@@ -292,7 +287,7 @@ class TestConcurrentAccess:
                     time.sleep(0.001)
                     session.close()
                     results.append(True)
-                except Exception as e:
+                except Exception:
                     results.append(False)
 
             threads = [Thread(target=perform_operation, args=(i,)) for i in range(20)]
@@ -309,7 +304,7 @@ class TestConcurrentAccess:
         """Test concurrent access to sync state."""
         reset_storage_manager()
 
-        with patch('tracertm.cli.storage_helper.ConfigManager') as mock_config:
+        with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
             mock_config.return_value.get.return_value = str(tmp_path)
 
             manager = get_storage_manager()
@@ -333,7 +328,7 @@ class TestConcurrentAccess:
         """Test concurrent access to sync queue."""
         reset_storage_manager()
 
-        with patch('tracertm.cli.storage_helper.ConfigManager') as mock_config:
+        with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
             mock_config.return_value.get.return_value = str(tmp_path)
 
             manager = get_storage_manager()
@@ -363,7 +358,7 @@ class TestConcurrentAccess:
         def verify_singleton():
             nonlocal first_manager
             try:
-                with patch('tracertm.cli.storage_helper.ConfigManager') as mock_config:
+                with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
                     mock_config.return_value.get.return_value = str(tmp_path)
 
                     manager = get_storage_manager()
@@ -397,11 +392,12 @@ class TestErrorHandling:
 
     def test_handle_storage_error_decorator_catches_file_not_found(self):
         """Test that handle_storage_error catches FileNotFoundError."""
+
         @handle_storage_error
         def failing_func():
             raise FileNotFoundError("Test file not found")
 
-        with patch('tracertm.cli.storage_helper._console.print') as mock_print:
+        with patch("tracertm.cli.storage_helper._console.print") as mock_print:
             try:
                 failing_func()
             except Exception:
@@ -412,11 +408,12 @@ class TestErrorHandling:
 
     def test_handle_storage_error_decorator_catches_value_error(self):
         """Test that handle_storage_error catches ValueError."""
+
         @handle_storage_error
         def failing_func():
             raise ValueError("Invalid value")
 
-        with patch('tracertm.cli.storage_helper._console.print') as mock_print:
+        with patch("tracertm.cli.storage_helper._console.print") as mock_print:
             try:
                 failing_func()
             except Exception:
@@ -426,11 +423,12 @@ class TestErrorHandling:
 
     def test_handle_storage_error_decorator_catches_generic_exception(self):
         """Test that handle_storage_error catches generic exceptions."""
+
         @handle_storage_error
         def failing_func():
             raise RuntimeError("Storage connection failed")
 
-        with patch('tracertm.cli.storage_helper._console.print') as mock_print:
+        with patch("tracertm.cli.storage_helper._console.print") as mock_print:
             try:
                 failing_func()
             except Exception:
@@ -440,6 +438,7 @@ class TestErrorHandling:
 
     def test_handle_storage_error_decorator_returns_result_on_success(self):
         """Test that handle_storage_error returns result on success."""
+
         @handle_storage_error
         def successful_func():
             return "success"
@@ -449,6 +448,7 @@ class TestErrorHandling:
 
     def test_handle_storage_error_decorator_preserves_function_name(self):
         """Test that handle_storage_error preserves function name."""
+
         @handle_storage_error
         def my_storage_func():
             return "result"
@@ -459,12 +459,12 @@ class TestErrorHandling:
         """Test that _trigger_sync handles missing API endpoint gracefully."""
         reset_storage_manager()
 
-        with patch('tracertm.cli.storage_helper.ConfigManager') as mock_config:
+        with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
             mock_config_instance = MagicMock()
             mock_config_instance.get.side_effect = lambda key: None
             mock_config.return_value = mock_config_instance
 
-            with patch('tracertm.cli.storage_helper.get_storage_manager') as mock_storage:
+            with patch("tracertm.cli.storage_helper.get_storage_manager") as mock_storage:
                 mock_storage_instance = MagicMock()
                 mock_storage.return_value = mock_storage_instance
 
@@ -473,17 +473,18 @@ class TestErrorHandling:
 
     def test_with_sync_decorator_handles_sync_failure(self):
         """Test that with_sync decorator handles sync failures gracefully."""
+
         @with_sync(enabled=True)
         def command_func():
             return "completed"
 
-        with patch('tracertm.cli.storage_helper.ConfigManager') as mock_config:
+        with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
             mock_config.return_value.get.return_value = True
 
-            with patch('tracertm.cli.storage_helper._trigger_sync') as mock_trigger:
+            with patch("tracertm.cli.storage_helper._trigger_sync") as mock_trigger:
                 mock_trigger.side_effect = Exception("Sync failed")
 
-                with patch('tracertm.cli.storage_helper._console.print'):
+                with patch("tracertm.cli.storage_helper._console.print"):
                     result = command_func()
 
                     # Command should complete despite sync failure
@@ -491,11 +492,12 @@ class TestErrorHandling:
 
     def test_with_sync_decorator_disabled_skips_sync(self):
         """Test that with_sync decorator respects enabled flag."""
+
         @with_sync(enabled=False)
         def command_func():
             return "completed"
 
-        with patch('tracertm.cli.storage_helper._trigger_sync') as mock_trigger:
+        with patch("tracertm.cli.storage_helper._trigger_sync") as mock_trigger:
             result = command_func()
 
             # Sync should not be triggered
@@ -513,7 +515,7 @@ class TestConfigurationLoading:
 
     def test_get_current_project_returns_tuple(self):
         """Test that get_current_project returns tuple."""
-        with patch('tracertm.cli.storage_helper.ConfigManager') as mock_config:
+        with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
             mock_config.return_value.get.side_effect = lambda key: (
                 "project-123" if key == "current_project_id" else "My Project"
             )
@@ -526,7 +528,7 @@ class TestConfigurationLoading:
 
     def test_get_current_project_returns_none_when_not_set(self):
         """Test that get_current_project returns None when not set."""
-        with patch('tracertm.cli.storage_helper.ConfigManager') as mock_config:
+        with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
             mock_config.return_value.get.return_value = None
 
             result = get_current_project()
@@ -535,7 +537,7 @@ class TestConfigurationLoading:
 
     def test_get_current_project_returns_none_when_partial(self):
         """Test that get_current_project returns None when only partial."""
-        with patch('tracertm.cli.storage_helper.ConfigManager') as mock_config:
+        with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
             # Only project_id, no project_name
             def get_side_effect(key):
                 if key == "current_project_id":
@@ -550,11 +552,12 @@ class TestConfigurationLoading:
 
     def test_require_project_decorator_allows_execution_with_project(self):
         """Test that require_project allows execution when project is set."""
+
         @require_project()
         def my_command():
             return "executed"
 
-        with patch('tracertm.cli.storage_helper.get_current_project') as mock_project:
+        with patch("tracertm.cli.storage_helper.get_current_project") as mock_project:
             mock_project.return_value = ("project-123", "My Project")
 
             result = my_command()
@@ -563,14 +566,15 @@ class TestConfigurationLoading:
 
     def test_require_project_decorator_prevents_execution_without_project(self):
         """Test that require_project prevents execution when project is not set."""
+
         @require_project()
         def my_command():
             return "executed"
 
-        with patch('tracertm.cli.storage_helper.get_current_project') as mock_project:
+        with patch("tracertm.cli.storage_helper.get_current_project") as mock_project:
             mock_project.return_value = None
 
-            with patch('tracertm.cli.storage_helper._console.print'):
+            with patch("tracertm.cli.storage_helper._console.print"):
                 try:
                     my_command()
                 except Exception:
@@ -596,13 +600,13 @@ class TestDisplayFormatting:
             item_type="feature",
             status="todo",
             priority="high",
-            item_metadata={}
+            item_metadata={},
         )
 
         table = format_item_for_display(item)
 
         assert table is not None
-        assert hasattr(table, 'add_row')
+        assert hasattr(table, "add_row")
 
     def test_format_item_for_display_contains_required_fields(self):
         """Test that formatted item contains required fields."""
@@ -615,7 +619,7 @@ class TestDisplayFormatting:
             status="todo",
             priority="high",
             owner="alice",
-            item_metadata={"key": "value"}
+            item_metadata={"key": "value"},
         )
 
         table = format_item_for_display(item)
@@ -626,11 +630,7 @@ class TestDisplayFormatting:
     def test_format_link_for_display_returns_table(self):
         """Test that format_link_for_display returns Rich table."""
         link = Link(
-            id="link-123",
-            project_id="proj-1",
-            source_item_id="item-1",
-            target_item_id="item-2",
-            link_type="implements"
+            id="link-123", project_id="proj-1", source_item_id="item-1", target_item_id="item-2", link_type="implements"
         )
 
         table = format_link_for_display(link)
@@ -640,28 +640,12 @@ class TestDisplayFormatting:
     def test_format_link_for_display_with_context_items(self):
         """Test format_link_for_display with context items."""
         link = Link(
-            id="link-123",
-            project_id="proj-1",
-            source_item_id="item-1",
-            target_item_id="item-2",
-            link_type="implements"
+            id="link-123", project_id="proj-1", source_item_id="item-1", target_item_id="item-2", link_type="implements"
         )
 
-        source_item = Item(
-            id="item-1",
-            project_id="proj-1",
-            title="Source Item",
-            item_type="feature",
-            status="todo"
-        )
+        source_item = Item(id="item-1", project_id="proj-1", title="Source Item", item_type="feature", status="todo")
 
-        target_item = Item(
-            id="item-2",
-            project_id="proj-1",
-            title="Target Item",
-            item_type="feature",
-            status="done"
-        )
+        target_item = Item(id="item-2", project_id="proj-1", title="Target Item", item_type="feature", status="done")
 
         table = format_link_for_display(link, source_item, target_item)
 
@@ -670,20 +654,8 @@ class TestDisplayFormatting:
     def test_format_items_table_returns_table(self):
         """Test that format_items_table returns Rich table."""
         items = [
-            Item(
-                id="item-1",
-                project_id="proj-1",
-                title="Item 1",
-                item_type="feature",
-                status="todo"
-            ),
-            Item(
-                id="item-2",
-                project_id="proj-1",
-                title="Item 2",
-                item_type="bug",
-                status="done"
-            ),
+            Item(id="item-1", project_id="proj-1", title="Item 1", item_type="feature", status="todo"),
+            Item(id="item-2", project_id="proj-1", title="Item 2", item_type="bug", status="done"),
         ]
 
         table = format_items_table(items, title="Test Items")
@@ -693,13 +665,7 @@ class TestDisplayFormatting:
     def test_format_items_table_with_project_column(self):
         """Test format_items_table with project column."""
         items = [
-            Item(
-                id="item-1",
-                project_id="proj-1",
-                title="Item 1",
-                item_type="feature",
-                status="todo"
-            ),
+            Item(id="item-1", project_id="proj-1", title="Item 1", item_type="feature", status="todo"),
         ]
 
         table = format_items_table(items, title="Test Items", show_project=True)
@@ -709,28 +675,12 @@ class TestDisplayFormatting:
     def test_format_links_table_returns_table(self):
         """Test that format_links_table returns Rich table."""
         link = Link(
-            id="link-1",
-            project_id="proj-1",
-            source_item_id="item-1",
-            target_item_id="item-2",
-            link_type="implements"
+            id="link-1", project_id="proj-1", source_item_id="item-1", target_item_id="item-2", link_type="implements"
         )
 
-        item1 = Item(
-            id="item-1",
-            project_id="proj-1",
-            title="Item 1",
-            item_type="feature",
-            status="todo"
-        )
+        item1 = Item(id="item-1", project_id="proj-1", title="Item 1", item_type="feature", status="todo")
 
-        item2 = Item(
-            id="item-2",
-            project_id="proj-1",
-            title="Item 2",
-            item_type="feature",
-            status="done"
-        )
+        item2 = Item(id="item-2", project_id="proj-1", title="Item 2", item_type="feature", status="done")
 
         links = [(link, item1, item2)]
         table = format_links_table(links, title="Test Links")
@@ -781,10 +731,10 @@ class TestSyncManagement:
         """Test that show_sync_status displays status."""
         reset_storage_manager()
 
-        with patch('tracertm.cli.storage_helper.ConfigManager') as mock_config:
+        with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
             mock_config.return_value.get.return_value = str(tmp_path)
 
-            with patch('tracertm.cli.storage_helper._console.print') as mock_print:
+            with patch("tracertm.cli.storage_helper._console.print") as mock_print:
                 show_sync_status()
 
                 assert mock_print.called
@@ -793,14 +743,12 @@ class TestSyncManagement:
         """Test _trigger_sync with queue items."""
         reset_storage_manager()
 
-        with patch('tracertm.cli.storage_helper.ConfigManager') as mock_config:
+        with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
             mock_config_inst = MagicMock()
-            mock_config_inst.get.side_effect = lambda key: (
-                "http://localhost:8000" if key == "api_endpoint" else None
-            )
+            mock_config_inst.get.side_effect = lambda key: "http://localhost:8000" if key == "api_endpoint" else None
             mock_config.return_value = mock_config_inst
 
-            with patch('tracertm.cli.storage_helper.get_storage_manager') as mock_storage:
+            with patch("tracertm.cli.storage_helper.get_storage_manager") as mock_storage:
                 mock_storage_inst = MagicMock()
                 mock_storage_inst.get_sync_queue.return_value = [
                     {"entity_id": "item-1", "operation": "create"},
@@ -808,8 +756,8 @@ class TestSyncManagement:
                 ]
                 mock_storage.return_value = mock_storage_inst
 
-                with patch('tracertm.storage.sync_engine.create_sync_engine'):
-                    with patch('tracertm.cli.storage_helper._console.print'):
+                with patch("tracertm.storage.sync_engine.create_sync_engine"):
+                    with patch("tracertm.cli.storage_helper._console.print"):
                         _trigger_sync()
 
 
@@ -823,14 +771,15 @@ class TestWithSyncDecorator:
 
     def test_with_sync_decorator_enabled_triggers_sync(self):
         """Test that with_sync decorator triggers sync when enabled."""
+
         @with_sync(enabled=True)
         def my_command():
             return "result"
 
-        with patch('tracertm.cli.storage_helper.ConfigManager') as mock_config:
+        with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
             mock_config.return_value.get.return_value = True
 
-            with patch('tracertm.cli.storage_helper._trigger_sync') as mock_trigger:
+            with patch("tracertm.cli.storage_helper._trigger_sync") as mock_trigger:
                 result = my_command()
 
                 assert result == "result"
@@ -838,11 +787,12 @@ class TestWithSyncDecorator:
 
     def test_with_sync_decorator_disabled_skips_sync(self):
         """Test that with_sync decorator skips sync when disabled."""
+
         @with_sync(enabled=False)
         def my_command():
             return "result"
 
-        with patch('tracertm.cli.storage_helper._trigger_sync') as mock_trigger:
+        with patch("tracertm.cli.storage_helper._trigger_sync") as mock_trigger:
             result = my_command()
 
             assert result == "result"
@@ -850,14 +800,15 @@ class TestWithSyncDecorator:
 
     def test_with_sync_decorator_respects_auto_sync_config(self):
         """Test that with_sync decorator respects auto_sync config."""
+
         @with_sync(enabled=True)
         def my_command():
             return "result"
 
-        with patch('tracertm.cli.storage_helper.ConfigManager') as mock_config:
+        with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
             mock_config.return_value.get.return_value = False
 
-            with patch('tracertm.cli.storage_helper._trigger_sync') as mock_trigger:
+            with patch("tracertm.cli.storage_helper._trigger_sync") as mock_trigger:
                 result = my_command()
 
                 assert result == "result"
@@ -866,14 +817,15 @@ class TestWithSyncDecorator:
 
     def test_with_sync_decorator_preserves_function_behavior(self):
         """Test that with_sync decorator preserves function behavior."""
+
         @with_sync(enabled=True)
         def my_command(x, y):
             return x + y
 
-        with patch('tracertm.cli.storage_helper.ConfigManager') as mock_config:
+        with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
             mock_config.return_value.get.return_value = False
 
-            with patch('tracertm.cli.storage_helper._trigger_sync'):
+            with patch("tracertm.cli.storage_helper._trigger_sync"):
                 result = my_command(2, 3)
 
                 assert result == 5
@@ -889,6 +841,7 @@ class TestRequireProjectDecorator:
 
     def test_require_project_preserves_function_name(self):
         """Test that require_project preserves function name."""
+
         @require_project()
         def my_command():
             return "result"
@@ -897,11 +850,12 @@ class TestRequireProjectDecorator:
 
     def test_require_project_with_args_and_kwargs(self):
         """Test require_project with function args and kwargs."""
+
         @require_project()
         def my_command(a, b, c=None):
             return (a, b, c)
 
-        with patch('tracertm.cli.storage_helper.get_current_project') as mock_project:
+        with patch("tracertm.cli.storage_helper.get_current_project") as mock_project:
             mock_project.return_value = ("proj-1", "Project")
 
             result = my_command(1, 2, c=3)
@@ -910,24 +864,22 @@ class TestRequireProjectDecorator:
 
     def test_require_project_prints_error_message(self):
         """Test that require_project prints helpful error message."""
+
         @require_project()
         def my_command():
             return "result"
 
-        with patch('tracertm.cli.storage_helper.get_current_project') as mock_project:
+        with patch("tracertm.cli.storage_helper.get_current_project") as mock_project:
             mock_project.return_value = None
 
-            with patch('tracertm.cli.storage_helper._console.print') as mock_print:
+            with patch("tracertm.cli.storage_helper._console.print") as mock_print:
                 try:
                     my_command()
                 except Exception:
                     pass
 
                 # Should print helpful message
-                assert any(
-                    "project" in str(call_args).lower()
-                    for call_args in mock_print.call_args_list
-                )
+                assert any("project" in str(call_args).lower() for call_args in mock_print.call_args_list)
 
 
 # ============================================================================
@@ -942,7 +894,7 @@ class TestDatabaseOperations:
         """Test that storage manager can create project."""
         reset_storage_manager()
 
-        with patch('tracertm.cli.storage_helper.ConfigManager') as mock_config:
+        with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
             mock_config.return_value.get.return_value = str(tmp_path)
 
             manager = get_storage_manager()
@@ -963,7 +915,7 @@ class TestDatabaseOperations:
         """Test that storage manager can create item."""
         reset_storage_manager()
 
-        with patch('tracertm.cli.storage_helper.ConfigManager') as mock_config:
+        with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
             mock_config.return_value.get.return_value = str(tmp_path)
 
             manager = get_storage_manager()
@@ -976,12 +928,7 @@ class TestDatabaseOperations:
 
             # Create item
             item = Item(
-                id="item-1",
-                project_id="proj-1",
-                title="Test Item",
-                view="FEATURE",
-                item_type="feature",
-                status="todo"
+                id="item-1", project_id="proj-1", title="Test Item", view="FEATURE", item_type="feature", status="todo"
             )
             session.add(item)
             session.commit()
@@ -997,7 +944,7 @@ class TestDatabaseOperations:
         """Test that storage manager can update item."""
         reset_storage_manager()
 
-        with patch('tracertm.cli.storage_helper.ConfigManager') as mock_config:
+        with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
             mock_config.return_value.get.return_value = str(tmp_path)
 
             manager = get_storage_manager()
@@ -1014,7 +961,7 @@ class TestDatabaseOperations:
                 title="Original Title",
                 view="FEATURE",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             session.add(item)
             session.commit()
@@ -1025,7 +972,8 @@ class TestDatabaseOperations:
 
             # Verify update
             retrieved = session.query(Item).filter_by(id="item-1").first()
-            assert retrieved.title == "Updated Title"
+            assert retrieved is not None
+            assert retrieved.title == "Updated Title"  # type: ignore[possibly-missing-attribute]
 
             session.close()
 
@@ -1033,7 +981,7 @@ class TestDatabaseOperations:
         """Test that storage manager can delete item."""
         reset_storage_manager()
 
-        with patch('tracertm.cli.storage_helper.ConfigManager') as mock_config:
+        with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
             mock_config.return_value.get.return_value = str(tmp_path)
 
             manager = get_storage_manager()
@@ -1045,12 +993,7 @@ class TestDatabaseOperations:
             session.commit()
 
             item = Item(
-                id="item-1",
-                project_id="proj-1",
-                title="Test Item",
-                view="FEATURE",
-                item_type="feature",
-                status="todo"
+                id="item-1", project_id="proj-1", title="Test Item", view="FEATURE", item_type="feature", status="todo"
             )
             session.add(item)
             session.commit()
@@ -1078,7 +1021,7 @@ class TestTransactionManagement:
         """Test that storage manager handles transaction rollback."""
         reset_storage_manager()
 
-        with patch('tracertm.cli.storage_helper.ConfigManager') as mock_config:
+        with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
             mock_config.return_value.get.return_value = str(tmp_path)
 
             manager = get_storage_manager()
@@ -1090,13 +1033,7 @@ class TestTransactionManagement:
             session.commit()
 
             # Try to create item but rollback
-            item = Item(
-                id="item-1",
-                project_id="proj-1",
-                title="Test Item",
-                item_type="feature",
-                status="todo"
-            )
+            item = Item(id="item-1", project_id="proj-1", title="Test Item", item_type="feature", status="todo")
             session.add(item)
             session.rollback()
 
@@ -1110,7 +1047,7 @@ class TestTransactionManagement:
         """Test that storage manager commits transactions."""
         reset_storage_manager()
 
-        with patch('tracertm.cli.storage_helper.ConfigManager') as mock_config:
+        with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
             mock_config.return_value.get.return_value = str(tmp_path)
 
             manager = get_storage_manager()
@@ -1132,7 +1069,7 @@ class TestTransactionManagement:
         """Test that storage manager maintains session isolation."""
         reset_storage_manager()
 
-        with patch('tracertm.cli.storage_helper.ConfigManager') as mock_config:
+        with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
             mock_config.return_value.get.return_value = str(tmp_path)
 
             manager = get_storage_manager()
@@ -1147,13 +1084,7 @@ class TestTransactionManagement:
             session1.commit()
 
             # Session2 should not see uncommitted changes
-            item = Item(
-                id="item-1",
-                project_id="proj-1",
-                title="Test Item",
-                item_type="feature",
-                status="todo"
-            )
+            item = Item(id="item-1", project_id="proj-1", title="Test Item", item_type="feature", status="todo")
             session2.add(item)
             # Don't commit yet
 
@@ -1177,7 +1108,7 @@ class TestIntegration:
         """Test full workflow: create project, item, and retrieve."""
         reset_storage_manager()
 
-        with patch('tracertm.cli.storage_helper.ConfigManager') as mock_config:
+        with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
             mock_config.return_value.get.return_value = str(tmp_path)
 
             # Get storage manager
@@ -1197,7 +1128,7 @@ class TestIntegration:
                     title=f"Item {i}",
                     view=f"VIEW{i}",
                     item_type="feature",
-                    status="todo"
+                    status="todo",
                 )
                 for i in range(1, 4)
             ]
@@ -1207,9 +1138,7 @@ class TestIntegration:
             session.commit()
 
             # Format and retrieve
-            retrieved_items = session.query(Item).filter_by(
-                project_id="proj-1"
-            ).all()
+            retrieved_items = session.query(Item).filter_by(project_id="proj-1").all()
             assert len(retrieved_items) == 3
 
             # Format for display
@@ -1222,7 +1151,7 @@ class TestIntegration:
         """Test workflow including link creation."""
         reset_storage_manager()
 
-        with patch('tracertm.cli.storage_helper.ConfigManager') as mock_config:
+        with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
             mock_config.return_value.get.return_value = str(tmp_path)
 
             manager = get_storage_manager()
@@ -1235,12 +1164,7 @@ class TestIntegration:
 
             # Create items
             item1 = Item(
-                id="item-1",
-                project_id="proj-1",
-                title="Feature",
-                view="FEATURE",
-                item_type="feature",
-                status="todo"
+                id="item-1", project_id="proj-1", title="Feature", view="FEATURE", item_type="feature", status="todo"
             )
             item2 = Item(
                 id="item-2",
@@ -1248,7 +1172,7 @@ class TestIntegration:
                 title="Implementation",
                 view="IMPL",
                 item_type="implementation",
-                status="todo"
+                status="todo",
             )
 
             session.add(item1)
@@ -1261,7 +1185,7 @@ class TestIntegration:
                 project_id="proj-1",
                 source_item_id="item-1",
                 target_item_id="item-2",
-                link_type="implements"
+                link_type="implements",
             )
             session.add(link)
             session.commit()
@@ -1278,13 +1202,14 @@ class TestIntegration:
 
     def test_decorator_combination(self):
         """Test combining multiple decorators."""
+
         @with_sync(enabled=False)
         @handle_storage_error
         @require_project()
         def complex_command():
             return "success"
 
-        with patch('tracertm.cli.storage_helper.get_current_project') as mock_project:
+        with patch("tracertm.cli.storage_helper.get_current_project") as mock_project:
             mock_project.return_value = ("proj-1", "Project")
 
             result = complex_command()
@@ -1294,7 +1219,7 @@ class TestIntegration:
         """Test singleton consistency across multiple operations."""
         reset_storage_manager()
 
-        with patch('tracertm.cli.storage_helper.ConfigManager') as mock_config:
+        with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
             mock_config.return_value.get.return_value = str(tmp_path)
 
             manager1 = get_storage_manager()
@@ -1320,14 +1245,14 @@ class TestIntegration:
         """Test error handling during operations."""
         reset_storage_manager()
 
-        with patch('tracertm.cli.storage_helper.ConfigManager') as mock_config:
+        with patch("tracertm.cli.storage_helper.ConfigManager") as mock_config:
             mock_config.return_value.get.return_value = str(tmp_path)
 
             @handle_storage_error
             def failing_operation():
                 raise ValueError("Invalid operation")
 
-            with patch('tracertm.cli.storage_helper._console.print'):
+            with patch("tracertm.cli.storage_helper._console.print"):
                 try:
                     failing_operation()
                 except Exception:

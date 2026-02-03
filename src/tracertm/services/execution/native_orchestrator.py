@@ -7,23 +7,21 @@ Provides workspace isolation and resource management.
 from __future__ import annotations
 
 import asyncio
+import logging
 import os
 import shutil
-import signal
+import subprocess  # noqa: S404
 import tempfile
 import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Optional
-import logging
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 
 class NativeOrchestratorError(Exception):
     """Raised when native execution fails."""
-
-    pass
 
 
 @dataclass
@@ -32,10 +30,11 @@ class ProcessHandle:
 
     process_id: str
     workspace: Path
-    pid: Optional[int] = None
-    proc: Optional[asyncio.subprocess.Process] = None
+    pid: int | None = None
+    proc: Any = None  # asyncio.subprocess.Process at runtime
     env: dict[str, str] = field(default_factory=dict)
     created_at: float = field(default_factory=lambda: __import__("time").time())
+    _wait_task: asyncio.Task[None] | None = field(default=None, repr=False)
 
     def is_running(self) -> bool:
         """Check if the process is still running."""
@@ -77,9 +76,7 @@ class NativeOrchestrator:
         """
         return True
 
-    async def create_workspace(
-        self, handle_id: Optional[str] = None, env: Optional[dict[str, str]] = None
-    ) -> str:
+    async def create_workspace(self, handle_id: str | None = None, env: dict[str, str] | None = None) -> str:
         """Create an isolated workspace directory.
 
         Args:
@@ -96,9 +93,7 @@ class NativeOrchestrator:
             handle_id = str(uuid.uuid4())
 
         if handle_id in self._handles:
-            raise NativeOrchestratorError(
-                f"Workspace {handle_id} already exists. Use unique handle IDs."
-            )
+            raise NativeOrchestratorError(f"Workspace {handle_id} already exists. Use unique handle IDs.")
 
         try:
             workspace = self._base / handle_id
@@ -122,7 +117,7 @@ class NativeOrchestrator:
         handle_id: str,
         command: str | list[str],
         timeout: int = 300,
-        input_data: Optional[bytes] = None,
+        input_data: bytes | None = None,
         check: bool = False,
     ) -> tuple[int, str, str]:
         """Run a command in the workspace.
@@ -143,26 +138,21 @@ class NativeOrchestrator:
         handle = self._get_handle(handle_id)
 
         # Convert string command to list
-        if isinstance(command, str):
-            command_list = command.split()
-        else:
-            command_list = command
+        command_list = command.split() if isinstance(command, str) else command
 
         # Build process environment
         proc_env = os.environ.copy()
         proc_env.update(handle.env)
 
         try:
-            logger.debug(
-                f"Running command in {handle_id}: {' '.join(command_list)}"
-            )
+            logger.debug(f"Running command in {handle_id}: {' '.join(command_list)}")
 
             proc = await asyncio.create_subprocess_exec(
                 *command_list,
                 cwd=str(handle.workspace),
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-                stdin=asyncio.subprocess.PIPE if input_data else None,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                stdin=subprocess.PIPE if input_data else None,
                 env=proc_env,
             )
 
@@ -171,29 +161,25 @@ class NativeOrchestrator:
                     proc.communicate(input=input_data),
                     timeout=timeout,
                 )
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 proc.kill()
                 try:
                     await asyncio.wait_for(proc.wait(), timeout=5)
-                except asyncio.TimeoutError:
+                except TimeoutError:
                     pass
-                raise NativeOrchestratorError(
-                    f"Command timed out after {timeout}s: {' '.join(command_list)}"
-                )
+                raise NativeOrchestratorError(f"Command timed out after {timeout}s: {' '.join(command_list)}") from None
 
             stdout = stdout_data.decode("utf-8", errors="replace")
             stderr = stderr_data.decode("utf-8", errors="replace")
             return_code = proc.returncode or 0
 
             if check and return_code != 0:
-                raise NativeOrchestratorError(
-                    f"Command failed with code {return_code}: {stderr}"
-                )
+                raise NativeOrchestratorError(f"Command failed with code {return_code}: {stderr}")
 
             logger.debug(f"Command completed with return code {return_code}")
             return return_code, stdout, stderr
 
-        except asyncio.TimeoutError as e:
+        except TimeoutError as e:
             raise NativeOrchestratorError(f"Command execution timed out: {e}") from e
         except Exception as e:
             raise NativeOrchestratorError(f"Failed to execute command: {e}") from e
@@ -220,38 +206,31 @@ class NativeOrchestrator:
         handle = self._get_handle(handle_id)
 
         if handle.is_running():
-            raise NativeOrchestratorError(
-                f"Process already running in {handle_id}. Stop it first."
-            )
+            raise NativeOrchestratorError(f"Process already running in {handle_id}. Stop it first.")
 
         # Convert string command to list
-        if isinstance(command, str):
-            command_list = command.split()
-        else:
-            command_list = command
+        command_list = command.split() if isinstance(command, str) else command
 
         # Build process environment
         proc_env = os.environ.copy()
         proc_env.update(handle.env)
 
         try:
-            logger.debug(
-                f"Starting background process in {handle_id}: {' '.join(command_list)}"
-            )
+            logger.debug(f"Starting background process in {handle_id}: {' '.join(command_list)}")
 
             proc = await asyncio.create_subprocess_exec(
                 *command_list,
                 cwd=str(handle.workspace),
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
                 env=proc_env,
             )
 
             handle.proc = proc
             handle.pid = proc.pid
 
-            # Create a task to wait for process completion
-            asyncio.create_task(self._wait_process(handle_id, timeout))
+            # Create a task to wait for process completion (keep reference to avoid GC)
+            handle._wait_task = asyncio.create_task(self._wait_process(handle_id, timeout))
 
             logger.debug(f"Background process started with PID {proc.pid}")
             return handle_id
@@ -272,7 +251,7 @@ class NativeOrchestrator:
 
         try:
             await asyncio.wait_for(handle.proc.wait(), timeout=timeout)
-        except asyncio.TimeoutError:
+        except TimeoutError:
             logger.warning(f"Process {handle_id} timed out after {timeout}s, killing...")
             await self.stop(handle_id)
         except Exception as e:
@@ -302,12 +281,12 @@ class NativeOrchestrator:
 
             try:
                 await asyncio.wait_for(handle.proc.wait(), timeout=timeout)
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 logger.warning(f"Process {handle.pid} didn't stop, sending SIGKILL...")
                 handle.proc.kill()
                 try:
                     await asyncio.wait_for(handle.proc.wait(), timeout=5)
-                except asyncio.TimeoutError:
+                except TimeoutError:
                     logger.error(f"Failed to kill process {handle.pid}")
 
             logger.info(f"Process {handle.pid} stopped")
@@ -315,9 +294,7 @@ class NativeOrchestrator:
         except Exception as e:
             logger.error(f"Error stopping process {handle_id}: {e}")
 
-    async def copy_to(
-        self, handle_id: str, source: Path | str, dest_name: str = ""
-    ) -> Path:
+    async def copy_to(self, handle_id: str, source: Path | str, dest_name: str = "") -> Path:
         """Copy a file into the workspace.
 
         Args:
@@ -356,9 +333,7 @@ class NativeOrchestrator:
         except Exception as e:
             raise NativeOrchestratorError(f"Failed to copy file: {e}") from e
 
-    async def copy_from(
-        self, handle_id: str, source_name: str, dest: Path | str
-    ) -> None:
+    async def copy_from(self, handle_id: str, source_name: str, dest: Path | str) -> None:
         """Copy a file from workspace to host.
 
         Args:
@@ -374,9 +349,7 @@ class NativeOrchestrator:
         dest_path = Path(dest)
 
         if not source_path.exists():
-            raise NativeOrchestratorError(
-                f"Source file does not exist in workspace: {source_path}"
-            )
+            raise NativeOrchestratorError(f"Source file does not exist in workspace: {source_path}")
 
         try:
             logger.debug(f"Copying {source_path} to {dest_path}")
@@ -497,9 +470,7 @@ class NativeOrchestrator:
         handle = self._get_handle(handle_id)
 
         if handle.is_running():
-            raise NativeOrchestratorError(
-                "Cannot modify environment while process is running"
-            )
+            raise NativeOrchestratorError("Cannot modify environment while process is running")
 
         handle.env.update(env)
         logger.debug(f"Updated environment for {handle_id}: {list(env.keys())}")
@@ -507,8 +478,8 @@ class NativeOrchestrator:
     async def apply_resource_limits(
         self,
         handle_id: str,
-        cpu_seconds: Optional[int] = None,
-        memory_mb: Optional[int] = None,
+        cpu_seconds: int | None = None,
+        memory_mb: int | None = None,
     ) -> None:
         """Apply resource limits to a workspace via environment variables.
 
@@ -523,7 +494,7 @@ class NativeOrchestrator:
         Raises:
             NativeOrchestratorError: If handle doesn't exist.
         """
-        handle = self._get_handle(handle_id)
+        self._get_handle(handle_id)
 
         env_updates = {}
         if cpu_seconds is not None:
@@ -533,6 +504,4 @@ class NativeOrchestrator:
 
         if env_updates:
             await self.set_workspace_env(handle_id, env_updates)
-            logger.info(
-                f"Applied resource limits to {handle_id}: {env_updates}"
-            )
+            logger.info(f"Applied resource limits to {handle_id}: {env_updates}")

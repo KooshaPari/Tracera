@@ -14,19 +14,19 @@ export type InterceptorSubscription = () => void
 export const INTERNAL_REQUEST_ID_HEADER_NAME =
   'x-interceptors-internal-request-id'
 
-export function getGlobalSymbol<V>(symbol: Symbol): V | undefined {
+export function getGlobalSymbol<V>(symbol: symbol): V | undefined {
   return (
     // @ts-ignore https://github.com/Microsoft/TypeScript/issues/24587
     globalThis[symbol] || undefined
   )
 }
 
-function setGlobalSymbol(symbol: Symbol, value: any): void {
+function setGlobalSymbol(symbol: symbol, value: any): void {
   // @ts-ignore
   globalThis[symbol] = value
 }
 
-export function deleteGlobalSymbol(symbol: Symbol): void {
+export function deleteGlobalSymbol(symbol: symbol): void {
   // @ts-ignore
   delete globalThis[symbol]
 }

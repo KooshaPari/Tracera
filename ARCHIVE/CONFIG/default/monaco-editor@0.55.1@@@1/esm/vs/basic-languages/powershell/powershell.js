@@ -1,6 +1,6 @@
 const conf = {
   // the default separators except `$-`
-  wordPattern: /(-?\d*\.\d\w*)|([^\`\~\!\@\#%\^\&\*\(\)\=\+\[\{\]\}\\\|\;\:\'\"\,\.\<\>\/\?\s]+)/g,
+  wordPattern: /(-?\d*\.\d\w*)|([^`~!@#%^&*()=+[{\]}\\|;:'",.<>/?\s]+)/g,
   comments: {
     lineComment: "#",
     blockComment: ["<#", "#>"]
@@ -81,7 +81,7 @@ const language = {
   ],
   helpKeywords: /SYNOPSIS|DESCRIPTION|PARAMETER|EXAMPLE|INPUTS|OUTPUTS|NOTES|LINK|COMPONENT|ROLE|FUNCTIONALITY|FORWARDHELPTARGETNAME|FORWARDHELPCATEGORY|REMOTEHELPRUNSPACE|EXTERNALHELP/,
   // we include these common regular expressions
-  symbols: /[=><!~?&%|+\-*\/\^;\.,]+/,
+  symbols: /[=><!~?&%|+\-*/^;.,]+/,
   escapes: /`(?:[abfnrtv\\"'$]|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
   // The main tokenizer for our languages
   tokenizer: {
@@ -109,17 +109,17 @@ const language = {
       [/<#/, "comment", "@comment"],
       [/#.*$/, "comment"],
       // delimiters
-      [/[{}()\[\]]/, "@brackets"],
+      [/[{}()[\]]/, "@brackets"],
       [/@symbols/, "delimiter"],
       // numbers
-      [/\d*\.\d+([eE][\-+]?\d+)?/, "number.float"],
+      [/\d*\.\d+([eE][-+]?\d+)?/, "number.float"],
       [/0[xX][0-9a-fA-F_]*[0-9a-fA-F]/, "number.hex"],
       [/\d+?/, "number"],
       // delimiter: after number because of .\d floats
       [/[;,.]/, "delimiter"],
       // strings:
-      [/\@"/, "string", '@herestring."'],
-      [/\@'/, "string", "@herestring.'"],
+      [/@"/, "string", '@herestring."'],
+      [/@'/, "string", "@herestring.'"],
       [
         /"/,
         {
@@ -141,7 +141,7 @@ const language = {
     ],
     string: [
       [
-        /[^"'\$`]+/,
+        /[^"'$`]+/,
         {
           cases: {
             "@eos": { token: "string", next: "@popall" },
@@ -213,7 +213,7 @@ const language = {
           }
         }
       ],
-      [/[^\$`]+/, "string"],
+      [/[^$`]+/, "string"],
       [/@escapes/, "string.escape"],
       [/`./, "string.escape.invalid"],
       [
@@ -227,10 +227,10 @@ const language = {
       ]
     ],
     comment: [
-      [/[^#\.]+/, "comment"],
+      [/[^#.]+/, "comment"],
       [/#>/, "comment", "@pop"],
       [/(\.)(@helpKeywords)(?!\w)/, { token: "comment.keyword.$2" }],
-      [/[\.#]/, "comment"]
+      [/[.#]/, "comment"]
     ]
   }
 };

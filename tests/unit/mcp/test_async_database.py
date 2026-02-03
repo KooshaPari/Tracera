@@ -12,7 +12,6 @@ import pytest
 from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncEngine
 
-from tracertm.core.context import current_user_id
 from tracertm.mcp.database_adapter import (
     get_async_engine,
     get_mcp_session,
@@ -70,7 +69,7 @@ async def test_get_mcp_session_sets_rls_context(mocker):
     mock_config = mocker.patch("tracertm.mcp.database_adapter.ConfigManager")
     mock_config.return_value.get.return_value = "postgresql://localhost/test"
 
-    async with get_mcp_session() as session:
+    async with get_mcp_session() as _session:
         # In PostgreSQL, this would set the RLS context
         # For SQLite tests, this is a no-op
         pass
@@ -94,9 +93,7 @@ async def test_get_mcp_session_commits_on_success():
 
     # Verify project was committed
     async with get_mcp_session() as session:
-        result = await session.execute(
-            select(Project).filter(Project.id == "test-project-1")
-        )
+        result = await session.execute(select(Project).filter(Project.id == "test-project-1"))
         saved_project = result.scalar_one_or_none()
         assert saved_project is not None
         assert saved_project.name == "Test Project"
@@ -105,23 +102,23 @@ async def test_get_mcp_session_commits_on_success():
 @pytest.mark.asyncio
 async def test_get_mcp_session_rollsback_on_error():
     """Test that session rolls back changes on error."""
-    with pytest.raises(ValueError):
+
+    async def _rollback_scenario():
         async with get_mcp_session() as session:
-            # Create a test project
             project = Project(
                 id="test-project-2",
                 name="Test Project",
                 description="Test",
             )
             session.add(project)
-            # Raise error before commit
             raise ValueError("Test error")
+
+    with pytest.raises(ValueError, match="Test error"):
+        await _rollback_scenario()
 
     # Verify project was not committed
     async with get_mcp_session() as session:
-        result = await session.execute(
-            select(Project).filter(Project.id == "test-project-2")
-        )
+        result = await session.execute(select(Project).filter(Project.id == "test-project-2"))
         saved_project = result.scalar_one_or_none()
         assert saved_project is None
 
@@ -152,9 +149,9 @@ async def test_get_pool_status_before_init():
 @pytest.mark.asyncio
 async def test_engine_sharing_reduces_connections():
     """Test that multiple sessions share the same connection pool."""
-    # Get engine first
-    engine = await get_async_engine()
-    initial_pool_size = engine.pool.size()
+    # Get pool status via adapter (avoids typing issues with pool.size())
+    initial_status = await get_pool_status()
+    initial_pool_size = initial_status["size"]
 
     # Create multiple sessions
     sessions_count = 5
@@ -163,7 +160,8 @@ async def test_engine_sharing_reduces_connections():
             await session.execute(text("SELECT 1"))
 
     # Verify we're still using the same pool
-    final_pool_size = engine.pool.size()
+    final_status = await get_pool_status()
+    final_pool_size = final_status["size"]
     assert initial_pool_size == final_pool_size  # Pool size shouldn't grow
 
 

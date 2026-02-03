@@ -28,17 +28,13 @@ class GraphReportService:
             return {"errors": ["graph_not_found"]}
 
         nodes_result = await self.session.execute(
-            select(Item)
-            .join(GraphNode, GraphNode.item_id == Item.id)
-            .where(GraphNode.graph_id == graph_id)
+            select(Item).join(GraphNode, GraphNode.item_id == Item.id).where(GraphNode.graph_id == graph_id)
         )
         nodes = list(nodes_result.scalars().all())
         node_ids = {n.id for n in nodes}
         node_kind_by_id = {n.id: n.item_type for n in nodes}
 
-        links_result = await self.session.execute(
-            select(Link).where(Link.graph_id == graph_id)
-        )
+        links_result = await self.session.execute(select(Link).where(Link.graph_id == graph_id))
         links = list(links_result.scalars().all())
         linked_nodes = set()
         for link in links:
@@ -57,9 +53,7 @@ class GraphReportService:
         mapping_graph_obj = mapping_graph.scalar_one_or_none()
         mapping_links: list[Link] = []
         if mapping_graph_obj:
-            mapping_links_result = await self.session.execute(
-                select(Link).where(Link.graph_id == mapping_graph_obj.id)
-            )
+            mapping_links_result = await self.session.execute(select(Link).where(Link.graph_id == mapping_graph_obj.id))
             mapping_links = list(mapping_links_result.scalars().all())
         mapping_linked = set()
         for link in mapping_links:
@@ -69,9 +63,8 @@ class GraphReportService:
         missing_mappings: list[str] = []
         if graph.graph_type == "user_requirements":
             for node_id, kind in node_kind_by_id.items():
-                if kind in {"capability", "expectation", "acceptance_check"}:
-                    if node_id not in mapping_linked:
-                        missing_mappings.append(node_id)
+                if kind in {"capability", "expectation", "acceptance_check"} and node_id not in mapping_linked:
+                    missing_mappings.append(node_id)
 
         # API endpoints unreachable from journey or mapping graphs
         unreachable_api: list[str] = []

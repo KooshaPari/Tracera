@@ -20,7 +20,7 @@ declare namespace xmlbuilder {
      * @param doctypeOrOptions - Doctype declaration or create options
      * @param options - create options
      */
-    function create(nameOrObject: string | { [name: string]: Object },
+    function create(nameOrObject: string | { [name: string]: object },
         xmldecOrOptions?: CreateOptions, doctypeOrOptions?: CreateOptions,
         options?: CreateOptions): XMLElement;
 
@@ -795,9 +795,9 @@ declare namespace xmlbuilder {
          * 
          * @returns the last top level node created
          */
-        element(name: any, attributes?: Object, text?: any): XMLElement;
-        ele(name: any, attributes?: Object, text?: any): XMLElement;
-        e(name: any, attributes?: Object, text?: any): XMLElement;
+        element(name: any, attributes?: object, text?: any): XMLElement;
+        ele(name: any, attributes?: object, text?: any): XMLElement;
+        e(name: any, attributes?: object, text?: any): XMLElement;
 
         /**
          * Adds or modifies an attribute.
@@ -822,7 +822,7 @@ declare namespace xmlbuilder {
          * 
          * @returns the new node
          */
-        insertBefore(name: any, attributes?: Object, text?: any): XMLElement;
+        insertBefore(name: any, attributes?: object, text?: any): XMLElement;
         /**
          * Creates a new sibling node and inserts it after this node.
          * 
@@ -832,7 +832,7 @@ declare namespace xmlbuilder {
          * 
          * @returns the new node
          */
-        insertAfter(name: any, attributes?: Object, text?: any): XMLElement;
+        insertAfter(name: any, attributes?: object, text?: any): XMLElement;
         /**
          * Removes this node from the tree.
          * 
@@ -851,9 +851,9 @@ declare namespace xmlbuilder {
          * 
          * @returns the node created
          */
-        node(name: string, attributes?: Object, text?: any): XMLElement;
-        nod(name: string, attributes?: Object, text?: any): XMLElement;
-        n(name: string, attributes?: Object, text?: any): XMLElement;
+        node(name: string, attributes?: object, text?: any): XMLElement;
+        nod(name: string, attributes?: object, text?: any): XMLElement;
+        n(name: string, attributes?: object, text?: any): XMLElement;
 
         /**
          * Creates a new text node and appends it to the list of child nodes.
@@ -938,13 +938,13 @@ declare namespace xmlbuilder {
          */
         instruction(target: string, value: any): XMLElement;
         instruction(array: Array<any>): XMLElement;
-        instruction(obj: Object): XMLElement;
+        instruction(obj: object): XMLElement;
         ins(target: string, value: any): XMLElement;
         ins(array: Array<any>): XMLElement;
-        ins(obj: Object): XMLElement;
+        ins(obj: object): XMLElement;
         i(target: string, value: any): XMLElement;
         i(array: Array<any>): XMLElement;
-        i(obj: Object): XMLElement;
+        i(obj: object): XMLElement;
 
         /**
          * Creates a processing instruction node before the current node.
@@ -1205,8 +1205,8 @@ declare namespace xmlbuilder {
          * 
          * @returns the DOCTYPE node
          */
-        element(name: string, value?: Object): XMLDocType;
-        ele(name: string, value?: Object): XMLDocType;
+        element(name: string, value?: object): XMLDocType;
+        ele(name: string, value?: object): XMLDocType;
 
         /**
          * Creates an attribute declaration.
@@ -1311,10 +1311,10 @@ declare namespace xmlbuilder {
          */
         instruction(target: string, value: any): XMLDocType;
         instruction(array: Array<any>): XMLDocType;
-        instruction(obj: Object): XMLDocType;
+        instruction(obj: object): XMLDocType;
         ins(target: string, value: any): XMLDocType;
         ins(array: Array<any>): XMLDocType;
-        ins(obj: Object): XMLDocType;
+        ins(obj: object): XMLDocType;
 
         /**
          * Returns the root element node.
@@ -1533,9 +1533,9 @@ declare namespace xmlbuilder {
          * 
          * @returns the document builder object
          */
-        node(name: string, attributes?: Object, text?: any): XMLDocumentCB;
-        nod(name: string, attributes?: Object, text?: any): XMLDocumentCB;
-        n(name: string, attributes?: Object, text?: any): XMLDocumentCB;
+        node(name: string, attributes?: object, text?: any): XMLDocumentCB;
+        nod(name: string, attributes?: object, text?: any): XMLDocumentCB;
+        n(name: string, attributes?: object, text?: any): XMLDocumentCB;
 
         /**
          * Creates a child element node.
@@ -1549,9 +1549,9 @@ declare namespace xmlbuilder {
          * 
          * @returns the document builder object
          */
-        element(name: any, attributes?: Object, text?: any): XMLDocumentCB;
-        ele(name: any, attributes?: Object, text?: any): XMLDocumentCB;
-        e(name: any, attributes?: Object, text?: any): XMLDocumentCB;
+        element(name: any, attributes?: object, text?: any): XMLDocumentCB;
+        ele(name: any, attributes?: object, text?: any): XMLDocumentCB;
+        e(name: any, attributes?: object, text?: any): XMLDocumentCB;
 
         /**
          * Adds or modifies an attribute.
@@ -1632,13 +1632,13 @@ declare namespace xmlbuilder {
          */
         instruction(target: string, value: any): XMLDocumentCB;
         instruction(array: Array<any>): XMLDocumentCB;
-        instruction(obj: Object): XMLDocumentCB;
+        instruction(obj: object): XMLDocumentCB;
         ins(target: string, value: any): XMLDocumentCB;
         ins(array: Array<any>): XMLDocumentCB;
-        ins(obj: Object): XMLDocumentCB;
+        ins(obj: object): XMLDocumentCB;
         i(target: string, value: any): XMLDocumentCB;
         i(array: Array<any>): XMLDocumentCB;
-        i(obj: Object): XMLDocumentCB;
+        i(obj: object): XMLDocumentCB;
 
         /**
          * Creates the XML declaration.
@@ -1680,9 +1680,9 @@ declare namespace xmlbuilder {
          * 
          * @returns the document builder object
          */
-        dtdElement(name: string, value?: Object): XMLDocumentCB;
-        element(name: string, value?: Object): XMLDocumentCB;
-        ele(name: string, value?: Object): XMLDocumentCB;
+        dtdElement(name: string, value?: object): XMLDocumentCB;
+        element(name: string, value?: object): XMLDocumentCB;
+        ele(name: string, value?: object): XMLDocumentCB;
 
         /**
          * Creates an attribute declaration.

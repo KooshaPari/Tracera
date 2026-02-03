@@ -33,7 +33,7 @@
 			}
 		],
 		'keyword': keywords,
-		'operator': /\bis!|\b(?:as|is)\b|\+\+|--|&&|\|\||<<=?|>>=?|~(?:\/=?)?|[+\-*\/%&^|=!<>]=?|\?/
+		'operator': /\bis!|\b(?:as|is)\b|\+\+|--|&&|\|\||<<=?|>>=?|~(?:\/=?)?|[+\-*/%&^|=!<>]=?|\?/
 	});
 
 	Prism.languages.insertBefore('dart', 'string', {

@@ -13,10 +13,11 @@ Revises: 027_add_step_definitions
 Create Date: 2026-01-29 15:00:00.000000
 """
 
-from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.dialects.postgresql import JSONB
+
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "028_add_item_specifications"

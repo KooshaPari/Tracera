@@ -24,7 +24,7 @@ export function onBecomeObserved(
     listener: Lambda
 ): Lambda
 export function onBecomeObserved<K, V = any>(
-    value: ObservableMap<K, V> | Object,
+    value: ObservableMap<K, V> | object,
     property: K,
     listener: Lambda
 ): Lambda
@@ -43,7 +43,7 @@ export function onBecomeUnobserved(
     listener: Lambda
 ): Lambda
 export function onBecomeUnobserved<K, V = any>(
-    value: ObservableMap<K, V> | Object,
+    value: ObservableMap<K, V> | object,
     property: K,
     listener: Lambda
 ): Lambda

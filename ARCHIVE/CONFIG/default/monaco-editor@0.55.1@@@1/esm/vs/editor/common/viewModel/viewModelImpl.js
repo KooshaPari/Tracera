@@ -804,7 +804,7 @@ class ViewModel extends Disposable {
         }
         const fontInfo = this._configuration.options.get(59 /* EditorOption.fontInfo */);
         const colorMap = this._getColorMap();
-        const hasBadChars = (/[:;\\\/<>]/.test(fontInfo.fontFamily));
+        const hasBadChars = (/[:;\\/<>]/.test(fontInfo.fontFamily));
         const useDefaultFontFamily = (hasBadChars || fontInfo.fontFamily === EDITOR_FONT_DEFAULTS.fontFamily);
         let fontFamily;
         if (useDefaultFontFamily) {

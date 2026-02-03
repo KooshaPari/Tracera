@@ -62,9 +62,7 @@ class StorageAdapter:
         project_storage = self.storage.get_project_storage(project_name)
         return project_storage.get_project()
 
-    def create_project(
-        self, name: str, description: str | None = None, metadata: dict | None = None
-    ) -> Project:
+    def create_project(self, name: str, description: str | None = None, metadata: dict | None = None) -> Project:
         """
         Create or update project.
 
@@ -108,17 +106,14 @@ class StorageAdapter:
         item_storage = project_storage.get_item_storage(project)
 
         # Get items from SQLite
-        items = item_storage.list_items(
+        # TODO: Merge with items parsed from Markdown files
+        # This would scan the markdown directories and parse frontmatter
+        # For now, return SQLite items only
+        return item_storage.list_items(
             item_type=item_type,
             status=status,
             parent_id=parent_id,
         )
-
-        # TODO: Merge with items parsed from Markdown files
-        # This would scan the markdown directories and parse frontmatter
-        # For now, return SQLite items only
-
-        return items
 
     def get_item(self, project: Project, item_id: str) -> Item | None:
         """
@@ -182,7 +177,7 @@ class StorageAdapter:
         )
 
         # Notify listeners
-        self._notify_item_change(item.id)
+        self._notify_item_change(str(item.id))
 
         return item
 
@@ -227,7 +222,7 @@ class StorageAdapter:
         )
 
         # Notify listeners
-        self._notify_item_change(item.id)
+        self._notify_item_change(str(item.id))
 
         return item
 
@@ -470,7 +465,8 @@ class StorageAdapter:
             items_by_type: dict[str, int] = {}
             for item_type in ["epic", "story", "test", "task"]:
                 count = (
-                    session.query(Item)
+                    session
+                    .query(Item)
                     .filter(
                         Item.project_id == project.id,
                         Item.item_type == item_type,
@@ -484,7 +480,8 @@ class StorageAdapter:
             items_by_status: dict[str, int] = {}
             for status in ["todo", "in_progress", "done", "blocked"]:
                 count = (
-                    session.query(Item)
+                    session
+                    .query(Item)
                     .filter(
                         Item.project_id == project.id,
                         Item.status == status,
@@ -495,9 +492,7 @@ class StorageAdapter:
                 items_by_status[status] = count
 
             # Count links
-            total_links = (
-                session.query(Link).filter(Link.project_id == project.id).count()
-            )
+            total_links = session.query(Link).filter(Link.project_id == project.id).count()
 
             return {
                 "total_items": sum(items_by_type.values()),
@@ -512,9 +507,7 @@ class StorageAdapter:
     # Reactive Callbacks
     # ========================================================================
 
-    def on_sync_status_change(
-        self, callback: Callable[[SyncState], None]
-    ) -> Callable[[], None]:
+    def on_sync_status_change(self, callback: Callable[[SyncState], None]) -> Callable[[], None]:
         """
         Register callback for sync status changes.
 
@@ -531,9 +524,7 @@ class StorageAdapter:
 
         return unregister
 
-    def on_conflict_detected(
-        self, callback: Callable[[Conflict], None]
-    ) -> Callable[[], None]:
+    def on_conflict_detected(self, callback: Callable[[Conflict], None]) -> Callable[[], None]:
         """
         Register callback for conflict detection.
 
@@ -550,9 +541,7 @@ class StorageAdapter:
 
         return unregister
 
-    def on_item_change(
-        self, callback: Callable[[str], None]
-    ) -> Callable[[], None]:
+    def on_item_change(self, callback: Callable[[str], None]) -> Callable[[], None]:
         """
         Register callback for item changes.
 

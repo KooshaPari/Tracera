@@ -12,12 +12,11 @@ from typing import Any, TypeVar
 
 from sqlalchemy.orm.exc import StaleDataError
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 class ConcurrencyError(Exception):
     """Raised when concurrent operation conflict detected."""
-    pass
 
 
 def retry_with_backoff(
@@ -40,6 +39,7 @@ def retry_with_backoff(
     Returns:
         Decorated function with retry logic
     """
+
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> T:
@@ -55,8 +55,8 @@ def retry_with_backoff(
                     if attempt < max_retries:
                         # Calculate delay with exponential backoff
                         if jitter:
-                            # Add random jitter (±25%)
-                            jitter_amount = delay * 0.25 * (2 * random.random() - 1)
+                            # Add random jitter (±25%) — not for crypto
+                            jitter_amount = delay * 0.25 * (2 * random.random() - 1)  # noqa: S311
                             actual_delay = delay + jitter_amount
                         else:
                             actual_delay = delay
@@ -70,9 +70,7 @@ def retry_with_backoff(
                         delay = min(delay * exponential_base, max_delay)
                     else:
                         # Max retries exceeded
-                        raise ConcurrencyError(
-                            f"Operation failed after {max_retries} retries: {e!s}"
-                        ) from e
+                        raise ConcurrencyError(f"Operation failed after {max_retries} retries: {e!s}") from e
                 except Exception:
                     # Non-retryable error
                     raise
@@ -83,6 +81,7 @@ def retry_with_backoff(
             raise RuntimeError("Unexpected retry logic failure")
 
         return wrapper
+
     return decorator
 
 
@@ -127,16 +126,14 @@ class ConcurrentOperationsService:
                 last_exception = e
 
                 if attempt < max_retries:
-                    # Add jitter to prevent thundering herd
-                    jitter = delay * 0.25 * (2 * random.random() - 1)
+                    # Add jitter to prevent thundering herd (not for crypto)
+                    jitter = delay * 0.25 * (2 * random.random() - 1)  # noqa: S311
                     actual_delay = delay + jitter
 
                     time.sleep(actual_delay)
                     delay = min(delay * 2.0, 2.0)  # Exponential backoff, max 2s
                 else:
-                    raise ConcurrencyError(
-                        f"Operation failed after {max_retries} retries: {e!s}"
-                    ) from e
+                    raise ConcurrencyError(f"Operation failed after {max_retries} retries: {e!s}") from e
 
         if last_exception:
             raise last_exception

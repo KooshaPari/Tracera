@@ -47,7 +47,7 @@ def main():
 
         print(f"✓ Created .trace/ at: {trace_dir}")
         print(f"✓ Project ID: {project_id}")
-        print(f"✓ Structure:")
+        print("✓ Structure:")
         for item in sorted(trace_dir.rglob("*")):
             if item.is_file():
                 rel_path = item.relative_to(trace_dir)
@@ -159,7 +159,7 @@ def main():
 
         counters = storage.get_project_counters(project_path)
         for item_type, count in counters.items():
-            print(f"  {item_type}: {count} (next: {item_type.upper()}-{count+1:03d})")
+            print(f"  {item_type}: {count} (next: {item_type.upper()}-{count + 1:03d})")
 
         # ========================================
         # 5. Index Project
@@ -243,6 +243,7 @@ def main():
         src_dir.mkdir(parents=True)
 
         import os
+
         original_cwd = os.getcwd()
         os.chdir(src_dir)
 
@@ -262,10 +263,10 @@ def main():
         print("Summary")
         print("=" * 60)
         print(f"✓ Project initialized at: {project_path.relative_to(base_dir)}")
-        print(f"✓ Markdown files in: .trace/")
+        print("✓ Markdown files in: .trace/")
         print(f"✓ SQLite index at: {storage.db_path.relative_to(base_dir)}")
         print(f"✓ Created {len(epics)} epic, {len(stories)} stories, 1 test")
-        print(f"✓ All items indexed and searchable")
+        print("✓ All items indexed and searchable")
         print("\n" + "=" * 60)
 
 

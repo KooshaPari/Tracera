@@ -15,7 +15,7 @@ Prism.languages.antlr4 = {
 				alias: 'punctuation'
 			},
 			'escape': /\\(?:u(?:[a-fA-F\d]{4}|\{[a-fA-F\d]+\})|[pP]\{[=\w-]+\}|[^\r\nupP])/,
-			'punctuation': /[\[\]]/
+			'punctuation': /[[\]]/
 		}
 	},
 	'action': {

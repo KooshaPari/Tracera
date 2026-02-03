@@ -33,13 +33,13 @@ define("vs/clojure-DyYtgmYv", ["exports"], (function(exports) {
     ],
     constants: ["true", "false", "nil"],
     // delimiters: /[\\\[\]\s"#'(),;@^`{}~]|$/,
-    numbers: /^(?:[+\-]?\d+(?:(?:N|(?:[eE][+\-]?\d+))|(?:\.?\d*(?:M|(?:[eE][+\-]?\d+))?)|\/\d+|[xX][0-9a-fA-F]+|r[0-9a-zA-Z]+)?(?=[\\\[\]\s"#'(),;@^`{}~]|$))/,
-    characters: /^(?:\\(?:backspace|formfeed|newline|return|space|tab|o[0-7]{3}|u[0-9A-Fa-f]{4}|x[0-9A-Fa-f]{4}|.)?(?=[\\\[\]\s"(),;@^`{}~]|$))/,
+    numbers: /^(?:[+-]?\d+(?:(?:N|(?:[eE][+-]?\d+))|(?:\.?\d*(?:M|(?:[eE][+-]?\d+))?)|\/\d+|[xX][0-9a-fA-F]+|r[0-9a-zA-Z]+)?(?=[\\[\]\s"#'(),;@^`{}~]|$))/,
+    characters: /^(?:\\(?:backspace|formfeed|newline|return|space|tab|o[0-7]{3}|u[0-9A-Fa-f]{4}|x[0-9A-Fa-f]{4}|.)?(?=[\\[\]\s"(),;@^`{}~]|$))/,
     escapes: /^\\(?:["'\\bfnrt]|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
     // simple-namespace := /^[^\\\/\[\]\d\s"#'(),;@^`{}~][^\\\[\]\s"(),;@^`{}~]*/
     // simple-symbol    := /^(?:\/|[^\\\/\[\]\d\s"#'(),;@^`{}~][^\\\[\]\s"(),;@^`{}~]*)/
     // qualified-symbol := (<simple-namespace>(<.><simple-namespace>)*</>)?<simple-symbol>
-    qualifiedSymbols: /^(?:(?:[^\\\/\[\]\d\s"#'(),;@^`{}~][^\\\[\]\s"(),;@^`{}~]*(?:\.[^\\\/\[\]\d\s"#'(),;@^`{}~][^\\\[\]\s"(),;@^`{}~]*)*\/)?(?:\/|[^\\\/\[\]\d\s"#'(),;@^`{}~][^\\\[\]\s"(),;@^`{}~]*)*(?=[\\\[\]\s"(),;@^`{}~]|$))/,
+    qualifiedSymbols: /^(?:(?:[^\\/[\]\d\s"#'(),;@^`{}~][^\\[\]\s"(),;@^`{}~]*(?:\.[^\\/[\]\d\s"#'(),;@^`{}~][^\\[\]\s"(),;@^`{}~]*)*\/)?(?:\/|[^\\/[\]\d\s"#'(),;@^`{}~][^\\[\]\s"(),;@^`{}~]*)*(?=[\\[\]\s"(),;@^`{}~]|$))/,
     specialForms: [
       ".",
       "catch",
@@ -720,7 +720,7 @@ define("vs/clojure-DyYtgmYv", ["exports"], (function(exports) {
         // strings
         { include: "@string" },
         // brackets
-        [/[()\[\]{}]/, "@brackets"],
+        [/[()[\]{}]/, "@brackets"],
         // regular expressions
         [/\/#"(?:\.|(?:")|[^"\n])*"\/g/, "regexp"],
         // reader macro characters

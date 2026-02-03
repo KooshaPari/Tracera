@@ -65,7 +65,7 @@ export default function stan(Prism) {
         /(?:\b\d+(?:_\d+)*(?:\.(?:\d+(?:_\d+)*)?)?|\B\.\d+(?:_\d+)*)(?:E[+-]?\d+(?:_\d+)*)?i?(?!\w)/i,
       boolean: /\b(?:false|true)\b/,
       operator: /<-|\.[*/]=?|\|\|?|&&|[!=<>+\-*/]=?|['^%~?:]/,
-      punctuation: /[()\[\]{},;]/
+      punctuation: /[()[\]{},;]/
     }
     Prism.languages.stan.constraint.inside.expression.inside =
       Prism.languages.stan

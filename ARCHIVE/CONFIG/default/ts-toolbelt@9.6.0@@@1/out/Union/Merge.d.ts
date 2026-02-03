@@ -18,4 +18,4 @@ declare type _Merge<U extends object> = IntersectOf<Overwrite<U, {
  * ```
  */
 export declare type Merge<U extends object> = ComputeRaw<_Merge<Strict<U>>>;
-export {};
+

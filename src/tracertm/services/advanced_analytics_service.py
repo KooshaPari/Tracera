@@ -1,6 +1,6 @@
 """Service for advanced analytics and reporting."""
 
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -80,15 +80,11 @@ class AdvancedAnalyticsService:
 
         # Group events by day
         daily_events = {}
-        cutoff_date = datetime.utcnow() - timedelta(days=days)
+        cutoff_date = datetime.now(UTC) - timedelta(days=days)
 
         for event in events:
             if hasattr(event, "created_at") and event.created_at >= cutoff_date:
-                date_key = (
-                    event.created_at.date().isoformat()
-                    if hasattr(event.created_at, "date")
-                    else "unknown"
-                )
+                date_key = event.created_at.date().isoformat() if hasattr(event.created_at, "date") else "unknown"
                 daily_events[date_key] = daily_events.get(date_key, 0) + 1
 
         return {
@@ -108,13 +104,11 @@ class AdvancedAnalyticsService:
         link_types = {}
 
         for item in items:
-            if hasattr(item, "outgoing_links"):
-                for link in item.outgoing_links:
-                    total_links += 1
-                    link_type = (
-                        link.link_type if hasattr(link, "link_type") else "unknown"
-                    )
-                    link_types[link_type] = link_types.get(link_type, 0) + 1
+            outgoing = getattr(item, "outgoing_links", [])
+            for link in outgoing:
+                total_links += 1
+                link_type = link.link_type if hasattr(link, "link_type") else "unknown"
+                link_types[link_type] = link_types.get(link_type, 0) + 1
 
         # Calculate average links per item
         avg_links = total_links / len(items) if items else 0
@@ -139,16 +133,14 @@ class AdvancedAnalyticsService:
             if hasattr(item, "description") and item.description:
                 items_with_description += 1
 
-            if hasattr(item, "outgoing_links") and len(item.outgoing_links) > 0:
+            if len(getattr(item, "outgoing_links", [])) > 0:
                 items_with_links += 1
 
         return {
             "project_id": project_id,
             "total_items": len(items),
             "items_with_description": items_with_description,
-            "description_coverage": (
-                (items_with_description / len(items) * 100) if items else 0
-            ),
+            "description_coverage": ((items_with_description / len(items) * 100) if items else 0),
             "items_with_links": items_with_links,
             "link_coverage": (items_with_links / len(items) * 100) if items else 0,
         }
@@ -163,7 +155,7 @@ class AdvancedAnalyticsService:
 
         return {
             "project_id": project_id,
-            "generated_at": datetime.utcnow().isoformat(),
+            "generated_at": datetime.now(UTC).isoformat(),
             "project_metrics": metrics,
             "team_analytics": team,
             "trend_analysis": trends,

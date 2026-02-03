@@ -4,8 +4,8 @@ import pytest
 from sqlalchemy.orm.exc import StaleDataError
 
 from tracertm.services.concurrent_operations_service import (
-    ConcurrentOperationsService,
     ConcurrencyError,
+    ConcurrentOperationsService,
     retry_with_backoff,
 )
 
@@ -15,7 +15,7 @@ def test_retry_with_backoff_retries_then_raises(monkeypatch):
 
     def op():
         calls["count"] += 1
-        raise StaleDataError()
+        raise StaleDataError
 
     # avoid real sleep
     monkeypatch.setattr(time, "sleep", lambda x: None)
@@ -32,7 +32,7 @@ def test_execute_with_retry_success_after_conflict(monkeypatch):
     def op():
         calls["count"] += 1
         if calls["count"] == 1:
-            raise StaleDataError()
+            raise StaleDataError
         return "ok"
 
     monkeypatch.setattr(time, "sleep", lambda x: None)

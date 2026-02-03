@@ -325,23 +325,23 @@ const language = {
     "rtc"
   ],
   // we include these common regular expressions
-  symbols: /[=><!~?:&|+\-*\/\^%]+/,
+  symbols: /[=><!~?:&|+\-*/^%]+/,
   // C# style strings
   escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
   // The main tokenizer for our languages
   tokenizer: {
     root: [
       [/(\.\.)/, "delimiter"],
-      [/\b(16#[0-9A-Fa-f\_]*)+\b/, "number.hex"],
-      [/\b(2#[01\_]+)+\b/, "number.binary"],
-      [/\b(8#[0-9\_]*)+\b/, "number.octal"],
-      [/\b\d*\.\d+([eE][\-+]?\d+)?\b/, "number.float"],
-      [/\b(L?REAL)#[0-9\_\.e]+\b/, "number.float"],
-      [/\b(BYTE|(?:D|L)?WORD|U?(?:S|D|L)?INT)#[0-9\_]+\b/, "number"],
+      [/\b(16#[0-9A-Fa-f_]*)+\b/, "number.hex"],
+      [/\b(2#[01_]+)+\b/, "number.binary"],
+      [/\b(8#[0-9_]*)+\b/, "number.octal"],
+      [/\b\d*\.\d+([eE][-+]?\d+)?\b/, "number.float"],
+      [/\b(L?REAL)#[0-9_.e]+\b/, "number.float"],
+      [/\b(BYTE|(?:D|L)?WORD|U?(?:S|D|L)?INT)#[0-9_]+\b/, "number"],
       [/\d+/, "number"],
       [/\b(T|DT|TOD)#[0-9:-_shmyd]+\b/, "tag"],
-      [/\%(I|Q|M)(X|B|W|D|L)[0-9\.]+/, "tag"],
-      [/\%(I|Q|M)[0-9\.]*/, "tag"],
+      [/%(I|Q|M)(X|B|W|D|L)[0-9.]+/, "tag"],
+      [/%(I|Q|M)[0-9.]*/, "tag"],
       [/\b[A-Za-z]{1,6}#[0-9]+\b/, "tag"],
       [/\b(TO_|CTU_|CTD_|CTUD_|MUX_|SEL_)[A_Za-z]+\b/, "predefined"],
       [/\b[A_Za-z]+(_TO_)[A_Za-z]+\b/, "predefined"],
@@ -364,7 +364,7 @@ const language = {
         }
       ],
       { include: "@whitespace" },
-      [/[{}()\[\]]/, "@brackets"],
+      [/[{}()[\]]/, "@brackets"],
       [/"([^"\\]|\\.)*$/, "string.invalid"],
       // non-teminated string
       [/"/, { token: "string.quote", bracket: "@open", next: "@string_dq" }],
@@ -378,18 +378,18 @@ const language = {
       [/\b[A-Za-z0-9_]+\b/, "variable.name", "@pop"]
     ],
     comment: [
-      [/[^\/*]+/, "comment"],
+      [/[^/*]+/, "comment"],
       [/\/\*/, "comment", "@push"],
       // nested comment
       ["\\*/", "comment", "@pop"],
-      [/[\/*]/, "comment"]
+      [/[/*]/, "comment"]
     ],
     comment2: [
-      [/[^\(*]+/, "comment"],
+      [/[^(*]+/, "comment"],
       [/\(\*/, "comment", "@push"],
       // nested comment
       ["\\*\\)", "comment", "@pop"],
-      [/[\(*]/, "comment"]
+      [/[(*]/, "comment"]
     ],
     whitespace: [
       [/[ \t\r\n]+/, "white"],

@@ -108,7 +108,7 @@ declare module 'web-tree-sitter' {
       descendantForPosition(startPosition: Point, endPosition: Point): SyntaxNode;
       namedDescendantForPosition(position: Point): SyntaxNode;
       namedDescendantForPosition(startPosition: Point, endPosition: Point): SyntaxNode;
-      descendantsOfType(types: String | Array<String>, startPosition?: Point, endPosition?: Point): Array<SyntaxNode>;
+      descendantsOfType(types: string | Array<string>, startPosition?: Point, endPosition?: Point): Array<SyntaxNode>;
 
       walk(): TreeCursor;
     }

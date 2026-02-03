@@ -16,21 +16,15 @@ Focus areas:
 5. Database interactions and transactions
 """
 
-import csv
 import json
-import re
 import tempfile
-from datetime import datetime, timedelta
-from io import StringIO
-from pathlib import Path
-from typing import Any
+from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import AsyncMock, Mock, patch
 from uuid import uuid4
 
 import pytest
 import pytest_asyncio
 import yaml
-from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -41,8 +35,7 @@ from tracertm.services.critical_path_service import CriticalPathService
 from tracertm.services.export_import_service import ExportImportService
 from tracertm.services.progress_service import ProgressService
 from tracertm.services.stateless_ingestion_service import StatelessIngestionService
-from tracertm.services.tui_service import TUIService, UIComponent, UIComponentType
-
+from tracertm.services.tui_service import TUIService, UIComponentType
 
 # ============================================================================
 # STATELESS INGESTION SERVICE TESTS (Target: 80%+ coverage)
@@ -86,7 +79,7 @@ class TestStatelessIngestionServiceGapCoverage:
 
     def test_ingest_markdown_dry_run_mode(self, service):
         """Test dry run returns preview without creating items."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix=".md", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as tmp:
             tmp.write("# Header 1\n## Header 2\n[Link](url)\n")
             tmp.flush()
 
@@ -101,10 +94,10 @@ class TestStatelessIngestionServiceGapCoverage:
 
     def test_ingest_markdown_without_frontmatter_library(self, service, mock_session):
         """Test markdown ingestion when frontmatter library not available."""
-        with patch('tracertm.services.stateless_ingestion_service.frontmatter', None):
+        with patch("tracertm.services.stateless_ingestion_service.frontmatter", None):
             service_no_fm = StatelessIngestionService(mock_session)
 
-            with tempfile.NamedTemporaryFile(mode='w', suffix=".md", delete=False) as tmp:
+            with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as tmp:
                 tmp.write("# Test Header\nContent here")
                 tmp.flush()
 
@@ -120,7 +113,7 @@ class TestStatelessIngestionServiceGapCoverage:
 
     def test_ingest_markdown_with_frontmatter_parsing(self, service, mock_session):
         """Test markdown with YAML frontmatter metadata."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix=".md", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as tmp:
             tmp.write("""---
 project: Test Project
 description: Test Description
@@ -144,7 +137,7 @@ status: in_progress
 
     def test_ingest_markdown_frontmatter_exception_handling(self, service, mock_session):
         """Test handling of frontmatter parsing exceptions."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix=".md", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as tmp:
             tmp.write("---\ninvalid: yaml: content:\n---\n# Header")
             tmp.flush()
 
@@ -158,7 +151,7 @@ status: in_progress
 
     def test_ingest_markdown_create_new_project(self, service, mock_session):
         """Test creating new project when project_id not provided."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix=".md", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as tmp:
             tmp.write("# Test Header")
             tmp.flush()
 
@@ -178,7 +171,7 @@ status: in_progress
         mock_project.id = project_id
         mock_session.query.return_value.filter.return_value.first.return_value = mock_project
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix=".md", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as tmp:
             tmp.write("# Test")
             tmp.flush()
 
@@ -190,7 +183,7 @@ status: in_progress
         """Test error when specified project_id doesn't exist."""
         mock_session.query.return_value.filter.return_value.first.return_value = None
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix=".md", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as tmp:
             tmp.write("# Test")
             tmp.flush()
 
@@ -203,7 +196,7 @@ status: in_progress
         mock_project.id = str(uuid4())
         mock_session.query.return_value.filter.return_value.first.return_value = mock_project
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix=".md", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as tmp:
             tmp.write("""# Level 1
 ## Level 2
 ### Level 3
@@ -223,7 +216,7 @@ status: in_progress
         mock_project.id = str(uuid4())
         mock_session.query.return_value.filter.return_value.first.return_value = mock_project
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix=".md", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as tmp:
             tmp.write("""# Target Header
 Content
 [Link to Target](#target-header)
@@ -236,13 +229,13 @@ Content
 
     def test_ingest_markdown_without_markdown_it_library(self, mock_session):
         """Test when MarkdownIt library is not available."""
-        with patch('tracertm.services.stateless_ingestion_service.MarkdownIt', None):
+        with patch("tracertm.services.stateless_ingestion_service.MarkdownIt", None):
             service = StatelessIngestionService(mock_session)
             assert service.md_parser is None
 
     def test_ingest_markdown_without_markdown_library(self, mock_session):
         """Test when Markdown library is not available."""
-        with patch('tracertm.services.stateless_ingestion_service.Markdown', None):
+        with patch("tracertm.services.stateless_ingestion_service.Markdown", None):
             service = StatelessIngestionService(mock_session)
             assert service.markdown is None
 
@@ -266,7 +259,7 @@ Content
 
     def test_ingest_mdx_dry_run_mode(self, service):
         """Test MDX dry run returns component count."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix=".mdx", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".mdx", delete=False) as tmp:
             tmp.write("# Header\n<Button>Click</Button>\n<Alert>Warning</Alert>")
             tmp.flush()
 
@@ -282,7 +275,7 @@ Content
         mock_project.id = str(uuid4())
         mock_session.query.return_value.filter.return_value.first.return_value = mock_project
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix=".mdx", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".mdx", delete=False) as tmp:
             tmp.write("""# MDX Page
 <Component attr="value">Content</Component>
 <AnotherComponent>More content</AnotherComponent>
@@ -295,14 +288,14 @@ Content
 
     def test_ingest_mdx_without_frontmatter(self, service, mock_session):
         """Test MDX without frontmatter library."""
-        with patch('tracertm.services.stateless_ingestion_service.frontmatter', None):
+        with patch("tracertm.services.stateless_ingestion_service.frontmatter", None):
             service_no_fm = StatelessIngestionService(mock_session)
 
             mock_project = Mock(spec=Project)
             mock_project.id = str(uuid4())
             mock_session.query.return_value.filter.return_value.first.return_value = mock_project
 
-            with tempfile.NamedTemporaryFile(mode='w', suffix=".mdx", delete=False) as tmp:
+            with tempfile.NamedTemporaryFile(mode="w", suffix=".mdx", delete=False) as tmp:
                 tmp.write("<Component>Test</Component>")
                 tmp.flush()
 
@@ -318,6 +311,7 @@ Content
         # Set up mock to first return None (project doesn't exist by name)
         # Then after creation, return the mock project when queried by ID
         first_call = True
+
         def query_side_effect(*args, **kwargs):
             nonlocal first_call
             mock_query = Mock()
@@ -332,7 +326,7 @@ Content
 
         mock_session.query.side_effect = query_side_effect
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix=".mdx", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".mdx", delete=False) as tmp:
             tmp.write("# Test")
             tmp.flush()
 
@@ -360,7 +354,7 @@ Content
 
     def test_ingest_yaml_invalid_yaml_syntax(self, service):
         """Test error for invalid YAML syntax."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix=".yaml", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as tmp:
             tmp.write("invalid: yaml: [unclosed bracket")
             tmp.flush()
 
@@ -369,7 +363,7 @@ Content
 
     def test_ingest_yaml_non_dict_root(self, service):
         """Test error when YAML root is not a dictionary."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix=".yaml", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as tmp:
             tmp.write("- item1\n- item2")
             tmp.flush()
 
@@ -378,12 +372,8 @@ Content
 
     def test_ingest_yaml_openapi_detection(self, service):
         """Test OpenAPI format detection."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix=".yaml", delete=False) as tmp:
-            yaml_content = {
-                "openapi": "3.0.0",
-                "info": {"title": "API", "version": "1.0.0"},
-                "paths": {}
-            }
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as tmp:
+            yaml_content = {"openapi": "3.0.0", "info": {"title": "API", "version": "1.0.0"}, "paths": {}}
             tmp.write(yaml.dump(yaml_content))
             tmp.flush()
 
@@ -393,11 +383,8 @@ Content
 
     def test_ingest_yaml_bmad_detection(self, service):
         """Test BMad format detection."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix=".yaml", delete=False) as tmp:
-            yaml_content = {
-                "bmad": True,
-                "requirements": [{"id": "REQ-1", "title": "Test"}]
-            }
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as tmp:
+            yaml_content = {"bmad": True, "requirements": [{"id": "REQ-1", "title": "Test"}]}
             tmp.write(yaml.dump(yaml_content))
             tmp.flush()
 
@@ -407,7 +394,7 @@ Content
 
     def test_ingest_yaml_generic_format(self, service):
         """Test generic YAML format."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix=".yaml", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as tmp:
             yaml_content = {"name": "Test", "items": [{"title": "Item 1"}]}
             tmp.write(yaml.dump(yaml_content))
             tmp.flush()
@@ -424,7 +411,7 @@ Content
         """Test full OpenAPI spec ingestion with schemas and paths."""
         mock_session.query.return_value.filter.return_value.first.return_value = None
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix=".yaml", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as tmp:
             openapi_spec = {
                 "openapi": "3.0.0",
                 "info": {"title": "Test API", "description": "Test Description", "version": "1.0.0"},
@@ -433,15 +420,12 @@ Content
                         "User": {
                             "type": "object",
                             "description": "User schema",
-                            "properties": {"name": {"type": "string"}}
+                            "properties": {"name": {"type": "string"}},
                         },
-                        "Product": {
-                            "type": "object",
-                            "properties": {"id": {"type": "integer"}}
-                        }
+                        "Product": {"type": "object", "properties": {"id": {"type": "integer"}}},
                     },
                     "responses": {},
-                    "parameters": {}
+                    "parameters": {},
                 },
                 "paths": {
                     "/users": {
@@ -452,37 +436,25 @@ Content
                             "responses": {
                                 "200": {
                                     "description": "Success",
-                                    "content": {
-                                        "application/json": {
-                                            "schema": {"$ref": "#/components/schemas/User"}
-                                        }
-                                    }
+                                    "content": {"application/json": {"schema": {"$ref": "#/components/schemas/User"}}},
                                 }
-                            }
+                            },
                         },
                         "post": {
                             "operationId": "createUser",
                             "summary": "Create user",
                             "requestBody": {
-                                "content": {
-                                    "application/json": {
-                                        "schema": {"$ref": "#/components/schemas/User"}
-                                    }
-                                }
+                                "content": {"application/json": {"schema": {"$ref": "#/components/schemas/User"}}}
                             },
                             "responses": {
                                 "201": {
                                     "description": "Created",
-                                    "content": {
-                                        "application/json": {
-                                            "schema": {"$ref": "#/components/schemas/User"}
-                                        }
-                                    }
+                                    "content": {"application/json": {"schema": {"$ref": "#/components/schemas/User"}}},
                                 }
-                            }
-                        }
+                            },
+                        },
                     }
-                }
+                },
             }
             tmp.write(yaml.dump(openapi_spec))
             tmp.flush()
@@ -495,17 +467,12 @@ Content
 
     def test_ingest_openapi_dry_run_counts(self, service):
         """Test OpenAPI dry run calculates correct counts."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix=".yaml", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as tmp:
             openapi_spec = {
                 "openapi": "3.0.0",
                 "info": {"title": "API"},
-                "components": {
-                    "schemas": {"User": {}, "Product": {}, "Order": {}}
-                },
-                "paths": {
-                    "/users": {"get": {}, "post": {}, "x-custom": {}},
-                    "/products": {"get": {}, "delete": {}}
-                }
+                "components": {"schemas": {"User": {}, "Product": {}, "Order": {}}},
+                "paths": {"/users": {"get": {}, "post": {}, "x-custom": {}}, "/products": {"get": {}, "delete": {}}},
             }
             tmp.write(yaml.dump(openapi_spec))
             tmp.flush()
@@ -521,16 +488,11 @@ Content
         """Test OpenAPI ingestion skips x- extension fields."""
         mock_session.query.return_value.filter.return_value.first.return_value = None
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix=".yaml", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as tmp:
             openapi_spec = {
                 "openapi": "3.0.0",
                 "info": {"title": "API"},
-                "paths": {
-                    "/test": {
-                        "get": {"summary": "Real endpoint"},
-                        "x-internal": {"should": "be skipped"}
-                    }
-                }
+                "paths": {"/test": {"get": {"summary": "Real endpoint"}, "x-internal": {"should": "be skipped"}}},
             }
             tmp.write(yaml.dump(openapi_spec))
             tmp.flush()
@@ -543,7 +505,7 @@ Content
         """Test linking of related endpoints on same path."""
         mock_session.query.return_value.filter.return_value.first.return_value = None
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix=".yaml", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as tmp:
             openapi_spec = {
                 "openapi": "3.0.0",
                 "info": {"title": "API"},
@@ -551,9 +513,9 @@ Content
                     "/resource": {
                         "get": {"summary": "Get"},
                         "post": {"summary": "Create"},
-                        "put": {"summary": "Update"}
+                        "put": {"summary": "Update"},
                     }
-                }
+                },
             }
             tmp.write(yaml.dump(openapi_spec))
             tmp.flush()
@@ -571,7 +533,7 @@ Content
         """Test complete BMad format ingestion."""
         mock_session.query.return_value.filter.return_value.first.return_value = None
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix=".yaml", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as tmp:
             bmad_content = {
                 "project": {"name": "Test Project", "description": "Test Desc"},
                 "requirements": [
@@ -584,7 +546,7 @@ Content
                         "priority": "high",
                         "owner": "dev1",
                         "tags": ["important"],
-                        "depends_on": []
+                        "depends_on": [],
                     },
                     {
                         "id": "REQ-2",
@@ -594,17 +556,10 @@ Content
                         "type": "test_case",
                         "status": "todo",
                         "parent_id": "REQ-1",
-                        "depends_on": ["REQ-1"]
-                    }
+                        "depends_on": ["REQ-1"],
+                    },
                 ],
-                "traceability": [
-                    {
-                        "source": "REQ-1",
-                        "target": "REQ-2",
-                        "type": "verifies",
-                        "rule": "test-coverage"
-                    }
-                ]
+                "traceability": [{"source": "REQ-1", "target": "REQ-2", "type": "verifies", "rule": "test-coverage"}],
             }
             tmp.write(yaml.dump(bmad_content))
             tmp.flush()
@@ -619,15 +574,8 @@ Content
         """Test BMad with alternative spec structure."""
         mock_session.query.return_value.filter.return_value.first.return_value = None
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix=".yaml", delete=False) as tmp:
-            bmad_content = {
-                "spec": {
-                    "requirements": [
-                        {"id": "REQ-1", "title": "Test"}
-                    ],
-                    "traceability": []
-                }
-            }
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as tmp:
+            bmad_content = {"spec": {"requirements": [{"id": "REQ-1", "title": "Test"}], "traceability": []}}
             tmp.write(yaml.dump(bmad_content))
             tmp.flush()
 
@@ -640,14 +588,14 @@ Content
         """Test BMad requirement type to view routing."""
         mock_session.query.return_value.filter.return_value.first.return_value = None
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix=".yaml", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as tmp:
             bmad_content = {
                 "requirements": [
                     {"id": "R1", "title": "Feature", "type": "feature"},
                     {"id": "R2", "title": "Test", "type": "test"},
                     {"id": "R3", "title": "Code", "type": "code"},
                     {"id": "R4", "title": "API", "type": "api"},
-                    {"id": "R5", "title": "Generic", "type": "requirement"}
+                    {"id": "R5", "title": "Generic", "type": "requirement"},
                 ]
             }
             tmp.write(yaml.dump(bmad_content))
@@ -661,12 +609,12 @@ Content
         """Test BMad depends_on creates proper links."""
         mock_session.query.return_value.filter.return_value.first.return_value = None
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix=".yaml", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as tmp:
             bmad_content = {
                 "requirements": [
                     {"id": "REQ-1", "title": "Base"},
                     {"id": "REQ-2", "title": "Depends on 1", "depends_on": "REQ-1"},
-                    {"id": "REQ-3", "title": "Depends on both", "depends_on": ["REQ-1", "REQ-2"]}
+                    {"id": "REQ-3", "title": "Depends on both", "depends_on": ["REQ-1", "REQ-2"]},
                 ]
             }
             tmp.write(yaml.dump(bmad_content))
@@ -680,11 +628,11 @@ Content
         """Test BMad parent_id creates child_of links."""
         mock_session.query.return_value.filter.return_value.first.return_value = None
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix=".yaml", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as tmp:
             bmad_content = {
                 "requirements": [
                     {"id": "EPIC-1", "title": "Epic"},
-                    {"id": "STORY-1", "title": "Story", "parent_id": "EPIC-1"}
+                    {"id": "STORY-1", "title": "Story", "parent_id": "EPIC-1"},
                 ]
             }
             tmp.write(yaml.dump(bmad_content))
@@ -702,18 +650,11 @@ Content
         """Test generic YAML with nested dictionaries."""
         mock_session.query.return_value.filter.return_value.first.return_value = None
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix=".yaml", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as tmp:
             yaml_content = {
                 "name": "Project",
-                "section1": {
-                    "description": "Section 1",
-                    "subsection1": {
-                        "description": "Subsection"
-                    }
-                },
-                "section2": {
-                    "items": ["a", "b"]
-                }
+                "section1": {"description": "Section 1", "subsection1": {"description": "Subsection"}},
+                "section2": {"items": ["a", "b"]},
             }
             tmp.write(yaml.dump(yaml_content))
             tmp.flush()
@@ -727,12 +668,12 @@ Content
         """Test generic YAML with list of dict items."""
         mock_session.query.return_value.filter.return_value.first.return_value = None
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix=".yaml", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as tmp:
             yaml_content = {
                 "tasks": [
                     {"title": "Task 1", "description": "Do thing 1"},
                     {"name": "Task 2", "description": "Do thing 2"},
-                    {"description": "Task 3 no title"}
+                    {"description": "Task 3 no title"},
                 ]
             }
             tmp.write(yaml.dump(yaml_content))
@@ -744,14 +685,8 @@ Content
 
     def test_ingest_generic_yaml_dry_run_recursive_count(self, service):
         """Test generic YAML dry run counts nested items."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix=".yaml", delete=False) as tmp:
-            yaml_content = {
-                "level1": {
-                    "level2": {
-                        "level3": ["a", "b", "c"]
-                    }
-                }
-            }
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as tmp:
+            yaml_content = {"level1": {"level2": {"level3": ["a", "b", "c"]}}}
             tmp.write(yaml.dump(yaml_content))
             tmp.flush()
 
@@ -823,17 +758,14 @@ class TestCriticalPathServiceGapCoverage:
     async def async_session(self):
         """Create async database session."""
         engine = create_async_engine("sqlite+aiosqlite:///:memory:")
-        async_session_factory = sessionmaker(
-            engine, class_=AsyncSession, expire_on_commit=False
-        )
+        async_session_factory = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
         async with async_session_factory() as session:
             yield session
 
     @pytest.fixture
     def mock_async_session(self):
         """Create mock async session."""
-        session = Mock(spec=AsyncSession)
-        return session
+        return Mock(spec=AsyncSession)
 
     @pytest.fixture
     def service(self, mock_async_session):
@@ -1004,11 +936,7 @@ class TestCriticalPathServiceGapCoverage:
 
     def test_find_critical_path_linear_critical_path(self, service):
         """Test _find_critical_path with linear critical path."""
-        adjacency_list = {
-            "item-1": ["item-2"],
-            "item-2": ["item-3"],
-            "item-3": []
-        }
+        adjacency_list = {"item-1": ["item-2"], "item-2": ["item-3"], "item-3": []}
         critical_items = {"item-1", "item-2", "item-3"}
         topo_order = ["item-1", "item-2", "item-3"]
 
@@ -1018,12 +946,7 @@ class TestCriticalPathServiceGapCoverage:
 
     def test_find_critical_path_branching_critical_path(self, service):
         """Test _find_critical_path with branching paths."""
-        adjacency_list = {
-            "item-1": ["item-2", "item-3"],
-            "item-2": ["item-4"],
-            "item-3": [],
-            "item-4": []
-        }
+        adjacency_list = {"item-1": ["item-2", "item-3"], "item-2": ["item-4"], "item-3": [], "item-4": []}
         critical_items = {"item-1", "item-2", "item-4"}
         topo_order = ["item-1", "item-2", "item-3", "item-4"]
 
@@ -1152,7 +1075,7 @@ class TestProgressServiceGapCoverage:
                 filter_mock = Mock()
 
                 # For parent query
-                if not hasattr(query_side_effect, 'call_count'):
+                if not hasattr(query_side_effect, "call_count"):
                     query_side_effect.call_count = 0
 
                 if query_side_effect.call_count == 0:
@@ -1168,6 +1091,7 @@ class TestProgressServiceGapCoverage:
                 query_side_effect.call_count += 1
                 mock_query.filter.return_value = filter_mock
                 return mock_query
+            return None
 
         mock_session.query.side_effect = query_side_effect
 
@@ -1230,7 +1154,7 @@ class TestProgressServiceGapCoverage:
             mock_result = Mock()
             mock_result.filter.return_value.all.return_value = [link1, link2]
 
-            if hasattr(query_filter_first, 'item_call'):
+            if hasattr(query_filter_first, "item_call"):
                 query_filter_first.item_call += 1
             else:
                 query_filter_first.item_call = 0
@@ -1268,7 +1192,7 @@ class TestProgressServiceGapCoverage:
             mock_query.filter.return_value.all.return_value = [link]
 
             # First call for blocked item, second for missing blocker
-            if not hasattr(query_side_effect, 'call_count'):
+            if not hasattr(query_side_effect, "call_count"):
                 query_side_effect.call_count = 0
 
             if query_side_effect.call_count == 0:
@@ -1292,7 +1216,7 @@ class TestProgressServiceGapCoverage:
 
     def test_get_stalled_items_default_threshold(self, service, mock_session):
         """Test get_stalled_items with default 7-day threshold."""
-        old_date = datetime.utcnow() - timedelta(days=10)
+        old_date = datetime.now(UTC) - timedelta(days=10)
 
         stalled_item = Mock(spec=Item)
         stalled_item.id = "stalled-1"
@@ -1310,7 +1234,7 @@ class TestProgressServiceGapCoverage:
 
     def test_get_stalled_items_custom_threshold(self, service, mock_session):
         """Test get_stalled_items with custom threshold."""
-        old_date = datetime.utcnow() - timedelta(days=15)
+        old_date = datetime.now(UTC) - timedelta(days=15)
 
         stalled_item = Mock(spec=Item)
         stalled_item.id = "stalled-1"
@@ -1524,10 +1448,10 @@ class TestExportImportServiceGapCoverage:
     @pytest.mark.asyncio
     async def test_export_to_json_missing_attributes(self, service):
         """Test JSON export handles items missing attributes."""
-        project = Mock(spec=['id'])
+        project = Mock(spec=["id"])
         project.id = "proj-1"
 
-        item = Mock(spec=['id'])
+        item = Mock(spec=["id"])
         item.id = "item-1"
 
         service.projects = Mock()
@@ -1579,7 +1503,7 @@ class TestExportImportServiceGapCoverage:
     @pytest.mark.asyncio
     async def test_export_to_csv_missing_attributes(self, service):
         """Test CSV export handles missing attributes."""
-        item = Mock(spec=['id'])
+        item = Mock(spec=["id"])
         item.id = "item-1"
 
         service.items = Mock()
@@ -1663,8 +1587,8 @@ class TestExportImportServiceGapCoverage:
     @pytest.mark.asyncio
     async def test_export_to_markdown_missing_attributes(self, service):
         """Test markdown export handles missing attributes."""
-        project = Mock(spec=['id'])
-        item = Mock(spec=['id'])
+        project = Mock(spec=["id"])
+        item = Mock(spec=["id"])
 
         service.projects = Mock()
         service.projects.get_by_id = AsyncMock(return_value=project)
@@ -1703,7 +1627,7 @@ class TestExportImportServiceGapCoverage:
         json_data = json.dumps({
             "items": [
                 {"title": "Item 1", "view": "FEATURE", "type": "feature", "status": "todo"},
-                {"title": "Item 2", "view": "TEST", "type": "test", "status": "in_progress"}
+                {"title": "Item 2", "view": "TEST", "type": "test", "status": "in_progress"},
             ]
         })
 
@@ -1719,14 +1643,10 @@ class TestExportImportServiceGapCoverage:
     @pytest.mark.asyncio
     async def test_import_from_json_partial_failure(self, service):
         """Test JSON import with some failures."""
-        json_data = json.dumps({
-            "items": [
-                {"title": "Good Item"},
-                {"title": "Bad Item"}
-            ]
-        })
+        json_data = json.dumps({"items": [{"title": "Good Item"}, {"title": "Bad Item"}]})
 
         service.items = Mock()
+
         async def create_side_effect(**kwargs):
             if kwargs["title"] == "Bad Item":
                 raise Exception("Creation failed")
@@ -1742,9 +1662,7 @@ class TestExportImportServiceGapCoverage:
     @pytest.mark.asyncio
     async def test_import_from_json_default_values(self, service):
         """Test JSON import uses default values for missing fields."""
-        json_data = json.dumps({
-            "items": [{"title": "Minimal Item"}]
-        })
+        json_data = json.dumps({"items": [{"title": "Minimal Item"}]})
 
         service.items = Mock()
         service.items.create = AsyncMock()
@@ -1765,7 +1683,7 @@ class TestExportImportServiceGapCoverage:
     @pytest.mark.asyncio
     async def test_import_from_csv_invalid_format(self, service):
         """Test CSV import with invalid CSV."""
-        csv_data = "invalid,csv,\nunclosed,quote,\""
+        csv_data = 'invalid,csv,\nunclosed,quote,"'
 
         result = await service.import_from_csv("proj-1", csv_data)
 
@@ -1816,6 +1734,7 @@ Item 2,TEST,test,in_progress"""
         csv_data = "Title\nGood\nBad"
 
         service.items = Mock()
+
         async def create_side_effect(**kwargs):
             if kwargs["title"] == "Bad":
                 raise Exception("Failed")
@@ -1870,9 +1789,7 @@ class TestTUIServiceGapCoverage:
     def test_register_component_basic(self, service):
         """Test basic component registration."""
         component = service.register_component(
-            name="test-component",
-            component_type=UIComponentType.DASHBOARD,
-            title="Test Dashboard"
+            name="test-component", component_type=UIComponentType.DASHBOARD, title="Test Dashboard"
         )
 
         assert component.name == "test-component"
@@ -1885,10 +1802,7 @@ class TestTUIServiceGapCoverage:
         data = {"key": "value", "count": 42}
 
         component = service.register_component(
-            name="test",
-            component_type=UIComponentType.TABLE,
-            title="Table",
-            data=data
+            name="test", component_type=UIComponentType.TABLE, title="Table", data=data
         )
 
         assert component.data == data
@@ -2071,6 +1985,7 @@ class TestTUIServiceGapCoverage:
 
     def test_trigger_event_handler_exception(self, service):
         """Test event handler exceptions are caught and returned."""
+
         def failing_handler():
             raise ValueError("Handler failed")
 
@@ -2085,6 +2000,7 @@ class TestTUIServiceGapCoverage:
     def test_trigger_event_mixed_success_failure(self, service):
         """Test mix of successful and failing handlers."""
         good_handler = Mock(return_value="success")
+
         def bad_handler():
             raise Exception("fail")
 
@@ -2198,9 +2114,7 @@ class TestTUIServiceGapCoverage:
     def test_create_dashboard_basic(self, service):
         """Test creating basic dashboard."""
         dashboard = service.create_dashboard(
-            name="main-dash",
-            title="Main Dashboard",
-            widgets=["widget1", "widget2", "widget3"]
+            name="main-dash", title="Main Dashboard", widgets=["widget1", "widget2", "widget3"]
         )
 
         assert dashboard.name == "main-dash"
@@ -2229,15 +2143,10 @@ class TestTUIServiceGapCoverage:
         columns = ["Name", "Age", "Email"]
         rows = [
             {"Name": "Alice", "Age": 30, "Email": "alice@test.com"},
-            {"Name": "Bob", "Age": 25, "Email": "bob@test.com"}
+            {"Name": "Bob", "Age": 25, "Email": "bob@test.com"},
         ]
 
-        table = service.create_table(
-            name="users-table",
-            title="Users",
-            columns=columns,
-            rows=rows
-        )
+        table = service.create_table(name="users-table", title="Users", columns=columns, rows=rows)
 
         assert table.name == "users-table"
         assert table.component_type == UIComponentType.TABLE

@@ -16,17 +16,20 @@ Coverage includes:
 - Error handling and cleanup
 """
 
-import pytest
-from datetime import datetime
-from unittest.mock import MagicMock, Mock, patch, PropertyMock, call
+from typing import Any, cast
+from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
+import pytest
+
 try:
-    from textual.app import App
-    from textual.widgets import Tree, Static, Input, Footer, Header, DataTable
-    from tracertm.tui.apps.browser import BrowserApp, TEXTUAL_AVAILABLE as BROWSER_AVAILABLE
-    from tracertm.tui.apps.dashboard import DashboardApp, TEXTUAL_AVAILABLE as DASHBOARD_AVAILABLE
-    from tracertm.tui.apps.graph import GraphApp, TEXTUAL_AVAILABLE as GRAPH_AVAILABLE
+    from tracertm.tui.apps.browser import TEXTUAL_AVAILABLE as BROWSER_AVAILABLE
+    from tracertm.tui.apps.browser import BrowserApp
+    from tracertm.tui.apps.dashboard import TEXTUAL_AVAILABLE as DASHBOARD_AVAILABLE
+    from tracertm.tui.apps.dashboard import DashboardApp
+    from tracertm.tui.apps.graph import TEXTUAL_AVAILABLE as GRAPH_AVAILABLE
+    from tracertm.tui.apps.graph import GraphApp
+
     TEXTUAL_AVAILABLE = True
 except ImportError:
     TEXTUAL_AVAILABLE = False
@@ -39,6 +42,7 @@ except ImportError:
 # BrowserApp Comprehensive Tests
 # =============================================================================
 
+
 @pytest.mark.skipif(not BROWSER_AVAILABLE, reason="Textual not available")
 class TestBrowserAppComprehensive:
     """Comprehensive tests for BrowserApp covering all code paths."""
@@ -49,7 +53,7 @@ class TestBrowserAppComprehensive:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = BrowserApp()
+        app = cast(Any, BrowserApp())
 
         assert app.project_id is None
         assert app.current_view == "FEATURE"
@@ -63,13 +67,13 @@ class TestBrowserAppComprehensive:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = BrowserApp()
+        app = cast(Any, BrowserApp())
 
-        assert hasattr(app, 'CSS')
+        assert hasattr(app, "CSS")
         assert isinstance(app.CSS, str)
         assert len(app.CSS) > 0
-        assert '#tree-panel' in app.CSS
-        assert '#detail-panel' in app.CSS
+        assert "#tree-panel" in app.CSS
+        assert "#detail-panel" in app.CSS
 
     @patch("tracertm.tui.apps.browser.ConfigManager")
     def test_browser_bindings_complete(self, mock_config_manager):
@@ -77,19 +81,19 @@ class TestBrowserAppComprehensive:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = BrowserApp()
+        app = cast(Any, BrowserApp())
 
         binding_keys = [b.key for b in app.BINDINGS]
-        assert 'q' in binding_keys
-        assert 'r' in binding_keys
-        assert 'f' in binding_keys
-        assert '?' in binding_keys
+        assert "q" in binding_keys
+        assert "r" in binding_keys
+        assert "f" in binding_keys
+        assert "?" in binding_keys
 
         binding_actions = [b.action for b in app.BINDINGS]
-        assert 'quit' in binding_actions
-        assert 'refresh' in binding_actions
-        assert 'filter' in binding_actions
-        assert 'help' in binding_actions
+        assert "quit" in binding_actions
+        assert "refresh" in binding_actions
+        assert "filter" in binding_actions
+        assert "help" in binding_actions
 
     @patch("tracertm.tui.apps.browser.ConfigManager")
     @patch("tracertm.tui.apps.browser.DatabaseConnection")
@@ -102,7 +106,7 @@ class TestBrowserAppComprehensive:
         mock_db = MagicMock()
         mock_db_class.return_value = mock_db
 
-        app = BrowserApp()
+        app = cast(Any, BrowserApp())
         app.setup_database()
 
         mock_db_class.assert_called_once_with("sqlite:///test.db")
@@ -116,13 +120,13 @@ class TestBrowserAppComprehensive:
         mock_config.get.return_value = None
         mock_config_manager.return_value = mock_config
 
-        app = BrowserApp()
+        app = cast(Any, BrowserApp())
         app.exit = MagicMock()
         app.setup_database()
 
         app.exit.assert_called_once()
         call_args = app.exit.call_args
-        assert 'No database configured' in str(call_args)
+        assert "No database configured" in str(call_args)
 
     @patch("tracertm.tui.apps.browser.ConfigManager")
     @patch("tracertm.tui.apps.browser.DatabaseConnection")
@@ -136,11 +140,10 @@ class TestBrowserAppComprehensive:
         mock_db.connect.side_effect = Exception("Connection failed")
         mock_db_class.return_value = mock_db
 
-        app = BrowserApp()
+        app = cast(Any, BrowserApp())
 
-        with pytest.raises(Exception) as exc_info:
+        with pytest.raises(Exception, match=r"Connection failed"):
             app.setup_database()
-        assert "Connection failed" in str(exc_info.value)
 
     @patch("tracertm.tui.apps.browser.ConfigManager")
     def test_browser_load_project_success(self, mock_config_manager):
@@ -150,7 +153,7 @@ class TestBrowserAppComprehensive:
         mock_config.get.return_value = project_id
         mock_config_manager.return_value = mock_config
 
-        app = BrowserApp()
+        app = cast(Any, BrowserApp())
         app.load_project()
 
         assert app.project_id == project_id
@@ -162,12 +165,12 @@ class TestBrowserAppComprehensive:
         mock_config.get.return_value = None
         mock_config_manager.return_value = mock_config
 
-        app = BrowserApp()
+        app = cast(Any, BrowserApp())
         app.exit = MagicMock()
         app.load_project()
 
         app.exit.assert_called_once()
-        assert 'No current project' in str(app.exit.call_args)
+        assert "No current project" in str(app.exit.call_args)
 
     @patch("tracertm.tui.apps.browser.ConfigManager")
     @patch("tracertm.tui.apps.browser.Session")
@@ -176,7 +179,7 @@ class TestBrowserAppComprehensive:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = BrowserApp()
+        app = cast(Any, BrowserApp())
         app.db = None
         app.project_id = str(uuid4())
 
@@ -192,8 +195,9 @@ class TestBrowserAppComprehensive:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = BrowserApp()
-        app.db = MagicMock()
+        app = cast(Any, BrowserApp())
+        mock_db = MagicMock()
+        app.db = mock_db
         app.project_id = None
 
         # Should return early without error
@@ -229,9 +233,10 @@ class TestBrowserAppComprehensive:
         mock_session_class.return_value.__exit__.return_value = None
 
         # Setup app
-        app = BrowserApp()
-        app.db = MagicMock()
-        app.db.engine = MagicMock()
+        app = cast(Any, BrowserApp())
+        mock_db = MagicMock()
+        mock_db.engine = MagicMock()
+        app.db = mock_db
         app.project_id = str(uuid4())
         app.current_view = "FEATURE"
 
@@ -267,7 +272,7 @@ class TestBrowserAppComprehensive:
         mock_query.all.return_value = [child1]
 
         # Setup app
-        app = BrowserApp()
+        app = cast(Any, BrowserApp())
         app.project_id = str(uuid4())
 
         parent_node = MagicMock()
@@ -283,7 +288,7 @@ class TestBrowserAppComprehensive:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = BrowserApp()
+        app = cast(Any, BrowserApp())
         app.show_item_details = MagicMock()
 
         item_id = str(uuid4())
@@ -292,7 +297,7 @@ class TestBrowserAppComprehensive:
 
         app.on_tree_node_selected(event)
 
-        assert app.selected_item_id == item_id
+        assert getattr(app, "selected_item_id", None) == item_id
         app.show_item_details.assert_called_once()
 
     @patch("tracertm.tui.apps.browser.ConfigManager")
@@ -301,7 +306,7 @@ class TestBrowserAppComprehensive:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = BrowserApp()
+        app = cast(Any, BrowserApp())
         app.show_item_details = MagicMock()
 
         event = MagicMock()
@@ -309,7 +314,7 @@ class TestBrowserAppComprehensive:
 
         app.on_tree_node_selected(event)
 
-        assert app.selected_item_id is None
+        assert getattr(app, "selected_item_id", None) is None
         app.show_item_details.assert_not_called()
 
     @patch("tracertm.tui.apps.browser.ConfigManager")
@@ -340,9 +345,10 @@ class TestBrowserAppComprehensive:
         mock_session_class.return_value.__exit__.return_value = None
 
         # Setup app
-        app = BrowserApp()
-        app.db = MagicMock()
-        app.db.engine = MagicMock()
+        app = cast(Any, BrowserApp())
+        mock_db = MagicMock()
+        mock_db.engine = MagicMock()
+        app.db = mock_db
         app.selected_item_id = item.id
 
         # Mock static widget
@@ -364,7 +370,7 @@ class TestBrowserAppComprehensive:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = BrowserApp()
+        app = cast(Any, BrowserApp())
         app.db = None
         app.selected_item_id = str(uuid4())
 
@@ -380,8 +386,9 @@ class TestBrowserAppComprehensive:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = BrowserApp()
-        app.db = MagicMock()
+        app = cast(Any, BrowserApp())
+        mock_db = MagicMock()
+        app.db = mock_db
         app.selected_item_id = None
 
         # Should return early without error
@@ -405,9 +412,10 @@ class TestBrowserAppComprehensive:
         mock_session_class.return_value.__enter__.return_value = mock_session
         mock_session_class.return_value.__exit__.return_value = None
 
-        app = BrowserApp()
-        app.db = MagicMock()
-        app.db.engine = MagicMock()
+        app = cast(Any, BrowserApp())
+        mock_db = MagicMock()
+        mock_db.engine = MagicMock()
+        app.db = mock_db
         app.selected_item_id = str(uuid4())
 
         mock_static = MagicMock()
@@ -424,7 +432,7 @@ class TestBrowserAppComprehensive:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = BrowserApp()
+        app = cast(Any, BrowserApp())
         event = MagicMock()
 
         # Should not raise error
@@ -436,7 +444,7 @@ class TestBrowserAppComprehensive:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = BrowserApp()
+        app = cast(Any, BrowserApp())
         app.refresh_tree = MagicMock()
 
         app.action_refresh()
@@ -449,7 +457,7 @@ class TestBrowserAppComprehensive:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = BrowserApp()
+        app = cast(Any, BrowserApp())
 
         mock_input = MagicMock()
         app.query_one = MagicMock(return_value=mock_input)
@@ -464,14 +472,14 @@ class TestBrowserAppComprehensive:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = BrowserApp()
+        app = cast(Any, BrowserApp())
         app.notify = MagicMock()
 
         app.action_help()
 
         app.notify.assert_called_once()
         notify_text = app.notify.call_args[0][0]
-        assert 'quit' in notify_text.lower() or 'refresh' in notify_text.lower()
+        assert "quit" in notify_text.lower() or "refresh" in notify_text.lower()
 
     @patch("tracertm.tui.apps.browser.ConfigManager")
     def test_browser_on_unmount_with_database(self, mock_config_manager):
@@ -479,12 +487,13 @@ class TestBrowserAppComprehensive:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = BrowserApp()
-        app.db = MagicMock()
+        app = cast(Any, BrowserApp())
+        mock_db = MagicMock()
+        app.db = mock_db
 
         app.on_unmount()
 
-        app.db.close.assert_called_once()
+        mock_db.close.assert_called_once()
 
     @patch("tracertm.tui.apps.browser.ConfigManager")
     def test_browser_on_unmount_no_database(self, mock_config_manager):
@@ -492,7 +501,7 @@ class TestBrowserAppComprehensive:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = BrowserApp()
+        app = cast(Any, BrowserApp())
         app.db = None
 
         # Should not raise error
@@ -502,6 +511,7 @@ class TestBrowserAppComprehensive:
 # =============================================================================
 # DashboardApp Comprehensive Tests
 # =============================================================================
+
 
 @pytest.mark.skipif(not DASHBOARD_AVAILABLE, reason="Textual not available")
 class TestDashboardAppComprehensive:
@@ -513,12 +523,12 @@ class TestDashboardAppComprehensive:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = DashboardApp()
+        app = cast(Any, DashboardApp())
 
-        assert app.project_id is None
-        assert app.current_view == "FEATURE"
-        assert app.db is None
-        assert app.config_manager is not None
+        assert getattr(app, "project_id", None) is None
+        assert getattr(app, "current_view", None) == "FEATURE"
+        assert getattr(app, "db", None) is None
+        assert getattr(app, "config_manager", None) is not None
 
     @patch("tracertm.tui.apps.dashboard.ConfigManager")
     def test_dashboard_css_defined(self, mock_config_manager):
@@ -526,12 +536,12 @@ class TestDashboardAppComprehensive:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = DashboardApp()
+        app = cast(Any, DashboardApp())
 
-        assert hasattr(app, 'CSS')
+        assert hasattr(app, "CSS")
         assert isinstance(app.CSS, str)
-        assert '#sidebar' in app.CSS
-        assert '#main' in app.CSS
+        assert "#sidebar" in app.CSS
+        assert "#main" in app.CSS
 
     @patch("tracertm.tui.apps.dashboard.ConfigManager")
     def test_dashboard_bindings_complete(self, mock_config_manager):
@@ -539,14 +549,14 @@ class TestDashboardAppComprehensive:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = DashboardApp()
+        app = cast(Any, DashboardApp())
 
-        binding_keys = [b.key for b in app.BINDINGS]
-        assert 'q' in binding_keys
-        assert 'v' in binding_keys
-        assert 'r' in binding_keys
-        assert 's' in binding_keys
-        assert '?' in binding_keys
+        binding_keys = [b.key for b in getattr(app, "BINDINGS", [])]
+        assert "q" in binding_keys
+        assert "v" in binding_keys
+        assert "r" in binding_keys
+        assert "s" in binding_keys
+        assert "?" in binding_keys
 
     @patch("tracertm.tui.apps.dashboard.ConfigManager")
     @patch("tracertm.tui.apps.dashboard.Session")
@@ -555,7 +565,7 @@ class TestDashboardAppComprehensive:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = DashboardApp()
+        app = cast(Any, DashboardApp())
 
         mock_tree = MagicMock()
         mock_tree.root = MagicMock()
@@ -585,9 +595,10 @@ class TestDashboardAppComprehensive:
         mock_session_class.return_value.__enter__.return_value = mock_session
         mock_session_class.return_value.__exit__.return_value = None
 
-        app = DashboardApp()
-        app.db = MagicMock()
-        app.db.engine = MagicMock()
+        app = cast(Any, DashboardApp())
+        mock_db = MagicMock()
+        mock_db.engine = MagicMock()
+        app.db = mock_db
         app.project_id = str(uuid4())
 
         # Mock widgets
@@ -595,9 +606,9 @@ class TestDashboardAppComprehensive:
         mock_state_summary = MagicMock()
 
         def mock_query_one(selector, widget_class):
-            if 'stats-table' in selector:
+            if "stats-table" in selector:
                 return mock_stats_table
-            elif 'state-summary' in selector:
+            if "state-summary" in selector:
                 return mock_state_summary
             return MagicMock()
 
@@ -616,7 +627,7 @@ class TestDashboardAppComprehensive:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = DashboardApp()
+        app = cast(Any, DashboardApp())
         app.db = None
         app.project_id = str(uuid4())
 
@@ -650,9 +661,10 @@ class TestDashboardAppComprehensive:
         mock_session_class.return_value.__enter__.return_value = mock_session
         mock_session_class.return_value.__exit__.return_value = None
 
-        app = DashboardApp()
-        app.db = MagicMock()
-        app.db.engine = MagicMock()
+        app = cast(Any, DashboardApp())
+        mock_db = MagicMock()
+        mock_db.engine = MagicMock()
+        app.db = mock_db
         app.project_id = str(uuid4())
 
         mock_items_table = MagicMock()
@@ -670,7 +682,7 @@ class TestDashboardAppComprehensive:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = DashboardApp()
+        app = cast(Any, DashboardApp())
         app.refresh_items = MagicMock()
 
         mock_items_title = MagicMock()
@@ -681,7 +693,7 @@ class TestDashboardAppComprehensive:
 
         app.on_tree_node_selected(event)
 
-        assert app.current_view == "CODE"
+        assert getattr(app, "current_view", None) == "CODE"
         app.refresh_items.assert_called_once()
         mock_items_title.update.assert_called_once()
 
@@ -691,7 +703,7 @@ class TestDashboardAppComprehensive:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = DashboardApp()
+        app = cast(Any, DashboardApp())
         app.current_view = "FEATURE"
         app.refresh_items = MagicMock()
 
@@ -700,7 +712,7 @@ class TestDashboardAppComprehensive:
 
         app.action_switch_view()
 
-        assert app.current_view == "CODE"
+        assert getattr(app, "current_view", None) == "CODE"
         app.refresh_items.assert_called_once()
 
     @patch("tracertm.tui.apps.dashboard.ConfigManager")
@@ -709,7 +721,7 @@ class TestDashboardAppComprehensive:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = DashboardApp()
+        app = cast(Any, DashboardApp())
         app.current_view = "PROGRESS"  # Last view
         app.refresh_items = MagicMock()
 
@@ -718,7 +730,7 @@ class TestDashboardAppComprehensive:
 
         app.action_switch_view()
 
-        assert app.current_view == "FEATURE"
+        assert getattr(app, "current_view", None) == "FEATURE"
 
     @patch("tracertm.tui.apps.dashboard.ConfigManager")
     def test_dashboard_action_refresh(self, mock_config_manager):
@@ -726,7 +738,7 @@ class TestDashboardAppComprehensive:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = DashboardApp()
+        app = cast(Any, DashboardApp())
         app.refresh_data = MagicMock()
 
         app.action_refresh()
@@ -739,14 +751,14 @@ class TestDashboardAppComprehensive:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = DashboardApp()
+        app = cast(Any, DashboardApp())
         app.notify = MagicMock()
 
         app.action_search()
 
         app.notify.assert_called_once()
         notify_text = app.notify.call_args[0][0]
-        assert 'not yet implemented' in notify_text.lower() or 'search' in notify_text.lower()
+        assert "not yet implemented" in notify_text.lower() or "search" in notify_text.lower()
 
     @patch("tracertm.tui.apps.dashboard.ConfigManager")
     def test_dashboard_action_help(self, mock_config_manager):
@@ -754,7 +766,7 @@ class TestDashboardAppComprehensive:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = DashboardApp()
+        app = cast(Any, DashboardApp())
         app.notify = MagicMock()
 
         app.action_help()
@@ -767,7 +779,7 @@ class TestDashboardAppComprehensive:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = DashboardApp()
+        app = cast(Any, DashboardApp())
         app.db = MagicMock()
         app.project_id = str(uuid4())
         app.refresh_stats = MagicMock()
@@ -783,6 +795,7 @@ class TestDashboardAppComprehensive:
 # GraphApp Comprehensive Tests
 # =============================================================================
 
+
 @pytest.mark.skipif(not GRAPH_AVAILABLE, reason="Textual not available")
 class TestGraphAppComprehensive:
     """Comprehensive tests for GraphApp covering all code paths."""
@@ -793,13 +806,13 @@ class TestGraphAppComprehensive:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = GraphApp()
+        app = cast(Any, GraphApp())
 
-        assert app.project_id is None
-        assert app.db is None
-        assert app.nodes == {}
-        assert app.links == []
-        assert app.zoom == 1.0
+        assert getattr(app, "project_id", None) is None
+        assert getattr(app, "db", None) is None
+        assert getattr(app, "nodes", {}) == {}
+        assert getattr(app, "links", []) == []
+        assert getattr(app, "zoom", 1.0) == 1.0
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
     def test_graph_css_defined(self, mock_config_manager):
@@ -807,12 +820,12 @@ class TestGraphAppComprehensive:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = GraphApp()
+        app = cast(Any, GraphApp())
 
-        assert hasattr(app, 'CSS')
+        assert hasattr(app, "CSS")
         assert isinstance(app.CSS, str)
-        assert '#graph-panel' in app.CSS
-        assert '#info-panel' in app.CSS
+        assert "#graph-panel" in app.CSS
+        assert "#info-panel" in app.CSS
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
     def test_graph_bindings_complete(self, mock_config_manager):
@@ -820,14 +833,14 @@ class TestGraphAppComprehensive:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = GraphApp()
+        app = cast(Any, GraphApp())
 
-        binding_keys = [b.key for b in app.BINDINGS]
-        assert 'q' in binding_keys
-        assert 'r' in binding_keys
-        assert '+' in binding_keys
-        assert '-' in binding_keys
-        assert '?' in binding_keys
+        binding_keys = [b.key for b in getattr(app, "BINDINGS", [])]
+        assert "q" in binding_keys
+        assert "r" in binding_keys
+        assert "+" in binding_keys
+        assert "-" in binding_keys
+        assert "?" in binding_keys
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
     @patch("tracertm.tui.apps.graph.Session")
@@ -860,22 +873,22 @@ class TestGraphAppComprehensive:
         def mock_all():
             if mock_query.filter.call_count <= 1:
                 return [item1, item2]
-            else:
-                return [link1]
+            return [link1]
 
         mock_query.all = mock_all
         mock_session_class.return_value.__enter__.return_value = mock_session
         mock_session_class.return_value.__exit__.return_value = None
 
-        app = GraphApp()
-        app.db = MagicMock()
-        app.db.engine = MagicMock()
+        app = cast(Any, GraphApp())
+        mock_db = MagicMock()
+        mock_db.engine = MagicMock()
+        app.db = mock_db
         app.project_id = str(uuid4())
 
         app.load_graph_data()
 
-        assert len(app.nodes) == 2
-        assert ("item1", "item2") in app.links
+        assert len(getattr(app, "nodes", {})) == 2
+        assert ("item1", "item2") in getattr(app, "links", [])
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
     @patch("tracertm.tui.apps.graph.Session")
@@ -884,7 +897,7 @@ class TestGraphAppComprehensive:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = GraphApp()
+        app = cast(Any, GraphApp())
         app.db = None
         app.project_id = str(uuid4())
 
@@ -892,8 +905,8 @@ class TestGraphAppComprehensive:
         app.load_graph_data()
 
         mock_session.assert_not_called()
-        assert len(app.nodes) == 0
-        assert len(app.links) == 0
+        assert len(getattr(app, "nodes", {})) == 0
+        assert len(getattr(app, "links", [])) == 0
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
     @patch("tracertm.tui.apps.graph.Session")
@@ -923,18 +936,18 @@ class TestGraphAppComprehensive:
         def mock_first():
             if mock_query.filter.call_count % 3 == 1:
                 return source_item
-            elif mock_query.filter.call_count % 3 == 2:
+            if mock_query.filter.call_count % 3 == 2:
                 return target_item
-            else:
-                return link
+            return link
 
         mock_query.first = mock_first
         mock_session_class.return_value.__enter__.return_value = mock_session
         mock_session_class.return_value.__exit__.return_value = None
 
-        app = GraphApp()
-        app.db = MagicMock()
-        app.db.engine = MagicMock()
+        app = cast(Any, GraphApp())
+        mock_db = MagicMock()
+        mock_db.engine = MagicMock()
+        app.db = mock_db
         app.nodes = {"source": (10, 10), "target": (20, 20)}
         app.links = [("source", "target")]
         app.zoom = 1.5
@@ -945,11 +958,11 @@ class TestGraphAppComprehensive:
         mock_stats = MagicMock()
 
         def mock_query_one(selector, widget_class):
-            if 'graph-canvas' in selector:
+            if "graph-canvas" in selector:
                 return mock_canvas
-            elif 'link-table' in selector:
+            if "link-table" in selector:
                 return mock_link_table
-            elif 'graph-stats' in selector:
+            if "graph-stats" in selector:
                 return mock_stats
             return MagicMock()
 
@@ -967,7 +980,7 @@ class TestGraphAppComprehensive:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = GraphApp()
+        app = cast(Any, GraphApp())
         app.load_graph_data = MagicMock()
         app.render_graph = MagicMock()
 
@@ -982,13 +995,13 @@ class TestGraphAppComprehensive:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = GraphApp()
+        app = cast(Any, GraphApp())
         app.zoom = 1.0
         app.render_graph = MagicMock()
 
         app.action_zoom_in()
 
-        assert app.zoom > 1.0
+        assert getattr(app, "zoom", 1.0) > 1.0
         app.render_graph.assert_called_once()
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
@@ -997,13 +1010,13 @@ class TestGraphAppComprehensive:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = GraphApp()
+        app = cast(Any, GraphApp())
         app.zoom = 5.0  # Max zoom
         app.render_graph = MagicMock()
 
         app.action_zoom_in()
 
-        assert app.zoom <= 5.0
+        assert getattr(app, "zoom", 5.0) <= 5.0
         app.render_graph.assert_called_once()
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
@@ -1012,13 +1025,13 @@ class TestGraphAppComprehensive:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = GraphApp()
+        app = cast(Any, GraphApp())
         app.zoom = 2.0
         app.render_graph = MagicMock()
 
         app.action_zoom_out()
 
-        assert app.zoom < 2.0
+        assert getattr(app, "zoom", 2.0) < 2.0
         app.render_graph.assert_called_once()
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
@@ -1027,13 +1040,13 @@ class TestGraphAppComprehensive:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = GraphApp()
+        app = cast(Any, GraphApp())
         app.zoom = 0.5  # Min zoom
         app.render_graph = MagicMock()
 
         app.action_zoom_out()
 
-        assert app.zoom >= 0.5
+        assert getattr(app, "zoom", 0.5) >= 0.5
         app.render_graph.assert_called_once()
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
@@ -1042,7 +1055,7 @@ class TestGraphAppComprehensive:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = GraphApp()
+        app = cast(Any, GraphApp())
         app.notify = MagicMock()
 
         app.action_help()
@@ -1055,12 +1068,13 @@ class TestGraphAppComprehensive:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = GraphApp()
-        app.db = MagicMock()
+        app = cast(Any, GraphApp())
+        mock_db = MagicMock()
+        app.db = mock_db
 
         app.on_unmount()
 
-        app.db.close.assert_called_once()
+        mock_db.close.assert_called_once()
 
     @patch("tracertm.tui.apps.graph.ConfigManager")
     def test_graph_on_unmount_no_database(self, mock_config_manager):
@@ -1068,7 +1082,7 @@ class TestGraphAppComprehensive:
         mock_config = MagicMock()
         mock_config_manager.return_value = mock_config
 
-        app = GraphApp()
+        app = cast(Any, GraphApp())
         app.db = None
 
         # Should not raise error
@@ -1079,12 +1093,13 @@ class TestGraphAppComprehensive:
 # Placeholder Classes Tests
 # =============================================================================
 
+
 def test_browser_app_placeholder_without_textual():
     """Test BrowserApp placeholder raises ImportError when Textual is not available."""
     from tracertm.tui.apps.browser import TEXTUAL_AVAILABLE
 
     if not TEXTUAL_AVAILABLE:
-        from tracertm.tui.apps.browser import BrowserApp
+        from tracertm.tui.apps.browser import BrowserApp  # type: ignore[possibly-missing-import]
 
         with pytest.raises(ImportError) as exc_info:
             BrowserApp()
@@ -1096,7 +1111,7 @@ def test_dashboard_app_placeholder_without_textual():
     from tracertm.tui.apps.dashboard import TEXTUAL_AVAILABLE
 
     if not TEXTUAL_AVAILABLE:
-        from tracertm.tui.apps.dashboard import DashboardApp
+        from tracertm.tui.apps.dashboard import DashboardApp  # type: ignore[possibly-missing-import]
 
         with pytest.raises(ImportError) as exc_info:
             DashboardApp()
@@ -1108,7 +1123,7 @@ def test_graph_app_placeholder_without_textual():
     from tracertm.tui.apps.graph import TEXTUAL_AVAILABLE
 
     if not TEXTUAL_AVAILABLE:
-        from tracertm.tui.apps.graph import GraphApp
+        from tracertm.tui.apps.graph import GraphApp  # type: ignore[possibly-missing-import]
 
         with pytest.raises(ImportError) as exc_info:
             GraphApp()

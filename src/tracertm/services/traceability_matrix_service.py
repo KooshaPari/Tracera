@@ -167,14 +167,13 @@ class TraceabilityMatrixService:
         # Header row
         html.append("<tr>")
         html.append("<th>Source</th>")
-        for col in matrix.columns:
-            html.append(f'<th>{col["title"]}</th>')
+        html.extend(f"<th>{col['title']}</th>" for col in matrix.columns)
         html.append("</tr>")
 
         # Data rows
         for i, row_item in enumerate(matrix.rows):
             html.append("<tr>")
-            html.append(f'<td><strong>{row_item["title"]}</strong></td>')
+            html.append(f"<td><strong>{row_item['title']}</strong></td>")
             for _j, cell in enumerate(matrix.matrix[i]):
                 if cell:
                     html.append(f'<td style="background-color: #90EE90;">{cell}</td>')
@@ -212,9 +211,11 @@ class TraceabilityMatrixService:
                 uncovered_sources.append(matrix.rows[i]["id"])
 
         # Check targets
-        for j in range(len(matrix.columns)):
-            if not any(matrix.matrix[i][j] for i in range(len(matrix.rows))):
-                uncovered_targets.append(matrix.columns[j]["id"])
+        uncovered_targets = [
+            matrix.columns[j]["id"]
+            for j in range(len(matrix.columns))
+            if not any(matrix.matrix[i][j] for i in range(len(matrix.rows)))
+        ]
 
         return {
             "uncovered_sources": uncovered_sources,

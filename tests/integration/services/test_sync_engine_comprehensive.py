@@ -14,32 +14,29 @@ Target: 200-250 tests with 95%+ pass rate and 6-9% coverage increase
 
 import asyncio
 import hashlib
-import json
 import logging
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any, Optional
-from unittest.mock import MagicMock, AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from sqlalchemy import create_engine, text, select, func
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy import create_engine, text
+from sqlalchemy.orm import sessionmaker
 
 from tracertm.models.base import Base
 from tracertm.models.item import Item
-from tracertm.models.link import Link
 from tracertm.models.project import Project
 from tracertm.storage import (
     ChangeDetector,
     EntityType,
     OperationType,
+    QueuedChange,
     SyncEngine,
     SyncQueue,
+    SyncResult,
     SyncState,
     SyncStateManager,
     SyncStatus,
-    QueuedChange,
-    SyncResult,
 )
 from tracertm.storage.conflict_resolver import ConflictStrategy, VectorClock
 
@@ -75,9 +72,9 @@ def mock_db_connection(db_engine):
     db = MagicMock()
     db.engine = db_engine
     # Ensure tables are created for each test
-    from sqlalchemy import text
     with db_engine.connect() as conn:
-        conn.execute(text("""
+        conn.execute(
+            text("""
             CREATE TABLE IF NOT EXISTS sync_queue (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 entity_type TEXT NOT NULL,
@@ -88,14 +85,17 @@ def mock_db_connection(db_engine):
                 retry_count INTEGER DEFAULT 0,
                 last_error TEXT
             )
-        """))
-        conn.execute(text("""
+        """)
+        )
+        conn.execute(
+            text("""
             CREATE TABLE IF NOT EXISTS sync_state (
                 key TEXT PRIMARY KEY,
                 value TEXT NOT NULL,
                 updated_at TEXT NOT NULL
             )
-        """))
+        """)
+        )
         conn.commit()
     return db
 
@@ -133,15 +133,14 @@ def sample_project(db_session):
 @pytest.fixture(scope="function")
 def sync_engine(mock_db_connection, mock_api_client, mock_storage_manager):
     """Create a sync engine instance."""
-    engine = SyncEngine(
+    return SyncEngine(
         db_connection=mock_db_connection,
         api_client=mock_api_client,
         storage_manager=mock_storage_manager,
         conflict_strategy=ConflictStrategy.LAST_WRITE_WINS,
         max_retries=3,
-        retry_delay=0.1
+        retry_delay=0.1,
     )
-    return engine
 
 
 @pytest.fixture(scope="function")
@@ -195,7 +194,7 @@ class TestChangeDetectorComprehensive:
         """Test hash of empty string."""
         detector = ChangeDetector()
         hash_value = detector.compute_hash("")
-        expected = hashlib.sha256("".encode("utf-8")).hexdigest()
+        expected = hashlib.sha256(b"").hexdigest()
         assert hash_value == expected
 
     def test_compute_hash_special_characters(self):
@@ -342,7 +341,7 @@ class TestSyncQueueComprehensive:
             entity_type=EntityType.ITEM,
             entity_id="item-1",
             operation=OperationType.CREATE,
-            payload={"title": "New Item"}
+            payload={"title": "New Item"},
         )
         assert queue_id is not None
 
@@ -375,8 +374,8 @@ class TestSyncQueueComprehensive:
         complex_payload = {
             "title": "Complex Item",
             "nested": {"key": "value", "list": [1, 2, 3]},
-            "timestamp": datetime.utcnow().isoformat(),
-            "unicode": "こんにちは"
+            "timestamp": datetime.now(UTC).isoformat(),
+            "unicode": "こんにちは",
         }
         queue_id = queue.enqueue(EntityType.ITEM, "item-complex", OperationType.CREATE, complex_payload)
         assert queue_id is not None
@@ -500,9 +499,9 @@ class TestSyncQueueComprehensive:
             entity_id="item-1",
             operation=OperationType.CREATE,
             payload={"title": "Test"},
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(UTC),
             retry_count=0,
-            last_error=None
+            last_error=None,
         )
         assert change.id == 1
         assert change.entity_type == EntityType.ITEM
@@ -516,9 +515,9 @@ class TestSyncQueueComprehensive:
             entity_id="item-1",
             operation=OperationType.UPDATE,
             payload={},
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(UTC),
             retry_count=2,
-            last_error="Network error"
+            last_error="Network error",
         )
         assert change.retry_count == 2
         assert change.last_error is not None
@@ -560,9 +559,9 @@ class TestSyncStateManagerComprehensive:
     def test_update_last_sync_default_time(self, mock_db_connection):
         """Test updating last sync with default timestamp."""
         manager = SyncStateManager(mock_db_connection)
-        before = datetime.utcnow()
+        before = datetime.now(UTC)
         manager.update_last_sync()
-        after = datetime.utcnow()
+        after = datetime.now(UTC)
         state = manager.get_state()
         assert state.last_sync is not None
         assert before <= state.last_sync <= after
@@ -570,7 +569,7 @@ class TestSyncStateManagerComprehensive:
     def test_update_last_sync_custom_time(self, mock_db_connection):
         """Test updating last sync with custom timestamp."""
         manager = SyncStateManager(mock_db_connection)
-        custom_time = datetime.utcnow() - timedelta(hours=1)
+        custom_time = datetime.now(UTC) - timedelta(hours=1)
         manager.update_last_sync(custom_time)
         state = manager.get_state()
         assert state.last_sync == custom_time
@@ -637,14 +636,14 @@ class TestSyncStateManagerComprehensive:
 
     def test_sync_state_dataclass(self):
         """Test SyncState dataclass."""
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         state = SyncState(
             last_sync=now,
             pending_changes=5,
             status=SyncStatus.SYNCING,
             last_error="Test error",
             conflicts_count=1,
-            synced_entities=10
+            synced_entities=10,
         )
         assert state.last_sync == now
         assert state.pending_changes == 5
@@ -686,11 +685,7 @@ class TestSyncStateManagerComprehensive:
     def test_sync_result_dataclass(self):
         """Test SyncResult dataclass."""
         result = SyncResult(
-            success=True,
-            entities_synced=10,
-            conflicts=[{"entity_id": "1"}],
-            errors=["Error 1"],
-            duration_seconds=5.5
+            success=True, entities_synced=10, conflicts=[{"entity_id": "1"}], errors=["Error 1"], duration_seconds=5.5
         )
         assert result.success is True
         assert result.entities_synced == 10
@@ -773,27 +768,21 @@ class TestSyncEngineLifecycleComprehensive:
             entity_type=EntityType.ITEM,
             entity_id="item-1",
             operation=OperationType.CREATE,
-            payload={"title": "New Item"}
+            payload={"title": "New Item"},
         )
         assert queue_id is not None
 
     def test_queue_change_item_update(self, sync_engine):
         """Test queuing an item update."""
         queue_id = sync_engine.queue_change(
-            entity_type=EntityType.ITEM,
-            entity_id="item-1",
-            operation=OperationType.UPDATE,
-            payload={"status": "done"}
+            entity_type=EntityType.ITEM, entity_id="item-1", operation=OperationType.UPDATE, payload={"status": "done"}
         )
         assert queue_id is not None
 
     def test_queue_change_item_delete(self, sync_engine):
         """Test queuing an item deletion."""
         queue_id = sync_engine.queue_change(
-            entity_type=EntityType.ITEM,
-            entity_id="item-1",
-            operation=OperationType.DELETE,
-            payload={}
+            entity_type=EntityType.ITEM, entity_id="item-1", operation=OperationType.DELETE, payload={}
         )
         assert queue_id is not None
 
@@ -803,7 +792,7 @@ class TestSyncEngineLifecycleComprehensive:
             entity_type=EntityType.LINK,
             entity_id="link-1",
             operation=OperationType.CREATE,
-            payload={"from_id": "item-1", "to_id": "item-2"}
+            payload={"from_id": "item-1", "to_id": "item-2"},
         )
         assert queue_id is not None
 
@@ -813,7 +802,7 @@ class TestSyncEngineLifecycleComprehensive:
             entity_type=EntityType.PROJECT,
             entity_id="project-1",
             operation=OperationType.UPDATE,
-            payload={"name": "Updated Project"}
+            payload={"name": "Updated Project"},
         )
         assert queue_id is not None
 
@@ -823,7 +812,7 @@ class TestSyncEngineLifecycleComprehensive:
             entity_type=EntityType.AGENT,
             entity_id="agent-1",
             operation=OperationType.CREATE,
-            payload={"name": "New Agent"}
+            payload={"name": "New Agent"},
         )
         assert queue_id is not None
 
@@ -832,10 +821,7 @@ class TestSyncEngineLifecycleComprehensive:
         ids = []
         for i in range(10):
             queue_id = sync_engine.queue_change(
-                entity_type=EntityType.ITEM,
-                entity_id=f"item-{i}",
-                operation=OperationType.CREATE,
-                payload={}
+                entity_type=EntityType.ITEM, entity_id=f"item-{i}", operation=OperationType.CREATE, payload={}
             )
             ids.append(queue_id)
         assert len(set(ids)) == 10  # All unique
@@ -853,10 +839,7 @@ class TestSyncEngineLifecycleComprehensive:
         """Test that sync updates status."""
         # Queue a change first
         sync_engine.queue_change(
-            entity_type=EntityType.ITEM,
-            entity_id="item-1",
-            operation=OperationType.CREATE,
-            payload={}
+            entity_type=EntityType.ITEM, entity_id="item-1", operation=OperationType.CREATE, payload={}
         )
         result = await sync_engine.sync()
         state = sync_engine.get_status()
@@ -867,10 +850,7 @@ class TestSyncEngineLifecycleComprehensive:
         """Test that sync records errors."""
         sync_engine.api.post.side_effect = Exception("API Error")
         sync_engine.queue_change(
-            entity_type=EntityType.ITEM,
-            entity_id="item-1",
-            operation=OperationType.CREATE,
-            payload={}
+            entity_type=EntityType.ITEM, entity_id="item-1", operation=OperationType.CREATE, payload={}
         )
         result = await sync_engine.sync()
         # Should handle error gracefully
@@ -888,9 +868,9 @@ class TestSyncEngineLifecycleComprehensive:
         """Test get_status returns SyncState."""
         status = sync_engine.get_status()
         assert isinstance(status, SyncState)
-        assert hasattr(status, 'last_sync')
-        assert hasattr(status, 'pending_changes')
-        assert hasattr(status, 'status')
+        assert hasattr(status, "last_sync")
+        assert hasattr(status, "pending_changes")
+        assert hasattr(status, "status")
 
     @pytest.mark.asyncio
     async def test_clear_queue(self, sync_engine):
@@ -922,14 +902,14 @@ class TestSyncEngineLifecycleComprehensive:
             ConflictStrategy.LAST_WRITE_WINS,
             ConflictStrategy.LOCAL_WINS,
             ConflictStrategy.REMOTE_WINS,
-            ConflictStrategy.MANUAL
+            ConflictStrategy.MANUAL,
         ]
         for strategy in strategies:
             engine = SyncEngine(
                 db_connection=mock_db_connection,
                 api_client=mock_api_client,
                 storage_manager=mock_storage_manager,
-                conflict_strategy=strategy
+                conflict_strategy=strategy,
             )
             assert engine.conflict_strategy == strategy
 
@@ -940,18 +920,14 @@ class TestSyncEngineLifecycleComprehensive:
             api_client=mock_api_client,
             storage_manager=mock_storage_manager,
             max_retries=5,
-            retry_delay=2.0
+            retry_delay=2.0,
         )
         assert engine.max_retries == 5
         assert engine.retry_delay == 2.0
 
     def test_vector_clock_creation(self, sync_engine):
         """Test creating a vector clock."""
-        vc = sync_engine.create_vector_clock(
-            client_id="client-1",
-            version=1,
-            parent_version=0
-        )
+        vc = sync_engine.create_vector_clock(client_id="client-1", version=1, parent_version=0)
         assert isinstance(vc, VectorClock)
         assert vc.client_id == "client-1"
         assert vc.version == 1
@@ -981,15 +957,15 @@ class TestSyncEngineLifecycleComprehensive:
     @pytest.mark.asyncio
     async def test_pull_changes_with_timestamp(self, sync_engine):
         """Test pulling changes since a timestamp."""
-        timestamp = datetime.utcnow() - timedelta(hours=1)
+        timestamp = datetime.now(UTC) - timedelta(hours=1)
         result = await sync_engine.pull_changes(since=timestamp)
         assert isinstance(result, SyncResult)
 
     def test_resolve_conflict_last_write_wins(self, sync_engine):
         """Test conflict resolution with LAST_WRITE_WINS."""
         sync_engine.conflict_strategy = ConflictStrategy.LAST_WRITE_WINS
-        local = {"title": "Local", "updated_at": (datetime.utcnow() - timedelta(hours=1)).isoformat()}
-        remote = {"title": "Remote", "updated_at": datetime.utcnow().isoformat()}
+        local = {"title": "Local", "updated_at": (datetime.now(UTC) - timedelta(hours=1)).isoformat()}
+        remote = {"title": "Remote", "updated_at": datetime.now(UTC).isoformat()}
         resolved = sync_engine._resolve_conflict(local, remote)
         assert resolved == remote
 
@@ -1016,7 +992,7 @@ class TestSyncEngineLifecycleComprehensive:
         remote = {"title": "Remote"}
         resolved = sync_engine._resolve_conflict(local, remote)
         # Manual strategy returns local for now
-        assert resolved == local or resolved == remote
+        assert resolved in (local, remote)
 
 
 # ============================================================================
@@ -1031,12 +1007,7 @@ class TestSyncEngineBatchOperations:
     async def test_batch_item_sync(self, sync_engine):
         """Test syncing multiple items."""
         for i in range(10):
-            sync_engine.queue_change(
-                EntityType.ITEM,
-                f"item-{i}",
-                OperationType.CREATE,
-                {"title": f"Item {i}"}
-            )
+            sync_engine.queue_change(EntityType.ITEM, f"item-{i}", OperationType.CREATE, {"title": f"Item {i}"})
         pending = sync_engine.queue.get_pending()
         assert len(pending) == 10
 
@@ -1045,10 +1016,7 @@ class TestSyncEngineBatchOperations:
         """Test syncing multiple links."""
         for i in range(5):
             sync_engine.queue_change(
-                EntityType.LINK,
-                f"link-{i}",
-                OperationType.CREATE,
-                {"from": f"item-{i}", "to": f"item-{i+1}"}
+                EntityType.LINK, f"link-{i}", OperationType.CREATE, {"from": f"item-{i}", "to": f"item-{i + 1}"}
             )
         pending = sync_engine.queue.get_pending()
         assert len(pending) == 5
@@ -1071,12 +1039,7 @@ class TestSyncEngineBatchOperations:
     async def test_large_batch_1000_items(self, sync_engine):
         """Test syncing 1000 items (performance test)."""
         for i in range(1000):
-            sync_engine.queue_change(
-                EntityType.ITEM,
-                f"item-{i}",
-                OperationType.CREATE,
-                {"title": f"Item {i}"}
-            )
+            sync_engine.queue_change(EntityType.ITEM, f"item-{i}", OperationType.CREATE, {"title": f"Item {i}"})
         assert sync_engine.queue.get_count() == 1000
 
     @pytest.mark.asyncio
@@ -1098,11 +1061,7 @@ class TestSyncEngineBatchOperations:
     async def test_batch_with_large_payloads(self, sync_engine):
         """Test batch with large payloads."""
         for i in range(10):
-            large_payload = {
-                "title": f"Item {i}",
-                "description": "x" * 10000,
-                "data": list(range(1000))
-            }
+            large_payload = {"title": f"Item {i}", "description": "x" * 10000, "data": list(range(1000))}
             sync_engine.queue_change(EntityType.ITEM, f"item-{i}", OperationType.CREATE, large_payload)
         pending = sync_engine.queue.get_pending()
         assert len(pending) == 10
@@ -1110,14 +1069,10 @@ class TestSyncEngineBatchOperations:
     @pytest.mark.asyncio
     async def test_concurrent_queue_access(self, sync_engine):
         """Test queue operations under concurrent access."""
+
         async def queue_items(start, count):
             for i in range(start, start + count):
-                sync_engine.queue_change(
-                    EntityType.ITEM,
-                    f"item-{i}",
-                    OperationType.CREATE,
-                    {}
-                )
+                sync_engine.queue_change(EntityType.ITEM, f"item-{i}", OperationType.CREATE, {})
 
         # Simulate concurrent queueing
         total_count = sync_engine.queue.get_count()
@@ -1126,6 +1081,7 @@ class TestSyncEngineBatchOperations:
     def test_queue_memory_efficiency(self, sync_engine):
         """Test that queue doesn't create excessive memory usage."""
         import sys
+
         initial_size = sys.getsizeof(sync_engine.queue)
 
         # Queue many items
@@ -1210,9 +1166,9 @@ class TestSyncEngineBatchOperations:
     @pytest.mark.asyncio
     async def test_sync_with_timestamp_tracking(self, sync_engine):
         """Test sync tracks timestamp correctly."""
-        before = datetime.utcnow()
+        before = datetime.now(UTC)
         result = await sync_engine.sync()
-        after = datetime.utcnow()
+        after = datetime.now(UTC)
 
         state = sync_engine.get_status()
         if state.last_sync:
@@ -1267,6 +1223,7 @@ class TestSyncEngineConcurrency:
     @pytest.mark.asyncio
     async def test_concurrent_queue_operations(self, sync_engine):
         """Test queue thread safety with concurrent operations."""
+
         async def add_items():
             for i in range(10):
                 sync_engine.queue_change(EntityType.ITEM, f"item-{i}", OperationType.CREATE, {})
@@ -1317,9 +1274,7 @@ class TestSyncEngineEdgeCases:
         """Test queuing with special characters in entity ID."""
         special_ids = ["item:1", "item|2", "item/3", "item\\4"]
         for entity_id in special_ids:
-            queue_id = sync_engine.queue_change(
-                EntityType.ITEM, entity_id, OperationType.CREATE, {}
-            )
+            queue_id = sync_engine.queue_change(EntityType.ITEM, entity_id, OperationType.CREATE, {})
             assert queue_id is not None
 
     def test_queue_with_unicode_in_payload(self, sync_engine):
@@ -1330,9 +1285,7 @@ class TestSyncEngineEdgeCases:
             {"emoji": "🚀🎉🔥"},
         ]
         for payload in payloads:
-            queue_id = sync_engine.queue_change(
-                EntityType.ITEM, "item-1", OperationType.CREATE, payload
-            )
+            queue_id = sync_engine.queue_change(EntityType.ITEM, "item-1", OperationType.CREATE, payload)
             assert queue_id is not None
 
     def test_sync_status_with_null_error(self, sync_engine):
@@ -1377,17 +1330,13 @@ class TestSyncEngineEdgeCases:
     def test_payload_with_null_values(self, sync_engine):
         """Test payload with None values."""
         payload = {"title": None, "value": None}
-        queue_id = sync_engine.queue_change(
-            EntityType.ITEM, "item-1", OperationType.CREATE, payload
-        )
+        queue_id = sync_engine.queue_change(EntityType.ITEM, "item-1", OperationType.CREATE, payload)
         assert queue_id is not None
 
     def test_payload_with_nested_null_values(self, sync_engine):
         """Test payload with nested None values."""
         payload = {"nested": {"key": None}, "list": [1, None, 3]}
-        queue_id = sync_engine.queue_change(
-            EntityType.ITEM, "item-1", OperationType.CREATE, payload
-        )
+        queue_id = sync_engine.queue_change(EntityType.ITEM, "item-1", OperationType.CREATE, payload)
         assert queue_id is not None
 
     def test_remove_already_removed_item(self, sync_engine):
@@ -1438,14 +1387,14 @@ class TestSyncEngineEdgeCases:
 
     def test_state_update_with_very_old_timestamp(self, sync_engine):
         """Test state update with very old timestamp."""
-        old_time = datetime.utcnow() - timedelta(days=365)
+        old_time = datetime.now(UTC) - timedelta(days=365)
         sync_engine.state_manager.update_last_sync(old_time)
         state = sync_engine.get_status()
         assert state.last_sync == old_time
 
     def test_state_update_with_future_timestamp(self, sync_engine):
         """Test state update with future timestamp."""
-        future_time = datetime.utcnow() + timedelta(days=365)
+        future_time = datetime.now(UTC) + timedelta(days=365)
         sync_engine.state_manager.update_last_sync(future_time)
         state = sync_engine.get_status()
         assert state.last_sync == future_time
@@ -1469,17 +1418,13 @@ class TestSyncEngineEdgeCases:
 
     def test_queue_change_with_empty_entity_id(self, sync_engine):
         """Test queuing with empty entity ID."""
-        queue_id = sync_engine.queue_change(
-            EntityType.ITEM, "", OperationType.CREATE, {}
-        )
+        queue_id = sync_engine.queue_change(EntityType.ITEM, "", OperationType.CREATE, {})
         assert queue_id is not None
 
     def test_queue_change_with_very_long_entity_id(self, sync_engine):
         """Test queuing with very long entity ID."""
         long_id = "x" * 10000
-        queue_id = sync_engine.queue_change(
-            EntityType.ITEM, long_id, OperationType.CREATE, {}
-        )
+        queue_id = sync_engine.queue_change(EntityType.ITEM, long_id, OperationType.CREATE, {})
         assert queue_id is not None
 
     @pytest.mark.asyncio
@@ -1503,11 +1448,7 @@ class TestSyncEngineEdgeCases:
 
     def test_vector_clock_with_extreme_versions(self, sync_engine):
         """Test vector clock with extreme version numbers."""
-        vc = sync_engine.create_vector_clock(
-            client_id="client-1",
-            version=999999999,
-            parent_version=999999998
-        )
+        vc = sync_engine.create_vector_clock(client_id="client-1", version=999999999, parent_version=999999998)
         assert vc.version == 999999999
         assert vc.parent_version == 999999998
 
@@ -1532,24 +1473,20 @@ class TestSyncEngineIntegration:
     async def test_sync_with_item_service_integration(self, sync_engine, db_session, sample_project):
         """Test sync integration with ItemService."""
         # Create an item in DB
-        from tracertm.models.item import Item
         item = Item(
             id="int-item-1",
             project_id=sample_project.id,
             title="Integration Item",
             view="TEST",
             item_type="requirement",
-            status="todo"
+            status="todo",
         )
         db_session.add(item)
         db_session.commit()
 
         # Queue a sync change
         queue_id = sync_engine.queue_change(
-            EntityType.ITEM,
-            "int-item-1",
-            OperationType.UPDATE,
-            {"status": "in_progress"}
+            EntityType.ITEM, "int-item-1", OperationType.UPDATE, {"status": "in_progress"}
         )
         assert queue_id is not None
 
@@ -1560,7 +1497,7 @@ class TestSyncEngineIntegration:
             EntityType.LINK,
             "int-link-1",
             OperationType.CREATE,
-            {"from_id": "item-1", "to_id": "item-2", "type": "depends-on"}
+            {"from_id": "item-1", "to_id": "item-2", "type": "depends-on"},
         )
         assert queue_id is not None
 
@@ -1571,17 +1508,12 @@ class TestSyncEngineIntegration:
             "title": "Test Item",
             "description": "Description",
             "status": "active",
-            "nested": {"key": "value"}
+            "nested": {"key": "value"},
         }
-        queue_id = sync_engine.queue_change(
-            EntityType.ITEM,
-            "integrity-test",
-            OperationType.CREATE,
-            test_payload
-        )
+        queue_id = sync_engine.queue_change(EntityType.ITEM, "integrity-test", OperationType.CREATE, test_payload)
 
         pending = sync_engine.queue.get_pending()
-        found_item = [p for p in pending if p.entity_id == "integrity-test"][0]
+        found_item = next(p for p in pending if p.entity_id == "integrity-test")
         assert found_item.payload == test_payload
 
     @pytest.mark.asyncio
@@ -1610,7 +1542,7 @@ class TestSyncEngineIntegration:
                 EntityType.ITEM,
                 f"full-cycle-{i}",
                 OperationType.CREATE if i % 2 == 0 else OperationType.UPDATE,
-                {"index": i}
+                {"index": i},
             )
 
         # Verify state before
@@ -1629,8 +1561,8 @@ class TestSyncEngineIntegration:
 
     def test_conflict_detection_basic(self, sync_engine):
         """Test basic conflict detection."""
-        local = {"title": "Local", "updated_at": datetime.utcnow().isoformat()}
-        remote = {"title": "Remote", "updated_at": datetime.utcnow().isoformat()}
+        local = {"title": "Local", "updated_at": datetime.now(UTC).isoformat()}
+        remote = {"title": "Remote", "updated_at": datetime.now(UTC).isoformat()}
         # Should not raise
         resolved = sync_engine._resolve_conflict(local, remote)
         assert resolved is not None
@@ -1687,12 +1619,7 @@ class TestSyncEngineIntegration:
         """Test change queue handles multiple changes for same entity."""
         # Queue multiple changes for same entity with same operation
         for i in range(10):
-            sync_engine.queue_change(
-                EntityType.ITEM,
-                "item-1",
-                OperationType.UPDATE,
-                {"version": i}
-            )
+            sync_engine.queue_change(EntityType.ITEM, "item-1", OperationType.UPDATE, {"version": i})
 
         pending = sync_engine.queue.get_pending()
         # All changes are kept (queue doesn't compact, sync engine handles ordering)
@@ -1738,12 +1665,7 @@ class TestSyncEngineIntegration:
 
         # Queue 1000 items
         for i in range(1000):
-            sync_engine.queue_change(
-                EntityType.ITEM,
-                f"perf-{i}",
-                OperationType.CREATE,
-                {"index": i}
-            )
+            sync_engine.queue_change(EntityType.ITEM, f"perf-{i}", OperationType.CREATE, {"index": i})
 
         # Time the sync
         start = time.time()

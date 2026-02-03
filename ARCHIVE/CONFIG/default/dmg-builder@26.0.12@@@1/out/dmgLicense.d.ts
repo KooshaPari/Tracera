@@ -5,4 +5,4 @@ type LicenseConfig = {
     labels: any[];
 };
 export declare function addLicenseToDmg(packager: PlatformPackager<any>, dmgPath: string): Promise<LicenseConfig | null>;
-export {};
+

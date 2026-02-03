@@ -45,4 +45,4 @@ export type DelimiterCasedProperties<
 			DelimiterCase<K, Delimiter, ApplyDefaultOptions<WordsOptions, _DefaultDelimiterCaseOptions, Options>>
 			]: Value[K]};
 
-export {};
+

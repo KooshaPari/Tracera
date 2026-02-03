@@ -1,10 +1,11 @@
 """Unit tests for shortest path service caching."""
 
-import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
-from tracertm.services.shortest_path_service import ShortestPathService, PathResult
+import pytest
+
 from tracertm.services.cache_service import CacheService
+from tracertm.services.shortest_path_service import ShortestPathService
 
 
 @pytest.fixture
@@ -27,8 +28,8 @@ def service(mock_session, mock_cache):
     """Create a shortest path service with mocked dependencies."""
     service = ShortestPathService(mock_session, mock_cache)
     # Mock repository methods
-    service.items.get_by_project = AsyncMock(return_value=[])
-    service.links.get_by_project = AsyncMock(return_value=[])
+    service.items.get_by_project = AsyncMock(return_value=[])  # type: ignore[assignment]
+    service.links.get_by_project = AsyncMock(return_value=[])  # type: ignore[assignment]
     return service
 
 
@@ -216,13 +217,13 @@ async def test_no_cache_service(mock_session):
     item1.id = "item-1"
     item2 = MagicMock()
     item2.id = "item-2"
-    service.items.get_by_project = AsyncMock(return_value=[item1, item2])
+    service.items.get_by_project = AsyncMock(return_value=[item1, item2])  # type: ignore[assignment]
 
     link = MagicMock()
     link.source_item_id = "item-1"
     link.target_item_id = "item-2"
     link.link_type = "depends_on"
-    service.links.get_by_project = AsyncMock(return_value=[link])
+    service.links.get_by_project = AsyncMock(return_value=[link])  # type: ignore[assignment]
 
     # Execute - should work without caching
     result = await service.find_shortest_path("proj-123", "item-1", "item-2")

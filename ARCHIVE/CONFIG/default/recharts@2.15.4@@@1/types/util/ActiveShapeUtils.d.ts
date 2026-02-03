@@ -74,4 +74,4 @@ export declare function compareScatter(shapeData: ScatterItem, activeTooltipItem
  * This assumes equal lengths of shape objects to data items.
  */
 export declare function getActiveShapeIndexForTooltip({ activeTooltipItem, graphicalItem, itemData, }: GetActiveShapeIndexForTooltip): number;
-export {};
+

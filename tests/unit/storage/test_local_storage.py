@@ -7,13 +7,10 @@ for the hybrid local storage architecture.
 
 import json
 import sqlite3
-from datetime import datetime
-from pathlib import Path
+from datetime import UTC, datetime
 
 import pytest
 import yaml
-
-
 
 # ============================================================================
 # FIXTURES
@@ -150,7 +147,7 @@ def init_db(db_path):
     conn.commit()
     conn.close()
 
-    yield db_path
+    return db_path
 
     # Cleanup handled by tmp_path
 
@@ -162,10 +159,10 @@ def sample_project_data():
         "id": "proj-001",
         "name": "test-project",
         "description": "Test Project Description",
-        "created_at": datetime.utcnow().isoformat(),
-        "updated_at": datetime.utcnow().isoformat(),
+        "created_at": datetime.now(UTC).isoformat(),
+        "updated_at": datetime.now(UTC).isoformat(),
         "version": 1,
-        "is_deleted": 0
+        "is_deleted": 0,
     }
 
 
@@ -184,9 +181,9 @@ def sample_item_data():
         "owner": "@team-lead",
         "parent_id": None,
         "version": 1,
-        "created_at": datetime.utcnow().isoformat(),
-        "updated_at": datetime.utcnow().isoformat(),
-        "is_deleted": 0
+        "created_at": datetime.now(UTC).isoformat(),
+        "updated_at": datetime.now(UTC).isoformat(),
+        "is_deleted": 0,
     }
 
 
@@ -217,18 +214,21 @@ class TestLocalStorageProjectOperations:
         cursor = conn.cursor()
 
         # Act
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO projects (id, name, description, created_at, updated_at, version, is_deleted)
             VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (
-            sample_project_data["id"],
-            sample_project_data["name"],
-            sample_project_data["description"],
-            sample_project_data["created_at"],
-            sample_project_data["updated_at"],
-            sample_project_data["version"],
-            sample_project_data["is_deleted"]
-        ))
+        """,
+            (
+                sample_project_data["id"],
+                sample_project_data["name"],
+                sample_project_data["description"],
+                sample_project_data["created_at"],
+                sample_project_data["updated_at"],
+                sample_project_data["version"],
+                sample_project_data["is_deleted"],
+            ),
+        )
         conn.commit()
 
         # Assert
@@ -253,18 +253,21 @@ class TestLocalStorageProjectOperations:
         # Arrange
         conn = sqlite3.connect(init_db)
         cursor = conn.cursor()
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO projects (id, name, description, created_at, updated_at, version, is_deleted)
             VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (
-            sample_project_data["id"],
-            sample_project_data["name"],
-            sample_project_data["description"],
-            sample_project_data["created_at"],
-            sample_project_data["updated_at"],
-            sample_project_data["version"],
-            sample_project_data["is_deleted"]
-        ))
+        """,
+            (
+                sample_project_data["id"],
+                sample_project_data["name"],
+                sample_project_data["description"],
+                sample_project_data["created_at"],
+                sample_project_data["updated_at"],
+                sample_project_data["version"],
+                sample_project_data["is_deleted"],
+            ),
+        )
         conn.commit()
 
         # Act
@@ -289,28 +292,34 @@ class TestLocalStorageProjectOperations:
         # Arrange
         conn = sqlite3.connect(init_db)
         cursor = conn.cursor()
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO projects (id, name, description, created_at, updated_at, version, is_deleted)
             VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (
-            sample_project_data["id"],
-            sample_project_data["name"],
-            sample_project_data["description"],
-            sample_project_data["created_at"],
-            sample_project_data["updated_at"],
-            sample_project_data["version"],
-            sample_project_data["is_deleted"]
-        ))
+        """,
+            (
+                sample_project_data["id"],
+                sample_project_data["name"],
+                sample_project_data["description"],
+                sample_project_data["created_at"],
+                sample_project_data["updated_at"],
+                sample_project_data["version"],
+                sample_project_data["is_deleted"],
+            ),
+        )
         conn.commit()
 
         # Act
         new_description = "Updated Description"
         new_version = 2
-        cursor.execute("""
+        cursor.execute(
+            """
             UPDATE projects
             SET description = ?, version = ?, updated_at = ?
             WHERE id = ?
-        """, (new_description, new_version, datetime.utcnow().isoformat(), sample_project_data["id"]))
+        """,
+            (new_description, new_version, datetime.now(UTC).isoformat(), sample_project_data["id"]),
+        )
         conn.commit()
 
         # Assert
@@ -334,18 +343,21 @@ class TestLocalStorageProjectOperations:
         # Arrange
         conn = sqlite3.connect(init_db)
         cursor = conn.cursor()
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO projects (id, name, description, created_at, updated_at, version, is_deleted)
             VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (
-            sample_project_data["id"],
-            sample_project_data["name"],
-            sample_project_data["description"],
-            sample_project_data["created_at"],
-            sample_project_data["updated_at"],
-            sample_project_data["version"],
-            sample_project_data["is_deleted"]
-        ))
+        """,
+            (
+                sample_project_data["id"],
+                sample_project_data["name"],
+                sample_project_data["description"],
+                sample_project_data["created_at"],
+                sample_project_data["updated_at"],
+                sample_project_data["version"],
+                sample_project_data["is_deleted"],
+            ),
+        )
         conn.commit()
 
         # Act
@@ -387,42 +399,48 @@ class TestLocalStorageItemOperations:
         cursor = conn.cursor()
 
         # Create project first
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO projects (id, name, description, created_at, updated_at, version, is_deleted)
             VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (
-            sample_project_data["id"],
-            sample_project_data["name"],
-            sample_project_data["description"],
-            sample_project_data["created_at"],
-            sample_project_data["updated_at"],
-            sample_project_data["version"],
-            sample_project_data["is_deleted"]
-        ))
+        """,
+            (
+                sample_project_data["id"],
+                sample_project_data["name"],
+                sample_project_data["description"],
+                sample_project_data["created_at"],
+                sample_project_data["updated_at"],
+                sample_project_data["version"],
+                sample_project_data["is_deleted"],
+            ),
+        )
         conn.commit()
 
         # Act
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO items (
                 id, project_id, item_type, external_id, title, content_hash,
                 status, priority, owner, parent_id, version, created_at, updated_at, is_deleted
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            sample_item_data["id"],
-            sample_item_data["project_id"],
-            sample_item_data["item_type"],
-            sample_item_data["external_id"],
-            sample_item_data["title"],
-            sample_item_data["content_hash"],
-            sample_item_data["status"],
-            sample_item_data["priority"],
-            sample_item_data["owner"],
-            sample_item_data["parent_id"],
-            sample_item_data["version"],
-            sample_item_data["created_at"],
-            sample_item_data["updated_at"],
-            sample_item_data["is_deleted"]
-        ))
+        """,
+            (
+                sample_item_data["id"],
+                sample_item_data["project_id"],
+                sample_item_data["item_type"],
+                sample_item_data["external_id"],
+                sample_item_data["title"],
+                sample_item_data["content_hash"],
+                sample_item_data["status"],
+                sample_item_data["priority"],
+                sample_item_data["owner"],
+                sample_item_data["parent_id"],
+                sample_item_data["version"],
+                sample_item_data["created_at"],
+                sample_item_data["updated_at"],
+                sample_item_data["is_deleted"],
+            ),
+        )
         conn.commit()
 
         # Assert
@@ -449,47 +467,56 @@ class TestLocalStorageItemOperations:
         cursor = conn.cursor()
 
         # Create project
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO projects (id, name, description, created_at, updated_at, version, is_deleted)
             VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (
-            sample_project_data["id"],
-            sample_project_data["name"],
-            sample_project_data["description"],
-            sample_project_data["created_at"],
-            sample_project_data["updated_at"],
-            sample_project_data["version"],
-            sample_project_data["is_deleted"]
-        ))
+        """,
+            (
+                sample_project_data["id"],
+                sample_project_data["name"],
+                sample_project_data["description"],
+                sample_project_data["created_at"],
+                sample_project_data["updated_at"],
+                sample_project_data["version"],
+                sample_project_data["is_deleted"],
+            ),
+        )
 
         # Create multiple items
         for i in range(3):
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT INTO items (
                     id, project_id, item_type, external_id, title, content_hash,
                     status, priority, created_at, updated_at, version, is_deleted
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                f"item-{i:03d}",
-                sample_project_data["id"],
-                "story",
-                f"STORY-{i:03d}",
-                f"Story {i}",
-                f"hash-{i}",
-                "todo",
-                "medium",
-                datetime.utcnow().isoformat(),
-                datetime.utcnow().isoformat(),
-                1,
-                0
-            ))
+            """,
+                (
+                    f"item-{i:03d}",
+                    sample_project_data["id"],
+                    "story",
+                    f"STORY-{i:03d}",
+                    f"Story {i}",
+                    f"hash-{i}",
+                    "todo",
+                    "medium",
+                    datetime.now(UTC).isoformat(),
+                    datetime.now(UTC).isoformat(),
+                    1,
+                    0,
+                ),
+            )
         conn.commit()
 
         # Act
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT * FROM items
             WHERE project_id = ? AND is_deleted = 0
-        """, (sample_project_data["id"],))
+        """,
+            (sample_project_data["id"],),
+        )
         results = cursor.fetchall()
         conn.close()
 
@@ -510,47 +537,56 @@ class TestLocalStorageItemOperations:
         cursor = conn.cursor()
 
         # Create project
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO projects (id, name, description, created_at, updated_at, version, is_deleted)
             VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (
-            sample_project_data["id"],
-            sample_project_data["name"],
-            sample_project_data["description"],
-            sample_project_data["created_at"],
-            sample_project_data["updated_at"],
-            sample_project_data["version"],
-            sample_project_data["is_deleted"]
-        ))
+        """,
+            (
+                sample_project_data["id"],
+                sample_project_data["name"],
+                sample_project_data["description"],
+                sample_project_data["created_at"],
+                sample_project_data["updated_at"],
+                sample_project_data["version"],
+                sample_project_data["is_deleted"],
+            ),
+        )
 
         # Create items with different statuses
         statuses = ["todo", "in_progress", "done", "todo"]
         for i, status in enumerate(statuses):
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT INTO items (
                     id, project_id, item_type, external_id, title, content_hash,
                     status, created_at, updated_at, version, is_deleted
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                f"item-{i:03d}",
-                sample_project_data["id"],
-                "story",
-                f"STORY-{i:03d}",
-                f"Story {i}",
-                f"hash-{i}",
-                status,
-                datetime.utcnow().isoformat(),
-                datetime.utcnow().isoformat(),
-                1,
-                0
-            ))
+            """,
+                (
+                    f"item-{i:03d}",
+                    sample_project_data["id"],
+                    "story",
+                    f"STORY-{i:03d}",
+                    f"Story {i}",
+                    f"hash-{i}",
+                    status,
+                    datetime.now(UTC).isoformat(),
+                    datetime.now(UTC).isoformat(),
+                    1,
+                    0,
+                ),
+            )
         conn.commit()
 
         # Act
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT * FROM items
             WHERE project_id = ? AND status = ? AND is_deleted = 0
-        """, (sample_project_data["id"], "todo"))
+        """,
+            (sample_project_data["id"], "todo"),
+        )
         results = cursor.fetchall()
         conn.close()
 
@@ -663,16 +699,13 @@ class TestLocalStorageSyncQueue:
         cursor = conn.cursor()
 
         # Act
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO sync_queue (entity_type, entity_id, operation, payload, created_at)
             VALUES (?, ?, ?, ?, ?)
-        """, (
-            "item",
-            "item-001",
-            "create",
-            json.dumps({"title": "New Item"}),
-            datetime.utcnow().isoformat()
-        ))
+        """,
+            ("item", "item-001", "create", json.dumps({"title": "New Item"}), datetime.now(UTC).isoformat()),
+        )
         conn.commit()
 
         # Assert
@@ -697,31 +730,28 @@ class TestLocalStorageSyncQueue:
         conn = sqlite3.connect(init_db)
         cursor = conn.cursor()
 
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO sync_queue (entity_type, entity_id, operation, payload, created_at)
             VALUES (?, ?, ?, ?, ?)
-        """, (
-            "item",
-            "item-001",
-            "update",
-            json.dumps({"title": "Updated"}),
-            datetime.utcnow().isoformat()
-        ))
+        """,
+            ("item", "item-001", "update", json.dumps({"title": "Updated"}), datetime.now(UTC).isoformat()),
+        )
         conn.commit()
 
         # Act & Assert
-        with pytest.raises(sqlite3.IntegrityError):
-            cursor.execute("""
+        def insert_duplicate():
+            cursor.execute(
+                """
                 INSERT INTO sync_queue (entity_type, entity_id, operation, payload, created_at)
                 VALUES (?, ?, ?, ?, ?)
-            """, (
-                "item",
-                "item-001",
-                "update",
-                json.dumps({"title": "Updated Again"}),
-                datetime.utcnow().isoformat()
-            ))
+            """,
+                ("item", "item-001", "update", json.dumps({"title": "Updated Again"}), datetime.now(UTC).isoformat()),
+            )
             conn.commit()
+
+        with pytest.raises(sqlite3.IntegrityError):
+            insert_duplicate()
 
         conn.close()
 
@@ -740,16 +770,13 @@ class TestLocalStorageSyncQueue:
 
         # Add multiple entries
         for i in range(3):
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT INTO sync_queue (entity_type, entity_id, operation, payload, created_at)
                 VALUES (?, ?, ?, ?, ?)
-            """, (
-                "item",
-                f"item-{i:03d}",
-                "create",
-                json.dumps({"id": i}),
-                datetime.utcnow().isoformat()
-            ))
+            """,
+                ("item", f"item-{i:03d}", "create", json.dumps({"id": i}), datetime.now(UTC).isoformat()),
+            )
         conn.commit()
 
         # Act
@@ -849,7 +876,7 @@ class TestLocalStorageMarkdownStructure:
                     "source": "EPIC-001",
                     "target": "STORY-001",
                     "type": "implements",
-                    "created": datetime.utcnow().isoformat()
+                    "created": datetime.now(UTC).isoformat(),
                 }
             ]
         }

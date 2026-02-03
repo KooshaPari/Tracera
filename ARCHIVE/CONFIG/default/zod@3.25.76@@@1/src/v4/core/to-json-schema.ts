@@ -161,12 +161,10 @@ export class JSONSchemaGenerator {
               const regexes = [...patterns];
               if (regexes.length === 1) json.pattern = regexes[0]!.source;
               else if (regexes.length > 1) {
-                result.schema.allOf = [
-                  ...regexes.map((regex) => ({
+                result.schema.allOf = regexes.map((regex) => ({
                     ...(this.target === "draft-7" ? ({ type: "string" } as const) : {}),
                     pattern: regex.source,
-                  })),
-                ];
+                  }));
               }
             }
 

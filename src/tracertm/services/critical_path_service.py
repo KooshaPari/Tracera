@@ -91,9 +91,7 @@ class CriticalPathService:
 
         for node in topo_order:
             for neighbor in adjacency_list[node]:
-                earliest_start[neighbor] = max(
-                    earliest_start[neighbor], earliest_finish[node]
-                )
+                earliest_start[neighbor] = max(earliest_start[neighbor], earliest_finish[node])
                 earliest_finish[neighbor] = earliest_start[neighbor] + 1
 
         # Calculate latest start and finish times (backward pass)
@@ -103,9 +101,7 @@ class CriticalPathService:
 
         for node in reversed(topo_order):
             if adjacency_list[node]:
-                latest_finish[node] = min(
-                    latest_start[neighbor] for neighbor in adjacency_list[node]
-                )
+                latest_finish[node] = min(latest_start[neighbor] for neighbor in adjacency_list[node])
             latest_start[node] = latest_finish[node] - 1
 
         # Calculate slack times
@@ -168,9 +164,7 @@ class CriticalPathService:
             current_path.append(node)
 
             # Check if this is an end node
-            if not any(
-                neighbor in critical_items for neighbor in adjacency_list.get(node, [])
-            ):
+            if not any(neighbor in critical_items for neighbor in adjacency_list.get(node, [])):
                 path.extend(current_path)
                 return True
 

@@ -13,20 +13,13 @@ Focuses on:
 
 import asyncio
 import threading
-import time
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from contextlib import contextmanager
-from typing import Any
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
-from sqlalchemy import Engine, text
-from sqlalchemy.exc import OperationalError
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from tracertm.core.concurrency import ConcurrencyError, update_with_retry
-from tracertm.database.connection import DatabaseConnection, get_engine, get_session
-
+from tracertm.database.connection import DatabaseConnection, get_session
 
 # ==============================================================================
 # Advanced Concurrency Tests
@@ -50,10 +43,7 @@ class TestConcurrencyThreadSafety:
             return success_count
 
         # Run 20 concurrent operations
-        results = await asyncio.gather(*[
-            update_with_retry(increment_with_retry)
-            for _ in range(20)
-        ])
+        results = await asyncio.gather(*[update_with_retry(increment_with_retry) for _ in range(20)])
 
         assert len(results) == 20
         assert success_count == 20
@@ -76,8 +66,7 @@ class TestConcurrencyThreadSafety:
 
         # Run 10 concurrent operations, each requiring 2 attempts
         results = await asyncio.gather(*[
-            update_with_retry(lambda op_id=i: operation_with_id(op_id))
-            for i in range(10)
+            update_with_retry(lambda op_id=i: operation_with_id(op_id)) for i in range(10)
         ])
 
         assert len(results) == 10
@@ -112,10 +101,10 @@ class TestConcurrencyThreadSafety:
                 return shared_counter["value"]
 
         # Run concurrent operations - some will conflict and retry
-        results = await asyncio.gather(*[
-            update_with_retry(optimistic_increment, max_retries=10, base_delay=0.001)
-            for _ in range(10)
-        ], return_exceptions=True)
+        results = await asyncio.gather(
+            *[update_with_retry(optimistic_increment, max_retries=10, base_delay=0.001) for _ in range(10)],
+            return_exceptions=True,
+        )
 
         # All should eventually succeed
         successful = [r for r in results if not isinstance(r, Exception)]
@@ -131,15 +120,13 @@ class TestConcurrencyTimeouts:
     @pytest.mark.asyncio
     async def test_operation_timeout(self):
         """Test operation that times out."""
+
         async def slow_operation():
             await asyncio.sleep(10)
             return "never_completes"
 
         with pytest.raises(asyncio.TimeoutError):
-            await asyncio.wait_for(
-                update_with_retry(slow_operation),
-                timeout=0.1
-            )
+            await asyncio.wait_for(update_with_retry(slow_operation), timeout=0.1)
 
     @pytest.mark.asyncio
     async def test_retry_with_timeout(self):
@@ -154,8 +141,7 @@ class TestConcurrencyTimeouts:
 
         with pytest.raises(asyncio.TimeoutError):
             await asyncio.wait_for(
-                update_with_retry(operation_with_delays, max_retries=10, base_delay=0.05),
-                timeout=0.2
+                update_with_retry(operation_with_delays, max_retries=10, base_delay=0.05), timeout=0.2
             )
 
         # Should have attempted at least once
@@ -164,6 +150,7 @@ class TestConcurrencyTimeouts:
     @pytest.mark.asyncio
     async def test_concurrent_operations_with_timeout(self):
         """Test multiple concurrent operations with timeout."""
+
         async def fast_operation(op_id: int):
             await asyncio.sleep(0.01)
             return f"result_{op_id}"
@@ -173,12 +160,8 @@ class TestConcurrencyTimeouts:
             return f"slow_{op_id}"
 
         # Mix of fast and slow operations
-        tasks = [
-            asyncio.wait_for(update_with_retry(lambda: fast_operation(i)), timeout=0.5)
-            for i in range(5)
-        ] + [
-            asyncio.wait_for(update_with_retry(lambda: slow_operation(i)), timeout=0.05)
-            for i in range(5, 10)
+        tasks = [asyncio.wait_for(update_with_retry(lambda i=i: fast_operation(i)), timeout=0.5) for i in range(5)] + [
+            asyncio.wait_for(update_with_retry(lambda i=i: slow_operation(i)), timeout=0.05) for i in range(5, 10)
         ]
 
         results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -198,13 +181,12 @@ class TestConcurrencyCancellation:
         call_count = 0
 
         async def failing_operation():
+            await asyncio.sleep(0)
             nonlocal call_count
             call_count += 1
             raise ConcurrencyError("Always fails")
 
-        task = asyncio.create_task(
-            update_with_retry(failing_operation, max_retries=10, base_delay=0.1)
-        )
+        task = asyncio.create_task(update_with_retry(failing_operation, max_retries=10, base_delay=0.1))
 
         # Wait for first attempt
         await asyncio.sleep(0.05)
@@ -219,14 +201,12 @@ class TestConcurrencyCancellation:
     @pytest.mark.asyncio
     async def test_cancel_multiple_operations(self):
         """Test cancelling multiple concurrent operations."""
+
         async def long_running_operation(op_id: int):
             await asyncio.sleep(10)
             return f"completed_{op_id}"
 
-        tasks = [
-            asyncio.create_task(update_with_retry(lambda i=i: long_running_operation(i)))
-            for i in range(10)
-        ]
+        tasks = [asyncio.create_task(update_with_retry(lambda i=i: long_running_operation(i))) for i in range(10)]
 
         # Wait a bit then cancel all
         await asyncio.sleep(0.01)
@@ -319,10 +299,7 @@ class TestDatabaseConnectionPool:
                 errors.append((thread_id, e))
 
         # Create multiple threads accessing pool
-        threads = [
-            threading.Thread(target=use_connection, args=(i,))
-            for i in range(20)
-        ]
+        threads = [threading.Thread(target=use_connection, args=(i,)) for i in range(20)]
 
         for thread in threads:
             thread.start()
@@ -343,7 +320,7 @@ class TestDatabaseConnectionPoolExhaustion:
         """Test pool handles many concurrent sessions."""
         db_path = tmp_path / "pool_test.db"
         db = DatabaseConnection(f"sqlite:///{db_path}")
-        engine = db.connect()
+        _ = db.connect()
 
         sessions = []
         try:
@@ -462,7 +439,7 @@ class TestDatabaseConnectionErrorHandling:
         session = db.get_session()
 
         # Execute invalid SQL
-        with pytest.raises(Exception):
+        with pytest.raises(Exception, match=r"(invalid|syntax|statement)"):
             session.execute(text("INVALID SQL STATEMENT"))
 
         session.close()
@@ -492,7 +469,7 @@ class TestDatabaseConnectionErrorHandling:
         conn = engine.connect()
 
         # Try to execute invalid operation
-        with pytest.raises(Exception):
+        with pytest.raises(Exception, match=r"(no such table|nonexistent)"):
             conn.execute(text("SELECT * FROM nonexistent_table"))
 
         # Connection should still be usable after error
@@ -528,7 +505,6 @@ class TestDatabaseContextManagers:
         url = f"sqlite:///{db_path}"
 
         # Generator pattern automatically closes session
-        session_closed = False
         for session in get_session(url):
             result = session.execute(text("SELECT 42"))
             assert result.scalar() == 42
@@ -575,10 +551,7 @@ class TestDatabaseConcurrentAccess:
             except Exception as e:
                 errors.append((thread_id, str(e)))
 
-        threads = [
-            threading.Thread(target=read_operation, args=(i,))
-            for i in range(20)
-        ]
+        threads = [threading.Thread(target=read_operation, args=(i,)) for i in range(20)]
 
         for thread in threads:
             thread.start()
@@ -603,10 +576,7 @@ class TestDatabaseConcurrentAccess:
             with lock:
                 sessions.append(session)
 
-        threads = [
-            threading.Thread(target=create_session_thread)
-            for _ in range(30)
-        ]
+        threads = [threading.Thread(target=create_session_thread) for _ in range(30)]
 
         for thread in threads:
             thread.start()
@@ -630,18 +600,22 @@ class TestDatabaseConcurrentAccess:
 class TestConcurrencyParametric:
     """Parametric tests for concurrency utilities."""
 
-    @pytest.mark.parametrize("max_retries,base_delay", [
-        (1, 0.001),
-        (3, 0.01),
-        (5, 0.05),
-        (10, 0.001),
-    ])
+    @pytest.mark.parametrize(
+        ("max_retries", "base_delay"),
+        [
+            (1, 0.001),
+            (3, 0.01),
+            (5, 0.05),
+            (10, 0.001),
+        ],
+    )
     @pytest.mark.asyncio
     async def test_retry_with_various_parameters(self, max_retries, base_delay):
         """Test retry works with various parameter combinations."""
         call_count = 0
 
         async def operation():
+            await asyncio.sleep(0)
             nonlocal call_count
             call_count += 1
             if call_count < max_retries:
@@ -659,6 +633,7 @@ class TestConcurrencyParametric:
         call_count = 0
 
         async def operation():
+            await asyncio.sleep(0)
             nonlocal call_count
             call_count += 1
             if call_count <= error_count:
@@ -673,13 +648,13 @@ class TestConcurrencyParametric:
     @pytest.mark.asyncio
     async def test_concurrent_operations_count(self, operation_count):
         """Test varying numbers of concurrent operations."""
+
         async def simple_operation(op_id: int):
             await asyncio.sleep(0.001)
             return op_id
 
         gathered_results = await asyncio.gather(*[
-            update_with_retry(lambda i=i: simple_operation(i))
-            for i in range(operation_count)
+            update_with_retry(lambda i=i: simple_operation(i)) for i in range(operation_count)
         ])
 
         assert len(gathered_results) == operation_count
@@ -689,9 +664,7 @@ class TestConcurrencyParametric:
 class TestDatabaseParametric:
     """Parametric tests for database operations."""
 
-    @pytest.mark.parametrize("url_suffix", [
-        "test1", "test2", "mydb", "database123", "db_2024"
-    ])
+    @pytest.mark.parametrize("url_suffix", ["test1", "test2", "mydb", "database123", "db_2024"])
     def test_database_url_validation(self, url_suffix):
         """Test database URL validation with various inputs."""
         # Valid URLs should work
@@ -701,7 +674,7 @@ class TestDatabaseParametric:
 
         # Invalid URLs should fail
         invalid_url = f"invalid://{url_suffix}"
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=r"invalid|url|scheme"):
             DatabaseConnection(invalid_url)
 
     @pytest.mark.parametrize("session_count", [1, 5, 10, 15, 20])
@@ -756,14 +729,12 @@ class TestConcurrentDatabaseOperations:
             session = db.get_session()
             try:
                 result = session.execute(text("SELECT :id"), {"id": op_id})
-                value = result.scalar()
-                return value
+                return result.scalar()
             finally:
                 session.close()
 
         results = await asyncio.gather(*[
-            update_with_retry(lambda i=i: database_operation_with_retry(i), max_retries=3)
-            for i in range(10)
+            update_with_retry(lambda i=i: database_operation_with_retry(i), max_retries=3) for i in range(10)
         ])
 
         assert len(results) == 10
@@ -781,17 +752,13 @@ class TestConcurrentDatabaseOperations:
             session = db.get_session()
             try:
                 # Run in thread pool to avoid blocking
-                result = await loop.run_in_executor(
-                    None,
-                    lambda: session.execute(text("SELECT :id"), {"id": query_id}).scalar()
+                return await loop.run_in_executor(
+                    None, lambda: session.execute(text("SELECT :id"), {"id": query_id}).scalar()
                 )
-                return result
             finally:
                 session.close()
 
-        results = await asyncio.gather(*[
-            database_query(i) for i in range(30)
-        ])
+        results = await asyncio.gather(*[database_query(i) for i in range(30)])
 
         assert len(results) == 30
         assert sorted(results) == list(range(30))
@@ -851,6 +818,7 @@ class TestEdgeCases:
         call_count = 0
 
         async def always_fails():
+            await asyncio.sleep(0)
             nonlocal call_count
             call_count += 1
             raise ConcurrencyError("Immediate failure")
@@ -864,7 +832,7 @@ class TestEdgeCases:
 
     def test_empty_database_url_edge_case(self):
         """Test handling of empty database URL."""
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=r"empty|url|database"):
             DatabaseConnection("")
 
     def test_very_long_database_url(self, tmp_path):
@@ -877,14 +845,13 @@ class TestEdgeCases:
     @pytest.mark.asyncio
     async def test_extremely_high_concurrency(self):
         """Test system with extremely high concurrency."""
+
         async def quick_operation(op_id: int):
+            await asyncio.sleep(0)
             return op_id
 
         # 100 concurrent operations
-        results = await asyncio.gather(*[
-            update_with_retry(lambda i=i: quick_operation(i))
-            for i in range(100)
-        ])
+        results = await asyncio.gather(*[update_with_retry(lambda i=i: quick_operation(i)) for i in range(100)])
 
         assert len(results) == 100
         assert sorted(results) == list(range(100))
@@ -921,10 +888,10 @@ class TestConcurrencyStressTests:
             return f"success_{op_id}"
 
         # 50 operations, each requiring at least one retry
-        results = await asyncio.gather(*[
-            update_with_retry(lambda i=i: operation_requiring_retry(i), max_retries=10)
-            for i in range(50)
-        ], return_exceptions=True)
+        results = await asyncio.gather(
+            *[update_with_retry(lambda i=i: operation_requiring_retry(i), max_retries=10) for i in range(50)],
+            return_exceptions=True,
+        )
 
         # Count successes
         successful = [r for r in results if isinstance(r, str) and r.startswith("success_")]

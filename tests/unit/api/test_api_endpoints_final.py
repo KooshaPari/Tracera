@@ -5,11 +5,12 @@ These tests focus on verifying endpoint availability, proper status codes,
 and correct response structure with minimal but effective mocking.
 """
 
-import pytest
-from unittest.mock import patch, AsyncMock, MagicMock
-from fastapi.testclient import TestClient
-from tracertm.api.main import app
+from unittest.mock import AsyncMock, patch
 
+import pytest
+from fastapi.testclient import TestClient
+
+from tracertm.api.main import app
 
 client = TestClient(app)
 
@@ -31,8 +32,7 @@ class TestEndpointAvailability:
 
     def test_items_list_endpoint_available(self):
         """Test items list endpoint is available."""
-        with patch("tracertm.api.main.get_db") as mock_db, \
-             patch("tracertm.api.main.auth_guard") as mock_auth:
+        with patch("tracertm.api.main.get_db") as mock_db, patch("tracertm.api.main.auth_guard") as mock_auth:
             mock_auth.return_value = {"role": "user", "sub": "user123"}
             mock_db.return_value = AsyncMock()
 
@@ -42,8 +42,7 @@ class TestEndpointAvailability:
 
     def test_items_detail_endpoint_available(self):
         """Test items detail endpoint is available."""
-        with patch("tracertm.api.main.get_db") as mock_db, \
-             patch("tracertm.api.main.auth_guard") as mock_auth:
+        with patch("tracertm.api.main.get_db") as mock_db, patch("tracertm.api.main.auth_guard") as mock_auth:
             mock_auth.return_value = {"role": "user", "sub": "user123"}
             mock_db.return_value = AsyncMock()
 
@@ -52,8 +51,7 @@ class TestEndpointAvailability:
 
     def test_links_list_endpoint_available(self):
         """Test links list endpoint is available."""
-        with patch("tracertm.api.main.get_db") as mock_db, \
-             patch("tracertm.api.main.auth_guard") as mock_auth:
+        with patch("tracertm.api.main.get_db") as mock_db, patch("tracertm.api.main.auth_guard") as mock_auth:
             mock_auth.return_value = {"role": "user", "sub": "user123"}
             mock_db.return_value = AsyncMock()
 
@@ -62,8 +60,7 @@ class TestEndpointAvailability:
 
     def test_links_create_endpoint_available(self):
         """Test links create endpoint is available."""
-        with patch("tracertm.api.main.get_db") as mock_db, \
-             patch("tracertm.api.main.auth_guard") as mock_auth:
+        with patch("tracertm.api.main.get_db") as mock_db, patch("tracertm.api.main.auth_guard") as mock_auth:
             mock_auth.return_value = {"role": "user", "sub": "user123"}
             mock_db.return_value = AsyncMock()
 
@@ -78,8 +75,7 @@ class TestEndpointAvailability:
 
     def test_links_update_endpoint_available(self):
         """Test links update endpoint is available."""
-        with patch("tracertm.api.main.get_db") as mock_db, \
-             patch("tracertm.api.main.auth_guard") as mock_auth:
+        with patch("tracertm.api.main.get_db") as mock_db, patch("tracertm.api.main.auth_guard") as mock_auth:
             mock_auth.return_value = {"role": "user", "sub": "user123"}
             mock_db.return_value = AsyncMock()
 
@@ -89,8 +85,7 @@ class TestEndpointAvailability:
 
     def test_impact_analysis_endpoint_available(self):
         """Test impact analysis endpoint is available."""
-        with patch("tracertm.api.main.get_db") as mock_db, \
-             patch("tracertm.api.main.auth_guard") as mock_auth:
+        with patch("tracertm.api.main.get_db") as mock_db, patch("tracertm.api.main.auth_guard") as mock_auth:
             mock_auth.return_value = {"role": "user", "sub": "user123"}
             mock_db.return_value = AsyncMock()
 
@@ -99,8 +94,7 @@ class TestEndpointAvailability:
 
     def test_cycle_detection_endpoint_available(self):
         """Test cycle detection endpoint is available."""
-        with patch("tracertm.api.main.get_db") as mock_db, \
-             patch("tracertm.api.main.auth_guard") as mock_auth:
+        with patch("tracertm.api.main.get_db") as mock_db, patch("tracertm.api.main.auth_guard") as mock_auth:
             mock_auth.return_value = {"role": "user", "sub": "user123"}
             mock_db.return_value = AsyncMock()
 
@@ -109,15 +103,11 @@ class TestEndpointAvailability:
 
     def test_shortest_path_endpoint_available(self):
         """Test shortest path endpoint is available."""
-        with patch("tracertm.api.main.get_db") as mock_db, \
-             patch("tracertm.api.main.auth_guard") as mock_auth:
+        with patch("tracertm.api.main.get_db") as mock_db, patch("tracertm.api.main.auth_guard") as mock_auth:
             mock_auth.return_value = {"role": "user", "sub": "user123"}
             mock_db.return_value = AsyncMock()
 
-            response = client.get(
-                "/api/v1/analysis/shortest-path?"
-                "project_id=proj1&source_id=item1&target_id=item2"
-            )
+            response = client.get("/api/v1/analysis/shortest-path?project_id=proj1&source_id=item1&target_id=item2")
             assert response.status_code in [200, 404, 500]
 
 
@@ -143,8 +133,7 @@ class TestResponseStructure:
 
     def test_api_error_has_detail(self):
         """Test error responses include detail message."""
-        with patch("tracertm.api.main.get_db") as mock_db, \
-             patch("tracertm.api.main.auth_guard") as mock_auth:
+        with patch("tracertm.api.main.get_db") as mock_db, patch("tracertm.api.main.auth_guard") as mock_auth:
             mock_auth.return_value = {"role": "user", "sub": "user123"}
             mock_db.return_value = AsyncMock()
 
@@ -160,8 +149,7 @@ class TestHTTPMethods:
 
     def test_get_items_uses_get_method(self):
         """Test items endpoint requires GET."""
-        with patch("tracertm.api.main.get_db") as mock_db, \
-             patch("tracertm.api.main.auth_guard") as mock_auth:
+        with patch("tracertm.api.main.get_db") as mock_db, patch("tracertm.api.main.auth_guard") as mock_auth:
             mock_auth.return_value = {"role": "user", "sub": "user123"}
             mock_db.return_value = AsyncMock()
 
@@ -172,8 +160,7 @@ class TestHTTPMethods:
 
     def test_create_link_uses_post_method(self):
         """Test link creation requires POST."""
-        with patch("tracertm.api.main.get_db") as mock_db, \
-             patch("tracertm.api.main.auth_guard") as mock_auth:
+        with patch("tracertm.api.main.get_db") as mock_db, patch("tracertm.api.main.auth_guard") as mock_auth:
             mock_auth.return_value = {"role": "user", "sub": "user123"}
             mock_db.return_value = AsyncMock()
 
@@ -183,8 +170,7 @@ class TestHTTPMethods:
 
     def test_update_link_uses_put_method(self):
         """Test link update requires PUT."""
-        with patch("tracertm.api.main.get_db") as mock_db, \
-             patch("tracertm.api.main.auth_guard") as mock_auth:
+        with patch("tracertm.api.main.get_db") as mock_db, patch("tracertm.api.main.auth_guard") as mock_auth:
             mock_auth.return_value = {"role": "user", "sub": "user123"}
             mock_db.return_value = AsyncMock()
 
@@ -217,8 +203,7 @@ class TestAuthentication:
 
     def test_protected_endpoint_with_mock_auth(self):
         """Test protected endpoints work with auth mock."""
-        with patch("tracertm.api.main.get_db") as mock_db, \
-             patch("tracertm.api.main.auth_guard") as mock_auth:
+        with patch("tracertm.api.main.get_db") as mock_db, patch("tracertm.api.main.auth_guard") as mock_auth:
             mock_auth.return_value = {"role": "user", "sub": "user123"}
             mock_db.return_value = AsyncMock()
 
@@ -237,8 +222,7 @@ class TestResponseFormats:
 
     def test_error_response_is_json(self):
         """Test error responses are JSON."""
-        with patch("tracertm.api.main.get_db") as mock_db, \
-             patch("tracertm.api.main.auth_guard") as mock_auth:
+        with patch("tracertm.api.main.get_db") as mock_db, patch("tracertm.api.main.auth_guard") as mock_auth:
             mock_auth.return_value = {"role": "user", "sub": "user123"}
             mock_db.return_value = AsyncMock()
 
@@ -252,8 +236,7 @@ class TestPathParameters:
 
     def test_item_id_in_path(self):
         """Test item_id parameter in path."""
-        with patch("tracertm.api.main.get_db") as mock_db, \
-             patch("tracertm.api.main.auth_guard") as mock_auth:
+        with patch("tracertm.api.main.get_db") as mock_db, patch("tracertm.api.main.auth_guard") as mock_auth:
             mock_auth.return_value = {"role": "user", "sub": "user123"}
             mock_db.return_value = AsyncMock()
 
@@ -264,8 +247,7 @@ class TestPathParameters:
 
     def test_link_id_in_path(self):
         """Test link_id parameter in path."""
-        with patch("tracertm.api.main.get_db") as mock_db, \
-             patch("tracertm.api.main.auth_guard") as mock_auth:
+        with patch("tracertm.api.main.get_db") as mock_db, patch("tracertm.api.main.auth_guard") as mock_auth:
             mock_auth.return_value = {"role": "user", "sub": "user123"}
             mock_db.return_value = AsyncMock()
 
@@ -277,8 +259,7 @@ class TestPathParameters:
 
     def test_project_id_in_path(self):
         """Test project_id parameter in path."""
-        with patch("tracertm.api.main.get_db") as mock_db, \
-             patch("tracertm.api.main.auth_guard") as mock_auth:
+        with patch("tracertm.api.main.get_db") as mock_db, patch("tracertm.api.main.auth_guard") as mock_auth:
             mock_auth.return_value = {"role": "user", "sub": "user123"}
             mock_db.return_value = AsyncMock()
 
@@ -293,8 +274,7 @@ class TestQueryParameters:
 
     def test_skip_parameter(self):
         """Test skip parameter for pagination."""
-        with patch("tracertm.api.main.get_db") as mock_db, \
-             patch("tracertm.api.main.auth_guard") as mock_auth:
+        with patch("tracertm.api.main.get_db") as mock_db, patch("tracertm.api.main.auth_guard") as mock_auth:
             mock_auth.return_value = {"role": "user", "sub": "user123"}
             mock_db.return_value = AsyncMock()
 
@@ -303,8 +283,7 @@ class TestQueryParameters:
 
     def test_limit_parameter(self):
         """Test limit parameter for pagination."""
-        with patch("tracertm.api.main.get_db") as mock_db, \
-             patch("tracertm.api.main.auth_guard") as mock_auth:
+        with patch("tracertm.api.main.get_db") as mock_db, patch("tracertm.api.main.auth_guard") as mock_auth:
             mock_auth.return_value = {"role": "user", "sub": "user123"}
             mock_db.return_value = AsyncMock()
 
@@ -313,15 +292,11 @@ class TestQueryParameters:
 
     def test_multiple_query_parameters(self):
         """Test multiple query parameters."""
-        with patch("tracertm.api.main.get_db") as mock_db, \
-             patch("tracertm.api.main.auth_guard") as mock_auth:
+        with patch("tracertm.api.main.get_db") as mock_db, patch("tracertm.api.main.auth_guard") as mock_auth:
             mock_auth.return_value = {"role": "user", "sub": "user123"}
             mock_db.return_value = AsyncMock()
 
-            response = client.get(
-                "/api/v1/links?"
-                "project_id=test&source_id=item1&target_id=item2&skip=0&limit=10"
-            )
+            response = client.get("/api/v1/links?project_id=test&source_id=item1&target_id=item2&skip=0&limit=10")
             assert response.status_code in [200, 500]
 
 

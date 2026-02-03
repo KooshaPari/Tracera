@@ -4,12 +4,13 @@ Revision ID: 023_github_projects
 Revises: 022_github_app_installations
 Create Date: 2026-01-28 13:00:00.000000
 """
-from alembic import op
-from alembic import context
+
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.dialects.postgresql import JSON
-from sqlalchemy.dialects.sqlite import JSON as SQLiteJSON
+from sqlalchemy.dialects.sqlite import JSON as sqlite_json  # noqa: N811
+
+from alembic import context, op
 
 # revision identifiers, used by Alembic.
 revision = "023_github_projects"
@@ -21,18 +22,19 @@ depends_on = None
 def upgrade() -> None:
     # Determine JSON type based on database
     bind = op.get_bind()
-    dialect_name = (
-        bind.dialect.name
-        if bind is not None
-        else context.get_context().dialect.name
-    )
-    json_type = JSON if dialect_name == "postgresql" else SQLiteJSON
+    dialect_name = bind.dialect.name if bind is not None else context.get_context().dialect.name
+    json_type = JSON if dialect_name == "postgresql" else sqlite_json
 
     # Create github_projects table
     op.create_table(
         "github_projects",
         sa.Column("id", sa.String(36), primary_key=True),
-        sa.Column("project_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False),
+        sa.Column(
+            "project_id",
+            postgresql.UUID(as_uuid=True),
+            sa.ForeignKey("projects.id", ondelete="CASCADE"),
+            nullable=False,
+        ),
         sa.Column("github_repo_id", sa.Integer(), nullable=False),
         sa.Column("github_repo_owner", sa.String(255), nullable=False),
         sa.Column("github_repo_name", sa.String(255), nullable=False),

@@ -13,4 +13,4 @@ export declare function coerceInputValue(
   type: GraphQLInputType,
   onError?: OnErrorCB,
 ): unknown;
-export {};
+

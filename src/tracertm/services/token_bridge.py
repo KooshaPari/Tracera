@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import logging
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import jwt
@@ -92,9 +92,7 @@ class TokenBridge:
                 return self._validate_rs256_token(token)
             except Exception as e:
                 logger.error("Token validation failed for both HS256 and RS256")
-                raise jwt.InvalidTokenError(
-                    f"Token validation failed: HS256={rs_failure!r}, RS256={e!r}"
-                ) from e
+                raise jwt.InvalidTokenError(f"Token validation failed: HS256={rs_failure!r}, RS256={e!r}") from e
 
         # RS256 or other: try RS256 only (skip HS256 to avoid InvalidAlgorithmError)
         try:
@@ -136,27 +134,20 @@ class TokenBridge:
         # Optional manual issuer check when token has iss
         token_issuer = decoded.get("iss")
         if self.issuer and token_issuer:
-            iss_ok = (
-                str(token_issuer).rstrip("/") == str(self.issuer).rstrip("/")
-                or str(token_issuer).startswith("https://api.workos.com/")
+            iss_ok = str(token_issuer).rstrip("/") == str(self.issuer).rstrip("/") or str(token_issuer).startswith(
+                "https://api.workos.com/"
             )
             if not iss_ok:
-                raise InvalidIssuerError(
-                    f"Invalid issuer: expected {self.issuer!r}, got {token_issuer!r}"
-                )
+                raise InvalidIssuerError(f"Invalid issuer: expected {self.issuer!r}, got {token_issuer!r}")
 
         # Optional manual audience check only when token has aud (avoid MissingRequiredClaimError)
         token_aud = decoded.get("aud")
         if self.audience and token_aud:
             if isinstance(token_aud, list):
                 if self.audience not in token_aud:
-                    raise InvalidAudienceError(
-                        f"Invalid audience: expected {self.audience!r}, got {token_aud!r}"
-                    )
+                    raise InvalidAudienceError(f"Invalid audience: expected {self.audience!r}, got {token_aud!r}")
             elif token_aud != self.audience:
-                raise InvalidAudienceError(
-                    f"Invalid audience: expected {self.audience!r}, got {token_aud!r}"
-                )
+                raise InvalidAudienceError(f"Invalid audience: expected {self.audience!r}, got {token_aud!r}")
 
         logger.info("Validated RS256 token for user %s", decoded.get("sub"))
         return decoded
@@ -187,7 +178,7 @@ class TokenBridge:
 
         # Service tokens should have type="service"
         if decoded.get("type") != "service":
-            logger.warning(f"HS256 token missing type=service claim")
+            logger.warning("HS256 token missing type=service claim")
 
         logger.info(f"Validated HS256 service token for user {decoded.get('sub')}")
         return decoded
@@ -208,7 +199,7 @@ class TokenBridge:
         Returns:
             Encoded JWT token string
         """
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         payload = {
             "sub": user_id,
             "org_id": org_id,
@@ -219,10 +210,7 @@ class TokenBridge:
         }
 
         token = jwt.encode(payload, self.hs_secret, algorithm="HS256")
-        logger.info(
-            f"Created bridge token for user {user_id} (org {org_id}), "
-            f"expires in {ttl_minutes} minutes"
-        )
+        logger.info(f"Created bridge token for user {user_id} (org {org_id}), expires in {ttl_minutes} minutes")
         return token
 
     def refresh_jwks(self) -> None:
@@ -268,9 +256,7 @@ def get_token_bridge() -> TokenBridge:
         if client_id:
             jwks_url = f"{api_base.rstrip('/')}/sso/jwks/{client_id}"
         else:
-            raise ValueError(
-                "Either WORKOS_JWKS_URL or WORKOS_CLIENT_ID must be set"
-            )
+            raise ValueError("Either WORKOS_JWKS_URL or WORKOS_CLIENT_ID must be set")
 
     return TokenBridge(
         hs_secret=hs_secret,

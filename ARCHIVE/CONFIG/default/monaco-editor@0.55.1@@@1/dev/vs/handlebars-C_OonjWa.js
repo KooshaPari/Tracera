@@ -19,7 +19,7 @@ define("vs/handlebars-C_OonjWa", ["exports", "./editor.api-CykLys8L"], (function
     "wbr"
   ];
   const conf = {
-    wordPattern: /(-?\d*\.\d\w*)|([^\`\~\!\@\$\^\&\*\(\)\=\+\[\{\]\}\\\|\;\:\'\"\,\.\<\>\/\s]+)/g,
+    wordPattern: /(-?\d*\.\d\w*)|([^`~!@$^&*()=+[{\]}\\|;:'",.<>/\s]+)/g,
     comments: {
       blockComment: ["{{!--", "--}}"]
     },
@@ -126,7 +126,7 @@ define("vs/handlebars-C_OonjWa", ["exports", "./editor.api-CykLys8L"], (function
         [/\/?>/, "delimiter.html", "@pop"],
         [/"([^"]*)"/, "attribute.value"],
         [/'([^']*)'/, "attribute.value"],
-        [/[\w\-]+/, "attribute.name"],
+        [/[\w-]+/, "attribute.name"],
         [/=/, "delimiter"],
         [/[ \t\r\n]+/]
         // whitespace
@@ -144,7 +144,7 @@ define("vs/handlebars-C_OonjWa", ["exports", "./editor.api-CykLys8L"], (function
         [/type/, "attribute.name", "@scriptAfterType"],
         [/"([^"]*)"/, "attribute.value"],
         [/'([^']*)'/, "attribute.value"],
-        [/[\w\-]+/, "attribute.name"],
+        [/[\w-]+/, "attribute.name"],
         [/=/, "delimiter"],
         [
           />/,
@@ -239,7 +239,7 @@ define("vs/handlebars-C_OonjWa", ["exports", "./editor.api-CykLys8L"], (function
         ],
         [/"([^"]*)"/, "attribute.value"],
         [/'([^']*)'/, "attribute.value"],
-        [/[\w\-]+/, "attribute.name"],
+        [/[\w-]+/, "attribute.name"],
         [/=/, "delimiter"],
         [/[ \t\r\n]+/],
         // whitespace
@@ -270,7 +270,7 @@ define("vs/handlebars-C_OonjWa", ["exports", "./editor.api-CykLys8L"], (function
         [/type/, "attribute.name", "@styleAfterType"],
         [/"([^"]*)"/, "attribute.value"],
         [/'([^']*)'/, "attribute.value"],
-        [/[\w\-]+/, "attribute.name"],
+        [/[\w-]+/, "attribute.name"],
         [/=/, "delimiter"],
         [
           />/,
@@ -365,7 +365,7 @@ define("vs/handlebars-C_OonjWa", ["exports", "./editor.api-CykLys8L"], (function
         ],
         [/"([^"]*)"/, "attribute.value"],
         [/'([^']*)'/, "attribute.value"],
-        [/[\w\-]+/, "attribute.name"],
+        [/[\w-]+/, "attribute.name"],
         [/=/, "delimiter"],
         [/[ \t\r\n]+/],
         // whitespace

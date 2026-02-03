@@ -25,4 +25,4 @@ type D = IsOptional<string | null | undefined>;
 */
 export type IsOptional<T> = IsAny<T> extends true ? true : Extract<T, undefined> extends never ? false : true;
 
-export {};
+

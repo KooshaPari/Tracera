@@ -64,4 +64,4 @@ export type ApiConfig = BasicApiConfig & {
 export type ProductConfigOverride = FromSchema<typeof productConfigOverrideSchema>;
 export type ReasonsSettingsSchema = FromSchema<typeof reasonsSettings>;
 export type OptionalEmailSettings = FromSchema<typeof optionalEmailSettings>;
-export {};
+

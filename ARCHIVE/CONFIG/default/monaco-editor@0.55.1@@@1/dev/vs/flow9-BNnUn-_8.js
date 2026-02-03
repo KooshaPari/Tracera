@@ -83,7 +83,7 @@ define("vs/flow9-BNnUn-_8", ["exports"], (function(exports) {
       "??",
       "^"
     ],
-    symbols: /[@$=><!~?:&|+\-*\\\/\^%]+/,
+    symbols: /[@$=><!~?:&|+\-*\\/^%]+/,
     escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
     // The main tokenizer for our languages
     tokenizer: {
@@ -102,7 +102,7 @@ define("vs/flow9-BNnUn-_8", ["exports"], (function(exports) {
         // whitespace
         { include: "@whitespace" },
         // delimiters and operators
-        [/[{}()\[\]]/, "delimiter"],
+        [/[{}()[\]]/, "delimiter"],
         [/[<>](?!@symbols)/, "delimiter"],
         [
           /@symbols/,
@@ -127,9 +127,9 @@ define("vs/flow9-BNnUn-_8", ["exports"], (function(exports) {
         [/\/\/.*$/, "comment"]
       ],
       comment: [
-        [/[^\/*]+/, "comment"],
+        [/[^/*]+/, "comment"],
         [/\*\//, "comment", "@pop"],
-        [/[\/*]/, "comment"]
+        [/[/*]/, "comment"]
       ],
       string: [
         [/[^\\"]+/, "string"],

@@ -1,13 +1,13 @@
 """Health check router for monitoring service and integration health."""
 
 import os
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 import httpx
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from pydantic import BaseModel
 from redis.asyncio import Redis
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.infrastructure.nats_client import NATSClient
@@ -25,8 +25,8 @@ class ComponentHealth(BaseModel):
     """Health status of a single component."""
 
     status: str  # "healthy", "degraded", "unhealthy"
-    message: Optional[str] = None
-    latency_ms: Optional[float] = None
+    message: str | None = None
+    latency_ms: float | None = None
     last_check: datetime
 
 
@@ -46,7 +46,7 @@ class HealthResponse(BaseModel):
     version: str
     timestamp: datetime
     components: dict[str, ComponentHealth]
-    integration: Optional[IntegrationHealth] = None
+    integration: IntegrationHealth | None = None
 
 
 def get_version() -> str:
@@ -69,7 +69,7 @@ async def check_database(db: AsyncSession) -> ComponentHealth:
 
     try:
         # Simple query to check database connectivity
-        await db.execute("SELECT 1")
+        await db.execute(text("SELECT 1"))
         latency_ms = (time.time() - start) * 1000
 
         status = "healthy"
@@ -84,20 +84,20 @@ async def check_database(db: AsyncSession) -> ComponentHealth:
             status=status,
             message=message,
             latency_ms=latency_ms,
-            last_check=datetime.now(timezone.utc),
+            last_check=datetime.now(UTC),
         )
 
     except Exception as e:
         latency_ms = (time.time() - start) * 1000
         return ComponentHealth(
             status="unhealthy",
-            message=f"Database check failed: {str(e)}",
+            message=f"Database check failed: {e!s}",
             latency_ms=latency_ms,
-            last_check=datetime.now(timezone.utc),
+            last_check=datetime.now(UTC),
         )
 
 
-async def check_redis(redis: Optional[Redis]) -> ComponentHealth:
+async def check_redis(redis: Redis | None) -> ComponentHealth:
     """Check Redis connectivity and health.
 
     Args:
@@ -114,12 +114,12 @@ async def check_redis(redis: Optional[Redis]) -> ComponentHealth:
         return ComponentHealth(
             status="degraded",
             message="Redis not available (optional)",
-            last_check=datetime.now(timezone.utc),
+            last_check=datetime.now(UTC),
         )
 
     try:
         # Ping Redis
-        await redis.ping()
+        await redis.ping()  # type: ignore[misc]
         latency_ms = (time.time() - start) * 1000
 
         status = "healthy"
@@ -133,20 +133,20 @@ async def check_redis(redis: Optional[Redis]) -> ComponentHealth:
             status=status,
             message=message,
             latency_ms=latency_ms,
-            last_check=datetime.now(timezone.utc),
+            last_check=datetime.now(UTC),
         )
 
     except Exception as e:
         latency_ms = (time.time() - start) * 1000
         return ComponentHealth(
             status="degraded",
-            message=f"Redis check failed: {str(e)}",
+            message=f"Redis check failed: {e!s}",
             latency_ms=latency_ms,
-            last_check=datetime.now(timezone.utc),
+            last_check=datetime.now(UTC),
         )
 
 
-async def check_nats(nats: Optional[NATSClient]) -> ComponentHealth:
+def check_nats(nats: NATSClient | None) -> ComponentHealth:
     """Check NATS connectivity and health.
 
     Args:
@@ -163,16 +163,17 @@ async def check_nats(nats: Optional[NATSClient]) -> ComponentHealth:
         return ComponentHealth(
             status="degraded",
             message="NATS not initialized (optional)",
-            last_check=datetime.now(timezone.utc),
+            last_check=datetime.now(UTC),
         )
 
     try:
-        # Check if connected
-        if not nats.is_connected():
+        # Check if connected (NATSClient.is_connected is a method)
+        connected = nats.is_connected
+        if not (connected() if callable(connected) else connected):
             return ComponentHealth(
                 status="unhealthy",
                 message="NATS not connected",
-                last_check=datetime.now(timezone.utc),
+                last_check=datetime.now(UTC),
             )
 
         latency_ms = (time.time() - start) * 1000
@@ -188,16 +189,16 @@ async def check_nats(nats: Optional[NATSClient]) -> ComponentHealth:
             status=status,
             message=message,
             latency_ms=latency_ms,
-            last_check=datetime.now(timezone.utc),
+            last_check=datetime.now(UTC),
         )
 
     except Exception as e:
         latency_ms = (time.time() - start) * 1000
         return ComponentHealth(
             status="degraded",
-            message=f"NATS check failed: {str(e)}",
+            message=f"NATS check failed: {e!s}",
             latency_ms=latency_ms,
-            last_check=datetime.now(timezone.utc),
+            last_check=datetime.now(UTC),
         )
 
 
@@ -218,7 +219,7 @@ async def check_go_backend(base_url: str) -> ComponentHealth:
         return ComponentHealth(
             status="degraded",
             message="Go backend URL not configured",
-            last_check=datetime.now(timezone.utc),
+            last_check=datetime.now(UTC),
         )
 
     try:
@@ -231,7 +232,7 @@ async def check_go_backend(base_url: str) -> ComponentHealth:
                     status="unhealthy",
                     message=f"HTTP {resp.status_code}",
                     latency_ms=latency_ms,
-                    last_check=datetime.now(timezone.utc),
+                    last_check=datetime.now(UTC),
                 )
 
             status = "healthy"
@@ -245,16 +246,16 @@ async def check_go_backend(base_url: str) -> ComponentHealth:
                 status=status,
                 message=message,
                 latency_ms=latency_ms,
-                last_check=datetime.now(timezone.utc),
+                last_check=datetime.now(UTC),
             )
 
     except Exception as e:
         latency_ms = (time.time() - start) * 1000
         return ComponentHealth(
             status="unhealthy",
-            message=f"Request failed: {str(e)}",
+            message=f"Request failed: {e!s}",
             latency_ms=latency_ms,
-            last_check=datetime.now(timezone.utc),
+            last_check=datetime.now(UTC),
         )
 
 
@@ -287,14 +288,14 @@ async def get_health(
         components["database"] = ComponentHealth(
             status="degraded",
             message="Database dependency not available",
-            last_check=datetime.now(timezone.utc),
+            last_check=datetime.now(UTC),
         )
 
     # Check Redis
     components["redis"] = await check_redis(redis)
 
     # Check NATS
-    components["nats"] = await check_nats(nats)
+    components["nats"] = check_nats(nats)
 
     # Integration health
     integration = None
@@ -312,13 +313,13 @@ async def get_health(
         if comp.status == "unhealthy":
             status = "unhealthy"
             break
-        elif comp.status == "degraded":
+        if comp.status == "degraded":
             status = "degraded"
 
     return HealthResponse(
         status=status,
         version=get_version(),
-        timestamp=datetime.now(timezone.utc),
+        timestamp=datetime.now(UTC),
         components=components,
         integration=integration,
     )

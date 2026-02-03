@@ -4,10 +4,8 @@ GitHub App configuration and JWT token generation.
 
 import os
 import time
-from typing import Optional
 
 import jwt
-from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
 
 
@@ -16,9 +14,9 @@ class GitHubAppConfig:
 
     def __init__(
         self,
-        app_id: Optional[str] = None,
-        private_key: Optional[str] = None,
-        webhook_secret: Optional[str] = None,
+        app_id: str | None = None,
+        private_key: str | None = None,
+        webhook_secret: str | None = None,
     ):
         self.app_id = app_id or os.environ.get("GITHUB_APP_ID", "")
         self.private_key = private_key or os.environ.get("GITHUB_APP_PRIVATE_KEY", "")
@@ -28,13 +26,13 @@ class GitHubAppConfig:
         """Check if GitHub App is configured."""
         return bool(self.app_id and self.private_key)
 
-    def get_installation_url(self, state: Optional[str] = None) -> str:
+    def get_installation_url(self, state: str | None = None) -> str:
         """Generate GitHub App installation URL."""
         base_url = "https://github.com/apps"
         app_slug = os.environ.get("GITHUB_APP_SLUG", "")
         if not app_slug:
             raise ValueError("GITHUB_APP_SLUG is required")
-        
+
         url = f"{base_url}/{app_slug}/installations/new"
         if state:
             url += f"?state={state}"
@@ -62,13 +60,12 @@ class GitHubAppConfig:
             "iss": self.app_id,  # Issuer (GitHub App ID)
         }
 
-        token = jwt.encode(payload, private_key, algorithm="RS256")
-        return token
+        return jwt.encode(payload, private_key, algorithm="RS256")
 
     def verify_webhook_signature(self, payload: bytes, signature: str) -> bool:
         """Verify GitHub webhook signature."""
-        import hmac
         import hashlib
+        import hmac
 
         if not self.webhook_secret:
             return False

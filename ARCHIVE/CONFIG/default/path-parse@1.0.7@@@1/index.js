@@ -4,7 +4,7 @@ var isWindows = process.platform === 'win32';
 
 // Regex to split a windows path into into [dir, root, basename, name, ext]
 var splitWindowsRe =
-    /^(((?:[a-zA-Z]:|[\\\/]{2}[^\\\/]+[\\\/]+[^\\\/]+)?[\\\/]?)(?:[^\\\/]*[\\\/])*)((\.{1,2}|[^\\\/]+?|)(\.[^.\/\\]*|))[\\\/]*$/;
+    /^(((?:[a-zA-Z]:|[\\/]{2}[^\\/]+[\\/]+[^\\/]+)?[\\/]?)(?:[^\\/]*[\\/])*)((\.{1,2}|[^\\/]+?|)(\.[^./\\]*|))[\\/]*$/;
 
 var win32 = {};
 
@@ -36,7 +36,7 @@ win32.parse = function(pathString) {
 // Split a filename into [dir, root, basename, name, ext], unix version
 // 'root' is just a slash, or nothing.
 var splitPathRe =
-    /^((\/?)(?:[^\/]*\/)*)((\.{1,2}|[^\/]+?|)(\.[^.\/]*|))[\/]*$/;
+    /^((\/?)(?:[^/]*\/)*)((\.{1,2}|[^/]+?|)(\.[^./]*|))[/]*$/;
 var posix = {};
 
 

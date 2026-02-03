@@ -15,7 +15,6 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from tracertm.storage.conflict_resolver import (
-    Conflict,
     ConflictResolver,
     ConflictStrategy,
     EntityVersion,
@@ -41,7 +40,7 @@ def demo_basic_operations():
             description="Demo project for TUI integration",
             metadata={"team": "platform", "status": "active"},
         )
-        print(f"   ✓ Created project: {project.name} (ID: {project.id[:8]}...)")
+        print(f"   ✓ Created project: {project.name} (ID: {str(project.id)[:8]}...)")
 
         # Create items
         print("\n2. Creating items...")
@@ -53,7 +52,7 @@ def demo_basic_operations():
             description="Implement complete authentication system",
             priority="high",
         )
-        print(f"   ✓ Created epic: {epic.title} (ID: {epic.id[:8]}...)")
+        print(f"   ✓ Created epic: {epic.title} (ID: {str(epic.id)[:8]}...)")
 
         story1 = adapter.create_item(
             project=project,
@@ -61,10 +60,10 @@ def demo_basic_operations():
             item_type="story",
             external_id="STORY-001",
             description="Create login page with email/password",
-            parent_id=epic.id,
+            parent_id=str(epic.id),
             status="in_progress",
         )
-        print(f"   ✓ Created story: {story1.title} (ID: {story1.id[:8]}...)")
+        print(f"   ✓ Created story: {story1.title} (ID: {str(story1.id)[:8]}...)")
 
         story2 = adapter.create_item(
             project=project,
@@ -72,9 +71,9 @@ def demo_basic_operations():
             item_type="story",
             external_id="STORY-002",
             description="Implement password reset flow",
-            parent_id=epic.id,
+            parent_id=str(epic.id),
         )
-        print(f"   ✓ Created story: {story2.title} (ID: {story2.id[:8]}...)")
+        print(f"   ✓ Created story: {story2.title} (ID: {str(story2.id)[:8]}...)")
 
         test = adapter.create_item(
             project=project,
@@ -83,22 +82,22 @@ def demo_basic_operations():
             external_id="TEST-001",
             description="E2E test for login",
         )
-        print(f"   ✓ Created test: {test.title} (ID: {test.id[:8]}...)")
+        print(f"   ✓ Created test: {test.title} (ID: {str(test.id)[:8]}...)")
 
         # Create links
         print("\n3. Creating traceability links...")
         link1 = adapter.create_link(
             project=project,
-            source_id=story1.id,
-            target_id=epic.id,
+            source_id=str(story1.id),
+            target_id=str(epic.id),
             link_type="implements",
         )
         print(f"   ✓ Created link: {story1.title} → {epic.title}")
 
         link2 = adapter.create_link(
             project=project,
-            source_id=test.id,
-            target_id=story1.id,
+            source_id=str(test.id),
+            target_id=str(story1.id),
             link_type="tests",
         )
         print(f"   ✓ Created link: {test.title} → {story1.title}")
@@ -179,9 +178,7 @@ def demo_conflict_resolution():
             vector_clock=remote_clock,
             content_hash="def456",
         )
-        print(
-            f"   ✓ Remote version: v{remote_clock.version} @ {remote_clock.timestamp}"
-        )
+        print(f"   ✓ Remote version: v{remote_clock.version} @ {remote_clock.timestamp}")
 
         # Detect conflict
         print("\n2. Detecting conflict...")
@@ -194,15 +191,13 @@ def demo_conflict_resolution():
                 print(f"   ✓ Conflict detected: {conflict.id}")
                 print(f"     Entity: {conflict.entity_type} - {conflict.entity_id}")
                 print(f"     Local: v{conflict.local_version.vector_clock.version}")
-                print(
-                    f"     Remote: v{conflict.remote_version.vector_clock.version}"
-                )
+                print(f"     Remote: v{conflict.remote_version.vector_clock.version}")
 
                 # Show differences
                 from tracertm.storage.conflict_resolver import compare_versions
 
                 diffs = compare_versions(local_version, remote_version)
-                print(f"\n3. Data differences:")
+                print("\n3. Data differences:")
                 if diffs["modified"]:
                     print(f"   Modified fields: {', '.join(diffs['modified'])}")
                 if diffs["added"]:
@@ -211,21 +206,17 @@ def demo_conflict_resolution():
                     print(f"   Removed in remote: {', '.join(diffs['removed'])}")
 
                 # Resolve conflict
-                print(f"\n4. Resolving conflict (strategy: LAST_WRITE_WINS)...")
+                print("\n4. Resolving conflict (strategy: LAST_WRITE_WINS)...")
                 resolved = resolver.resolve(conflict)
                 print(f"   ✓ Resolved using: {resolved.strategy_used.value}")
                 winner = "remote" if resolved.version == remote_version else "local"
                 print(f"   ✓ Winner: {winner} version")
-                print(
-                    f"   ✓ Final title: {resolved.version.data['title']}"
-                )
-                print(
-                    f"   ✓ Final status: {resolved.version.data['status']}"
-                )
+                print(f"   ✓ Final title: {resolved.version.data['title']}")
+                print(f"   ✓ Final status: {resolved.version.data['status']}")
 
                 # Show backup
                 if conflict.backup_path:
-                    print(f"\n5. Backup created at:")
+                    print("\n5. Backup created at:")
                     print(f"   {conflict.backup_path}")
                     print("   Files:")
                     for file in conflict.backup_path.iterdir():
@@ -254,11 +245,11 @@ async def demo_sync_operations():
         for i in range(5):
             adapter.create_item(
                 project=project,
-                title=f"Feature {i+1}",
+                title=f"Feature {i + 1}",
                 item_type="epic",
-                external_id=f"EPIC-{i+1:03d}",
+                external_id=f"EPIC-{i + 1:03d}",
             )
-        print(f"   ✓ Created 5 items")
+        print("   ✓ Created 5 items")
 
         # Check sync status
         print("\n2. Checking sync status...")
@@ -294,9 +285,7 @@ def demo_reactive_callbacks():
             print(f"   [CALLBACK] Sync status changed: {state.status.value}")
 
         def on_conflict(conflict):
-            print(
-                f"   [CALLBACK] Conflict detected: {conflict.entity_type} {conflict.entity_id}"
-            )
+            print(f"   [CALLBACK] Conflict detected: {conflict.entity_type} {conflict.entity_id}")
 
         def on_item_change(item_id):
             print(f"   [CALLBACK] Item changed: {item_id[:8]}...")
@@ -310,12 +299,10 @@ def demo_reactive_callbacks():
         # Trigger callbacks
         print("\n2. Creating item (triggers callback)...")
         project = adapter.create_project("callback-demo")
-        item = adapter.create_item(
-            project=project, title="Test Item", item_type="epic"
-        )
+        item = adapter.create_item(project=project, title="Test Item", item_type="epic")
 
         print("\n3. Updating item (triggers callback)...")
-        adapter.update_item(project=project, item_id=item.id, status="done")
+        adapter.update_item(project=project, item_id=str(item.id), status="done")
 
         # Unregister
         print("\n4. Unregistering callbacks...")
@@ -325,9 +312,7 @@ def demo_reactive_callbacks():
         print("   ✓ Callbacks unregistered")
 
         print("\n5. Creating item (no callback)...")
-        item2 = adapter.create_item(
-            project=project, title="Test Item 2", item_type="story"
-        )
+        item2 = adapter.create_item(project=project, title="Test Item 2", item_type="story")
 
         print("\n✓ Demo completed!")
 

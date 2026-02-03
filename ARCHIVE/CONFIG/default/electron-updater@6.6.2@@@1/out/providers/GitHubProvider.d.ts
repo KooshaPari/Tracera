@@ -26,4 +26,4 @@ export declare class GitHubProvider extends BaseGitHubProvider<GithubUpdateInfo>
     private getBaseDownloadPath;
 }
 export declare function computeReleaseNotes(currentVersion: semver.SemVer, isFullChangelog: boolean, feed: XElement, latestRelease: any): string | Array<ReleaseNoteInfo> | null;
-export {};
+

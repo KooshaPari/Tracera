@@ -193,9 +193,9 @@ export function CoverageMatrixView({ projectId }: CoverageMatrixViewProps) {
 					<p className="mt-2 text-muted-foreground">
 						{searchQuery || viewFilter
 							? "Try adjusting your filters"
-							: showGapsOnly
+							: (showGapsOnly
 								? "All requirements have test coverage!"
-								: "Add requirements to see the coverage matrix"}
+								: "Add requirements to see the coverage matrix")}
 					</p>
 				</div>
 			) : (

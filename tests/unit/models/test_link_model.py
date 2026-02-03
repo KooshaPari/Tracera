@@ -1,7 +1,9 @@
 """Unit tests for Link model."""
 
-import pytest
 from uuid import uuid4
+
+import pytest
+
 from tracertm.models import Link
 
 pytestmark = pytest.mark.unit
@@ -26,7 +28,7 @@ class TestLinkModelCreation:
             project_id=test_ids["project_id"],
             source_item_id=test_ids["source_item_id"],
             target_item_id=test_ids["target_item_id"],
-            link_type="depends_on"
+            link_type="depends_on",
         )
         assert link.project_id == test_ids["project_id"]
         assert link.source_item_id == test_ids["source_item_id"]
@@ -41,7 +43,7 @@ class TestLinkModelCreation:
             source_item_id=test_ids["source_item_id"],
             target_item_id=test_ids["target_item_id"],
             link_type="validates",
-            link_metadata=metadata
+            link_metadata=metadata,
         )
         assert link.link_metadata == metadata
 
@@ -53,7 +55,7 @@ class TestLinkModelCreation:
             project_id=test_ids["project_id"],
             source_item_id=test_ids["source_item_id"],
             target_item_id=test_ids["target_item_id"],
-            link_type="implements"
+            link_type="implements",
         )
         assert link.id == link_id
 
@@ -67,7 +69,7 @@ class TestLinkModelTypes:
             project_id=test_ids["project_id"],
             source_item_id=test_ids["source_item_id"],
             target_item_id=test_ids["target_item_id"],
-            link_type="depends_on"
+            link_type="depends_on",
         )
         assert link.link_type == "depends_on"
 
@@ -77,7 +79,7 @@ class TestLinkModelTypes:
             project_id=test_ids["project_id"],
             source_item_id=test_ids["source_item_id"],
             target_item_id=test_ids["target_item_id"],
-            link_type="blocked_by"
+            link_type="blocked_by",
         )
         assert link.link_type == "blocked_by"
 
@@ -87,7 +89,7 @@ class TestLinkModelTypes:
             project_id=test_ids["project_id"],
             source_item_id=test_ids["source_item_id"],
             target_item_id=test_ids["target_item_id"],
-            link_type="implements"
+            link_type="implements",
         )
         assert link.link_type == "implements"
 
@@ -97,7 +99,7 @@ class TestLinkModelTypes:
             project_id=test_ids["project_id"],
             source_item_id=test_ids["source_item_id"],
             target_item_id=test_ids["target_item_id"],
-            link_type="tests"
+            link_type="tests",
         )
         assert link.link_type == "tests"
 
@@ -112,14 +114,14 @@ class TestLinkModelComparison:
             project_id=test_ids["project_id"],
             source_item_id=test_ids["source_item_id"],
             target_item_id=test_ids["target_item_id"],
-            link_type="depends_on"
+            link_type="depends_on",
         )
         link2 = Link(
             id="link-2",
             project_id=test_ids["project_id"],
             source_item_id=test_ids["source_item_id"],
             target_item_id=test_ids["target_item_id"],
-            link_type="depends_on"
+            link_type="depends_on",
         )
         assert link1.id != link2.id
 
@@ -129,13 +131,13 @@ class TestLinkModelComparison:
             project_id=test_ids["project_id"],
             source_item_id=test_ids["source_item_id"],
             target_item_id=test_ids["target_item_id"],
-            link_type="depends_on"
+            link_type="depends_on",
         )
         link2 = Link(
             project_id=test_ids["project_id"],
             source_item_id=test_ids["source_item_id"],
             target_item_id=test_ids["target_item_id"],
-            link_type="validates"
+            link_type="validates",
         )
         assert link1.link_type != link2.link_type
 
@@ -149,10 +151,10 @@ class TestLinkModelAttributes:
             project_id=test_ids["project_id"],
             source_item_id=test_ids["source_item_id"],
             target_item_id=test_ids["target_item_id"],
-            link_type="depends_on"
+            link_type="depends_on",
         )
-        assert hasattr(link, 'created_at')
-        assert hasattr(link, 'updated_at')
+        assert hasattr(link, "created_at")
+        assert hasattr(link, "updated_at")
 
     def test_link_metadata_defaults_to_dict(self, test_ids):
         """Link metadata defaults to empty dict when not provided."""
@@ -160,10 +162,10 @@ class TestLinkModelAttributes:
             project_id=test_ids["project_id"],
             source_item_id=test_ids["source_item_id"],
             target_item_id=test_ids["target_item_id"],
-            link_type="depends_on"
+            link_type="depends_on",
         )
         # Check if link_metadata attribute exists
-        assert hasattr(link, 'link_metadata')
+        assert hasattr(link, "link_metadata")
 
 
 class TestLinkModelRepresentation:
@@ -175,7 +177,7 @@ class TestLinkModelRepresentation:
             project_id=test_ids["project_id"],
             source_item_id=test_ids["source_item_id"],
             target_item_id=test_ids["target_item_id"],
-            link_type="depends_on"
+            link_type="depends_on",
         )
         repr_str = repr(link)
         assert "Link" in repr_str or "link" in repr_str.lower()

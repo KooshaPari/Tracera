@@ -599,7 +599,7 @@ class EditorFontLigatures extends BaseEditorOption {
             }
             return input;
         }
-        if (Boolean(input)) {
+        if (input) {
             return EditorFontLigatures.ON;
         }
         return EditorFontLigatures.OFF;
@@ -644,7 +644,7 @@ class EditorFontVariations extends BaseEditorOption {
             }
             return input;
         }
-        if (Boolean(input)) {
+        if (input) {
             return EditorFontVariations.TRANSLATE;
         }
         return EditorFontVariations.OFF;
@@ -1504,7 +1504,7 @@ class EditorMinimap extends BaseEditorOption {
             scale: 1,
             showRegionSectionHeaders: true,
             showMarkSectionHeaders: true,
-            markSectionHeaderRegex: '\\bMARK:\\s*(?<separator>\-?)\\s*(?<label>.*)$',
+            markSectionHeaderRegex: '\\bMARK:\\s*(?<separator>-?)\\s*(?<label>.*)$',
             sectionHeaderFontSize: 9,
             sectionHeaderLetterSpacing: 1,
         };

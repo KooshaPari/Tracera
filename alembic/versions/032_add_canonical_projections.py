@@ -8,9 +8,10 @@ Revises: 031_add_canonical_concepts
 Create Date: 2026-01-30
 """
 
-from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
+
+from alembic import op
 
 # revision identifiers, used by Alembic
 revision = "032_add_canonical_projections"
@@ -21,7 +22,7 @@ depends_on = None
 
 def upgrade() -> None:
     """Create canonical_projections junction table."""
-    
+
     op.create_table(
         "canonical_projections",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
@@ -75,11 +76,9 @@ def upgrade() -> None:
             nullable=False,
         ),
         # Unique constraint: one projection per concept-item pair
-        sa.UniqueConstraint(
-            "canonical_id", "item_id", name="uq_canonical_projections_concept_item"
-        ),
+        sa.UniqueConstraint("canonical_id", "item_id", name="uq_canonical_projections_concept_item"),
     )
-    
+
     # Create indexes for efficient lookups
     op.create_index("ix_canonical_projections_project_id", "canonical_projections", ["project_id"])
     op.create_index("ix_canonical_projections_canonical_id", "canonical_projections", ["canonical_id"])
@@ -105,4 +104,3 @@ def downgrade() -> None:
     op.drop_index("ix_canonical_projections_canonical_id", table_name="canonical_projections")
     op.drop_index("ix_canonical_projections_project_id", table_name="canonical_projections")
     op.drop_table("canonical_projections")
-

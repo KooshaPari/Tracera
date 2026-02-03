@@ -10,7 +10,9 @@ Use this checklist when cloning the repo or setting up a new environment so the 
 - [ ] **PostgreSQL** 14+ running and reachable
 - [ ] **Redis** (optional for cache)
 - [ ] **NATS** (optional for real-time)
-- [ ] **golangci-lint** installed if using Go pre-commit (`brew install golangci-lint`)
+- [ ] **Go tooling** (for lint/format): **gofumpt** + **golangci-lint** (`make install-tools` or `go install mvdan.cc/gofumpt@latest` and `go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest`). Run `make lint-go` / `make go-format` from repo root.
+- [ ] **Python tooling** (optional): **bandit** + **pip-audit** for security (`uv pip install -e ".[dev,test]"` includes them). Run `make lint-python`, `make type-check`, `make security-scan`.
+- [ ] **Frontend tooling**: **oxlint**, **oxfmt**, **stylelint**, **Vitest** (bun install in frontend). Run `make lint-frontend`, `make typecheck-frontend`, or `make quality-frontend`. See [OXC Implementation Checklist](OXC_IMPLEMENTATION_CHECKLIST.md) and [Python and TypeScript Tooling](../research/python-and-typescript-tooling.md).
 
 ## 2. Environment
 
@@ -43,7 +45,7 @@ Use this checklist when cloning the repo or setting up a new environment so the 
   - Apply per your Go backend docs (e.g. `go run ./cmd/migrate` or SQL files).
 - [ ] **Python backend (required for Test Cases, Links, Graphs, Test Runs)**
   ```bash
-  ./scripts/run_python_migrations.sh
+  ./scripts/shell/run_python_migrations.sh
   ```
   Or manually:
   ```bash
@@ -74,7 +76,7 @@ Use this checklist when cloning the repo or setting up a new environment so the 
 
 ## 7. Verify
 
-- [ ] Open frontend (e.g. http://localhost:4000 or http://localhost:5173).
+- [ ] Open frontend at http://localhost:4000 (only dev URL; do not use port 5173).
 - [ ] Log in (WorkOS AuthKit or your auth flow).
 - [ ] Open a project → **Test Cases** (or **Links**, **Graphs**). Page should load without "500" or "relation does not exist". If you see those, re-run [step 4](#4-database-migrations) (Python migrations).
 
@@ -86,7 +88,7 @@ Use this checklist when cloning the repo or setting up a new environment so the 
 | Frontend deps | `cd frontend && bun install` |
 | Go deps | `cd backend && go mod download` |
 | Python deps | `uv pip install -e ".[dev,test]"` |
-| Python DB | `./scripts/run_python_migrations.sh` |
+| Python DB | `./scripts/shell/run_python_migrations.sh` |
 | Start | `rtm dev start` |
 
 See also: [TROUBLESHOOTING](/docs/guides/TROUBLESHOOTING.md), [DEVELOPMENT_WORKFLOW](/docs/guides/DEVELOPMENT_WORKFLOW.md), [END_TO_END_PLAN](/docs/reports/END_TO_END_PLAN.md).

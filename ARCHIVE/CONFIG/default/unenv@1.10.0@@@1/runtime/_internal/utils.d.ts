@@ -7,4 +7,4 @@ export declare function notImplemented(name: string): (() => any) & {
     __unenv__: boolean;
 };
 export declare function notImplementedClass<T = unknown>(name: string): T;
-export {};
+

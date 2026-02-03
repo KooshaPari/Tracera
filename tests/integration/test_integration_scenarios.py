@@ -36,19 +36,15 @@ Comprehensive test suite covering:
 Total Target: 80-120 comprehensive integration scenario tests
 """
 
-import json
-import asyncio
-import pytest
-from datetime import datetime, timedelta
-from pathlib import Path
-from sqlalchemy.orm import Session
+from typing import cast
 from uuid import uuid4
-from typing import List, Dict, Any
 
-from tracertm.models.project import Project
+import pytest
+from sqlalchemy.orm import Session
+
 from tracertm.models.item import Item
 from tracertm.models.link import Link
-from tracertm.models.event import Event
+from tracertm.models.project import Project
 
 # Status and type constants
 ITEM_STATUS_PENDING = "todo"
@@ -88,6 +84,7 @@ pytestmark = pytest.mark.integration
 
 class TestProjectCreationAndSetup:
     """Test project creation workflows."""
+
     def test_project_creation_with_metadata(self, sync_db_session: Session):
         """Test creating a project with metadata."""
         metadata = {
@@ -108,6 +105,7 @@ class TestProjectCreationAndSetup:
 
         assert project.id is not None
         assert project.project_metadata == metadata
+
     def test_project_with_initial_items(self, sync_db_session: Session):
         """Test creating project with initial items."""
         project = Project(
@@ -136,12 +134,9 @@ class TestProjectCreationAndSetup:
         sync_db_session.commit()
 
         # Verify items were created
-        retrieved_items = (
-            sync_db_session.query(Item)
-            .filter_by(project_id=project.id)
-            .all()
-        )
+        retrieved_items = sync_db_session.query(Item).filter_by(project_id=project.id).all()
         assert len(retrieved_items) == 5
+
     def test_project_hierarchical_items(self, sync_db_session: Session):
         """Test creating hierarchical item structure."""
         project = Project(
@@ -183,11 +178,7 @@ class TestProjectCreationAndSetup:
 
         # Verify hierarchy
         retrieved_parent = sync_db_session.query(Item).filter_by(id=parent.id).first()
-        retrieved_children = (
-            sync_db_session.query(Item)
-            .filter_by(parent_id=parent.id)
-            .all()
-        )
+        retrieved_children = sync_db_session.query(Item).filter_by(parent_id=parent.id).all()
 
         assert retrieved_parent is not None
         assert len(retrieved_children) == 3
@@ -197,6 +188,7 @@ class TestProjectCreationAndSetup:
 
 class TestItemLinksAndDependencies:
     """Test linking items and creating dependencies."""
+
     def test_create_dependency_link(self, sync_db_session: Session):
         """Test creating a dependency link between items."""
         project = Project(id=str(uuid4()), name="Link Test Project")
@@ -234,14 +226,11 @@ class TestItemLinksAndDependencies:
         sync_db_session.commit()
 
         # Verify link was created
-        retrieved_link = (
-            sync_db_session.query(Link)
-            .filter_by(source_item_id=item_b.id)
-            .first()
-        )
+        retrieved_link = sync_db_session.query(Link).filter_by(source_item_id=item_b.id).first()
         assert retrieved_link is not None
         assert retrieved_link.target_item_id == item_a.id
         assert retrieved_link.link_type == LINK_TYPE_DEPENDS_ON
+
     def test_multiple_dependency_chains(self, sync_db_session: Session):
         """Test creating multiple dependency chains."""
         project = Project(id=str(uuid4()), name="Chain Test")
@@ -279,6 +268,7 @@ class TestItemLinksAndDependencies:
         # Verify all links
         all_links = sync_db_session.query(Link).all()
         assert len(all_links) == 3
+
     def test_change_link_type(self, sync_db_session: Session):
         """Test changing link type from depends_on to relates_to."""
         project = Project(id=str(uuid4()), name="Link Type Test")
@@ -318,11 +308,13 @@ class TestItemLinksAndDependencies:
 
         # Verify link type changed
         retrieved_link = sync_db_session.query(Link).filter_by(id=link.id).first()
+        assert retrieved_link is not None
         assert retrieved_link.link_type == LINK_TYPE_RELATES_TO
 
 
 class TestBulkOperations:
     """Test bulk operations on items."""
+
     def test_bulk_create_items(self, sync_db_session: Session):
         """Test creating items in bulk."""
         project = Project(id=str(uuid4()), name="Bulk Create Test")
@@ -349,6 +341,7 @@ class TestBulkOperations:
         # Verify all items created
         count = sync_db_session.query(Item).filter_by(project_id=project.id).count()
         assert count == 50
+
     def test_bulk_update_item_status(self, sync_db_session: Session):
         """Test bulk updating item status."""
         project = Project(id=str(uuid4()), name="Bulk Update Test")
@@ -371,23 +364,16 @@ class TestBulkOperations:
         sync_db_session.commit()
 
         # Bulk update status
-        items_to_update = (
-            sync_db_session.query(Item)
-            .filter(Item.id.in_(item_ids[:10]))
-            .all()
-        )
+        items_to_update = sync_db_session.query(Item).filter(Item.id.in_(item_ids[:10])).all()
         for item in items_to_update:
             item.status = ITEM_STATUS_IN_PROGRESS
 
         sync_db_session.commit()
 
         # Verify updates
-        in_progress = (
-            sync_db_session.query(Item)
-            .filter_by(status=ITEM_STATUS_IN_PROGRESS)
-            .count()
-        )
+        in_progress = sync_db_session.query(Item).filter_by(status=ITEM_STATUS_IN_PROGRESS).count()
         assert in_progress == 10
+
     def test_bulk_delete_items(self, sync_db_session: Session):
         """Test bulk deleting items."""
         project = Project(id=str(uuid4()), name="Bulk Delete Test")
@@ -409,27 +395,20 @@ class TestBulkOperations:
         sync_db_session.commit()
 
         # Delete half of the items
-        items_to_delete = (
-            sync_db_session.query(Item)
-            .filter(Item.id.in_(item_ids[:15]))
-            .all()
-        )
+        items_to_delete = sync_db_session.query(Item).filter(Item.id.in_(item_ids[:15])).all()
         for item in items_to_delete:
             sync_db_session.delete(item)
 
         sync_db_session.commit()
 
         # Verify deletion
-        remaining = (
-            sync_db_session.query(Item)
-            .filter_by(project_id=project.id)
-            .count()
-        )
+        remaining = sync_db_session.query(Item).filter_by(project_id=project.id).count()
         assert remaining == 15
 
 
 class TestMultiProjectWorkflows:
     """Test workflows involving multiple projects."""
+
     def test_create_multiple_projects(self, sync_db_session: Session):
         """Test creating and managing multiple projects."""
         projects = []
@@ -447,6 +426,7 @@ class TestMultiProjectWorkflows:
         # Verify all projects
         all_projects = sync_db_session.query(Project).all()
         assert len(all_projects) >= 5
+
     def test_cross_project_item_organization(self, sync_db_session: Session):
         """Test organizing items across multiple projects."""
         # Create projects
@@ -470,16 +450,8 @@ class TestMultiProjectWorkflows:
         sync_db_session.commit()
 
         # Verify items are isolated by project
-        project1_items = (
-            sync_db_session.query(Item)
-            .filter_by(project_id=project1.id)
-            .count()
-        )
-        project2_items = (
-            sync_db_session.query(Item)
-            .filter_by(project_id=project2.id)
-            .count()
-        )
+        project1_items = sync_db_session.query(Item).filter_by(project_id=project1.id).count()
+        project2_items = sync_db_session.query(Item).filter_by(project_id=project2.id).count()
 
         assert project1_items == 10
         assert project2_items == 10
@@ -492,6 +464,7 @@ class TestMultiProjectWorkflows:
 
 class TestItemStateTransitions:
     """Test valid and invalid item state transitions."""
+
     def test_pending_to_in_progress(self, sync_db_session: Session):
         """Test transition from PENDING to IN_PROGRESS."""
         project = Project(id=str(uuid4()), name="State Test")
@@ -513,7 +486,9 @@ class TestItemStateTransitions:
         sync_db_session.commit()
 
         retrieved = sync_db_session.query(Item).filter_by(id=item.id).first()
+        assert retrieved is not None
         assert retrieved.status == ITEM_STATUS_IN_PROGRESS
+
     def test_in_progress_to_completed(self, sync_db_session: Session):
         """Test transition from IN_PROGRESS to COMPLETED."""
         project = Project(id=str(uuid4()), name="Complete Test")
@@ -535,7 +510,9 @@ class TestItemStateTransitions:
         sync_db_session.commit()
 
         retrieved = sync_db_session.query(Item).filter_by(id=item.id).first()
+        assert retrieved is not None
         assert retrieved.status == ITEM_STATUS_COMPLETED
+
     def test_all_valid_state_paths(self, sync_db_session: Session):
         """Test all valid state transition paths."""
         project = Project(id=str(uuid4()), name="Path Test")
@@ -569,7 +546,9 @@ class TestItemStateTransitions:
             sync_db_session.commit()
 
             retrieved = sync_db_session.query(Item).filter_by(id=item.id).first()
+            assert retrieved is not None
             assert retrieved.status == path[-1]
+
     def test_completed_item_cannot_transition(self, sync_db_session: Session):
         """Test that completed items cannot transition further."""
         project = Project(id=str(uuid4()), name="Locked Test")
@@ -594,11 +573,13 @@ class TestItemStateTransitions:
         # Note: This test validates current behavior.
         # Actual state machine validation would be in service layer
         retrieved = sync_db_session.query(Item).filter_by(id=item.id).first()
+        assert retrieved is not None
         assert retrieved.status == ITEM_STATUS_IN_PROGRESS
 
 
 class TestCascadingStatusUpdates:
     """Test cascading updates when parent item status changes."""
+
     def test_parent_completion_with_children(self, sync_db_session: Session):
         """Test parent item completion impact on children."""
         project = Project(id=str(uuid4()), name="Cascade Test")
@@ -639,15 +620,13 @@ class TestCascadingStatusUpdates:
 
         # Verify parent is completed
         retrieved_parent = sync_db_session.query(Item).filter_by(id=parent.id).first()
+        assert retrieved_parent is not None
         assert retrieved_parent.status == ITEM_STATUS_COMPLETED
 
         # Verify children still exist with their own status
-        retrieved_children = (
-            sync_db_session.query(Item)
-            .filter_by(parent_id=parent.id)
-            .all()
-        )
+        retrieved_children = sync_db_session.query(Item).filter_by(parent_id=parent.id).all()
         assert len(retrieved_children) == 3
+
     def test_parent_with_mixed_child_statuses(self, sync_db_session: Session):
         """Test parent with children in different states."""
         project = Project(id=str(uuid4()), name="Mixed Status Test")
@@ -686,11 +665,7 @@ class TestCascadingStatusUpdates:
         sync_db_session.commit()
 
         # Retrieve and verify
-        children = (
-            sync_db_session.query(Item)
-            .filter_by(parent_id=parent.id)
-            .all()
-        )
+        children = sync_db_session.query(Item).filter_by(parent_id=parent.id).all()
 
         child_statuses = {c.status for c in children}
         assert child_statuses == set(statuses)
@@ -703,6 +678,7 @@ class TestCascadingStatusUpdates:
 
 class TestDependencyWorkflows:
     """Test workflows involving dependencies and links."""
+
     def test_create_and_resolve_dependency(self, sync_db_session: Session):
         """Test creating a dependency and marking it as resolved."""
         project = Project(id=str(uuid4()), name="Dependency Test")
@@ -744,7 +720,9 @@ class TestDependencyWorkflows:
         # Verify states
         blocking = sync_db_session.query(Item).filter_by(id=blocking_item.id).first()
         blocked = sync_db_session.query(Item).filter_by(id=blocked_item.id).first()
+        assert blocking is not None
         assert blocking.status == ITEM_STATUS_COMPLETED
+
     def test_complex_dependency_graph(self, sync_db_session: Session):
         """Test creating a complex dependency graph."""
         project = Project(id=str(uuid4()), name="Graph Test")
@@ -794,16 +772,15 @@ class TestDependencyWorkflows:
         # Verify all dependencies created
         all_links = sync_db_session.query(Link).all()
         assert len(all_links) == len(dependencies)
+
     def test_bidirectional_relationships(self, sync_db_session: Session):
         """Test creating bidirectional relationships."""
         project = Project(id=str(uuid4()), name="Bidirectional Test")
         sync_db_session.add(project)
         sync_db_session.flush()
 
-        item_a = Item(id=str(uuid4()), project_id=project.id, title="Task A"), # NEEDS_ITEM_TYPE
-        view=VIEW_TASK,
-        item_b = Item(id=str(uuid4()), project_id=project.id, title="Task B"), # NEEDS_ITEM_TYPE
-        view=VIEW_TASK,
+        item_a: Item = Item(id=str(uuid4()), project_id=project.id, title="Task A", view=VIEW_TASK, item_type="task")
+        item_b: Item = Item(id=str(uuid4()), project_id=project.id, title="Task B", view=VIEW_TASK, item_type="task")
         sync_db_session.add_all([item_a, item_b])
         sync_db_session.flush()
 
@@ -824,16 +801,8 @@ class TestDependencyWorkflows:
         sync_db_session.commit()
 
         # Verify both directions
-        links_from_a = (
-            sync_db_session.query(Link)
-            .filter_by(source_item_id=item_a.id)
-            .all()
-        )
-        links_from_b = (
-            sync_db_session.query(Link)
-            .filter_by(source_item_id=item_b.id)
-            .all()
-        )
+        links_from_a = sync_db_session.query(Link).filter_by(source_item_id=item_a.id).all()
+        links_from_b = sync_db_session.query(Link).filter_by(source_item_id=item_b.id).all()
 
         assert len(links_from_a) == 1
         assert len(links_from_b) == 1
@@ -841,6 +810,7 @@ class TestDependencyWorkflows:
 
 class TestImpactAnalysisWorkflows:
     """Test impact analysis workflows."""
+
     def test_downstream_impact_analysis(self, sync_db_session: Session):
         """Test analyzing downstream impact of item changes."""
         project = Project(id=str(uuid4()), name="Impact Test")
@@ -876,18 +846,14 @@ class TestImpactAnalysisWorkflows:
         # Find all items that depend on item A
         def find_dependents(item_id, session):
             dependents = []
-            direct_deps = (
-                session.query(Link)
-                .filter_by(target_item_id=item_id)
-                .all()
-            )
+            direct_deps = session.query(Link).filter_by(target_item_id=item_id).all()
             for link in direct_deps:
                 dependents.append(link.source_item_id)
                 # Recursively find indirect dependencies
                 dependents.extend(find_dependents(link.source_item_id, session))
             return dependents
 
-        impacted_items = find_dependents(items[0].id, db_session)
+        impacted_items = find_dependents(str(items[0].id), sync_db_session)
         # Should find B, C, D
         assert len(impacted_items) >= 3
 
@@ -899,6 +865,7 @@ class TestImpactAnalysisWorkflows:
 
 class TestConcurrentItemAccess:
     """Test concurrent access to items."""
+
     def test_concurrent_item_reads(self, sync_db_session: Session):
         """Test multiple concurrent reads of same item."""
         project = Project(id=str(uuid4()), name="Concurrent Read Test")
@@ -917,12 +884,11 @@ class TestConcurrentItemAccess:
 
         # Simulate multiple readers
         for _ in range(5):
-            retrieved = (
-                sync_db_session.query(Item)
-                .filter_by(id=item.id)
-                .first()
-            )
-            assert retrieved.title == "Shared Item"
+            retrieved = sync_db_session.query(Item).filter_by(id=item.id).first()
+            assert retrieved is not None
+            row = cast(Item, retrieved)
+            assert row.title == "Shared Item"
+
     def test_sequential_item_modifications(self, sync_db_session: Session):
         """Test sequential modifications to same item."""
         project = Project(id=str(uuid4()), name="Sequential Mod Test")
@@ -941,13 +907,11 @@ class TestConcurrentItemAccess:
 
         # Sequential modifications
         for i in range(5):
-            retrieved = (
-                sync_db_session.query(Item)
-                .filter_by(id=item.id)
-                .first()
-            )
-            retrieved.title = f"Updated Title {i}"
-            retrieved.status = [
+            retrieved = sync_db_session.query(Item).filter_by(id=item.id).first()
+            assert retrieved is not None
+            row = cast(Item, retrieved)
+            row.title = f"Updated Title {i}"
+            row.status = [
                 ITEM_STATUS_PENDING,
                 ITEM_STATUS_IN_PROGRESS,
                 ITEM_STATUS_IN_PROGRESS,
@@ -958,8 +922,11 @@ class TestConcurrentItemAccess:
 
         # Verify final state
         final = sync_db_session.query(Item).filter_by(id=item.id).first()
-        assert final.title == "Updated Title 4"
-        assert final.status == ITEM_STATUS_COMPLETED
+        assert final is not None
+        final_row = cast(Item, final)
+        assert final_row.title == "Updated Title 4"
+        assert final_row.status == ITEM_STATUS_COMPLETED
+
     def test_concurrent_bulk_operations(self, sync_db_session: Session):
         """Test concurrent bulk operations."""
         project = Project(id=str(uuid4()), name="Bulk Concurrent Test")
@@ -982,41 +949,22 @@ class TestConcurrentItemAccess:
 
         # Simulate concurrent operations
         # Operation 1: Update first 10 items
-        items_1 = (
-            sync_db_session.query(Item)
-            .filter_by(project_id=project.id)
-            .limit(10)
-            .all()
-        )
+        items_1 = sync_db_session.query(Item).filter_by(project_id=project.id).limit(10).all()
         for item in items_1:
             item.status = ITEM_STATUS_IN_PROGRESS
 
         sync_db_session.commit()
 
         # Operation 2: Update next 10 items
-        items_2 = (
-            sync_db_session.query(Item)
-            .filter_by(project_id=project.id)
-            .offset(10)
-            .limit(10)
-            .all()
-        )
+        items_2 = sync_db_session.query(Item).filter_by(project_id=project.id).offset(10).limit(10).all()
         for item in items_2:
             item.status = ITEM_STATUS_COMPLETED
 
         sync_db_session.commit()
 
         # Verify both operations succeeded
-        in_progress = (
-            sync_db_session.query(Item)
-            .filter_by(status=ITEM_STATUS_IN_PROGRESS)
-            .count()
-        )
-        completed = (
-            sync_db_session.query(Item)
-            .filter_by(status=ITEM_STATUS_COMPLETED)
-            .count()
-        )
+        in_progress = sync_db_session.query(Item).filter_by(status=ITEM_STATUS_IN_PROGRESS).count()
+        completed = sync_db_session.query(Item).filter_by(status=ITEM_STATUS_COMPLETED).count()
 
         assert in_progress == 10
         assert completed == 10
@@ -1024,6 +972,7 @@ class TestConcurrentItemAccess:
 
 class TestConflictResolution:
     """Test conflict detection and resolution."""
+
     def test_detect_conflicting_modifications(self, sync_db_session: Session):
         """Test detecting conflicting modifications."""
         project = Project(id=str(uuid4()), name="Conflict Test")
@@ -1043,18 +992,24 @@ class TestConflictResolution:
         # Simulate two concurrent modifications
         # Get fresh instance
         item_v1 = sync_db_session.query(Item).filter_by(id=item.id).first()
-        item_v1.title = "Modified by User 1"
+        assert item_v1 is not None
+        v1 = cast(Item, item_v1)
+        v1.title = "Modified by User 1"
         sync_db_session.commit()
 
         # Get another instance and modify
         item_v2 = sync_db_session.query(Item).filter_by(id=item.id).first()
-        item_v2.description = "Modified by User 2"
+        assert item_v2 is not None
+        v2 = cast(Item, item_v2)
+        v2.description = "Modified by User 2"
         sync_db_session.commit()
 
         # Final verification - both changes should be reflected
         final = sync_db_session.query(Item).filter_by(id=item.id).first()
-        assert final.title == "Modified by User 1"
-        assert final.description == "Modified by User 2"
+        assert final is not None
+        final_row = cast(Item, final)
+        assert final_row.title == "Modified by User 1"
+        assert final_row.description == "Modified by User 2"
 
 
 # ============================================================================
@@ -1064,6 +1019,7 @@ class TestConflictResolution:
 
 class TestLargeScaleOperations:
     """Test performance and scalability with large datasets."""
+
     def test_create_large_project_500_items(self, sync_db_session: Session):
         """Test creating a project with 500 items."""
         project = Project(id=str(uuid4()), name="Large Project 500")
@@ -1094,6 +1050,7 @@ class TestLargeScaleOperations:
         # Verify count
         count = sync_db_session.query(Item).filter_by(project_id=project.id).count()
         assert count == 500
+
     def test_query_performance_on_large_dataset(self, sync_db_session: Session):
         """Test query performance on large dataset."""
         project = Project(id=str(uuid4()), name="Query Test Project")
@@ -1117,28 +1074,17 @@ class TestLargeScaleOperations:
 
         # Test various queries
         # Query 1: By status
-        pending = (
-            sync_db_session.query(Item)
-            .filter_by(status=ITEM_STATUS_PENDING)
-            .count()
-        )
+        pending = sync_db_session.query(Item).filter_by(status=ITEM_STATUS_PENDING).count()
         assert pending == 100
 
         # Query 2: By project
-        project_items = (
-            sync_db_session.query(Item)
-            .filter_by(project_id=project.id)
-            .count()
-        )
+        project_items = sync_db_session.query(Item).filter_by(project_id=project.id).count()
         assert project_items == 200
 
         # Query 3: Combined filter
-        results = (
-            sync_db_session.query(Item)
-            .filter_by(project_id=project.id, status=ITEM_STATUS_IN_PROGRESS)
-            .all()
-        )
+        results = sync_db_session.query(Item).filter_by(project_id=project.id, status=ITEM_STATUS_IN_PROGRESS).all()
         assert len(results) == 100
+
     def test_bulk_operations_at_scale(self, sync_db_session: Session):
         """Test bulk operations on 300+ items."""
         project = Project(id=str(uuid4()), name="Bulk Scale Test")
@@ -1161,48 +1107,26 @@ class TestLargeScaleOperations:
         sync_db_session.commit()
 
         # Bulk update 1: Change 100 items to IN_PROGRESS
-        items_to_update = (
-            sync_db_session.query(Item)
-            .filter_by(project_id=project.id)
-            .limit(100)
-            .all()
-        )
+        items_to_update = sync_db_session.query(Item).filter_by(project_id=project.id).limit(100).all()
         for item in items_to_update:
             item.status = ITEM_STATUS_IN_PROGRESS
         sync_db_session.commit()
 
         # Bulk update 2: Change next 100 items to COMPLETED
-        items_to_complete = (
-            sync_db_session.query(Item)
-            .filter_by(project_id=project.id)
-            .offset(100)
-            .limit(100)
-            .all()
-        )
+        items_to_complete = sync_db_session.query(Item).filter_by(project_id=project.id).offset(100).limit(100).all()
         for item in items_to_complete:
             item.status = ITEM_STATUS_COMPLETED
         sync_db_session.commit()
 
         # Verify state
-        pending = (
-            sync_db_session.query(Item)
-            .filter_by(status=ITEM_STATUS_PENDING)
-            .count()
-        )
-        in_progress = (
-            sync_db_session.query(Item)
-            .filter_by(status=ITEM_STATUS_IN_PROGRESS)
-            .count()
-        )
-        completed = (
-            sync_db_session.query(Item)
-            .filter_by(status=ITEM_STATUS_COMPLETED)
-            .count()
-        )
+        pending = sync_db_session.query(Item).filter_by(status=ITEM_STATUS_PENDING).count()
+        in_progress = sync_db_session.query(Item).filter_by(status=ITEM_STATUS_IN_PROGRESS).count()
+        completed = sync_db_session.query(Item).filter_by(status=ITEM_STATUS_COMPLETED).count()
 
         assert pending == 100
         assert in_progress == 100
         assert completed == 100
+
     def test_deep_hierarchy_performance(self, sync_db_session: Session):
         """Test performance with deep item hierarchies."""
         project = Project(id=str(uuid4()), name="Deep Hierarchy Test")
@@ -1245,6 +1169,7 @@ class TestLargeScaleOperations:
         total_items = sync_db_session.query(Item).filter_by(project_id=project.id).count()
         # Should be approximately: 5 + 5*5 + 5*5*5 + 5*5*5*5
         assert total_items > 600
+
     def test_link_performance_with_many_dependencies(self, sync_db_session: Session):
         """Test link performance with many dependencies."""
         project = Project(id=str(uuid4()), name="Link Scale Test")
@@ -1291,6 +1216,7 @@ class TestLargeScaleOperations:
 
 class TestWorkflowIntegration:
     """Test complete integrated workflows."""
+
     def test_complete_project_lifecycle(self, sync_db_session: Session):
         """Test complete project lifecycle from creation to completion."""
         # 1. Create project
@@ -1356,11 +1282,7 @@ class TestWorkflowIntegration:
 
         # 6. Complete some items
         for story in stories:
-            children = (
-                sync_db_session.query(Item)
-                .filter_by(parent_id=story.id)
-                .all()
-            )
+            children = sync_db_session.query(Item).filter_by(parent_id=story.id).all()
             for child in children:
                 child.status = ITEM_STATUS_COMPLETED
 
@@ -1378,14 +1300,13 @@ class TestWorkflowIntegration:
 
         # 9. Verify final state
         final_epic = sync_db_session.query(Item).filter_by(id=epic.id).first()
-        assert final_epic.status == ITEM_STATUS_COMPLETED
+        assert final_epic is not None
+        epic_row = cast(Item, final_epic)
+        assert epic_row.status == ITEM_STATUS_COMPLETED
 
-        completed_items = (
-            sync_db_session.query(Item)
-            .filter_by(status=ITEM_STATUS_COMPLETED)
-            .count()
-        )
+        completed_items = sync_db_session.query(Item).filter_by(status=ITEM_STATUS_COMPLETED).count()
         assert completed_items >= 6  # Epic + 3 stories + 2 tasks minimum
+
     def test_complex_integration_scenario(self, sync_db_session: Session):
         """Test complex scenario with multiple projects and interactions."""
         # Create 2 projects
@@ -1432,11 +1353,7 @@ class TestWorkflowIntegration:
         sync_db_session.commit()
 
         # Verify state
-        in_progress = (
-            sync_db_session.query(Item)
-            .filter_by(status=ITEM_STATUS_IN_PROGRESS)
-            .count()
-        )
+        in_progress = sync_db_session.query(Item).filter_by(status=ITEM_STATUS_IN_PROGRESS).count()
         assert in_progress == 3
 
         total_links = sync_db_session.query(Link).count()

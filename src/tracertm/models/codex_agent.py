@@ -4,11 +4,11 @@ Codex Agent Interaction model for QA Integration system.
 Tracks AI agent tasks for code review, image/video analysis, and test generation.
 """
 
-from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Text
 import uuid
 from datetime import datetime
 from typing import Any
 
+from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -39,9 +39,7 @@ class CodexAgentInteraction(Base):
         {"extend_existing": True},
     )
 
-    id: Mapped[str] = mapped_column(
-        String(36), primary_key=True, default=generate_codex_uuid
-    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_codex_uuid)
     execution_id: Mapped[str | None] = mapped_column(
         String(36),
         ForeignKey("executions.id", ondelete="SET NULL"),
@@ -74,12 +72,8 @@ class CodexAgentInteraction(Base):
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="pending")
 
     # Timing
-    started_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
-    completed_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     duration_ms: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     # Usage tracking

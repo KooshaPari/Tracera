@@ -37,4 +37,4 @@ export declare type _Nullable<O extends object, K extends Key, depth extends Dep
  * ```
  */
 export declare type Nullable<O extends object, K extends Key = Key, depth extends Depth = 'flat'> = O extends unknown ? _Nullable<O, K, depth> : never;
-export {};
+

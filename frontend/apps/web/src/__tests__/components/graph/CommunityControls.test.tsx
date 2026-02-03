@@ -23,10 +23,11 @@ describe(CommunityControls, () => {
 		]),
 		performance: {
 			clusteringTimeMs: 15.5,
-			nodeCount: 5,
 			edgeCount: 4,
+			nodeCount: 5,
 		},
 		stats: {
+			avgCommunitySize: 1.67,
 			communityCount: 3,
 			communitySizes: new Map([
 				["0", 2],
@@ -35,7 +36,6 @@ describe(CommunityControls, () => {
 			]),
 			maxCommunitySize: 2,
 			minCommunitySize: 1,
-			avgCommunitySize: 1.67,
 			modularity: 0.42,
 		},
 	};
@@ -259,15 +259,15 @@ describe(CommunityControls, () => {
 			communities: new Map(),
 			performance: {
 				clusteringTimeMs: 50,
-				nodeCount: 210,
 				edgeCount: 400,
+				nodeCount: 210,
 			},
 			stats: {
+				avgCommunitySize: 10.5,
 				communityCount: 20,
 				communitySizes: largeCommunities,
 				maxCommunitySize: 20,
 				minCommunitySize: 1,
-				avgCommunitySize: 10.5,
 			},
 		};
 

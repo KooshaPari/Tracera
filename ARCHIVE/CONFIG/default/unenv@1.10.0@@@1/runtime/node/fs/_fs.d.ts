@@ -95,4 +95,4 @@ export declare const writeFileSync: typeof fs.writeFileSync;
 export declare const writeSync: typeof fs.writeSync;
 export declare const writevSync: typeof fs.writevSync;
 export declare const statfsSync: typeof fs.statfsSync;
-export {};
+

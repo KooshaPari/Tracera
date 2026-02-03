@@ -17,7 +17,7 @@ export default function cfscript(Prism) {
         lookbehind: true,
         inside: {
           annotation: {
-            pattern: /(?:^|[^.])@[\w\.]+/,
+            pattern: /(?:^|[^.])@[\w.]+/,
             alias: 'punctuation'
           }
         }

@@ -8,10 +8,10 @@ from __future__ import annotations
 import asyncio
 import os
 import shutil
+import subprocess  # noqa: S404
 import tempfile
-from dataclasses import dataclass, asdict
-from datetime import datetime, timezone
-from pathlib import Path
+from dataclasses import asdict, dataclass
+from datetime import UTC, datetime
 from typing import Any
 from uuid import uuid4
 
@@ -25,8 +25,6 @@ from tracertm.services.recording.ffmpeg_pipeline import FFmpegPipeline
 
 class CodexExecutionError(Exception):
     """Raised when Codex execution fails."""
-
-    pass
 
 
 @dataclass
@@ -81,8 +79,8 @@ class CodexAgentService:
             proc = await asyncio.create_subprocess_exec(
                 self._codex_cmd,
                 "--version",
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
             )
             stdout, _ = await proc.communicate()
             if proc.returncode == 0:
@@ -98,8 +96,8 @@ class CodexAgentService:
                 self._codex_cmd,
                 "auth",
                 "status",
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
             )
             stdout, _ = await proc.communicate()
             output = stdout.decode().lower()
@@ -122,8 +120,8 @@ class CodexAgentService:
             cmd.append("--device-auth")
         proc = await asyncio.create_subprocess_exec(
             cmd,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
         )
         stdout, stderr = await proc.communicate()
         if proc.returncode != 0:
@@ -182,21 +180,19 @@ class CodexAgentService:
 
             # Update status
             interaction.status = "running"
-            interaction.started_at = datetime.now(timezone.utc)
+            interaction.started_at = datetime.now(UTC)
             await self.session.flush()
 
             # Execute
             env = self._get_sanitized_env()
             proc = await asyncio.create_subprocess_exec(
                 *cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
                 env=env,
             )
 
-            stdout, stderr = await asyncio.wait_for(
-                proc.communicate(), timeout=task.timeout_seconds
-            )
+            stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=task.timeout_seconds)
 
             output_text = stdout.decode()
             interaction.output_data = {
@@ -206,22 +202,23 @@ class CodexAgentService:
             }
             interaction.response = output_text
             interaction.status = "completed" if proc.returncode == 0 else "failed"
-            interaction.completed_at = datetime.now(timezone.utc)
+            completed_at = datetime.now(UTC)
+            interaction.completed_at = completed_at
             if interaction.started_at:
-                delta = interaction.completed_at - interaction.started_at
+                delta = completed_at - interaction.started_at
                 interaction.duration_ms = int(delta.total_seconds() * 1000)
 
             if proc.returncode != 0:
                 interaction.error_message = stderr.decode()[:1000]
 
-        except asyncio.TimeoutError:
+        except TimeoutError:
             interaction.status = "failed"
             interaction.error_message = f"Task timed out after {task.timeout_seconds}s"
-            interaction.completed_at = datetime.now(timezone.utc)
+            interaction.completed_at = datetime.now(UTC)
         except Exception as e:
             interaction.status = "failed"
             interaction.error_message = str(e)[:1000]
-            interaction.completed_at = datetime.now(timezone.utc)
+            interaction.completed_at = datetime.now(UTC)
 
         await self.session.flush()
         await self.session.refresh(interaction)
@@ -240,9 +237,7 @@ class CodexAgentService:
         if not artifact:
             raise CodexExecutionError(f"Artifact {artifact_id} not found")
         if artifact.artifact_type not in ["screenshot", "gif"]:
-            raise CodexExecutionError(
-                f"Artifact type {artifact.artifact_type} not supported for image review"
-            )
+            raise CodexExecutionError(f"Artifact type {artifact.artifact_type} not supported for image review")
 
         task = CodexTask(
             task_type="review_image",
@@ -250,9 +245,7 @@ class CodexAgentService:
             input_files=[artifact.file_path],
             sandbox="read-only",
         )
-        return await self.run_task(
-            task, project_id, execution_id=execution_id, artifact_id=artifact_id
-        )
+        return await self.run_task(task, project_id, execution_id=execution_id, artifact_id=artifact_id)
 
     async def review_video(
         self,
@@ -272,16 +265,12 @@ class CodexAgentService:
         if not artifact:
             raise CodexExecutionError(f"Artifact {artifact_id} not found")
         if artifact.artifact_type != "video":
-            raise CodexExecutionError(
-                f"Artifact type {artifact.artifact_type} not supported for video review"
-            )
+            raise CodexExecutionError(f"Artifact type {artifact.artifact_type} not supported for video review")
 
         frame_dir = tempfile.mkdtemp(prefix="codex_frames_")
         try:
             # Extract frames
-            frames = await self._ffmpeg.extract_frames(
-                artifact.file_path, frame_dir, interval_seconds=2.0
-            )
+            frames = await self._ffmpeg.extract_frames(artifact.file_path, frame_dir, interval_seconds=2.0)
 
             # Limit frames
             frames = frames[:max_frames]
@@ -292,9 +281,7 @@ class CodexAgentService:
                 input_files=[str(f) for f in frames],
                 sandbox="read-only",
             )
-            return await self.run_task(
-                task, project_id, execution_id=execution_id, artifact_id=artifact_id
-            )
+            return await self.run_task(task, project_id, execution_id=execution_id, artifact_id=artifact_id)
         finally:
             shutil.rmtree(frame_dir, ignore_errors=True)
 

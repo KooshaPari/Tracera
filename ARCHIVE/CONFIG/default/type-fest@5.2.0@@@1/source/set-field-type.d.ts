@@ -64,4 +64,4 @@ type _SetFieldType<BaseType, Keys extends keyof BaseType, NewType, Options exten
 		Options['preservePropertyModifiers'] extends false ? Record<Keys, NewType> : unknown
 	)>;
 
-export {};
+

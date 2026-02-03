@@ -387,7 +387,7 @@ define("vs/ecl-BJgqfLSq", ["exports"], (function(exports) {
       "varunicode"
     ].join("|"),
     operators: ["+", "-", "/", ":=", "<", "<>", "=", ">", "\\", "and", "in", "not", "or"],
-    symbols: /[=><!~?:&|+\-*\/\^%]+/,
+    symbols: /[=><!~?:&|+\-*/^%]+/,
     // escape sequences
     escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
     // The main tokenizer for our languages
@@ -408,7 +408,7 @@ define("vs/ecl-BJgqfLSq", ["exports"], (function(exports) {
         ],
         // whitespace
         { include: "@whitespace" },
-        [/[{}()\[\]]/, "@brackets"],
+        [/[{}()[\]]/, "@brackets"],
         [/[<>](?!@symbols)/, "@brackets"],
         [
           /@symbols/,
@@ -420,7 +420,7 @@ define("vs/ecl-BJgqfLSq", ["exports"], (function(exports) {
           }
         ],
         // numbers
-        [/[0-9_]*\.[0-9_]+([eE][\-+]?\d+)?/, "number.float"],
+        [/[0-9_]*\.[0-9_]+([eE][-+]?\d+)?/, "number.float"],
         [/0[xX][0-9a-fA-F_]+/, "number.hex"],
         [/0[bB][01]+/, "number.hex"],
         // binary: use same theme style as hex
@@ -441,9 +441,9 @@ define("vs/ecl-BJgqfLSq", ["exports"], (function(exports) {
         [/\/\/.*$/, "comment"]
       ],
       comment: [
-        [/[^\/*]+/, "comment"],
+        [/[^/*]+/, "comment"],
         [/\*\//, "comment", "@pop"],
-        [/[\/*]/, "comment"]
+        [/[/*]/, "comment"]
       ],
       string: [
         [/[^\\']+/, "string"],

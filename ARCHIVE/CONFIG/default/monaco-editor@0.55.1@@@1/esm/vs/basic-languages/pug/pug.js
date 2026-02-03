@@ -164,7 +164,7 @@ const language = {
     "wbr"
   ],
   // we include these common regular expressions
-  symbols: /[\+\-\*\%\&\|\!\=\/\.\,\:]+/,
+  symbols: /[+\-*%&|!=/.,:]+/,
   escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
   tokenizer: {
     root: [
@@ -218,10 +218,10 @@ const language = {
         }
       ],
       // delimiters and operators
-      [/[{}()\[\]]/, "@brackets"],
+      [/[{}()[\]]/, "@brackets"],
       [/@symbols/, "delimiter"],
       // numbers
-      [/\d+\.\d+([eE][\-+]?\d+)?/, "number.float"],
+      [/\d+\.\d+([eE][-+]?\d+)?/, "number.float"],
       [/\d+/, "number"],
       // strings:
       [/"/, "string", '@string."'],
@@ -316,10 +316,10 @@ const language = {
       [/./, { token: "@rematch", next: "@popall" }]
     ],
     comment: [
-      [/[^<\-]+/, "comment.content"],
+      [/[^<-]+/, "comment.content"],
       [/-->/, { token: "comment", next: "@pop" }],
       [/<!--/, "comment.content.invalid"],
-      [/[<\-]/, "comment.content"]
+      [/[<-]/, "comment.content"]
     ],
     string: [
       [

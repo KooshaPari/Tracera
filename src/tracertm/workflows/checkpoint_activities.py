@@ -6,18 +6,27 @@ They handle database persistence, AI execution, and snapshot operations.
 
 from __future__ import annotations
 
-import json
+import asyncio
 import logging
-import os
 import tarfile
 import tempfile
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal, cast
 
 from temporalio import activity
 
 logger = logging.getLogger(__name__)
+
+
+def _get_file_size(path: str) -> int:
+    """Get file size (helper for async Path operations)."""
+    return Path(path).stat().st_size
+
+
+def _remove_file(path: str) -> None:
+    """Remove file (helper for async Path operations)."""
+    Path(path).unlink(missing_ok=True)
 
 
 @activity.defn(name="create_checkpoint")
@@ -38,9 +47,7 @@ async def create_checkpoint(
     Returns:
         dict: Checkpoint creation result with ID and S3 key (placeholder)
     """
-    activity.logger.info(
-        f"Creating checkpoint for session {session_id} at turn {turn_number}"
-    )
+    activity.logger.info(f"Creating checkpoint for session {session_id} at turn {turn_number}")
 
     try:
         from tracertm.services.checkpoint_service import get_checkpoint_service
@@ -58,9 +65,7 @@ async def create_checkpoint(
         # Prepare S3 key (Phase 4 will implement actual MinIO upload)
         s3_key = f"sandboxes/{session_id}/snapshots/snapshot-turn-{turn_number}.tar.gz"
 
-        activity.logger.info(
-            f"Checkpoint created: {checkpoint.id} (turn {turn_number})"
-        )
+        activity.logger.info(f"Checkpoint created: {checkpoint.id} (turn {turn_number})")
 
         return {
             "status": "success",
@@ -127,17 +132,13 @@ async def load_checkpoint_by_turn(
     Returns:
         dict: Checkpoint data or None if not found
     """
-    activity.logger.info(
-        f"Loading checkpoint for session {session_id} at turn {turn_number}"
-    )
+    activity.logger.info(f"Loading checkpoint for session {session_id} at turn {turn_number}")
 
     try:
         from tracertm.services.checkpoint_service import get_checkpoint_service
 
         checkpoint_service = get_checkpoint_service()
-        checkpoint = await checkpoint_service.load_checkpoint_by_turn(
-            session_id, turn_number
-        )
+        checkpoint = await checkpoint_service.load_checkpoint_by_turn(session_id, turn_number)
 
         if not checkpoint:
             return None
@@ -175,19 +176,17 @@ async def execute_ai_turn(
     Returns:
         dict: Turn result with updated messages and metadata
     """
-    activity.logger.info(
-        f"Executing AI turn for session {session_id} (model={model})"
-    )
+    activity.logger.info(f"Executing AI turn for session {session_id} (model={model})")
 
     # Send heartbeat periodically during long-running execution
     activity.heartbeat("Starting AI turn")
 
     try:
         from tracertm.agent import get_agent_service
-        from tracertm.agent.session_store import SessionSandboxStoreDB
         from tracertm.agent.sandbox.local_fs import LocalFilesystemSandboxProvider
-        from tracertm.services.ai_tools import set_allowed_paths
+        from tracertm.agent.session_store import SessionSandboxStoreDB
         from tracertm.services.ai_service import get_ai_service
+        from tracertm.services.ai_tools import set_allowed_paths
 
         # Resolve session sandbox path
         sandbox_path = None
@@ -202,17 +201,11 @@ async def execute_ai_turn(
                 from tracertm.agent import AgentService
 
                 agent_svc = AgentService(session_store=store)
-                sandbox_path, _ = await agent_svc.get_or_create_session_sandbox(
-                    session_id, config=None, db_session=db
-                )
+                sandbox_path, _ = await agent_svc.get_or_create_session_sandbox(session_id, config=None, db_session=db)
         except (ValueError, RuntimeError, Exception) as e:
-            logger.debug(
-                f"DB session resolution failed ({e}), using global store"
-            )
+            logger.debug(f"DB session resolution failed ({e}), using global store")
             agent_svc = get_agent_service()
-            sandbox_path, _ = await agent_svc.get_or_create_session_sandbox(
-                session_id
-            )
+            sandbox_path, _ = await agent_svc.get_or_create_session_sandbox(session_id)
 
         # Set allowed paths for file operations
         if sandbox_path:
@@ -233,16 +226,13 @@ async def execute_ai_turn(
         )
 
         # Update messages with assistant response
-        updated_messages = messages + [{"role": "assistant", "content": response}]
+        updated_messages = [*messages, {"role": "assistant", "content": response}]
 
         # Check if conversation should end (simple heuristic)
         done = False
         if isinstance(response, str):
             # Conversation ends if response contains completion markers
-            done = any(
-                marker in response.lower()
-                for marker in ["goodbye", "task complete", "finished", "done with"]
-            )
+            done = any(marker in response.lower() for marker in ["goodbye", "task complete", "finished", "done with"])
 
         activity.logger.info(f"AI turn completed (done={done})")
 
@@ -289,9 +279,7 @@ async def create_sandbox_snapshot(
     Returns:
         dict: Snapshot result with S3 key and metadata
     """
-    activity.logger.info(
-        f"Creating sandbox snapshot: {snapshot_name} (compression={compression})"
-    )
+    activity.logger.info(f"Creating sandbox snapshot: {snapshot_name} (compression={compression})")
 
     # Send heartbeat for long-running operation
     activity.heartbeat("Starting snapshot creation")
@@ -302,11 +290,11 @@ async def create_sandbox_snapshot(
         agent_svc = get_agent_service()
         sandbox_path, _ = await agent_svc.get_or_create_session_sandbox(session_id)
 
-        if not sandbox_path or not os.path.exists(sandbox_path):
+        if not sandbox_path or not (await asyncio.to_thread(Path(sandbox_path).exists)):
             raise FileNotFoundError(f"Sandbox not found for session {session_id}")
 
         # Prepare S3 key (Phase 4 will upload to MinIO)
-        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+        timestamp = datetime.now(UTC).strftime("%Y%m%d-%H%M%S")
         s3_key = f"sandboxes/{session_id}/snapshots/{snapshot_name}-{timestamp}.tar.gz"
 
         # Create temporary snapshot archive
@@ -314,34 +302,30 @@ async def create_sandbox_snapshot(
         if include_sandbox:
             activity.heartbeat("Creating archive")
 
-            with tempfile.NamedTemporaryFile(
-                delete=False, suffix=".tar.gz"
-            ) as temp_file:
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".tar.gz") as temp_file:
                 temp_path = temp_file.name
 
             try:
                 # Create tar archive
-                compression_mode = {
-                    "gzip": "w:gz",
-                    "bzip2": "w:bz2",
-                    "none": "w",
-                }.get(compression, "w:gz")
-
-                with tarfile.open(temp_path, compression_mode) as tar:
-                    tar.add(sandbox_path, arcname=os.path.basename(sandbox_path))
-
-                snapshot_size = os.path.getsize(temp_path)
-                activity.logger.info(
-                    f"Snapshot archive created: {snapshot_size} bytes"
+                compression_mode = cast(
+                    Literal["w", "w:gz", "w:bz2"],
+                    {"gzip": "w:gz", "bzip2": "w:bz2", "none": "w"}.get(
+                        compression, "w:gz"
+                    ),
                 )
+
+                with tarfile.open(temp_path, mode=compression_mode) as tar:
+                    tar.add(sandbox_path, arcname=Path(sandbox_path).name)
+
+                snapshot_size = await asyncio.to_thread(_get_file_size, temp_path)
+                activity.logger.info(f"Snapshot archive created: {snapshot_size} bytes")
 
                 # Phase 4: Upload to MinIO here
                 # For now, we'll just track metadata
 
             finally:
-                # Clean up temporary file
-                if os.path.exists(temp_path):
-                    os.unlink(temp_path)
+                # Clean up temporary file (run in thread to avoid ASYNC240)
+                await asyncio.to_thread(_remove_file, temp_path)
 
         snapshot_metadata = {
             "snapshot_name": snapshot_name,
@@ -349,7 +333,7 @@ async def create_sandbox_snapshot(
             "compression": compression,
             "retention_days": retention_days,
             "sandbox_path": sandbox_path,
-            "created_at": datetime.now(timezone.utc).isoformat(),
+            "created_at": datetime.now(UTC).isoformat(),
         }
 
         activity.logger.info(f"Snapshot created: {s3_key}")
@@ -359,7 +343,7 @@ async def create_sandbox_snapshot(
             "s3_key": s3_key,  # Placeholder - Phase 4 will populate
             "size_bytes": snapshot_size,
             "snapshot_metadata": snapshot_metadata,
-            "created_at": datetime.now(timezone.utc).isoformat(),
+            "created_at": datetime.now(UTC).isoformat(),
         }
 
     except Exception as e:
@@ -383,20 +367,19 @@ async def update_session_snapshot_ref(
     Returns:
         dict: Update result
     """
+    await asyncio.sleep(0)
     activity.logger.info(f"Updating session {session_id} with snapshot ref {s3_key}")
 
     try:
         # Phase 4 will implement actual session update with S3 reference
         # For now, just log the operation
-        activity.logger.info(
-            f"Snapshot reference updated for session {session_id}"
-        )
+        activity.logger.info(f"Snapshot reference updated for session {session_id}")
 
         return {
             "status": "success",
             "session_id": session_id,
             "s3_key": s3_key,
-            "updated_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(UTC).isoformat(),
         }
 
     except Exception as e:
@@ -414,16 +397,13 @@ async def list_active_sessions() -> dict[str, Any]:
     activity.logger.info("Listing active agent sessions")
 
     try:
-        from tracertm.mcp.database_adapter import get_mcp_session
         from sqlalchemy import select
+
+        from tracertm.mcp.database_adapter import get_mcp_session
         from tracertm.models.agent_session import AgentSession
 
         async with get_mcp_session() as db:
-            result = await db.execute(
-                select(AgentSession.session_id).order_by(
-                    AgentSession.updated_at.desc()
-                )
-            )
+            result = await db.execute(select(AgentSession.session_id).order_by(AgentSession.updated_at.desc()))
             session_ids = [row[0] for row in result.all()]
 
         activity.logger.info(f"Found {len(session_ids)} active sessions")
@@ -454,9 +434,8 @@ async def cleanup_old_snapshots(
     Returns:
         dict: Cleanup results
     """
-    activity.logger.info(
-        f"Cleaning up snapshots older than {retention_days} days (dry_run={dry_run})"
-    )
+    await asyncio.sleep(0)
+    activity.logger.info(f"Cleaning up snapshots older than {retention_days} days (dry_run={dry_run})")
 
     # Send heartbeat for long-running cleanup
     activity.heartbeat("Starting cleanup scan")

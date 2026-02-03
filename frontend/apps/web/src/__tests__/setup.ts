@@ -107,14 +107,14 @@ afterEach(() => {
 if (typeof globalThis.window !== "undefined") {
 	Object.defineProperty(globalThis.window, "matchMedia", {
 		value: vi.fn().mockImplementation((query) => ({
+			addEventListener: vi.fn(),
+			addListener: vi.fn(),
+			dispatchEvent: vi.fn(),
 			matches: false,
 			media: query,
 			onchange: null,
-			addListener: vi.fn(),
-			removeListener: vi.fn(),
-			addEventListener: vi.fn(),
 			removeEventListener: vi.fn(),
-			dispatchEvent: vi.fn(),
+			removeListener: vi.fn(),
 		})),
 		writable: true,
 	});
@@ -124,8 +124,8 @@ if (typeof globalThis.window !== "undefined") {
 if (typeof navigator !== "undefined") {
 	Object.defineProperty(navigator, "clipboard", {
 		value: {
-			writeText: vi.fn(() => Promise.resolve()),
 			readText: vi.fn(() => Promise.resolve("")),
+			writeText: vi.fn(() => Promise.resolve()),
 		},
 		writable: true,
 	});

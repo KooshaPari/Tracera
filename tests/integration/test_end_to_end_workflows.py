@@ -8,15 +8,15 @@ import/export, and backup/recovery.
 Target: +4-5% coverage (45-60 tests)
 """
 
-import pytest
-import json
-from datetime import datetime, timedelta
-from typing import List
+from datetime import UTC, datetime, timezone
+from typing import Any
 
-from tracertm.models.project import Project
+import pytest
+
+from tracertm.models.event import Event
 from tracertm.models.item import Item
 from tracertm.models.link import Link
-from tracertm.models.event import Event
+from tracertm.models.project import Project
 
 
 class TestItemCreationLinkingSync:
@@ -26,11 +26,7 @@ class TestItemCreationLinkingSync:
     def test_simple_item_creation_workflow(self, sync_db_session):
         """Test simple item creation workflow."""
         # Create project
-        project = Project(
-            id="workflow-project",
-            name="Workflow Project",
-            description="Test workflow project"
-        )
+        project = Project(id="workflow-project", name="Workflow Project", description="Test workflow project")
         sync_db_session.add(project)
         sync_db_session.commit()
 
@@ -41,15 +37,10 @@ class TestItemCreationLinkingSync:
             title="User Authentication",
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         item2 = Item(
-            id="API-001",
-            project_id="workflow-project",
-            title="Auth API",
-            view="API",
-            item_type="api",
-            status="todo"
+            id="API-001", project_id="workflow-project", title="Auth API", view="API", item_type="api", status="todo"
         )
 
         sync_db_session.add(item1)
@@ -57,12 +48,8 @@ class TestItemCreationLinkingSync:
         sync_db_session.commit()
 
         # Verify
-        project_result = sync_db_session.query(Project).filter_by(
-            id="workflow-project"
-        ).first()
-        items = sync_db_session.query(Item).filter_by(
-            project_id="workflow-project"
-        ).all()
+        project_result = sync_db_session.query(Project).filter_by(id="workflow-project").first()
+        items = sync_db_session.query(Item).filter_by(project_id="workflow-project").all()
 
         assert project_result is not None
         assert len(items) == 2
@@ -78,14 +65,14 @@ class TestItemCreationLinkingSync:
                 project_id="test-project",
                 source_item_id="item-1",
                 target_item_id="item-4",
-                link_type="tests"
+                link_type="tests",
             ),
             Link(
                 id="workflow-link-2",
                 project_id="test-project",
                 source_item_id="item-2",
                 target_item_id="item-3",
-                link_type="implements"
+                link_type="implements",
             ),
         ]
 
@@ -94,9 +81,7 @@ class TestItemCreationLinkingSync:
         db_with_sample_data.commit()
 
         # Verify links
-        result_links = db_with_sample_data.query(Link).filter(
-            Link.id.startswith("workflow-link")
-        ).all()
+        result_links = db_with_sample_data.query(Link).filter(Link.id.startswith("workflow-link")).all()
         assert len(result_links) == 2
 
     @pytest.mark.integration
@@ -133,7 +118,7 @@ class TestItemCreationLinkingSync:
             title="Item 1",
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         item2 = Item(
             id="LIFECYCLE-002",
@@ -141,7 +126,7 @@ class TestItemCreationLinkingSync:
             title="Item 2",
             view="TEST",
             item_type="test",
-            status="todo"
+            status="todo",
         )
 
         sync_db_session.add(item1)
@@ -158,21 +143,17 @@ class TestItemCreationLinkingSync:
             project_id="lifecycle-project",
             source_item_id="LIFECYCLE-001",
             target_item_id="LIFECYCLE-002",
-            link_type="tests"
+            link_type="tests",
         )
         sync_db_session.add(link)
         sync_db_session.commit()
 
         # Verify link exists
-        result_link = sync_db_session.query(Link).filter_by(
-            id="lifecycle-link"
-        ).first()
+        result_link = sync_db_session.query(Link).filter_by(id="lifecycle-link").first()
         assert result_link is not None
 
         # Delete item2
-        item2_to_delete = sync_db_session.query(Item).filter_by(
-            id="LIFECYCLE-002"
-        ).first()
+        item2_to_delete = sync_db_session.query(Item).filter_by(id="LIFECYCLE-002").first()
         try:
             sync_db_session.delete(item2_to_delete)
             sync_db_session.commit()
@@ -190,18 +171,13 @@ class TestProjectSetupManagementExport:
             id="new-project",
             name="New Project",
             description="Complete workflow test",
-            project_metadata={
-                "team": "platform",
-                "visibility": "private"
-            }
+            project_metadata={"team": "platform", "visibility": "private"},
         )
 
         sync_db_session.add(project)
         sync_db_session.commit()
 
-        result = sync_db_session.query(Project).filter_by(
-            id="new-project"
-        ).first()
+        result = sync_db_session.query(Project).filter_by(id="new-project").first()
         assert result is not None
         assert result.name == "New Project"
         assert result.project_metadata["team"] == "platform"
@@ -209,11 +185,7 @@ class TestProjectSetupManagementExport:
     @pytest.mark.integration
     def test_project_configuration_workflow(self, sync_db_session):
         """Test project configuration workflow."""
-        project = Project(
-            id="config-project",
-            name="Config Project",
-            project_metadata={"configured": False}
-        )
+        project = Project(id="config-project", name="Config Project", project_metadata={"configured": False})
         sync_db_session.add(project)
         sync_db_session.commit()
 
@@ -221,9 +193,7 @@ class TestProjectSetupManagementExport:
         project.project_metadata = {"configured": True, "settings": {"theme": "dark"}}
         sync_db_session.commit()
 
-        result = sync_db_session.query(Project).filter_by(
-            id="config-project"
-        ).first()
+        result = sync_db_session.query(Project).filter_by(id="config-project").first()
         assert result.project_metadata["configured"] is True
         assert result.project_metadata["settings"]["theme"] == "dark"
 
@@ -233,12 +203,7 @@ class TestProjectSetupManagementExport:
         project = Project(
             id="team-project",
             name="Team Project",
-            project_metadata={
-                "members": [
-                    {"name": "Alice", "role": "owner"},
-                    {"name": "Bob", "role": "contributor"}
-                ]
-            }
+            project_metadata={"members": [{"name": "Alice", "role": "owner"}, {"name": "Bob", "role": "contributor"}]},
         )
         sync_db_session.add(project)
         sync_db_session.commit()
@@ -247,37 +212,31 @@ class TestProjectSetupManagementExport:
         sync_db_session.refresh(project)
 
         # Add member
-        new_members = project.project_metadata["members"] + [{"name": "Charlie", "role": "viewer"}]
+        _meta = project.project_metadata
+        members = (_meta.get("members") if isinstance(_meta, dict) else None)
+        new_members = (members if isinstance(members, list) else []) + [{"name": "Charlie", "role": "viewer"}]
         project.project_metadata = {"members": new_members}
         sync_db_session.commit()
 
         # Query fresh from database
-        result = sync_db_session.query(Project).filter_by(
-            id="team-project"
-        ).first()
+        result = sync_db_session.query(Project).filter_by(id="team-project").first()
         assert len(result.project_metadata["members"]) >= 2
 
     @pytest.mark.integration
     def test_project_archive_workflow(self, sync_db_session):
         """Test project archival workflow."""
-        project = Project(
-            id="archive-project",
-            name="Archive Project",
-            project_metadata={"archived": False}
-        )
+        project = Project(id="archive-project", name="Archive Project", project_metadata={"archived": False})
         sync_db_session.add(project)
         sync_db_session.commit()
 
         # Archive project - need to reassign to trigger dirty flag
         metadata = project.project_metadata.copy()
         metadata["archived"] = True
-        metadata["archived_at"] = datetime.utcnow().isoformat()
+        metadata["archived_at"] = datetime.now(UTC).isoformat()
         project.project_metadata = metadata
         sync_db_session.commit()
 
-        result = sync_db_session.query(Project).filter_by(
-            id="archive-project"
-        ).first()
+        result = sync_db_session.query(Project).filter_by(id="archive-project").first()
         assert result.project_metadata["archived"] is True
         assert "archived_at" in result.project_metadata
 
@@ -295,7 +254,7 @@ class TestProjectSetupManagementExport:
             "projects": [{"id": p.id, "name": p.name} for p in projects],
             "items": [{"id": i.id, "title": i.title} for i in items],
             "links": [{"id": l.id, "type": l.link_type} for l in links],
-            "events": [{"id": e.id, "type": e.event_type} for e in events]
+            "events": [{"id": e.id, "type": e.event_type} for e in events],
         }
 
         assert len(export_data["projects"]) >= 1
@@ -318,7 +277,7 @@ class TestConflictDetectionResolution:
             title="Original",
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         sync_db_session.add(item)
         sync_db_session.commit()
@@ -327,9 +286,7 @@ class TestConflictDetectionResolution:
         item.title = "User Update"
         sync_db_session.commit()
 
-        result = sync_db_session.query(Item).filter_by(
-            id="CONFLICT-001"
-        ).first()
+        result = sync_db_session.query(Item).filter_by(id="CONFLICT-001").first()
         assert result.title == "User Update"
 
     @pytest.mark.integration
@@ -341,7 +298,7 @@ class TestConflictDetectionResolution:
             project_id="test-project",
             source_item_id="item-1",
             target_item_id="item-2",
-            link_type="depends_on"
+            link_type="depends_on",
         )
 
         db_with_sample_data.add(link1)
@@ -353,19 +310,15 @@ class TestConflictDetectionResolution:
             project_id="test-project",
             source_item_id="item-2",
             target_item_id="item-1",
-            link_type="depends_on"
+            link_type="depends_on",
         )
 
         db_with_sample_data.add(link2)
         db_with_sample_data.commit()
 
         # Both should exist
-        result1 = db_with_sample_data.query(Link).filter_by(
-            id="conflict-link-1"
-        ).first()
-        result2 = db_with_sample_data.query(Link).filter_by(
-            id="conflict-link-2"
-        ).first()
+        result1 = db_with_sample_data.query(Link).filter_by(id="conflict-link-1").first()
+        result2 = db_with_sample_data.query(Link).filter_by(id="conflict-link-2").first()
 
         assert result1 is not None
         assert result2 is not None
@@ -402,22 +355,16 @@ class TestConflictDetectionResolution:
             view="FEATURE",
             item_type="feature",
             status="todo",
-            item_metadata={"version": 1, "author": "alice"}
+            item_metadata={"version": 1, "author": "alice"},
         )
         sync_db_session.add(item)
         sync_db_session.commit()
 
         # Merge metadata
-        item.item_metadata = {
-            "version": 2,
-            "author": "alice",
-            "reviewer": "bob"
-        }
+        item.item_metadata = {"version": 2, "author": "alice", "reviewer": "bob"}
         sync_db_session.commit()
 
-        result = sync_db_session.query(Item).filter_by(
-            id="MERGE-001"
-        ).first()
+        result = sync_db_session.query(Item).filter_by(id="MERGE-001").first()
         assert result.item_metadata["version"] == 2
         assert result.item_metadata["reviewer"] == "bob"
 
@@ -439,7 +386,7 @@ class TestBulkOperationsWithRollback:
                 title=f"Bulk Item {i}",
                 view="FEATURE",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             for i in range(10)
         ]
@@ -448,9 +395,7 @@ class TestBulkOperationsWithRollback:
             sync_db_session.add(item)
         sync_db_session.commit()
 
-        count = sync_db_session.query(Item).filter(
-            Item.id.startswith("BULK-")
-        ).count()
+        count = sync_db_session.query(Item).filter(Item.id.startswith("BULK-")).count()
         assert count == 10
 
     @pytest.mark.integration
@@ -468,7 +413,7 @@ class TestBulkOperationsWithRollback:
                 title=f"Item {i}",
                 view="FEATURE",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             sync_db_session.add(item)
         sync_db_session.commit()
@@ -482,7 +427,7 @@ class TestBulkOperationsWithRollback:
                     project_id="bulk-links",
                     source_item_id=f"LINK-ITEM-{i}",
                     target_item_id=f"LINK-ITEM-{j}",
-                    link_type="depends_on"
+                    link_type="depends_on",
                 )
                 links.append(link)
 
@@ -490,9 +435,7 @@ class TestBulkOperationsWithRollback:
             sync_db_session.add(link)
         sync_db_session.commit()
 
-        count = sync_db_session.query(Link).filter(
-            Link.id.startswith("BULK-LINK")
-        ).count()
+        count = sync_db_session.query(Link).filter(Link.id.startswith("BULK-LINK")).count()
         assert count == 10
 
     @pytest.mark.integration
@@ -505,9 +448,7 @@ class TestBulkOperationsWithRollback:
 
         initialized_db.commit()
 
-        updated_items = initialized_db.query(Item).filter_by(
-            status="in_progress"
-        ).all()
+        updated_items = initialized_db.query(Item).filter_by(status="in_progress").all()
         assert len(updated_items) >= 2
 
     @pytest.mark.integration
@@ -527,7 +468,7 @@ class TestBulkOperationsWithRollback:
                 title=f"Partial {i}",
                 view="FEATURE",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             for i in range(5)
         ]
@@ -539,9 +480,7 @@ class TestBulkOperationsWithRollback:
         savepoint.rollback()
         sync_db_session.commit()
 
-        count = sync_db_session.query(Item).filter(
-            Item.id.startswith("PARTIAL-")
-        ).count()
+        count = sync_db_session.query(Item).filter(Item.id.startswith("PARTIAL-")).count()
         assert count == 0
 
 
@@ -552,11 +491,7 @@ class TestMultiStepUserScenarios:
     def test_feature_development_workflow(self, sync_db_session):
         """Test feature development workflow."""
         # Create project
-        project = Project(
-            id="feature-dev",
-            name="Feature Development",
-            project_metadata={"phase": "development"}
-        )
+        project = Project(id="feature-dev", name="Feature Development", project_metadata={"phase": "development"})
         sync_db_session.add(project)
         sync_db_session.commit()
 
@@ -567,7 +502,7 @@ class TestMultiStepUserScenarios:
             title="New Authentication",
             view="FEATURE",
             item_type="feature",
-            status="todo"
+            status="todo",
         )
         sync_db_session.add(feature)
         sync_db_session.commit()
@@ -579,7 +514,7 @@ class TestMultiStepUserScenarios:
             title="Auth API Endpoints",
             view="API",
             item_type="api",
-            status="todo"
+            status="todo",
         )
         db_schema = Item(
             id="DB-AUTH",
@@ -587,7 +522,7 @@ class TestMultiStepUserScenarios:
             title="User Table Schema",
             view="DATABASE",
             item_type="schema",
-            status="todo"
+            status="todo",
         )
         tests = Item(
             id="TEST-AUTH",
@@ -595,7 +530,7 @@ class TestMultiStepUserScenarios:
             title="Authentication Tests",
             view="TEST",
             item_type="test",
-            status="todo"
+            status="todo",
         )
 
         for item in [api, db_schema, tests]:
@@ -609,21 +544,21 @@ class TestMultiStepUserScenarios:
                 project_id="feature-dev",
                 source_item_id="FEAT-001",
                 target_item_id="API-AUTH",
-                link_type="implements"
+                link_type="implements",
             ),
             Link(
                 id="link-2",
                 project_id="feature-dev",
                 source_item_id="FEAT-001",
                 target_item_id="DB-AUTH",
-                link_type="depends_on"
+                link_type="depends_on",
             ),
             Link(
                 id="link-3",
                 project_id="feature-dev",
                 source_item_id="TEST-AUTH",
                 target_item_id="FEAT-001",
-                link_type="tests"
+                link_type="tests",
             ),
         ]
 
@@ -654,7 +589,7 @@ class TestMultiStepUserScenarios:
             title="System shall authenticate users",
             view="REQUIREMENT",
             item_type="requirement",
-            status="todo"
+            status="todo",
         )
         sync_db_session.add(req)
         sync_db_session.commit()
@@ -666,7 +601,7 @@ class TestMultiStepUserScenarios:
             title="JWT-based Authentication Design",
             view="DESIGN",
             item_type="design",
-            status="todo"
+            status="todo",
         )
         sync_db_session.add(design)
         sync_db_session.commit()
@@ -677,15 +612,13 @@ class TestMultiStepUserScenarios:
             project_id="requirements",
             source_item_id="REQ-001",
             target_item_id="DESIGN-001",
-            link_type="implemented_by"
+            link_type="implemented_by",
         )
         sync_db_session.add(link)
         sync_db_session.commit()
 
         # Verify traceability
-        result_link = sync_db_session.query(Link).filter_by(
-            id="trace-1"
-        ).first()
+        result_link = sync_db_session.query(Link).filter_by(id="trace-1").first()
         assert result_link is not None
 
     @pytest.mark.integration
@@ -703,7 +636,7 @@ class TestMultiStepUserScenarios:
             view="BUG",
             item_type="bug",
             status="new",
-            item_metadata={"severity": "high", "priority": 1}
+            item_metadata={"severity": "high", "priority": 1},
         )
         sync_db_session.add(bug)
         sync_db_session.commit()
@@ -715,12 +648,12 @@ class TestMultiStepUserScenarios:
 
         # In progress
         bug.status = "in_progress"
-        bug.item_metadata["started_at"] = datetime.utcnow().isoformat()
+        bug.item_metadata["started_at"] = datetime.now(UTC).isoformat()
         sync_db_session.commit()
 
         # Resolved
         bug.status = "resolved"
-        bug.item_metadata["fixed_at"] = datetime.utcnow().isoformat()
+        bug.item_metadata["fixed_at"] = datetime.now(UTC).isoformat()
         sync_db_session.commit()
 
         result = sync_db_session.query(Item).filter_by(id="BUG-001").first()
@@ -734,37 +667,17 @@ class TestImportExportWorkflows:
     def test_project_export_to_json(self, db_with_sample_data):
         """Test project export to JSON."""
         project = db_with_sample_data.query(Project).first()
-        items = db_with_sample_data.query(Item).filter_by(
-            project_id=project.id
-        ).all()
-        links = db_with_sample_data.query(Link).filter_by(
-            project_id=project.id
-        ).all()
+        items = db_with_sample_data.query(Item).filter_by(project_id=project.id).all()
+        links = db_with_sample_data.query(Link).filter_by(project_id=project.id).all()
 
         # Create export JSON
-        export = {
-            "project": {
-                "id": project.id,
-                "name": project.name,
-                "created_at": project.created_at.isoformat()
-            },
-            "items": [
-                {
-                    "id": item.id,
-                    "title": item.title,
-                    "status": item.status
-                }
-                for item in items
-            ],
+        export: dict[str, Any] = {
+            "project": {"id": project.id, "name": project.name, "created_at": project.created_at.isoformat()},
+            "items": [{"id": item.id, "title": item.title, "status": item.status} for item in items],
             "links": [
-                {
-                    "id": link.id,
-                    "source": link.source_item_id,
-                    "target": link.target_item_id,
-                    "type": link.link_type
-                }
+                {"id": link.id, "source": link.source_item_id, "target": link.target_item_id, "type": link.link_type}
                 for link in links
-            ]
+            ],
         }
 
         assert export["project"]["id"] is not None
@@ -775,41 +688,34 @@ class TestImportExportWorkflows:
     def test_data_import_workflow(self, sync_db_session):
         """Test data import workflow."""
         # Import data
-        import_data = {
-            "project": {
-                "id": "imported-project",
-                "name": "Imported Project"
-            },
+        import_data: dict[str, Any] = {
+            "project": {"id": "imported-project", "name": "Imported Project"},
             "items": [
                 {"id": "IMP-001", "title": "Item 1", "status": "todo"},
                 {"id": "IMP-002", "title": "Item 2", "status": "todo"},
-            ]
+            ],
         }
 
         # Create imported project and items
-        project = Project(
-            id=import_data["project"]["id"],
-            name=import_data["project"]["name"]
-        )
+        project_data = import_data["project"]
+        project = Project(id=project_data["id"], name=project_data["name"])
         sync_db_session.add(project)
         sync_db_session.commit()
 
         for item_data in import_data["items"]:
             item = Item(
-                id=item_data["id"],
-                project_id=import_data["project"]["id"],
-                title=item_data["title"],
+                id=str(item_data["id"]),
+                project_id=str(project_data["id"]),
+                title=str(item_data["title"]),
                 view="FEATURE",
                 item_type="feature",
-                status=item_data["status"]
+                status=str(item_data["status"]),
             )
             sync_db_session.add(item)
         sync_db_session.commit()
 
         # Verify import
-        imported_items = sync_db_session.query(Item).filter_by(
-            project_id="imported-project"
-        ).all()
+        imported_items = sync_db_session.query(Item).filter_by(project_id="imported-project").all()
         assert len(imported_items) == 2
 
 
@@ -820,21 +726,21 @@ class TestBackupRecoveryWorkflows:
     def test_project_backup_creation(self, db_with_sample_data):
         """Test project backup creation."""
         project = db_with_sample_data.query(Project).first()
-        items = db_with_sample_data.query(Item).filter_by(
-            project_id=project.id
-        ).all()
+        items = db_with_sample_data.query(Item).filter_by(project_id=project.id).all()
 
         # Create backup
-        backup = {
-            "timestamp": datetime.utcnow().isoformat(),
+        backup: dict[str, Any] = {
+            "timestamp": datetime.now(UTC).isoformat(),
             "project_id": project.id,
             "item_count": len(items),
-            "items": [item.id for item in items]
+            "items": [item.id for item in items],
         }
 
         assert backup["project_id"] is not None
-        assert backup["item_count"] >= 4
-        assert len(backup["items"]) == backup["item_count"]
+        item_count: int = backup["item_count"]
+        items_list: list[Any] = backup["items"]
+        assert item_count >= 4
+        assert len(items_list) == item_count
 
     @pytest.mark.integration
     def test_data_recovery_workflow(self, sync_db_session):
@@ -851,7 +757,7 @@ class TestBackupRecoveryWorkflows:
                 title=f"Item {i}",
                 view="FEATURE",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             for i in range(3)
         ]
@@ -861,9 +767,7 @@ class TestBackupRecoveryWorkflows:
         sync_db_session.commit()
 
         # Simulate recovery: verify data
-        recovered_items = sync_db_session.query(Item).filter_by(
-            project_id="recovery-project"
-        ).all()
+        recovered_items = sync_db_session.query(Item).filter_by(project_id="recovery-project").all()
         assert len(recovered_items) == 3
 
     @pytest.mark.integration
@@ -881,7 +785,7 @@ class TestBackupRecoveryWorkflows:
                 title=f"Batch 1 Item {i}",
                 view="FEATURE",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             for i in range(2)
         ]
@@ -898,7 +802,7 @@ class TestBackupRecoveryWorkflows:
                 title=f"Batch 2 Item {i}",
                 view="FEATURE",
                 item_type="feature",
-                status="todo"
+                status="todo",
             )
             for i in range(2)
         ]
@@ -908,7 +812,5 @@ class TestBackupRecoveryWorkflows:
         sync_db_session.commit()
 
         # Verify both batches
-        all_items = sync_db_session.query(Item).filter_by(
-            project_id="incremental-backup"
-        ).all()
+        all_items = sync_db_session.query(Item).filter_by(project_id="incremental-backup").all()
         assert len(all_items) == 4

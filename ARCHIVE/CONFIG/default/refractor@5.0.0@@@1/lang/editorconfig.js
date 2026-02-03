@@ -15,10 +15,10 @@ export default function editorconfig(Prism) {
       lookbehind: true,
       alias: 'selector',
       inside: {
-        regex: /\\\\[\[\]{},!?.*]/,
+        regex: /\\\\[[\]{},!?.*]/,
         // Escape special characters with '\\'
         operator: /[!?]|\.\.|\*{1,2}/,
-        punctuation: /[\[\]{},]/
+        punctuation: /[[\]{},]/
       }
     },
     key: {

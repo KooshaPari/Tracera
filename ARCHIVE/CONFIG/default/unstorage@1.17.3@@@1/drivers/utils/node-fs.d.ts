@@ -8,4 +8,4 @@ export declare function readdir(dir: string): Promise<Dirent[]>;
 export declare function ensuredir(dir: string): Promise<void>;
 export declare function readdirRecursive(dir: string, ignore?: (p: string) => boolean, maxDepth?: number): Promise<string[]>;
 export declare function rmRecursive(dir: string): Promise<void>;
-export {};
+

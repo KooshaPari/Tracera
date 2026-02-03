@@ -25,7 +25,7 @@ const conf = {
 const language = {
   defaultToken: "",
   tokenPostfix: ".rst",
-  control: /[\\`*_\[\]{}()#+\-\.!]/,
+  control: /[\\`*_[\]{}()#+\-.!]/,
   escapes: /\\(?:@control)/,
   empty: [
     "area",
@@ -47,7 +47,7 @@ const language = {
   simpleRefName: /(?:`@phrase`|@simpleRefNameWithoutBq)/,
   phrase: /@simpleRefNameWithoutBq(?:\s@simpleRefNameWithoutBq)*/,
   citationName: /[A-Za-z][A-Za-z0-9-_.]*/,
-  blockLiteralStart: /(?:[!"#$%&'()*+,-./:;<=>?@\[\]^_`{|}~]|[\s])/,
+  blockLiteralStart: /(?:[!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~]|[\s])/,
   precedingChars: /(?:[ -:/'"<([{])/,
   followingChars: /(?:[ -.,:;!?/'")\]}>]|$)/,
   punctuation: /(=|-|~|`|#|"|\^|\+|\*|:|\.|'|_|\+)/,
@@ -58,7 +58,7 @@ const language = {
       //line-blocks
       //No rules on it
       //bullet-lists
-      [/^\s*([\*\-+‣•]|[a-zA-Z0-9]+\.|\([a-zA-Z0-9]+\)|[a-zA-Z0-9]+\))\s/, "keyword"],
+      [/^\s*([*\-+‣•]|[a-zA-Z0-9]+\.|\([a-zA-Z0-9]+\)|[a-zA-Z0-9]+\))\s/, "keyword"],
       //literal-blocks
       [/([ ]::)\s*$/, "keyword", "@blankLineOfLiteralBlocks"],
       [/(::)\s*$/, "keyword", "@blankLineOfLiteralBlocks"],
@@ -108,7 +108,7 @@ const language = {
       [/\*\*([^\\*]|\*(?!\*))+\*\*/, "strong"],
       [/\*[^*]+\*/, "emphasis"],
       //inline-literals
-      [/(``)((?:[^`]|\`(?!`))+)(``)/, ["", "keyword", ""]],
+      [/(``)((?:[^`]|`(?!`))+)(``)/, ["", "keyword", ""]],
       [/(__\s+)(.+)/, ["", "keyword"]],
       //interpreted-text
       [/(:)((?:@simpleRefNameWithoutBq)?)(:`)([^`]+)(`)/, ["", "keyword", "", "", ""]],

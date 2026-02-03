@@ -8,9 +8,10 @@ Revises: 033_add_doc_entities
 Create Date: 2026-01-30
 """
 
-from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
+
+from alembic import op
 
 # revision identifiers, used by Alembic
 revision = "034_add_code_entities"
@@ -21,7 +22,7 @@ depends_on = None
 
 def upgrade() -> None:
     """Create code_entities table with AST references."""
-    
+
     op.create_table(
         "code_entities",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
@@ -111,12 +112,23 @@ def upgrade() -> None:
         sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
         sa.Column("indexed_at", sa.DateTime(timezone=True), nullable=True),
     )
-    
+
     # Self-referential foreign key
-    op.create_foreign_key("fk_code_entities_parent", "code_entities", "code_entities", ["parent_id"], ["id"], ondelete="CASCADE")
-    op.create_foreign_key("fk_code_entities_item", "code_entities", "items", ["linked_item_id"], ["id"], ondelete="SET NULL")
-    op.create_foreign_key("fk_code_entities_canonical", "code_entities", "canonical_concepts", ["canonical_id"], ["id"], ondelete="SET NULL")
-    
+    op.create_foreign_key(
+        "fk_code_entities_parent", "code_entities", "code_entities", ["parent_id"], ["id"], ondelete="CASCADE"
+    )
+    op.create_foreign_key(
+        "fk_code_entities_item", "code_entities", "items", ["linked_item_id"], ["id"], ondelete="SET NULL"
+    )
+    op.create_foreign_key(
+        "fk_code_entities_canonical",
+        "code_entities",
+        "canonical_concepts",
+        ["canonical_id"],
+        ["id"],
+        ondelete="SET NULL",
+    )
+
     # Create indexes
     op.create_index("ix_code_entities_project_id", "code_entities", ["project_id"])
     op.create_index("ix_code_entities_symbol_name", "code_entities", ["symbol_name"])
@@ -150,4 +162,3 @@ def downgrade() -> None:
     op.drop_constraint("fk_code_entities_item", "code_entities", type_="foreignkey")
     op.drop_constraint("fk_code_entities_parent", "code_entities", type_="foreignkey")
     op.drop_table("code_entities")
-

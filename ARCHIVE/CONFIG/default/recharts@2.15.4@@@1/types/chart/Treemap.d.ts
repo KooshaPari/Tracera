@@ -86,4 +86,4 @@ export declare class Treemap extends PureComponent<Props, State> {
     renderNestIndex(): React.ReactElement;
     render(): React.JSX.Element;
 }
-export {};
+

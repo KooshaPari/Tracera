@@ -14,4 +14,4 @@ declare type _Split<S extends string, D extends string = ''> = D extends '' ? Po
  * @param D to split at
  */
 export declare type Split<S extends string, D extends string = ''> = _Split<S, D> extends infer X ? Cast<X, string[]> : never;
-export {};
+

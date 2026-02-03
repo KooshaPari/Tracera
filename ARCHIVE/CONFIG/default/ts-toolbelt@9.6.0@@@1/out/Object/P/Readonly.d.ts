@@ -21,4 +21,4 @@ declare type ReadonlyAt<O, Path extends List<Key>, depth extends Depth> = O exte
  * ```
  */
 export declare type Readonly<O extends object, Path extends List<Key>, depth extends Depth = 'flat'> = Path extends unknown ? ReadonlyAt<O, Path, depth> : never;
-export {};
+

@@ -38,13 +38,13 @@ define("vs/bat-gO9qKzUo", ["exports"], (function(exports) {
     ],
     keywords: /call|defined|echo|errorlevel|exist|for|goto|if|pause|set|shift|start|title|not|pushd|popd/,
     // we include these common regular expressions
-    symbols: /[=><!~?&|+\-*\/\^;\.,]+/,
+    symbols: /[=><!~?&|+\-*/^;.,]+/,
     escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
     // The main tokenizer for our languages
     tokenizer: {
       root: [
         [/^(\s*)(rem(?:\s.*|))$/, ["", "comment"]],
-        [/(\@?)(@keywords)(?!\w)/, [{ token: "keyword" }, { token: "keyword.$2" }]],
+        [/(@?)(@keywords)(?!\w)/, [{ token: "keyword" }, { token: "keyword.$2" }]],
         // whitespace
         [/[ \t\r\n]+/, ""],
         // blocks
@@ -58,10 +58,10 @@ define("vs/bat-gO9qKzUo", ["exports"], (function(exports) {
         [/%[^%]+%/, "variable"],
         [/%%[\w]+(?!\w)/, "variable"],
         // punctuations
-        [/[{}()\[\]]/, "@brackets"],
+        [/[{}()[\]]/, "@brackets"],
         [/@symbols/, "delimiter"],
         // numbers
-        [/\d*\.\d+([eE][\-+]?\d+)?/, "number.float"],
+        [/\d*\.\d+([eE][-+]?\d+)?/, "number.float"],
         [/0[xX][0-9a-fA-F_]*[0-9a-fA-F]/, "number.hex"],
         [/\d+/, "number"],
         // punctuation: after number because of .\d floats

@@ -9,8 +9,8 @@ import logging
 import os
 import tempfile
 import uuid
+from datetime import UTC, datetime
 from pathlib import Path
-from datetime import datetime
 
 from tracertm.agent.types import (
     SandboxConfig,
@@ -26,7 +26,7 @@ def _get_base_dir() -> str:
     base = os.getenv("AGENT_SANDBOX_BASE_DIR", "").strip()
     if base:
         return base
-    return os.path.join(tempfile.gettempdir(), "tracertm_agent_sandboxes")
+    return str(Path(tempfile.gettempdir()) / "tracertm_agent_sandboxes")
 
 
 class LocalFilesystemSandboxProvider:
@@ -37,11 +37,9 @@ class LocalFilesystemSandboxProvider:
         self._metadata: dict[str, SandboxMetadata] = {}
 
     def _session_dir(self, session_id: str) -> str:
-        return os.path.join(self._base_dir, session_id)
+        return str(Path(self._base_dir) / session_id)
 
-    async def create_sandbox(
-        self, config: SandboxConfig, session_id: str
-    ) -> SandboxMetadata:
+    async def create_sandbox(self, config: SandboxConfig, session_id: str) -> SandboxMetadata:
         """Create a sandbox directory for the session. Reuses same path if already exists."""
         sandbox_id = session_id or str(uuid.uuid4())
         path = self._session_dir(sandbox_id)
@@ -51,8 +49,8 @@ class LocalFilesystemSandboxProvider:
         metadata = SandboxMetadata(
             sandbox_id=sandbox_id,
             status=SandboxStatus.READY,
-            created_at=datetime.utcnow(),
-            started_at=datetime.utcnow(),
+            created_at=datetime.now(UTC),
+            started_at=datetime.now(UTC),
             vcpus=config.vcpus,
             memory_mb=config.memory_mb,
             timeout_seconds=config.timeout_seconds,
@@ -62,9 +60,7 @@ class LocalFilesystemSandboxProvider:
         logger.debug("Local sandbox created: %s at %s", sandbox_id, path)
         return metadata
 
-    async def execute_command(
-        self, sandbox_id: str, command: str
-    ) -> dict:
+    async def execute_command(self, sandbox_id: str, command: str) -> dict:
         """Run command in the sandbox root. Returns dict with stdout, stderr, returncode.
 
         The command string is safely parsed into arguments using shlex to prevent
@@ -77,8 +73,9 @@ class LocalFilesystemSandboxProvider:
             raise ValueError(f"Sandbox has no root: {sandbox_id}")
 
         def run():
-            import subprocess
             import shlex
+            import subprocess  # noqa: S404
+
             # Safely parse command string into argument list without using shell=True
             try:
                 cmd_args = shlex.split(command)
@@ -86,10 +83,10 @@ class LocalFilesystemSandboxProvider:
                 # If parsing fails, return error
                 return {
                     "stdout": "",
-                    "stderr": f"Command parsing error: {str(e)}",
+                    "stderr": f"Command parsing error: {e!s}",
                     "returncode": 1,
                 }
-            result = subprocess.run(
+            result = subprocess.run(  # noqa: S603
                 cmd_args,
                 shell=False,
                 cwd=root,
@@ -105,9 +102,7 @@ class LocalFilesystemSandboxProvider:
 
         return await asyncio.to_thread(run)
 
-    async def write_file(
-        self, sandbox_id: str, path: str, content: str
-    ) -> dict:
+    async def write_file(self, sandbox_id: str, path: str, content: str) -> dict:
         """Write file under sandbox root. Path is relative to sandbox root."""
         if sandbox_id not in self._metadata:
             raise ValueError(f"Sandbox not found: {sandbox_id}")
@@ -116,7 +111,11 @@ class LocalFilesystemSandboxProvider:
             raise ValueError(f"Sandbox has no root: {sandbox_id}")
 
         full = Path(root) / path.lstrip("/")
-        if not str(full.resolve()).startswith(str(Path(root).resolve())):
+
+        def _path_escapes() -> bool:
+            return not str(full.resolve()).startswith(str(Path(root).resolve()))
+
+        if await asyncio.to_thread(_path_escapes):
             raise ValueError("Path escapes sandbox root")
 
         def do_write():
@@ -132,11 +131,12 @@ class LocalFilesystemSandboxProvider:
             return False
         metadata = self._metadata[sandbox_id]
         metadata.status = SandboxStatus.CLEANED
-        metadata.completed_at = datetime.utcnow()
+        metadata.completed_at = datetime.now(UTC)
         # Do not delete directory by default so chat/session can persist
         remove = os.getenv("AGENT_SANDBOX_CLEANUP_REMOVE_DIR", "").lower() in ("1", "true", "yes")
-        if remove and metadata.sandbox_root and os.path.isdir(metadata.sandbox_root):
-            await asyncio.to_thread(lambda: _rmtree_safe(metadata.sandbox_root))
+        root = metadata.sandbox_root
+        if remove and root is not None and await asyncio.to_thread(Path(root).is_dir):
+            await asyncio.to_thread(_rmtree_safe, root)
         del self._metadata[sandbox_id]
         logger.debug("Sandbox cleaned: %s", sandbox_id)
         return True
@@ -144,6 +144,7 @@ class LocalFilesystemSandboxProvider:
 
 def _rmtree_safe(path: str) -> None:
     import shutil
+
     try:
         shutil.rmtree(path, ignore_errors=True)
     except OSError:

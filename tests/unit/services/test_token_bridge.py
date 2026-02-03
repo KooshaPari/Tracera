@@ -1,8 +1,6 @@
 """Tests for token bridge service."""
 
-import os
-import time
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import jwt
 import pytest
@@ -11,6 +9,7 @@ from jwt import PyJWKClient
 from tracertm.services.token_bridge import TokenBridge, get_token_bridge
 
 TEST_SECRET = "test-secret-must-be-at-least-32-bytes-long-for-security"
+_TEST_WRONG_SECRET = "different-secret-at-least-32-bytes-long-for-tests"
 TEST_JWKS_URL = "https://api.workos.com/sso/jwks/client_test"
 
 
@@ -96,8 +95,8 @@ class TestCreateBridgeToken:
         )
 
         # Check expiry is ~5 minutes from now
-        exp = datetime.fromtimestamp(decoded["exp"], tz=timezone.utc)
-        now = datetime.now(timezone.utc)
+        exp = datetime.fromtimestamp(decoded["exp"], tz=UTC)
+        now = datetime.now(UTC)
         expires_in = (exp - now).total_seconds()
 
         assert 290 < expires_in < 310  # 5 min ± 10 sec tolerance
@@ -117,8 +116,8 @@ class TestCreateBridgeToken:
             options={"verify_signature": True, "verify_exp": False},
         )
 
-        exp = datetime.fromtimestamp(decoded["exp"], tz=timezone.utc)
-        now = datetime.now(timezone.utc)
+        exp = datetime.fromtimestamp(decoded["exp"], tz=UTC)
+        now = datetime.now(UTC)
         expires_in = (exp - now).total_seconds()
 
         assert 590 < expires_in < 610  # 10 min ± 10 sec
@@ -138,14 +137,14 @@ class TestValidateHS256Token:
 
     def test_wrong_secret(self, token_bridge):
         """Test that wrong secret fails validation."""
-        # Create token with different secret
-        wrong_secret = "different-secret-at-least-32-bytes-long-for-tests"
+        # Create token with different secret (test-only, not a real credential)
+        wrong_secret = _TEST_WRONG_SECRET
         wrong_token = jwt.encode(
             {
                 "sub": "user_123",
                 "org_id": "org_456",
                 "type": "service",
-                "exp": datetime.now(timezone.utc) + timedelta(minutes=5),
+                "exp": datetime.now(UTC) + timedelta(minutes=5),
             },
             wrong_secret,
             algorithm="HS256",
@@ -162,8 +161,8 @@ class TestValidateHS256Token:
                 "sub": "user_123",
                 "org_id": "org_456",
                 "type": "service",
-                "exp": datetime.now(timezone.utc) - timedelta(minutes=1),
-                "iat": datetime.now(timezone.utc) - timedelta(minutes=10),
+                "exp": datetime.now(UTC) - timedelta(minutes=1),
+                "iat": datetime.now(UTC) - timedelta(minutes=10),
             },
             TEST_SECRET,
             algorithm="HS256",
@@ -179,7 +178,7 @@ class TestValidateHS256Token:
             {
                 "sub": "user_123",
                 "org_id": "org_456",
-                "exp": datetime.now(timezone.utc) + timedelta(minutes=5),
+                "exp": datetime.now(UTC) + timedelta(minutes=5),
             },
             TEST_SECRET,
             algorithm="HS256",
@@ -319,7 +318,7 @@ class TestTokenBridgeIntegration:
                 "sub": "user_123",
                 "org_id": "org_456",
                 "type": "service",
-                "exp": datetime.now(timezone.utc) - timedelta(seconds=1),
+                "exp": datetime.now(UTC) - timedelta(seconds=1),
             },
             TEST_SECRET,
             algorithm="HS256",

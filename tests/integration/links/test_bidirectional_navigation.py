@@ -4,8 +4,8 @@ Integration tests for Epic 4: Bidirectional link navigation (FR19).
 Tests that users can navigate bidirectionally through links.
 """
 
-
 import pytest
+
 pytestmark = pytest.mark.integration
 from typer.testing import CliRunner
 

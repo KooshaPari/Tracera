@@ -1287,7 +1287,7 @@ Prism.languages.markup = {
 		greedy: true,
 		inside: {
 			'internal-subset': {
-				pattern: /(^[^\[]*\[)[\s\S]+(?=\]>$)/,
+				pattern: /(^[^[]*\[)[\s\S]+(?=\]>$)/,
 				lookbehind: true,
 				greedy: true,
 				inside: null // see below
@@ -1306,14 +1306,14 @@ Prism.languages.markup = {
 		greedy: true
 	},
 	'tag': {
-		pattern: /<\/?(?!\d)[^\s>\/=$<%]+(?:\s(?:\s*[^\s>\/=]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s'">=]+(?=[\s>]))|(?=[\s/>])))+)?\s*\/?>/,
+		pattern: /<\/?(?!\d)[^\s>/=$<%]+(?:\s(?:\s*[^\s>/=]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s'">=]+(?=[\s>]))|(?=[\s/>])))+)?\s*\/?>/,
 		greedy: true,
 		inside: {
 			'tag': {
-				pattern: /^<\/?[^\s>\/]+/,
+				pattern: /^<\/?[^\s>/]+/,
 				inside: {
 					'punctuation': /^<\/?/,
-					'namespace': /^[^\s>\/:]+:/
+					'namespace': /^[^\s>/:]+:/
 				}
 			},
 			'special-attr': [],
@@ -1334,9 +1334,9 @@ Prism.languages.markup = {
 			},
 			'punctuation': /\/?>/,
 			'attr-name': {
-				pattern: /[^\s>\/]+/,
+				pattern: /[^\s>/]+/,
 				inside: {
-					'namespace': /^[^\s>\/:]+:/
+					'namespace': /^[^\s>/:]+:/
 				}
 			}
 
@@ -1585,7 +1585,7 @@ Prism.languages.javascript = Prism.languages.extend('clike', {
 			lookbehind: true
 		},
 		{
-			pattern: /(^|[^.]|\.\.\.\s*)\b(?:as|assert(?=\s*\{)|async(?=\s*(?:function\b|\(|[$\w\xA0-\uFFFF]|$))|await|break|case|class|const|continue|debugger|default|delete|do|else|enum|export|extends|finally(?=\s*(?:\{|$))|for|from(?=\s*(?:['"]|$))|function|(?:get|set)(?=\s*(?:[#\[$\w\xA0-\uFFFF]|$))|if|implements|import|in|instanceof|interface|let|new|null|of|package|private|protected|public|return|static|super|switch|this|throw|try|typeof|undefined|var|void|while|with|yield)\b/,
+			pattern: /(^|[^.]|\.\.\.\s*)\b(?:as|assert(?=\s*\{)|async(?=\s*(?:function\b|\(|[$\w\xA0-\uFFFF]|$))|await|break|case|class|const|continue|debugger|default|delete|do|else|enum|export|extends|finally(?=\s*(?:\{|$))|for|from(?=\s*(?:['"]|$))|function|(?:get|set)(?=\s*(?:[#[$\w\xA0-\uFFFF]|$))|if|implements|import|in|instanceof|interface|let|new|null|of|package|private|protected|public|return|static|super|switch|this|throw|try|typeof|undefined|var|void|while|with|yield)\b/,
 			lookbehind: true
 		},
 	],
@@ -1636,10 +1636,10 @@ Prism.languages.insertBefore('javascript', 'keyword', {
 			// with the only syntax, so we have to define 2 different regex patterns.
 			/\//.source +
 			'(?:' +
-			/(?:\[(?:[^\]\\\r\n]|\\.)*\]|\\.|[^/\\\[\r\n])+\/[dgimyus]{0,7}/.source +
+			/(?:\[(?:[^\]\\\r\n]|\\.)*\]|\\.|[^/\\[\r\n])+\/[dgimyus]{0,7}/.source +
 			'|' +
 			// `v` flag syntax. This supports 3 levels of nested character classes.
-			/(?:\[(?:[^[\]\\\r\n]|\\.|\[(?:[^[\]\\\r\n]|\\.|\[(?:[^[\]\\\r\n]|\\.)*\])*\])*\]|\\.|[^/\\\[\r\n])+\/[dgimyus]{0,7}v[dgimyus]{0,7}/.source +
+			/(?:\[(?:[^[\]\\\r\n]|\\.|\[(?:[^[\]\\\r\n]|\\.|\[(?:[^[\]\\\r\n]|\\.)*\])*\])*\]|\\.|[^/\\[\r\n])+\/[dgimyus]{0,7}v[dgimyus]{0,7}/.source +
 			')' +
 			// lookahead
 			/(?=(?:\s|\/\*(?:[^*]|\*(?!\/))*\*\/)*(?:$|[\r\n,.;:})\]]|\/\/))/.source

@@ -1,0 +1,16 @@
+pyproject.toml: [mypy]: Unrecognized option: strict_concatenation = True
+You must install the lxml package before you can run mypy with `--txt-report`.
+You can do this with `python3 -m pip install lxml`.
+Traceback (most recent call last):
+  File "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/.venv/bin/mypy", line 10, in <module>
+    sys.exit(console_entry())
+             ^^^^^^^^^^^^^^^
+  File "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/.venv/lib/python3.12/site-packages/mypy/__main__.py", line 15, in console_entry
+    main()
+  File "mypy/main.py", line 135, in main
+  File "mypy/main.py", line 219, in run_build
+  File "mypy/build.py", line 222, in build
+  File "mypy/build.py", line 263, in _build
+  File "mypy/report.py", line 61, in __init__
+  File "mypy/report.py", line 78, in add_report
+ImportError

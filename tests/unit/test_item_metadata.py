@@ -1,4 +1,5 @@
 """Tests for item metadata operations."""
+
 import uuid
 from unittest.mock import AsyncMock
 
@@ -30,16 +31,8 @@ class TestItemMetadata:
         item_id = str(uuid.uuid4())
         agent_id = "test-agent"
 
-        existing_item = Item(
-            id=item_id,
-            item_metadata={"existing": "value"},
-            version=1
-        )
-        updated_item = Item(
-            id=item_id,
-            item_metadata={"existing": "value", "new": "data"},
-            version=2
-        )
+        existing_item = Item(id=item_id, item_metadata={"existing": "value"}, version=1)
+        updated_item = Item(id=item_id, item_metadata={"existing": "value", "new": "data"}, version=2)
 
         item_service.items.get_by_id = AsyncMock(return_value=existing_item)
         item_service.items.update = AsyncMock(return_value=updated_item)
@@ -47,18 +40,13 @@ class TestItemMetadata:
         item_service.events.log = AsyncMock()
 
         # Execute
-        result = await item_service.update_metadata(
-            item_id,
-            agent_id,
-            {"new": "data"},
-            merge=True
-        )
+        result = await item_service.update_metadata(item_id, agent_id, {"new": "data"}, merge=True)
 
         # Verify
         assert result.item_metadata["new"] == "data"
         item_service.items.update.assert_called_once()
         call_args = item_service.items.update.call_args.kwargs
-        assert call_args['item_metadata'] == {"existing": "value", "new": "data"}
+        assert call_args["item_metadata"] == {"existing": "value", "new": "data"}
 
     async def test_replace_metadata(self, item_service, mock_session):
         """Test replacing metadata (no merge)."""
@@ -66,16 +54,8 @@ class TestItemMetadata:
         item_id = str(uuid.uuid4())
         agent_id = "test-agent"
 
-        existing_item = Item(
-            id=item_id,
-            item_metadata={"existing": "value"},
-            version=1
-        )
-        updated_item = Item(
-            id=item_id,
-            item_metadata={"replaced": "true"},
-            version=2
-        )
+        existing_item = Item(id=item_id, item_metadata={"existing": "value"}, version=1)
+        updated_item = Item(id=item_id, item_metadata={"replaced": "true"}, version=2)
 
         item_service.items.get_by_id = AsyncMock(return_value=existing_item)
         item_service.items.update = AsyncMock(return_value=updated_item)
@@ -83,15 +63,10 @@ class TestItemMetadata:
         item_service.events.log = AsyncMock()
 
         # Execute
-        result = await item_service.update_metadata(
-            item_id,
-            agent_id,
-            {"replaced": "true"},
-            merge=False
-        )
+        result = await item_service.update_metadata(item_id, agent_id, {"replaced": "true"}, merge=False)
 
         # Verify
         assert result.item_metadata["replaced"] == "true"
         item_service.items.update.assert_called_once()
         call_args = item_service.items.update.call_args.kwargs
-        assert call_args['item_metadata'] == {"replaced": "true"}
+        assert call_args["item_metadata"] == {"replaced": "true"}

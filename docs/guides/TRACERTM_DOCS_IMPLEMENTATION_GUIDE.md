@@ -20,7 +20,7 @@ All documentation structure files are in the project root:
 
 The file that needs to be updated is currently a client component:
 ```
-/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/docs-site/app/docs/[[...slug]]/page.tsx
+/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/docs/site/app/docs/[[...slug]]/page.tsx
 ```
 
 **Note**: The file appears to have been modified and is now using `'use client'`. You may need to convert back to a server component or adjust the approach.
@@ -111,7 +111,7 @@ Replace the existing `DOCS_STRUCTURE` constant in `page.tsx` with your merged st
 
 Start the development server:
 ```bash
-cd /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/docs-site
+cd /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/docs/site
 bun run dev
 ```
 
@@ -129,7 +129,7 @@ Create a script to generate all needed directories:
 #!/bin/bash
 # generate-docs-structure.sh
 
-BASE_DIR="/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/docs-site/content/docs"
+BASE_DIR="/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/docs/site/content/docs"
 
 # Function to create directory structure from paths
 create_structure() {

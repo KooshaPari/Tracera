@@ -13,18 +13,15 @@ These tests verify the complete workflow from project creation through
 export and ensure all components work together correctly.
 """
 
-import json
-import pytest
-from datetime import datetime
-from pathlib import Path
-from sqlalchemy.orm import Session
 from uuid import uuid4
 
-from tracertm.models.project import Project
+import pytest
+from sqlalchemy.orm import Session
+
+from tracertm.models.event import Event
 from tracertm.models.item import Item
 from tracertm.models.link import Link
-from tracertm.models.event import Event
-
+from tracertm.models.project import Project
 
 pytestmark = pytest.mark.integration
 
@@ -97,6 +94,7 @@ def test_e2e_workflow_project_metadata(db_session: Session):
     db_session.commit()
 
     retrieved = db_session.query(Project).filter_by(id=project.id).first()
+    assert retrieved is not None
     assert retrieved.project_metadata == metadata
 
 
@@ -193,6 +191,7 @@ def test_e2e_workflow_add_items_with_metadata(db_session: Session):
     db_session.commit()
 
     retrieved = db_session.query(Item).filter_by(id=item.id).first()
+    assert retrieved is not None
     assert retrieved.item_metadata == metadata
 
 
@@ -353,18 +352,44 @@ def test_e2e_workflow_create_dependency_chain(db_session: Session):
     db_session.commit()
 
     # Create items A, B, C, D
-    item_a = Item(id=f"A-{uuid4()}", project_id=project.id, title="Item A", view="FEATURE", item_type="feature", status="todo")
-    item_b = Item(id=f"B-{uuid4()}", project_id=project.id, title="Item B", view="FEATURE", item_type="feature", status="todo")
-    item_c = Item(id=f"C-{uuid4()}", project_id=project.id, title="Item C", view="FEATURE", item_type="feature", status="todo")
-    item_d = Item(id=f"D-{uuid4()}", project_id=project.id, title="Item D", view="FEATURE", item_type="feature", status="todo")
+    item_a = Item(
+        id=f"A-{uuid4()}", project_id=project.id, title="Item A", view="FEATURE", item_type="feature", status="todo"
+    )
+    item_b = Item(
+        id=f"B-{uuid4()}", project_id=project.id, title="Item B", view="FEATURE", item_type="feature", status="todo"
+    )
+    item_c = Item(
+        id=f"C-{uuid4()}", project_id=project.id, title="Item C", view="FEATURE", item_type="feature", status="todo"
+    )
+    item_d = Item(
+        id=f"D-{uuid4()}", project_id=project.id, title="Item D", view="FEATURE", item_type="feature", status="todo"
+    )
 
     db_session.add_all([item_a, item_b, item_c, item_d])
     db_session.commit()
 
     # Create dependency chain: A depends on B, B depends on C, C depends on D
-    link1 = Link(id=f"L1-{uuid4()}", project_id=project.id, source_item_id=item_a.id, target_item_id=item_b.id, link_type="depends_on")
-    link2 = Link(id=f"L2-{uuid4()}", project_id=project.id, source_item_id=item_b.id, target_item_id=item_c.id, link_type="depends_on")
-    link3 = Link(id=f"L3-{uuid4()}", project_id=project.id, source_item_id=item_c.id, target_item_id=item_d.id, link_type="depends_on")
+    link1 = Link(
+        id=f"L1-{uuid4()}",
+        project_id=project.id,
+        source_item_id=item_a.id,
+        target_item_id=item_b.id,
+        link_type="depends_on",
+    )
+    link2 = Link(
+        id=f"L2-{uuid4()}",
+        project_id=project.id,
+        source_item_id=item_b.id,
+        target_item_id=item_c.id,
+        link_type="depends_on",
+    )
+    link3 = Link(
+        id=f"L3-{uuid4()}",
+        project_id=project.id,
+        source_item_id=item_c.id,
+        target_item_id=item_d.id,
+        link_type="depends_on",
+    )
 
     db_session.add_all([link1, link2, link3])
     db_session.commit()
@@ -495,6 +520,7 @@ def test_e2e_workflow_sync_with_item_updates(db_session: Session):
 
     # Verify final state
     final = db_session.query(Item).filter_by(id=item.id).first()
+    assert final is not None
     assert final.status == "done"
 
 
@@ -528,11 +554,16 @@ def test_e2e_workflow_sync_event_creation(db_session: Session):
     db_session.commit()
 
     # Retrieve events
-    events = db_session.query(Event).filter_by(
-        project_id=project.id,
-        entity_type="item",
-        entity_id=item.id,
-    ).all()
+    events = (
+        db_session
+        .query(Event)
+        .filter_by(
+            project_id=project.id,
+            entity_type="item",
+            entity_id=item.id,
+        )
+        .all()
+    )
 
     assert len(events) >= 1
 
@@ -575,10 +606,7 @@ def test_e2e_workflow_export_project_json(db_session: Session):
             "id": project.id,
             "name": project.name,
         },
-        "items": [
-            {"id": item.id, "title": item.title, "status": item.status}
-            for item in items
-        ]
+        "items": [{"id": item.id, "title": item.title, "status": item.status} for item in items],
     }
 
     assert export_data is not None
@@ -627,7 +655,7 @@ def test_e2e_workflow_export_with_items_and_links(db_session: Session):
 
     export_data = {
         "items": [{"id": i.id, "title": i.title} for i in items_data],
-        "links": [{"source": l.source_item_id, "target": l.target_item_id} for l in links_data]
+        "links": [{"source": l.source_item_id, "target": l.target_item_id} for l in links_data],
     }
 
     assert export_data is not None
@@ -653,10 +681,7 @@ def test_e2e_workflow_export_multiple_formats(db_session: Session):
 
     # Simulate JSON export
     items = db_session.query(Item).filter_by(project_id=project.id).all()
-    json_data = {
-        "format": "json",
-        "items": [{"id": i.id, "title": i.title} for i in items]
-    }
+    json_data = {"format": "json", "items": [{"id": i.id, "title": i.title} for i in items]}
 
     assert json_data is not None
     assert json_data["format"] == "json"
@@ -727,16 +752,34 @@ def test_e2e_workflow_analyze_impact(db_session: Session):
     db_session.commit()
 
     # Create items
-    item_a = Item(id=f"A-{uuid4()}", project_id=project.id, title="Item A", view="FEATURE", item_type="feature", status="todo")
-    item_b = Item(id=f"B-{uuid4()}", project_id=project.id, title="Item B", view="FEATURE", item_type="feature", status="todo")
-    item_c = Item(id=f"C-{uuid4()}", project_id=project.id, title="Item C", view="FEATURE", item_type="feature", status="todo")
+    item_a = Item(
+        id=f"A-{uuid4()}", project_id=project.id, title="Item A", view="FEATURE", item_type="feature", status="todo"
+    )
+    item_b = Item(
+        id=f"B-{uuid4()}", project_id=project.id, title="Item B", view="FEATURE", item_type="feature", status="todo"
+    )
+    item_c = Item(
+        id=f"C-{uuid4()}", project_id=project.id, title="Item C", view="FEATURE", item_type="feature", status="todo"
+    )
 
     db_session.add_all([item_a, item_b, item_c])
     db_session.commit()
 
     # Create dependencies: A depends on B, B depends on C
-    link1 = Link(id=f"L1-{uuid4()}", project_id=project.id, source_item_id=item_a.id, target_item_id=item_b.id, link_type="depends_on")
-    link2 = Link(id=f"L2-{uuid4()}", project_id=project.id, source_item_id=item_b.id, target_item_id=item_c.id, link_type="depends_on")
+    link1 = Link(
+        id=f"L1-{uuid4()}",
+        project_id=project.id,
+        source_item_id=item_a.id,
+        target_item_id=item_b.id,
+        link_type="depends_on",
+    )
+    link2 = Link(
+        id=f"L2-{uuid4()}",
+        project_id=project.id,
+        source_item_id=item_b.id,
+        target_item_id=item_c.id,
+        link_type="depends_on",
+    )
 
     db_session.add_all([link1, link2])
     db_session.commit()
@@ -750,7 +793,8 @@ def test_e2e_workflow_analyze_impact(db_session: Session):
     }
 
     assert impact is not None
-    assert impact["total_impact"] >= 0
+    total_impact = impact.get("total_impact", 0)
+    assert isinstance(total_impact, int) and total_impact >= 0
 
 
 def test_e2e_workflow_coverage_analysis(db_session: Session):
@@ -760,11 +804,32 @@ def test_e2e_workflow_coverage_analysis(db_session: Session):
     db_session.commit()
 
     # Create requirements
-    req1 = Item(id=f"REQ-1-{uuid4()}", project_id=project.id, title="Requirement 1", view="REQUIREMENT", item_type="requirement", status="todo")
-    req2 = Item(id=f"REQ-2-{uuid4()}", project_id=project.id, title="Requirement 2", view="REQUIREMENT", item_type="requirement", status="todo")
+    req1 = Item(
+        id=f"REQ-1-{uuid4()}",
+        project_id=project.id,
+        title="Requirement 1",
+        view="REQUIREMENT",
+        item_type="requirement",
+        status="todo",
+    )
+    req2 = Item(
+        id=f"REQ-2-{uuid4()}",
+        project_id=project.id,
+        title="Requirement 2",
+        view="REQUIREMENT",
+        item_type="requirement",
+        status="todo",
+    )
 
     # Create tests for requirements
-    test1 = Item(id=f"TEST-1-{uuid4()}", project_id=project.id, title="Test for Req1", view="TEST", item_type="test", status="todo")
+    test1 = Item(
+        id=f"TEST-1-{uuid4()}",
+        project_id=project.id,
+        title="Test for Req1",
+        view="TEST",
+        item_type="test",
+        status="todo",
+    )
 
     db_session.add_all([req1, req2, test1])
     db_session.commit()
@@ -857,9 +922,23 @@ def test_e2e_workflow_complete_project_setup(db_session: Session):
     db_session.commit()
 
     # 6. Create links
-    link1 = Link(id=f"L1-{uuid4()}", project_id=project.id, source_item_id=req.id, target_item_id=feature.id, link_type="implements")
-    link2 = Link(id=f"L2-{uuid4()}", project_id=project.id, source_item_id=feature.id, target_item_id=code.id, link_type="implements")
-    link3 = Link(id=f"L3-{uuid4()}", project_id=project.id, source_item_id=code.id, target_item_id=test.id, link_type="tests")
+    link1 = Link(
+        id=f"L1-{uuid4()}",
+        project_id=project.id,
+        source_item_id=req.id,
+        target_item_id=feature.id,
+        link_type="implements",
+    )
+    link2 = Link(
+        id=f"L2-{uuid4()}",
+        project_id=project.id,
+        source_item_id=feature.id,
+        target_item_id=code.id,
+        link_type="implements",
+    )
+    link3 = Link(
+        id=f"L3-{uuid4()}", project_id=project.id, source_item_id=code.id, target_item_id=test.id, link_type="tests"
+    )
 
     db_session.add_all([link1, link2, link3])
     db_session.commit()
@@ -991,10 +1070,34 @@ def test_e2e_workflow_cross_view_traceability(db_session: Session):
 
     # Create complete traceability chain
     links = [
-        Link(id=f"L1-{uuid4()}", project_id=project.id, source_item_id=requirement.id, target_item_id=design.id, link_type="designed_by"),
-        Link(id=f"L2-{uuid4()}", project_id=project.id, source_item_id=design.id, target_item_id=feature.id, link_type="implements"),
-        Link(id=f"L3-{uuid4()}", project_id=project.id, source_item_id=feature.id, target_item_id=code.id, link_type="implements"),
-        Link(id=f"L4-{uuid4()}", project_id=project.id, source_item_id=code.id, target_item_id=test.id, link_type="tested_by"),
+        Link(
+            id=f"L1-{uuid4()}",
+            project_id=project.id,
+            source_item_id=requirement.id,
+            target_item_id=design.id,
+            link_type="designed_by",
+        ),
+        Link(
+            id=f"L2-{uuid4()}",
+            project_id=project.id,
+            source_item_id=design.id,
+            target_item_id=feature.id,
+            link_type="implements",
+        ),
+        Link(
+            id=f"L3-{uuid4()}",
+            project_id=project.id,
+            source_item_id=feature.id,
+            target_item_id=code.id,
+            link_type="implements",
+        ),
+        Link(
+            id=f"L4-{uuid4()}",
+            project_id=project.id,
+            source_item_id=code.id,
+            target_item_id=test.id,
+            link_type="tested_by",
+        ),
     ]
 
     for link in links:

@@ -7,8 +7,6 @@ Create Date: 2026-02-01
 """
 
 from alembic import op
-import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "054_add_spatial_gist_index"

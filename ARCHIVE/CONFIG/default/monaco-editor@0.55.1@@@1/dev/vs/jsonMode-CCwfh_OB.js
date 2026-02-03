@@ -890,7 +890,7 @@ define("vs/jsonMode-CCwfh_OB", ["module", "exports", "./workers-p6mTW5Va", "./ls
     }
   }
   const richEditConfiguration = {
-    wordPattern: /(-?\d*\.\d\w*)|([^\[\{\]\}\:\"\,\s]+)/g,
+    wordPattern: /(-?\d*\.\d\w*)|([^[{\]}:",\s]+)/g,
     comments: {
       lineComment: "//",
       blockComment: ["/*", "*/"]

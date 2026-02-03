@@ -8,12 +8,11 @@ This module provides MCP-style tools that the AI can use:
 
 import asyncio
 import fnmatch
-import json
 import logging
 import os
+import pathlib
 import re
-import subprocess
-from pathlib import Path
+import subprocess  # noqa: S404
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -362,13 +361,48 @@ BLOCKED_COMMANDS = [
 
 # Binary file extensions to skip during search
 BINARY_EXTENSIONS = {
-    ".pyc", ".pyo", ".so", ".dylib", ".dll", ".exe", ".bin",
-    ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".ico", ".svg",
-    ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
-    ".zip", ".tar", ".gz", ".bz2", ".xz", ".7z", ".rar",
-    ".mp3", ".mp4", ".avi", ".mov", ".wav", ".flac",
-    ".woff", ".woff2", ".ttf", ".eot", ".otf",
-    ".sqlite", ".db", ".sqlite3",
+    ".pyc",
+    ".pyo",
+    ".so",
+    ".dylib",
+    ".dll",
+    ".exe",
+    ".bin",
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".gif",
+    ".bmp",
+    ".ico",
+    ".svg",
+    ".pdf",
+    ".doc",
+    ".docx",
+    ".xls",
+    ".xlsx",
+    ".ppt",
+    ".pptx",
+    ".zip",
+    ".tar",
+    ".gz",
+    ".bz2",
+    ".xz",
+    ".7z",
+    ".rar",
+    ".mp3",
+    ".mp4",
+    ".avi",
+    ".mov",
+    ".wav",
+    ".flac",
+    ".woff",
+    ".woff2",
+    ".ttf",
+    ".eot",
+    ".otf",
+    ".sqlite",
+    ".db",
+    ".sqlite3",
 }
 
 # Maximum file size to read (10MB)
@@ -381,7 +415,7 @@ MAX_OUTPUT_SIZE = 1 * 1024 * 1024
 def set_allowed_paths(paths: list[str]) -> None:
     """Configure allowed paths for filesystem operations."""
     global ALLOWED_PATHS
-    ALLOWED_PATHS = [os.path.abspath(p) for p in paths]
+    ALLOWED_PATHS = [pathlib.Path(p).resolve() for p in paths]
 
 
 def is_path_allowed(path: str) -> bool:
@@ -394,7 +428,7 @@ def is_path_allowed(path: str) -> bool:
 
     # Resolve symlinks to prevent symlink-based attacks
     try:
-        real_path = os.path.realpath(path)
+        real_path = pathlib.Path(path).resolve()
     except (OSError, ValueError):
         return False
 
@@ -403,7 +437,7 @@ def is_path_allowed(path: str) -> bool:
 
 def is_binary_file(filepath: str) -> bool:
     """Check if a file is likely binary based on extension."""
-    _, ext = os.path.splitext(filepath.lower())
+    ext = pathlib.Path(filepath).suffix.lower()
     return ext in BINARY_EXTENSIONS
 
 
@@ -416,6 +450,7 @@ def is_command_safe(command: str) -> bool:
 # =============================================================================
 # Tool Executors
 # =============================================================================
+
 
 async def execute_tool(
     tool_name: str,
@@ -436,45 +471,44 @@ async def execute_tool(
     """
     try:
         if tool_name == "read_file":
-            return await _read_file(tool_input, working_directory)
-        elif tool_name == "write_file":
-            return await _write_file(tool_input, working_directory)
-        elif tool_name == "edit_file":
-            return await _edit_file(tool_input, working_directory)
-        elif tool_name == "list_directory":
-            return await _list_directory(tool_input, working_directory)
-        elif tool_name == "search_files":
-            return await _search_files(tool_input, working_directory)
-        elif tool_name == "run_command":
+            return _read_file(tool_input, working_directory)
+        if tool_name == "write_file":
+            return _write_file(tool_input, working_directory)
+        if tool_name == "edit_file":
+            return _edit_file(tool_input, working_directory)
+        if tool_name == "list_directory":
+            return _list_directory(tool_input, working_directory)
+        if tool_name == "search_files":
+            return _search_files(tool_input, working_directory)
+        if tool_name == "run_command":
             return await _run_command(tool_input, working_directory)
-        elif tool_name.startswith("tracertm_"):
+        if tool_name.startswith("tracertm_"):
             return await _execute_tracertm_tool(tool_name, tool_input, db_session)
-        else:
-            return {"success": False, "error": f"Unknown tool: {tool_name}"}
+        return {"success": False, "error": f"Unknown tool: {tool_name}"}
     except Exception as e:
         logger.error(f"Tool execution error: {tool_name}: {e}", exc_info=True)
         return {"success": False, "error": str(e)}
 
 
-async def _read_file(params: dict, base_dir: str | None) -> dict:
+def _read_file(params: dict, base_dir: str | None) -> dict:
     """Read file contents."""
     path = params["path"]
-    if base_dir and not os.path.isabs(path):
-        path = os.path.join(base_dir, path)
+    if base_dir and not pathlib.Path(path).is_absolute():
+        path = pathlib.Path(base_dir) / path
 
-    if not is_path_allowed(path):
+    if not is_path_allowed(str(path)):
         return {"success": False, "error": f"Access denied: {path}"}
 
-    if not os.path.exists(path):
+    if not path.exists():
         return {"success": False, "error": f"File not found: {path}"}
 
-    if os.path.getsize(path) > MAX_FILE_SIZE:
+    if path.stat().st_size > MAX_FILE_SIZE:
         return {"success": False, "error": f"File too large: {path}"}
 
     offset = params.get("offset", 1) - 1  # Convert to 0-indexed
     limit = params.get("limit", 500)
 
-    with open(path, "r", encoding="utf-8", errors="replace") as f:
+    with path.open(encoding="utf-8", errors="replace") as f:
         lines = f.readlines()
 
     if offset > 0:
@@ -483,10 +517,7 @@ async def _read_file(params: dict, base_dir: str | None) -> dict:
         lines = lines[:limit]
 
     # Add line numbers
-    numbered_lines = [
-        f"{i + offset + 1:>6}\t{line.rstrip()}"
-        for i, line in enumerate(lines)
-    ]
+    numbered_lines = [f"{i + offset + 1:>6}\t{line.rstrip()}" for i, line in enumerate(lines)]
 
     return {
         "success": True,
@@ -498,21 +529,21 @@ async def _read_file(params: dict, base_dir: str | None) -> dict:
     }
 
 
-async def _write_file(params: dict, base_dir: str | None) -> dict:
+def _write_file(params: dict, base_dir: str | None) -> dict:
     """Write content to file."""
-    path = params["path"]
+    path = pathlib.Path(params["path"])
     content = params["content"]
 
-    if base_dir and not os.path.isabs(path):
-        path = os.path.join(base_dir, path)
+    if base_dir and not path.is_absolute():
+        path = pathlib.Path(base_dir) / path
 
-    if not is_path_allowed(path):
+    if not is_path_allowed(str(path)):
         return {"success": False, "error": f"Access denied: {path}"}
 
     # Create parent directories if needed
-    os.makedirs(os.path.dirname(path), exist_ok=True)
+    path.parent.mkdir(exist_ok=True, parents=True)
 
-    with open(path, "w", encoding="utf-8") as f:
+    with path.open("w", encoding="utf-8") as f:
         f.write(content)
 
     return {
@@ -521,22 +552,22 @@ async def _write_file(params: dict, base_dir: str | None) -> dict:
     }
 
 
-async def _edit_file(params: dict, base_dir: str | None) -> dict:
+def _edit_file(params: dict, base_dir: str | None) -> dict:
     """Edit file by replacing a string."""
-    path = params["path"]
+    path = pathlib.Path(params["path"])
     old_string = params["old_string"]
     new_string = params["new_string"]
 
-    if base_dir and not os.path.isabs(path):
-        path = os.path.join(base_dir, path)
+    if base_dir and not path.is_absolute():
+        path = pathlib.Path(base_dir) / path
 
-    if not is_path_allowed(path):
+    if not is_path_allowed(str(path)):
         return {"success": False, "error": f"Access denied: {path}"}
 
-    if not os.path.exists(path):
+    if not path.exists():
         return {"success": False, "error": f"File not found: {path}"}
 
-    with open(path, "r", encoding="utf-8") as f:
+    with path.open(encoding="utf-8") as f:
         content = f.read()
 
     count = content.count(old_string)
@@ -547,7 +578,7 @@ async def _edit_file(params: dict, base_dir: str | None) -> dict:
 
     new_content = content.replace(old_string, new_string, 1)
 
-    with open(path, "w", encoding="utf-8") as f:
+    with path.open("w", encoding="utf-8") as f:
         f.write(new_content)
 
     return {
@@ -556,19 +587,19 @@ async def _edit_file(params: dict, base_dir: str | None) -> dict:
     }
 
 
-async def _list_directory(params: dict, base_dir: str | None) -> dict:
+def _list_directory(params: dict, base_dir: str | None) -> dict:
     """List directory contents."""
-    path = params.get("path", base_dir or ".")
+    path = pathlib.Path(params.get("path", base_dir or "."))
     pattern = params.get("pattern", "*")
     recursive = params.get("recursive", False)
 
-    if base_dir and not os.path.isabs(path):
-        path = os.path.join(base_dir, path)
+    if base_dir and not path.is_absolute():
+        path = pathlib.Path(base_dir) / path
 
-    if not is_path_allowed(path):
+    if not is_path_allowed(str(path)):
         return {"success": False, "error": f"Access denied: {path}"}
 
-    if not os.path.exists(path):
+    if not path.exists():
         return {"success": False, "error": f"Directory not found: {path}"}
 
     results = []
@@ -579,27 +610,26 @@ async def _list_directory(params: dict, base_dir: str | None) -> dict:
         for root, dirs, files in os.walk(path):
             # Filter out hidden and common ignore directories
             dirs[:] = [d for d in dirs if not d.startswith(".") and d not in skip_dirs]
-            for name in files + dirs:
-                full_path = os.path.join(root, name)
-                rel_path = os.path.relpath(full_path, path)
-                if fnmatch.fnmatch(name, pattern):
-                    is_dir = os.path.isdir(full_path)
-                    results.append({
-                        "path": rel_path,
-                        "type": "directory" if is_dir else "file",
-                    })
+            root_path = pathlib.Path(root)
+            results.extend([
+                {
+                    "path": (root_path / name).relative_to(path),
+                    "type": "directory" if (root_path / name).is_dir() else "file",
+                }
+                for name in files + dirs
+                if fnmatch.fnmatch(name, pattern)
+            ])
             if len(results) > 1000:
                 break
     else:
         # Use scandir for better performance (avoids extra stat calls)
         try:
             with os.scandir(path) as entries:
-                for entry in entries:
-                    if fnmatch.fnmatch(entry.name, pattern):
-                        results.append({
-                            "path": entry.name,
-                            "type": "directory" if entry.is_dir() else "file",
-                        })
+                results.extend([
+                    {"path": entry.name, "type": "directory" if entry.is_dir() else "file"}
+                    for entry in entries
+                    if fnmatch.fnmatch(entry.name, pattern)
+                ])
         except PermissionError:
             return {"success": False, "error": f"Permission denied: {path}"}
 
@@ -609,18 +639,18 @@ async def _list_directory(params: dict, base_dir: str | None) -> dict:
     }
 
 
-async def _search_files(params: dict, base_dir: str | None) -> dict:
+def _search_files(params: dict, base_dir: str | None) -> dict:
     """Search for pattern in files."""
     pattern = params["pattern"]
-    path = params.get("path", base_dir or ".")
+    path = pathlib.Path(params.get("path", base_dir or "."))
     file_pattern = params.get("file_pattern", "*")
     context_lines = params.get("context_lines", 2)
     max_results = params.get("max_results", 50)
 
-    if base_dir and not os.path.isabs(path):
-        path = os.path.join(base_dir, path)
+    if base_dir and not path.is_absolute():
+        path = pathlib.Path(base_dir) / path
 
-    if not is_path_allowed(path):
+    if not is_path_allowed(str(path)):
         return {"success": False, "error": f"Access denied: {path}"}
 
     try:
@@ -645,18 +675,18 @@ async def _search_files(params: dict, base_dir: str | None) -> dict:
             if not fnmatch.fnmatch(name, file_pattern):
                 continue
 
-            file_path = os.path.join(root, name)
-            rel_path = os.path.relpath(file_path, path)
+            file_path = root_path / name
+            rel_path = str(file_path.relative_to(path))
 
             # Skip large files
             try:
-                if os.path.getsize(file_path) > MAX_FILE_SIZE:
+                if file_path.stat().st_size > MAX_FILE_SIZE:
                     continue
             except OSError:
                 continue
 
             try:
-                with open(file_path, "r", encoding="utf-8", errors="replace") as f:
+                with file_path.open(encoding="utf-8", errors="replace") as f:
                     lines = f.readlines()
 
                 for i, line in enumerate(lines):
@@ -674,7 +704,8 @@ async def _search_files(params: dict, base_dir: str | None) -> dict:
 
                         if len(results) >= max_results:
                             break
-            except Exception:
+            except Exception as e:
+                logger.debug("Skipping file %s: %s", file_path, e)
                 continue
 
             if len(results) >= max_results:
@@ -698,19 +729,25 @@ async def _run_command(params: dict, base_dir: str | None) -> dict:
     if not is_command_safe(command):
         return {"success": False, "error": "Command blocked for security reasons"}
 
-    if base_dir and not os.path.isabs(working_dir):
-        working_dir = os.path.join(base_dir, working_dir)
+    if base_dir and not pathlib.Path(working_dir).is_absolute():
+        working_dir = str(pathlib.Path(base_dir) / working_dir)
 
     # Verify working directory exists
-    if not os.path.isdir(working_dir):
+    if not await asyncio.to_thread(pathlib.Path(working_dir).is_dir):
         return {"success": False, "error": f"Working directory not found: {working_dir}"}
 
     # Create a sanitized environment (remove sensitive variables)
     env = os.environ.copy()
     sensitive_vars = [
-        "ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GOOGLE_AI_KEY",
-        "AWS_SECRET_ACCESS_KEY", "GITHUB_TOKEN", "DATABASE_URL",
-        "SECRET_KEY", "JWT_SECRET", "PRIVATE_KEY",
+        "ANTHROPIC_API_KEY",
+        "OPENAI_API_KEY",
+        "GOOGLE_AI_KEY",
+        "AWS_SECRET_ACCESS_KEY",
+        "GITHUB_TOKEN",
+        "DATABASE_URL",
+        "SECRET_KEY",
+        "JWT_SECRET",
+        "PRIVATE_KEY",
     ]
     for var in sensitive_vars:
         env.pop(var, None)
@@ -718,8 +755,8 @@ async def _run_command(params: dict, base_dir: str | None) -> dict:
     try:
         process = await asyncio.create_subprocess_shell(
             command,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             cwd=working_dir,
             env=env,
         )
@@ -740,12 +777,12 @@ async def _run_command(params: dict, base_dir: str | None) -> dict:
                 "stderr": stderr_text,
             },
         }
-    except asyncio.TimeoutError:
+    except TimeoutError:
         # Try to kill the process
         try:
             process.kill()
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("Process kill failed: %s", e)
         return {"success": False, "error": f"Command timed out after {timeout}s"}
     except Exception as e:
         return {"success": False, "error": str(e)}
@@ -789,7 +826,7 @@ async def _execute_tracertm_tool(
             },
         }
 
-    elif tool_name == "tracertm_get_item":
+    if tool_name == "tracertm_get_item":
         from tracertm.repositories.item_repository import ItemRepository
 
         if not db_session:
@@ -814,7 +851,7 @@ async def _execute_tracertm_tool(
             },
         }
 
-    elif tool_name == "tracertm_get_links":
+    if tool_name == "tracertm_get_links":
         from tracertm.repositories.link_repository import LinkRepository
 
         if not db_session:
@@ -828,14 +865,14 @@ async def _execute_tracertm_tool(
         if direction in ("outgoing", "both"):
             outgoing = await repo.get_by_source(item_id)
             links.extend([
-                {"type": "outgoing", "target_id": str(l.target_item_id), "link_type": l.link_type}
-                for l in outgoing
+                {"type": "outgoing", "target_id": str(link.target_item_id), "link_type": link.link_type}
+                for link in outgoing
             ])
         if direction in ("incoming", "both"):
             incoming = await repo.get_by_target(item_id)
             links.extend([
-                {"type": "incoming", "source_id": str(l.source_item_id), "link_type": l.link_type}
-                for l in incoming
+                {"type": "incoming", "source_id": str(link.source_item_id), "link_type": link.link_type}
+                for link in incoming
             ])
 
         return {
@@ -843,7 +880,7 @@ async def _execute_tracertm_tool(
             "result": {"item_id": item_id, "links": links},
         }
 
-    elif tool_name == "tracertm_impact_analysis":
+    if tool_name == "tracertm_impact_analysis":
         from tracertm.services.impact_analysis_service import ImpactAnalysisService
 
         if not db_session:
@@ -862,10 +899,11 @@ async def _execute_tracertm_tool(
             },
         }
 
-    elif tool_name == "tracertm_search":
+    if tool_name == "tracertm_search":
         # Simple search implementation
-        from tracertm.repositories.item_repository import ItemRepository
         from sqlalchemy import text
+
+        from tracertm.repositories.item_repository import ItemRepository
 
         if not db_session:
             return {"success": False, "error": "Database session required"}
@@ -888,14 +926,11 @@ async def _execute_tracertm_tool(
             "success": True,
             "result": {
                 "query": query,
-                "results": [
-                    {"id": str(r.id), "title": r.title, "type": r.view, "status": r.status}
-                    for r in rows
-                ],
+                "results": [{"id": str(r.id), "title": r.title, "type": r.view, "status": r.status} for r in rows],
             },
         }
 
-    elif tool_name == "tracertm_create_item":
+    if tool_name == "tracertm_create_item":
         from tracertm.repositories.item_repository import ItemRepository
 
         if not db_session:
@@ -923,14 +958,18 @@ async def _execute_tracertm_tool(
             },
         }
 
-    elif tool_name == "tracertm_create_link":
+    if tool_name == "tracertm_create_link":
         from tracertm.repositories.link_repository import LinkRepository
 
         if not db_session:
             return {"success": False, "error": "Database session required"}
 
         repo = LinkRepository(db_session)
+        project_id = params.get("project_id")
+        if not project_id:
+            return {"success": False, "error": "project_id required for tracertm_create_link"}
         link = await repo.create(
+            project_id=project_id,
             source_item_id=params["source_id"],
             target_item_id=params["target_id"],
             link_type=params["link_type"],

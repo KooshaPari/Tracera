@@ -23,7 +23,7 @@ export default function awk(Prism) {
       greedy: true
     },
     regex: {
-      pattern: /((?:^|[^\w\s)])\s*)\/(?:[^\/\\\r\n]|\\.)*\//,
+      pattern: /((?:^|[^\w\s)])\s*)\/(?:[^/\\\r\n]|\\.)*\//,
       lookbehind: true,
       greedy: true
     },

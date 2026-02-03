@@ -1,4 +1,5 @@
 """Tests for item hierarchy operations."""
+
 import uuid
 from unittest.mock import AsyncMock
 
@@ -30,7 +31,7 @@ class TestItemHierarchy:
 
         expected_children = [
             Item(id=str(uuid.uuid4()), parent_id=parent_id, title="Child 1"),
-            Item(id=str(uuid.uuid4()), parent_id=parent_id, title="Child 2")
+            Item(id=str(uuid.uuid4()), parent_id=parent_id, title="Child 2"),
         ]
 
         item_service.items.get_children = AsyncMock(return_value=expected_children)
@@ -47,7 +48,7 @@ class TestItemHierarchy:
 
         expected_ancestors = [
             Item(id=str(uuid.uuid4()), title="Grandparent"),
-            Item(id=str(uuid.uuid4()), title="Parent")
+            Item(id=str(uuid.uuid4()), title="Parent"),
         ]
 
         item_service.items.get_ancestors = AsyncMock(return_value=expected_ancestors)
@@ -63,7 +64,7 @@ class TestItemHierarchy:
 
         expected_descendants = [
             Item(id=str(uuid.uuid4()), title="Child"),
-            Item(id=str(uuid.uuid4()), title="Grandchild")
+            Item(id=str(uuid.uuid4()), title="Grandchild"),
         ]
 
         item_service.items.get_descendants = AsyncMock(return_value=expected_descendants)
@@ -77,4 +78,3 @@ class TestItemHierarchy:
         """Test validation when creating a child item."""
         # This tests the logic in create_item service method if we add specific parent validation logic there
         # Currently simple pass-through to repo, but good to have a placeholder or test repo constraints
-        pass

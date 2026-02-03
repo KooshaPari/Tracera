@@ -1,13 +1,14 @@
 """Contract Service for TraceRTM."""
 
-from typing import Any, List, Optional
+from typing import Any
 
-from sqlalchemy import select, delete
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from tracertm.models.specification import Contract
 from tracertm.core.concurrency import update_with_retry
+from tracertm.models.specification import Contract
 from tracertm.repositories.event_repository import EventRepository
+
 
 class ContractService:
     """Service for Contract Management."""
@@ -37,11 +38,11 @@ class ContractService:
         item_id: str,
         title: str,
         contract_type: str,
-        preconditions: List[dict] | None = None,
-        postconditions: List[dict] | None = None,
-        invariants: List[dict] | None = None,
+        preconditions: list[dict] | None = None,
+        postconditions: list[dict] | None = None,
+        invariants: list[dict] | None = None,
         status: str = "draft",
-        tags: List[str] | None = None,
+        tags: list[str] | None = None,
     ) -> Contract:
         """Create a new Contract."""
         # Simple numbering
@@ -49,7 +50,7 @@ class ContractService:
             select(Contract).where(Contract.project_id == project_id).order_by(Contract.created_at.desc()).limit(1)
         )
         last = result.scalar_one_or_none()
-        
+
         if last:
             try:
                 last_num = int(last.contract_number.replace("CTR-", ""))
@@ -58,7 +59,7 @@ class ContractService:
                 next_num = 1
         else:
             next_num = 1
-            
+
         contract_number = f"CTR-{next_num:04d}"
 
         contract = Contract(
@@ -73,7 +74,7 @@ class ContractService:
             invariants=invariants or [],
             tags=tags or [],
         )
-        
+
         self.session.add(contract)
         await self.session.flush()
         await self._log_event(
@@ -91,33 +92,34 @@ class ContractService:
         await self.session.refresh(contract)
         return contract
 
-    async def get_contract(self, contract_id: str) -> Optional[Contract]:
+    async def get_contract(self, contract_id: str) -> Contract | None:
         """Get Contract by ID."""
         result = await self.session.execute(select(Contract).where(Contract.id == contract_id))
         return result.scalar_one_or_none()
 
-    async def list_contracts(self, project_id: str, item_id: Optional[str] = None) -> List[Contract]:
+    async def list_contracts(self, project_id: str, item_id: str | None = None) -> list[Contract]:
         """List Contracts for a project or specific item."""
         query = select(Contract).where(Contract.project_id == project_id)
-        
+
         if item_id:
             query = query.where(Contract.item_id == item_id)
-            
+
         result = await self.session.execute(query)
         return list(result.scalars().all())
 
-    async def update_contract(self, contract_id: str, **updates: Any) -> Optional[Contract]:
+    async def update_contract(self, contract_id: str, **updates: Any) -> Contract | None:
         """Update a Contract."""
+
         async def do_update() -> Contract:
             contract = await self.get_contract(contract_id)
             if not contract:
                 raise ValueError(f"Contract {contract_id} not found")
-            
-            before = {key: getattr(contract, key, None) for key in updates.keys()}
+
+            before = {key: getattr(contract, key, None) for key in updates}
             for key, value in updates.items():
                 if hasattr(contract, key):
                     setattr(contract, key, value)
-            
+
             contract.version += 1
             self.session.add(contract)
             await self._log_event(
@@ -126,10 +128,7 @@ class ContractService:
                 event_type="updated",
                 data={
                     "description": "Contract updated",
-                    "changes": {
-                        key: {"from": before.get(key), "to": updates.get(key)}
-                        for key in updates.keys()
-                    },
+                    "changes": {key: {"from": before.get(key), "to": updates.get(key)} for key in updates},
                     "from_value": before.get("status"),
                     "to_value": updates.get("status"),
                 },
@@ -160,4 +159,4 @@ class ContractService:
         )
         result = await self.session.execute(delete(Contract).where(Contract.id == contract_id))
         await self.session.commit()
-        return result.rowcount > 0
+        return getattr(result, "rowcount", 0) > 0

@@ -1,6 +1,7 @@
 """Service for Chaos Mode features."""
 
-from datetime import datetime
+import uuid
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -21,34 +22,33 @@ class ChaosModeService:
 
     async def detect_zombies(
         self,
-        project_id: str,
+        project_id: str | uuid.UUID,
         days_inactive: int = 30,
     ) -> dict[str, Any]:
         """Detect zombie items (orphaned/dead items)."""
+        project_id = str(project_id)
         items = await self.items.query(project_id, {})
 
         zombies = []
         for item in items:
             # Check if item has no links
-            has_links = await self.links.get_by_source(item.id)
-            has_incoming = await self.links.get_by_target(item.id)
+            has_links = await self.links.get_by_source(str(item.id))
+            has_incoming = await self.links.get_by_target(str(item.id))
 
             # Check if item is stale
             is_stale = False
             if hasattr(item, "updated_at"):
-                days_since_update = (datetime.utcnow() - item.updated_at).days
+                days_since_update = (datetime.now(UTC) - item.updated_at).days
                 is_stale = days_since_update > days_inactive
 
             # Item is zombie if orphaned and stale
             if not has_links and not has_incoming and is_stale:
-                zombies.append(
-                    {
-                        "item_id": item.id,
-                        "title": item.title,
-                        "status": item.status,
-                        "days_inactive": days_since_update if is_stale else 0,
-                    }
-                )
+                zombies.append({
+                    "item_id": item.id,
+                    "title": item.title,
+                    "status": item.status,
+                    "days_inactive": days_since_update if is_stale else 0,
+                })
 
         return {
             "zombie_count": len(zombies),
@@ -59,10 +59,11 @@ class ChaosModeService:
 
     async def analyze_impact(
         self,
-        project_id: str,
-        item_id: str,
+        project_id: str | uuid.UUID,
+        item_id: str | uuid.UUID,
     ) -> dict[str, Any]:
         """Analyze impact of changing an item."""
+        item_id = str(item_id)
         item = await self.items.get_by_id(item_id)
         if not item:
             return {"error": "Item not found"}
@@ -76,7 +77,7 @@ class ChaosModeService:
         # Calculate transitive impact
         transitive_impact = set()
         for link in direct_impact:
-            transitive = await self._get_transitive_impact(link.target_item_id)
+            transitive = await self._get_transitive_impact(str(link.target_item_id))
             transitive_impact.update(transitive)
 
         return {
@@ -86,10 +87,7 @@ class ChaosModeService:
             "dependencies": len(dependencies),
             "transitive_impact": len(transitive_impact),
             "total_impact": len(direct_impact) + len(transitive_impact),
-            "impact_items": [
-                {"id": link.target_item_id, "type": link.link_type}
-                for link in direct_impact
-            ],
+            "impact_items": [{"id": link.target_item_id, "type": link.link_type} for link in direct_impact],
         }
 
     async def _get_transitive_impact(self, item_id: str) -> set[str]:
@@ -106,29 +104,28 @@ class ChaosModeService:
 
             # Get all items that depend on current
             links = await self.links.get_by_source(current)
-            for link in links:
-                if link.target_item_id not in visited:
-                    to_visit.append(link.target_item_id)
+            to_visit.extend(str(link.target_item_id) for link in links if str(link.target_item_id) not in visited)
 
         return visited
 
     async def create_temporal_snapshot(
         self,
-        project_id: str,
+        project_id: str | uuid.UUID,
         snapshot_name: str,
         agent_id: str = "system",
     ) -> dict[str, Any]:
         """Create a temporal snapshot of project state."""
+        project_id = str(project_id)
         items = await self.items.query(project_id, {})
         # Get all links by querying all items
         links = []
         for item in items:
-            source_links = await self.links.get_by_source(item.id)
+            source_links = await self.links.get_by_source(str(item.id))
             links.extend(source_links)
 
         snapshot = {
             "name": snapshot_name,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "project_id": project_id,
             "item_count": len(items),
             "link_count": len(links),
@@ -166,12 +163,14 @@ class ChaosModeService:
 
     async def mass_update_items(
         self,
-        project_id: str,
-        item_ids: list[str],
+        project_id: str | uuid.UUID,
+        item_ids: list[str] | list[uuid.UUID],
         updates: dict[str, Any],
         agent_id: str = "system",
     ) -> dict[str, Any]:
         """Mass update multiple items."""
+        project_id = str(project_id)
+        item_ids = [str(i) for i in item_ids]
         updated = []
         errors = []
 
@@ -212,14 +211,15 @@ class ChaosModeService:
 
     async def get_project_health(
         self,
-        project_id: str,
+        project_id: str | uuid.UUID,
     ) -> dict[str, Any]:
         """Get overall project health metrics."""
+        project_id = str(project_id)
         items = await self.items.query(project_id, {})
         # Get all links by querying all items
         links = []
         for item in items:
-            source_links = await self.links.get_by_source(item.id)
+            source_links = await self.links.get_by_source(str(item.id))
             links.extend(source_links)
 
         # Calculate metrics
@@ -247,19 +247,17 @@ class ChaosModeService:
             "todo": todo_items,
             "total_links": len(links),
             "zombie_count": zombies_result["zombie_count"],
-            "completion_percentage": (
-                (completed_items / total_items * 100) if total_items > 0 else 0
-            ),
+            "completion_percentage": ((completed_items / total_items * 100) if total_items > 0 else 0),
         }
 
     async def explode_file(
         self,
         content: str,
-        project_id: str,
+        project_id: str | uuid.UUID,
         view: str,
     ) -> int:
         """Explode file content into multiple items."""
-
+        project_id = str(project_id)
         items_created = 0
         lines = content.split("\n")
         current_parent = None
@@ -319,12 +317,14 @@ class ChaosModeService:
 
     async def track_scope_crash(
         self,
-        project_id: str,
+        project_id: str | uuid.UUID,
         reason: str,
-        item_ids: list[str],
+        item_ids: list[str] | list[uuid.UUID],
         agent_id: str = "system",
     ) -> dict[str, Any]:
         """Track scope crash (mass cancellation)."""
+        project_id = str(project_id)
+        item_ids = [str(i) for i in item_ids]
         items_affected = 0
 
         for item_id in item_ids:
@@ -360,10 +360,11 @@ class ChaosModeService:
 
     async def cleanup_zombies(
         self,
-        project_id: str,
+        project_id: str | uuid.UUID,
         days_inactive: int = 30,
     ) -> int:
         """Cleanup (delete) zombie items."""
+        project_id = str(project_id)
         zombies_result = await self.detect_zombies(project_id, days_inactive)
         deleted_count = 0
 
@@ -375,7 +376,7 @@ class ChaosModeService:
                 await self.items.update(
                     item_id=item_id,
                     expected_version=item.version,
-                    deleted_at=datetime.utcnow(),
+                    deleted_at=datetime.now(UTC),
                 )
                 deleted_count += 1
 
@@ -383,12 +384,13 @@ class ChaosModeService:
 
     async def create_snapshot(
         self,
-        project_id: str,
+        project_id: str | uuid.UUID,
         name: str,
         description: str | None = None,
         agent_id: str = "system",
     ) -> dict[str, Any]:
         """Create a temporal snapshot (wrapper for create_temporal_snapshot)."""
+        project_id = str(project_id)
         snapshot = await self.create_temporal_snapshot(project_id, name, agent_id)
 
         if description:

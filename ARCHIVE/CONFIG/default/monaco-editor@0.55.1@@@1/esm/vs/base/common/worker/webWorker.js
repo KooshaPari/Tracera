@@ -316,7 +316,7 @@ function propertyIsEvent(name) {
 }
 function propertyIsDynamicEvent(name) {
     // Assume a property is a dynamic event (a method that returns an event) if it has a form of "onDynamicSomething"
-    return /^onDynamic/.test(name) && isUpperAsciiLetter(name.charCodeAt(9));
+    return name.startsWith('onDynamic') && isUpperAsciiLetter(name.charCodeAt(9));
 }
 /**
  * Worker side

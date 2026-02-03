@@ -24,4 +24,4 @@ type C = IsArray<string>;
 */
 export type UnknownArray = readonly unknown[];
 
-export {};
+

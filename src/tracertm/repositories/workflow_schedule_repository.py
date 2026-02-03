@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 from uuid import uuid4
 
@@ -60,20 +60,16 @@ class WorkflowScheduleRepository:
         return list(result.scalars().all())
 
     async def get_by_schedule_id(self, schedule_id: str) -> WorkflowSchedule | None:
-        result = await self.session.execute(
-            select(WorkflowSchedule).where(WorkflowSchedule.schedule_id == schedule_id)
-        )
+        result = await self.session.execute(select(WorkflowSchedule).where(WorkflowSchedule.schedule_id == schedule_id))
         return result.scalar_one_or_none()
 
     async def mark_last_run(self, schedule_id: str, last_run_at: datetime) -> None:
         await self.session.execute(
             update(WorkflowSchedule)
             .where(WorkflowSchedule.schedule_id == schedule_id)
-            .values(last_run_at=last_run_at, updated_at=datetime.utcnow())
+            .values(last_run_at=last_run_at, updated_at=datetime.now(UTC))
         )
 
     async def delete_by_schedule_id(self, schedule_id: str) -> int:
-        result = await self.session.execute(
-            delete(WorkflowSchedule).where(WorkflowSchedule.schedule_id == schedule_id)
-        )
-        return result.rowcount or 0
+        result = await self.session.execute(delete(WorkflowSchedule).where(WorkflowSchedule.schedule_id == schedule_id))
+        return getattr(result, "rowcount", 0) or 0

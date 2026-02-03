@@ -188,8 +188,8 @@ export async function defineConfig(
               ...viteConfig.userConfig,
               ...clientViteConfig.userConfig,
               define: {
-                ...(viteConfig.userConfig.define || {}),
-                ...(clientViteConfig.userConfig.define || {}),
+                ...viteConfig.userConfig.define,
+                ...clientViteConfig.userConfig.define,
                 ...injectDefineEnv('TSS_PUBLIC_BASE', publicBase),
                 ...injectDefineEnv('TSS_CLIENT_BASE', clientBase),
                 ...injectDefineEnv('TSS_API_BASE', apiBase),
@@ -207,8 +207,8 @@ export async function defineConfig(
               ]),
               optimizeDeps: {
                 entries: [],
-                ...(viteConfig.userConfig.optimizeDeps || {}),
-                ...(clientViteConfig.userConfig.optimizeDeps || {}),
+                ...viteConfig.userConfig.optimizeDeps,
+                ...clientViteConfig.userConfig.optimizeDeps,
               },
             }),
             TanStackRouterVite({
@@ -251,8 +251,8 @@ export async function defineConfig(
               ...viteConfig.userConfig,
               ...ssrViteConfig.userConfig,
               define: {
-                ...(viteConfig.userConfig.define || {}),
-                ...(ssrViteConfig.userConfig.define || {}),
+                ...viteConfig.userConfig.define,
+                ...ssrViteConfig.userConfig.define,
                 ...injectDefineEnv('TSS_PUBLIC_BASE', publicBase),
                 ...injectDefineEnv('TSS_CLIENT_BASE', clientBase),
                 ...injectDefineEnv('TSS_API_BASE', apiBase),
@@ -271,8 +271,8 @@ export async function defineConfig(
               ]),
               optimizeDeps: {
                 entries: [],
-                ...(viteConfig.userConfig.optimizeDeps || {}),
-                ...(ssrViteConfig.userConfig.optimizeDeps || {}),
+                ...viteConfig.userConfig.optimizeDeps,
+                ...ssrViteConfig.userConfig.optimizeDeps,
               },
             }),
             TanStackRouterVite({
@@ -318,8 +318,8 @@ export async function defineConfig(
               ...viteConfig.userConfig,
               ...serverViteConfig.userConfig,
               define: {
-                ...(viteConfig.userConfig.define || {}),
-                ...(serverViteConfig.userConfig.define || {}),
+                ...viteConfig.userConfig.define,
+                ...serverViteConfig.userConfig.define,
                 ...injectDefineEnv('TSS_PUBLIC_BASE', publicBase),
                 ...injectDefineEnv('TSS_CLIENT_BASE', clientBase),
                 ...injectDefineEnv('TSS_API_BASE', apiBase),
@@ -338,8 +338,8 @@ export async function defineConfig(
               ]),
               optimizeDeps: {
                 entries: [],
-                ...(viteConfig.userConfig.optimizeDeps || {}),
-                ...(serverViteConfig.userConfig.optimizeDeps || {}),
+                ...viteConfig.userConfig.optimizeDeps,
+                ...serverViteConfig.userConfig.optimizeDeps,
               },
             }),
             TanStackRouterVite({
@@ -424,12 +424,12 @@ export async function defineConfig(
             ]),
             optimizeDeps: {
               entries: [],
-              ...(viteConfig.userConfig.optimizeDeps || {}),
-              ...(apiViteConfig.userConfig.optimizeDeps || {}),
+              ...viteConfig.userConfig.optimizeDeps,
+              ...apiViteConfig.userConfig.optimizeDeps,
             },
             define: {
-              ...(viteConfig.userConfig.define || {}),
-              ...(apiViteConfig.userConfig.define || {}),
+              ...viteConfig.userConfig.define,
+              ...apiViteConfig.userConfig.define,
               ...injectDefineEnv('TSS_PUBLIC_BASE', publicBase),
               ...injectDefineEnv('TSS_CLIENT_BASE', clientBase),
               ...injectDefineEnv('TSS_API_BASE', apiBase),

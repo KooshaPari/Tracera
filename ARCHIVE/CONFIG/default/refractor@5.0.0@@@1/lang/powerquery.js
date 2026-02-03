@@ -59,8 +59,8 @@ export default function powerquery(Prism) {
         /\b0x[\da-f]+\b|(?:[+-]?(?:\b\d+\.)?\b\d+|[+-]\.\d+|(^|[^.])\B\.\d+)(?:e[+-]?\d+)?\b/i,
       lookbehind: true
     },
-    operator: /[-+*\/&?@^]|<(?:=>?|>)?|>=?|=>?|\.\.\.?/,
-    punctuation: /[,;\[\](){}]/
+    operator: /[-+*/&?@^]|<(?:=>?|>)?|>=?|=>?|\.\.\.?/,
+    punctuation: /[,;[\](){}]/
   }
   Prism.languages.pq = Prism.languages['powerquery']
   Prism.languages.mscript = Prism.languages['powerquery']

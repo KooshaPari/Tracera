@@ -4,10 +4,9 @@ Targets: logging_config.py (0%), schemas.py (0%), core/database.py (31.71%),
          core/concurrency.py (52.38%), config/settings.py (67.24%)
 """
 
-import pytest
-from unittest.mock import MagicMock, patch, PropertyMock
-from pathlib import Path
 import tempfile
+from pathlib import Path
+from unittest.mock import MagicMock, patch
 
 
 class TestLoggingConfig:
@@ -16,16 +15,19 @@ class TestLoggingConfig:
     def test_logging_config_import(self):
         """Test logging_config module can be imported."""
         from tracertm import logging_config
+
         assert logging_config is not None
 
     def test_setup_logging_function_exists(self):
         """Test setup_logging function exists."""
         from tracertm.logging_config import setup_logging
+
         assert callable(setup_logging)
 
     def test_get_logger_function_exists(self):
         """Test get_logger function exists."""
         from tracertm.logging_config import get_logger
+
         assert callable(get_logger)
 
     def test_get_logger_returns_logger(self):
@@ -37,15 +39,16 @@ class TestLoggingConfig:
 
     def test_setup_logging_with_mocked_settings(self):
         """Test setup_logging with mocked settings."""
-        with patch('tracertm.logging_config.get_settings') as mock_settings:
+        with patch("tracertm.logging_config.get_settings") as mock_settings:
             # Create a mock settings object
             settings_mock = MagicMock()
             settings_mock.log_level = "DEBUG"
             settings_mock.data_dir = Path(tempfile.gettempdir()) / "tracertm_test"
             mock_settings.return_value = settings_mock
 
-            with patch('tracertm.logging_config.logger') as mock_logger:
+            with patch("tracertm.logging_config.logger") as mock_logger:
                 from tracertm.logging_config import setup_logging
+
                 setup_logging()
 
                 # Verify logger methods were called
@@ -59,42 +62,50 @@ class TestSchemas:
     def test_schemas_package_import(self):
         """Test schemas package can be imported."""
         from tracertm import schemas
+
         assert schemas is not None
 
     def test_schemas_has_common_exports(self):
         """Test schemas exports common items."""
         from tracertm import schemas
+
         # Schemas package may export Pydantic models
-        assert hasattr(schemas, '__path__') or hasattr(schemas, '__file__')
+        assert hasattr(schemas, "__path__") or hasattr(schemas, "__file__")
 
     def test_item_schema_exists(self):
         """Test item schema module exists in package."""
         try:
             from tracertm.schemas import item
+
             assert item is not None
         except ImportError:
             # Check if there's an item schema
             from tracertm import schemas
-            assert hasattr(schemas, 'ItemCreate') or hasattr(schemas, 'ItemSchema') or True
+
+            assert hasattr(schemas, "ItemCreate") or hasattr(schemas, "ItemSchema") or True
 
     def test_project_schema_exists(self):
         """Test project schema exists."""
         try:
-            from tracertm.schemas import project
+            from tracertm.schemas import project  # type: ignore[attr-defined]
+
             assert project is not None
         except ImportError:
             # Check alternatives
             from tracertm import schemas
-            assert hasattr(schemas, 'ProjectCreate') or hasattr(schemas, 'ProjectSchema') or True
+
+            assert hasattr(schemas, "ProjectCreate") or hasattr(schemas, "ProjectSchema") or True
 
     def test_link_schema_exists(self):
         """Test link schema exists."""
         try:
             from tracertm.schemas import link
+
             assert link is not None
         except ImportError:
             from tracertm import schemas
-            assert hasattr(schemas, 'LinkCreate') or hasattr(schemas, 'LinkSchema') or True
+
+            assert hasattr(schemas, "LinkCreate") or hasattr(schemas, "LinkSchema") or True
 
 
 class TestCoreDatabaseModule:
@@ -103,12 +114,14 @@ class TestCoreDatabaseModule:
     def test_core_database_import(self):
         """Test core.database module can be imported."""
         from tracertm.core import database
+
         assert database is not None
 
     def test_database_module_has_session_local(self):
         """Test database module exports SessionLocal."""
         from tracertm.core import database
-        assert hasattr(database, 'SessionLocal') or hasattr(database, 'get_session')
+
+        assert hasattr(database, "SessionLocal") or hasattr(database, "get_session")
 
 
 class TestCoreConcurrencyModule:
@@ -117,6 +130,7 @@ class TestCoreConcurrencyModule:
     def test_core_concurrency_import(self):
         """Test core.concurrency module can be imported."""
         from tracertm.core import concurrency
+
         assert concurrency is not None
 
 
@@ -126,11 +140,13 @@ class TestConfigSettings:
     def test_config_settings_import(self):
         """Test config.settings module can be imported."""
         from tracertm.config import settings
+
         assert settings is not None
 
     def test_get_settings_function_exists(self):
         """Test get_settings function exists."""
         from tracertm.config import get_settings
+
         assert callable(get_settings)
 
     def test_get_settings_returns_settings(self):
@@ -145,14 +161,14 @@ class TestConfigSettings:
         from tracertm.config import get_settings
 
         settings = get_settings()
-        assert hasattr(settings, 'log_level')
+        assert hasattr(settings, "log_level")
 
     def test_settings_has_data_dir(self):
         """Test Settings has data_dir attribute."""
         from tracertm.config import get_settings
 
         settings = get_settings()
-        assert hasattr(settings, 'data_dir')
+        assert hasattr(settings, "data_dir")
 
 
 class TestConfigManager:
@@ -161,25 +177,28 @@ class TestConfigManager:
     def test_config_manager_import(self):
         """Test ConfigManager can be imported."""
         from tracertm.config.manager import ConfigManager
+
         assert ConfigManager is not None
 
     def test_config_manager_init(self):
         """Test ConfigManager initialization."""
         from tracertm.config.manager import ConfigManager
 
-        with patch('tracertm.config.manager.Path'):
+        with patch("tracertm.config.manager.Path"):
             manager = ConfigManager()
             assert manager is not None
 
     def test_config_manager_get_method(self):
         """Test ConfigManager has get method."""
         from tracertm.config.manager import ConfigManager
-        assert hasattr(ConfigManager, 'get')
+
+        assert hasattr(ConfigManager, "get")
 
     def test_config_manager_set_method(self):
         """Test ConfigManager has set method."""
         from tracertm.config.manager import ConfigManager
-        assert hasattr(ConfigManager, 'set')
+
+        assert hasattr(ConfigManager, "set")
 
 
 class TestDatabaseConnection:
@@ -188,12 +207,18 @@ class TestDatabaseConnection:
     def test_database_connection_import(self):
         """Test database.connection module can be imported."""
         from tracertm.database import connection
+
         assert connection is not None
 
     def test_connection_has_engine(self):
         """Test connection module has engine or get_engine."""
         from tracertm.database import connection
-        assert hasattr(connection, 'engine') or hasattr(connection, 'get_engine') or hasattr(connection, 'DatabaseConnection')
+
+        assert (
+            hasattr(connection, "engine")
+            or hasattr(connection, "get_engine")
+            or hasattr(connection, "DatabaseConnection")
+        )
 
 
 class TestRepositoryModules:
@@ -202,19 +227,23 @@ class TestRepositoryModules:
     def test_event_repository_import(self):
         """Test EventRepository can be imported."""
         from tracertm.repositories.event_repository import EventRepository
+
         assert EventRepository is not None
 
     def test_item_repository_import(self):
         """Test ItemRepository can be imported."""
         from tracertm.repositories.item_repository import ItemRepository
+
         assert ItemRepository is not None
 
     def test_link_repository_import(self):
         """Test LinkRepository can be imported."""
         from tracertm.repositories.link_repository import LinkRepository
+
         assert LinkRepository is not None
 
     def test_project_repository_import(self):
         """Test ProjectRepository can be imported."""
         from tracertm.repositories.project_repository import ProjectRepository
+
         assert ProjectRepository is not None

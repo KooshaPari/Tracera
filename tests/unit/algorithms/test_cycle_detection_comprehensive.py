@@ -11,20 +11,21 @@ Targets: 80-120 tests covering:
 Coverage goal: +2-3% improvement
 """
 
+from unittest.mock import AsyncMock, Mock
+
 import pytest
-from unittest.mock import Mock, AsyncMock, MagicMock, patch
-from sqlalchemy.orm import Session
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import OperationalError
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 
-from tracertm.services.cycle_detection_service import CycleDetectionService
-from tracertm.models.link import Link
 from tracertm.models.item import Item
-
+from tracertm.models.link import Link
+from tracertm.services.cycle_detection_service import CycleDetectionService
 
 # ============================================================================
 # BASIC DFS CYCLE DETECTION TESTS
 # ============================================================================
+
 
 class TestDFSBasedCycleDetection:
     """Test DFS-based cycle detection algorithm."""
@@ -129,6 +130,7 @@ class TestDFSBasedCycleDetection:
 # EDGE CASE: SINGLE NODE GRAPHS
 # ============================================================================
 
+
 class TestSingleNodeGraphs:
     """Test cycle detection on single-node graphs."""
 
@@ -182,6 +184,7 @@ class TestSingleNodeGraphs:
 # ============================================================================
 # EDGE CASE: EMPTY GRAPHS
 # ============================================================================
+
 
 class TestEmptyGraphs:
     """Test cycle detection on empty graphs."""
@@ -254,6 +257,7 @@ class TestEmptyGraphs:
 # EDGE CASE: DISCONNECTED COMPONENTS
 # ============================================================================
 
+
 class TestDisconnectedComponents:
     """Test cycle detection with disconnected graph components."""
 
@@ -322,6 +326,7 @@ class TestDisconnectedComponents:
 # ============================================================================
 # EDGE CASE: COMPLEX CYCLE PATTERNS
 # ============================================================================
+
 
 class TestComplexCyclePatterns:
     """Test detection of complex cycle patterns."""
@@ -403,6 +408,7 @@ class TestComplexCyclePatterns:
 # HAS_CYCLE METHOD TESTS
 # ============================================================================
 
+
 class TestHasCycleMethod:
     """Test has_cycle method for individual link addition."""
 
@@ -468,6 +474,7 @@ class TestHasCycleMethod:
 # GRAPH BUILDING TESTS
 # ============================================================================
 
+
 class TestGraphBuilding:
     """Test _build_dependency_graph method."""
 
@@ -525,7 +532,7 @@ class TestGraphBuilding:
     def test_build_graph_database_error(self, service, mock_session):
         """Test building graph handles database errors gracefully."""
         mock_session.query.return_value.filter.return_value.all.side_effect = OperationalError(
-            "test", "test", "test"
+            "test", None, Exception("test")
         )
 
         graph = service._build_dependency_graph("proj1", "depends_on")
@@ -537,6 +544,7 @@ class TestGraphBuilding:
 # ASYNC TESTS
 # ============================================================================
 
+
 class TestAsyncCycleDetection:
     """Test async cycle detection methods."""
 
@@ -546,8 +554,7 @@ class TestAsyncCycleDetection:
 
     @pytest.fixture
     def mock_links_repo(self):
-        repo = AsyncMock()
-        return repo
+        return AsyncMock()
 
     @pytest.fixture
     def service(self, mock_async_session, mock_links_repo):
@@ -589,13 +596,14 @@ class TestAsyncCycleDetection:
         service = CycleDetectionService(mock_async_session, links=mock_links_repo)
         result = await service.detect_cycles_async("proj1", link_types=["depends_on"])
 
-        # Should detect cycle through depends_on links only
-        assert result.has_cycles is True
+        # Should detect cycle through depends_on links only (service returns SimpleNamespace)
+        assert getattr(result, "has_cycles", result.get("has_cycles") if isinstance(result, dict) else None) is True
 
 
 # ============================================================================
 # MISSING DEPENDENCIES TESTS
 # ============================================================================
+
 
 class TestMissingDependencies:
     """Test detect_missing_dependencies method."""
@@ -689,6 +697,7 @@ class TestMissingDependencies:
 # LINK TYPE FILTERING TESTS
 # ============================================================================
 
+
 class TestLinkTypeFiltering:
     """Test link type filtering in cycle detection."""
 
@@ -724,6 +733,7 @@ class TestLinkTypeFiltering:
 # PERFORMANCE AND LARGE GRAPH TESTS
 # ============================================================================
 
+
 class TestLargeGraphs:
     """Test cycle detection on large graphs."""
 
@@ -739,8 +749,7 @@ class TestLargeGraphs:
         """Test handling of large acyclic graph with 100 nodes."""
         # Create a chain: 0 -> 1 -> 2 -> ... -> 99
         links = [
-            Mock(spec=Link, source_item_id=str(i), target_item_id=str(i+1), link_type="depends_on")
-            for i in range(99)
+            Mock(spec=Link, source_item_id=str(i), target_item_id=str(i + 1), link_type="depends_on") for i in range(99)
         ]
         mock_session.query.return_value.filter.return_value.all.return_value = links
 
@@ -768,6 +777,7 @@ class TestLargeGraphs:
 # ============================================================================
 # INITIALIZATION AND CONFIGURATION TESTS
 # ============================================================================
+
 
 class TestServiceInitialization:
     """Test CycleDetectionService initialization."""
@@ -812,6 +822,7 @@ class TestServiceInitialization:
 # ============================================================================
 # CAN_REACH ALGORITHM TESTS
 # ============================================================================
+
 
 class TestCanReachAlgorithm:
     """Test _can_reach DFS traversal algorithm."""
@@ -858,12 +869,7 @@ class TestCanReachAlgorithm:
 
     def test_can_reach_branching_path(self, service):
         """Test can_reach with multiple paths."""
-        graph = {
-            "A": {"B", "C"},
-            "B": {"D"},
-            "C": {"D"},
-            "D": set()
-        }
+        graph = {"A": {"B", "C"}, "B": {"D"}, "C": {"D"}, "D": set()}
         result = service._can_reach(graph, "A", "D")
         assert result is True
 
@@ -871,6 +877,7 @@ class TestCanReachAlgorithm:
 # ============================================================================
 # FIND_CYCLES ALGORITHM TESTS
 # ============================================================================
+
 
 class TestFindCyclesAlgorithm:
     """Test _find_cycles DFS-based cycle detection algorithm."""
@@ -937,6 +944,7 @@ class TestFindCyclesAlgorithm:
 # INTEGRATION TESTS WITH REPOSITORIES
 # ============================================================================
 
+
 class TestRepositoryIntegration:
     """Test integration with repository pattern."""
 
@@ -953,9 +961,7 @@ class TestRepositoryIntegration:
         return AsyncMock()
 
     @pytest.mark.asyncio
-    async def test_detect_cycles_async_uses_repository(
-        self, mock_async_session, mock_links_repo, mock_items_repo
-    ):
+    async def test_detect_cycles_async_uses_repository(self, mock_async_session, mock_links_repo, mock_items_repo):
         """Test that async detection uses repository."""
         links = [
             Mock(spec=Link, source_item_id="A", target_item_id="B", link_type="depends_on"),
@@ -969,9 +975,7 @@ class TestRepositoryIntegration:
         mock_links_repo.get_by_project.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_async_detects_cycles_from_repository(
-        self, mock_async_session, mock_links_repo
-    ):
+    async def test_async_detects_cycles_from_repository(self, mock_async_session, mock_links_repo):
         """Test async cycle detection using repository data."""
         # Create a cycle via repository
         links = [
@@ -983,7 +987,7 @@ class TestRepositoryIntegration:
         service = CycleDetectionService(mock_async_session, links=mock_links_repo)
         result = await service.detect_cycles_async("proj1")
 
-        assert result.has_cycles is True
+        assert getattr(result, "has_cycles", result.get("has_cycles") if isinstance(result, dict) else None) is True
 
 
 if __name__ == "__main__":

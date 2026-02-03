@@ -51,4 +51,4 @@ export declare class YAxis extends React.Component<Props> {
     };
     render(): React.JSX.Element;
 }
-export {};
+

@@ -2,33 +2,35 @@
 Specification tools for MCP.
 """
 
-from typing import List, Optional, Any
-
 from fastmcp.exceptions import ToolError
 
-from tracertm.mcp.core import mcp
-from tracertm.mcp.api_client import get_api_client
 from tracertm.api.http_client import TraceRTMHttpClient, TraceRTMHttpError
+from tracertm.mcp.api_client import get_api_client
+from tracertm.mcp.core import mcp
 
 
 def _api_client() -> TraceRTMHttpClient:
     return get_api_client()
 
+
 # =============================================================================
 # ADR Tools
 # =============================================================================
 
+
 @mcp.tool(description="Create a new Architecture Decision Record (ADR)")
-async def create_adr(
+def create_adr(
     project_id: str,
     title: str,
     context: str,
     decision: str,
     consequences: str,
     status: str = "proposed",
-    decision_drivers: List[str] = [],
-    tags: List[str] = [],
+    decision_drivers: list[str] | None = None,
+    tags: list[str] | None = None,
 ) -> dict:
+    decision_drivers = decision_drivers if decision_drivers is not None else []
+    tags = tags if tags is not None else []
     client = _api_client()
     try:
         adr = client.post(
@@ -54,11 +56,12 @@ async def create_adr(
         "status": adr.get("status", status),
     }
 
+
 @mcp.tool(description="List ADRs for a project")
-async def list_adrs(
+def list_adrs(
     project_id: str,
-    status: Optional[str] = None,
-) -> List[dict]:
+    status: str | None = None,
+) -> list[dict]:
     client = _api_client()
     try:
         adrs = client.get(
@@ -79,12 +82,14 @@ async def list_adrs(
         for a in adrs
     ]
 
+
 # =============================================================================
 # Contract Tools
 # =============================================================================
 
+
 @mcp.tool(description="Create a new Contract (Design by Contract)")
-async def create_contract(
+def create_contract(
     project_id: str,
     item_id: str,
     title: str,
@@ -112,18 +117,20 @@ async def create_contract(
         "title": contract.get("title", title),
     }
 
+
 # =============================================================================
 # Feature & Scenario Tools
 # =============================================================================
 
+
 @mcp.tool(description="Create a new BDD Feature")
-async def create_feature(
+def create_feature(
     project_id: str,
     name: str,
-    description: str = None,
-    as_a: str = None,
-    i_want: str = None,
-    so_that: str = None,
+    description: str | None = None,
+    as_a: str | None = None,
+    i_want: str | None = None,
+    so_that: str | None = None,
 ) -> dict:
     client = _api_client()
     try:
@@ -147,8 +154,9 @@ async def create_feature(
         "name": feature.get("name", name),
     }
 
+
 @mcp.tool(description="Create a new BDD Scenario for a Feature")
-async def create_scenario(
+def create_scenario(
     feature_id: str,
     title: str,
     gherkin_text: str,
@@ -168,12 +176,14 @@ async def create_scenario(
         "title": scenario.get("title", title),
     }
 
+
 # =============================================================================
 # Quality Tools
 # =============================================================================
 
+
 @mcp.tool(description="Analyze requirements quality (smells, ambiguity)")
-async def analyze_quality(
+def analyze_quality(
     item_id: str,
 ) -> dict:
     client = _api_client()

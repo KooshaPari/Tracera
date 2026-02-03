@@ -402,7 +402,7 @@ Status: ✅ PASSED (All 1,651 tests collected successfully)
 ## 3. DOCUMENTATION SITE TESTING
 
 ### Location
-`/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/docs-site/`
+`docs/site/`
 
 **Status:** ❌ NO TEST COVERAGE
 - Static Next.js documentation site

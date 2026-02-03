@@ -323,7 +323,7 @@ function isNotFoundResponse(error: any) {
     status: 404,
     headers: {
       'Content-Type': 'application/json',
-      ...(headers || {}),
+      ...headers,
     },
   })
 }

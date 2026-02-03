@@ -17,5 +17,5 @@ export declare function diffSentences(oldStr: string, newStr: string, options: D
 export declare function diffSentences(oldStr: string, newStr: string, options: DiffSentencesOptionsNonabortable & CallbackOptionNonabortable<string>): undefined;
 export declare function diffSentences(oldStr: string, newStr: string, options: DiffSentencesOptionsAbortable): ChangeObject<string>[] | undefined;
 export declare function diffSentences(oldStr: string, newStr: string, options?: DiffSentencesOptionsNonabortable): ChangeObject<string>[];
-export {};
+
 //# sourceMappingURL=sentence.d.ts.map

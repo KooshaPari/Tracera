@@ -172,12 +172,12 @@ function parseRegExp(pattern) {
     return regEx;
 }
 // regexes to check for trivial glob patterns that just check for String#endsWith
-const T1 = /^\*\*\/\*\.[\w\.-]+$/; // **/*.something
-const T2 = /^\*\*\/([\w\.-]+)\/?$/; // **/something
-const T3 = /^{\*\*\/\*?[\w\.-]+\/?(,\*\*\/\*?[\w\.-]+\/?)*}$/; // {**/*.something,**/*.else} or {**/package.json,**/project.json}
-const T3_2 = /^{\*\*\/\*?[\w\.-]+(\/(\*\*)?)?(,\*\*\/\*?[\w\.-]+(\/(\*\*)?)?)*}$/; // Like T3, with optional trailing /**
-const T4 = /^\*\*((\/[\w\.-]+)+)\/?$/; // **/something/else
-const T5 = /^([\w\.-]+(\/[\w\.-]+)*)\/?$/; // something/else
+const T1 = /^\*\*\/\*\.[\w.-]+$/; // **/*.something
+const T2 = /^\*\*\/([\w.-]+)\/?$/; // **/something
+const T3 = /^{\*\*\/\*?[\w.-]+\/?(,\*\*\/\*?[\w.-]+\/?)*}$/; // {**/*.something,**/*.else} or {**/package.json,**/project.json}
+const T3_2 = /^{\*\*\/\*?[\w.-]+(\/(\*\*)?)?(,\*\*\/\*?[\w.-]+(\/(\*\*)?)?)*}$/; // Like T3, with optional trailing /**
+const T4 = /^\*\*((\/[\w.-]+)+)\/?$/; // **/something/else
+const T5 = /^([\w.-]+(\/[\w.-]+)*)\/?$/; // something/else
 const CACHE = new LRUCache(10000); // bounded to 10000 elements
 const FALSE = function () {
     return false;

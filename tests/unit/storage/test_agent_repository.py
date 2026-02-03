@@ -5,9 +5,9 @@ Coverage target: 70%+
 Tests CRUD operations, query optimization, error handling, and transaction management.
 """
 
+from unittest.mock import AsyncMock
+
 import pytest
-from unittest.mock import MagicMock, Mock, AsyncMock, patch
-from pathlib import Path
 
 
 class TestAgentRepository:
@@ -25,18 +25,26 @@ class TestAgentRepository:
     @pytest.fixture
     def storage_instance(self, mock_db_session):
         """Create storage instance."""
+        storage_name = "agent"
+        class_name = "AgentRepository"
         try:
             import importlib
-            module_name = f"tracertm.storage.agent_repository" if "repository" not in storage_name else f"tracertm.repositories.agent_repository"
+
+            module_name = (
+                "tracertm.storage.agent_repository"
+                if "repository" not in storage_name
+                else "tracertm.repositories.agent_repository"
+            )
             try:
                 module = importlib.import_module(module_name)
             except ImportError:
                 # Try alternative location
-                module_name = f"tracertm.database.agent_repository"
+                module_name = "tracertm.database.agent_repository"
                 module = importlib.import_module(module_name)
 
             classes = [
-                obj for name, obj in vars(module).items()
+                obj
+                for name, obj in vars(module).items()
                 if isinstance(obj, type) and class_name.lower() in name.lower()
             ]
             if classes:
@@ -46,10 +54,10 @@ class TestAgentRepository:
                 except TypeError:
                     try:
                         return storage_class()
-                    except:
+                    except Exception:
                         return storage_class
             return None
-        except:
+        except Exception:
             return None
 
     def test_storage_initialization(self, storage_instance):
