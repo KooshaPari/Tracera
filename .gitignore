@@ -93,6 +93,8 @@ backend/
 !backend/.golangci.yml
 !backend/golangci-baseline.json
 !backend/golangci-phase1-summary.txt
+!backend/go.mod
+!backend/go.sum
 cli/
 
 # Local MinIO (Homebrew)
