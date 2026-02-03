@@ -648,6 +648,7 @@ from tracertm.api.handlers.items import (
     build_list_response,
     build_query_conditions,
     execute_item_query,
+    ItemListParams,
     resolve_view_matches,
     try_get_from_cache,
 )
@@ -655,6 +656,7 @@ from tracertm.api.handlers.links import (
     build_links_response,
     detect_link_columns,
     execute_links_query,
+    LinkQueryParams,
     parse_exclude_types,
     try_get_links_from_cache,
 )
@@ -927,9 +929,15 @@ async def _list_items_impl(
         ensure_project_access(project_id, claims)
 
     # Try to get from cache (only for simple queries without view resolution)
-    cache_key, cached = await try_get_from_cache(
-        cache, project_id, view, status, parent_id, skip, limit
+    params = ItemListParams(
+        project_id=project_id,
+        view=view,
+        status=status,
+        parent_id=parent_id,
+        skip=skip,
+        limit=limit,
     )
+    cache_key, cached = await try_get_from_cache(cache, params)
     if cached is not None:
         return cached
 
@@ -937,10 +945,10 @@ async def _list_items_impl(
     matches = await resolve_view_matches(view, project_id, db)
 
     # Build query conditions
-    conditions = build_query_conditions(project_id, status, parent_id, matches)
+    conditions = build_query_conditions(params, matches)
 
     # Execute query
-    total_count, items = await execute_item_query(db, conditions, skip, limit)
+    total_count, items = await execute_item_query(db, conditions, params)
 
     # Build response
     result = build_list_response(items, total_count, project_id, limit)
@@ -1025,20 +1033,23 @@ async def list_links(
         exclude_types_list = parse_exclude_types(exclude_types)
 
         # Try to get from cache
-        cache_key, cached = await try_get_links_from_cache(
-            cache, project_id, source_id, target_id, skip, limit, exclude_types
+        params = LinkQueryParams(
+            project_id=project_id,
+            source_id=source_id,
+            target_id=target_id,
+            exclude_types=exclude_types_list,
+            skip=skip,
+            limit=limit,
         )
+        cache_key, cached = await try_get_links_from_cache(cache, params)
         if cached is not None:
             return cached
 
         # Detect actual column names from the database
-        src_col, tgt_col, typ_col, meta_col = await detect_link_columns(db)
+        columns = await detect_link_columns(db)
 
         # Query links based on filter criteria
-        total_count, links_result = await execute_links_query(
-            db, project_id, source_id, target_id, exclude_types_list,
-            src_col, tgt_col, typ_col, meta_col, skip, limit
-        )
+        total_count, links_result = await execute_links_query(db, params, columns)
 
         # Build response
         result = build_links_response(links_result, total_count, project_id)
@@ -1721,7 +1732,7 @@ async def refresh_access_token_endpoint(payload: dict[str, Any]):
         raise HTTPException(status_code=400, detail="Missing refresh_token")
 
     result = verify_refresh_token(refresh_token)
-    if not isinstance(result, dict[str, Any]):
+    if not isinstance(result, dict):
         raise HTTPException(status_code=401, detail="Invalid refresh token")
     return {
         "access_token": result.get("access_token"),
@@ -1740,8 +1751,8 @@ async def auth_me_endpoint(
     from tracertm.repositories.account_repository import AccountRepository
 
     user = None
-    user_id = claims.get("sub") if isinstance(claims, dict[str, Any]) else None
-    account_id = claims.get("account_id") if isinstance(claims, dict[str, Any]) else None
+    user_id = claims.get("sub") if isinstance(claims, dict) else None
+    account_id = claims.get("account_id") if isinstance(claims, dict) else None
 
     if user_id:
         try:
@@ -1750,7 +1761,7 @@ async def auth_me_endpoint(
             user = None
 
     # System admin: set role and cache so ensure_* can bypass without email in JWT
-    if user and isinstance(user, dict[str, Any]):
+    if user and isinstance(user, dict):
         user_email = user.get("email") or user.get("email_address")
         if _is_system_admin_email(user_email):
             user = dict[str, Any](user)
@@ -2081,7 +2092,7 @@ async def list_accounts_endpoint(
     from tracertm.repositories.account_repository import AccountRepository
     from tracertm.schemas.account import AccountResponse
 
-    user_id = claims.get("sub") if isinstance(claims, dict[str, Any]) else None
+    user_id = claims.get("sub") if isinstance(claims, dict) else None
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")
 
@@ -2110,7 +2121,7 @@ async def create_account_endpoint(
     from tracertm.repositories.account_repository import AccountRepository
     from tracertm.schemas.account import AccountCreate, AccountResponse
 
-    user_id = claims.get("sub") if isinstance(claims, dict[str, Any]) else None
+    user_id = claims.get("sub") if isinstance(claims, dict) else None
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")
 
@@ -2157,7 +2168,7 @@ async def switch_account_endpoint(
     """Switch active account context."""
     from tracertm.repositories.account_repository import AccountRepository
 
-    user_id = claims.get("sub") if isinstance(claims, dict[str, Any]) else None
+    user_id = claims.get("sub") if isinstance(claims, dict) else None
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")
 
@@ -2691,7 +2702,7 @@ async def list_projects(
     """List all projects (cached for 10 minutes)."""
     from tracertm.repositories.project_repository import ProjectRepository
 
-    user_id = claims.get("sub") if isinstance(claims, dict[str, Any]) else None
+    user_id = claims.get("sub") if isinstance(claims, dict) else None
     if user_id:
         await _ensure_default_account_for_user(db, user_id)
 
@@ -2714,7 +2725,7 @@ async def list_projects(
                 "id": str(project.id),
                 "name": project.name,
                 "description": (
-                    project.metadata.get("description") if isinstance(project.metadata, dict[str, Any]) else None
+                    project.metadata.get("description") if isinstance(project.metadata, dict) else None
                 ) if hasattr(project, "metadata") and project.metadata else None,
                 "metadata": project.metadata if hasattr(project, "metadata") else {},
                 "created_at": project.created_at.isoformat() if hasattr(project, "created_at") and project.created_at else None,
@@ -2758,7 +2769,7 @@ async def get_project(
     # Get metadata from project_metadata or metadata alias
     project_metadata = getattr(project, "project_metadata", None) or getattr(project, "metadata", None) or {}
     description = getattr(project, "description", None)
-    if not description and isinstance(project_metadata, dict[str, Any]):
+    if not description and isinstance(project_metadata, dict):
         description = project_metadata.get("description")
 
     result = {
@@ -2794,7 +2805,7 @@ async def create_project(
     ensure_write_permission(claims, action="create_project")
     from tracertm.repositories.project_repository import ProjectRepository
 
-    user_id = claims.get("sub") if isinstance(claims, dict[str, Any]) else None
+    user_id = claims.get("sub") if isinstance(claims, dict) else None
     account_id = None
     if user_id:
         account_id = await _ensure_default_account_for_user(db, user_id)
@@ -2988,7 +2999,7 @@ async def import_full_project(
 
     service = ImportService(db)
     try:
-        json_str = json.dumps(body) if isinstance(body, dict[str, Any]) else body
+        json_str = json.dumps(body) if isinstance(body, dict) else body
     except TypeError:
         raise HTTPException(status_code=400, detail="Request body must be JSON object (canonical format)")
     result = await service.import_from_json(json_str)
@@ -8423,7 +8434,7 @@ async def list_github_repos(
 
     enforce_rate_limit(request, claims)
 
-    user_id = claims.get("sub") if isinstance(claims, dict[str, Any]) else None
+    user_id = claims.get("sub") if isinstance(claims, dict) else None
     if account_id and user_id:
         # Verify user has access to account
         account_repo = AccountRepository(db)
@@ -8471,10 +8482,10 @@ async def list_github_repos(
                     page=page,
                 )
                 # Handle both formats: { repositories: [...] } and list
-                if isinstance(repos_result, dict[str, Any]):
+                if isinstance(repos_result, dict):
                     repos = repos_result.get("repositories", [])
                 else:
-                    repos = repos_result if isinstance(repos_result, list[Any]) else []
+                    repos = repos_result if isinstance(repos_result, list) else []
 
         # Fallback to OAuth credential
         elif credential_id:
@@ -8553,7 +8564,7 @@ async def create_github_repo(
 
     enforce_rate_limit(request, claims)
 
-    user_id = claims.get("sub") if isinstance(claims, dict[str, Any]) else None
+    user_id = claims.get("sub") if isinstance(claims, dict) else None
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")
 
@@ -8704,7 +8715,7 @@ async def get_github_app_install_url(
     from tracertm.config.github_app import get_github_app_config
     from tracertm.repositories.account_repository import AccountRepository
 
-    user_id = claims.get("sub") if isinstance(claims, dict[str, Any]) else None
+    user_id = claims.get("sub") if isinstance(claims, dict) else None
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")
 
@@ -8820,7 +8831,7 @@ async def list_github_app_installations(
     from tracertm.repositories.account_repository import AccountRepository
     from tracertm.repositories.github_app_repository import GitHubAppInstallationRepository
 
-    user_id = claims.get("sub") if isinstance(claims, dict[str, Any]) else None
+    user_id = claims.get("sub") if isinstance(claims, dict) else None
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")
 
@@ -8862,7 +8873,7 @@ async def link_github_app_installation(
     from tracertm.repositories.account_repository import AccountRepository
     from tracertm.repositories.github_app_repository import GitHubAppInstallationRepository
 
-    user_id = claims.get("sub") if isinstance(claims, dict[str, Any]) else None
+    user_id = claims.get("sub") if isinstance(claims, dict) else None
     account_id = data.get("account_id")
 
     if not user_id or not account_id:
@@ -8903,7 +8914,7 @@ async def delete_github_app_installation(
     from tracertm.repositories.account_repository import AccountRepository
     from tracertm.repositories.github_app_repository import GitHubAppInstallationRepository
 
-    user_id = claims.get("sub") if isinstance(claims, dict[str, Any]) else None
+    user_id = claims.get("sub") if isinstance(claims, dict) else None
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")
 
