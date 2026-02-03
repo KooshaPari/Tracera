@@ -15,7 +15,7 @@ interface EmptyStateProps {
 	};
 }
 
-export function EmptyState({
+export const EmptyState = function EmptyState({
 	icon,
 	title,
 	description,
@@ -56,4 +56,4 @@ export function EmptyState({
 			)}
 		</div>
 	);
-}
+};

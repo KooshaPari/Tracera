@@ -1,21 +1,9 @@
 import { logger } from "@/lib/logger";
-/**
- * CSRF Token Management
- *
- * Handles CSRF token fetching, storage, and injection into requests.
- * Uses the double-submit cookie pattern for CSRF protection.
- *
- * Token flow:
- * 1. App init: Fetch CSRF token from GET /api/v1/csrf-token
- * 2. Store token in memory (NOT localStorage for security)
- * 3. Inject token into X-CSRF-Token header for state-changing requests
- * 4. After each state-changing request, extract new token from response
- * 5. On 403 errors, refresh token and retry
- */
 
 const API_BASE_URL = import.meta.env?.VITE_API_URL || "http://localhost:4000";
-const CSRF_HEADER = "X-CSRF-Token";
 const CSRF_COOKIE_NAME = "csrf_token";
+const CSRF_HEADER = "X-CSRF-Token";
+const HTTP_STATUS_FORBIDDEN = 403;
 
 // In-memory token storage (never use localStorage for CSRF tokens)
 let csrfToken: string | null = null;
@@ -25,7 +13,7 @@ let tokenFetchPromise: Promise<string> | null = null;
  * Fetch CSRF token from server
  * Uses a promise to avoid race conditions if called multiple times
  */
-export async function fetchCSRFToken(): Promise<string> {
+export const fetchCSRFToken = async (): Promise<string> => {
 	// If a fetch is already in progress, return that promise
 	if (tokenFetchPromise) {
 		return tokenFetchPromise;
@@ -40,11 +28,11 @@ export async function fetchCSRFToken(): Promise<string> {
 	tokenFetchPromise = (async () => {
 		try {
 			const response = await fetch(`${API_BASE_URL}/api/v1/csrf-token`, {
-				method: "GET",
 				credentials: "include", // Include cookies for double-submit pattern
 				headers: {
 					"Content-Type": "application/json",
 				},
+				method: "GET",
 			});
 
 			if (!response.ok) {
@@ -71,38 +59,38 @@ export async function fetchCSRFToken(): Promise<string> {
 	})();
 
 	return tokenFetchPromise;
-}
+};
 
 /**
  * Get current CSRF token without fetching
  * Returns null if token not loaded yet
  */
-export function getCSRFToken(): string | null {
+export const getCSRFToken = (): string | null => {
 	return csrfToken;
-}
+};
 
 /**
  * Set CSRF token (used after receiving new token in response)
  */
-export function setCSRFToken(token: string): void {
+export const setCSRFToken = (token: string): void => {
 	csrfToken = token;
 	logger.debug("[CSRF] Token updated");
-}
+};
 
 /**
  * Refresh CSRF token by fetching a new one
  */
-export async function refreshCSRFToken(): Promise<string> {
+export const refreshCSRFToken = async (): Promise<string> => {
 	csrfToken = null; // Clear current token
 	tokenFetchPromise = null; // Clear any pending promise
 	return fetchCSRFToken();
-}
+};
 
 /**
  * Initialize CSRF protection on app startup
  * This should be called once when the app initializes
  */
-export async function initializeCSRF(): Promise<void> {
+export const initializeCSRF = async (): Promise<void> => {
 	try {
 		await fetchCSRFToken();
 		logger.info("[CSRF] Initialized successfully");
@@ -111,20 +99,20 @@ export async function initializeCSRF(): Promise<void> {
 		// Don't throw - CSRF is optional in dev mode
 		// In production, requests will fail if token is missing
 	}
-}
+};
 
 /**
  * Check if a request method requires CSRF protection
  */
-function isStateChangingRequest(method: string): boolean {
-	return ["POST", "PUT", "PATCH", "DELETE"].includes(method.toUpperCase());
-}
+const isStateChangingRequest = (method: string): boolean => {
+	return ["DELETE", "PATCH", "POST", "PUT"].includes(method.toUpperCase());
+};
 
 /**
  * Get CSRF headers to include in requests
  * Returns headers object with CSRF token if request requires it
  */
-export function getCSRFHeaders(method: string): Record<string, string> {
+export const getCSRFHeaders = (method: string): Record<string, string> => {
 	if (!isStateChangingRequest(method)) {
 		return {};
 	}
@@ -137,15 +125,15 @@ export function getCSRFHeaders(method: string): Record<string, string> {
 	return {
 		[CSRF_HEADER]: csrfToken,
 	};
-}
+};
 
 /**
  * Extract CSRF token from response (if server sends new token)
  * Some servers may send token in response header or body
  */
-export function extractCSRFTokenFromResponse(
+export const extractCSRFTokenFromResponse = (
 	response: Response,
-): string | null {
+): string | null => {
 	// Check for token in response header
 	const headerToken = response.headers.get(CSRF_HEADER);
 	if (headerToken) {
@@ -162,13 +150,13 @@ export function extractCSRFTokenFromResponse(
 	}
 
 	return null;
-}
+};
 
 /**
  * Middleware for API client to automatically include CSRF tokens
  * This should be used with the API client to inject tokens into all requests
  */
-export function createCSRFRequestInterceptor() {
+export const createCSRFRequestInterceptor = () => {
 	return async (request: Request): Promise<Request> => {
 		// Clone the request to modify it
 		const newRequest = request.clone();
@@ -192,15 +180,17 @@ export function createCSRFRequestInterceptor() {
 
 		return newRequest;
 	};
-}
+};
 
 /**
  * Middleware for API client to handle CSRF errors
  * Returns true if error was a CSRF error and was handled
  */
-export async function handleCSRFError(response: Response): Promise<boolean> {
+export const handleCSRFError = async (
+	response: Response,
+): Promise<boolean> => {
 	// Check for CSRF-related 403 errors
-	if (response.status === 403) {
+	if (response.status === HTTP_STATUS_FORBIDDEN) {
 		const contentType = response.headers.get("content-type");
 		if (contentType?.includes("application/json")) {
 			try {
@@ -223,20 +213,20 @@ export async function handleCSRFError(response: Response): Promise<boolean> {
 						return false;
 					}
 				}
-			} catch (error) {
+			} catch {
 				// Response body not JSON, not a CSRF error
 			}
 		}
 	}
 
 	return false;
-}
+};
 
 /**
  * Get all CSRF-related cookies
  * Useful for debugging
  */
-export function getCSRFCookies(): Record<string, string> {
+export const getCSRFCookies = (): Record<string, string> => {
 	const cookies: Record<string, string> = {};
 
 	if (typeof document === "undefined") {
@@ -252,24 +242,24 @@ export function getCSRFCookies(): Record<string, string> {
 	});
 
 	return cookies;
-}
+};
 
 /**
  * Clear CSRF token (useful for logout)
  */
-export function clearCSRFToken(): void {
+export const clearCSRFToken = (): void => {
 	csrfToken = null;
 	tokenFetchPromise = null;
 	logger.debug("[CSRF] Token cleared");
-}
+};
 
 /**
  * Debug helper to log CSRF state
  */
-export function logCSRFState(): void {
+export const logCSRFState = (): void => {
 	logger.group("[CSRF] Current State");
 	logger.info("Token in memory:", csrfToken ? "Yes" : "No");
 	logger.info("Token value:", `${csrfToken?.substring(0, 20)}...` || "None");
 	logger.info("Cookies:", getCSRFCookies());
 	logger.groupEnd();
-}
+};

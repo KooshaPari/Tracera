@@ -48,9 +48,9 @@ describe("Redirect Routes - Backward Compatibility", () => {
 				test_case: "test",
 			};
 
-			expect(typeToView.epic).toBe("feature");
-			expect(typeToView.test_case).toBe("test");
-			expect(typeToView.api_endpoint).toBe("api");
+			expect(typeToView["epic"]).toBe("feature");
+			expect(typeToView["test_case"]).toBe("test");
+			expect(typeToView["api_endpoint"]).toBe("api");
 		});
 	});
 

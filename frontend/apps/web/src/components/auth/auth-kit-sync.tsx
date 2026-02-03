@@ -4,7 +4,7 @@ import { logger } from "@/lib/logger";
 import config from "../../config/constants";
 import { getReturnTo, isPublicRoute } from "../../lib/auth-utils";
 import { useAuthStore } from "../../stores/authStore";
-import type { User } from "../../stores/authStore";
+import type { User, UserMetadata } from "../../stores/authStore";
 import { useEffect, useMemo, useRef } from "react";
 
 const SECONDS_PER_MINUTE = 60;
@@ -12,24 +12,56 @@ const MILLIS_PER_SECOND = 1000;
 const REFRESH_INTERVAL_MS = 5 * SECONDS_PER_MINUTE * MILLIS_PER_SECOND;
 const MIN_LENGTH = 0;
 
+const isRecordObject = (value: unknown): value is Record<string, unknown> =>
+	Object.prototype.toString.call(value) === "[object Object]";
+
+const readStringField = (
+	obj: Record<string, unknown>,
+	key: string,
+): string | undefined => {
+	const value = obj[key];
+	if (typeof value === "string") {
+		return value;
+	}
+	return undefined;
+};
+
+const readMetadataField = (
+	obj: Record<string, unknown>,
+	key: string,
+): UserMetadata | undefined => {
+	const value = obj[key];
+	if (value && typeof value === "object") {
+		return value as UserMetadata;
+	}
+	return undefined;
+};
+
 const toUser = (workosUser: unknown): User | null => {
-	if (!workosUser) {
+	if (!isRecordObject(workosUser)) {
 		return null;
 	}
-	const nameParts = [workosUser.firstName, workosUser.lastName].filter(Boolean);
+	const firstName = readStringField(workosUser, "firstName");
+	const lastName = readStringField(workosUser, "lastName");
+	const email = readStringField(workosUser, "email");
+	const id = readStringField(workosUser, "id");
+	if (!email || !id) {
+		return null;
+	}
+	const nameParts = [firstName, lastName].filter(Boolean);
 	let name = "";
 	if (nameParts.length > MIN_LENGTH) {
 		name = nameParts.join(" ");
 	} else {
-		name = workosUser.email;
+		name = email;
 	}
 	return {
-		avatar: workosUser.profilePictureUrl,
-		email: workosUser.email,
-		id: workosUser.id,
-		metadata: workosUser.metadata,
+		avatar: readStringField(workosUser, "profilePictureUrl"),
+		email,
+		id,
+		metadata: readMetadataField(workosUser, "metadata"),
 		name,
-		role: workosUser.role,
+		role: readStringField(workosUser, "role"),
 	};
 };
 

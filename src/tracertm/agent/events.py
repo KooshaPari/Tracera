@@ -16,6 +16,7 @@ Event Subject Schema:
 """
 
 import logging
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any
@@ -24,6 +25,50 @@ from uuid import uuid4
 from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
+
+# Max length for content/tool summaries in event payloads (avoid huge NATS messages)
+MAX_CONTENT_PREVIEW_LENGTH = 500
+
+
+@dataclass(frozen=True)
+class SessionCheckpointPayload:
+    """Payload for session checkpoint event."""
+
+    checkpoint_id: str
+    turn_number: int
+    s3_key: str | None = None
+    metadata: dict[str, Any] | None = None
+
+
+@dataclass(frozen=True)
+class ChatMessagePayload:
+    """Payload for chat message event."""
+
+    role: str
+    content: str
+    turn_number: int
+    metadata: dict[str, Any] | None = None
+
+
+@dataclass(frozen=True)
+class ChatToolUsePayload:
+    """Payload for chat tool use event."""
+
+    tool_name: str
+    tool_input: dict[str, Any]
+    tool_output: Any | None = None
+    success: bool = True
+    error: str | None = None
+
+
+@dataclass(frozen=True)
+class SnapshotCreatedPayload:
+    """Payload for snapshot created event."""
+
+    snapshot_id: str
+    s3_key: str
+    size_bytes: int
+    file_count: int
 
 
 class EventType(StrEnum):
@@ -157,20 +202,14 @@ class AgentEventPublisher:
         self,
         session_id: str,
         project_id: str | None,
-        checkpoint_id: str,
-        turn_number: int,
-        s3_key: str | None = None,
-        metadata: dict[str, Any] | None = None,
+        payload: SessionCheckpointPayload,
     ) -> None:
         """Publish session checkpoint event.
 
         Args:
             session_id: Session identifier
             project_id: Associated project ID
-            checkpoint_id: Unique checkpoint identifier
-            turn_number: Conversation turn number
-            s3_key: S3 storage key for checkpoint data
-            metadata: Additional checkpoint metadata
+            payload: Checkpoint data (checkpoint_id, turn_number, s3_key, metadata)
         """
         if not self._enabled:
             return
@@ -180,10 +219,10 @@ class AgentEventPublisher:
             session_id=session_id,
             project_id=project_id,
             data={
-                "checkpoint_id": checkpoint_id,
-                "turn_number": turn_number,
-                "s3_key": s3_key,
-                "metadata": metadata or {},
+                "checkpoint_id": payload.checkpoint_id,
+                "turn_number": payload.turn_number,
+                "s3_key": payload.s3_key,
+                "metadata": (payload.metadata or {}) if payload.metadata is not None else {},
             },
             metadata=EventMetadata(source=EventSource.WORKFLOW_EXECUTOR),
         )
@@ -265,37 +304,35 @@ class AgentEventPublisher:
         self,
         session_id: str,
         project_id: str | None,
-        role: str,
-        content: str,
-        turn_number: int,
-        metadata: dict[str, Any] | None = None,
+        payload: ChatMessagePayload,
     ) -> None:
         """Publish chat message event.
 
         Args:
             session_id: Session identifier
             project_id: Associated project ID
-            role: Message role (user/assistant/system)
-            content: Message content (truncated if too long)
-            turn_number: Conversation turn number
-            metadata: Optional message metadata
+            payload: Message data (role, content, turn_number, metadata)
         """
         if not self._enabled:
             return
 
-        # Truncate content for event payload (full content in database)
-        content_preview = content[:500] if len(content) > 500 else content
+        content = payload.content
+        content_preview = (
+            content[:MAX_CONTENT_PREVIEW_LENGTH]
+            if len(content) > MAX_CONTENT_PREVIEW_LENGTH
+            else content
+        )
 
         event = BaseEvent(
             event_type=EventType.CHAT_MESSAGE,
             session_id=session_id,
             project_id=project_id,
             data={
-                "role": role,
+                "role": payload.role,
                 "content_preview": content_preview,
                 "content_length": len(content),
-                "turn_number": turn_number,
-                "metadata": metadata or {},
+                "turn_number": payload.turn_number,
+                "metadata": (payload.metadata or {}) if payload.metadata is not None else {},
             },
             metadata=EventMetadata(source=EventSource.CHAT_HANDLER),
         )
@@ -309,40 +346,34 @@ class AgentEventPublisher:
         self,
         session_id: str,
         project_id: str | None,
-        tool_name: str,
-        tool_input: dict[str, Any],
-        tool_output: Any | None = None,
-        success: bool = True,
-        error: str | None = None,
+        payload: ChatToolUsePayload,
     ) -> None:
         """Publish tool use event.
 
         Args:
             session_id: Session identifier
             project_id: Associated project ID
-            tool_name: Name of tool executed
-            tool_input: Tool input parameters
-            tool_output: Tool output (truncated)
-            success: Whether execution succeeded
-            error: Error message if failed
+            payload: Tool use data (tool_name, tool_input, tool_output, success, error)
         """
         if not self._enabled:
             return
 
-        # Truncate input/output for event payload
-        input_summary = str(tool_input)[:500]
-        output_summary = str(tool_output)[:500] if tool_output else None
+        input_summary = str(payload.tool_input)[:MAX_CONTENT_PREVIEW_LENGTH]
+        output_summary = (
+            str(payload.tool_output)[:MAX_CONTENT_PREVIEW_LENGTH]
+            if payload.tool_output else None
+        )
 
         event = BaseEvent(
             event_type=EventType.CHAT_TOOL_USE,
             session_id=session_id,
             project_id=project_id,
             data={
-                "tool_name": tool_name,
+                "tool_name": payload.tool_name,
                 "input_summary": input_summary,
                 "output_summary": output_summary,
-                "success": success,
-                "error": error,
+                "success": payload.success,
+                "error": payload.error,
             },
             metadata=EventMetadata(source=EventSource.CHAT_HANDLER),
         )
@@ -393,20 +424,14 @@ class AgentEventPublisher:
         self,
         session_id: str,
         project_id: str | None,
-        snapshot_id: str,
-        s3_key: str,
-        size_bytes: int,
-        file_count: int,
+        payload: SnapshotCreatedPayload,
     ) -> None:
         """Publish snapshot created event.
 
         Args:
             session_id: Session identifier
             project_id: Associated project ID
-            snapshot_id: Unique snapshot identifier
-            s3_key: S3 storage key for snapshot
-            size_bytes: Snapshot size in bytes
-            file_count: Number of files in snapshot
+            payload: Snapshot data (snapshot_id, s3_key, size_bytes, file_count)
         """
         if not self._enabled:
             return
@@ -416,10 +441,10 @@ class AgentEventPublisher:
             session_id=session_id,
             project_id=project_id,
             data={
-                "snapshot_id": snapshot_id,
-                "s3_key": s3_key,
-                "size_bytes": size_bytes,
-                "file_count": file_count,
+                "snapshot_id": payload.snapshot_id,
+                "s3_key": payload.s3_key,
+                "size_bytes": payload.size_bytes,
+                "file_count": payload.file_count,
             },
             metadata=EventMetadata(source=EventSource.SNAPSHOT_SERVICE),
         )

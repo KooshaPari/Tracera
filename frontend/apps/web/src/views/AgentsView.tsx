@@ -1,23 +1,26 @@
-import { useEffect, useState } from "react";
-import { Button, Card, CardContent, CardHeader, CardTitle } from "@tracertm/ui";
 import { Badge } from "@tracertm/ui/components/Badge";
+import { Button, Card, CardContent, CardHeader, CardTitle } from "@tracertm/ui";
+
+const MINUTE_IN_MS = Number("60000");
+const HOUR_IN_MS = Number("60") * MINUTE_IN_MS;
+const TASKS_DEFAULT = Number("0");
 
 type AgentStatus = "active" | "idle" | "running" | "offline";
 
 interface AgentSummary {
+	capabilities?: string[];
 	id: string;
+	lastRun?: string;
 	name: string;
 	status: AgentStatus;
 	tasksCompleted?: number;
-	lastRun?: string;
-	capabilities?: string[];
 }
 
 const fallbackAgents: AgentSummary[] = [
 	{
 		capabilities: ["sync", "dependency-check"],
 		id: "agent-1",
-		lastRun: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+		lastRun: new Date(Date.now() - HOUR_IN_MS).toISOString(),
 		name: "Sync Agent",
 		status: "active",
 		tasksCompleted: 24,
@@ -25,7 +28,7 @@ const fallbackAgents: AgentSummary[] = [
 	{
 		capabilities: ["validation", "quality-checks"],
 		id: "agent-2",
-		lastRun: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+		lastRun: new Date(Date.now() - 2 * HOUR_IN_MS).toISOString(),
 		name: "Validation Agent",
 		status: "idle",
 		tasksCompleted: 12,
@@ -33,14 +36,14 @@ const fallbackAgents: AgentSummary[] = [
 	{
 		capabilities: ["coverage-report", "test-execution"],
 		id: "agent-3",
-		lastRun: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+		lastRun: new Date(Date.now() - 15 * MINUTE_IN_MS).toISOString(),
 		name: "Coverage Agent",
 		status: "running",
 		tasksCompleted: 7,
 	},
 ];
 
-const statusVariant = (status: AgentStatus) => {
+const statusVariant = (status: AgentStatus): "default" | "outline" | "secondary" => {
 	switch (status) {
 		case "active": {
 			return "default";
@@ -57,7 +60,7 @@ const statusVariant = (status: AgentStatus) => {
 	}
 };
 
-const formatLastRun = (iso?: string) => {
+const formatLastRun = (iso?: string): string => {
 	if (!iso) {
 		return "Last run: —";
 	}
@@ -68,10 +71,40 @@ const formatLastRun = (iso?: string) => {
 	return `Last run: ${date.toLocaleString()}`;
 };
 
-export function AgentsView() {
-	const [agents, setAgents] = useState<AgentSummary[]>(fallbackAgents);
+const AgentCard = ({ agent }: { agent: AgentSummary }): JSX.Element => (
+	<Card className="border border-border/60">
+		<CardHeader className="space-y-2">
+			<div className="flex items-center justify-between gap-3">
+				<CardTitle className="text-base">{agent.name}</CardTitle>
+				<Badge variant={statusVariant(agent.status)}>{agent.status}</Badge>
+			</div>
+			<p className="text-xs text-muted-foreground">
+				{agent.tasksCompleted ?? TASKS_DEFAULT} tasks completed
+			</p>
+			<p className="text-xs text-muted-foreground">
+				{formatLastRun(agent.lastRun)}
+			</p>
+		</CardHeader>
+		<CardContent className="space-y-3">
+			{agent.capabilities?.length ? (
+				<p className="text-xs text-muted-foreground">
+					Capabilities: {agent.capabilities.join(", ")}
+				</p>
+			) : null}
+			<div className="flex flex-wrap gap-2">
+				<Button size="sm" variant="secondary">
+					View Logs
+				</Button>
+				<Button size="sm" variant="outline">
+					Configure
+				</Button>
+			</div>
+		</CardContent>
+	</Card>
+);
 
-	useEffect(() => {}, []);
+export const AgentsView = (): JSX.Element => {
+	const agents = fallbackAgents;
 
 	return (
 		<div className="space-y-6">
@@ -84,39 +117,9 @@ export function AgentsView() {
 
 			<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
 				{agents.map((agent) => (
-					<Card key={agent.id} className="border border-border/60">
-						<CardHeader className="space-y-2">
-							<div className="flex items-center justify-between gap-3">
-								<CardTitle className="text-base">{agent.name}</CardTitle>
-								<Badge variant={statusVariant(agent.status)}>
-									{agent.status}
-								</Badge>
-							</div>
-							<p className="text-xs text-muted-foreground">
-								{agent.tasksCompleted ?? 0} tasks completed
-							</p>
-							<p className="text-xs text-muted-foreground">
-								{formatLastRun(agent.lastRun)}
-							</p>
-						</CardHeader>
-						<CardContent className="space-y-3">
-							{agent.capabilities?.length ? (
-								<p className="text-xs text-muted-foreground">
-									Capabilities: {agent.capabilities.join(", ")}
-								</p>
-							) : null}
-							<div className="flex flex-wrap gap-2">
-								<Button size="sm" variant="secondary">
-									View Logs
-								</Button>
-								<Button size="sm" variant="outline">
-									Configure
-								</Button>
-							</div>
-						</CardContent>
-					</Card>
+					<AgentCard key={agent.id} agent={agent} />
 				))}
 			</div>
 		</div>
 	);
-}
+};

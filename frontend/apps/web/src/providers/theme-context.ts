@@ -20,4 +20,4 @@ const DEFAULT_THEME_CONTEXT: ThemeContextType = {
 
 const ThemeContext = createContext<ThemeContextType>(DEFAULT_THEME_CONTEXT);
 
-export default ThemeContext;
+export { ThemeContext };

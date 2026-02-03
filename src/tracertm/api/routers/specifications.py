@@ -39,7 +39,7 @@ from tracertm.schemas.specification import (
 )
 from tracertm.services.adr_service import ADRService
 from tracertm.services.contract_service import ContractService
-from tracertm.services.feature_service import FeatureService
+from tracertm.services.feature_service import CreateFeatureInput, FeatureService
 from tracertm.services.scenario_service import ScenarioService
 
 # =============================================================================
@@ -670,9 +670,7 @@ async def create_feature_spec(
     service = FeatureService(db)
 
     try:
-        created_feature = await service.create_feature(
-            project_id=feature.project_id,
-            name=feature.name,
+        options = CreateFeatureInput(
             description=feature.description,
             as_a=feature.as_a,
             i_want=feature.i_want,
@@ -680,6 +678,11 @@ async def create_feature_spec(
             status=feature.status.value if hasattr(feature.status, "value") else feature.status,
             tags=feature.tags,
             related_requirements=feature.related_requirements,
+        )
+        created_feature = await service.create_feature(
+            project_id=feature.project_id,
+            name=feature.name,
+            options=options,
         )
 
         # Publish NATS event

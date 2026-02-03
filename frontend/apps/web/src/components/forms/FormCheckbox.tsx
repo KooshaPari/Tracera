@@ -1,7 +1,6 @@
-import * as React from "react";
-import type { CheckboxProps } from "@/components/ui/checkbox";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Checkbox, type CheckboxProps } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
+import * as React from "react";
 
 const CHECKBOX_ID_RADIX = 36;
 const CHECKBOX_ID_RANDOM_LENGTH = 9;
@@ -15,6 +14,7 @@ export interface FormCheckboxProps extends Omit<CheckboxProps, "id"> {
 	error?: boolean;
 	errorMessage?: string;
 	required?: boolean;
+	id?: string;
 }
 
 export const FormCheckbox = React.forwardRef<

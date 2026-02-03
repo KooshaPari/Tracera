@@ -13,7 +13,7 @@ interface MobileFormLayoutProps {
  * Mobile-optimized form layout that stacks all fields vertically
  * with increased touch targets and optimized spacing
  */
-export function MobileFormLayout({
+export const MobileFormLayout = function MobileFormLayout({
 	children,
 	className,
 	title,
@@ -42,7 +42,7 @@ export function MobileFormLayout({
 			<form className="space-y-4 sm:space-y-5">{children}</form>
 		</div>
 	);
-}
+};
 
 interface FormFieldProps {
 	label?: string;
@@ -56,7 +56,7 @@ interface FormFieldProps {
 /**
  * Form field wrapper that ensures proper spacing and touch targets
  */
-export function FormField({
+export const FormField = function FormField({
 	label,
 	error,
 	required,
@@ -87,7 +87,7 @@ export function FormField({
 			)}
 		</div>
 	);
-}
+};
 
 interface FormGroupProps {
 	children: ReactNode;
@@ -99,7 +99,7 @@ interface FormGroupProps {
  * Groups multiple form fields together
  * Stacks on mobile, can arrange in columns on larger screens
  */
-export function FormGroup({
+export const FormGroup = function FormGroup({
 	children,
 	columns = "1",
 	className,
@@ -114,7 +114,7 @@ export function FormGroup({
 			{children}
 		</div>
 	);
-}
+};
 
 interface FormActionsProps {
 	children: ReactNode;
@@ -127,7 +127,7 @@ interface FormActionsProps {
  * Actions footer for forms with proper spacing and touch targets
  * Buttons are full-width on mobile
  */
-export function FormActions({
+export const FormActions = function FormActions({
 	children,
 	className,
 	justify = "end",
@@ -153,7 +153,7 @@ export function FormActions({
 			{children}
 		</div>
 	);
-}
+};
 
 interface FormInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 	isMobile?: boolean;

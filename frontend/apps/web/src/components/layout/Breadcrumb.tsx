@@ -18,7 +18,7 @@ interface BreadcrumbSegment {
 	isLoading?: boolean;
 }
 
-export function Breadcrumbs() {
+export const Breadcrumbs = function Breadcrumbs() {
 	const matches = useMatches();
 	const params = useParams({ strict: false });
 	const projectId = params.projectId as string | undefined;
@@ -186,4 +186,4 @@ export function Breadcrumbs() {
 			</BreadcrumbList>
 		</ShadcnBreadcrumb>
 	);
-}
+};

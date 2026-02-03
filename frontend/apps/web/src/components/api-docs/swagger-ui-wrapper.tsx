@@ -1,10 +1,12 @@
 "use client";
 
-import { logger } from "@/lib/logger";
-import { Copy, Download, Moon, Sun } from "lucide-react";
-import { type ComponentProps, type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
-import SwaggerUI from "swagger-ui-react";
+/* eslint-disable eslint/sort-imports */
 import "swagger-ui-react/swagger-ui.css";
+import { type ComponentProps, type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import { Copy, Download, Moon, Sun } from "lucide-react";
+import { logger } from "@/lib/logger";
+import SwaggerUI from "swagger-ui-react";
+/* eslint-enable eslint/sort-imports */
 
 interface SwaggerUIWrapperProps {
 	specUrl?: string;

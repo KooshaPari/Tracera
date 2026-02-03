@@ -154,7 +154,7 @@ export function CreateItemForm({
 				restoreFocus(savedFocusRef.current);
 			}
 		};
-	}, [handleKeyDown, onCancel]);
+	}, [handleKeyDown, onCancel, titleProp]);
 
 	return (
 		<div className="fixed inset-0 z-50 flex items-center justify-center">

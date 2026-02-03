@@ -1,10 +1,11 @@
 // Graph node loading skeleton — LOD-shaped (Phase 3, 2.1)
 // Renders a loading placeholder by lodLevel: dot → minimal pill → compact pill → full pill → full node shape
 
-import type { Node, NodeProps } from "@xyflow/react";
 import { Handle, Position } from "@xyflow/react";
+import type { Node, NodeProps } from "@xyflow/react";
 import { Skeleton } from "@tracertm/ui/components/Skeleton";
 import { memo } from "react";
+
 import { LODLevel } from "./utils/lod";
 
 export interface NodeLoadingSkeletonData {
@@ -13,9 +14,9 @@ export interface NodeLoadingSkeletonData {
 	[key: string]: unknown;
 }
 
-const NodeLoadingSkeletonComponent = function NodeLoadingSkeletonComponent({
+const NodeLoadingSkeletonComponent = ({
 	data,
-}: NodeProps<Node<NodeLoadingSkeletonData, "nodeLoading">>) {
+}: NodeProps<Node<NodeLoadingSkeletonData, "nodeLoading">>) => {
 	const lod = (data.lodLevel ?? LODLevel.VeryClose) as LODLevel;
 
 	return (
@@ -35,7 +36,7 @@ const NodeLoadingSkeletonComponent = function NodeLoadingSkeletonComponent({
 	);
 };
 
-const LodLoadingShape = function LodLoadingShape({ lod }: { lod: LODLevel }) {
+const LodLoadingShape = ({ lod }: { lod: LODLevel }) => {
 	switch (lod) {
 		case LODLevel.VeryFar: {
 			return <Skeleton className="h-2 w-2 min-w-2 min-h-2 rounded-full" />;

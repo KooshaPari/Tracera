@@ -36,8 +36,8 @@
    - Key Tools: `create_item_phase3`, `get_item_phase3`, `query_items_phase3`, `get_db_metrics_phase3`
    - Features: Demonstrates pooling, caching, eager loading
 
-6. **benchmark_phase3.py** (390 lines)
-   - Path: `src/tracertm/mcp/benchmark_phase3.py`
+6. **db_benchmark.py** (390 lines)
+   - Path: `src/tracertm/mcp/db_benchmark.py`
    - Purpose: Performance benchmarking suite
    - Key Classes: `BenchmarkRunner`
    - Features: Compares old vs new, measures improvements
@@ -125,7 +125,7 @@ tools/items_phase3.py
 ├── tracertm.mcp.tools.base_async
 └── tracertm.models.item
 
-benchmark_phase3.py
+db_benchmark.py
 ├── tracertm.database.connection
 ├── tracertm.mcp.database_manager
 ├── tracertm.mcp.query_optimizer
@@ -157,7 +157,7 @@ async with get_async_session() as session:
 
 ### Run Benchmark
 ```bash
-python -m tracertm.mcp.benchmark_phase3 <db_url> <project_id>
+python -m tracertm.mcp.db_benchmark <db_url> <project_id>
 ```
 
 ### Run Tests

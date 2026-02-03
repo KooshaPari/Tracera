@@ -2,14 +2,14 @@
  * Example component demonstrating NDJSON streaming usage
  */
 
-import type { ChangeEvent } from "react";
-import { useCallback, useMemo, useState } from "react";
 import {
 	useStreamExport,
 	useStreamGraph,
 	useStreamItems,
 } from "../../hooks/useStreaming";
+import type { StreamingStats } from "../../lib/ndjson-parser";
 import { StreamingProgress, StreamingProgressBar } from "../StreamingProgress";
+import { useCallback, useMemo, useState, type ChangeEvent } from "react";
 
 const SLICE_SIZE = 10;
 const PREVIEW_SIZE = 3;
@@ -367,35 +367,21 @@ const ExportControls = ({
 	);
 };
 
-type ExportProgressProps = {
-	isStreaming: boolean;
-	itemsReceived?: number;
-	stats?: { itemsReceived: number } | null;
-};
-
-const ExportProgress = ({ isStreaming, itemsReceived, stats }: ExportProgressProps) => (
-	<div className="space-y-2">
-		<StreamingProgress
-			stats={stats ?? undefined}
-			isStreaming={isStreaming}
-			showThroughput
-			showBytes
-		/>
-		{stats && (
-			<StreamingProgressBar
-				current={itemsReceived ?? stats.itemsReceived}
-				isStreaming={isStreaming}
-			/>
-		)}
-	</div>
-);
-
 type ExportActionsProps = {
 	canDownload: boolean;
 	isStreaming: boolean;
 	onDownload: () => void;
 	onReset: () => void;
 };
+
+type ExportSizeProps = { count: number };
+
+const ExportSize = ({ count }: ExportSizeProps) => (
+	<div className="p-3 bg-muted rounded">
+		<div className="text-sm text-muted-foreground">Export Size</div>
+		<div className="text-2xl font-bold">{count} items</div>
+	</div>
+);
 
 const ExportActions = ({
 	canDownload,
@@ -457,16 +443,22 @@ const StreamExportExample = () => {
 				value={exportType}
 			/>
 
-			<ExportProgress
-				isStreaming={state.isStreaming}
-				itemsReceived={state.stats?.itemsReceived}
-				stats={state.stats}
-			/>
-
-			<div className="p-3 bg-muted rounded">
-				<div className="text-sm text-muted-foreground">Export Size</div>
-				<div className="text-2xl font-bold">{data.length} items</div>
+			<div className="space-y-2">
+				<StreamingProgress
+					stats={state.stats as StreamingStats | null}
+					isStreaming={state.isStreaming}
+					showThroughput
+					showBytes
+				/>
+				{state.stats && (
+					<StreamingProgressBar
+						current={state.stats.itemsReceived}
+						isStreaming={state.isStreaming}
+					/>
+				)}
 			</div>
+
+			<ExportSize count={data.length} />
 
 			<ExportActions
 				canDownload={canDownload}

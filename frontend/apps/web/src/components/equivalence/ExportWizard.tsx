@@ -1,10 +1,4 @@
-import { AlertCircle, Download, Loader2 } from "lucide-react";
-import type { FC } from "react";
-import { useEffect, useMemo, useState } from "react";
-import { clientCore } from "@/api/client-core";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
 	Dialog,
 	DialogContent,
@@ -13,8 +7,13 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { AlertCircle, Download, Loader2 } from "lucide-react";
+import { type FC, useEffect, useMemo, useState } from "react";
+import { clientCore } from "@/api/client-core";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { logger } from "@/lib/logger";
 
 const { getAuthHeaders } = clientCore;
@@ -149,7 +148,7 @@ const useExportStats = (isOpen: boolean, projectId: string) => {
 		};
 	}, [isOpen, projectId, stats]);
 
-	return { stats, error, setError };
+	return { error, setError, stats };
 };
 
 const useExportOptions = () => {
@@ -181,15 +180,15 @@ const useExportOptions = () => {
 
 	return {
 		format,
-		includeEmbeddings,
-		includeItemInfo,
-		includeMetadata,
-		pretty,
 		handleEmbeddingsChange,
 		handleFormatChange,
 		handleItemInfoChange,
 		handleMetadataChange,
 		handlePrettyChange,
+		includeEmbeddings,
+		includeItemInfo,
+		includeMetadata,
+		pretty,
 	};
 };
 
@@ -197,7 +196,7 @@ const useExportStep = () => {
 	const [step, setStep] = useState<ExportStep>("options");
 	const goToOptions = () => setStep("options");
 	const goToReview = () => setStep("review");
-	return { step, goToOptions, goToReview };
+	return { goToOptions, goToReview, step };
 };
 
 const useEstimatedSize = (
@@ -217,35 +216,39 @@ const useEstimatedSize = (
 		return formatSize(baseSize + embeddingsSize);
 	}, [includeEmbeddings, stats]);
 
-const useExportActions = (
-	config: ExportConfig,
-	projectId: string,
-	projectName: string,
-	onClose: () => void,
-	onExport: ExportWizardProps["onExport"],
-	resetStep: () => void,
-	setError: (value: string | null) => void,
-) => {
+const useExportActions = (params: {
+	config: ExportConfig;
+	onClose: () => void;
+	onExport: ExportWizardProps["onExport"];
+	projectId: string;
+	projectName: string;
+	resetStep: () => void;
+	setError: (value: string | null) => void;
+}) => {
 	const [isLoading, setIsLoading] = useState(false);
 
 	const handleClose = () => {
-		resetStep();
-		setError(null);
-		onClose();
+		params.resetStep();
+		params.setError(null);
+		params.onClose();
 	};
 
 	const handleExport = async () => {
 		setIsLoading(true);
-		setError(null);
+		params.setError(null);
 		try {
-			if (onExport) {
-				await onExport(config);
+			if (params.onExport) {
+				await params.onExport(params.config);
 			} else {
-				await runDefaultExport(projectId, projectName, config);
+				await runDefaultExport(
+					params.projectId,
+					params.projectName,
+					params.config,
+				);
 			}
-			onClose();
+			params.onClose();
 		} catch (exportError) {
-			setError(
+			params.setError(
 				exportError instanceof Error ? exportError.message : "Export failed",
 			);
 		} finally {
@@ -356,22 +359,22 @@ const buildBodyProps = (params: {
 }): ExportWizardBodyProps => ({
 	optionsProps: {
 		error: params.error,
-		stats: params.stats,
+		estimatedSize: params.estimatedSize,
 		format: params.options.format,
 		includeEmbeddings: params.options.includeEmbeddings,
 		includeItemInfo: params.options.includeItemInfo,
 		includeMetadata: params.options.includeMetadata,
-		pretty: params.options.pretty,
-		estimatedSize: params.estimatedSize,
-		onFormatChange: params.options.handleFormatChange,
 		onEmbeddingsChange: params.options.handleEmbeddingsChange,
+		onFormatChange: params.options.handleFormatChange,
 		onItemInfoChange: params.options.handleItemInfoChange,
 		onMetadataChange: params.options.handleMetadataChange,
 		onPrettyChange: params.options.handlePrettyChange,
+		pretty: params.options.pretty,
+		stats: params.stats,
 	},
 	reviewProps: {
-		format: params.options.format,
 		estimatedSize: params.estimatedSize,
+		format: params.options.format,
 		includeEmbeddings: params.options.includeEmbeddings,
 		includeItemInfo: params.options.includeItemInfo,
 		includeMetadata: params.options.includeMetadata,
@@ -388,12 +391,12 @@ const buildFooterProps = (params: {
 	onNext: () => void;
 	step: ExportStep;
 }): ExportFooterProps => ({
-	step: params.step,
 	isLoading: params.isLoading,
 	onBack: params.onBack,
 	onClose: params.onClose,
 	onExport: params.onExport,
 	onNext: params.onNext,
+	step: params.step,
 });
 
 const SummaryItem: FC<{ label: string; value: number }> = ({ label, value }) => (
@@ -674,15 +677,15 @@ export const ExportWizard: FC<ExportWizardProps> = ({
 	const options = useExportOptions();
 	const estimatedSize = useEstimatedSize(stats, options.includeEmbeddings);
 	const config: ExportConfig = { format: options.format, includeEmbeddings: options.includeEmbeddings, includeItemInfo: options.includeItemInfo, includeMetadata: options.includeMetadata, pretty: options.pretty };
-	const { handleClose, handleExport, isLoading } = useExportActions(
+	const { handleClose, handleExport, isLoading } = useExportActions({
 		config,
-		projectId,
-		projectName,
 		onClose,
 		onExport,
-		goToOptions,
+		projectId,
+		projectName,
+		resetStep: goToOptions,
 		setError,
-	);
+	});
 	const bodyProps = buildBodyProps({ error, estimatedSize, options, stats, step });
 	const footerProps = buildFooterProps({ isLoading, onBack: goToOptions, onClose: handleClose, onExport: handleExport, onNext: goToReview, step });
 	return <ExportWizardLayout bodyProps={bodyProps} footerProps={footerProps} isOpen={isOpen} onClose={handleClose} projectName={projectName} />;

@@ -1,11 +1,11 @@
 import { Outlet, useLocation, useMatches } from "@tanstack/react-router";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { ChatBubble } from "@/components/chat";
 import { cn } from "@/lib/utils";
 import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
 
-export function Layout() {
+export const Layout = function Layout() {
 	const location = useLocation();
 	const matches = useMatches();
 	const path = location.pathname;
@@ -56,7 +56,7 @@ export function Layout() {
 		);
 	}
 
-	const handleSkipToMain = (e: React.SyntheticEvent) => {
+	const handleSkipToMain = useCallback((e: React.SyntheticEvent) => {
 		e.preventDefault();
 		hasHandledFirstTabRef.current = true;
 		const mainContent = document.querySelector("main");
@@ -71,7 +71,16 @@ export function Layout() {
 				{ once: true },
 			);
 		}
-	};
+	}, []);
+
+	const handleSkipKeyDown = useCallback(
+		(event: React.KeyboardEvent) => {
+			if (event.key === "Enter" || event.key === " ") {
+				handleSkipToMain(event);
+			}
+		},
+		[handleSkipToMain],
+	);
 
 	useEffect(() => {
 		const handleFirstTab = (event: KeyboardEvent) => {
@@ -125,11 +134,7 @@ export function Layout() {
 				id="skip-to-main"
 				href="#main-content"
 				onClick={handleSkipToMain}
-				onKeyDown={(event) => {
-					if (event.key === "Enter" || event.key === " ") {
-						handleSkipToMain(event);
-					}
-				}}
+				onKeyDown={handleSkipKeyDown}
 				tabIndex={0}
 				className="absolute left-[-9999px] top-0 z-[10000] bg-primary px-4 py-2 text-primary-foreground focus:left-4 focus:top-4 focus:rounded-lg"
 			>
@@ -165,6 +170,6 @@ export function Layout() {
 			</div>
 		</div>
 	);
-}
+};
 
 export default Layout;

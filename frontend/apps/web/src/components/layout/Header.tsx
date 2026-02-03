@@ -25,7 +25,7 @@ import {
 	Shield,
 	XCircle,
 } from "lucide-react";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { MobileMenu } from "@/components/mobile";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useProject } from "@/hooks/useProjects";
@@ -33,7 +33,9 @@ import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
 import { Breadcrumbs } from "./Breadcrumb";
 
-function getNotificationIcon(type: string) {
+const AVATAR_INITIALS_MAX = 2;
+
+const getNotificationIcon = function getNotificationIcon(type: string) {
 	switch (type) {
 		case "success": {
 			return <CheckCircle className="h-4 w-4 text-green-500" />;
@@ -48,17 +50,25 @@ function getNotificationIcon(type: string) {
 			return <Info className="h-4 w-4 text-blue-500" />;
 		}
 	}
-}
+};
 
-export function Header() {
+export const Header = function Header() {
 	const location = useLocation();
 	const navigate = useNavigate();
 	const params = useParams({ strict: false });
-	const { user } = useAuthStore();
+	const { user, logout } = useAuthStore();
 	const { notifications, unreadCount, markAsRead, markAllRead } =
 		useNotifications();
 	const projectId = params.projectId as string | undefined;
 	const { data: project } = useProject(projectId || "");
+
+	const handleLogout = useCallback(() => {
+		logout()
+			.then(() => {
+				navigate({ to: "/auth/login" });
+			})
+			.catch(() => {});
+	}, [logout, navigate]);
 
 	// Get initials for avatar
 	const initials = user?.name
@@ -67,7 +77,7 @@ export function Header() {
 				.map((n) => n[0])
 				.join("")
 				.toUpperCase()
-				.slice(0, 2)
+				.slice(0, AVATAR_INITIALS_MAX)
 		: "U";
 
 	// Dynamic header content based on route
@@ -234,7 +244,7 @@ export function Header() {
 													markAsRead.mutate(notification.id);
 												}
 												if (notification.link) {
-													void navigate({ to: notification.link });
+													navigate({ to: notification.link });
 												}
 											}}
 										>
@@ -355,4 +365,4 @@ export function Header() {
 			</div>
 		</header>
 	);
-}
+};

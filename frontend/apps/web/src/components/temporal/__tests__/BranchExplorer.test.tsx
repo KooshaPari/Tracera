@@ -1,10 +1,10 @@
 // BranchExplorer component tests
 
+import { BranchExplorer } from "../BranchExplorer";
+import { EMPTY_BRANCHES, MOCK_BRANCHES } from "./fixtures/branches";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { BranchExplorer } from "../BranchExplorer";
-import type { Branch } from "../TemporalNavigator";
 
 describe(BranchExplorer, () => {
 	let user: ReturnType<typeof userEvent.setup>;
@@ -12,45 +12,6 @@ describe(BranchExplorer, () => {
 	beforeEach(() => {
 		user = userEvent.setup();
 	});
-	const mockBranches: Branch[] = [
-		{
-			createdAt: new Date("2024-01-01"),
-			description: "Main production branch",
-			id: "branch-1",
-			mergeRequestCount: 5,
-			name: "main",
-			status: "active",
-			updatedAt: new Date("2024-01-15"),
-		},
-		{
-			createdAt: new Date("2024-01-05"),
-			description: "Development branch",
-			id: "branch-2",
-			mergeRequestCount: 2,
-			name: "develop",
-			parentId: "branch-1",
-			status: "active",
-			updatedAt: new Date("2024-01-14"),
-		},
-		{
-			createdAt: new Date("2024-01-10"),
-			id: "branch-3",
-			mergeRequestCount: 1,
-			name: "feature/auth",
-			parentId: "branch-2",
-			status: "review",
-			updatedAt: new Date("2024-01-13"),
-		},
-		{
-			createdAt: new Date("2024-01-12"),
-			id: "branch-4",
-			mergeRequestCount: 0,
-			name: "hotfix/security",
-			parentId: "branch-1",
-			status: "merged",
-			updatedAt: new Date("2024-01-12"),
-		},
-	];
 
 	const mockOnBranchChange = vi.fn();
 	const mockOnMergeRequest = vi.fn();
@@ -64,7 +25,7 @@ describe(BranchExplorer, () => {
 		render(
 			<BranchExplorer
 				projectId="proj-1"
-				branches={mockBranches}
+				branches={MOCK_BRANCHES}
 				currentBranchId="branch-1"
 				onBranchChange={mockOnBranchChange}
 			/>,
@@ -78,7 +39,7 @@ describe(BranchExplorer, () => {
 		render(
 			<BranchExplorer
 				projectId="proj-1"
-				branches={mockBranches}
+				branches={MOCK_BRANCHES}
 				currentBranchId="branch-1"
 				onBranchChange={mockOnBranchChange}
 			/>,
@@ -95,7 +56,7 @@ describe(BranchExplorer, () => {
 		render(
 			<BranchExplorer
 				projectId="proj-1"
-				branches={mockBranches}
+				branches={MOCK_BRANCHES}
 				currentBranchId="branch-1"
 				onBranchChange={mockOnBranchChange}
 			/>,
@@ -110,7 +71,7 @@ describe(BranchExplorer, () => {
 		render(
 			<BranchExplorer
 				projectId="proj-1"
-				branches={mockBranches}
+				branches={MOCK_BRANCHES}
 				currentBranchId="branch-1"
 				onBranchChange={mockOnBranchChange}
 			/>,
@@ -124,7 +85,7 @@ describe(BranchExplorer, () => {
 		render(
 			<BranchExplorer
 				projectId="proj-1"
-				branches={mockBranches}
+				branches={MOCK_BRANCHES}
 				currentBranchId="branch-1"
 				onBranchChange={mockOnBranchChange}
 				onBranchCreate={mockOnBranchCreate}
@@ -138,7 +99,7 @@ describe(BranchExplorer, () => {
 		render(
 			<BranchExplorer
 				projectId="proj-1"
-				branches={mockBranches}
+				branches={MOCK_BRANCHES}
 				currentBranchId="branch-1"
 				onBranchChange={mockOnBranchChange}
 				onBranchCreate={mockOnBranchCreate}
@@ -154,7 +115,7 @@ describe(BranchExplorer, () => {
 		render(
 			<BranchExplorer
 				projectId="proj-1"
-				branches={mockBranches}
+				branches={MOCK_BRANCHES}
 				currentBranchId="branch-1"
 				onBranchChange={mockOnBranchChange}
 			/>,
@@ -169,7 +130,7 @@ describe(BranchExplorer, () => {
 		render(
 			<BranchExplorer
 				projectId="proj-1"
-				branches={mockBranches}
+				branches={MOCK_BRANCHES}
 				currentBranchId="branch-1"
 				onBranchChange={mockOnBranchChange}
 			/>,
@@ -182,7 +143,7 @@ describe(BranchExplorer, () => {
 		render(
 			<BranchExplorer
 				projectId="proj-1"
-				branches={[]}
+				branches={EMPTY_BRANCHES}
 				currentBranchId=""
 				onBranchChange={mockOnBranchChange}
 			/>,
@@ -195,7 +156,7 @@ describe(BranchExplorer, () => {
 		render(
 			<BranchExplorer
 				projectId="proj-1"
-				branches={mockBranches}
+				branches={MOCK_BRANCHES}
 				currentBranchId="branch-1"
 				onBranchChange={mockOnBranchChange}
 				onMergeRequest={mockOnMergeRequest}
@@ -210,7 +171,7 @@ describe(BranchExplorer, () => {
 		render(
 			<BranchExplorer
 				projectId="proj-1"
-				branches={mockBranches}
+				branches={MOCK_BRANCHES}
 				currentBranchId="branch-2"
 				onBranchChange={mockOnBranchChange}
 			/>,
@@ -224,7 +185,7 @@ describe(BranchExplorer, () => {
 		render(
 			<BranchExplorer
 				projectId="proj-1"
-				branches={mockBranches}
+				branches={MOCK_BRANCHES}
 				currentBranchId="branch-1"
 				onBranchChange={mockOnBranchChange}
 			/>,

@@ -16,6 +16,11 @@ from tenacity import (
     wait_exponential,
 )
 
+# HTTP status ranges for retry and error handling
+HTTP_BAD_REQUEST_START = 400
+HTTP_SERVER_ERROR_START = 500
+HTTP_SERVER_ERROR_END = 600
+
 
 class TraceRTMHttpError(RuntimeError):
     """HTTP error from TraceRTM API."""
@@ -32,7 +37,22 @@ def _default_base_url() -> str:
 
 
 def _is_retryable_status(status: int) -> bool:
-    return status in (408, 429) or 500 <= status < 600
+    return status in (408, 429) or (
+        HTTP_SERVER_ERROR_START <= status < HTTP_SERVER_ERROR_END
+    )
+
+
+def _error_message_and_payload(response: httpx.Response) -> tuple[str, Any | None]:
+    """Extract message and optional payload from error response body."""
+    message = response.text
+    payload: Any | None = None
+    try:
+        payload = response.json()
+        if isinstance(payload, dict) and payload.get("detail"):
+            message = str(payload.get("detail"))
+    except Exception:
+        pass
+    return message, payload
 
 
 class TraceRTMHttpClient:
@@ -100,25 +120,9 @@ class TraceRTMHttpClient:
                 json=json,
                 headers=self._build_headers(headers),
             )
-        if response.status_code >= 400:
-            if _is_retryable_status(response.status_code):
-                message = response.text
-                try:
-                    payload = response.json()
-                    if isinstance(payload, dict[str, Any]) and payload.get("detail"):
-                        message = str(payload.get("detail"))
-                except Exception:
-                    payload = None
-                raise TraceRTMHttpError(response.status_code, message, payload)
-            message = response.text
-            payload_val: Any | None = None
-            try:
-                payload_val = response.json()
-                if isinstance(payload_val, dict[str, Any]) and payload_val.get("detail"):
-                    message = str(payload_val.get("detail"))
-            except Exception:
-                payload_val = None
-            raise TraceRTMHttpError(response.status_code, message, payload_val)
+        if response.status_code >= HTTP_BAD_REQUEST_START:
+            message, payload = _error_message_and_payload(response)
+            raise TraceRTMHttpError(response.status_code, message, payload)
         if not response.content:
             return None
         content_type = response.headers.get("content-type", "")

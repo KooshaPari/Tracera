@@ -29,6 +29,14 @@ SUFFIXED_FILES=$(find apps packages -type f \( -name "*.ts" -o -name "*.tsx" -o 
 NUMBERED_FILES=$(find apps packages -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" \) \
   -not -path "*/node_modules/*" | grep -E '_[0-9]+\.(ts|tsx|js|jsx)$' || true)
 
+# Check for phase suffixes (*_phase2, *_phase3, *phase2_*, etc.)
+PHASE_FILES=$(find apps packages -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" \) \
+  -not -path "*/node_modules/*" | grep -E '(_phase[0-9]|_phase[0-9][0-9]|phase[0-9]_|phase[0-9][0-9]_)\.(ts|tsx|js|jsx)$' || true)
+
+# Check for other common AI versioning (*_final, *_latest, *_updated, etc.)
+OTHER_VERSION_FILES=$(find apps packages -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" \) \
+  -not -path "*/node_modules/*" | grep -E '_(final|latest|revised)\.(ts|tsx|js|jsx)$' || true)
+
 # Combine all violations
 ALL_VIOLATIONS=""
 if [ -n "$VERSIONED_FILES" ]; then
@@ -42,6 +50,12 @@ if [ -n "$SUFFIXED_FILES" ]; then
 fi
 if [ -n "$NUMBERED_FILES" ]; then
   ALL_VIOLATIONS="$ALL_VIOLATIONS$NUMBERED_FILES\n"
+fi
+if [ -n "$PHASE_FILES" ]; then
+  ALL_VIOLATIONS="$ALL_VIOLATIONS$PHASE_FILES\n"
+fi
+if [ -n "$OTHER_VERSION_FILES" ]; then
+  ALL_VIOLATIONS="$ALL_VIOLATIONS$OTHER_VERSION_FILES\n"
 fi
 
 # Report results
@@ -57,6 +71,8 @@ if [ -n "$ALL_VIOLATIONS" ]; then
   echo "  • Prefixed: NewDashboard.tsx, ImprovedComponent.tsx, EnhancedButton.tsx"
   echo "  • Suffixed: Dashboard_new.tsx, Component_improved.tsx"
   echo "  • Numbered: Dashboard_2.tsx, Component_3.tsx"
+  echo "  • Phase suffixes: benchmark_phase2.tsx, component_phase3.tsx"
+  echo "  • Other versions: service_final.tsx, component_latest.tsx"
   echo ""
   echo -e "${YELLOW}Required action:${NC}"
   echo "  1. Identify the canonical (currently used) file"

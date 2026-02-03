@@ -327,12 +327,10 @@ processes:
     availability:
       restart: on_failure
       max_restarts: 5
-    # Probe after migrations + server start; use /api/v1/health (same handler as /health)
+    # Probe after migrations + server start; exec probe prints service + URL + status on failure
     readiness_probe:
-      http_get:
-        host: localhost
-        port: 8080
-        path: /api/v1/health
+      exec:
+        command: "bash scripts/shell/readiness-http.sh go-backend localhost 8080 /api/v1/health 200"
       initial_delay_seconds: 20
       period_seconds: 5
       timeout_seconds: 5
@@ -367,12 +365,10 @@ processes:
     availability:
       restart: on_failure
       max_restarts: 5
-    # Python preflight polls go-backend and temporal-host with indefinite retry; give it time to complete
+    # Python preflight polls go-backend and temporal-host with indefinite retry; exec prints service + URL + status on failure
     readiness_probe:
-      http_get:
-        host: localhost
-        port: 8000
-        path: /health
+      exec:
+        command: "bash scripts/shell/readiness-http.sh python-backend localhost 8000 /health 200"
       initial_delay_seconds: 10
       period_seconds: 5
       timeout_seconds: 10
@@ -395,12 +391,10 @@ processes:
     availability:
       restart: on_failure
       max_restarts: 5
-    # Vite can take 15–25s after predev (generate:types); delay first probe so it doesn't fail
+    # Vite can take 15–25s after predev (generate:types); exec prints service + URL + status on failure
     readiness_probe:
-      http_get:
-        host: localhost
-        port: 5173
-        path: /
+      exec:
+        command: "bash scripts/shell/readiness-http.sh frontend localhost 5173 / 200"
       initial_delay_seconds: 25
       period_seconds: 5
       timeout_seconds: 10
@@ -471,10 +465,8 @@ processes:
     availability:
       restart: on_failure
     readiness_probe:
-      http_get:
-        host: localhost
-        port: 4000
-        path: /health
+      exec:
+        command: "bash scripts/shell/readiness-http.sh caddy localhost 4000 /health 200"
       initial_delay_seconds: 5
       period_seconds: 5
       timeout_seconds: 3

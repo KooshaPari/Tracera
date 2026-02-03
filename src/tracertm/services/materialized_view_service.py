@@ -1,11 +1,14 @@
 """Materialized view management service for TraceRTM."""
 
 from dataclasses import dataclass
-from datetime import UTC, datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
+
+# Seconds after which a view is considered stale
+STALE_THRESHOLD_SECONDS = 5.0
 
 
 @dataclass
@@ -90,7 +93,7 @@ class MaterializedViewService:
             unprocessed_changes=int(row[1]),
             oldest_change=row[2],
             staleness_seconds=staleness_seconds,
-            is_stale=staleness_seconds > 5.0,  # Stale if > 5 seconds
+            is_stale=staleness_seconds > STALE_THRESHOLD_SECONDS,
         )
 
     async def cleanup_change_log(self, days_to_keep: int = 30) -> int:

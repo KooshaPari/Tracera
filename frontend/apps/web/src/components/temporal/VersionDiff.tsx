@@ -13,7 +13,7 @@ import type {
 	DiffItem,
 	Version,
 	VersionDiff as VersionDiffType,
-} from "@tracertm/types/temporal";
+} from "@tracertm/types";
 import {
 	ArrowRight,
 	CheckCircle,

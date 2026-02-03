@@ -6,7 +6,7 @@ import { requireAuth } from "@/lib/route-guards";
  * Equivalence Management View
  * Allows users to view, export, and import equivalence mappings
  */
-export function EquivalenceView() {
+export const EquivalenceView = () => {
 	const { projectId } = useParams({ from: "/projects/$projectId/equivalence" });
 
 	return (
@@ -14,7 +14,7 @@ export function EquivalenceView() {
 			<EquivalenceManager projectId={projectId} />
 		</div>
 	);
-}
+};
 
 export const EQUIVALENCE_VIEW = EquivalenceView;
 

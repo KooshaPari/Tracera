@@ -31,7 +31,7 @@ from fastapi import Depends, FastAPI, HTTPException, Request, WebSocket, WebSock
 try:
     from uvicorn.protocols.utils import ClientDisconnected
 except ImportError:
-    ClientDisconnected = type("ClientDisconnected", (Exception,), {})  # no-op if not present
+    ClientDisconnected: type[Exception] = type("ClientDisconnected", (Exception,), {})  # type: ignore[assignment,misc]
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel
@@ -364,7 +364,7 @@ def ensure_credential_access(credential, claims: dict[str, Any] | None) -> None:
         raise HTTPException(status_code=403, detail="Credential access denied")
 
 
-def enforce_rate_limit(request: Request, claims: dict[str, Any] | None) -> None:
+def enforce_rate_limit(request: Request | None, claims: dict[str, Any] | None) -> None:
     """Apply simple rate limiting hook."""
     # Skip rate limiting when request is not injected (e.g. in tests) to avoid AttributeError
     if request is None:
@@ -391,7 +391,11 @@ def enforce_rate_limit(request: Request, claims: dict[str, Any] | None) -> None:
     key = claims.get("sub") if claims else None
     key = key or request.headers.get("X-User-ID") or client_ip or "anonymous"
     limit_info = get_endpoint_limit(request.method, request.url.path)
-    limit = limit_info.get("limit") if isinstance(limit_info, dict[str, Any]) else limit_info
+    limit: int | None = None
+    if isinstance(limit_info, dict):
+        limit = limit_info.get("limit")  # type: ignore[assignment]
+    elif isinstance(limit_info, int):
+        limit = limit_info
 
     allowed = limiter.check_limit(key, method=request.method, path=request.url.path, limit=limit)
 
@@ -409,7 +413,9 @@ def enforce_rate_limit(request: Request, claims: dict[str, Any] | None) -> None:
         raise HTTPException(status_code=429, detail=message, headers=headers)
 
 
-enforce_rate_limit._counts = defaultdict(int)  # type: ignore[attr-defined]
+# Type annotation for the rate limit counter
+_rate_limit_counts: defaultdict[tuple[str, str, str], int] = defaultdict(int)
+enforce_rate_limit._counts = _rate_limit_counts  # type: ignore[attr-defined]
 
 
 # Create FastAPI app
@@ -559,13 +565,13 @@ def _backoff_delay(attempt: int, initial: float, cap: float, multiplier: float =
 
 async def _poll_one_service(
     service_name: str,
-    check: "PreflightCheck",
+    check: Any,
     is_required: bool,
     interval_initial: float,
     interval_max: float,
 ) -> tuple[str, bool]:
     """Poll one preflight check indefinitely with progressive backoff (cap interval_max). Returns (check.name, ok)."""
-    from tracertm.preflight import run_single_check
+    from tracertm.preflight import PreflightCheck, run_single_check
 
     # Initial wait so dependent services can start
     await asyncio.sleep(interval_initial)
@@ -934,7 +940,7 @@ from tracertm.api.routers import adrs, auth, blockchain, contracts, execution, f
 
 # Try to import Brotli compression (optional dependency)
 try:
-    from brotli_asgi import BrotliMiddleware
+    from brotli_asgi import BrotliMiddleware  # type: ignore[import]
     BROTLI_AVAILABLE = True
 except ImportError:
     BROTLI_AVAILABLE = False
@@ -1317,7 +1323,7 @@ async def list_items(
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     cache: CacheService = Depends(get_cache_service),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """List items in a project. Returns empty list on any backend error so callers (e.g. home loader) do not get 500."""
     try:
@@ -1519,7 +1525,7 @@ async def get_item(
     item_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Get a specific item."""
     try:
@@ -1562,16 +1568,16 @@ def _link_row_to_dict(row: Any, project_id: str | None) -> dict[str, Any]:
 # Links endpoints
 @app.get("/api/v1/links")
 async def list_links(
-    project_id: str = None,
-    source_id: str = None,
-    target_id: str = None,
+    project_id: str | None = None,
+    source_id: str | None = None,
+    target_id: str | None = None,
     skip: int = 0,
     limit: int = 100,
-    exclude_types: str = None,  # ✅ NEW: Comma-separated list of types to exclude
+    exclude_types: str | None = None,  # Comma-separated list of types to exclude
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     cache: CacheService = Depends(get_cache_service),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """List links, optionally filtered by project, source, or target, with support for excluding specific link types."""
     try:
@@ -1845,7 +1851,7 @@ async def list_links_grouped(
     view: str | None = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Show links for an item grouped as incoming/outgoing."""
     enforce_rate_limit(request, claims)
@@ -1954,7 +1960,7 @@ async def create_link(
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     cache: CacheService = Depends(get_cache_service),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Create a new link."""
     ensure_write_permission(claims, action="create")
@@ -1990,7 +1996,7 @@ async def update_link(
     request_body: LinkUpdate,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Update link fields."""
     enforce_rate_limit(request, claims)
@@ -2028,7 +2034,7 @@ async def delete_link(
     link_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Delete link."""
     enforce_rate_limit(request, claims)
@@ -2051,7 +2057,7 @@ async def get_traceability_gaps(
     to_view: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Find coverage gaps between two views."""
     enforce_rate_limit(request, claims)
@@ -2086,7 +2092,7 @@ async def get_traceability_matrix(
     target_view: str | None = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Generate traceability matrix."""
     enforce_rate_limit(request, claims)
@@ -2115,7 +2121,7 @@ async def get_reverse_impact(
     max_depth: int = 5,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Analyze upstream dependencies of an item."""
     enforce_rate_limit(request, claims)
@@ -2123,7 +2129,7 @@ async def get_reverse_impact(
 
     service = impact_analysis_service.ImpactAnalysisService(db)
     result = await _maybe_await(
-        service.analyze_reverse_impact(project_id=project_id, item_id=item_id, max_depth=max_depth)
+        service.analyze_reverse_impact(item_id=item_id, max_depth=max_depth)
     )
 
     return {
@@ -2138,7 +2144,7 @@ async def get_project_health(
     project_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Get high-level health metrics for a project."""
     enforce_rate_limit(request, claims)
@@ -2163,7 +2169,7 @@ async def get_impact_analysis(
     project_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Get impact analysis for an item."""
     enforce_rate_limit(request, claims)
@@ -2188,7 +2194,7 @@ async def detect_cycles(
     project_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Detect cycles in project dependency graph."""
     enforce_rate_limit(request, claims)
@@ -2213,7 +2219,7 @@ async def find_shortest_path(
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     cache: CacheService = Depends(get_cache_service),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Find shortest path between two items with Redis caching for 10x performance."""
     enforce_rate_limit(request, claims)
@@ -2258,7 +2264,7 @@ async def create_item_endpoint(
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     cache: CacheService = Depends(get_cache_service),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Create an item with simple permission checks."""
     ensure_write_permission(claims, action="create")
@@ -2309,7 +2315,7 @@ async def update_item_endpoint(
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     cache: CacheService = Depends(get_cache_service),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Update an item with optimistic locking (if expected_version provided)."""
     ensure_write_permission(claims, action="update")
@@ -2362,7 +2368,7 @@ async def delete_item_endpoint(
     item_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Delete an item (permission-gated)."""
     ensure_write_permission(claims, action="delete")
@@ -2391,7 +2397,7 @@ async def bulk_update_items_endpoint(
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     cache: CacheService = Depends(get_cache_service),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Bulk update item status with optional preview."""
     ensure_write_permission(claims, action="bulk_update")
@@ -2440,7 +2446,7 @@ async def summarize_items_endpoint(
     view: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Summarize items in a view (counts by status + samples)."""
     enforce_rate_limit(request, claims)
@@ -2692,7 +2698,7 @@ async def device_code_endpoint(
     import secrets
 
     try:
-        from tracertm.schemas.auth import DeviceCodeRequest
+        from tracertm.schemas.auth import DeviceCodeRequest, DeviceCodeResponse
         request_data = DeviceCodeRequest(**data)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -2703,7 +2709,7 @@ async def device_code_endpoint(
 
     # Generate device code (high entropy for security)
     device_code = secrets.token_urlsafe(32)
-    user_code = secrets.token_upper(8)  # 8 char uppercase code
+    user_code = secrets.token_urlsafe(8).upper()  # 8 char uppercase code
 
     # Build verification URL - use WorkOS AuthKit or fallback
     authkit_domain = os.getenv("WORKOS_AUTHKIT_DOMAIN")
@@ -2752,7 +2758,7 @@ async def device_token_endpoint(
     import time
 
     try:
-        from tracertm.schemas.auth import DeviceTokenRequest
+        from tracertm.schemas.auth import DeviceTokenRequest, DeviceTokenResponse
         request_data = DeviceTokenRequest(**data)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -3205,7 +3211,7 @@ async def get_temporal_summary(
     schedule_limit: int = 200,
 ):
     """Get Temporal health and summary metrics for dashboards."""
-    ensure_read_permission(claims, action="temporal_summary")
+    check_permissions(claims=claims, action="temporal_summary")
     service = TemporalService()
     try:
         return await service.get_summary(
@@ -4620,7 +4626,7 @@ async def list_problems(
     limit: int = 100,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """List problems in a project with optional filters."""
     if not (request and request.headers.get("X-Bulk-Operation") == "true"):
@@ -4668,7 +4674,7 @@ async def get_problem(
     problem_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Get a specific problem by ID."""
     enforce_rate_limit(request, claims)
@@ -4735,7 +4741,7 @@ async def create_problem(
     problem_data: ProblemCreate,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Create a new problem."""
     enforce_rate_limit(request, claims)
@@ -4774,7 +4780,7 @@ async def update_problem(
     problem_data: ProblemUpdate,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Update a problem."""
     enforce_rate_limit(request, claims)
@@ -4811,7 +4817,7 @@ async def transition_problem_status(
     transition: ProblemStatusTransition,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Transition problem to a new status."""
     enforce_rate_limit(request, claims)
@@ -4838,7 +4844,7 @@ async def record_problem_rca(
     rca_data: RCARequest,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Record Root Cause Analysis for a problem."""
     enforce_rate_limit(request, claims)
@@ -4871,7 +4877,7 @@ async def update_problem_workaround(
     workaround_data: WorkaroundUpdate,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Update workaround information for a problem."""
     enforce_rate_limit(request, claims)
@@ -4896,7 +4902,7 @@ async def update_problem_permanent_fix(
     fix_data: PermanentFixUpdate,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Update permanent fix information for a problem."""
     enforce_rate_limit(request, claims)
@@ -4921,7 +4927,7 @@ async def close_problem(
     closure_data: ProblemClosure,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Close a problem."""
     enforce_rate_limit(request, claims)
@@ -4945,7 +4951,7 @@ async def get_problem_activities(
     limit: int = 50,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Get activity log for a problem."""
     enforce_rate_limit(request, claims)
@@ -4977,7 +4983,7 @@ async def delete_problem(
     problem_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Delete a problem (soft delete)."""
     enforce_rate_limit(request, claims)
@@ -4998,7 +5004,7 @@ async def get_problem_stats(
     project_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Get problem statistics for a project."""
     enforce_rate_limit(request, claims)
@@ -5043,7 +5049,7 @@ async def list_processes(
     limit: int = 100,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """List processes in a project with optional filters."""
     if not (request and request.headers.get("X-Bulk-Operation") == "true"):
@@ -5087,7 +5093,7 @@ async def get_process(
     process_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Get a specific process by ID."""
     enforce_rate_limit(request, claims)
@@ -5143,7 +5149,7 @@ async def create_process(
     process_data: ProcessCreate,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Create a new process."""
     enforce_rate_limit(request, claims)
@@ -5192,7 +5198,7 @@ async def update_process(
     process_data: ProcessUpdate,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Update a process."""
     enforce_rate_limit(request, claims)
@@ -5233,7 +5239,7 @@ async def create_process_version(
     version_data: ProcessVersionCreate,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Create a new version of a process."""
     enforce_rate_limit(request, claims)
@@ -5264,7 +5270,7 @@ async def activate_process(
     activation_data: ProcessActivation,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Activate a process version."""
     enforce_rate_limit(request, claims)
@@ -5293,7 +5299,7 @@ async def deprecate_process(
     deprecation_data: ProcessDeprecation,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Deprecate a process."""
     enforce_rate_limit(request, claims)
@@ -5318,7 +5324,7 @@ async def delete_process(
     process_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Delete a process (soft delete)."""
     enforce_rate_limit(request, claims)
@@ -5339,7 +5345,7 @@ async def get_process_stats(
     project_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Get process statistics for a project."""
     enforce_rate_limit(request, claims)
@@ -5365,7 +5371,7 @@ async def create_process_execution(
     execution_data: ProcessExecutionCreate,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Start a new execution of a process."""
     enforce_rate_limit(request, claims)
@@ -5394,7 +5400,7 @@ async def list_process_executions(
     limit: int = 50,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """List executions for a process."""
     enforce_rate_limit(request, claims)
@@ -5431,7 +5437,7 @@ async def get_execution(
     execution_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Get a specific process execution."""
     enforce_rate_limit(request, claims)
@@ -5467,7 +5473,7 @@ async def start_execution(
     execution_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Start a pending execution."""
     enforce_rate_limit(request, claims)
@@ -5489,7 +5495,7 @@ async def advance_execution(
     stage_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Advance execution to next stage."""
     enforce_rate_limit(request, claims)
@@ -5515,7 +5521,7 @@ async def complete_execution(
     completion_data: ProcessExecutionComplete,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Complete a process execution."""
     enforce_rate_limit(request, claims)
@@ -5564,7 +5570,7 @@ async def list_test_cases(
     limit: int = 100,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """List test cases in a project with optional filters."""
     if not (request and request.headers.get("X-Bulk-Operation") == "true"):
@@ -5617,7 +5623,7 @@ async def get_test_case(
     test_case_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Get a specific test case by ID."""
     enforce_rate_limit(request, claims)
@@ -5676,7 +5682,7 @@ async def create_test_case(
     test_case_data: TestCaseCreate,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Create a new test case."""
     enforce_rate_limit(request, claims)
@@ -5724,7 +5730,7 @@ async def update_test_case(
     test_case_data: TestCaseUpdate,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Update a test case."""
     enforce_rate_limit(request, claims)
@@ -5769,7 +5775,7 @@ async def transition_test_case_status(
     transition: TestCaseStatusTransition,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Transition test case to a new status."""
     enforce_rate_limit(request, claims)
@@ -5796,7 +5802,7 @@ async def submit_test_case_for_review(
     review_data: TestCaseReview,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Submit a test case for review."""
     enforce_rate_limit(request, claims)
@@ -5822,7 +5828,7 @@ async def approve_test_case(
     review_data: TestCaseReview,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Approve a test case after review."""
     enforce_rate_limit(request, claims)
@@ -5848,7 +5854,7 @@ async def deprecate_test_case(
     deprecation_data: TestCaseDeprecation,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Deprecate a test case."""
     enforce_rate_limit(request, claims)
@@ -5875,7 +5881,7 @@ async def get_test_case_activities(
     limit: int = 50,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Get activity log for a test case."""
     enforce_rate_limit(request, claims)
@@ -5907,7 +5913,7 @@ async def delete_test_case(
     test_case_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Delete a test case (soft delete)."""
     enforce_rate_limit(request, claims)
@@ -5928,7 +5934,7 @@ async def get_test_case_stats(
     project_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Get test case statistics for a project."""
     enforce_rate_limit(request, claims)
@@ -5969,7 +5975,7 @@ async def list_test_suites(
     limit: int = 50,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """List test suites for a project with filtering."""
     enforce_rate_limit(request, claims)
@@ -6029,7 +6035,7 @@ async def get_test_suite(
     suite_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Get a test suite by ID."""
     enforce_rate_limit(request, claims)
@@ -6081,7 +6087,7 @@ async def create_test_suite(
     suite_data: dict[str, Any],
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Create a new test suite."""
     enforce_rate_limit(request, claims)
@@ -6121,7 +6127,7 @@ async def update_test_suite(
     suite_data: dict[str, Any],
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Update a test suite."""
     enforce_rate_limit(request, claims)
@@ -6152,7 +6158,7 @@ async def transition_test_suite_status(
     status_data: dict[str, Any],
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Transition test suite status."""
     enforce_rate_limit(request, claims)
@@ -6187,7 +6193,7 @@ async def add_test_case_to_suite(
     tc_data: dict[str, Any],
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Add a test case to a suite."""
     enforce_rate_limit(request, claims)
@@ -6221,7 +6227,7 @@ async def remove_test_case_from_suite(
     test_case_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Remove a test case from a suite."""
     enforce_rate_limit(request, claims)
@@ -6249,7 +6255,7 @@ async def get_suite_test_cases(
     suite_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Get test cases in a suite."""
     enforce_rate_limit(request, claims)
@@ -6287,7 +6293,7 @@ async def get_test_suite_activities(
     limit: int = 50,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Get activity log for a test suite."""
     enforce_rate_limit(request, claims)
@@ -6327,7 +6333,7 @@ async def delete_test_suite(
     suite_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Delete a test suite."""
     enforce_rate_limit(request, claims)
@@ -6352,7 +6358,7 @@ async def get_test_suite_stats(
     project_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Get test suite statistics for a project."""
     enforce_rate_limit(request, claims)
@@ -6383,7 +6389,7 @@ async def list_test_runs(
     limit: int = 50,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """List test runs for a project with filtering."""
     enforce_rate_limit(request, claims)
@@ -6450,7 +6456,7 @@ async def get_test_run(
     run_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Get a test run by ID."""
     enforce_rate_limit(request, claims)
@@ -6509,7 +6515,7 @@ async def create_test_run(
     run_data: dict[str, Any],
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Create a new test run."""
     enforce_rate_limit(request, claims)
@@ -6547,7 +6553,7 @@ async def update_test_run(
     run_data: dict[str, Any],
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Update a test run."""
     enforce_rate_limit(request, claims)
@@ -6578,7 +6584,7 @@ async def start_test_run(
     start_data: dict[str, Any] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Start a test run."""
     enforce_rate_limit(request, claims)
@@ -6612,7 +6618,7 @@ async def complete_test_run(
     complete_data: dict[str, Any] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Complete a test run."""
     enforce_rate_limit(request, claims)
@@ -6650,7 +6656,7 @@ async def cancel_test_run(
     cancel_data: dict[str, Any] = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Cancel a test run."""
     enforce_rate_limit(request, claims)
@@ -6684,7 +6690,7 @@ async def submit_test_result(
     result_data: dict[str, Any],
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Submit a single test result."""
     enforce_rate_limit(request, claims)
@@ -6732,7 +6738,7 @@ async def submit_bulk_test_results(
     bulk_data: dict[str, Any],
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Submit multiple test results at once."""
     enforce_rate_limit(request, claims)
@@ -6762,7 +6768,7 @@ async def get_test_run_results(
     status: str | None = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Get all results for a test run."""
     enforce_rate_limit(request, claims)
@@ -6815,7 +6821,7 @@ async def get_test_run_activities(
     limit: int = 50,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Get activity log for a test run."""
     enforce_rate_limit(request, claims)
@@ -6855,7 +6861,7 @@ async def delete_test_run(
     run_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Delete a test run."""
     enforce_rate_limit(request, claims)
@@ -6880,7 +6886,7 @@ async def get_test_run_stats(
     project_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Get test run statistics for a project."""
     enforce_rate_limit(request, claims)
@@ -6923,7 +6929,7 @@ async def list_test_coverage(
     limit: int = 100,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """List test coverage mappings for a project with filtering."""
     enforce_rate_limit(request, claims)
@@ -6983,7 +6989,7 @@ async def create_test_coverage(
     notes: str | None = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Create a new test coverage mapping."""
     enforce_rate_limit(request, claims)
@@ -7028,7 +7034,7 @@ async def get_test_coverage(
     coverage_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Get a test coverage mapping by ID."""
     enforce_rate_limit(request, claims)
@@ -7074,7 +7080,7 @@ async def update_test_coverage(
     notes: str | None = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Update a test coverage mapping."""
     enforce_rate_limit(request, claims)
@@ -7115,7 +7121,7 @@ async def delete_test_coverage(
     coverage_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Delete a test coverage mapping."""
     enforce_rate_limit(request, claims)
@@ -7141,7 +7147,7 @@ async def verify_test_coverage(
     notes: str | None = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Mark a coverage mapping as verified."""
     enforce_rate_limit(request, claims)
@@ -7175,7 +7181,7 @@ async def get_traceability_matrix(
     requirement_view: str | None = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Get the traceability matrix for a project."""
     enforce_rate_limit(request, claims)
@@ -7195,7 +7201,7 @@ async def get_coverage_gaps(
     requirement_view: str | None = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Find requirements that have no test coverage."""
     enforce_rate_limit(request, claims)
@@ -7214,7 +7220,7 @@ async def get_test_case_coverage(
     test_case_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Get coverage summary for a specific test case."""
     enforce_rate_limit(request, claims)
@@ -7232,7 +7238,7 @@ async def get_requirement_coverage(
     requirement_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Get all test cases covering a specific requirement."""
     enforce_rate_limit(request, claims)
@@ -7264,7 +7270,7 @@ async def get_coverage_stats(
     project_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Get coverage statistics for a project."""
     enforce_rate_limit(request, claims)
@@ -7284,7 +7290,7 @@ async def get_coverage_activities(
     limit: int = 50,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Get activity log for a coverage mapping."""
     enforce_rate_limit(request, claims)
@@ -7333,7 +7339,7 @@ async def list_webhooks(
     limit: int = 50,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """List webhooks for a project."""
     enforce_rate_limit(request, claims)
@@ -7409,7 +7415,7 @@ async def create_webhook(
     payload: WebhookCreateRequest,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Create a new webhook integration."""
     enforce_rate_limit(request, claims)
@@ -7465,7 +7471,7 @@ async def get_webhook(
     webhook_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Get a webhook by ID."""
     enforce_rate_limit(request, claims)
@@ -7533,7 +7539,7 @@ async def update_webhook(
     payload: WebhookUpdateRequest,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Update a webhook."""
     enforce_rate_limit(request, claims)
@@ -7585,7 +7591,7 @@ async def set_webhook_status(
     payload: WebhookStatusRequest,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Update webhook status."""
     enforce_rate_limit(request, claims)
@@ -7617,7 +7623,7 @@ async def regenerate_webhook_secret(
     webhook_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Regenerate the webhook secret."""
     enforce_rate_limit(request, claims)
@@ -7646,7 +7652,7 @@ async def delete_webhook(
     webhook_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Delete a webhook."""
     enforce_rate_limit(request, claims)
@@ -7675,7 +7681,7 @@ async def get_webhook_logs(
     limit: int = 50,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Get webhook logs."""
     enforce_rate_limit(request, claims)
@@ -7731,7 +7737,7 @@ async def get_webhook_stats(
     project_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Get webhook statistics for a project."""
     enforce_rate_limit(request, claims)
@@ -7824,7 +7830,7 @@ async def get_qa_metrics_summary(
     project_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Get comprehensive QA metrics summary for dashboard."""
     enforce_rate_limit(request, claims)
@@ -7891,7 +7897,7 @@ async def get_pass_rate_trend(
     days: int = 30,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Get pass rate trend data for charts."""
     enforce_rate_limit(request, claims)
@@ -7948,7 +7954,7 @@ async def get_coverage_metrics(
     project_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Get detailed coverage metrics."""
     enforce_rate_limit(request, claims)
@@ -8007,7 +8013,7 @@ async def get_defect_density(
     project_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Get defect density metrics (failed tests per test case)."""
     enforce_rate_limit(request, claims)
@@ -8076,7 +8082,7 @@ async def get_flaky_tests(
     project_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Get flaky test analysis."""
     enforce_rate_limit(request, claims)
@@ -8163,7 +8169,7 @@ async def get_execution_history(
     days: int = 7,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Get recent test execution history."""
     enforce_rate_limit(request, claims)
@@ -8225,7 +8231,7 @@ async def start_oauth_flow(
     data: dict[str, Any],
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Start OAuth flow for an external integration provider."""
     import secrets
@@ -8297,7 +8303,7 @@ async def oauth_callback(
     data: dict[str, Any],
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Handle OAuth callback and store credentials."""
     import httpx
@@ -8449,7 +8455,7 @@ async def list_credentials(
     include_global: bool = True,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """List integration credentials for a project."""
     from tracertm.repositories.integration_repository import IntegrationCredentialRepository
@@ -8495,7 +8501,7 @@ async def validate_credential(
     credential_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Validate an integration credential."""
     from datetime import datetime
@@ -8566,7 +8572,7 @@ async def delete_credential(
     credential_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Delete an integration credential."""
     from tracertm.repositories.integration_repository import IntegrationCredentialRepository
@@ -8598,7 +8604,7 @@ async def list_mappings(
     provider: str = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """List integration mappings for a project."""
     from tracertm.repositories.integration_repository import IntegrationMappingRepository
@@ -8646,7 +8652,7 @@ async def create_mapping(
     data: dict[str, Any],
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Create a new integration mapping."""
     from tracertm.repositories.integration_repository import (
@@ -8759,7 +8765,7 @@ async def update_mapping(
     data: dict[str, Any],
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Update an integration mapping."""
     from tracertm.repositories.integration_repository import (
@@ -8817,7 +8823,7 @@ async def delete_mapping(
     mapping_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Delete an integration mapping."""
     from tracertm.repositories.integration_repository import (
@@ -8855,7 +8861,7 @@ async def get_sync_status(
     project_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Get sync status summary for a project."""
     from sqlalchemy import func, select
@@ -8941,7 +8947,7 @@ async def trigger_sync(
     data: dict[str, Any],
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Trigger a manual sync for a mapping or credential."""
     from tracertm.repositories.integration_repository import (
@@ -9002,7 +9008,7 @@ async def get_sync_queue(
     limit: int = 50,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Get sync queue items for a project."""
     from tracertm.repositories.integration_repository import (
@@ -9061,7 +9067,7 @@ async def list_conflicts(
     status: str = "pending",
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """List sync conflicts for a project."""
     from tracertm.repositories.integration_repository import (
@@ -9115,7 +9121,7 @@ async def resolve_conflict(
     data: dict[str, Any],
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Resolve a sync conflict."""
     from tracertm.repositories.integration_repository import (
@@ -9188,7 +9194,7 @@ async def list_github_repos(
     page: int = 1,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """List GitHub repositories accessible via GitHub App installation or OAuth credential."""
     from tracertm.clients.github_client import GitHubClient
@@ -9320,7 +9326,7 @@ async def create_github_repo(
     data: dict[str, Any],
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Create a new GitHub repository."""
     from tracertm.clients.github_client import GitHubClient
@@ -9407,7 +9413,7 @@ async def list_github_issues(
     page: int = 1,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """List GitHub issues for a repository."""
     from tracertm.clients.github_client import GitHubClient
@@ -9711,7 +9717,7 @@ async def list_github_projects(
     is_org: bool = True,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """List GitHub Projects v2 for an owner."""
     from tracertm.clients.github_client import GitHubClient
@@ -9790,7 +9796,7 @@ async def auto_link_github_projects(
     data: dict[str, Any],
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Auto-link GitHub Projects for a repository."""
     from tracertm.clients.github_client import GitHubClient
@@ -9852,7 +9858,7 @@ async def list_linked_github_projects(
     github_repo_id: int | None = None,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """List linked GitHub Projects."""
     from tracertm.repositories.github_project_repository import GitHubProjectRepository
@@ -9893,7 +9899,7 @@ async def unlink_github_project(
     github_project_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Unlink a GitHub Project from a TraceRTM project."""
     from tracertm.repositories.github_project_repository import GitHubProjectRepository
@@ -9919,7 +9925,7 @@ async def list_linear_teams(
     credential_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """List Linear teams accessible with the credential."""
     from tracertm.clients.linear_client import LinearClient
@@ -9974,7 +9980,7 @@ async def list_linear_issues(
     first: int = 50,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """List Linear issues for a team."""
     from tracertm.clients.linear_client import LinearClient
@@ -10030,7 +10036,7 @@ async def list_linear_projects(
     first: int = 50,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """List Linear projects."""
     from tracertm.clients.linear_client import LinearClient
@@ -10221,7 +10227,7 @@ async def get_integration_stats(
     project_id: str,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Get integration statistics for a project."""
     from sqlalchemy import func, select
@@ -10360,7 +10366,7 @@ async def stream_chat(
     request_body: ChatRequest,
     claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
-    request: Request = None,
+    request: Request | None = None,
 ):
     """Stream AI chat completion using Server-Sent Events.
 
@@ -10393,19 +10399,23 @@ async def stream_chat(
         """Generate SSE stream with tool use support."""
         try:
             if use_agent_sandbox:
+                from tracertm.agent.agent_service import StreamChatOptions
                 from tracertm.agent.types import SandboxConfig
                 sandbox_config = None
                 if request_body.context and request_body.context.project_id:
                     sandbox_config = SandboxConfig(project_id=request_body.context.project_id)
                 agent_service = _agent_service()
-                async for chunk in agent_service.stream_chat_with_sandbox(
-                    messages=messages,
-                    session_id=request_body.session_id,
+                opts = StreamChatOptions(
                     provider=request_body.provider.value,
                     model=request_body.model,
                     system_prompt=request_body.system_prompt,
                     max_tokens=request_body.max_tokens,
                     enable_tools=True,
+                )
+                async for chunk in agent_service.stream_chat_with_sandbox(
+                    messages=messages,
+                    session_id=request_body.session_id,
+                    options=opts,
                     db_session=db,
                     sandbox_config=sandbox_config,
                 ):
@@ -10454,7 +10464,7 @@ async def stream_chat(
 async def simple_chat(
     request_body: ChatRequest,
     claims: dict[str, Any] = Depends(auth_guard),
-    request: Request = None,
+    request: Request | None = None,
     db: AsyncSession = Depends(get_db),
 ):
     """Non-streaming chat completion (for testing/simple use cases)."""
@@ -10471,6 +10481,7 @@ async def simple_chat(
 
     try:
         if use_agent_sandbox:
+            from tracertm.agent.agent_service import StreamChatOptions
             from tracertm.agent.types import SandboxConfig
             sandbox_config = None
             if request_body.context and request_body.context.project_id:
@@ -10478,13 +10489,16 @@ async def simple_chat(
             agent_service = getattr(request.app.state, "agent_service", None) if request else None
             if agent_service is None:
                 agent_service = get_agent_service()
-            response = await agent_service.simple_chat_with_sandbox(
-                messages=messages,
-                session_id=request_body.session_id,
+            opts = StreamChatOptions(
                 provider=request_body.provider.value,
                 model=request_body.model,
                 system_prompt=request_body.system_prompt,
                 max_tokens=request_body.max_tokens,
+            )
+            response = await agent_service.simple_chat_with_sandbox(
+                messages=messages,
+                session_id=request_body.session_id,
+                options=opts,
                 db_session=db,
                 sandbox_config=sandbox_config,
             )

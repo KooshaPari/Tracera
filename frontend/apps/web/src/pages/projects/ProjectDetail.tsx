@@ -1,6 +1,6 @@
 import { Outlet, useParams } from "@tanstack/react-router";
 
-export function ProjectDetail() {
+export const ProjectDetail = () => {
 	const params = useParams({ strict: false });
 	const projectId = params.projectId as string | undefined;
 
@@ -17,4 +17,4 @@ export function ProjectDetail() {
 			<Outlet />
 		</div>
 	);
-}
+};

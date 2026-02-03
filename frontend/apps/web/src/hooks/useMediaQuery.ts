@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-export function useMediaQuery(query: string): boolean {
+export const useMediaQuery = (query: string): boolean => {
 	const [matches, setMatches] = useState(false);
 
 	useEffect(() => {
@@ -37,21 +37,21 @@ export function useMediaQuery(query: string): boolean {
 	}, [query]);
 
 	return matches;
-}
+};
 
 // Predefined breakpoint hooks
-export function useIsMobile(): boolean {
+export const useIsMobile = (): boolean => {
 	return useMediaQuery("(max-width: 768px)");
-}
+};
 
-export function useIsTablet(): boolean {
+export const useIsTablet = (): boolean => {
 	return useMediaQuery("(min-width: 769px) and (max-width: 1024px)");
-}
+};
 
-export function useIsDesktop(): boolean {
+export const useIsDesktop = (): boolean => {
 	return useMediaQuery("(min-width: 1025px)");
-}
+};
 
-export function useIsDarkMode(): boolean {
+export const useIsDarkMode = (): boolean => {
 	return useMediaQuery("(prefers-color-scheme: dark)");
-}
+};

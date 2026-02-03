@@ -1,8 +1,8 @@
 // Timeline View - Horizontal version timeline with markers and zoom controls
 
-import { cn } from "@tracertm/ui";
 import { Badge } from "@tracertm/ui/components/Badge";
 import { Button } from "@tracertm/ui/components/Button";
+import { cn } from "@tracertm/ui";
 import {
 	CalendarDays,
 	ChevronLeft,
@@ -10,8 +10,20 @@ import {
 	ZoomIn,
 	ZoomOut,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+
 import type { Version } from "./TemporalNavigator";
+
+const MS_PER_DAY = 86_400_000;
+const DAYS_PER_WEEK = 7;
+const DAYS_PER_MONTH = 30;
+const DAYS_PER_YEAR = 365;
+const SCROLL_DELTA = 100;
+const ZOOM_MIN = 0.5;
+const ZOOM_STEP = 0.1;
+const ZOOM_MAX = 2;
+const CARD_MIN_WIDTH = 150;
+const ZOOM_PCT = 100;
 
 export interface TimelineViewProps {
 	versions: Version[];
@@ -19,61 +31,57 @@ export interface TimelineViewProps {
 	onVersionChange: (versionId: string) => void;
 }
 
-function getDaysAgo(timestamp: Date): string {
+const getDaysAgo = (timestamp: Date): string => {
 	const now = new Date();
 	const diff = now.getTime() - timestamp.getTime();
-	const days = Math.floor(diff / 86_400_000);
+	const days = Math.floor(diff / MS_PER_DAY);
 
-	if (days === 0) {
-		return "Today";
-	}
-	if (days === 1) {
-		return "Yesterday";
-	}
-	if (days < 7) {
-		return `${days} days ago`;
-	}
-	if (days < 30) {
-		return `${Math.floor(days / 7)} weeks ago`;
-	}
-	if (days < 365) {
-		return `${Math.floor(days / 30)} months ago`;
-	}
-	return `${Math.floor(days / 365)} years ago`;
-}
+	if (days === 0) return "Today";
+	if (days === 1) return "Yesterday";
+	if (days < DAYS_PER_WEEK) return `${days} days ago`;
+	if (days < DAYS_PER_MONTH) return `${Math.floor(days / DAYS_PER_WEEK)} weeks ago`;
+	if (days < DAYS_PER_YEAR) return `${Math.floor(days / DAYS_PER_MONTH)} months ago`;
+	return `${Math.floor(days / DAYS_PER_YEAR)} years ago`;
+};
 
-export function TimelineView({
+export const TimelineView = ({
 	versions,
 	currentVersionId,
 	onVersionChange,
-}: TimelineViewProps) {
+}: TimelineViewProps) => {
 	const [zoomLevel, setZoomLevel] = useState(1);
 	const [scrollOffset, setScrollOffset] = useState(0);
 
 	const sortedVersions = useMemo(
 		() =>
 			[...versions].toSorted(
-				(a: { timestamp: Date }, b: { timestamp: Date }) =>
+				(a: Version, b: Version) =>
 					a.timestamp.getTime() - b.timestamp.getTime(),
 			),
 		[versions],
 	);
 
-	// Const timeRange = useMemo(() => {
-	// 	If (sortedVersions.length === 0) {
-	// 		Return { min: 0, max: 0, span: 1 };
-	// 	}
-	// 	Const min = sortedVersions[0].timestamp.getTime();
-	// 	Const max = sortedVersions[sortedVersions.length - 1].timestamp.getTime();
-	// 	Return { min, max, span: max - min };
-	// }, [sortedVersions]);
-
-	const handleScroll = (direction: "left" | "right") => {
-		const delta = 100;
+	const handleScroll = useCallback((direction: "left" | "right") => {
 		setScrollOffset((prev) =>
-			direction === "left" ? Math.max(prev - delta, 0) : prev + delta,
+			direction === "left" ? Math.max(prev - SCROLL_DELTA, 0) : prev + SCROLL_DELTA,
 		);
-	};
+	}, []);
+
+	const handleZoomOut = useCallback(() => {
+		setZoomLevel((z) => Math.max(ZOOM_MIN, z - ZOOM_STEP));
+	}, []);
+
+	const handleZoomIn = useCallback(() => {
+		setZoomLevel((z) => Math.min(ZOOM_MAX, z + ZOOM_STEP));
+	}, []);
+
+	const handleScrollLeft = useCallback(() => {
+		handleScroll("left");
+	}, [handleScroll]);
+
+	const handleScrollRight = useCallback(() => {
+		handleScroll("right");
+	}, [handleScroll]);
 
 	return (
 		<div className="flex flex-col gap-4 p-4 bg-white dark:bg-gray-950">
@@ -82,7 +90,7 @@ export function TimelineView({
 					<Button
 						size="sm"
 						variant="outline"
-						onClick={() => handleScroll("left")}
+						onClick={handleScrollLeft}
 						className="w-8 h-8 p-0"
 					>
 						<ChevronLeft className="w-4 h-4" />
@@ -93,7 +101,7 @@ export function TimelineView({
 					<Button
 						size="sm"
 						variant="outline"
-						onClick={() => handleScroll("right")}
+						onClick={handleScrollRight}
 						className="w-8 h-8 p-0"
 					>
 						<ChevronRight className="w-4 h-4" />
@@ -102,12 +110,12 @@ export function TimelineView({
 
 				<div className="flex items-center gap-2">
 					<span className="text-xs text-gray-600 dark:text-gray-400">
-						Zoom: {Math.round(zoomLevel * 100)}%
+						Zoom: {Math.round(zoomLevel * ZOOM_PCT)}%
 					</span>
 					<Button
 						size="sm"
 						variant="outline"
-						onClick={() => setZoomLevel((z) => Math.max(0.5, z - 0.1))}
+						onClick={handleZoomOut}
 						className="w-8 h-8 p-0"
 					>
 						<ZoomOut className="w-4 h-4" />
@@ -115,7 +123,7 @@ export function TimelineView({
 					<Button
 						size="sm"
 						variant="outline"
-						onClick={() => setZoomLevel((z) => Math.min(2, z + 0.1))}
+						onClick={handleZoomIn}
 						className="w-8 h-8 p-0"
 					>
 						<ZoomIn className="w-4 h-4" />
@@ -133,7 +141,7 @@ export function TimelineView({
 						transition: "transform 0.3s ease-out",
 					}}
 				>
-					{sortedVersions.map((version: { id: string; timestamp: Date }) => {
+					{sortedVersions.map((version: Version) => {
 						const isCurrentVersion = version.id === currentVersionId;
 
 						return (
@@ -141,7 +149,7 @@ export function TimelineView({
 								key={version.id}
 								className="relative flex-shrink-0 pt-1"
 								style={{
-									minWidth: 150 * zoomLevel,
+									minWidth: CARD_MIN_WIDTH * zoomLevel,
 								}}
 								onClick={() => onVersionChange(version.id)}
 								onKeyDown={(e) => {
@@ -218,18 +226,22 @@ export function TimelineView({
 				</div>
 			</div>
 
-			{sortedVersions.length > 0 && (
+			{sortedVersions.length > 0 && (() => {
+				const first = sortedVersions[0];
+				const last = sortedVersions[sortedVersions.length - 1];
+				return (
 				<div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 pt-2 border-t border-gray-200 dark:border-gray-800">
 					<span>
-						{sortedVersions[0].timestamp.toLocaleDateString()} -
-						{sortedVersions.at(-1).timestamp.toLocaleDateString()}
+						{first?.timestamp.toLocaleDateString()} -
+						{last?.timestamp.toLocaleDateString()}
 					</span>
 					<span>
 						{sortedVersions.length} version
 						{sortedVersions.length === 1 ? "" : "s"}
 					</span>
 				</div>
-			)}
+				);
+			})()}
 
 			{sortedVersions.length === 0 && (
 				<div className="flex items-center justify-center py-8 text-gray-500 dark:text-gray-400">
@@ -238,4 +250,4 @@ export function TimelineView({
 			)}
 		</div>
 	);
-}
+};

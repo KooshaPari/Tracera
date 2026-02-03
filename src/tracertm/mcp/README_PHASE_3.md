@@ -35,7 +35,7 @@
 | **[query_optimizer.py](query_optimizer.py)** | Eager loading |
 | **[tools/base_async.py](tools/base_async.py)** | Async utilities |
 | **[tools/items_phase3.py](tools/items_phase3.py)** | Example implementation |
-| **[benchmark_phase3.py](benchmark_phase3.py)** | Benchmark suite |
+| **[db_benchmark.py](db_benchmark.py)** | Benchmark suite |
 
 ---
 
@@ -47,7 +47,7 @@ pytest tests/unit/mcp/test_database_manager.py -v
 pytest tests/unit/mcp/test_cache.py -v
 
 # Run benchmark
-python -m tracertm.mcp.benchmark_phase3 <db_url> <project_id>
+python -m tracertm.mcp.db_benchmark <db_url> <project_id>
 ```
 
 ---

@@ -11,9 +11,10 @@ interface Event {
 	projectId?: string;
 }
 
-const apiClient = client.apiClient;
-const safeApiCall = client.safeApiCall;
-const get = apiClient.GET.bind(apiClient);
+type ApiClient = typeof client.apiClient;
+const apiClient: ApiClient = client.apiClient;
+const safeApiCall: typeof client.safeApiCall = client.safeApiCall;
+const get: ApiClient["GET"] = apiClient.GET.bind(apiClient);
 
 const isRecordObject = (value: unknown): value is Record<string, unknown> =>
 	Object.prototype.toString.call(value) === "[object Object]";
@@ -67,11 +68,6 @@ const fetchEvent = async (id: string): Promise<Event | undefined> => {
 		return undefined;
 	}
 };
-
-const eventsApi = { fetchEvent, fetchEvents };
-
-// eslint-disable-next-line import/no-default-export
-export default eventsApi;
 
 export { fetchEvent, fetchEvents };
 export type { Event };

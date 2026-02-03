@@ -1,8 +1,9 @@
 // BranchExplorer Storybook stories
 import type { Meta, StoryObj } from "@storybook/react";
-import { BranchExplorer } from "../BranchExplorer";
 import type { Branch } from "../TemporalNavigator";
 import { logger } from "@/lib/logger";
+import { BranchExplorer } from "../BranchExplorer";
+
 
 const meta = {
 	component: BranchExplorer,
@@ -13,6 +14,8 @@ const meta = {
 	title: "Temporal/BranchExplorer",
 } satisfies Meta<typeof BranchExplorer>;
 
+// Storybook requires default export for meta
+// eslint-disable-next-line import/no-default-export -- Storybook convention
 export default meta;
 type Story = StoryObj<typeof meta>;
 
@@ -109,7 +112,7 @@ export const FeatureBranchSelected: Story = {
 export const SingleBranch: Story = {
 	args: {
 		...Default.args,
-		branches: [mockBranches[0]],
+		branches: mockBranches[0] !== undefined ? [mockBranches[0]] : [],
 	},
 };
 

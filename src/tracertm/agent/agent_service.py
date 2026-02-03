@@ -8,13 +8,25 @@ lifecycle events via NATS for real-time monitoring and integration.
 import logging
 import traceback
 from collections.abc import AsyncIterator
+from dataclasses import dataclass
 from typing import Any
 
-from tracertm.agent.events import AgentEventPublisher, SessionStatus
+from tracertm.agent.events import AgentEventPublisher, ChatMessagePayload, SessionStatus
 from tracertm.agent.session_store import SessionSandboxStore
 from tracertm.agent.types import SandboxConfig
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True)
+class StreamChatOptions:
+    """Options for stream/simple chat (provider, model, limits)."""
+
+    provider: str = "claude"
+    model: str | None = None
+    system_prompt: str | None = None
+    max_tokens: int = 4096
+    enable_tools: bool = True
 
 
 class AgentService:
@@ -77,22 +89,55 @@ class AgentService:
 
         return path, created
 
+    async def _publish_user_message_if_any(
+        self, session_id: str, project_id: Any, messages: list[dict]
+    ) -> None:
+        """Publish chat message event for the last user message."""
+        if not (session_id and self._event_publisher and messages):
+            return
+        last_message = messages[-1]
+        if last_message.get("role") != "user":
+            return
+        try:
+            await self._event_publisher.publish_chat_message(
+                session_id=session_id,
+                project_id=project_id,
+                role="user",
+                content=str(last_message.get("content", "")),
+                turn_number=len(messages) // 2,
+            )
+        except Exception as e:
+            logger.debug("Failed to publish chat message event: %s", e)
+
+    async def _publish_chat_error(
+        self, session_id: str, project_id: Any, exc: BaseException
+    ) -> None:
+        """Publish chat error event; log and swallow publish errors."""
+        if not (session_id and self._event_publisher):
+            return
+        try:
+            await self._event_publisher.publish_chat_error(
+                session_id=session_id,
+                project_id=project_id,
+                error_type=type(exc).__name__,
+                error_message=str(exc),
+                stack_trace=traceback.format_exc(),
+            )
+        except Exception as publish_error:
+            logger.debug("Failed to publish chat error event: %s", publish_error)
+
     async def stream_chat_with_sandbox(
         self,
         messages: list[dict],
         session_id: str | None = None,
-        provider: str = "claude",
-        model: str | None = None,
-        system_prompt: str | None = None,
-        max_tokens: int = 4096,
-        enable_tools: bool = True,
+        options: StreamChatOptions | None = None,
         db_session: Any = None,
         sandbox_config: SandboxConfig | None = None,
     ) -> AsyncIterator[str]:
         """Stream chat; if session_id is set, use its sandbox as working_directory."""
-        working_directory = None
+        opts = options or StreamChatOptions()
         project_id = getattr(sandbox_config, "project_id", None) if sandbox_config else None
-
+        working_directory = None
         if session_id:
             working_directory, _ = await self.get_or_create_session_sandbox(
                 session_id, config=sandbox_config, db_session=db_session
@@ -104,63 +149,35 @@ class AgentService:
         if working_directory:
             set_allowed_paths([working_directory])
 
-        # Publish chat message event for user message
-        if session_id and self._event_publisher and messages:
-            last_message = messages[-1]
-            if last_message.get("role") == "user":
-                try:
-                    await self._event_publisher.publish_chat_message(
-                        session_id=session_id,
-                        project_id=project_id,
-                        role="user",
-                        content=str(last_message.get("content", "")),
-                        turn_number=len(messages) // 2,  # Approximate turn number
-                    )
-                except Exception as e:
-                    logger.debug(f"Failed to publish chat message event: {e}")
-
+        await self._publish_user_message_if_any(session_id or "", project_id, messages)
         ai = get_ai_service()
 
         try:
             async for chunk in ai.stream_chat(
                 messages=messages,
-                provider=provider,
-                model=model,
-                system_prompt=system_prompt,
-                max_tokens=max_tokens,
-                enable_tools=enable_tools,
+                provider=opts.provider,
+                model=opts.model,
+                system_prompt=opts.system_prompt,
+                max_tokens=opts.max_tokens,
+                enable_tools=opts.enable_tools,
                 working_directory=working_directory,
                 db_session=db_session,
             ):
                 yield chunk
-
         except Exception as e:
-            # Publish error event
-            if session_id and self._event_publisher:
-                try:
-                    await self._event_publisher.publish_chat_error(
-                        session_id=session_id,
-                        project_id=project_id,
-                        error_type=type(e).__name__,
-                        error_message=str(e),
-                        stack_trace=traceback.format_exc(),
-                    )
-                except Exception as publish_error:
-                    logger.debug(f"Failed to publish chat error event: {publish_error}")
+            await self._publish_chat_error(session_id or "", project_id, e)
             raise
 
     async def simple_chat_with_sandbox(
         self,
         messages: list[dict],
         session_id: str | None = None,
-        provider: str = "claude",
-        model: str | None = None,
-        system_prompt: str | None = None,
-        max_tokens: int = 4096,
+        options: StreamChatOptions | None = None,
         db_session: Any = None,
         sandbox_config: SandboxConfig | None = None,
     ) -> str:
         """Non-streaming chat; if session_id is set, use its sandbox as working_directory."""
+        opts = options or StreamChatOptions()
         if session_id:
             _working_directory, _ = await self.get_or_create_session_sandbox(
                 session_id, config=sandbox_config, db_session=db_session
@@ -171,10 +188,10 @@ class AgentService:
         ai = get_ai_service()
         return await ai.simple_chat(
             messages=messages,
-            provider=provider,
-            model=model,
-            system_prompt=system_prompt,
-            max_tokens=max_tokens,
+            provider=opts.provider,
+            model=opts.model,
+            system_prompt=opts.system_prompt,
+            max_tokens=opts.max_tokens,
         )
 
     async def destroy_session(

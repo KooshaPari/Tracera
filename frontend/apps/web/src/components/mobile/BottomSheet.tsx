@@ -1,6 +1,6 @@
-import { X } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import type { ReactNode } from "react";
+import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface BottomSheetProps {
@@ -17,7 +17,7 @@ interface BottomSheetProps {
  * Mobile-optimized bottom sheet modal that slides up from bottom
  * Perfect for mobile dialogs with good touch interaction
  */
-export function BottomSheet({
+export const BottomSheet = function BottomSheet({
 	isOpen,
 	onClose,
 	title,
@@ -118,9 +118,9 @@ export function BottomSheet({
 			</div>
 		</>
 	);
-}
+};
 
-interface MobilePickerOption {
+export interface MobilePickerOption {
 	value: string | number;
 	label: string;
 	description?: string;
@@ -139,7 +139,7 @@ interface MobilePickerProps {
 /**
  * Mobile picker optimized for touch with large tap targets
  */
-export function MobilePicker({
+export const MobilePicker = function MobilePicker({
 	isOpen,
 	onClose,
 	title,
@@ -147,10 +147,27 @@ export function MobilePicker({
 	selectedValue,
 	onSelect,
 }: MobilePickerProps) {
-	const handleSelect = (value: string | number) => {
-		onSelect(value);
-		onClose();
-	};
+	const handleSelect = useCallback(
+		(value: string | number) => {
+			onSelect(value);
+			onClose();
+		},
+		[onSelect, onClose],
+	);
+
+	const handleOptionClick = useCallback(
+		(e: React.MouseEvent<HTMLButtonElement>) => {
+			const raw = e.currentTarget.getAttribute("data-value");
+			if (raw === null || raw === undefined) return;
+			try {
+				const value = JSON.parse(raw) as string | number;
+				handleSelect(value);
+			} catch {
+				// ignore invalid data-value
+			}
+		},
+		[handleSelect],
+	);
 
 	return (
 		<BottomSheet isOpen={isOpen} onClose={onClose} title={title}>
@@ -158,7 +175,8 @@ export function MobilePicker({
 				{options.map((option) => (
 					<button
 						key={option.value}
-						onClick={() => handleSelect(option.value)}
+						data-value={JSON.stringify(option.value)}
+						onClick={handleOptionClick}
 						disabled={option.disabled}
 						className={cn(
 							"w-full px-4 py-4 rounded-lg text-left",

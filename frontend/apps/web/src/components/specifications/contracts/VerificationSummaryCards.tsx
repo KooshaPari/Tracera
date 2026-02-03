@@ -1,5 +1,4 @@
 import { type FC, useMemo } from "react";
-import type { Contract } from "../../..";
 import {
 	Card,
 	CheckCircle2,
@@ -7,6 +6,7 @@ import {
 	ShieldAlert,
 	ShieldCheck,
 } from "lucide-react";
+import type { Contract } from "../../..";
 
 interface VerificationSummaryCardsProps {
 	contracts: readonly Contract[];

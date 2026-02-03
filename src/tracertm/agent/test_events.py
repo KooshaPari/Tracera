@@ -20,6 +20,15 @@ from tracertm.agent.events import (
     SessionStatus,
 )
 
+# Test data constants (avoid magic numbers in assertions)
+EXPECTED_CHECKPOINT_TURN = 5
+EXPECTED_FINAL_TURN = 10
+TEST_CONTENT_PREVIEW_LEN = 500
+TEST_CONTENT_LENGTH = 1000
+EXPECTED_CHAT_TURN_NUMBER = 3
+TEST_SNAPSHOT_SIZE_BYTES = 1024000
+TEST_SNAPSHOT_FILE_COUNT = 150
+
 
 class MockNATSClient:
     """Mock NATS client for testing event publishing."""
@@ -98,7 +107,7 @@ async def test_publish_session_checkpoint(publisher, mock_nats):
     assert event["subject"] == "tracertm.sessions.sess-123.checkpoint"
     assert event["payload"]["event_type"] == EventType.SESSION_CHECKPOINT
     assert event["payload"]["data"]["checkpoint_id"] == "ckpt-789"
-    assert event["payload"]["data"]["turn_number"] == 5
+    assert event["payload"]["data"]["turn_number"] == EXPECTED_CHECKPOINT_TURN
     assert event["payload"]["data"]["s3_key"] == "checkpoints/sess-123/ckpt-789.json"
     assert event["payload"]["data"]["metadata"]["notes"] == "checkpoint after code generation"
 
@@ -138,19 +147,19 @@ async def test_publish_session_status_changed(publisher, mock_nats):
     assert event["payload"]["event_type"] == EventType.SESSION_STATUS_CHANGED
     assert event["payload"]["data"]["old_status"] == "ACTIVE"
     assert event["payload"]["data"]["new_status"] == "COMPLETED"
-    assert event["payload"]["data"]["details"]["final_turn"] == 10
+    assert event["payload"]["data"]["details"]["final_turn"] == EXPECTED_FINAL_TURN
 
 
 @pytest.mark.asyncio
 async def test_publish_chat_message(publisher, mock_nats):
     """Test chat message event publishing."""
-    long_content = "A" * 1000
+    long_content = "A" * TEST_CONTENT_LENGTH
     await publisher.publish_chat_message(
         session_id="sess-123",
         project_id="proj-456",
         role="user",
         content=long_content,
-        turn_number=3,
+        turn_number=EXPECTED_CHAT_TURN_NUMBER,
         metadata={"source": "web_ui"},
     )
 
@@ -160,10 +169,10 @@ async def test_publish_chat_message(publisher, mock_nats):
     assert event["subject"] == "tracertm.chat.sess-123.message"
     assert event["payload"]["event_type"] == EventType.CHAT_MESSAGE
     assert event["payload"]["data"]["role"] == "user"
-    # Content should be truncated to 500 chars
-    assert len(event["payload"]["data"]["content_preview"]) == 500
-    assert event["payload"]["data"]["content_length"] == 1000
-    assert event["payload"]["data"]["turn_number"] == 3
+    # Content should be truncated to preview length
+    assert len(event["payload"]["data"]["content_preview"]) == TEST_CONTENT_PREVIEW_LEN
+    assert event["payload"]["data"]["content_length"] == TEST_CONTENT_LENGTH
+    assert event["payload"]["data"]["turn_number"] == EXPECTED_CHAT_TURN_NUMBER
 
 
 @pytest.mark.asyncio
@@ -216,8 +225,8 @@ async def test_publish_snapshot_created(publisher, mock_nats):
         project_id="proj-456",
         snapshot_id="snap-789",
         s3_key="snapshots/sess-123/snap-789.tar.gz",
-        size_bytes=1024000,
-        file_count=150,
+        size_bytes=TEST_SNAPSHOT_SIZE_BYTES,
+        file_count=TEST_SNAPSHOT_FILE_COUNT,
     )
 
     assert len(mock_nats.published_events) == 1
@@ -227,8 +236,8 @@ async def test_publish_snapshot_created(publisher, mock_nats):
     assert event["payload"]["event_type"] == EventType.SNAPSHOT_CREATED
     assert event["payload"]["data"]["snapshot_id"] == "snap-789"
     assert event["payload"]["data"]["s3_key"] == "snapshots/sess-123/snap-789.tar.gz"
-    assert event["payload"]["data"]["size_bytes"] == 1024000
-    assert event["payload"]["data"]["file_count"] == 150
+    assert event["payload"]["data"]["size_bytes"] == TEST_SNAPSHOT_SIZE_BYTES
+    assert event["payload"]["data"]["file_count"] == TEST_SNAPSHOT_FILE_COUNT
 
 
 @pytest.mark.asyncio

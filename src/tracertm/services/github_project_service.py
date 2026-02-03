@@ -2,11 +2,26 @@
 Service for GitHub Projects auto-linking and synchronization.
 """
 
+from dataclasses import dataclass
+from typing import Any
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from typing import Any
 from tracertm.clients.github_client import GitHubClient
 from tracertm.repositories.github_project_repository import GitHubProjectRepository
+
+
+@dataclass
+class LinkProjectParams:
+    """Parameters for linking a GitHub Project to a TraceRTM project."""
+
+    project_id: str
+    github_repo_id: int
+    github_repo_owner: str
+    github_repo_name: str
+    github_project_id: str
+    github_project_number: int
+    auto_sync: bool = True
 
 
 class GitHubProjectService:
@@ -97,25 +112,16 @@ class GitHubProjectService:
             for p in projects
         ]
 
-    async def link_project(
-        self,
-        project_id: str,
-        github_repo_id: int,
-        github_repo_owner: str,
-        github_repo_name: str,
-        github_project_id: str,
-        github_project_number: int,
-        auto_sync: bool = True,
-    ) -> dict[str, Any]:
+    async def link_project(self, params: LinkProjectParams) -> dict[str, Any]:
         """Manually link a GitHub Project to a TraceRTM project."""
         github_project = await self.repo.create(
-            project_id=project_id,
-            github_repo_id=github_repo_id,
-            github_repo_owner=github_repo_owner,
-            github_repo_name=github_repo_name,
-            github_project_id=github_project_id,
-            github_project_number=github_project_number,
-            auto_sync=auto_sync,
+            project_id=params.project_id,
+            github_repo_id=params.github_repo_id,
+            github_repo_owner=params.github_repo_owner,
+            github_repo_name=params.github_repo_name,
+            github_project_id=params.github_project_id,
+            github_project_number=params.github_project_number,
+            auto_sync=params.auto_sync,
         )
 
         await self.db.commit()

@@ -77,8 +77,20 @@ import { useProjects } from "@/hooks/useProjects";
 import { cn } from "@/lib/utils";
 import { useProjectStore } from "@/stores";
 
+const SIDEBAR_DEFAULT_WIDTH_PX = 320;
+const SIDEBAR_MIN_WIDTH_PX = 280;
+const SIDEBAR_MAX_WIDTH_PX = 720;
+const RECENT_PROJECTS_DISPLAY_MAX = 5;
+
 type SortOption = "recent" | "alphabetical" | "modified";
 type FilterOption = "all" | "active" | "archived";
+
+export type SidebarNavItem = {
+	badge: number | null;
+	href: string;
+	icon: React.ComponentType<{ className?: string }>;
+	title: string;
+};
 
 // Utility function to highlight search text
 const highlightText = (text: string, query: string) => {
@@ -89,7 +101,7 @@ const highlightText = (text: string, query: string) => {
 	return parts.map((part, i) =>
 		part.toLowerCase() === query.toLowerCase() ? (
 			<mark
-				key={i}
+				key={`${i}-${part.slice(0, 8)}`}
 				className="bg-primary/20 text-primary font-medium rounded px-0.5"
 			>
 				{part}
@@ -100,7 +112,7 @@ const highlightText = (text: string, query: string) => {
 	);
 };
 
-function SidebarComponent() {
+const SidebarComponent = function SidebarComponent() {
 	const [isCollapsed, setIsCollapsed] = useState(false);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [collapsedGroups, setCollapsedGroups] = useState<
@@ -130,8 +142,8 @@ function SidebarComponent() {
 	const isTestEnv = typeof navigator !== "undefined" && navigator.webdriver;
 	const [sidebarWidth, setSidebarWidth] = useState(() => {
 		const saved = localStorage.getItem("sidebar-width");
-		const parsed = saved ? Number.parseInt(saved, 10) : 320;
-		return Math.max(280, parsed); // Ensure minimum width so content isn't cut off
+		const parsed = saved ? Number.parseInt(saved, 10) : SIDEBAR_DEFAULT_WIDTH_PX;
+		return Math.max(SIDEBAR_MIN_WIDTH_PX, parsed);
 	});
 	const [isResizing, setIsResizing] = useState(false);
 
@@ -258,7 +270,10 @@ function SidebarComponent() {
 			const handleMouseMove = (e: MouseEvent) => {
 				e.preventDefault();
 				const delta = e.clientX - startX;
-				const newWidth = Math.max(280, Math.min(720, startWidth + delta));
+				const newWidth = Math.max(
+					SIDEBAR_MIN_WIDTH_PX,
+					Math.min(SIDEBAR_MAX_WIDTH_PX, startWidth + delta),
+				);
 				setSidebarWidth(newWidth);
 				localStorage.setItem("sidebar-width", newWidth.toString());
 			};
@@ -303,7 +318,11 @@ function SidebarComponent() {
 
 		const activeId =
 			(typeof projectId === "string" && projectId) ||
-			(currentProject?.id !== null && String(currentProject.id)) ||
+			(currentProject !== null &&
+				currentProject !== undefined &&
+				currentProject.id !== null &&
+				currentProject.id !== undefined &&
+				String(currentProject.id)) ||
 			"";
 		if (activeId) {
 			groups.push({
@@ -682,7 +701,7 @@ function SidebarComponent() {
 			.map((id) => allProjects.find((p) => p.id === id))
 			.filter(
 				(p): p is NonNullable<typeof p> =>
-					Boolean(p) && p.id !== currentProject?.id,
+					p !== null && p !== undefined && p.id !== currentProject?.id,
 			);
 	}, [recentProjects, allProjects, currentProject]);
 
@@ -720,7 +739,7 @@ function SidebarComponent() {
 			);
 		}
 
-		return sorted.slice(0, 5);
+		return sorted.slice(0, RECENT_PROJECTS_DISPLAY_MAX);
 	}, [recentProjectObjects, recentSort, searchQuery, recentProjects]);
 
 	const handleProjectAction = useCallback(
@@ -892,7 +911,7 @@ function SidebarComponent() {
 															value="views"
 															className="space-y-1 mt-0 max-h-[280px] overflow-y-auto overflow-x-hidden min-w-0 w-full max-w-full isolate"
 														>
-															{viewsItems.map((item: { href: string }) => (
+															{viewsItems.map((item: SidebarNavItem) => (
 																<NavItem
 																	key={item.href}
 																	ref={setNavItemRef}
@@ -1132,7 +1151,7 @@ function SidebarComponent() {
 													</div>
 												</CollapsibleTrigger>
 												<CollapsibleContent className="pt-1 space-y-1 max-h-[360px] overflow-y-auto overflow-x-hidden min-w-0 w-full max-w-full isolate">
-													{group.items.map((item: { href: string }) => (
+													{group.items.map((item: SidebarNavItem) => (
 														<NavItem
 															key={item.href}
 															ref={setNavItemRef}
@@ -1158,7 +1177,7 @@ function SidebarComponent() {
 												</h3>
 											)}
 											<div className="space-y-0.5 min-w-0 w-full" role="list">
-												{group.items.map((item: { href: string }) => (
+												{group.items.map((item: SidebarNavItem) => (
 													<NavItem
 														key={item.href}
 														ref={setNavItemRef}
@@ -1352,15 +1371,10 @@ function SidebarComponent() {
 			</div>
 		</TooltipProvider>
 	);
-}
+};
 
 interface NavItemProps {
-	item: {
-		title: string;
-		href: string;
-		icon: React.ComponentType<{ className?: string }>;
-		badge: number | null;
-	};
+	item: SidebarNavItem;
 	isActive: boolean;
 	isCollapsed?: boolean;
 	searchQuery?: string;

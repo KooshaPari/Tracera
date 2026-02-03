@@ -84,10 +84,10 @@ export interface CacheStatistics {
 	oldestEntry: { key: string; age: number } | null;
 	newestEntry: { key: string; age: number } | null;
 	entriesBySize: {
-		tiny: number; // < 1 KB
-		small: number; // 1-10 KB
-		medium: number; // 10-100 KB
 		large: number; // 100 KB+
+		medium: number; // 10-100 KB
+		small: number; // 1-10 KB
+		tiny: number; // < 1 KB
 	};
 }
 
@@ -166,6 +166,7 @@ class GraphCacheImpl<T = any> {
 
 		// Store entry
 		this.entries.set(key, {
+			value,
 			metadata: {
 				createdTime: Date.now(),
 				estimatedSize,
@@ -173,7 +174,6 @@ class GraphCacheImpl<T = any> {
 				lastAccessTime: Date.now(),
 				missCount: 0,
 			},
-			value,
 		});
 
 		this.lruOrder.push(key);

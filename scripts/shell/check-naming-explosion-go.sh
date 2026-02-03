@@ -51,6 +51,20 @@ NUMBERED_FILES=$(find $SEARCH_DIRS -type f -name "*.go" \
   -not -path "*/pb/*.pb.go" | \
   grep -E '_[0-9]+\.go$' || true)
 
+# Check for phase suffixes (*_phase2, *_phase3, *Phase2*, etc.)
+PHASE_FILES=$(find $SEARCH_DIRS -type f -name "*.go" \
+  -not -path "*/vendor/*" \
+  -not -path "*_test.go" \
+  -not -path "*/pb/*.pb.go" | \
+  grep -E '(_phase[0-9]|_phase[0-9][0-9]|phase[0-9]_|phase[0-9][0-9]_|Phase[0-9])\.go$' || true)
+
+# Check for other common AI versioning (*Final, *Latest, *_final, etc.)
+OTHER_VERSION_FILES=$(find $SEARCH_DIRS -type f -name "*.go" \
+  -not -path "*/vendor/*" \
+  -not -path "*_test.go" \
+  -not -path "*/pb/*.pb.go" | \
+  grep -E '(Final|Latest|Revised|_final|_latest|_revised)\.go$' || true)
+
 # Combine all violations
 ALL_VIOLATIONS=""
 if [ -n "$VERSIONED_FILES" ]; then
@@ -64,6 +78,12 @@ if [ -n "$SUFFIXED_FILES" ]; then
 fi
 if [ -n "$NUMBERED_FILES" ]; then
   ALL_VIOLATIONS="$ALL_VIOLATIONS$NUMBERED_FILES\n"
+fi
+if [ -n "$PHASE_FILES" ]; then
+  ALL_VIOLATIONS="$ALL_VIOLATIONS$PHASE_FILES\n"
+fi
+if [ -n "$OTHER_VERSION_FILES" ]; then
+  ALL_VIOLATIONS="$ALL_VIOLATIONS$OTHER_VERSION_FILES\n"
 fi
 
 # Report results
@@ -79,6 +99,8 @@ if [ -n "$ALL_VIOLATIONS" ]; then
   echo "  • Prefixed: NewDashboard.go, ImprovedService.go, EnhancedAPI.go"
   echo "  • Suffixed: DashboardNew.go, ServiceImproved.go"
   echo "  • Numbered: Dashboard_2.go, Service_3.go"
+  echo "  • Phase suffixes: benchmark_phase2.go, servicePhase3.go"
+  echo "  • Other versions: ServiceFinal.go, handlerLatest.go"
   echo ""
   echo -e "${YELLOW}Required action:${NC}"
   echo "  1. Identify the canonical (currently used) file"

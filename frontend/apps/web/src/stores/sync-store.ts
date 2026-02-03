@@ -1,81 +1,92 @@
-import type { Mutation } from "@tracertm/types";
 import { create } from "zustand";
+import type { Mutation } from "@tracertm/types";
 
-interface SyncState {
-	// Online status
+type SyncConflict = {
+	localData: unknown;
+	mutation: Mutation;
+	serverData: unknown;
+};
+
+interface SyncDataState {
+	conflicts: SyncConflict[];
+	failedMutations: Mutation[];
 	isOnline: boolean;
-
-	// Sync status
 	isSyncing: boolean;
 	lastSyncedAt: Date | null;
-	syncError: string | null;
-
-	// Pending mutations queue
 	pendingMutations: Mutation[];
-	failedMutations: Mutation[];
+	syncError: string | null;
+}
 
-	// Conflict resolution
-	conflicts: {
-		mutation: Mutation;
-		serverData: unknown;
-		localData: unknown;
-	}[];
-
-	// Actions
-	setOnline: (online: boolean) => void;
-	startSync: () => void;
-	finishSync: (error?: string) => void;
-	addPendingMutation: (mutation: Mutation) => void;
-	removePendingMutation: (mutationId: string) => void;
-	moveMutationToFailed: (mutationId: string) => void;
-	retryFailedMutation: (mutationId: string) => void;
-	clearFailedMutations: () => void;
+interface SyncActions {
 	addConflict: (
 		mutation: Mutation,
 		serverData: unknown,
 		localData: unknown,
 	) => void;
-	resolveConflict: (mutationId: string) => void;
+	addPendingMutation: (mutation: Mutation) => void;
+	clearFailedMutations: () => void;
+	finishSync: (error?: string) => void;
+	moveMutationToFailed: (mutationId: string) => void;
+	removePendingMutation: (mutationId: string) => void;
 	reset: () => void;
+	resolveConflict: (mutationId: string) => void;
+	retryFailedMutation: (mutationId: string) => void;
+	setOnline: (online: boolean) => void;
+	startSync: () => void;
 }
 
-export const useSyncStore = create<SyncState>((set, _get) => ({
-	// Initial state
+type SyncState = SyncDataState & SyncActions;
+
+type SyncSetter = (
+	partial:
+		| Partial<SyncState>
+		| ((state: SyncState) => Partial<SyncState> | SyncState),
+) => void;
+
+type SyncGetter = () => SyncState;
+
+const createInitialState = (): SyncDataState => ({
+	conflicts: [],
+	failedMutations: [],
 	isOnline: typeof navigator !== "undefined" ? navigator.onLine : true,
 	isSyncing: false,
 	lastSyncedAt: null,
-	syncError: null,
 	pendingMutations: [],
-	failedMutations: [],
-	conflicts: [],
+	syncError: null,
+});
 
-	// Actions
-	setOnline: (online) => set({ isOnline: online }),
-
-	startSync: () => set({ isSyncing: true, syncError: null }),
-
+const createStatusActions = (set: SyncSetter): Pick<
+	SyncActions,
+	"finishSync" | "setOnline" | "startSync"
+> => ({
 	finishSync: (error) =>
 		set({
 			isSyncing: false,
 			lastSyncedAt: error ? null : new Date(),
 			syncError: error || null,
 		}),
+	setOnline: (online) => set({ isOnline: online }),
+	startSync: () => set({ isSyncing: true, syncError: null }),
+});
 
+const createMutationActions = (set: SyncSetter): Pick<
+	SyncActions,
+		| "addPendingMutation"
+		| "clearFailedMutations"
+		| "moveMutationToFailed"
+		| "removePendingMutation"
+		| "retryFailedMutation"
+> => ({
 	addPendingMutation: (mutation) =>
 		set((state) => ({
 			pendingMutations: [...state.pendingMutations, mutation],
 		})),
-
-	removePendingMutation: (mutationId) =>
-		set((state) => ({
-			pendingMutations: state.pendingMutations.filter(
-				(m) => m.id !== mutationId,
-			),
-		})),
-
+	clearFailedMutations: () => set({ failedMutations: [] }),
 	moveMutationToFailed: (mutationId) =>
 		set((state) => {
-			const mutation = state.pendingMutations.find((m) => m.id === mutationId);
+			const mutation = state.pendingMutations.find(
+				(candidate) => candidate.id !== undefined && candidate.id === mutationId,
+			);
 			if (!mutation) {
 				return state;
 			}
@@ -83,38 +94,51 @@ export const useSyncStore = create<SyncState>((set, _get) => ({
 			return {
 				failedMutations: [...state.failedMutations, mutation],
 				pendingMutations: state.pendingMutations.filter(
-					(m) => m.id !== mutationId,
+					(candidate) => candidate.id !== mutationId,
 				),
 			};
 		}),
-
+	removePendingMutation: (mutationId) =>
+		set((state) => ({
+			pendingMutations: state.pendingMutations.filter(
+				(mutation) => mutation.id !== mutationId,
+			),
+		})),
 	retryFailedMutation: (mutationId) =>
 		set((state) => {
-			const mutation = state.failedMutations.find((m) => m.id === mutationId);
+			const mutation = state.failedMutations.find(
+				(candidate) => candidate.id !== undefined && candidate.id === mutationId,
+			);
 			if (!mutation) {
 				return state;
 			}
 
 			return {
 				failedMutations: state.failedMutations.filter(
-					(m) => m.id !== mutationId,
+					(candidate) => candidate.id !== mutationId,
 				),
 				pendingMutations: [...state.pendingMutations, mutation],
 			};
 		}),
+});
 
-	clearFailedMutations: () => set({ failedMutations: [] }),
-
+const createConflictActions = (set: SyncSetter): Pick<
+	SyncActions,
+	"addConflict" | "resolveConflict"
+> => ({
 	addConflict: (mutation, serverData, localData) =>
 		set((state) => ({
 			conflicts: [...state.conflicts, { localData, mutation, serverData }],
 		})),
-
 	resolveConflict: (mutationId) =>
 		set((state) => ({
-			conflicts: state.conflicts.filter((c) => c.mutation.id !== mutationId),
+			conflicts: state.conflicts.filter(
+				(conflict) => conflict.mutation.id !== mutationId,
+			),
 		})),
+});
 
+const createResetAction = (set: SyncSetter): Pick<SyncActions, "reset"> => ({
 	reset: () =>
 		set({
 			conflicts: [],
@@ -124,7 +148,19 @@ export const useSyncStore = create<SyncState>((set, _get) => ({
 			pendingMutations: [],
 			syncError: null,
 		}),
-}));
+});
+
+const buildSyncStore = (set: SyncSetter, _get: SyncGetter): SyncState => ({
+	...createInitialState(),
+	...createStatusActions(set),
+	...createMutationActions(set),
+	...createConflictActions(set),
+	...createResetAction(set),
+});
+
+export const useSyncStore = create<SyncState>((set, get) =>
+	buildSyncStore(set, get),
+);
 
 // Setup online/offline listeners
 if ("window" in globalThis) {

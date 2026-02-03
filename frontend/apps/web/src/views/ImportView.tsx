@@ -1,5 +1,5 @@
+import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { logger } from "@/lib/logger";
 import { Button } from "@tracertm/ui/components/Button";
 import { Card } from "@tracertm/ui/components/Card";
 import { Label } from "@tracertm/ui/components/Label";
@@ -11,12 +11,12 @@ import {
 	SelectValue,
 } from "@tracertm/ui/components/Select";
 import { Textarea } from "@tracertm/ui/components/Textarea";
-import { useState } from "react";
 import { api } from "../api/endpoints";
+import { logger } from "@/lib/logger";
 
 type ImportFormat = "json" | "csv";
 
-export function ImportView() {
+export const ImportView = () => {
 	// Note: projectId would come from route params in actual implementation
 	// For now, we'll use state
 	const [projectId, setProjectId] = useState<string>("");
@@ -85,6 +85,18 @@ export function ImportView() {
 		importMutation.mutate({ data, format, projectId });
 	};
 
+	const handleProjectSelect = (value: string) => {
+		setProjectId(value === "none" ? "" : value);
+	};
+
+	const handleFormatChange = (v: string) => {
+		setFormat(v as ImportFormat);
+	};
+
+	const handleDataChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+		setData(e.target.value);
+	};
+
 	return (
 		<div className="space-y-6">
 			<div>
@@ -105,9 +117,7 @@ export function ImportView() {
 						</label>
 						<Select
 							value={projectId || "none"}
-							onValueChange={(value) => {
-								setProjectId(value === "none" ? "" : value);
-							}}
+							onValueChange={handleProjectSelect}
 						>
 							<SelectTrigger id="project-select" className="mt-2">
 								<SelectValue placeholder="Select a project" />
@@ -130,10 +140,7 @@ export function ImportView() {
 						>
 							Import Format
 						</label>
-						<Select
-							value={format}
-							onValueChange={(v) => setFormat(v as ImportFormat)}
-						>
+						<Select value={format} onValueChange={handleFormatChange}>
 							<SelectTrigger id="format-select" className="mt-2">
 								<SelectValue />
 							</SelectTrigger>
@@ -165,7 +172,7 @@ export function ImportView() {
 						<Textarea
 							id="data-input"
 							value={data}
-							onChange={(e) => setData(e.target.value)}
+							onChange={handleDataChange}
 							placeholder={
 								format === "json"
 									? "Paste JSON data here..."
@@ -237,4 +244,4 @@ export function ImportView() {
 			)}
 		</div>
 	);
-}
+};

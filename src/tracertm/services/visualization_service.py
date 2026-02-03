@@ -1,9 +1,83 @@
 """
-from typing import Any
 Visualization service for TraceRTM.
 
 Provides ASCII graph and tree visualization for items and links.
 """
+
+from typing import Any
+
+
+def _get_item_level(
+    item_id: str,
+    links: list[dict[str, object]],
+    visited: set[str],
+    current_level: int = 0,
+) -> int:
+    """Get level of item in graph."""
+    if item_id in visited:
+        return current_level
+
+    visited.add(item_id)
+    max_level = current_level
+
+    # Find items that depend on this one
+    for link in links:
+        if link.get("source") == item_id:
+            target = link.get("target")
+            if isinstance(target, str):
+                target_level = _get_item_level(target, links, visited, current_level + 1)
+                max_level = max(max_level, target_level)
+
+    return max_level
+
+
+def _calculate_levels(
+    items: dict[str, dict[str, object]],
+    links: list[dict[str, object]],
+) -> dict[int, list[str]]:
+    """Calculate levels for each item in the graph."""
+    levels: dict[int, list[str]] = {}
+    visited: set[str] = set()
+
+    for item_id in items:
+        level = _get_item_level(item_id, links, visited)
+        if level not in levels:
+            levels[level] = []
+        levels[level].append(item_id)
+
+    return levels
+
+
+def _render_link(
+    link: dict[str, object],
+    items: dict[str, dict[str, object]],
+) -> str | None:
+    """Render a single link as string."""
+    source_key = link.get("source")
+    target_key = link.get("target")
+    if isinstance(source_key, str) and isinstance(target_key, str):
+        source_item = items.get(source_key, {})
+        target_item = items.get(target_key, {})
+        if isinstance(source_item, dict) and isinstance(target_item, dict):
+            source = source_item.get("title", source_key)
+            target = target_item.get("title", target_key)
+            link_type = link.get("type", "relates_to")
+            return f"  {source} --[{link_type}]--> {target}"
+    return None
+
+
+def _render_levels(
+    items: dict[str, dict[str, object]],
+    levels: dict[int, list[str]],
+) -> list[str]:
+    """Render items grouped by level."""
+    lines = []
+    for level in sorted(levels.keys()):
+        lines.append(f"\nLevel {level}:")
+        for item_id in levels[level]:
+            item = items[item_id]
+            lines.append(f"  [{item_id}] {item.get('title', 'Unknown')}")
+    return lines
 
 
 class VisualizationService:
@@ -78,55 +152,18 @@ class VisualizationService:
         lines.append("Item Dependency Graph")
         lines.append("=" * 40)
 
-        # Group items by level
-        levels: dict[int, list[str]] = {}
-        visited: set[str] = set()
+        # Calculate levels for items
+        levels = _calculate_levels(items, links)
 
-        def get_level(item_id: str, current_level: int = 0) -> int:
-            """Get level of item in graph."""
-            if item_id in visited:
-                return current_level
-
-            visited.add(item_id)
-            max_level = current_level
-
-            # Find items that depend on this one
-            for link in links:
-                if link.get("source") == item_id:
-                    target = link.get("target")
-                    if isinstance(target, str):
-                        target_level = get_level(target, current_level + 1)
-                        max_level = max(max_level, target_level)
-
-            return max_level
-
-        # Calculate levels
-        for item_id in items:
-            level = get_level(item_id)
-            if level not in levels:
-                levels[level] = []
-            levels[level].append(item_id)
-
-        # Render by level
-        for level in sorted(levels.keys()):
-            lines.append(f"\nLevel {level}:")
-            for item_id in levels[level]:
-                item = items[item_id]
-                lines.append(f"  [{item_id}] {item.get('title', 'Unknown')}")
+        # Render items by level
+        lines.extend(_render_levels(items, levels))
 
         # Render links
         lines.append("\nDependencies:")
         for link in links:
-            source_key = link.get("source")
-            target_key = link.get("target")
-            if isinstance(source_key, str) and isinstance(target_key, str):
-                source_item = items.get(source_key, {})
-                target_item = items.get(target_key, {})
-                if isinstance(source_item, dict[str, Any]) and isinstance(target_item, dict[str, Any]):
-                    source = source_item.get("title", source_key)
-                    target = target_item.get("title", target_key)
-                    link_type = link.get("type", "relates_to")
-                    lines.append(f"  {source} --[{link_type}]--> {target}")
+            rendered = _render_link(link, items)
+            if rendered:
+                lines.append(rendered)
 
         return "\n".join(lines)
 
@@ -158,14 +195,48 @@ class VisualizationService:
         for i, source_id in enumerate(item_ids):
             row = f"{i:3d} "
             for _j, target_id in enumerate(item_ids):
-                # Check if there's a link
-                has_link = any(link["source"] == source_id and link["target"] == target_id for link in links)
-                row += " X " if has_link else " . "
+                # Check if there's a link from source to target
+                has_link = any(
+                    link.get("source") == source_id and link.get("target") == target_id
+                    for link in links
+                )
+                row += "  X " if has_link else "    "
             lines.append(row)
 
-        # Legend
         lines.append("\nLegend:")
-        lines.append("  X = dependency exists")
-        lines.append("  . = no dependency")
+        for i, item_id in enumerate(item_ids):
+            item = items[item_id]
+            lines.append(f"  {i}: {item.get('title', item_id)}")
+
+        return "\n".join(lines)
+
+    @staticmethod
+    def render_item_summary(
+        item: dict[str, object],
+        max_title_length: int = 40,
+    ) -> str:
+        """Render a single item summary.
+
+        Args:
+            item: Item to render
+            max_title_length: Maximum title length
+
+        Returns:
+            Item summary as string
+        """
+        title = item.get("title", item.get("id", "Unknown"))
+        if len(title) > max_title_length:
+            title = title[:max_title_length - 3] + "..."
+
+        lines = []
+        lines.append(f"  {title}")
+        lines.append(f"  ID: {item.get('id', 'N/A')}")
+
+        item_type = item.get("type", item.get("item_type", "N/A"))
+        lines.append(f"  Type: {item_type}")
+
+        status = item.get("status")
+        if status:
+            lines.append(f"  Status: {status}")
 
         return "\n".join(lines)

@@ -2,6 +2,8 @@
  * ModelSelector - Combobox for selecting AI provider and model
  */
 
+import { getEnabledProviders, getModel } from "@/lib/ai/modelRegistry";
+import type { AIModel } from "@/lib/ai/types";
 import {
 	Select,
 	SelectContent,
@@ -12,8 +14,7 @@ import {
 	cn,
 } from "@tracertm/ui";
 import { Sparkles } from "lucide-react";
-import { getEnabledProviders, getModel } from "@/lib/ai/modelRegistry";
-import type { AIModel } from "@/lib/ai/types";
+import { useCallback, useMemo } from "react";
 
 interface ModelSelectorProps {
 	value: AIModel;
@@ -22,20 +23,49 @@ interface ModelSelectorProps {
 	className?: string;
 }
 
-export function ModelSelector({
+const ProviderGroup = ({
+	models,
+	name,
+}: {
+	models: AIModel[];
+	name: string;
+}) => (
+	<SelectGroup>
+		<div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+			{name}
+		</div>
+		{models.map((model) => (
+			<SelectItem key={model.id} value={model.id} className="text-xs">
+				<div className="flex flex-col">
+					<span>{model.name}</span>
+					{model.description ? (
+						<span className="text-[10px] text-muted-foreground">
+							{model.description}
+						</span>
+					) : null}
+				</div>
+			</SelectItem>
+		))}
+	</SelectGroup>
+);
+
+export const ModelSelector = ({
 	value,
 	onChange,
 	disabled,
 	className,
-}: ModelSelectorProps) {
-	const providers = getEnabledProviders();
+}: ModelSelectorProps) => {
+	const providers = useMemo(() => getEnabledProviders(), []);
 
-	const handleValueChange = (modelId: string) => {
-		const model = getModel(modelId);
-		if (model) {
-			onChange(model);
-		}
-	};
+	const handleValueChange = useCallback(
+		(modelId: string) => {
+			const model = getModel(modelId);
+			if (model) {
+				onChange(model);
+			}
+		},
+		[onChange],
+	);
 
 	return (
 		<Select
@@ -44,7 +74,6 @@ export function ModelSelector({
 			disabled={disabled ?? false}
 		>
 			<SelectTrigger
-				role="button"
 				className={cn(
 					"h-8 text-xs gap-1.5 bg-background/50 border-muted",
 					className,
@@ -55,25 +84,13 @@ export function ModelSelector({
 			</SelectTrigger>
 			<SelectContent>
 				{providers.map((provider) => (
-					<SelectGroup key={provider.id}>
-						<div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-							{provider.name}
-						</div>
-						{provider.models.map((model) => (
-							<SelectItem key={model.id} value={model.id} className="text-xs">
-								<div className="flex flex-col">
-									<span>{model.name}</span>
-									{model.description && (
-										<span className="text-[10px] text-muted-foreground">
-											{model.description}
-										</span>
-									)}
-								</div>
-							</SelectItem>
-						))}
-					</SelectGroup>
+					<ProviderGroup
+						key={provider.id}
+						models={provider.models}
+						name={provider.name}
+					/>
 				))}
 			</SelectContent>
 		</Select>
 	);
-}
+};

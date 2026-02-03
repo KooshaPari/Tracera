@@ -5,6 +5,9 @@ from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+# Average query time threshold (ms) above which to recommend indexes
+AVG_TIME_MS_THRESHOLD = 100
+
 
 class PerformanceTuningService:
     """Service for performance tuning and optimization."""
@@ -126,7 +129,7 @@ class PerformanceTuningService:
         if query_metrics:
             avg_time = sum(m["value"] for m in query_metrics) / len(query_metrics)
 
-            if avg_time > 100:  # > 100ms
+            if avg_time > AVG_TIME_MS_THRESHOLD:
                 recommendations.append("CREATE INDEX idx_item_status ON items(status)")
                 recommendations.append("CREATE INDEX idx_item_view ON items(view)")
                 recommendations.append("CREATE INDEX idx_link_source ON links(source_item_id)")

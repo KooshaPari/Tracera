@@ -3,10 +3,23 @@
  * Displays breakdown by category with color-coded segments
  */
 
-import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+
+// Constants for animation and styling
+const ANIMATION_DURATION_MS = 500;
+const FRAME_INTERVAL_MS = 16; // ~60fps
+const ANIMATION_STEPS = 30;
+const SCORE_EXCELLENT = 90;
+const SCORE_GOOD = 70;
+const SCORE_FAIR = 50;
+
+const COLOR_EXCELLENT = "#10b981";
+const COLOR_GOOD = "#3b82f6";
+const COLOR_FAIR = "#f59e0b";
+const COLOR_POOR = "#ef4444";
 
 interface HealthScoreRingProps {
 	score: number; // 0-100
@@ -22,33 +35,33 @@ interface HealthScoreRingProps {
 }
 
 const DEFAULT_CATEGORIES = [
-	{ color: "#10b981", name: "Excellent", value: 0 },
-	{ color: "#3b82f6", name: "Good", value: 0 },
-	{ color: "#f59e0b", name: "Fair", value: 0 },
-	{ color: "#ef4444", name: "Poor", value: 0 },
+	{ color: COLOR_EXCELLENT, name: "Excellent", value: 0 },
+	{ color: COLOR_GOOD, name: "Good", value: 0 },
+	{ color: COLOR_FAIR, name: "Fair", value: 0 },
+	{ color: COLOR_POOR, name: "Poor", value: 0 },
 ];
 
-function getScoreColor(value: number) {
-	if (value >= 90) {
-		return "#10b981";
-	} // Green
-	if (value >= 70) {
-		return "#3b82f6";
-	} // Blue
-	if (value >= 50) {
-		return "#f59e0b";
-	} // Amber
-	return "#ef4444"; // Red
-}
+const getScoreColor = (value: number) => {
+	if (value >= SCORE_EXCELLENT) {
+		return COLOR_EXCELLENT;
+	}
+	if (value >= SCORE_GOOD) {
+		return COLOR_GOOD;
+	}
+	if (value >= SCORE_FAIR) {
+		return COLOR_FAIR;
+	}
+	return COLOR_POOR;
+};
 
-export function HealthScoreRing({
+export const HealthScoreRing = ({
 	score,
 	categories,
 	showAnimation = true,
 	showLegend = true,
 	size = 300,
 	className,
-}: HealthScoreRingProps) {
+}: HealthScoreRingProps) => {
 	const [animatedScore, setAnimatedScore] = useState(0);
 
 	useEffect(() => {
@@ -59,7 +72,7 @@ export function HealthScoreRing({
 
 		let current = 0;
 		const target = score;
-		const increment = target / 30; // Animate over ~500ms
+		const increment = target / ANIMATION_STEPS;
 
 		const interval = setInterval(() => {
 			current += increment;
@@ -69,7 +82,7 @@ export function HealthScoreRing({
 			} else {
 				setAnimatedScore(Math.round(current));
 			}
-		}, 16); // ~60fps
+		}, FRAME_INTERVAL_MS);
 
 		return () => clearInterval(interval);
 	}, [score, showAnimation]);
@@ -158,22 +171,22 @@ export function HealthScoreRing({
 				animate={{ opacity: 1 }}
 				transition={{ delay: 0.5 }}
 			>
-				{animatedScore >= 90 && (
+				{animatedScore >= SCORE_EXCELLENT && (
 					<p className="text-green-600 font-medium">
 						Excellent specification health!
 					</p>
 				)}
-				{animatedScore >= 70 && animatedScore < 90 && (
+				{animatedScore >= SCORE_GOOD && animatedScore < SCORE_EXCELLENT && (
 					<p className="text-blue-600 font-medium">
 						Good specification coverage.
 					</p>
 				)}
-				{animatedScore >= 50 && animatedScore < 70 && (
+				{animatedScore >= SCORE_FAIR && animatedScore < SCORE_GOOD && (
 					<p className="text-amber-600 font-medium">
 						Consider improving specifications.
 					</p>
 				)}
-				{animatedScore < 50 && (
+				{animatedScore < SCORE_FAIR && (
 					<p className="text-red-600 font-medium">
 						Significant specification gaps detected.
 					</p>
@@ -181,4 +194,4 @@ export function HealthScoreRing({
 			</motion.div>
 		</motion.div>
 	);
-}
+};

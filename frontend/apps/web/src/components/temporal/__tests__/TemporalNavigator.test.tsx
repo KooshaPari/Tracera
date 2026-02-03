@@ -1,66 +1,71 @@
 // TemporalNavigator component tests
 
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { TemporalNavigator } from "../TemporalNavigator";
+
 import type { Branch, Version } from "../TemporalNavigator";
+import { TemporalNavigator } from "../TemporalNavigator";
+
+const EMPTY_BRANCHES: Branch[] = [];
+const EMPTY_VERSIONS: Version[] = [];
+
+const MOCK_BRANCHES: Branch[] = [
+	{
+		createdAt: new Date("2024-01-01"),
+		id: "branch-1",
+		mergeRequestCount: 0,
+		name: "main",
+		status: "active",
+		updatedAt: new Date("2024-01-15"),
+	},
+	{
+		createdAt: new Date("2024-01-05"),
+		id: "branch-2",
+		mergeRequestCount: 2,
+		name: "develop",
+		parentId: "branch-1",
+		status: "active",
+		updatedAt: new Date("2024-01-14"),
+	},
+	{
+		createdAt: new Date("2024-01-10"),
+		id: "branch-3",
+		mergeRequestCount: 1,
+		name: "feature/auth",
+		parentId: "branch-2",
+		status: "review",
+		updatedAt: new Date("2024-01-13"),
+	},
+];
+
+const MOCK_VERSIONS: Version[] = [
+	{
+		branchId: "branch-1",
+		id: "v-1",
+		status: "published",
+		tag: "1.0.0",
+		timestamp: new Date("2024-01-01"),
+		title: "v1.0.0",
+	},
+	{
+		branchId: "branch-1",
+		id: "v-2",
+		status: "published",
+		tag: "1.1.0",
+		timestamp: new Date("2024-01-10"),
+		title: "v1.1.0",
+	},
+	{
+		branchId: "branch-2",
+		id: "v-3",
+		status: "draft",
+		timestamp: new Date("2024-01-15"),
+		title: "Dev Build",
+	},
+];
 
 describe(TemporalNavigator, () => {
-	const mockBranches: Branch[] = [
-		{
-			createdAt: new Date("2024-01-01"),
-			id: "branch-1",
-			mergeRequestCount: 0,
-			name: "main",
-			status: "active",
-			updatedAt: new Date("2024-01-15"),
-		},
-		{
-			createdAt: new Date("2024-01-05"),
-			id: "branch-2",
-			mergeRequestCount: 2,
-			name: "develop",
-			parentId: "branch-1",
-			status: "active",
-			updatedAt: new Date("2024-01-14"),
-		},
-		{
-			createdAt: new Date("2024-01-10"),
-			id: "branch-3",
-			mergeRequestCount: 1,
-			name: "feature/auth",
-			parentId: "branch-2",
-			status: "review",
-			updatedAt: new Date("2024-01-13"),
-		},
-	];
-
-	const mockVersions: Version[] = [
-		{
-			branchId: "branch-1",
-			id: "v-1",
-			status: "published",
-			tag: "1.0.0",
-			timestamp: new Date("2024-01-01"),
-			title: "v1.0.0",
-		},
-		{
-			branchId: "branch-1",
-			id: "v-2",
-			status: "published",
-			tag: "1.1.0",
-			timestamp: new Date("2024-01-10"),
-			title: "v1.1.0",
-		},
-		{
-			branchId: "branch-2",
-			id: "v-3",
-			status: "draft",
-			timestamp: new Date("2024-01-15"),
-			title: "Dev Build",
-		},
-	];
-
 	const mockOnBranchChange = vi.fn();
 	const mockOnVersionChange = vi.fn();
 	const mockOnBranchCreate = vi.fn();
@@ -75,8 +80,8 @@ describe(TemporalNavigator, () => {
 				projectId="proj-1"
 				currentBranchId="branch-1"
 				currentVersionId="v-1"
-				branches={mockBranches}
-				versions={mockVersions}
+				branches={MOCK_BRANCHES}
+				versions={MOCK_VERSIONS}
 				onBranchChange={mockOnBranchChange}
 				onVersionChange={mockOnVersionChange}
 			/>,
@@ -91,8 +96,8 @@ describe(TemporalNavigator, () => {
 				projectId="proj-1"
 				currentBranchId="branch-1"
 				currentVersionId="v-1"
-				branches={mockBranches}
-				versions={mockVersions}
+				branches={MOCK_BRANCHES}
+				versions={MOCK_VERSIONS}
 				onBranchChange={mockOnBranchChange}
 				onVersionChange={mockOnVersionChange}
 			/>,
@@ -102,13 +107,14 @@ describe(TemporalNavigator, () => {
 	});
 
 	it("calls onBranchCreate when create button is clicked", async () => {
+		const user = userEvent.setup();
 		render(
 			<TemporalNavigator
 				projectId="proj-1"
 				currentBranchId="branch-1"
 				currentVersionId="v-1"
-				branches={mockBranches}
-				versions={mockVersions}
+				branches={MOCK_BRANCHES}
+				versions={MOCK_VERSIONS}
 				onBranchChange={mockOnBranchChange}
 				onVersionChange={mockOnVersionChange}
 				onBranchCreate={mockOnBranchCreate}
@@ -129,8 +135,8 @@ describe(TemporalNavigator, () => {
 				projectId="proj-1"
 				currentBranchId="branch-1"
 				currentVersionId="v-2"
-				branches={mockBranches}
-				versions={mockVersions}
+				branches={MOCK_BRANCHES}
+				versions={MOCK_VERSIONS}
 				onBranchChange={mockOnBranchChange}
 				onVersionChange={mockOnVersionChange}
 			/>,
@@ -145,8 +151,8 @@ describe(TemporalNavigator, () => {
 				projectId="proj-1"
 				currentBranchId="branch-1"
 				currentVersionId="v-1"
-				branches={mockBranches}
-				versions={mockVersions}
+				branches={MOCK_BRANCHES}
+				versions={MOCK_VERSIONS}
 				onBranchChange={mockOnBranchChange}
 				onVersionChange={mockOnVersionChange}
 			/>,
@@ -162,8 +168,8 @@ describe(TemporalNavigator, () => {
 				projectId="proj-1"
 				currentBranchId=""
 				currentVersionId=""
-				branches={[]}
-				versions={[]}
+				branches={EMPTY_BRANCHES}
+				versions={EMPTY_VERSIONS}
 				onBranchChange={mockOnBranchChange}
 				onVersionChange={mockOnVersionChange}
 			/>,
@@ -178,8 +184,8 @@ describe(TemporalNavigator, () => {
 				projectId="proj-1"
 				currentBranchId="branch-2"
 				currentVersionId="v-3"
-				branches={mockBranches}
-				versions={mockVersions}
+				branches={MOCK_BRANCHES}
+				versions={MOCK_VERSIONS}
 				onBranchChange={mockOnBranchChange}
 				onVersionChange={mockOnVersionChange}
 			/>,

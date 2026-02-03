@@ -1,11 +1,12 @@
 // Graph node error skeleton — LOD-shaped (Phase 3, 2.2)
 // Renders an error placeholder by lodLevel: dot → minimal pill → compact pill → full pill/card + retry
 
-import { Button } from "@tracertm/ui/components/Button";
 import { Handle, Position } from "@xyflow/react";
 import type { Node, NodeProps } from "@xyflow/react";
+import { Button } from "@tracertm/ui/components/Button";
 import { AlertCircle } from "lucide-react";
-import { memo } from "react";
+import { memo, useCallback } from "react";
+
 import { LODLevel } from "./utils/lod";
 
 export interface NodeErrorSkeletonData {
@@ -16,14 +17,17 @@ export interface NodeErrorSkeletonData {
 	[key: string]: unknown;
 }
 
-function NodeErrorSkeletonComponent({
+const NodeErrorSkeletonComponent = ({
 	data,
-}: NodeProps<Node<NodeErrorSkeletonData, "nodeError">>) {
+}: NodeProps<Node<NodeErrorSkeletonData, "nodeError">>) => {
 	const lod = (data.lodLevel ?? LODLevel.VeryClose) as LODLevel;
 	const message =
 		data.errorMessage ??
-		(typeof data.error === "string" ? data.error : "Error");
-	const { onRetry } = data;
+		(typeof data["error"] === "string" ? data["error"] : "Error");
+	const onRetryClick = useCallback(
+		() => data.onRetry?.(data.id),
+		[data.id, data.onRetry],
+	);
 
 	return (
 		<>
@@ -35,8 +39,7 @@ function NodeErrorSkeletonComponent({
 			<LodErrorShape
 				lod={lod}
 				message={message}
-				nodeId={data.id}
-				onRetry={onRetry}
+				onRetryClick={onRetryClick}
 			/>
 			<Handle
 				type="source"
@@ -45,19 +48,45 @@ function NodeErrorSkeletonComponent({
 			/>
 		</>
 	);
-}
+};
 
-function LodErrorShape({
+const LodErrorShapeFull = ({
+	message,
+	onRetryClick,
+}: {
+	message: string;
+	onRetryClick?: () => void;
+}) => (
+	<div className="px-2 py-1.5 rounded-md bg-destructive/10 border border-destructive/30 text-destructive text-xs max-w-[160px]">
+		<div className="flex items-center gap-1 mb-1">
+			<AlertCircle className="h-3.5 w-3.5 shrink-0" />
+			<span className="font-medium truncate">Error</span>
+		</div>
+		<p className="text-[10px] text-muted-foreground line-clamp-2 mb-1">
+			{message}
+		</p>
+		{onRetryClick && (
+			<Button
+				variant="outline"
+				size="sm"
+				className="h-5 px-1.5 text-[10px]"
+				onClick={onRetryClick}
+			>
+				Retry
+			</Button>
+		)}
+	</div>
+);
+
+const LodErrorShape = ({
 	lod,
 	message,
-	nodeId,
-	onRetry,
+	onRetryClick,
 }: {
 	lod: LODLevel;
 	message: string;
-	nodeId: string;
-	onRetry?: (id: string) => void;
-}) {
+	onRetryClick?: () => void;
+}) => {
 	switch (lod) {
 		case LODLevel.VeryFar: {
 			return (
@@ -90,28 +119,10 @@ function LodErrorShape({
 		case LODLevel.VeryClose:
 		default: {
 			return (
-				<div className="px-2 py-1.5 rounded-md bg-destructive/10 border border-destructive/30 text-destructive text-xs max-w-[160px]">
-					<div className="flex items-center gap-1 mb-1">
-						<AlertCircle className="h-3.5 w-3.5 shrink-0" />
-						<span className="font-medium truncate">Error</span>
-					</div>
-					<p className="text-[10px] text-muted-foreground line-clamp-2 mb-1">
-						{message}
-					</p>
-					{onRetry && (
-						<Button
-							variant="outline"
-							size="sm"
-							className="h-5 px-1.5 text-[10px]"
-							onClick={() => onRetry(nodeId)}
-						>
-							Retry
-						</Button>
-					)}
-				</div>
+				<LodErrorShapeFull message={message} onRetryClick={onRetryClick} />
 			);
 		}
 	}
-}
+};
 
 export const NodeErrorSkeleton = memo(NodeErrorSkeletonComponent);

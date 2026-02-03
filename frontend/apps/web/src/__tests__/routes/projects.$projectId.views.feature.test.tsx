@@ -46,7 +46,7 @@ describe("Feature View Route", () => {
 		];
 
 		expect(mockFeatures).toHaveLength(3);
-		expect(mockFeatures[0].priority).toBe("high");
+		expect(mockFeatures[0]?.priority).toBe("high");
 	});
 
 	it("calculates feature completion status", () => {

@@ -1,7 +1,13 @@
-import * as componentLibraryQueries from "./component-library.queries";
 import { componentLibraryMutations } from "./component-library.mutations";
+import * as componentLibraryQueries from "./component-library.queries";
 
-const componentLibraryApi = {};
-Object.assign(componentLibraryApi, componentLibraryQueries, componentLibraryMutations);
+type ComponentLibraryApi = typeof componentLibraryQueries &
+	typeof componentLibraryMutations;
+
+const componentLibraryApi: ComponentLibraryApi = Object.assign(
+	{},
+	componentLibraryQueries,
+	componentLibraryMutations,
+);
 
 export { componentLibraryApi };

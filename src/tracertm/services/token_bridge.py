@@ -18,6 +18,9 @@ from jwt.exceptions import ExpiredSignatureError, InvalidAudienceError, InvalidI
 
 logger = logging.getLogger(__name__)
 
+# Minimum secret length for HS256 tokens (256 bits = 32 bytes)
+HS256_MIN_SECRET_LENGTH = 32
+
 
 class TokenBridge:
     """Handles both WorkOS RS256 and internal HS256 token validation.
@@ -48,7 +51,7 @@ class TokenBridge:
             issuer: Expected issuer claim (typically WorkOS API base URL)
             cache_ttl: JWKS cache TTL in seconds (default 24 hours)
         """
-        if len(hs_secret) < 32:
+        if len(hs_secret) < HS256_MIN_SECRET_LENGTH:
             raise ValueError("HS256 secret must be at least 32 characters")
 
         self.hs_secret = hs_secret

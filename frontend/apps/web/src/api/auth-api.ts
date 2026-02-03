@@ -1,11 +1,3 @@
-import authConstants from "./auth-constants";
-import client from "./client";
-import {
-	ensureCSRFToken,
-	getStoredToken,
-	handleAuthResponse,
-} from "./auth-utils";
-import { AuthError } from "./auth-types";
 import type {
 	AuthResponse,
 	ChangePasswordRequest,
@@ -15,6 +7,14 @@ import type {
 	UpdateUserProfileRequest,
 	User,
 } from "./auth-types";
+import { AuthError } from "./auth-types";
+import {
+	ensureCSRFToken,
+	getStoredToken,
+	handleAuthResponse,
+} from "./auth-utils";
+import authConstants from "./auth-constants";
+import client from "./client";
 
 const apiClient = client.apiClient;
 const safeApiCall = client.safeApiCall;

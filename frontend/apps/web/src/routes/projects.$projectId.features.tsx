@@ -16,6 +16,4 @@ export const Route = createFileRoute("/projects/$projectId/features" as any)({
 	component: FeaturesPage,
 });
 
-function FeaturesPage() {
-	return null;
-}
+const FeaturesPage = () => null;

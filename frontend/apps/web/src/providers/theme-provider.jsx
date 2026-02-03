@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import ThemeContext from "./theme-context";
+import { ThemeContext } from "./theme-context";
 
 const resolveInitialTheme = () => {
 	const stored = localStorage.getItem("theme");
@@ -59,4 +59,4 @@ const ThemeProvider = ({ children }) => {
 	);
 };
 
-export default ThemeProvider;
+export { ThemeProvider };

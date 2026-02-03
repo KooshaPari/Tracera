@@ -1,12 +1,12 @@
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { AuthKitProvider, useAuth } from "@workos-inc/authkit-react";
-import { logger } from "@/lib/logger";
 import { Toaster } from "sonner";
+import { logger } from "@/lib/logger";
 import { getWebSocketManager } from "../api/websocket";
-import { AuthKitSync } from "../components/auth/AuthKitSync";
+import AuthKitSync from "../components/auth/auth-kit-sync";
 import { initializeCSRF } from "../lib/csrf";
-import { useAuthStore } from "../stores/authStore";
-import { useWebSocketStore } from "../stores/websocketStore";
+import { useAuthStore } from "../stores/auth-store";
+import { useWebSocketStore } from "../stores/websocket-store";
 
 const appProvidersDeps = {
 	AuthKitProvider,
@@ -21,4 +21,4 @@ const appProvidersDeps = {
 	useWebSocketStore,
 };
 
-export default appProvidersDeps;
+export { appProvidersDeps };

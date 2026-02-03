@@ -6,6 +6,9 @@ from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+# Minimum path length to derive parent (path[-2])
+_MIN_PATH_LEN_FOR_PARENT = 2
+
 from tracertm.models.item import Item
 from tracertm.repositories.item_repository import ItemRepository
 from tracertm.repositories.link_repository import LinkRepository
@@ -156,7 +159,7 @@ class ImpactAnalysisService:
         # Build adjacency list
         children: dict[str, set[str]] = {}
         for node in nodes:
-            if len(node.path) >= 2:
+            if len(node.path) >= _MIN_PATH_LEN_FOR_PARENT:
                 parent = node.path[-2]
                 if parent not in children:
                     children[parent] = set()

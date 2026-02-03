@@ -1,10 +1,10 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { ProblemView } from "@/pages/projects/views/ProblemView";
 
-export function ProblemViewRoute() {
+export const ProblemViewRoute = (): JSX.Element => {
 	const { projectId } = useParams({ from: "/projects/$projectId" });
 	return <ProblemView projectId={projectId} />;
-}
+};
 
 export const PROBLEM_VIEW = ProblemViewRoute;
 

@@ -1,5 +1,5 @@
-import { Progress } from "@tracertm/ui/components/Progress";
 import { memo } from "react";
+import { Progress } from "@tracertm/ui/components/Progress";
 
 interface LoadingProgressProps {
 	loaded: number;

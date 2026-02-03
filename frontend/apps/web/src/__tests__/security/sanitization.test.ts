@@ -510,6 +510,9 @@ describe("Input Sanitization Tests", () => {
 // Comprehensive Sanitization Helper
 describe("Comprehensive Sanitization Helper", () => {
 	const sanitizeInput = (input: unknown, type: string): unknown => {
+		if (typeof input !== "string") {
+			return input;
+		}
 		switch (type) {
 			case "text": {
 				return input.trim().substring(0, 1000);

@@ -43,6 +43,16 @@ handlerNew.go          (go)
 Dashboard_2.tsx        (frontend)
 service_2.py           (python)
 handler_2.go           (go)
+
+# Phase suffixes (CAUGHT NOW!)
+benchmark_phase2.tsx   (frontend)
+benchmark_phase3.py    (python)
+servicePhase2.go       (go)
+
+# Other AI versioning
+component_final.tsx    (frontend)
+service_latest.py      (python)
+handlerFinal.go        (go)
 ```
 
 ### ✅ DO THIS INSTEAD
@@ -92,11 +102,18 @@ Dashboard.tsx          # One file, always current
 
 ## Current Status (2026-02-02)
 
-| Language   | Guard Script | Violations | Action Needed |
-|------------|--------------|------------|---------------|
-| Frontend   | ✅ Active    | ⚠️ 5 files | Clean up in Phase 2 |
-| Python     | ✅ Active    | ⚠️ 5 files | Clean up in Phase 2 |
-| Go         | ✅ Active    | ✅ Clean   | None |
+| Language   | Guard Script | Phase Detection | Violations | Action Needed |
+|------------|--------------|-----------------|------------|---------------|
+| Frontend   | ✅ Active    | ✅ Enhanced     | ⚠️ 5 files | Clean up in Phase 2 |
+| Python     | ✅ Active    | ✅ Enhanced     | ⚠️ 5 files | Clean up in Phase 2 |
+| Go         | ✅ Active    | ✅ Enhanced     | ✅ Clean   | None |
+
+**Phase 2 Enhancement (Just Completed):**
+- Added detection for `*_phase2`, `*_phase3`, `*phase2_*` patterns
+- Added detection for `*_final`, `*_latest`, `*_revised` patterns
+- Updated all 3 detection scripts (frontend, Python, Go)
+- Updated GitHub Actions workflow
+- Verified with test files
 
 ---
 
@@ -234,6 +251,8 @@ If you see ANY of these in a file listing:
 - `New*`, `Improved*`, `Enhanced*`, `Updated*`
 - `*_new`, `*_improved`, `*_enhanced`, `*_updated`
 - `*_2`, `*_3`
+- `*_phase2`, `*_phase3`, `*phase2_*`, `*Phase2*` (NEW!)
+- `*_final`, `*_latest`, `*_revised`, `*Final`, `*Latest` (NEW!)
 
 → **STOP. Run the detection script. Clean up immediately.**
 

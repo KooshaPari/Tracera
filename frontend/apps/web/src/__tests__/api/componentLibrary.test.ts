@@ -5,7 +5,7 @@ import type {
 	LibraryComponent,
 } from "@tracertm/types";
 import { describe, expect, it } from "vitest";
-import componentLibraryApi from "../../api/component-library";
+import { componentLibraryApi } from "../../api/component-library";
 
 interface CreateComponentLibraryInput {
 	projectId: string;
@@ -152,7 +152,7 @@ describe("component library API hooks", () => {
 				usageCount: 0,
 			};
 
-			expect(component.variant).toBeUndefined();
+			expect(component.variants).toBeUndefined();
 		});
 	});
 

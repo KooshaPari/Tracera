@@ -26,7 +26,7 @@
 
 | Tool | File | Status | Purpose |
 |------|------|--------|---------|
-| Benchmark Suite | `benchmark_phase3.py` | ✅ Complete | Measures performance improvements |
+| Benchmark Suite | `db_benchmark.py` | ✅ Complete | Measures performance improvements |
 | Documentation | `PHASE_3_DATABASE_OPTIMIZATION.md` | ✅ Complete | Complete usage guide and best practices |
 | Unit Tests | `tests/unit/mcp/test_*.py` | ✅ Complete | Test coverage for all components |
 
@@ -257,7 +257,7 @@ pytest tests/unit/mcp/ -v
 
 ```bash
 # Benchmark performance improvements
-python -m tracertm.mcp.benchmark_phase3 \
+python -m tracertm.mcp.db_benchmark \
     "postgresql://user:pass@localhost/tracertm" \
     "project-uuid-here"
 ```
@@ -301,7 +301,7 @@ print(f"Slow queries: {metrics['data']['queries']['slow_queries_count']}")
 
 ### Examples & Tools
 5. `/src/tracertm/mcp/tools/items_phase3.py` (340 lines)
-6. `/src/tracertm/mcp/benchmark_phase3.py` (390 lines)
+6. `/src/tracertm/mcp/db_benchmark.py` (390 lines)
 
 ### Documentation
 7. `/src/tracertm/mcp/PHASE_3_DATABASE_OPTIMIZATION.md` (Full guide)

@@ -54,6 +54,24 @@ NUMBERED_FILES=$(find $SEARCH_DIRS -type f -name "*.py" \
   -not -path "*/fixtures/*" | \
   grep -E '_[0-9]+\.py$' || true)
 
+# Check for phase suffixes (*_phase2, *_phase3, *phase2_*, etc.)
+PHASE_FILES=$(find $SEARCH_DIRS -type f -name "*.py" \
+  -not -path "*/ARCHIVE/*" \
+  -not -path "*/__pycache__/*" \
+  -not -path "*/migrations/*" \
+  -not -path "*_pb2.py" \
+  -not -path "*_pb2_grpc.py" | \
+  grep -E '(_phase[0-9]|_phase[0-9][0-9]|phase[0-9]_|phase[0-9][0-9]_)\.py$' || true)
+
+# Check for other common AI versioning (*_final, *_latest, etc.)
+OTHER_VERSION_FILES=$(find $SEARCH_DIRS -type f -name "*.py" \
+  -not -path "*/ARCHIVE/*" \
+  -not -path "*/__pycache__/*" \
+  -not -path "*/migrations/*" \
+  -not -path "*_pb2.py" \
+  -not -path "*_pb2_grpc.py" | \
+  grep -E '_(final|latest|revised)\.py$' || true)
+
 # Combine all violations
 ALL_VIOLATIONS=""
 if [ -n "$VERSIONED_FILES" ]; then
@@ -67,6 +85,12 @@ if [ -n "$SUFFIXED_FILES" ]; then
 fi
 if [ -n "$NUMBERED_FILES" ]; then
   ALL_VIOLATIONS="$ALL_VIOLATIONS$NUMBERED_FILES\n"
+fi
+if [ -n "$PHASE_FILES" ]; then
+  ALL_VIOLATIONS="$ALL_VIOLATIONS$PHASE_FILES\n"
+fi
+if [ -n "$OTHER_VERSION_FILES" ]; then
+  ALL_VIOLATIONS="$ALL_VIOLATIONS$OTHER_VERSION_FILES\n"
 fi
 
 # Report results
@@ -82,6 +106,8 @@ if [ -n "$ALL_VIOLATIONS" ]; then
   echo "  • Prefixed: new_dashboard.py, improved_service.py, enhanced_api.py"
   echo "  • Suffixed: dashboard_new.py, service_improved.py"
   echo "  • Numbered: dashboard_2.py, service_3.py"
+  echo "  • Phase suffixes: benchmark_phase2.py, service_phase3.py"
+  echo "  • Other versions: service_final.py, module_latest.py"
   echo ""
   echo -e "${YELLOW}Required action:${NC}"
   echo "  1. Identify the canonical (currently used) module"

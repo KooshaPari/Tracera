@@ -1,6 +1,15 @@
-import { create } from "zustand";
 import { logger } from "@/lib/logger";
+import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+
+const API_BASE_URL_DEFAULT = "http://localhost:4000";
+const AUTH_TOKEN_KEY = "auth_token";
+const HTTP_UNAUTHORIZED = Number("401");
+const REFRESH_INTERVAL_MINUTES = Number("20");
+const SECONDS_PER_MINUTE = Number("60");
+const MILLISECONDS_PER_SECOND = Number("1000");
+const REFRESH_INTERVAL_MS =
+	REFRESH_INTERVAL_MINUTES * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND;
 
 // SSR-safe storage that only accesses localStorage on the client
 const noopStorage = {
@@ -21,6 +30,9 @@ const getStorage = () => {
 	return localStorage;
 };
 
+const getApiBaseUrl = (): string =>
+	import.meta.env.VITE_API_URL || API_BASE_URL_DEFAULT;
+
 const isRecordObject = (value: unknown): value is Record<string, unknown> =>
 	Object.prototype.toString.call(value) === "[object Object]";
 
@@ -35,14 +47,35 @@ const readStringField = (
 	return undefined;
 };
 
+/**
+ * User metadata from authentication
+ */
+export type UserMetadata = Record<
+	string,
+	string | number | boolean | object | null | undefined
+>;
+
+export interface User {
+	avatar?: string;
+	email: string;
+	id: string;
+	metadata?: UserMetadata;
+	name?: string;
+	role?: string;
+}
+
+export interface Account {
+	account_type: string;
+	id: string;
+	name: string;
+	slug: string;
+}
+
 const isUser = (value: unknown): value is User => {
 	if (!isRecordObject(value)) {
 		return false;
 	}
-	return (
-		typeof value["id"] === "string" &&
-		typeof value["email"] === "string"
-	);
+	return typeof value["id"] === "string" && typeof value["email"] === "string";
 };
 
 const isAccount = (value: unknown): value is Account => {
@@ -120,337 +153,345 @@ const parseAccountResponse = (
 	return {};
 };
 
-/**
- * User metadata from authentication
- */
-export type UserMetadata = Record<
-	string,
-	string | number | boolean | object | null | undefined
->;
-
-export interface User {
-	id: string;
-	email: string;
-	name?: string;
-	avatar?: string;
-	role?: string;
-	metadata?: UserMetadata;
-}
-
-export interface Account {
-	id: string;
-	name: string;
-	slug: string;
-	account_type: string;
-}
-
-interface AuthState {
-	// Auth state
-	user: User | null;
-	token: string | null;
+interface AuthStateData {
 	account: Account | null;
 	isAuthenticated: boolean;
 	isLoading: boolean;
 	refreshTimer: NodeJS.Timeout | null;
-
-	// Actions
-	setUser: (user: User | null) => void;
-	setToken: (token: string | null) => void;
-	setAccount: (account: Account | null) => void;
-	login: (email: string, password: string) => Promise<void>;
-	logout: () => Promise<void>;
-	validateSession: () => Promise<boolean>;
-	refreshToken: () => Promise<void>;
-	updateProfile: (updates: Partial<User>) => void;
-	setAuthFromWorkOS: (user: User | null, token: string | null) => void;
-	switchAccount: (accountId: string) => Promise<void>;
-	initializeAutoRefresh: () => void;
-	stopAutoRefresh: () => void;
+	token: string | null;
+	user: User | null;
 }
 
-export const useAuthStore = create<AuthState>()(
-	persist(
-		(set, get) => ({
-			// Initial state
-			user: null,
-			token: null,
-			account: null,
-			isAuthenticated: false,
-			isLoading: false,
-			refreshTimer: null,
+interface AuthStateActions {
+	initializeAutoRefresh: () => void;
+	login: (email: string, password: string) => Promise<void>;
+	logout: () => Promise<void>;
+	refreshToken: () => Promise<void>;
+	setAccount: (account: Account | null) => void;
+	setAuthFromWorkOS: (user: User | null, token: string | null) => void;
+	setToken: (token: string | null) => void;
+	setUser: (user: User | null) => void;
+	stopAutoRefresh: () => void;
+	switchAccount: (accountId: string) => Promise<void>;
+	updateProfile: (updates: Partial<User>) => void;
+	validateSession: () => Promise<boolean>;
+}
 
-			// Actions
-			setUser: (user) => {
-				set({
-					isAuthenticated: !!user,
-					user,
-				});
-			},
+type AuthState = AuthStateData & AuthStateActions;
 
-			setToken: (token) => {
-				/**
-				 * Token Storage Strategy:
-				 *
-				 * Development (devMode=true):
-				 * - WorkOS SDK manages tokens in localStorage
-				 * - This store mirrors the token for state management
-				 * - Acceptable for development without custom domain
-				 *
-				 * Production (devMode=false):
-				 * - WorkOS SDK uses HttpOnly cookies (requires custom auth domain)
-				 * - This localStorage token becomes a fallback/cache
-				 * - Backend validates actual HttpOnly cookie tokens
-				 *
-				 * The token here is primarily for:
-				 * 1. State management (isAuthenticated checks)
-				 * 2. Development mode compatibility
-				 * 3. Backwards compatibility with existing code
-				 */
-				// Treat empty string as null
-				const normalizedToken = token?.trim() ? token : null;
-				if (typeof localStorage !== "undefined") {
-					if (normalizedToken) {
-						localStorage.setItem("auth_token", normalizedToken);
-					} else {
-						localStorage.removeItem("auth_token");
-					}
-				}
-				set({ token: normalizedToken });
-			},
+type StoreSetter = (
+	partial:
+		| Partial<AuthState>
+		| ((state: AuthState) => Partial<AuthState> | AuthState),
+) => void;
 
-			login: async (email, password) => {
-				set({ isLoading: true });
-				try {
-					if (!email || !password) {
-						throw new Error("Email and password are required");
-					}
+type StoreGetter = () => AuthState;
 
-					const API_URL =
-						import.meta.env.VITE_API_URL || "http://localhost:4000";
-					const response = await fetch(`${API_URL}/api/v1/auth/login`, {
-						method: "POST",
-						headers: { "Content-Type": "application/json" },
-						credentials: "include", // Important for HttpOnly cookies
-						body: JSON.stringify({ email, password }),
-					});
+const createInitialState = (): AuthStateData => ({
+	account: null,
+	isAuthenticated: false,
+	isLoading: false,
+	refreshTimer: null,
+	token: null,
+	user: null,
+});
 
-					if (!response.ok) {
-						const errorData = await response
-							.json()
-							.catch(() => ({ detail: "Login failed" }));
-						throw new Error(
-							errorData.detail || `Login failed: ${response.status}`,
-						);
-					}
+const normalizeToken = (token: string | null): string | null => {
+	const normalized = token?.trim();
+	return normalized ? normalized : null;
+};
 
-					const parsed = parseLoginResponse(await response.json());
-					if (!parsed) {
-						throw new Error("Invalid response from login endpoint");
-					}
+const persistToken = (token: string | null): void => {
+	if (typeof localStorage === "undefined") {
+		return;
+	}
+	if (token) {
+		localStorage.setItem(AUTH_TOKEN_KEY, token);
+	} else {
+		localStorage.removeItem(AUTH_TOKEN_KEY);
+	}
+};
 
-					get().setUser(parsed.user);
-					// Store token if provided in response
-					if (parsed.access_token) {
-						get().setToken(parsed.access_token);
-					}
+const fetchJson = async (
+	path: string,
+	options: RequestInit,
+): Promise<{ data?: unknown; response: Response }> => {
+	const response = await fetch(`${getApiBaseUrl()}${path}`, options);
+	let data: unknown;
+	try {
+		data = await response.json();
+	} catch {
+		data = undefined;
+	}
+	return { data, response };
+};
 
-					// Start auto-refresh on successful login
-					get().initializeAutoRefresh();
-				} catch (error) {
-					set({ isAuthenticated: false, token: null, user: null });
-					logger.error("Login failed:", error);
-					throw error;
-				} finally {
-					set({ isLoading: false });
-				}
-			},
+const createSetterActions = (set: StoreSetter): Pick<
+	AuthStateActions,
+	"setAccount" | "setToken" | "setUser"
+> => ({
+	setAccount: (account) => set({ account }),
+	setToken: (token) => {
+		/**
+		 * Token Storage Strategy:
+		 *
+		 * Development (devMode=true):
+		 * - WorkOS SDK manages tokens in localStorage
+		 * - This store mirrors the token for state management
+		 * - Acceptable for development without custom domain
+		 *
+		 * Production (devMode=false):
+		 * - WorkOS SDK uses HttpOnly cookies (requires custom auth domain)
+		 * - This localStorage token becomes a fallback/cache
+		 * - Backend validates actual HttpOnly cookie tokens
+		 *
+		 * The token here is primarily for:
+		 * 1. State management (isAuthenticated checks)
+		 * 2. Development mode compatibility
+		 * 3. Backwards compatibility with existing code
+		 */
+		const normalizedToken = normalizeToken(token);
+		persistToken(normalizedToken);
+		set({ token: normalizedToken });
+	},
+	setUser: (user) => {
+		set({
+			isAuthenticated: Boolean(user),
+			user,
+		});
+	},
+});
 
-			logout: async () => {
-				try {
-					// Stop auto-refresh
-					get().stopAutoRefresh();
+const createLoginAction = (
+	set: StoreSetter,
+	get: StoreGetter,
+): Pick<AuthStateActions, "login"> => ({
+	login: async (email, password) => {
+		set({ isLoading: true });
+		try {
+			if (!email || !password) {
+				throw new Error("Email and password are required");
+			}
 
-					// Call logout endpoint to clear server-side session
-					const API_URL =
-						import.meta.env.VITE_API_URL || "http://localhost:4000";
-					await fetch(`${API_URL}/api/v1/auth/logout`, {
+			const { data, response } = await fetchJson("/api/v1/auth/login", {
+				body: JSON.stringify({ email, password }),
+				credentials: "include", // Important for HttpOnly cookies
+				headers: { "Content-Type": "application/json" },
+				method: "POST",
+			});
+
+			if (!response.ok) {
+				const detail =
+					isRecordObject(data) && typeof data["detail"] === "string"
+						? data["detail"]
+						: "Login failed";
+				throw new Error(
+					`${detail || "Login failed"}: ${response.status}`,
+				);
+			}
+
+			const parsed = parseLoginResponse(data);
+			if (!parsed) {
+				throw new Error("Invalid response from login endpoint");
+			}
+
+			get().setUser(parsed.user);
+			if (parsed.access_token) {
+				get().setToken(parsed.access_token);
+			}
+			get().initializeAutoRefresh();
+		} catch (error) {
+			set({ isAuthenticated: false, token: null, user: null });
+			logger.error("Login failed:", error);
+			throw error;
+		} finally {
+			set({ isLoading: false });
+		}
+	},
+});
+
+const createLogoutAction = (
+	set: StoreSetter,
+	get: StoreGetter,
+): Pick<AuthStateActions, "logout"> => ({
+	logout: async () => {
+		try {
+			get().stopAutoRefresh();
+			await fetch(`${getApiBaseUrl()}/api/v1/auth/logout`, {
+				credentials: "include",
+				headers: { "Content-Type": "application/json" },
+				method: "POST",
+			}).catch(() => {
+				logger.warn("Logout API call failed, clearing local state");
+			});
+		} catch (error) {
+			logger.error("Logout error:", error);
+		} finally {
+			get().setToken(null);
+			get().setUser(null);
+			set({ isAuthenticated: false });
+		}
+	},
+});
+
+const createSessionActions = (
+	get: StoreGetter,
+): Pick<AuthStateActions, "refreshToken" | "switchAccount" | "validateSession"> =>
+	({
+		refreshToken: async () => {
+			try {
+				const { data, response } = await fetchJson(
+					"/api/v1/auth/refresh",
+					{
 						credentials: "include",
-						headers: {
-							"Content-Type": "application/json",
-						},
+						headers: { "Content-Type": "application/json" },
 						method: "POST",
-					}).catch(() => {
-						// Ignore errors during logout - proceed with local cleanup
-						logger.warn("Logout API call failed, clearing local state");
-					});
-				} catch (error) {
-					logger.error("Logout error:", error);
-				} finally {
-					// Clear local state regardless of API success
-					get().setToken(null);
-					get().setUser(null);
-					set({ isAuthenticated: false });
-				}
-			},
+					},
+				);
 
-			validateSession: async () => {
-				try {
-					const token = get().token?.trim();
-					// Don't call /auth/me without a token — backend returns 401
-					if (!token) {
-						return false;
-					}
-					const API_URL =
-						import.meta.env.VITE_API_URL || "http://localhost:4000";
-					const headers: Record<string, string> = {
+				if (!response.ok) {
+					await get().logout();
+					return;
+				}
+
+				const parsed = parseRefreshResponse(data);
+				if (parsed?.user) {
+					get().setUser(parsed.user);
+				}
+				if (parsed?.access_token) {
+					get().setToken(parsed.access_token);
+				}
+			} catch (error) {
+				logger.error("Token refresh failed:", error);
+				await get().logout();
+			}
+		},
+		switchAccount: async (accountId: string) => {
+			if (!get().user) {
+				throw new Error("Not authenticated");
+			}
+
+			try {
+				const { data, response } = await fetchJson(
+					`/api/v1/accounts/${accountId}/switch`,
+					{
+						credentials: "include",
+						headers: { "Content-Type": "application/json" },
+						method: "POST",
+					},
+				);
+
+				if (!response.ok) {
+					throw new Error("Failed to switch account");
+				}
+
+				const parsed = parseAccountResponse(data);
+				if (parsed?.account) {
+					get().setAccount(parsed.account);
+				}
+			} catch (error) {
+				logger.error("Failed to switch account:", error);
+				throw error;
+			}
+		},
+		validateSession: async () => {
+			try {
+				const token = normalizeToken(get().token);
+				if (!token) {
+					return false;
+				}
+
+				const { data, response } = await fetchJson("/api/v1/auth/me", {
+					credentials: "include",
+					headers: {
 						Authorization: `Bearer ${token}`,
 						"Content-Type": "application/json",
-					};
-					const res = await fetch(`${API_URL}/api/v1/auth/me`, {
-						method: "GET",
-						credentials: "include", // Send HttpOnly cookies
-						headers,
-					});
+					},
+					method: "GET",
+				});
 
-					if (res.status === 401) {
-						// Session expired
-						await get().logout();
-						return false;
-					}
-
-					if (!res.ok) {
-						throw new Error(`Session validation failed: ${res.status}`);
-					}
-
-					const parsed = parseSessionResponse(await res.json());
-					if (parsed) {
-						if (parsed.user) {
-							get().setUser(parsed.user);
-						}
-						if (parsed.account) {
-							get().setAccount(parsed.account);
-						}
-					}
-
-					return true;
-				} catch (error) {
-					logger.error("Session validation error:", error);
+				if (response.status === HTTP_UNAUTHORIZED) {
 					await get().logout();
 					return false;
 				}
-			},
 
-			refreshToken: async () => {
-				try {
-					const API_URL =
-						import.meta.env.VITE_API_URL || "http://localhost:4000";
-					const response = await fetch(`${API_URL}/api/v1/auth/refresh`, {
-						credentials: "include",
-						headers: {
-							"Content-Type": "application/json",
-						},
-						method: "POST",
-					});
-
-					if (!response.ok) {
-						// If refresh fails, logout the user
-						await get().logout();
-						return;
-					}
-
-					const parsed = parseRefreshResponse(await response.json());
-					if (parsed) {
-						if (parsed.user) {
-							get().setUser(parsed.user);
-						}
-						if (parsed.access_token) {
-							get().setToken(parsed.access_token);
-						}
-					}
-				} catch (error) {
-					logger.error("Token refresh failed:", error);
-					await get().logout();
-				}
-			},
-
-			updateProfile: (updates) => {
-				const currentUser = get().user;
-				if (currentUser) {
-					set({
-						user: { ...currentUser, ...updates },
-					});
-				}
-			},
-
-			setAuthFromWorkOS: (user, token) => {
-				get().setUser(user);
-				if (token) {
-					get().setToken(token);
-				}
-				// Start auto-refresh
-				get().initializeAutoRefresh();
-			},
-
-			setAccount: (account) => {
-				set({ account });
-			},
-
-			switchAccount: async (accountId: string) => {
-				if (!get().user) {
-					throw new Error("Not authenticated");
+				if (!response.ok) {
+					throw new Error(`Session validation failed: ${response.status}`);
 				}
 
-				try {
-					const API_URL =
-						import.meta.env.VITE_API_URL || "http://localhost:4000";
-					const res = await fetch(
-						`${API_URL}/api/v1/accounts/${accountId}/switch`,
-						{
-							method: "POST",
-							credentials: "include", // Send HttpOnly cookies
-							headers: {
-								"Content-Type": "application/json",
-							},
-						},
-					);
-
-					if (!res.ok) {
-						throw new Error("Failed to switch account");
-					}
-
-					const parsed = parseAccountResponse(await res.json());
-					if (parsed && parsed.account) {
-						get().setAccount(parsed.account);
-					}
-				} catch (error) {
-					logger.error("Failed to switch account:", error);
-					throw error;
+				const parsed = parseSessionResponse(data);
+				if (parsed?.user) {
+					get().setUser(parsed.user);
 				}
-			},
-
-			initializeAutoRefresh: () => {
-				// Stop existing timer if any
-				get().stopAutoRefresh();
-
-				// Start new timer to refresh token every 20 minutes (1200000ms)
-				const timer = setInterval(
-					() => {
-						undefined;
-					},
-					20 * 60 * 1000,
-				);
-
-				set({ refreshTimer: timer });
-			},
-
-			stopAutoRefresh: () => {
-				const timer = get().refreshTimer;
-				if (timer) {
-					clearInterval(timer);
-					set({ refreshTimer: null });
+				if (parsed?.account) {
+					get().setAccount(parsed.account);
 				}
-			},
-		}),
+
+				return true;
+			} catch (error) {
+				logger.error("Session validation error:", error);
+				await get().logout();
+				return false;
+			}
+		},
+	});
+
+const createProfileActions = (
+	set: StoreSetter,
+	get: StoreGetter,
+): Pick<AuthStateActions, "setAuthFromWorkOS" | "updateProfile"> => ({
+	setAuthFromWorkOS: (user, token) => {
+		get().setUser(user);
+		if (token) {
+			get().setToken(token);
+		}
+		get().initializeAutoRefresh();
+	},
+	updateProfile: (updates) => {
+		const currentUser = get().user;
+		if (currentUser) {
+			set({ user: { ...currentUser, ...updates } });
+		}
+	},
+});
+
+const createAutoRefreshActions = (
+	set: StoreSetter,
+	get: StoreGetter,
+): Pick<AuthStateActions, "initializeAutoRefresh" | "stopAutoRefresh"> => ({
+	initializeAutoRefresh: () => {
+		get().stopAutoRefresh();
+
+		const timer = setInterval(() => {
+			get()
+				.refreshToken()
+				.catch((error) => logger.error("Auto refresh failed:", error));
+		}, REFRESH_INTERVAL_MS);
+
+		set({ refreshTimer: timer });
+	},
+	stopAutoRefresh: () => {
+		const timer = get().refreshTimer;
+		if (timer) {
+			clearInterval(timer);
+			set({ refreshTimer: null });
+		}
+	},
+});
+
+const buildAuthStore = (set: StoreSetter, get: StoreGetter): AuthState => ({
+	...createInitialState(),
+	...createSetterActions(set),
+	...createLoginAction(set, get),
+	...createLogoutAction(set, get),
+	...createSessionActions(get),
+	...createProfileActions(set, get),
+	...createAutoRefreshActions(set, get),
+});
+
+export const useAuthStore = create<AuthState>()(
+	persist(
+		(set, get) => buildAuthStore(set, get),
 		{
 			name: "tracertm-auth-store",
 			partialize: (state) => ({

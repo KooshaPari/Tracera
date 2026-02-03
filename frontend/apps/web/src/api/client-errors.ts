@@ -1,4 +1,3 @@
-/* eslint-disable promise/prefer-await-to-then */
 import { apiConstants } from "./client-constants";
 
 class ApiError extends Error {
@@ -15,57 +14,54 @@ class ApiError extends Error {
 	}
 }
 
-const safeApiCall = <TData>(
+const safeApiCall = async <TData>(
 	apiCall:
 		| Promise<{ data?: TData; error?: unknown; response: Response }>
 		| null
 		| undefined,
 ): Promise<{ data?: TData; error?: unknown; response: Response }> => {
-	if (apiCall) {
-		return apiCall;
+	if (apiCall !== null && typeof apiCall !== "undefined") {
+		return await apiCall;
 	}
 
-	return Promise.reject(
-		new ApiError(
-			apiConstants.statusServerError,
-			"API request failed: promise is null",
-		),
+	throw new ApiError(
+		apiConstants.statusServerError,
+		"API request failed: promise is null",
 	);
 };
 
-const handleApiResponse = <TData>(
+const handleApiResponse = async <TData>(
 	promise:
 		| Promise<{ data?: TData; error?: unknown; response: Response }>
 		| null
 		| undefined,
 ): Promise<TData> => {
-	if (promise) {
-		return promise.then((result) => {
-			const { data, error, response } = result;
-			const status = response
-				? response.status
-				: apiConstants.statusServerError;
-			const statusText = response ? response.statusText : "";
-
-			if (error) {
-				const errorText = statusText === "" ? "Unknown error" : statusText;
-				throw new ApiError(status, errorText, error);
-			}
-
-			if (data) {
-				return data;
-			}
-
-			throw new ApiError(status, "No data returned");
-		});
-	}
-
-	return Promise.reject(
-		new ApiError(
+	if (promise === null || typeof promise === "undefined") {
+		throw new ApiError(
 			apiConstants.statusServerError,
 			"API request failed: promise is null",
-		),
-	);
+		);
+	}
+
+	const result = await promise;
+	const { data, error, response } = result;
+	let status = apiConstants.statusServerError;
+	let statusText = "";
+	if (response) {
+		status = response.status;
+		statusText = response.statusText;
+	}
+
+	if (typeof error !== "undefined" && error !== null) {
+		const errorText = statusText === "" ? "Unknown error" : statusText;
+		throw new ApiError(status, errorText, error);
+	}
+
+	if (typeof data !== "undefined") {
+		return data;
+	}
+
+	throw new ApiError(status, "No data returned");
 };
 
 const clientErrors = {

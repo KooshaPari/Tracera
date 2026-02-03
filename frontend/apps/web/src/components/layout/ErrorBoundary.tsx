@@ -1,8 +1,8 @@
-import { Button } from "@tracertm/ui";
-import { logger } from "@/lib/logger";
 import { AlertTriangle, RefreshCcw, RotateCw } from "lucide-react";
 import { Component } from "react";
 import type { ReactNode } from "react";
+import { Button } from "@tracertm/ui";
+import { logger } from "@/lib/logger";
 
 interface ErrorBoundaryProps {
 	children: ReactNode;
@@ -35,6 +35,10 @@ export class ErrorBoundary extends Component<
 
 	reset = () => {
 		this.setState({ error: null, hasError: false });
+	};
+
+	reloadPage = () => {
+		globalThis.location.reload();
 	};
 
 	override render() {
@@ -74,7 +78,7 @@ export class ErrorBoundary extends Component<
 								Try Reset
 							</Button>
 							<Button
-								onClick={() => globalThis.location.reload()}
+								onClick={this.reloadPage}
 								variant="outline"
 								className="flex-1 gap-2"
 								size="sm"

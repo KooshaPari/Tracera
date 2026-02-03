@@ -1,16 +1,4 @@
-import {
-	AlertCircle,
-	AlertTriangle,
-	CheckCircle2,
-	FileText,
-	Loader2,
-	Upload,
-} from "lucide-react";
-import type { ChangeEvent, FC } from "react";
-import { useState } from "react";
-import { clientCore } from "@/api/client-core";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
@@ -19,9 +7,20 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+	AlertCircle,
+	AlertTriangle,
+	CheckCircle2,
+	FileText,
+	Loader2,
+	Upload,
+} from "lucide-react";
+import { type ChangeEvent, type FC, type ReactNode, useState } from "react";
+import { clientCore } from "@/api/client-core";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 
 const { getAuthHeaders } = clientCore;
 
@@ -45,6 +44,9 @@ interface ValidationError {
 	message: string;
 	index?: number;
 }
+
+const EMPTY_ERRORS: ValidationError[] = [];
+const EMPTY_WARNINGS: ValidationError[] = [];
 
 interface ValidationResult {
 	valid: boolean;
@@ -135,7 +137,7 @@ const runImport = async (
 	return data;
 };
 
-type SetState<T> = (value: T) => void;
+type SetState<Value> = (value: Value) => void;
 type SetStep = (value: ImportStep | ((prev: ImportStep) => ImportStep)) => void;
 
 const createHandleFileSelect =
@@ -260,20 +262,20 @@ const buildBodyProps = (params: {
 	step: ImportStep;
 	validation: ValidationResult | null;
 }): ImportWizardBodyProps => ({
-	step: params.step,
-	uploadProps: { error: params.error, file: params.file, onFileSelect: params.onFileSelect },
-	validationProps: { validation: params.validation },
-	conflictProps: {
-		conflictStrategy: params.conflictStrategy,
-		conflictsCount: params.validation?.conflicts?.length ?? 0,
-		onStrategyChange: params.onStrategyChange,
-	},
+	completeProps: { result: params.importResult },
 	confirmProps: {
 		conflictStrategy: params.conflictStrategy,
 		projectName: params.projectName,
 		validation: params.validation,
 	},
-	completeProps: { result: params.importResult },
+	conflictProps: {
+		conflictsCount: params.validation?.conflicts?.length ?? 0,
+		conflictStrategy: params.conflictStrategy,
+		onStrategyChange: params.onStrategyChange,
+	},
+	step: params.step,
+	uploadProps: { error: params.error, file: params.file, onFileSelect: params.onFileSelect },
+	validationProps: { validation: params.validation },
 });
 
 const buildFooterProps = (params: {
@@ -331,6 +333,19 @@ type ValidationTabsProps = {
 type ValidationListProps = {
 	items: ValidationError[];
 	variant: "errors" | "warnings";
+};
+
+type OptionalTabsTriggerProps = {
+	className?: string;
+	label: string;
+	show: boolean;
+	value: string;
+};
+
+type OptionalTabsContentProps = {
+	children: ReactNode;
+	show: boolean;
+	value: string;
 };
 
 type ConflictStepProps = {
@@ -521,35 +536,51 @@ const ValidationList: FC<ValidationListProps> = ({ items, variant }) => (
 	</div>
 );
 
+const OptionalTabsTrigger: FC<OptionalTabsTriggerProps> = ({
+	className,
+	label,
+	show,
+	value,
+}) =>
+	show ? (
+		<TabsTrigger value={value} className={className}>
+			{label}
+		</TabsTrigger>
+	) : null;
+
+const OptionalTabsContent: FC<OptionalTabsContentProps> = ({
+	children,
+	show,
+	value,
+}) => (show ? <TabsContent value={value}>{children}</TabsContent> : null);
+
 const ValidationTabs: FC<ValidationTabsProps> = ({ validation }) => (
 	<Tabs defaultValue="summary" className="w-full">
 		<TabsList>
 			<TabsTrigger value="summary">Summary</TabsTrigger>
-			{validation?.errors?.length ? (
-				<TabsTrigger value="errors" className="text-red-600">
-					Errors ({validation.errors.length})
-				</TabsTrigger>
-			) : null}
-			{validation?.warnings?.length ? (
-				<TabsTrigger value="warnings" className="text-yellow-600">
-					Warnings ({validation.warnings.length})
-				</TabsTrigger>
-			) : null}
+			<OptionalTabsTrigger
+				show={Boolean(validation?.errors?.length)}
+				value="errors"
+				className="text-red-600"
+				label={`Errors (${validation?.errors.length ?? 0})`}
+			/>
+			<OptionalTabsTrigger
+				show={Boolean(validation?.warnings?.length)}
+				value="warnings"
+				className="text-yellow-600"
+				label={`Warnings (${validation?.warnings.length ?? 0})`}
+			/>
 		</TabsList>
 		<TabsContent value="summary" className="space-y-3">
 			<ValidationSummary validation={validation} />
 		</TabsContent>
-		{validation?.errors?.length ? (
-			<TabsContent value="errors">
-				<ValidationList items={validation.errors} variant="errors" />
-			</TabsContent>
-		) : null}
-		{validation?.warnings?.length ? (
-			<TabsContent value="warnings">
-				<ValidationList items={validation.warnings} variant="warnings" />
-			</TabsContent>
-		) : null}
-	</Tabs>
+	<OptionalTabsContent show={Boolean(validation?.errors?.length)} value="errors">
+		<ValidationList items={validation?.errors ?? EMPTY_ERRORS} variant="errors" />
+	</OptionalTabsContent>
+	<OptionalTabsContent show={Boolean(validation?.warnings?.length)} value="warnings">
+		<ValidationList items={validation?.warnings ?? EMPTY_WARNINGS} variant="warnings" />
+	</OptionalTabsContent>
+</Tabs>
 );
 
 const ValidateStep: FC<ValidationTabsProps> = ({ validation }) => (
@@ -781,41 +812,43 @@ const ImportFooter: FC<ImportFooterProps> = ({
 	onNextFromValidate,
 	onValidate,
 	step,
-}) => (
-	<DialogFooter>
-		{step === "upload" ? (
-			<UploadFooter
-				isLoading={isLoading}
-				onCancel={onCancel}
-				onValidate={onValidate}
-			/>
-		) : null}
-		{step === "validate" ? (
-			<ValidateFooter
-				isValid={isValid}
-				onBack={onBackFromValidate}
-				onNext={onNextFromValidate}
-			/>
-		) : null}
-		{step === "conflicts" ? (
-			<ConflictFooter
-				isLoading={isLoading}
-				onBack={onBackFromConflicts}
-				onPrimary={onNextFromConflicts}
-				primaryLabel="Next"
-			/>
-		) : null}
-		{step === "confirm" ? (
+}) => {
+	const footerByStep: Record<ImportStep, ReactNode> = {
+		complete: <CompleteFooter onClose={onClose} />,
+		confirm: (
 			<ConflictFooter
 				isLoading={isLoading}
 				onBack={onBackFromConflicts}
 				onPrimary={onImport}
 				primaryLabel="Import"
 			/>
-		) : null}
-		{step === "complete" ? <CompleteFooter onClose={onClose} /> : null}
-	</DialogFooter>
-);
+		),
+		conflicts: (
+			<ConflictFooter
+				isLoading={isLoading}
+				onBack={onBackFromConflicts}
+				onPrimary={onNextFromConflicts}
+				primaryLabel="Next"
+			/>
+		),
+		upload: (
+			<UploadFooter
+				isLoading={isLoading}
+				onCancel={onCancel}
+				onValidate={onValidate}
+			/>
+		),
+		validate: (
+			<ValidateFooter
+				isValid={isValid}
+				onBack={onBackFromValidate}
+				onNext={onNextFromValidate}
+			/>
+		),
+	};
+
+	return <DialogFooter>{footerByStep[step]}</DialogFooter>;
+};
 
 const ImportWizardLayout: FC<ImportWizardLayoutProps> = ({
 	bodyProps,

@@ -1,6 +1,5 @@
-/* eslint-disable promise/prefer-await-to-then */
-import { getCSRFHeaders } from "../lib/csrf";
 import { logger } from "@/lib/logger";
+import { getCSRFHeaders } from "../lib/csrf";
 import { useAuthStore } from "../stores/authStore";
 import { apiConstants } from "./client-constants";
 import { responseHandlers } from "./client-response-handlers";
@@ -106,10 +105,10 @@ const handleSessionError = (error: unknown): boolean => {
 	return false;
 };
 
-const validateSession = (): Promise<boolean> => {
+const validateSession = async (): Promise<boolean> => {
 	const token = getStoredToken();
 	if (token === "") {
-		return Promise.resolve(false);
+		return false;
 	}
 
 	const headers: Record<string, string> = {
@@ -124,13 +123,13 @@ const validateSession = (): Promise<boolean> => {
 	};
 
 	try {
-		const response = fetch(
+		const response = await fetch(
 			`${API_BASE_URL}${apiConstants.authMePath}`,
 			requestInit,
 		);
-		return response.then(handleSessionResponse);
-	} catch (error) {
-		return Promise.resolve(handleSessionError(error));
+		return handleSessionResponse(response);
+	} catch (error: unknown) {
+		return handleSessionError(error);
 	}
 };
 
@@ -215,10 +214,20 @@ apiClient.use({
 	onResponse,
 });
 
-export const clientCore = {
+interface ClientCore {
+	API_BASE_URL: string;
+	apiClient: typeof apiClient;
+	getAuthHeaders: () => Record<string, string>;
+	getBackendURL: (path?: string) => string;
+	validateSession: () => Promise<boolean>;
+}
+
+const clientCore: ClientCore = {
 	API_BASE_URL,
 	apiClient,
 	getAuthHeaders,
 	getBackendURL,
 	validateSession,
 };
+
+export { clientCore, type ClientCore };

@@ -4,16 +4,16 @@ import {
 	useLocation,
 	useParams,
 } from "@tanstack/react-router";
-import { Suspense, lazy } from "react";
+import { useCallback, Suspense, lazy } from "react";
 import { ErrorBoundary } from "@/components/layout/ErrorBoundary";
 import { FullScreenPage } from "@/components/layout/FullScreenPage";
-import { requireAuth } from "@/lib/route-guards";
 import { logger } from "@/lib/logger";
+import { requireAuth } from "@/lib/route-guards";
 
 const ProjectDetailView = lazy(() =>
 	import("@/views/ProjectDetailView").then((m) => {
 		const Comp = m.ProjectDetailView;
-		if (Comp == null) {
+		if (Comp === null || Comp === undefined) {
 			logger.error("ProjectDetailView module did not export a component", m);
 			return {
 				default: () => (
@@ -27,18 +27,7 @@ const ProjectDetailView = lazy(() =>
 	}),
 );
 
-export const Route = createFileRoute("/projects/$projectId")({
-	beforeLoad: () => requireAuth(),
-	component: ProjectDetailComponent,
-	errorComponent: ErrorComponent,
-	loader: async ({ params }: { params: { projectId: string } }) => {
-		// ProjectDetailView fetches its own data
-		// Don't throw errors here - let ProjectDetailView handle them
-		return { projectId: params.projectId };
-	},
-});
-
-function ProjectDetailComponent() {
+const ProjectDetailComponent = () => {
 	const params = Route.useParams();
 	const location = useLocation();
 
@@ -64,10 +53,13 @@ function ProjectDetailComponent() {
 			)}
 		</ErrorBoundary>
 	);
-}
+};
 
-function ErrorComponent({ error }: { error?: Error }) {
+const ErrorComponent = ({ error }: { error?: Error }) => {
 	const { projectId } = useParams({ strict: false });
+	const handleGoBack = useCallback(() => {
+		globalThis.history.back();
+	}, []);
 
 	return (
 		<FullScreenPage>
@@ -89,7 +81,7 @@ function ErrorComponent({ error }: { error?: Error }) {
 					</p>
 				)}
 				<button
-					onClick={() => globalThis.history.back()}
+					onClick={handleGoBack}
 					className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
 				>
 					Go Back
@@ -97,4 +89,15 @@ function ErrorComponent({ error }: { error?: Error }) {
 			</div>
 		</FullScreenPage>
 	);
-}
+};
+
+export const Route = createFileRoute("/projects/$projectId")({
+	beforeLoad: () => requireAuth(),
+	component: ProjectDetailComponent,
+	errorComponent: ErrorComponent,
+	loader: async ({ params }: { params: { projectId: string } }) => {
+		// ProjectDetailView fetches its own data
+		// Don't throw errors here - let ProjectDetailView handle them
+		return { projectId: params.projectId };
+	},
+});

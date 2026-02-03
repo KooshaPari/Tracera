@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import inspect
 import uuid
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from datetime import date as date_type
 from typing import Any
@@ -15,6 +16,81 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.core.concurrency import update_with_retry
 from tracertm.models.specification import ADR, Contract, Feature, Scenario
+
+
+@dataclass
+class ADROptions:
+    """Optional parameters for ADR creation."""
+    status: str = "proposed"
+    decision_drivers: list[str] | None = None
+    considered_options: list[dict] | None = None
+    related_requirements: list[str] | None = None
+    related_adrs: list[str] | None = None
+    stakeholders: list[str] | None = None
+    tags: list[str] | None = None
+    date_value: date_type | None = None
+
+
+@dataclass
+class ADRContent:
+    """Core content for ADR creation."""
+    title: str
+    context: str
+    decision: str
+    consequences: str
+
+
+@dataclass
+class ContractOptions:
+    """Optional parameters for Contract creation."""
+    preconditions: list[dict] | None = None
+    postconditions: list[dict] | None = None
+    invariants: list[dict] | None = None
+    states: list[str] | None = None
+    transitions: list[dict] | None = None
+    executable_spec: str | None = None
+    spec_language: str | None = None
+    tags: list[str] | None = None
+
+
+@dataclass
+class FeatureOptions:
+    """Optional parameters for Feature creation."""
+    description: str | None = None
+    as_a: str | None = None
+    i_want: str | None = None
+    so_that: str | None = None
+    status: str = "draft"
+    file_path: str | None = None
+    tags: list[str] | None = None
+    related_requirements: list[str] | None = None
+    related_adrs: list[str] | None = None
+
+
+@dataclass
+class ScenarioOptions:
+    """Optional parameters for Scenario creation."""
+    description: str | None = None
+    is_outline: bool = False
+    background: list[dict] | None = None
+    given: list[dict] | None = None
+    when: list[dict] | None = None
+    then: list[dict] | None = None
+    and_: list[dict] | None = None
+    but: list[dict] | None = None
+    examples: dict | None = None
+    tags: list[str] | None = None
+    requirement_ids: list[str] | None = None
+    test_case_ids: list[str] | None = None
+
+
+@dataclass
+class StepDefinitionOptions:
+    """Optional parameters for StepDefinition creation."""
+    language: str = "python"
+    description: str | None = None
+    parameters: list[dict] | None = None
+    tags: list[str] | None = None
 
 
 async def _maybe_await(value: Any) -> Any:
@@ -32,20 +108,11 @@ class ADRService:
     async def create(
         self,
         project_id: str,
-        title: str,
-        context: str,
-        decision: str,
-        consequences: str,
-        status: str = "proposed",
-        decision_drivers: list[str] | None = None,
-        considered_options: list[dict] | None = None,
-        related_requirements: list[str] | None = None,
-        related_adrs: list[str] | None = None,
-        stakeholders: list[str] | None = None,
-        tags: list[str] | None = None,
-        date_value: date_type | None = None,
+        content: ADRContent,
+        options: ADROptions | None = None,
     ) -> ADR:
         """Create a new ADR."""
+        opts = options or ADROptions()
         # Generate sequential ADR number
         result = await self.session.execute(
             select(ADR).where(ADR.project_id == project_id).order_by(ADR.created_at.desc()).limit(1)
@@ -67,18 +134,18 @@ class ADRService:
             id=str(uuid.uuid4()),
             project_id=project_id,
             adr_number=adr_number,
-            title=title,
-            status=status,
-            context=context,
-            decision=decision,
-            consequences=consequences,
-            decision_drivers=decision_drivers or [],
-            considered_options=considered_options or [],
-            related_requirements=related_requirements or [],
-            related_adrs=related_adrs or [],
-            stakeholders=stakeholders or [],
-            tags=tags or [],
-            date=date_value or datetime.now(UTC).date(),
+            title=content.title,
+            status=opts.status,
+            context=content.context,
+            decision=content.decision,
+            consequences=content.consequences,
+            decision_drivers=opts.decision_drivers or [],
+            considered_options=opts.considered_options or [],
+            related_requirements=opts.related_requirements or [],
+            related_adrs=opts.related_adrs or [],
+            stakeholders=opts.stakeholders or [],
+            tags=opts.tags or [],
+            date=opts.date_value or datetime.now(UTC).date(),
             version=1,
         )
 
@@ -203,16 +270,10 @@ class ContractService:
         item_id: str,
         title: str,
         contract_type: str,
-        preconditions: list[dict] | None = None,
-        postconditions: list[dict] | None = None,
-        invariants: list[dict] | None = None,
-        states: list[str] | None = None,
-        transitions: list[dict] | None = None,
-        executable_spec: str | None = None,
-        spec_language: str | None = None,
-        tags: list[str] | None = None,
+        options: ContractOptions | None = None,
     ) -> Contract:
         """Create a new Contract."""
+        opts = options or ContractOptions()
         # Generate sequential contract number
         result = await self.session.execute(
             select(Contract).where(Contract.project_id == project_id).order_by(Contract.created_at.desc()).limit(1)
@@ -238,14 +299,14 @@ class ContractService:
             title=title,
             contract_type=contract_type,
             status="draft",
-            preconditions=preconditions or [],
-            postconditions=postconditions or [],
-            invariants=invariants or [],
-            states=states or [],
-            transitions=transitions or [],
-            executable_spec=executable_spec,
-            spec_language=spec_language,
-            tags=tags or [],
+            preconditions=opts.preconditions or [],
+            postconditions=opts.postconditions or [],
+            invariants=opts.invariants or [],
+            states=opts.states or [],
+            transitions=opts.transitions or [],
+            executable_spec=opts.executable_spec,
+            spec_language=opts.spec_language,
+            tags=opts.tags or [],
             version=1,
         )
 
@@ -379,17 +440,10 @@ class FeatureService:
         self,
         project_id: str,
         name: str,
-        description: str | None = None,
-        as_a: str | None = None,
-        i_want: str | None = None,
-        so_that: str | None = None,
-        status: str = "draft",
-        file_path: str | None = None,
-        tags: list[str] | None = None,
-        related_requirements: list[str] | None = None,
-        related_adrs: list[str] | None = None,
+        options: FeatureOptions | None = None,
     ) -> Feature:
         """Create a new Feature."""
+        opts = options or FeatureOptions()
         # Generate sequential feature number
         result = await self.session.execute(
             select(Feature).where(Feature.project_id == project_id).order_by(Feature.created_at.desc()).limit(1)
@@ -412,15 +466,15 @@ class FeatureService:
             project_id=project_id,
             feature_number=feature_number,
             name=name,
-            description=description,
-            as_a=as_a,
-            i_want=i_want,
-            so_that=so_that,
-            status=status,
-            file_path=file_path,
-            tags=tags or [],
-            related_requirements=related_requirements or [],
-            related_adrs=related_adrs or [],
+            description=opts.description,
+            as_a=opts.as_a,
+            i_want=opts.i_want,
+            so_that=opts.so_that,
+            status=opts.status,
+            file_path=opts.file_path,
+            tags=opts.tags or [],
+            related_requirements=opts.related_requirements or [],
+            related_adrs=opts.related_adrs or [],
             version=1,
         )
 
@@ -529,18 +583,10 @@ class ScenarioService:
         feature_id: str,
         title: str,
         gherkin_text: str,
-        description: str | None = None,
-        is_outline: bool = False,
-        background: list[dict] | None = None,
-        given_steps: list[dict] | None = None,
-        when_steps: list[dict] | None = None,
-        then_steps: list[dict] | None = None,
-        examples: dict | None = None,
-        tags: list[str] | None = None,
-        requirement_ids: list[str] | None = None,
-        test_case_ids: list[str] | None = None,
+        options: ScenarioOptions | None = None,
     ) -> Scenario:
         """Create a new Scenario."""
+        opts = options or ScenarioOptions()
         # Get feature to find project context
         feature = await self.session.execute(select(Feature).where(Feature.id == feature_id))
         feature_obj = await _maybe_await(feature.scalar_one_or_none())
@@ -569,17 +615,17 @@ class ScenarioService:
             feature_id=feature_id,
             scenario_number=scenario_number,
             title=title,
-            description=description,
+            description=opts.description,
             gherkin_text=gherkin_text,
-            is_outline=is_outline,
-            background=background or [],
-            given_steps=given_steps or [],
-            when_steps=when_steps or [],
-            then_steps=then_steps or [],
-            examples=examples,
-            tags=tags or [],
-            requirement_ids=requirement_ids or [],
-            test_case_ids=test_case_ids or [],
+            is_outline=opts.is_outline,
+            background=opts.background or [],
+            given_steps=opts.given or [],
+            when_steps=opts.when or [],
+            then_steps=opts.then or [],
+            examples=opts.examples,
+            tags=opts.tags or [],
+            requirement_ids=opts.requirement_ids or [],
+            test_case_ids=opts.test_case_ids or [],
             status="draft",
             pass_rate=0.0,
             version=1,
@@ -704,22 +750,20 @@ class StepDefinitionService:
         step_pattern: str,
         step_type: str,
         implementation_code: str,
-        language: str = "python",
-        description: str | None = None,
-        parameters: list[dict] | None = None,
-        tags: list[str] | None = None,
+        options: StepDefinitionOptions | None = None,
     ) -> dict[str, Any]:
         """Create a new Step Definition."""
+        opts = options or StepDefinitionOptions()
         return {
             "id": str(uuid.uuid4()),
             "project_id": project_id,
             "step_pattern": step_pattern,
             "step_type": step_type,  # given, when, then
             "implementation_code": implementation_code,
-            "language": language,
-            "description": description,
-            "parameters": parameters or [],
-            "tags": tags or [],
+            "language": opts.language,
+            "description": opts.description,
+            "parameters": opts.parameters or [],
+            "tags": opts.tags or [],
             "usage_count": 0,
             "created_at": datetime.now(UTC).isoformat(),
             "version": 1,

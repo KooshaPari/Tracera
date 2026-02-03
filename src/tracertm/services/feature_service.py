@@ -1,5 +1,6 @@
 """Feature Service for TraceRTM."""
 
+from dataclasses import dataclass
 from typing import Any
 
 from sqlalchemy import delete, select
@@ -8,6 +9,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from tracertm.core.concurrency import update_with_retry
 from tracertm.models.specification import Feature
 from tracertm.repositories.event_repository import EventRepository
+
+
+@dataclass
+class CreateFeatureInput:
+    """Input for creating a feature (optional fields)."""
+
+    description: str | None = None
+    as_a: str | None = None
+    i_want: str | None = None
+    so_that: str | None = None
+    status: str = "draft"
+    tags: list[str] | None = None
+    related_requirements: list[str] | None = None
 
 
 class FeatureService:
@@ -36,15 +50,10 @@ class FeatureService:
         self,
         project_id: str,
         name: str,
-        description: str | None = None,
-        as_a: str | None = None,
-        i_want: str | None = None,
-        so_that: str | None = None,
-        status: str = "draft",
-        tags: list[str] | None = None,
-        related_requirements: list[str] | None = None,
+        options: CreateFeatureInput | None = None,
     ) -> Feature:
         """Create a new Feature."""
+        opts = options or CreateFeatureInput()
         # Simple numbering
         result = await self.session.execute(
             select(Feature).where(Feature.project_id == project_id).order_by(Feature.created_at.desc()).limit(1)
@@ -66,13 +75,13 @@ class FeatureService:
             project_id=project_id,
             feature_number=feature_number,
             name=name,
-            description=description,
-            as_a=as_a,
-            i_want=i_want,
-            so_that=so_that,
-            status=status,
-            tags=tags or [],
-            related_requirements=related_requirements or [],
+            description=opts.description,
+            as_a=opts.as_a,
+            i_want=opts.i_want,
+            so_that=opts.so_that,
+            status=opts.status,
+            tags=opts.tags or [],
+            related_requirements=opts.related_requirements or [],
         )
 
         self.session.add(feature)

@@ -144,8 +144,8 @@ const removeLayoutsForItems = (
 
 type CountTracker = { value: number };
 
-const removeMatchingKeys = <T>(
-	entries: Map<string, T>,
+const removeMatchingKeys = <EntryValue>(
+	entries: Map<string, EntryValue>,
 	regex: RegExp,
 	tracker: CountTracker,
 ): void => {
@@ -157,12 +157,15 @@ const removeMatchingKeys = <T>(
 	}
 };
 
-const invalidateItem = (
-	set: StoreSetter,
-	get: StoreGetter,
-	itemId: string,
-	cascading: boolean,
-): void => {
+type InvalidateItemOptions = {
+	cascading: boolean;
+	get: StoreGetter;
+	itemId: string;
+	set: StoreSetter;
+};
+
+const invalidateItem = (options: InvalidateItemOptions): void => {
+	const { cascading, get, itemId, set } = options;
 	const state = get();
 	const deps = state.getItemDependencies(itemId);
 
@@ -235,7 +238,7 @@ const createInvalidationActions = (
 	get: StoreGetter,
 ): InvalidationActions => ({
 	invalidateByItem: (itemId: string, cascading = true): void => {
-		invalidateItem(set, get, itemId, cascading);
+		invalidateItem({ cascading, get, itemId, set });
 	},
 	invalidateByPattern: (pattern: string): number =>
 		invalidatePattern(set, pattern),

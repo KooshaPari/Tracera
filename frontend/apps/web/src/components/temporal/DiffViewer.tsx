@@ -11,7 +11,8 @@
 
 import type { DiffItem, DiffViewerState, FieldDiffChange } from "@repo/types";
 import { CheckCircle, ChevronDown, ChevronUp, Copy } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
+import type { ReactNode } from "react";
 
 interface DiffViewerProps {
 	item: DiffItem;
@@ -20,13 +21,20 @@ interface DiffViewerProps {
 	compact?: boolean;
 }
 
-export function DiffViewer({ fieldChanges, compact = false }: DiffViewerProps) {
+const COPY_RESET_MS = 2000;
+
+export const DiffViewer = ({ fieldChanges, compact = false }: DiffViewerProps) => {
 	const [copiedField, setCopiedField] = useState<string | null>(null);
 
-	const handleCopyValue = (value: unknown, field: string) => {
-		const text = formatValueForCopy(value);
-		undefined;
-	};
+	const handleCopyValue = useCallback(
+		(value: unknown, field: string) => {
+			const text = formatValueForCopy(value);
+			navigator.clipboard?.writeText(text).catch(() => {});
+			setCopiedField(field);
+			setTimeout(() => setCopiedField(null), COPY_RESET_MS);
+		},
+		[],
+	);
 
 	return (
 		<div className="space-y-4">
@@ -57,7 +65,42 @@ interface FieldChangeRowProps {
 	compact?: boolean;
 }
 
-function getChangeTypeColor(changeType: string) {
+interface FieldChangeExpandedProps {
+	change: FieldDiffChange;
+	onCopyOld: () => void;
+	onCopyNew: () => void;
+	isCopied: boolean;
+}
+
+const FieldChangeExpanded = ({
+	change,
+	onCopyOld,
+	onCopyNew,
+	isCopied,
+}: FieldChangeExpandedProps) => (
+	<div className="mt-3 space-y-2">
+		{change.changeType !== "added" && (
+			<ValueDisplay
+				label="Old Value"
+				value={change.oldValue}
+				type="old"
+				onCopy={onCopyOld}
+				isCopied={isCopied}
+			/>
+		)}
+		{change.changeType !== "removed" && (
+			<ValueDisplay
+				label="New Value"
+				value={change.newValue}
+				type="new"
+				onCopy={onCopyNew}
+				isCopied={isCopied}
+			/>
+		)}
+	</div>
+);
+
+const getChangeTypeColor = (changeType: string): string => {
 	switch (changeType) {
 		case "added": {
 			return "bg-green-50 border-l-green-500 text-green-900";
@@ -72,15 +115,24 @@ function getChangeTypeColor(changeType: string) {
 			return "bg-gray-50 border-l-gray-500";
 		}
 	}
-}
+};
 
-function FieldChangeRow({
+const FieldChangeRow = ({
 	change,
 	onCopy,
 	isCopied,
 	compact = false,
-}: FieldChangeRowProps) {
+}: FieldChangeRowProps) => {
 	const [expanded, setExpanded] = useState(!compact);
+	const toggleExpanded = useCallback(() => setExpanded((e) => !e), []);
+	const handleCopyOld = useCallback(
+		() => onCopy(change.oldValue, change.field),
+		[onCopy, change.oldValue, change.field],
+	);
+	const handleCopyNew = useCallback(
+		() => onCopy(change.newValue, change.field),
+		[onCopy, change.newValue, change.field],
+	);
 
 	return (
 		<div
@@ -88,9 +140,10 @@ function FieldChangeRow({
 		>
 			<div className="p-4">
 				{/* Field Header */}
-				<div
-					className="flex items-center justify-between cursor-pointer"
-					onClick={() => setExpanded(!expanded)}
+				<button
+					type="button"
+					className="flex w-full items-center justify-between cursor-pointer border-0 bg-transparent p-0 text-left"
+					onClick={toggleExpanded}
 				>
 					<div className="flex items-center gap-2">
 						{expanded ? (
@@ -101,61 +154,48 @@ function FieldChangeRow({
 						<span className="font-semibold text-sm">{change.field}</span>
 						<ChangeTypeBadge type={change.changeType} />
 					</div>
-				</div>
-
-				{/* Expanded Content */}
+				</button>
 				{expanded && (
-					<div className="mt-3 space-y-2">
-						{change.changeType !== "added" && (
-							<ValueDisplay
-								label="Old Value"
-								value={change.oldValue}
-								type="old"
-								onCopy={() => onCopy(change.oldValue, change.field)}
-								isCopied={isCopied}
-							/>
-						)}
-
-						{change.changeType !== "removed" && (
-							<ValueDisplay
-								label="New Value"
-								value={change.newValue}
-								type="new"
-								onCopy={() => onCopy(change.newValue, change.field)}
-								isCopied={isCopied}
-							/>
-						)}
-					</div>
+					<FieldChangeExpanded
+						change={change}
+						onCopyOld={handleCopyOld}
+						onCopyNew={handleCopyNew}
+						isCopied={isCopied}
+					/>
 				)}
 			</div>
 		</div>
 	);
-}
+};
 
 interface ChangeTypeBadgeProps {
 	type: string;
 }
 
-function ChangeTypeBadge({ type }: ChangeTypeBadgeProps) {
-	const badges: Record<string, { bg: string; text: string; label: string }> = {
-		added: {
-			bg: "bg-green-100",
-			label: "Added",
-			text: "text-green-800",
-		},
-		modified: {
-			bg: "bg-blue-100",
-			label: "Modified",
-			text: "text-blue-800",
-		},
-		removed: {
-			bg: "bg-red-100",
-			label: "Removed",
-			text: "text-red-800",
-		},
-	};
+const BADGE_STYLES: Record<string, { bg: string; text: string; label: string }> = {
+	added: {
+		bg: "bg-green-100",
+		label: "Added",
+		text: "text-green-800",
+	},
+	modified: {
+		bg: "bg-blue-100",
+		label: "Modified",
+		text: "text-blue-800",
+	},
+	removed: {
+		bg: "bg-red-100",
+		label: "Removed",
+		text: "text-red-800",
+	},
+};
 
-	const badge = badges[type] || badges.modified;
+type BadgeStyle = { bg: string; text: string; label: string };
+
+const DEFAULT_BADGE: BadgeStyle = BADGE_STYLES["modified"] as BadgeStyle;
+
+const ChangeTypeBadge = ({ type }: ChangeTypeBadgeProps) => {
+	const badge: BadgeStyle = BADGE_STYLES[type] ?? DEFAULT_BADGE;
 
 	return (
 		<span
@@ -164,7 +204,7 @@ function ChangeTypeBadge({ type }: ChangeTypeBadgeProps) {
 			{badge.label}
 		</span>
 	);
-}
+};
 
 interface ValueDisplayProps {
 	label: string;
@@ -174,15 +214,35 @@ interface ValueDisplayProps {
 	isCopied: boolean;
 }
 
-function ValueDisplay({
+const JSON_INDENT = 2;
+
+const renderValueContent = (value: unknown): ReactNode => {
+	if (typeof value === "object" && value !== null) {
+		return (
+			<pre className="whitespace-pre-wrap">
+				{JSON.stringify(value, null, JSON_INDENT)}
+			</pre>
+		);
+	}
+	if (value === null || value === undefined) {
+		return <span className="italic opacity-60">null</span>;
+	}
+	if (typeof value === "boolean") {
+		return <span>{value ? "true" : "false"}</span>;
+	}
+	if (typeof value === "object") {
+		return <span>{JSON.stringify(value)}</span>;
+	}
+	return <span>{String(value)}</span>;
+};
+
+const ValueDisplay = ({
 	label,
 	value,
 	type,
 	onCopy,
 	isCopied,
-}: ValueDisplayProps) {
-	const isComplex = typeof value === "object" && value !== null;
-
+}: ValueDisplayProps) => {
 	return (
 		<div className="bg-white rounded border border-gray-200">
 			<div className="px-3 py-2 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
@@ -206,34 +266,22 @@ function ValueDisplay({
 						: "bg-green-50 text-green-900"
 				}`}
 			>
-				{isComplex ? (
-					<pre className="whitespace-pre-wrap">
-						{JSON.stringify(value, null, 2)}
-					</pre>
-				) : value === null || value === undefined ? (
-					<span className="italic opacity-60">null</span>
-				) : typeof value === "boolean" ? (
-					<span>{value ? "true" : "false"}</span>
-				) : typeof value === "object" ? (
-					<span>{JSON.stringify(value)}</span>
-				) : (
-					<span>{String(value)}</span>
-				)}
+				{renderValueContent(value)}
 			</div>
 		</div>
 	);
-}
+};
 
-// Helper functions
-function formatValueForCopy(value: unknown): string {
+const formatValueForCopy = (value: unknown): string => {
 	if (value === null || value === undefined) {
 		return "null";
 	}
 	if (typeof value === "object") {
-		return JSON.stringify(value, null, 2);
+		return JSON.stringify(value, null, JSON_INDENT);
 	}
 	return String(value);
-}
+};
 
-export default DiffViewer;
 export type { DiffViewerProps };
+// eslint-disable-next-line import/no-default-export -- backward compatibility
+export default DiffViewer;

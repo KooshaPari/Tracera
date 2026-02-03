@@ -213,8 +213,8 @@ describe("Screenshot Utilities", () => {
 
 			// Then: Verify all are returned and sorted (most recent first)
 			expect(screenshots).toHaveLength(2);
-			expect(screenshots[0].id).toBe(metadata2.id);
-			expect(screenshots[1].id).toBe(metadata1.id);
+			expect(screenshots[0]?.id).toBe(metadata2.id);
+			expect(screenshots[1]?.id).toBe(metadata1.id);
 		});
 
 		it("should clear screenshot cache", () => {
@@ -324,10 +324,14 @@ describe("Screenshot Utilities", () => {
 			const item = {
 				createdAt: "2024-01-01T00:00:00Z",
 				id: "item-1",
+				priority: "medium" as const,
 				projectId: "proj-1",
+				status: "todo" as const,
 				title: "Test Component",
 				type: "component",
 				updatedAt: "2024-01-01T00:00:00Z",
+				version: 1,
+				view: "architecture" as const,
 			};
 
 			const screenshot: ScreenshotMetadata = {
@@ -348,10 +352,14 @@ describe("Screenshot Utilities", () => {
 			const updatedItem = updateItemWithScreenshot(item, screenshot);
 
 			// Then: Verify item has screenshot metadata
-			expect(updatedItem.metadata?.screenshotUrl).toBe(screenshot.url);
-			expect(updatedItem.metadata?.thumbnailUrl).toBe(screenshot.thumbnailUrl);
-			expect(updatedItem.metadata?.screenshotVersion).toBe(screenshot.version);
-			expect(updatedItem.metadata?.screenshotVersionType).toBe(
+			expect(updatedItem.metadata?.["screenshotUrl"]).toBe(screenshot.url);
+			expect(updatedItem.metadata?.["thumbnailUrl"]).toBe(
+				screenshot.thumbnailUrl,
+			);
+			expect(updatedItem.metadata?.["screenshotVersion"]).toBe(
+				screenshot.version,
+			);
+			expect(updatedItem.metadata?.["screenshotVersionType"]).toBe(
 				screenshot.versionType,
 			);
 		});
@@ -471,8 +479,8 @@ describe("Screenshot Utilities", () => {
 			// Then: Verify version history
 			const screenshots = getComponentScreenshots(componentId);
 			expect(screenshots).toHaveLength(2);
-			expect(screenshots[0].version).toBe("2.0.0");
-			expect(screenshots[1].version).toBe("1.0.0");
+			expect(screenshots[0]?.version).toBe("2.0.0");
+			expect(screenshots[1]?.version).toBe("1.0.0");
 		});
 	});
 });

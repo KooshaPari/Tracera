@@ -9,7 +9,6 @@
  * - Cancellable loading
  */
 
-import { useEffect, useState } from "react";
 import type {
 	ProgressInfo,
 	StreamMetadata,
@@ -24,6 +23,7 @@ import {
 	Network,
 	XCircle,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 const ELAPSED_TICK_MS = 100;
 const MS_IN_SECOND = 1000;

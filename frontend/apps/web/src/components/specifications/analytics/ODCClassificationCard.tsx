@@ -100,7 +100,7 @@ const triggerConfig: Record<
 	},
 };
 
-export function ODCClassificationCard({
+export const ODCClassificationCard = ({
 	defectType,
 	trigger,
 	impact,
@@ -108,7 +108,7 @@ export function ODCClassificationCard({
 	likelyInjectionPhase,
 	suggestedPrevention,
 	className,
-}: ODCClassificationCardProps) {
+}: ODCClassificationCardProps) => {
 	const typeConfig = defectTypeConfig[defectType];
 	const triggerInfo = triggerConfig[trigger];
 
@@ -186,7 +186,7 @@ export function ODCClassificationCard({
 			)}
 		</div>
 	);
-}
+};
 
 interface ODCBadgeProps {
 	defectType: ODCDefectType;
@@ -194,11 +194,11 @@ interface ODCBadgeProps {
 	className?: string;
 }
 
-export function ODCBadge({
+export const ODCBadge = ({
 	defectType,
 	size = "md",
 	className,
-}: ODCBadgeProps) {
+}: ODCBadgeProps) => {
 	const config = defectTypeConfig[defectType];
 	const sizeClass =
 		size === "sm" ? "text-xs px-1.5 py-0.5" : "text-sm px-2 py-1";
@@ -216,7 +216,7 @@ export function ODCBadge({
 			{config.label}
 		</span>
 	);
-}
+};
 
 interface ODCTriggerBadgeProps {
 	trigger: ODCTrigger;
@@ -224,11 +224,11 @@ interface ODCTriggerBadgeProps {
 	className?: string;
 }
 
-export function ODCTriggerBadge({
+export const ODCTriggerBadge = ({
 	trigger,
 	size = "md",
 	className,
-}: ODCTriggerBadgeProps) {
+}: ODCTriggerBadgeProps) => {
 	const config = triggerConfig[trigger];
 	const sizeClass =
 		size === "sm" ? "text-xs px-1.5 py-0.5" : "text-sm px-2 py-1";
@@ -245,4 +245,4 @@ export function ODCTriggerBadge({
 			{config.label}
 		</span>
 	);
-}
+};

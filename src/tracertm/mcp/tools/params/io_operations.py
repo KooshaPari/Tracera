@@ -126,13 +126,19 @@ async def import_manage(
             try:
                 return json.loads(content)
             except json.JSONDecodeError:
-                return yaml.safe_load(content)
+                result = yaml.safe_load(content)
+                if result is None:
+                    raise ToolError("Failed to parse YAML content")
+                return result
         if path:
             file_path = Path(path)
             if not file_path.exists():
                 raise ToolError(f"File not found: {path}")
             if file_path.suffix.lower() in {".yaml", ".yml"}:
-                return yaml.safe_load(file_path.read_text(encoding="utf-8"))
+                result = yaml.safe_load(file_path.read_text(encoding="utf-8"))
+                if result is None:
+                    raise ToolError(f"Failed to parse YAML file: {path}")
+                return result
             return json.loads(file_path.read_text(encoding="utf-8"))
         raise ToolError("Provide data, content, or path for import.")
 

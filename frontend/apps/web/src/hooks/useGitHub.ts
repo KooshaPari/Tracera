@@ -2,7 +2,7 @@
  * React Query hooks for GitHub API.
  */
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
 	createGitHubRepo,
 	deleteGitHubAppInstallation,
@@ -11,7 +11,7 @@ import {
 	listGitHubAppInstallations,
 	listGitHubRepos,
 } from "../api/github";
-import type { CreateRepoRequest } from "../api/github";
+import type { CreateRepoRequest, GitHubRepo } from "../api/github";
 
 /**
  * Get GitHub App installation URL.
@@ -39,7 +39,6 @@ export function useGitHubAppInstallations(accountId: string | undefined) {
  * Link GitHub App installation.
  */
 export function useLinkGitHubAppInstallation() {
-	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: ({
 			installationId,
@@ -48,9 +47,6 @@ export function useLinkGitHubAppInstallation() {
 			installationId: string;
 			accountId: string;
 		}) => linkGitHubAppInstallation(installationId, accountId),
-		onSuccess: (_, variables) => {
-			undefined;
-		},
 	});
 }
 
@@ -58,12 +54,9 @@ export function useLinkGitHubAppInstallation() {
  * Delete GitHub App installation.
  */
 export function useDeleteGitHubAppInstallation() {
-	const queryClient = useQueryClient();
 	return useMutation({
-		mutationFn: deleteGitHubAppInstallation,
-		onSuccess: () => {
-			undefined;
-		},
+		mutationFn: (installationId: string) =>
+			deleteGitHubAppInstallation(installationId),
 	});
 }
 
@@ -89,11 +82,7 @@ export function useGitHubRepos(params: {
  * Create GitHub repository.
  */
 export function useCreateGitHubRepo() {
-	const queryClient = useQueryClient();
-	return useMutation({
+	return useMutation<GitHubRepo, Error, CreateRepoRequest>({
 		mutationFn: (data: CreateRepoRequest) => createGitHubRepo(data),
-		onSuccess: (_, variables) => {
-			undefined;
-		},
 	});
 }

@@ -32,7 +32,7 @@ import {
 } from "./auth";
 import { agentApi } from "./agent";
 import client from "./client";
-import componentLibraryApi from "./component-library";
+import { componentLibraryApi } from "./component-library";
 
 type ClientExports = typeof client;
 
