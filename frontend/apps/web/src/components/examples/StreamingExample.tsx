@@ -10,16 +10,6 @@ import {
 } from "../../hooks/useStreaming";
 import { StreamingProgress, StreamingProgressBar } from "../StreamingProgress";
 
-const SLICE_SIZE = 10;
-const PREVIEW_SIZE = 3;
-const DATE_SPLIT_INDEX = 0;
-
-const getItemKey = (item: { id?: string }, index: number) =>
-	`item-${item.id ?? index}`;
-
-const getNodeKey = (node: { id?: string }, index: number) =>
-	`node-${node.id ?? index}`;
-
 export function StreamItemsExample() {
 	const [projectId, setProjectId] = useState("");
 	const { items, state, startStreaming, stopStreaming, reset } =
@@ -30,8 +20,6 @@ export function StreamItemsExample() {
 			startStreaming({ projectId });
 		}
 	};
-
-	const displayItems = items.slice(-SLICE_SIZE);
 
 	return (
 		<div className="space-y-4 p-4 border rounded-lg">
@@ -89,14 +77,14 @@ export function StreamItemsExample() {
 			<div className="space-y-2">
 				<h4 className="font-medium">Received Items ({items.length})</h4>
 				<div className="max-h-64 overflow-y-auto space-y-1">
-					{displayItems.map((item, i) => (
-						<div
-							key={getItemKey(item, i)}
-							className="p-2 bg-muted rounded text-sm"
-						>
-							{JSON.stringify(item)}
-						</div>
-					))}
+					{items.slice(-10).map((item, i) => {
+						const itemKey = item.id ?? `index-${i}`;
+						return (
+							<div key={itemKey} className="p-2 bg-muted rounded text-sm">
+								{JSON.stringify(item)}
+							</div>
+						);
+					})}
 				</div>
 			</div>
 		</div>
@@ -113,9 +101,6 @@ export function StreamGraphExample() {
 			startStreaming(graphId);
 		}
 	};
-
-	const previewNodes = nodes.slice(0, PREVIEW_SIZE);
-	const remainingCount = nodes.length - PREVIEW_SIZE;
 
 	return (
 		<div className="space-y-4 p-4 border rounded-lg">
@@ -177,14 +162,13 @@ export function StreamGraphExample() {
 			<div className="p-4 bg-muted/50 rounded">
 				<div className="text-sm text-muted-foreground mb-2">Graph Preview</div>
 				<div className="text-xs space-y-1">
-					{previewNodes.map((node, i) => (
-						<div key={getNodeKey(node, i)}>
-							Node: {JSON.stringify(node)}
-						</div>
-					))}
-					{remainingCount > 0 && (
-						<div>... and {remainingCount} more</div>
-					)}
+					{nodes.slice(0, 3).map((node, i) => {
+						const nodeKey = node.id ?? `index-${i}`;
+						return (
+							<div key={nodeKey}>Node: {JSON.stringify(node)}</div>
+						);
+					})}
+					{nodes.length > 3 && <div>... and {nodes.length - 3} more</div>}
 				</div>
 			</div>
 		</div>
@@ -204,9 +188,7 @@ export function StreamExportExample() {
 	};
 
 	const handleDownload = () => {
-		const timestamp = new Date()
-			.toISOString()
-			.split("T")[DATE_SPLIT_INDEX];
+		const timestamp = new Date().toISOString().split("T")[0];
 		downloadAsFile(`export-${projectId}-${timestamp}.json`);
 	};
 
@@ -226,9 +208,7 @@ export function StreamExportExample() {
 				/>
 				<select
 					value={exportType}
-					onChange={(e) =>
-						setExportType(e.target.value as "json" | "csv")
-					}
+					onChange={(e) => setExportType(e.target.value as "json" | "csv")}
 					className="px-3 py-2 border rounded"
 					disabled={state.isStreaming}
 				>

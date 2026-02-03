@@ -6,8 +6,8 @@
  */
 
 import type { Edge, Node } from "@xyflow/react";
-import { GPUForceLayout } from "./gpuForceLayout";
 import type { ForceSimulationConfig } from "./gpuForceLayout";
+import { GPUForceLayout } from "./gpuForceLayout";
 
 // ============================================================================
 // MESSAGE TYPES
@@ -89,20 +89,14 @@ self.addEventListener(
 				type: "result",
 			};
 
-			(globalThis as unknown as Worker).postMessage(
-				response,
-				self.location.origin,
-			);
+			(globalThis as unknown as Worker).postMessage(response);
 		} catch (error) {
 			const errorResponse: ForceLayoutError = {
 				error: error instanceof Error ? error.message : String(error),
 				type: "error",
 			};
 
-			(globalThis as unknown as Worker).postMessage(
-				errorResponse,
-				self.location.origin,
-			);
+			(globalThis as unknown as Worker).postMessage(errorResponse);
 		}
 	},
 );
@@ -114,8 +108,5 @@ self.addEventListener("error", (err) => {
 		type: "error",
 	};
 
-	(globalThis as unknown as Worker).postMessage(
-		errorResponse,
-		self.location.origin,
-	);
+	(globalThis as unknown as Worker).postMessage(errorResponse);
 });

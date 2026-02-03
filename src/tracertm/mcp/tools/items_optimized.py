@@ -433,7 +433,7 @@ async def summarize_view_v2(
                 .all()
             )
 
-            counts = dict(status_counts)
+            counts = dict[str, Any](status_counts)
             total = sum(counts.values())
 
             return {

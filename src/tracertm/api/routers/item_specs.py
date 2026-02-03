@@ -390,7 +390,7 @@ router = APIRouter(
 async def create_requirement_spec(
     project_id: str = Path(..., description="Project ID"),
     data: RequirementSpecCreate | None = Body(None),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Create a requirement specification for an item.
@@ -426,7 +426,7 @@ async def create_requirement_spec(
 async def get_requirement_spec(
     project_id: str = Path(..., description="Project ID"),
     spec_id: str = Path(..., description="Requirement spec ID"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Get a requirement specification by ID.
@@ -457,7 +457,7 @@ async def get_requirement_spec(
 async def get_requirement_spec_by_item(
     project_id: str = Path(..., description="Project ID"),
     item_id: str = Path(..., description="Item ID"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Get a requirement specification by item ID.
@@ -492,7 +492,7 @@ async def list_requirement_specs(
     verification_status: str | None = Query(None, description="Filter by verification status"),
     limit: int = Query(100, ge=1, le=500, description="Result limit"),
     offset: int = Query(0, ge=0, description="Result offset"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """List requirement specifications for a project.
@@ -528,7 +528,7 @@ async def update_requirement_spec(
     project_id: str = Path(..., description="Project ID"),
     spec_id: str = Path(..., description="Requirement spec ID"),
     data: RequirementSpecUpdate | None = Body(None),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Update a requirement specification.
@@ -565,7 +565,7 @@ async def update_requirement_spec(
 async def delete_requirement_spec(
     project_id: str = Path(..., description="Project ID"),
     spec_id: str = Path(..., description="Requirement spec ID"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Delete a requirement specification.
@@ -593,7 +593,7 @@ async def delete_requirement_spec(
 async def analyze_requirement_quality(
     project_id: str = Path(..., description="Project ID"),
     spec_id: str = Path(..., description="Requirement spec ID"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Re-analyze quality for a requirement specification.
@@ -630,7 +630,7 @@ async def analyze_requirement_quality(
 async def analyze_requirement_impact(
     project_id: str = Path(..., description="Project ID"),
     spec_id: str = Path(..., description="Requirement spec ID"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Analyze impact for a requirement specification.
@@ -673,7 +673,7 @@ async def verify_requirement(
     ),
     evidence_reference: str = Query(..., description="Reference to the evidence"),
     description: str = Query(..., description="Verification description"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Mark a requirement as verified.
@@ -709,7 +709,7 @@ async def verify_requirement(
 async def get_unverified_requirements(
     project_id: str = Path(..., description="Project ID"),
     limit: int = Query(100, ge=1, le=500, description="Result limit"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Get unverified requirements for a project.
@@ -740,7 +740,7 @@ async def get_unverified_requirements(
 async def get_high_risk_requirements(
     project_id: str = Path(..., description="Project ID"),
     limit: int = Query(100, ge=1, le=500, description="Result limit"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Get high/critical risk requirements for a project.
@@ -777,7 +777,7 @@ async def get_high_risk_requirements(
 async def create_test_spec(
     project_id: str = Path(..., description="Project ID"),
     data: TestSpecCreate | None = Body(None),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Create a test specification for an item.
@@ -813,7 +813,7 @@ async def create_test_spec(
 async def get_test_spec(
     project_id: str = Path(..., description="Project ID"),
     spec_id: str = Path(..., description="Test spec ID"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Get a test specification by ID.
@@ -844,7 +844,7 @@ async def get_test_spec(
 async def get_test_spec_by_item(
     project_id: str = Path(..., description="Project ID"),
     item_id: str = Path(..., description="Item ID"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Get a test specification by item ID.
@@ -878,7 +878,7 @@ async def list_test_specs(
     is_quarantined: bool | None = Query(None, description="Filter by quarantine status"),
     limit: int = Query(100, ge=1, le=500, description="Result limit"),
     offset: int = Query(0, ge=0, description="Result offset"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """List test specifications for a project.
@@ -913,7 +913,7 @@ async def update_test_spec(
     project_id: str = Path(..., description="Project ID"),
     spec_id: str = Path(..., description="Test spec ID"),
     data: TestSpecUpdate | None = Body(None),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Update a test specification.
@@ -950,7 +950,7 @@ async def update_test_spec(
 async def delete_test_spec(
     project_id: str = Path(..., description="Project ID"),
     spec_id: str = Path(..., description="Test spec ID"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Delete a test specification.
@@ -982,7 +982,7 @@ async def record_test_run(
     duration_ms: int = Query(..., ge=0, description="Test duration in milliseconds"),
     error_message: str | None = Query(None, description="Error message if test failed"),
     environment: str | None = Query(None, description="Test environment"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Record a test run and update metrics.
@@ -1024,7 +1024,7 @@ async def quarantine_test(
     project_id: str = Path(..., description="Project ID"),
     spec_id: str = Path(..., description="Test spec ID"),
     reason: str = Query(..., description="Reason for quarantine"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Quarantine a flaky test.
@@ -1059,7 +1059,7 @@ async def quarantine_test(
 async def unquarantine_test(
     project_id: str = Path(..., description="Project ID"),
     spec_id: str = Path(..., description="Test spec ID"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Remove test from quarantine.
@@ -1093,7 +1093,7 @@ async def get_flaky_tests(
     project_id: str = Path(..., description="Project ID"),
     threshold: float = Query(0.2, ge=0, le=1, description="Flakiness threshold"),
     limit: int = Query(50, ge=1, le=200, description="Result limit"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Get flaky tests above threshold.
@@ -1126,7 +1126,7 @@ async def get_flaky_tests(
 )
 async def get_test_health_report(
     project_id: str = Path(..., description="Project ID"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Get test health report for a project.
@@ -1168,7 +1168,7 @@ async def get_test_health_report(
 async def create_epic_spec(
     project_id: str = Path(..., description="Project ID"),
     data: EpicSpecCreate | None = Body(None),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Create an epic specification for an item.
@@ -1204,7 +1204,7 @@ async def create_epic_spec(
 async def get_epic_spec(
     project_id: str = Path(..., description="Project ID"),
     spec_id: str = Path(..., description="Epic spec ID"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Get an epic specification by ID.
@@ -1237,7 +1237,7 @@ async def list_epic_specs(
     business_value: str | None = Query(None, description="Filter by business value"),
     limit: int = Query(100, ge=1, le=500, description="Result limit"),
     offset: int = Query(0, ge=0, description="Result offset"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """List epic specifications for a project.
@@ -1271,7 +1271,7 @@ async def update_epic_spec(
     project_id: str = Path(..., description="Project ID"),
     spec_id: str = Path(..., description="Epic spec ID"),
     data: EpicSpecUpdate | None = Body(None),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Update an epic specification.
@@ -1308,7 +1308,7 @@ async def update_epic_spec(
 async def delete_epic_spec(
     project_id: str = Path(..., description="Project ID"),
     spec_id: str = Path(..., description="Epic spec ID"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Delete an epic specification.
@@ -1342,7 +1342,7 @@ async def delete_epic_spec(
 async def create_user_story_spec(
     project_id: str = Path(..., description="Project ID"),
     data: UserStorySpecCreate | None = Body(None),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Create a user story specification for an item.
@@ -1378,7 +1378,7 @@ async def create_user_story_spec(
 async def get_user_story_spec(
     project_id: str = Path(..., description="Project ID"),
     spec_id: str = Path(..., description="User story spec ID"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Get a user story specification by ID.
@@ -1411,7 +1411,7 @@ async def list_user_story_specs(
     priority: str | None = Query(None, description="Filter by priority"),
     limit: int = Query(100, ge=1, le=500, description="Result limit"),
     offset: int = Query(0, ge=0, description="Result offset"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """List user story specifications for a project.
@@ -1445,7 +1445,7 @@ async def update_user_story_spec(
     project_id: str = Path(..., description="Project ID"),
     spec_id: str = Path(..., description="User story spec ID"),
     data: UserStorySpecUpdate | None = Body(None),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Update a user story specification.
@@ -1482,7 +1482,7 @@ async def update_user_story_spec(
 async def delete_user_story_spec(
     project_id: str = Path(..., description="Project ID"),
     spec_id: str = Path(..., description="User story spec ID"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Delete a user story specification.
@@ -1516,7 +1516,7 @@ async def delete_user_story_spec(
 async def create_task_spec(
     project_id: str = Path(..., description="Project ID"),
     data: TaskSpecCreate | None = Body(None),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Create a task specification for an item.
@@ -1552,7 +1552,7 @@ async def create_task_spec(
 async def get_task_spec(
     project_id: str = Path(..., description="Project ID"),
     spec_id: str = Path(..., description="Task spec ID"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Get a task specification by ID.
@@ -1585,7 +1585,7 @@ async def list_task_specs(
     assigned_to: str | None = Query(None, description="Filter by assignee"),
     limit: int = Query(100, ge=1, le=500, description="Result limit"),
     offset: int = Query(0, ge=0, description="Result offset"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """List task specifications for a project.
@@ -1619,7 +1619,7 @@ async def update_task_spec(
     project_id: str = Path(..., description="Project ID"),
     spec_id: str = Path(..., description="Task spec ID"),
     data: TaskSpecUpdate | None = Body(None),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Update a task specification.
@@ -1656,7 +1656,7 @@ async def update_task_spec(
 async def delete_task_spec(
     project_id: str = Path(..., description="Project ID"),
     spec_id: str = Path(..., description="Task spec ID"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Delete a task specification.
@@ -1690,7 +1690,7 @@ async def delete_task_spec(
 async def create_defect_spec(
     project_id: str = Path(..., description="Project ID"),
     data: DefectSpecCreate | None = Body(None),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Create a defect specification for an item.
@@ -1726,7 +1726,7 @@ async def create_defect_spec(
 async def get_defect_spec(
     project_id: str = Path(..., description="Project ID"),
     spec_id: str = Path(..., description="Defect spec ID"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Get a defect specification by ID.
@@ -1760,7 +1760,7 @@ async def list_defect_specs(
     resolution_status: str | None = Query(None, description="Filter by resolution status"),
     limit: int = Query(100, ge=1, le=500, description="Result limit"),
     offset: int = Query(0, ge=0, description="Result offset"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """List defect specifications for a project.
@@ -1795,7 +1795,7 @@ async def update_defect_spec(
     project_id: str = Path(..., description="Project ID"),
     spec_id: str = Path(..., description="Defect spec ID"),
     data: DefectSpecUpdate | None = Body(None),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Update a defect specification.
@@ -1832,7 +1832,7 @@ async def update_defect_spec(
 async def delete_defect_spec(
     project_id: str = Path(..., description="Project ID"),
     spec_id: str = Path(..., description="Defect spec ID"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Delete a defect specification.
@@ -1860,7 +1860,7 @@ async def delete_defect_spec(
 async def get_critical_defects(
     project_id: str = Path(..., description="Project ID"),
     limit: int = Query(50, ge=1, le=200, description="Result limit"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Get critical/blocker defects for a project.
@@ -1895,7 +1895,7 @@ async def get_critical_defects(
 )
 async def get_item_spec_stats(
     project_id: str = Path(..., description="Project ID"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Get aggregate statistics across all item spec types.
@@ -1930,7 +1930,7 @@ async def get_item_spec_stats(
 )
 async def get_requirement_quality_stats(
     project_id: str = Path(..., description="Project ID"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Get requirement quality statistics for a project.
@@ -1959,7 +1959,7 @@ async def get_requirement_quality_stats(
 )
 async def get_test_health_stats(
     project_id: str = Path(..., description="Project ID"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Get test health statistics for a project.
@@ -1988,7 +1988,7 @@ async def get_test_health_stats(
 )
 async def get_defect_metrics(
     project_id: str = Path(..., description="Project ID"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Get defect metrics for a project.
@@ -2075,7 +2075,7 @@ async def analyze_ears_pattern(
     project_id: str = Path(..., description="Project ID"),
     spec_id: str = Path(..., description="Requirement spec ID"),
     request: AnalyzeEARSRequest | None = Body(None),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Analyze EARS (Easy Approach to Requirements Syntax) pattern.
@@ -2120,14 +2120,14 @@ async def analyze_ears_pattern(
 
         raw_components = ears_analysis.get("components", {})
         components = {
-            k: EARSComponent(**v) if isinstance(v, dict) else v
+            k: EARSComponent(**v) if isinstance(v, dict[str, Any]) else v
             for k, v in raw_components.items()
         }
 
         suggestions: list[str] = []
         for key in ("validation_issues", "improvement_suggestions", "ambiguous_terms"):
             val = ears_analysis.get(key, [])
-            if isinstance(val, list):
+            if isinstance(val, list[Any]):
                 suggestions.extend(str(x) for x in val)
             elif val:
                 suggestions.append(str(val))
@@ -2162,7 +2162,7 @@ async def analyze_quality_dimensions(
     project_id: str = Path(..., description="Project ID"),
     spec_id: str = Path(..., description="Requirement spec ID"),
     request: AnalyzeQualityRequest | None = Body(None),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Analyze ISO 29148 quality dimensions.
@@ -2205,7 +2205,7 @@ async def analyze_quality_dimensions(
         dims = quality_analysis.get("dimension_scores", quality_analysis.get("dimensions", {}))
         return QualityScoreResponse(
             spec_id=spec_id,
-            dimensions={k: float(v) for k, v in dims.items()} if isinstance(dims, dict) else {},
+            dimensions={k: float(v) for k, v in dims.items()} if isinstance(dims, dict[str, Any]) else {},
             dimension_details=[],  # build from quality_analysis if needed
             overall_score=float(quality_analysis.get("overall_score", 0.0)),
             grade=grade,
@@ -2236,7 +2236,7 @@ async def get_version_chain(
     ),
     spec_id: str = Path(..., description="Spec ID"),
     limit: int = Query(50, ge=1, le=200, description="Max chain entries"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Get blockchain-style version chain history.
@@ -2304,7 +2304,7 @@ async def verify_baseline(
     ),
     spec_id: str = Path(..., description="Spec ID"),
     baseline_root: str = Query(..., description="Merkle root to verify against"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Verify spec against a baseline using Merkle proof.
@@ -2394,7 +2394,7 @@ async def get_merkle_proof(
     baseline_id: str = Query(
         None, description="Baseline ID to get proof from (optional, uses latest if not specified)"
     ),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Generate Merkle proof for the specification.
@@ -2479,7 +2479,7 @@ async def get_content_address(
         description="Spec type",
     ),
     spec_id: str = Path(..., description="Spec ID"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Get IPFS-style content addressing information.
@@ -2529,7 +2529,7 @@ async def analyze_flakiness(
     project_id: str = Path(..., description="Project ID"),
     spec_id: str = Path(..., description="Test spec ID"),
     request: AnalyzeFlakinessRequest | None = Body(None),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Analyze test flakiness using Meta's probabilistic model.
@@ -2597,7 +2597,7 @@ async def analyze_odc_classification(
     project_id: str = Path(..., description="Project ID"),
     spec_id: str = Path(..., description="Defect spec ID"),
     request: AnalyzeODCRequest | None = Body(None),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Classify defect using IBM Orthogonal Defect Classification.
@@ -2668,7 +2668,7 @@ async def analyze_cvss_score(
     project_id: str = Path(..., description="Project ID"),
     spec_id: str = Path(..., description="Defect spec ID"),
     request: AnalyzeCVSSRequest | None = Body(None),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Calculate CVSS security score for security-related defects.
@@ -2735,7 +2735,7 @@ async def analyze_impact(
     ),
     spec_id: str = Path(..., description="Spec ID"),
     request: AnalyzeImpactRequest | None = None,
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Analyze impact of changes using graph traversal.
@@ -2824,7 +2824,7 @@ async def calculate_prioritization(
     ),
     spec_id: str = Path(..., description="Spec ID"),
     request: CalculatePrioritizationRequest | None = None,
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Calculate WSJF, RICE, and MoSCoW prioritization.
@@ -2913,7 +2913,7 @@ async def calculate_prioritization(
 async def analyze_coverage_gaps(
     project_id: str = Path(..., description="Project ID"),
     request: AnalyzeCoverageGapsRequest | None = None,
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Analyze test coverage gaps across requirements.
@@ -2992,7 +2992,7 @@ async def analyze_coverage_gaps(
 async def analyze_suspect_links(
     project_id: str = Path(..., description="Project ID"),
     request: AnalyzeSuspectLinksRequest | None = None,
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Detect suspect traceability links.
@@ -3068,7 +3068,7 @@ async def analyze_similarity(
     ),
     spec_id: str = Path(..., description="Spec ID"),
     request: AnalyzeSimilarityRequest | None = None,
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Find semantically similar specifications.

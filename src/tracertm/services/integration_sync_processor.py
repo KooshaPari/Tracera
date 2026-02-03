@@ -200,7 +200,7 @@ class IntegrationSyncProcessor:
             status = "done" if state == "closed" else "todo"
             assignee = issue.get("assignee") or {}
             owner_name = assignee.get("login")
-            labels = [label.get("name") for label in issue.get("labels", []) if isinstance(label, dict)]
+            labels = [label.get("name") for label in issue.get("labels", []) if isinstance(label, dict[str, Any])]
             item_metadata = {
                 "external_system": "github",
                 "repo_full_name": repo_full_name,

@@ -5,9 +5,13 @@
  * Provides type-safe worker communication with automatic cleanup
  */
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { proxy, wrap } from "comlink";
 import type { Remote } from "comlink";
+import { proxy, wrap } from "comlink";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { DataTransformWorkerAPI } from "../workers/data-transform.worker";
+import type { ExportImportWorkerAPI } from "../workers/export-import.worker";
+import type { GraphLayoutWorkerAPI } from "../workers/graph-layout.worker";
+import type { SearchIndexWorkerAPI } from "../workers/search-index.worker";
 
 export interface UseWorkerOptions {
 	autoTerminate?: boolean;
@@ -15,9 +19,9 @@ export interface UseWorkerOptions {
 }
 
 export interface WorkerStatus {
+	error: Error | null;
 	isLoading: boolean;
 	isReady: boolean;
-	error: Error | null;
 	progress: number;
 }
 
@@ -28,7 +32,7 @@ export interface WorkerStatus {
  * @param options - Worker options
  * @returns Worker API, status, and control functions
  */
-export function useWorker<T extends object>(
+export const useWorker = <T extends object>(
 	workerFactory: () => Worker,
 	options: UseWorkerOptions = {},
 ): {
@@ -36,10 +40,10 @@ export function useWorker<T extends object>(
 	status: WorkerStatus;
 	terminate: () => void;
 	reset: () => void;
-} {
+} => {
 	const workerRef = useRef<Worker | null>(null);
 	const apiRef = useRef<Remote<T> | null>(null);
-	const terminateTimeoutRef = useRef<number | null>(null);
+	const terminateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 	const [status, setStatus] = useState<WorkerStatus>({
 		error: null,
@@ -58,11 +62,9 @@ export function useWorker<T extends object>(
 			try {
 				setStatus((prev) => ({ ...prev, isLoading: true, error: null }));
 
-				// Create worker
 				const worker = workerFactory();
 				workerRef.current = worker;
 
-				// Wrap with Comlink
 				const api = wrap<T>(worker);
 				apiRef.current = api;
 
@@ -86,7 +88,7 @@ export function useWorker<T extends object>(
 			}
 		};
 
-		undefined;
+		void initWorker();
 
 		return () => {
 			mounted = false;
@@ -112,7 +114,7 @@ export function useWorker<T extends object>(
 			clearTimeout(terminateTimeoutRef.current);
 		}
 
-		terminateTimeoutRef.current = globalThis.setTimeout(() => {
+		terminateTimeoutRef.current = setTimeout(() => {
 			if (workerRef.current) {
 				workerRef.current.terminate();
 				workerRef.current = null;
@@ -155,10 +157,10 @@ export function useWorker<T extends object>(
 /**
  * Hook for using a worker with progress tracking
  */
-export function useWorkerWithProgress<T extends object>(
+export const useWorkerWithProgress = <T extends object>(
 	workerFactory: () => Worker,
 	options: UseWorkerOptions = {},
-) {
+) => {
 	const { worker, status, terminate, reset } = useWorker<T>(
 		workerFactory,
 		options,
@@ -186,39 +188,24 @@ export function useWorkerWithProgress<T extends object>(
 /**
  * Hook for feature detection
  */
-export function useWorkerSupport() {
+export const useWorkerSupport = () => {
 	const [supported, setSupported] = useState(false);
 	const [checked, setChecked] = useState(false);
 
 	useEffect(() => {
 		const checkSupport = () => {
 			const hasWorker = typeof Worker !== "undefined";
-			//       Const _hasSharedArrayBuffer = typeof SharedArrayBuffer !== 'undefined';
-
 			setSupported(hasWorker);
 			setChecked(true);
-
-			if (!hasWorker) {
-			}
 		};
 
 		checkSupport();
 	}, []);
 
 	return { checked, supported };
-}
+};
 
-/**
- * Factory functions for specific workers
- * Types are imported directly so the worker module namespace is resolved.
- */
-
-import type { GraphLayoutWorkerAPI } from "../workers/graph-layout.worker";
-import type { DataTransformWorkerAPI } from "../workers/data-transform.worker";
-import type { ExportImportWorkerAPI } from "../workers/export-import.worker";
-import type { SearchIndexWorkerAPI } from "../workers/search-index.worker";
-
-export function useGraphLayoutWorker(options?: UseWorkerOptions) {
+export const useGraphLayoutWorker = (options?: UseWorkerOptions) => {
 	return useWorkerWithProgress<GraphLayoutWorkerAPI>(
 		() =>
 			new Worker(
@@ -229,8 +216,8 @@ export function useGraphLayoutWorker(options?: UseWorkerOptions) {
 	);
 }
 
-export function useDataTransformWorker(options?: UseWorkerOptions) {
-	return useWorkerWithProgress<DataTransformWorkerAPI>(
+export const useDataTransformWorker = (options?: UseWorkerOptions) =>
+	useWorkerWithProgress<DataTransformWorkerAPI>(
 		() =>
 			new Worker(
 				new URL("../workers/data-transform.worker.ts", import.meta.url),
@@ -238,10 +225,9 @@ export function useDataTransformWorker(options?: UseWorkerOptions) {
 			),
 		options,
 	);
-}
 
-export function useExportImportWorker(options?: UseWorkerOptions) {
-	return useWorkerWithProgress<ExportImportWorkerAPI>(
+export const useExportImportWorker = (options?: UseWorkerOptions) =>
+	useWorkerWithProgress<ExportImportWorkerAPI>(
 		() =>
 			new Worker(
 				new URL("../workers/export-import.worker.ts", import.meta.url),
@@ -249,10 +235,9 @@ export function useExportImportWorker(options?: UseWorkerOptions) {
 			),
 		options,
 	);
-}
 
-export function useSearchIndexWorker(options?: UseWorkerOptions) {
-	return useWorkerWithProgress<SearchIndexWorkerAPI>(
+export const useSearchIndexWorker = (options?: UseWorkerOptions) =>
+	useWorkerWithProgress<SearchIndexWorkerAPI>(
 		() =>
 			new Worker(
 				new URL("../workers/search-index.worker.ts", import.meta.url),
@@ -260,4 +245,3 @@ export function useSearchIndexWorker(options?: UseWorkerOptions) {
 			),
 		options,
 	);
-}

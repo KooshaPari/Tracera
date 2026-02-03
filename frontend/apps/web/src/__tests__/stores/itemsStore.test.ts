@@ -3,7 +3,7 @@
  */
 
 import { beforeEach, describe, expect, it } from "vitest";
-import { useItemsStore } from "../../stores/itemsStore";
+import { useItemsStore } from "../../stores/items-store";
 import { createMockItem } from "../mocks/data";
 
 describe("itemsStore", () => {

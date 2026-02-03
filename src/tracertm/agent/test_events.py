@@ -2,7 +2,10 @@
 
 This test module verifies that all agent lifecycle events are properly
 published to NATS with correct payload formats and subject patterns.
+
+Note: Uses /tmp paths for test data - safe in test context.
 """
+# ruff: noqa: S108
 
 import json
 from typing import Any

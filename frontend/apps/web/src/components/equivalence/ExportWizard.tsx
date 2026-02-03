@@ -1,6 +1,7 @@
 import { AlertCircle, Download, Loader2 } from "lucide-react";
 import type { FC } from "react";
 import { useEffect, useMemo, useState } from "react";
+import { clientCore } from "@/api/client-core";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -14,7 +15,6 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { clientCore } from "@/api/client-core";
 import { logger } from "@/lib/logger";
 
 const { getAuthHeaders } = clientCore;
@@ -57,6 +57,9 @@ interface ExportStats {
 	perspectives: number;
 	averageConfidence: number;
 }
+
+const toBoolean = (checked: boolean | "indeterminate"): boolean =>
+	Boolean(checked);
 
 const formatSize = (bytes: number): string => {
 	let size = bytes;
@@ -118,6 +121,281 @@ const runDefaultExport = async (
 	downloadExportBlob(blob, `equivalence-${projectName}-${date}.${config.format}`);
 };
 
+const useExportStats = (isOpen: boolean, projectId: string) => {
+	const [stats, setStats] = useState<ExportStats | null>(null);
+	const [error, setError] = useState<string | null>(null);
+
+	useEffect(() => {
+		let isMounted = true;
+		if (!isOpen || stats) {
+			return () => {
+				isMounted = false;
+			};
+		}
+		fetchExportStats(projectId)
+			.then((data) => {
+				if (isMounted) {
+					setStats(data);
+				}
+			})
+			.catch((fetchError) => {
+				logger.error("Failed to fetch export statistics:", fetchError);
+				if (isMounted) {
+					setError("Failed to load export statistics");
+				}
+			});
+		return () => {
+			isMounted = false;
+		};
+	}, [isOpen, projectId, stats]);
+
+	return { stats, error, setError };
+};
+
+const useExportOptions = () => {
+	const [format, setFormat] = useState<ExportFormat>("json");
+	const [includeEmbeddings, setIncludeEmbeddings] = useState(false);
+	const [includeMetadata, setIncludeMetadata] = useState(true);
+	const [includeItemInfo, setIncludeItemInfo] = useState(true);
+	const [pretty, setPretty] = useState(true);
+
+	const handleFormatChange = (value: string) => {
+		setFormat(value as ExportFormat);
+	};
+
+	const handleEmbeddingsChange = (checked: boolean | "indeterminate") => {
+		setIncludeEmbeddings(toBoolean(checked));
+	};
+
+	const handleItemInfoChange = (checked: boolean | "indeterminate") => {
+		setIncludeItemInfo(toBoolean(checked));
+	};
+
+	const handleMetadataChange = (checked: boolean | "indeterminate") => {
+		setIncludeMetadata(toBoolean(checked));
+	};
+
+	const handlePrettyChange = (checked: boolean | "indeterminate") => {
+		setPretty(toBoolean(checked));
+	};
+
+	return {
+		format,
+		includeEmbeddings,
+		includeItemInfo,
+		includeMetadata,
+		pretty,
+		handleEmbeddingsChange,
+		handleFormatChange,
+		handleItemInfoChange,
+		handleMetadataChange,
+		handlePrettyChange,
+	};
+};
+
+const useExportStep = () => {
+	const [step, setStep] = useState<ExportStep>("options");
+	const goToOptions = () => setStep("options");
+	const goToReview = () => setStep("review");
+	return { step, goToOptions, goToReview };
+};
+
+const useEstimatedSize = (
+	stats: ExportStats | null,
+	includeEmbeddings: boolean,
+): string =>
+	useMemo(() => {
+		if (!stats) {
+			return "Calculating...";
+		}
+		const baseSize =
+			(stats.concepts + stats.projections + stats.links) *
+			ESTIMATED_BYTES_PER_ITEM;
+		const embeddingsSize = includeEmbeddings
+			? stats.concepts * EMBEDDING_BYTES_PER_CONCEPT
+			: 0;
+		return formatSize(baseSize + embeddingsSize);
+	}, [includeEmbeddings, stats]);
+
+const useExportActions = (
+	config: ExportConfig,
+	projectId: string,
+	projectName: string,
+	onClose: () => void,
+	onExport: ExportWizardProps["onExport"],
+	resetStep: () => void,
+	setError: (value: string | null) => void,
+) => {
+	const [isLoading, setIsLoading] = useState(false);
+
+	const handleClose = () => {
+		resetStep();
+		setError(null);
+		onClose();
+	};
+
+	const handleExport = async () => {
+		setIsLoading(true);
+		setError(null);
+		try {
+			if (onExport) {
+				await onExport(config);
+			} else {
+				await runDefaultExport(projectId, projectName, config);
+			}
+			onClose();
+		} catch (exportError) {
+			setError(
+				exportError instanceof Error ? exportError.message : "Export failed",
+			);
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
+	return { handleClose, handleExport, isLoading };
+};
+
+type FormatSelectorProps = {
+	format: ExportFormat;
+	onChange: (value: string) => void;
+};
+
+type CheckboxRowProps = {
+	id: string;
+	label: string;
+	checked: boolean;
+	onChange: (checked: boolean | "indeterminate") => void;
+};
+
+type OptionsSectionProps = {
+	includeEmbeddings: boolean;
+	includeItemInfo: boolean;
+	includeMetadata: boolean;
+	pretty: boolean;
+	onEmbeddingsChange: (checked: boolean | "indeterminate") => void;
+	onItemInfoChange: (checked: boolean | "indeterminate") => void;
+	onMetadataChange: (checked: boolean | "indeterminate") => void;
+	onPrettyChange: (checked: boolean | "indeterminate") => void;
+};
+
+type OptionsStepProps = {
+	error: string | null;
+	stats: ExportStats | null;
+	format: ExportFormat;
+	includeEmbeddings: boolean;
+	includeItemInfo: boolean;
+	includeMetadata: boolean;
+	pretty: boolean;
+	estimatedSize: string;
+	onFormatChange: (value: string) => void;
+	onEmbeddingsChange: (checked: boolean | "indeterminate") => void;
+	onItemInfoChange: (checked: boolean | "indeterminate") => void;
+	onMetadataChange: (checked: boolean | "indeterminate") => void;
+	onPrettyChange: (checked: boolean | "indeterminate") => void;
+};
+
+type ReviewOptionsListProps = {
+	includeEmbeddings: boolean;
+	includeItemInfo: boolean;
+	includeMetadata: boolean;
+	pretty: boolean;
+};
+
+type ReviewStepProps = {
+	format: ExportFormat;
+	estimatedSize: string;
+	includeEmbeddings: boolean;
+	includeItemInfo: boolean;
+	includeMetadata: boolean;
+	pretty: boolean;
+};
+
+type ExportFooterProps = {
+	step: ExportStep;
+	isLoading: boolean;
+	onBack: () => void;
+	onClose: () => void;
+	onExport: () => void;
+	onNext: () => void;
+};
+
+type ExportWizardBodyProps = {
+	optionsProps: OptionsStepProps;
+	reviewProps: ReviewStepProps;
+	step: ExportStep;
+};
+
+type ExportWizardLayoutProps = {
+	bodyProps: ExportWizardBodyProps;
+	footerProps: ExportFooterProps;
+	isOpen: boolean;
+	onClose: () => void;
+	projectName: string;
+};
+
+type ExportOptionsState = {
+	format: ExportFormat;
+	includeEmbeddings: boolean;
+	includeItemInfo: boolean;
+	includeMetadata: boolean;
+	pretty: boolean;
+	handleEmbeddingsChange: (checked: boolean | "indeterminate") => void;
+	handleFormatChange: (value: string) => void;
+	handleItemInfoChange: (checked: boolean | "indeterminate") => void;
+	handleMetadataChange: (checked: boolean | "indeterminate") => void;
+	handlePrettyChange: (checked: boolean | "indeterminate") => void;
+};
+
+const buildBodyProps = (params: {
+	error: string | null;
+	estimatedSize: string;
+	options: ExportOptionsState;
+	stats: ExportStats | null;
+	step: ExportStep;
+}): ExportWizardBodyProps => ({
+	optionsProps: {
+		error: params.error,
+		stats: params.stats,
+		format: params.options.format,
+		includeEmbeddings: params.options.includeEmbeddings,
+		includeItemInfo: params.options.includeItemInfo,
+		includeMetadata: params.options.includeMetadata,
+		pretty: params.options.pretty,
+		estimatedSize: params.estimatedSize,
+		onFormatChange: params.options.handleFormatChange,
+		onEmbeddingsChange: params.options.handleEmbeddingsChange,
+		onItemInfoChange: params.options.handleItemInfoChange,
+		onMetadataChange: params.options.handleMetadataChange,
+		onPrettyChange: params.options.handlePrettyChange,
+	},
+	reviewProps: {
+		format: params.options.format,
+		estimatedSize: params.estimatedSize,
+		includeEmbeddings: params.options.includeEmbeddings,
+		includeItemInfo: params.options.includeItemInfo,
+		includeMetadata: params.options.includeMetadata,
+		pretty: params.options.pretty,
+	},
+	step: params.step,
+});
+
+const buildFooterProps = (params: {
+	isLoading: boolean;
+	onBack: () => void;
+	onClose: () => void;
+	onExport: () => void;
+	onNext: () => void;
+	step: ExportStep;
+}): ExportFooterProps => ({
+	step: params.step,
+	isLoading: params.isLoading,
+	onBack: params.onBack,
+	onClose: params.onClose,
+	onExport: params.onExport,
+	onNext: params.onNext,
+});
+
 const SummaryItem: FC<{ label: string; value: number }> = ({ label, value }) => (
 	<div>
 		<div className="font-medium">{value}</div>
@@ -137,10 +415,7 @@ const ExportSummary: FC<{ stats: ExportStats }> = ({ stats }) => (
 	</div>
 );
 
-const FormatSelector: FC<{
-	format: ExportFormat;
-	onChange: (value: string) => void;
-}> = ({ format, onChange }) => (
+const FormatSelector: FC<FormatSelectorProps> = ({ format, onChange }) => (
 	<div>
 		<Label className="text-base font-semibold mb-3 block">Format</Label>
 		<RadioGroup value={format} onValueChange={onChange}>
@@ -160,12 +435,7 @@ const FormatSelector: FC<{
 	</div>
 );
 
-const CheckboxRow: FC<{
-	id: string;
-	label: string;
-	checked: boolean;
-	onChange: (checked: boolean | "indeterminate") => void;
-}> = ({ id, label, checked, onChange }) => (
+const CheckboxRow: FC<CheckboxRowProps> = ({ id, label, checked, onChange }) => (
 	<div className="flex items-center space-x-2">
 		<Checkbox id={id} checked={checked} onCheckedChange={onChange} />
 		<Label htmlFor={id} className="font-normal cursor-pointer">
@@ -174,16 +444,7 @@ const CheckboxRow: FC<{
 	</div>
 );
 
-const OptionsSection: FC<{
-	includeEmbeddings: boolean;
-	includeItemInfo: boolean;
-	includeMetadata: boolean;
-	pretty: boolean;
-	onEmbeddingsChange: (checked: boolean | "indeterminate") => void;
-	onItemInfoChange: (checked: boolean | "indeterminate") => void;
-	onMetadataChange: (checked: boolean | "indeterminate") => void;
-	onPrettyChange: (checked: boolean | "indeterminate") => void;
-}> = ({
+const OptionsSection: FC<OptionsSectionProps> = ({
 	includeEmbeddings,
 	includeItemInfo,
 	includeMetadata,
@@ -233,21 +494,7 @@ const EstimatedSizeRow: FC<{ size: string }> = ({ size }) => (
 	</div>
 );
 
-const OptionsStep: FC<{
-	error: string | null;
-	stats: ExportStats | null;
-	format: ExportFormat;
-	includeEmbeddings: boolean;
-	includeItemInfo: boolean;
-	includeMetadata: boolean;
-	pretty: boolean;
-	estimatedSize: string;
-	onFormatChange: (value: string) => void;
-	onEmbeddingsChange: (checked: boolean | "indeterminate") => void;
-	onItemInfoChange: (checked: boolean | "indeterminate") => void;
-	onMetadataChange: (checked: boolean | "indeterminate") => void;
-	onPrettyChange: (checked: boolean | "indeterminate") => void;
-}> = ({
+const OptionsStep: FC<OptionsStepProps> = ({
 	error,
 	stats,
 	format,
@@ -287,12 +534,12 @@ const OptionsStep: FC<{
 	</div>
 );
 
-const ReviewOptionsList: FC<{
-	includeEmbeddings: boolean;
-	includeItemInfo: boolean;
-	includeMetadata: boolean;
-	pretty: boolean;
-}> = ({ includeEmbeddings, includeItemInfo, includeMetadata, pretty }) => (
+const ReviewOptionsList: FC<ReviewOptionsListProps> = ({
+	includeEmbeddings,
+	includeItemInfo,
+	includeMetadata,
+	pretty,
+}) => (
 	<ul className="text-sm space-y-1 list-disc list-inside">
 		{includeEmbeddings && <li>Embeddings</li>}
 		{includeMetadata && <li>Metadata & Evidence</li>}
@@ -301,14 +548,7 @@ const ReviewOptionsList: FC<{
 	</ul>
 );
 
-const ReviewStep: FC<{
-	format: ExportFormat;
-	estimatedSize: string;
-	includeEmbeddings: boolean;
-	includeItemInfo: boolean;
-	includeMetadata: boolean;
-	pretty: boolean;
-}> = ({
+const ReviewStep: FC<ReviewStepProps> = ({
 	format,
 	estimatedSize,
 	includeEmbeddings,
@@ -348,14 +588,14 @@ const ReviewStep: FC<{
 	</div>
 );
 
-const ExportFooter: FC<{
-	step: ExportStep;
-	isLoading: boolean;
-	onBack: () => void;
-	onClose: () => void;
-	onExport: () => void;
-	onNext: () => void;
-}> = ({ step, isLoading, onBack, onClose, onExport, onNext }) => (
+const ExportFooter: FC<ExportFooterProps> = ({
+	step,
+	isLoading,
+	onBack,
+	onClose,
+	onExport,
+	onNext,
+}) => (
 	<DialogFooter>
 		{step === "options" ? (
 			<>
@@ -389,6 +629,39 @@ const ExportFooter: FC<{
 	</DialogFooter>
 );
 
+const ExportWizardBody: FC<ExportWizardBodyProps> = ({
+	optionsProps,
+	reviewProps,
+	step,
+}) =>
+	step === "options" ? (
+		<OptionsStep {...optionsProps} />
+	) : (
+		<ReviewStep {...reviewProps} />
+	);
+
+const ExportWizardLayout: FC<ExportWizardLayoutProps> = ({
+	bodyProps,
+	footerProps,
+	isOpen,
+	onClose,
+	projectName,
+}) => (
+	<Dialog open={isOpen} onOpenChange={onClose}>
+		<DialogContent className="max-w-2xl">
+			<DialogHeader>
+				<DialogTitle>Export Equivalence Data</DialogTitle>
+				<DialogDescription>
+					Export canonical concepts, projections, and equivalence links from{" "}
+					{projectName}
+				</DialogDescription>
+			</DialogHeader>
+			<ExportWizardBody {...bodyProps} />
+			<ExportFooter {...footerProps} />
+		</DialogContent>
+	</Dialog>
+);
+
 export const ExportWizard: FC<ExportWizardProps> = ({
 	projectId,
 	projectName,
@@ -396,160 +669,21 @@ export const ExportWizard: FC<ExportWizardProps> = ({
 	onClose,
 	onExport,
 }) => {
-	const [step, setStep] = useState<ExportStep>("options");
-	const [format, setFormat] = useState<ExportFormat>("json");
-	const [includeEmbeddings, setIncludeEmbeddings] = useState(false);
-	const [includeMetadata, setIncludeMetadata] = useState(true);
-	const [includeItemInfo, setIncludeItemInfo] = useState(true);
-	const [pretty, setPretty] = useState(true);
-	const [isLoading, setIsLoading] = useState(false);
-	const [error, setError] = useState<string | null>(null);
-	const [stats, setStats] = useState<ExportStats | null>(null);
-
-	useEffect(() => {
-		let isMounted = true;
-		if (!isOpen || stats) {
-			return () => {
-				isMounted = false;
-			};
-		}
-		fetchExportStats(projectId)
-			.then((data) => {
-				if (isMounted) {
-					setStats(data);
-				}
-			})
-			.catch((fetchError) => {
-				logger.error("Failed to fetch export statistics:", fetchError);
-				if (isMounted) {
-					setError("Failed to load export statistics");
-				}
-			});
-		return () => {
-			isMounted = false;
-		};
-	}, [isOpen, projectId, stats]);
-
-	const estimatedSize = useMemo(() => {
-		if (!stats) {
-			return "Calculating...";
-		}
-		const baseSize =
-			(stats.concepts + stats.projections + stats.links) *
-			ESTIMATED_BYTES_PER_ITEM;
-		const embeddingsSize = includeEmbeddings
-			? stats.concepts * EMBEDDING_BYTES_PER_CONCEPT
-			: 0;
-		return formatSize(baseSize + embeddingsSize);
-	}, [includeEmbeddings, stats]);
-
-	const handleFormatChange = (value: string) => {
-		setFormat(value as ExportFormat);
-	};
-
-	const handleEmbeddingsChange = (checked: boolean | "indeterminate") => {
-		setIncludeEmbeddings(Boolean(checked));
-	};
-
-	const handleItemInfoChange = (checked: boolean | "indeterminate") => {
-		setIncludeItemInfo(Boolean(checked));
-	};
-
-	const handleMetadataChange = (checked: boolean | "indeterminate") => {
-		setIncludeMetadata(Boolean(checked));
-	};
-
-	const handlePrettyChange = (checked: boolean | "indeterminate") => {
-		setPretty(Boolean(checked));
-	};
-
-	const handleNext = () => {
-		setStep("review");
-	};
-
-	const handleBack = () => {
-		setStep("options");
-	};
-
-	const handleClose = () => {
-		setStep("options");
-		setError(null);
-		onClose();
-	};
-
-	const handleExport = async () => {
-		setIsLoading(true);
-		setError(null);
-		try {
-			const config: ExportConfig = {
-				format,
-				includeEmbeddings,
-				includeItemInfo,
-				includeMetadata,
-				pretty,
-			};
-			if (onExport) {
-				await onExport(config);
-			} else {
-				await runDefaultExport(projectId, projectName, config);
-			}
-			onClose();
-		} catch (exportError) {
-			setError(
-				exportError instanceof Error ? exportError.message : "Export failed",
-			);
-		} finally {
-			setIsLoading(false);
-		}
-	};
-
-	return (
-		<Dialog open={isOpen} onOpenChange={handleClose}>
-			<DialogContent className="max-w-2xl">
-				<DialogHeader>
-					<DialogTitle>Export Equivalence Data</DialogTitle>
-					<DialogDescription>
-						Export canonical concepts, projections, and equivalence links from {" "}
-						{projectName}
-					</DialogDescription>
-				</DialogHeader>
-
-				{step === "options" ? (
-					<OptionsStep
-						error={error}
-						stats={stats}
-						format={format}
-						includeEmbeddings={includeEmbeddings}
-						includeItemInfo={includeItemInfo}
-						includeMetadata={includeMetadata}
-						pretty={pretty}
-						estimatedSize={estimatedSize}
-						onFormatChange={handleFormatChange}
-						onEmbeddingsChange={handleEmbeddingsChange}
-						onItemInfoChange={handleItemInfoChange}
-						onMetadataChange={handleMetadataChange}
-						onPrettyChange={handlePrettyChange}
-					/>
-				) : (
-					<ReviewStep
-						format={format}
-						estimatedSize={estimatedSize}
-						includeEmbeddings={includeEmbeddings}
-						includeItemInfo={includeItemInfo}
-						includeMetadata={includeMetadata}
-						pretty={pretty}
-					/>
-				)}
-
-				<ExportFooter
-					step={step}
-					isLoading={isLoading}
-					onBack={handleBack}
-					onClose={handleClose}
-					onExport={handleExport}
-					onNext={handleNext}
-				/>
-			</DialogContent>
-		</Dialog>
+	const { stats, error, setError } = useExportStats(isOpen, projectId);
+	const { step, goToOptions, goToReview } = useExportStep();
+	const options = useExportOptions();
+	const estimatedSize = useEstimatedSize(stats, options.includeEmbeddings);
+	const config: ExportConfig = { format: options.format, includeEmbeddings: options.includeEmbeddings, includeItemInfo: options.includeItemInfo, includeMetadata: options.includeMetadata, pretty: options.pretty };
+	const { handleClose, handleExport, isLoading } = useExportActions(
+		config,
+		projectId,
+		projectName,
+		onClose,
+		onExport,
+		goToOptions,
+		setError,
 	);
+	const bodyProps = buildBodyProps({ error, estimatedSize, options, stats, step });
+	const footerProps = buildFooterProps({ isLoading, onBack: goToOptions, onClose: handleClose, onExport: handleExport, onNext: goToReview, step });
+	return <ExportWizardLayout bodyProps={bodyProps} footerProps={footerProps} isOpen={isOpen} onClose={handleClose} projectName={projectName} />;
 };

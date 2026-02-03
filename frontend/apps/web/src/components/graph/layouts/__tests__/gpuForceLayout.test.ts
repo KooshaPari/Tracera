@@ -2,12 +2,12 @@
  * Unit Tests for GPU Force-Directed Layout
  */
 
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { Edge, Node } from "@xyflow/react";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
-	GPUForceLayout,
 	disposeGPUForceLayout,
 	getGPUForceLayout,
+	GPUForceLayout,
 } from "../gpuForceLayout";
 
 describe(GPUForceLayout, () => {
@@ -50,13 +50,13 @@ describe(GPUForceLayout, () => {
 			});
 
 			expect(result).toHaveLength(3);
-			expect(result[0].id).toBe("1");
-			expect(result[1].id).toBe("2");
-			expect(result[2].id).toBe("3");
+			expect(result[0]?.id).toBe("1");
+			expect(result[1]?.id).toBe("2");
+			expect(result[2]?.id).toBe("3");
 
 			// Positions should be updated
-			expect(result[0].position.x).not.toBe(0);
-			expect(result[0].position.y).not.toBe(0);
+			expect(result[0]?.position.x).not.toBe(0);
+			expect(result[0]?.position.y).not.toBe(0);
 		});
 
 		it("should handle disconnected nodes", async () => {
@@ -75,10 +75,15 @@ describe(GPUForceLayout, () => {
 			expect(result).toHaveLength(3);
 
 			// Disconnected nodes should repel each other
-			const dist12 = Math.sqrt(
-				Math.pow(result[0].position.x - result[1].position.x, 2) +
-					Math.pow(result[0].position.y - result[1].position.y, 2),
-			);
+			const n0 = result[0];
+			const n1 = result[1];
+			const dist12 =
+				n0 && n1
+					? Math.hypot(
+							n0.position.x - n1.position.x,
+							n0.position.y - n1.position.y,
+						)
+					: 0;
 
 			expect(dist12).toBeGreaterThan(0);
 		});
@@ -105,15 +110,25 @@ describe(GPUForceLayout, () => {
 				repulsionStrength: 1000,
 			});
 
-			const dist1 = Math.sqrt(
-				Math.pow(result1[0].position.x - result1[1].position.x, 2) +
-					Math.pow(result1[0].position.y - result1[1].position.y, 2),
-			);
+			const r1a = result1[0];
+			const r1b = result1[1];
+			const dist1 =
+				r1a && r1b
+					? Math.hypot(
+							r1a.position.x - r1b.position.x,
+							r1a.position.y - r1b.position.y,
+						)
+					: 0;
 
-			const dist2 = Math.sqrt(
-				Math.pow(result2[0].position.x - result2[1].position.x, 2) +
-					Math.pow(result2[0].position.y - result2[1].position.y, 2),
-			);
+			const r2a = result2[0];
+			const r2b = result2[1];
+			const dist2 =
+				r2a && r2b
+					? Math.hypot(
+							r2a.position.x - r2b.position.x,
+							r2a.position.y - r2b.position.y,
+						)
+					: 0;
 
 			// Higher repulsion should result in larger distance
 			expect(dist1).toBeGreaterThan(dist2);
@@ -139,15 +154,25 @@ describe(GPUForceLayout, () => {
 				iterations: 100,
 			});
 
-			const dist1 = Math.sqrt(
-				Math.pow(result1[0].position.x - result1[1].position.x, 2) +
-					Math.pow(result1[0].position.y - result1[1].position.y, 2),
-			);
+			const r1a = result1[0];
+			const r1b = result1[1];
+			const dist1 =
+				r1a && r1b
+					? Math.hypot(
+							r1a.position.x - r1b.position.x,
+							r1a.position.y - r1b.position.y,
+						)
+					: 0;
 
-			const dist2 = Math.sqrt(
-				Math.pow(result2[0].position.x - result2[1].position.x, 2) +
-					Math.pow(result2[0].position.y - result2[1].position.y, 2),
-			);
+			const r2a = result2[0];
+			const r2b = result2[1];
+			const dist2 =
+				r2a && r2b
+					? Math.hypot(
+							r2a.position.x - r2b.position.x,
+							r2a.position.y - r2b.position.y,
+						)
+					: 0;
 
 			// Higher attraction should result in smaller distance
 			expect(dist1).toBeLessThan(dist2);
@@ -228,13 +253,14 @@ describe(GPUForceLayout, () => {
 			expect(result2).toHaveLength(50);
 
 			// Results should be similar but not identical
-			const pos1 = result1[0].position;
-			const pos2 = result2[0].position;
+			const pos1 = result1[0]?.position;
+			const pos2 = result2[0]?.position;
+			if (!pos1 || !pos2) {
+				throw new Error("Expected result positions");
+			}
 
 			// Positions should be in same general area (within 50%)
-			const dist = Math.sqrt(
-				Math.pow(pos1.x - pos2.x, 2) + Math.pow(pos1.y - pos2.y, 2),
-			);
+			const dist = Math.hypot(pos1.x - pos2.x, pos1.y - pos2.y);
 			const maxDist = Math.max(
 				Math.abs(pos1.x),
 				Math.abs(pos1.y),
@@ -255,8 +281,8 @@ describe(GPUForceLayout, () => {
 			const result = await layout.simulate(nodes, []);
 
 			expect(result).toHaveLength(1);
-			expect(result[0].position.x).toBeGreaterThanOrEqual(0);
-			expect(result[0].position.y).toBeGreaterThanOrEqual(0);
+			expect(result[0]?.position.x).toBeGreaterThanOrEqual(0);
+			expect(result[0]?.position.y).toBeGreaterThanOrEqual(0);
 		});
 
 		it("should handle two nodes with edge", async () => {
@@ -274,10 +300,15 @@ describe(GPUForceLayout, () => {
 			expect(result).toHaveLength(2);
 
 			// Nodes should be close but not overlapping
-			const dist = Math.sqrt(
-				Math.pow(result[0].position.x - result[1].position.x, 2) +
-					Math.pow(result[0].position.y - result[1].position.y, 2),
-			);
+			const n0 = result[0];
+			const n1 = result[1];
+			const dist =
+				n0 && n1
+					? Math.hypot(
+							n0.position.x - n1.position.x,
+							n0.position.y - n1.position.y,
+						)
+					: 0;
 
 			expect(dist).toBeGreaterThan(10);
 			expect(dist).toBeLessThan(500);
@@ -344,8 +375,8 @@ describe(GPUForceLayout, () => {
 
 			const result = await layout.simulate(nodes, []);
 
-			expect(result[0].data).toEqual({ label: "Test Node", value: 42 });
-			expect(result[0].type).toBe("custom");
+			expect(result[0]?.data).toEqual({ label: "Test Node", value: 42 });
+			expect(result[0]?.type).toBe("custom");
 		});
 	});
 });

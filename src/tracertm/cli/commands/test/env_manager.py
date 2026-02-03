@@ -111,7 +111,7 @@ class TestEnvManager:
             Configuration dictionary
         """
         config = cls.CONFIGS[environment]
-        if isinstance(config, dict):
+        if isinstance(config, dict[str, Any]):
             return dict(config)
         return cast(dict[str, Any], {})
 

@@ -3,6 +3,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from typing import Any
 from tracertm.api.deps import auth_guard, get_db
 from tracertm.schemas.execution import (
     ExecutionArtifactCreate,
@@ -30,7 +31,7 @@ router = APIRouter(prefix="/projects/{project_id}/executions", tags=["Executions
 async def create_execution(
     project_id: str,
     execution_create: ExecutionCreate,
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Create a new execution."""
@@ -61,7 +62,7 @@ async def list_executions(
     execution_type: str | None = Query(None, description="Filter by type"),
     limit: int = Query(100, ge=1, le=1000),
     offset: int = Query(0, ge=0),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """List executions for a project."""
@@ -93,7 +94,7 @@ async def list_executions(
 async def get_execution(
     project_id: str,
     execution_id: str,
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Get execution details by ID."""
@@ -122,7 +123,7 @@ async def start_execution(
     project_id: str,
     execution_id: str,
     start_data: ExecutionStart,
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Start an execution (transition from pending to running)."""
@@ -161,7 +162,7 @@ async def complete_execution(
     project_id: str,
     execution_id: str,
     complete_data: ExecutionComplete,
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Complete an execution (stop container, record duration, mark status)."""
@@ -200,7 +201,7 @@ async def list_artifacts(
     project_id: str,
     execution_id: str,
     artifact_type: str | None = Query(None, description="Filter by artifact type"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """List artifacts for an execution."""
@@ -228,7 +229,7 @@ async def add_artifact(
     project_id: str,
     execution_id: str,
     artifact_create: ExecutionArtifactCreate,
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Add an artifact to an execution."""
@@ -265,7 +266,7 @@ async def add_artifact(
 )
 async def get_execution_config(
     project_id: str,
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Get execution environment configuration for a project."""
@@ -285,7 +286,7 @@ async def get_execution_config(
 async def update_execution_config(
     project_id: str,
     config_update: ExecutionEnvironmentConfigUpdate,
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Update execution environment configuration for a project."""
@@ -313,7 +314,7 @@ async def update_execution_config(
 async def generate_vhs_tape(
     project_id: str,
     execution_id: str = Query(..., description="Execution ID to generate tape for"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Generate a VHS tape file (terminal recording) from execution artifacts."""

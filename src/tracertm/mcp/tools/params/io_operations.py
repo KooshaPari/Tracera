@@ -118,7 +118,7 @@ async def import_manage(
 
     def _load_data() -> dict[str, Any]:
         data = payload.get("data")
-        if isinstance(data, dict):
+        if isinstance(data, dict[str, Any]):
             return data
         content = payload.get("content")
         path = payload.get("path")
@@ -147,7 +147,7 @@ async def import_manage(
         errors, _ = import_cmd_module._validate_import_data(data)
         if errors:
             return _wrap({"errors": errors, "valid": False}, ctx, action)
-        if not data.get("project") or not isinstance(data.get("items"), list):
+        if not data.get("project") or not isinstance(data.get("items"), list[Any]):
             return _wrap({"errors": ["Canonical format requires project and items"], "valid": False}, ctx, action)
         import_cmd_module._import_data(data, None, "full")
         return _wrap(

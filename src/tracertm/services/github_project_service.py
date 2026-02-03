@@ -4,6 +4,7 @@ Service for GitHub Projects auto-linking and synchronization.
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from typing import Any
 from tracertm.clients.github_client import GitHubClient
 from tracertm.repositories.github_project_repository import GitHubProjectRepository
 
@@ -105,7 +106,7 @@ class GitHubProjectService:
         github_project_id: str,
         github_project_number: int,
         auto_sync: bool = True,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Manually link a GitHub Project to a TraceRTM project."""
         github_project = await self.repo.create(
             project_id=project_id,

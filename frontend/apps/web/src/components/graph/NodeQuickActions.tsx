@@ -7,7 +7,7 @@ import {
 	PopoverTrigger,
 } from "@tracertm/ui/components/Popover";
 import { FileEdit, Link2, Tag } from "lucide-react";
-import { memo, useState } from "react";
+import { memo, useCallback, useState } from "react";
 
 interface NodeQuickActionsProps {
 	nodeId: string;
@@ -16,136 +16,162 @@ interface NodeQuickActionsProps {
 	onEditNote: (nodeId: string, note: string) => void;
 }
 
-export const NodeQuickActions = memo(function NodeQuickActions({
-	nodeId,
-	onAddLink,
-	onAddTag,
-	onEditNote,
-}: NodeQuickActionsProps) {
+type ActionPopoverProps = {
+	buttonLabel: string;
+	buttonTitle: string;
+	children: React.ReactNode;
+	icon: React.ReactNode;
+};
+
+const ActionPopover = ({
+	buttonLabel,
+	buttonTitle,
+	children,
+	icon,
+}: ActionPopoverProps) => (
+	<Popover>
+		<PopoverTrigger asChild>
+			<Button
+				size="sm"
+				variant="ghost"
+				className="h-6 w-6 p-0"
+				aria-label={buttonLabel}
+				title={buttonTitle}
+			>
+				{icon}
+			</Button>
+		</PopoverTrigger>
+		<PopoverContent className="w-64">{children}</PopoverContent>
+	</Popover>
+);
+
+type ActionInputProps = {
+	buttonLabel: string;
+	buttonTitle: string;
+	icon: React.ReactNode;
+	inputId: string;
+	inputLabel: string;
+	placeholder: string;
+	value: string;
+	onChange: (value: string) => void;
+	onConfirm: () => void;
+};
+
+const ActionInput = ({
+	buttonLabel,
+	buttonTitle,
+	icon,
+	inputId,
+	inputLabel,
+	placeholder,
+	value,
+	onChange,
+	onConfirm,
+}: ActionInputProps) => {
+	const handleChange = useCallback(
+		(event: React.ChangeEvent<HTMLInputElement>) => {
+			onChange(event.target.value);
+		},
+		[onChange],
+	);
+
+	return (
+		<ActionPopover buttonLabel={buttonLabel} buttonTitle={buttonTitle} icon={icon}>
+			<div className="space-y-2">
+				<Label htmlFor={inputId}>{inputLabel}</Label>
+				<div className="flex gap-2">
+					<Input
+						id={inputId}
+						placeholder={placeholder}
+						value={value}
+						onChange={handleChange}
+						aria-label={inputLabel}
+					/>
+					<Button size="sm" onClick={onConfirm} aria-label={buttonLabel}>
+						Add
+					</Button>
+				</div>
+			</div>
+		</ActionPopover>
+	);
+};
+
+const NodeQuickActions = memo(({ nodeId, onAddLink, onAddTag, onEditNote }: NodeQuickActionsProps) => {
 	const [linkTarget, setLinkTarget] = useState("");
 	const [tag, setTag] = useState("");
 	const [note, setNote] = useState("");
 
+	const handleAddLink = useCallback(() => {
+		onAddLink(nodeId, linkTarget);
+		setLinkTarget("");
+	}, [linkTarget, nodeId, onAddLink]);
+
+	const handleAddTag = useCallback(() => {
+		onAddTag(nodeId, tag);
+		setTag("");
+	}, [nodeId, onAddTag, tag]);
+
+	const handleSaveNote = useCallback(() => {
+		onEditNote(nodeId, note);
+		setNote("");
+	}, [nodeId, note, onEditNote]);
+
+	const handleNoteChange = useCallback(
+		(event: React.ChangeEvent<HTMLInputElement>) => {
+			setNote(event.target.value);
+		},
+		[],
+	);
+
 	return (
 		<div className="flex gap-1" role="group" aria-label="Node quick actions">
-			{/* Add Link */}
-			<Popover>
-				<PopoverTrigger asChild>
-					<Button
-						size="sm"
-						variant="ghost"
-						className="h-6 w-6 p-0"
-						aria-label="Add link to another node"
-						title="Add link to another node"
-					>
-						<Link2 className="h-3 w-3" aria-hidden="true" />
-					</Button>
-				</PopoverTrigger>
-				<PopoverContent className="w-64">
-					<div className="space-y-2">
-						<Label htmlFor="link-target">Link to node</Label>
-						<div className="flex gap-2">
-							<Input
-								id="link-target"
-								placeholder="Node ID"
-								value={linkTarget}
-								onChange={(e) => setLinkTarget(e.target.value)}
-								aria-required="true"
-								aria-label="Target node ID for link"
-							/>
-							<Button
-								size="sm"
-								onClick={() => {
-									onAddLink(nodeId, linkTarget);
-									setLinkTarget("");
-								}}
-								aria-label="Confirm link addition"
-							>
-								Add
-							</Button>
-						</div>
-					</div>
-				</PopoverContent>
-			</Popover>
+			<ActionInput
+				buttonLabel="Add link to another node"
+				buttonTitle="Add link to another node"
+				icon={<Link2 className="h-3 w-3" aria-hidden="true" />}
+				inputId="link-target"
+				inputLabel="Link to node"
+				placeholder="Node ID"
+				value={linkTarget}
+				onChange={setLinkTarget}
+				onConfirm={handleAddLink}
+			/>
 
-			{/* Add Tag */}
-			<Popover>
-				<PopoverTrigger asChild>
-					<Button
-						size="sm"
-						variant="ghost"
-						className="h-6 w-6 p-0"
-						aria-label="Add tag to node"
-						title="Add tag to node"
-					>
-						<Tag className="h-3 w-3" aria-hidden="true" />
-					</Button>
-				</PopoverTrigger>
-				<PopoverContent className="w-64">
-					<div className="space-y-2">
-						<Label htmlFor="tag">Add tag</Label>
-						<div className="flex gap-2">
-							<Input
-								id="tag"
-								placeholder="Tag name"
-								value={tag}
-								onChange={(e) => setTag(e.target.value)}
-								aria-required="true"
-								aria-label="Tag name for node"
-							/>
-							<Button
-								size="sm"
-								onClick={() => {
-									onAddTag(nodeId, tag);
-									setTag("");
-								}}
-								aria-label="Confirm tag addition"
-							>
-								Add
-							</Button>
-						</div>
-					</div>
-				</PopoverContent>
-			</Popover>
+			<ActionInput
+				buttonLabel="Add tag to node"
+				buttonTitle="Add tag to node"
+				icon={<Tag className="h-3 w-3" aria-hidden="true" />}
+				inputId="tag"
+				inputLabel="Add tag"
+				placeholder="Tag name"
+				value={tag}
+				onChange={setTag}
+				onConfirm={handleAddTag}
+			/>
 
-			{/* Edit Note */}
-			<Popover>
-				<PopoverTrigger asChild>
-					<Button
-						size="sm"
-						variant="ghost"
-						className="h-6 w-6 p-0"
-						aria-label="Edit note for node"
-						title="Edit note for node"
-					>
-						<FileEdit className="h-3 w-3" aria-hidden="true" />
-					</Button>
-				</PopoverTrigger>
-				<PopoverContent className="w-64">
-					<div className="space-y-2">
-						<Label htmlFor="note">Quick note</Label>
-						<div className="flex gap-2">
-							<Input
-								id="note"
-								placeholder="Add note..."
-								value={note}
-								onChange={(e) => setNote(e.target.value)}
-								aria-label="Quick note for node"
-							/>
-							<Button
-								size="sm"
-								onClick={() => {
-									onEditNote(nodeId, note);
-									setNote("");
-								}}
-								aria-label="Save node note"
-							>
-								Save
-							</Button>
-						</div>
+			<ActionPopover
+				buttonLabel="Edit note for node"
+				buttonTitle="Edit note for node"
+				icon={<FileEdit className="h-3 w-3" aria-hidden="true" />}
+			>
+				<div className="space-y-2">
+					<Label htmlFor="note">Quick note</Label>
+					<div className="flex gap-2">
+						<Input
+							id="note"
+							placeholder="Add note..."
+							value={note}
+							onChange={handleNoteChange}
+							aria-label="Quick note for node"
+						/>
+						<Button size="sm" onClick={handleSaveNote} aria-label="Save node note">
+							Save
+						</Button>
 					</div>
-				</PopoverContent>
-			</Popover>
+				</div>
+			</ActionPopover>
 		</div>
 	);
 });
+
+export { NodeQuickActions };

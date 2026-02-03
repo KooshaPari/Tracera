@@ -5,6 +5,7 @@ Repository for Account model operations.
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from typing import Any
 from tracertm.models.account import Account
 from tracertm.models.account_user import AccountRole, AccountUser
 
@@ -20,7 +21,7 @@ class AccountRepository:
         name: str,
         slug: str,
         account_type: str = "personal",
-        metadata: dict | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> Account:
         """Create a new account."""
         account = Account(
@@ -55,7 +56,7 @@ class AccountRepository:
         account_id: str,
         name: str | None = None,
         slug: str | None = None,
-        metadata: dict | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> Account | None:
         """Update an account."""
         account = await self.get_by_id(account_id)

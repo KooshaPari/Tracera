@@ -57,7 +57,7 @@ def format_response(
         }
 
     # Compression for large responses
-    if compress and isinstance(response, dict):
+    if compress and isinstance(response, dict[str, Any]):
         serialized = json.dumps(response)
         if len(serialized) > compress_threshold:
             compressed = gzip.compress(serialized.encode("utf-8"))

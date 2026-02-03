@@ -141,7 +141,7 @@ navigateToChild(itemId, childIndex, hierarchy)
 
 **Context Management**
 ```typescript
-createDrillDownContext(itemId, items, hierarchy, expandedGroups)
+createDrillDownContext({ itemId, items, hierarchyMap, expandedGroups? })
 // Returns current drill-down state including:
 // - currentLevel, itemId, itemTitle
 // - breadcrumbs, parentInfo
@@ -150,7 +150,7 @@ createDrillDownContext(itemId, items, hierarchy, expandedGroups)
 
 **Grouping for UI**
 ```typescript
-createDrillDownNodeGroups(itemId, items, hierarchy, maxItemsPerGroup)
+createDrillDownNodeGroups({ itemId, items, hierarchyMap, maxItemsPerGroup? })
 // Creates expandable groups for current level
 // Handles splitting large groups automatically
 ```
@@ -243,10 +243,10 @@ const commonGroups = intersectGroupResults(groupingResults);
 
 ```typescript
 const hierarchy = buildHierarchy(items, links);
-const context = createDrillDownContext(itemId, items, hierarchy);
+const context = createDrillDownContext({ itemId, items, hierarchyMap: hierarchy });
 
 if (context.childrenAvailable) {
-  const groups = createDrillDownNodeGroups(itemId, items, hierarchy);
+  const groups = createDrillDownNodeGroups({ itemId, items, hierarchyMap: hierarchy });
   // Render expandable groups for next level
 }
 

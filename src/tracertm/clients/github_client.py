@@ -153,7 +153,7 @@ class GitHubClient:
         self,
         method: str,
         path: str,
-        params: dict | None = None,
+        params: dict[str, Any] | None = None,
         json: dict | None = None,
     ) -> httpx.Response:
         """Perform one request; raises on 5xx so tenacity can retry."""
@@ -167,7 +167,7 @@ class GitHubClient:
         self,
         method: str,
         path: str,
-        params: dict | None = None,
+        params: dict[str, Any] | None = None,
         json: dict | None = None,
     ) -> Any:
         """Make an authenticated request to GitHub API (with wait+retry on 5xx/network)."""
@@ -199,11 +199,11 @@ class GitHubClient:
 
     # ==================== USER & AUTH ====================
 
-    async def get_authenticated_user(self) -> dict:
+    async def get_authenticated_user(self) -> dict[str, Any]:
         """Get the authenticated user's profile."""
         return await self._request("GET", "/user")
 
-    async def get_user(self, username: str) -> dict:
+    async def get_user(self, username: str) -> dict[str, Any]:
         """Get a user's profile."""
         return await self._request("GET", f"/users/{username}")
 
@@ -261,7 +261,7 @@ class GitHubClient:
             },
         )
 
-    async def get_repo(self, owner: str, repo: str) -> dict:
+    async def get_repo(self, owner: str, repo: str) -> dict[str, Any]:
         """Get repository details."""
         return await self._request("GET", f"/repos/{owner}/{repo}")
 
@@ -274,7 +274,7 @@ class GitHubClient:
         gitignore_template: str | None = None,
         license_template: str | None = None,
         org: str | None = None,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Create a new repository.
 
         Args:
@@ -312,7 +312,7 @@ class GitHubClient:
         order: str = "desc",
         per_page: int = 30,
         page: int = 1,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Search repositories.
 
         Args:
@@ -342,7 +342,7 @@ class GitHubClient:
         installation_id: int | None = None,
         per_page: int = 30,
         page: int = 1,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """List repositories accessible to a GitHub App installation.
 
         Args:
@@ -396,7 +396,7 @@ class GitHubClient:
 
         return await self._request("GET", f"/repos/{owner}/{repo}/issues", params=params)
 
-    async def get_issue(self, owner: str, repo: str, issue_number: int) -> dict:
+    async def get_issue(self, owner: str, repo: str, issue_number: int) -> dict[str, Any]:
         """Get a single issue."""
         return await self._request("GET", f"/repos/{owner}/{repo}/issues/{issue_number}")
 
@@ -409,7 +409,7 @@ class GitHubClient:
         labels: list[str] | None = None,
         assignees: list[str] | None = None,
         milestone: int | None = None,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Create an issue."""
         data: dict[str, Any] = {"title": title}
         if body:
@@ -434,7 +434,7 @@ class GitHubClient:
         labels: list[str] | None = None,
         assignees: list[str] | None = None,
         milestone: int | None = None,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Update an issue."""
         data: dict[str, Any] = {}
         if title is not None:
@@ -458,7 +458,7 @@ class GitHubClient:
         repo: str,
         issue_number: int,
         body: str,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Add a comment to an issue."""
         return await self._request(
             "POST",
@@ -491,7 +491,7 @@ class GitHubClient:
             },
         )
 
-    async def get_pull_request(self, owner: str, repo: str, pull_number: int) -> dict:
+    async def get_pull_request(self, owner: str, repo: str, pull_number: int) -> dict[str, Any]:
         """Get a single pull request."""
         return await self._request("GET", f"/repos/{owner}/{repo}/pulls/{pull_number}")
 
@@ -504,7 +504,7 @@ class GitHubClient:
         body: str | None = None,
         state: str | None = None,
         base: str | None = None,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Update a pull request."""
         data: dict[str, Any] = {}
         if title is not None:
@@ -532,7 +532,7 @@ class GitHubClient:
         secret: str,
         events: list[str] | None = None,
         active: bool = True,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Create a repository webhook."""
         return await self._request(
             "POST",
@@ -563,7 +563,7 @@ class GitHubClient:
         order: str = "desc",
         per_page: int = 30,
         page: int = 1,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Search issues and pull requests."""
         return await self._request(
             "GET",
@@ -579,7 +579,7 @@ class GitHubClient:
 
     # ==================== PROJECTS (V2 GraphQL) ====================
 
-    async def graphql_query(self, query: str, variables: dict | None = None) -> dict:
+    async def graphql_query(self, query: str, variables: dict | None = None) -> dict[str, Any]:
         """Execute a GraphQL query against the GitHub API."""
         client = await self._get_client()
         response = await client.post(

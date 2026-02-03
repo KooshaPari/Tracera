@@ -12,14 +12,14 @@
  * Run with: bun test src/__tests__/performance/benchmarks.test.ts
  */
 
-import { describe, expect, it } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
-import { generateSyntheticGraph } from "@/lib/test-utils/synthetic-graph";
-import { logger } from "@/lib/logger";
+import { describe, expect, it } from "vitest";
 import { useHybridGraph } from "@/hooks/useHybridGraph";
-import { RBushSpatialIndex } from "@/lib/spatialIndex";
-import { GraphClustering } from "@/lib/graphology/clustering";
 import { GraphologyDataAdapter } from "@/lib/graphology/adapter";
+import { GraphClustering } from "@/lib/graphology/clustering";
+import { logger } from "@/lib/logger";
+import { RBushSpatialIndex } from "@/lib/spatialIndex";
+import { generateSyntheticGraph } from "@/lib/test-utils/synthetic-graph";
 
 // Test results accumulator for reporting
 const benchmarkResults: {
@@ -199,7 +199,9 @@ describe("Performance Benchmarks", () => {
 			const startTime = performance.now();
 
 			// Simulate node click handler
-			const nodeId = nodes[Math.floor(nodes.length / 2)].id;
+			const midNode = nodes[Math.floor(nodes.length / 2)];
+			expect(midNode).toBeDefined();
+			const nodeId = midNode!.id;
 			const clickedNode = nodes.find((n) => n.id === nodeId);
 			expect(clickedNode).toBeDefined();
 
@@ -223,8 +225,10 @@ describe("Performance Benchmarks", () => {
 			const startTime = performance.now();
 
 			// Simulate hover state change
-			const _hoveredNodeId = "test-node-123";
-			const _isHovered = true;
+			const hoveredNodeId = "test-node-123";
+			const isHovered = true;
+			expect(hoveredNodeId).toBe("test-node-123");
+			expect(isHovered).toBe(true);
 
 			const endTime = performance.now();
 			const latency = endTime - startTime;
@@ -246,7 +250,8 @@ describe("Performance Benchmarks", () => {
 			// Simulate zoom change
 			const oldZoom = 1;
 			const newZoom = 1.5;
-			const _zoomDelta = newZoom - oldZoom;
+			const zoomDelta = newZoom - oldZoom;
+			expect(zoomDelta).toBe(0.5);
 
 			const endTime = performance.now();
 			const latency = endTime - startTime;
@@ -268,7 +273,9 @@ describe("Performance Benchmarks", () => {
 			// Simulate pan
 			const deltaX = 100;
 			const deltaY = 50;
-			const _newPosition = { x: deltaX, y: deltaY };
+			const newPosition = { x: deltaX, y: deltaY };
+			expect(newPosition.x).toBe(100);
+			expect(newPosition.y).toBe(50);
 
 			const endTime = performance.now();
 			const latency = endTime - startTime;

@@ -3,6 +3,7 @@ Pydantic schemas for Account API.
 """
 
 from pydantic import BaseModel, Field
+from typing import Any
 
 
 class AccountCreate(BaseModel):
@@ -18,7 +19,7 @@ class AccountUpdate(BaseModel):
 
     name: str | None = Field(None, min_length=1, max_length=255)
     slug: str | None = Field(None, min_length=1, max_length=255)
-    metadata: dict | None = None
+    metadata: dict[str, Any] | None = None
 
 
 class AccountResponse(BaseModel):

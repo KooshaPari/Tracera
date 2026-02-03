@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { useForm, type FieldErrors, type UseFormRegister } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
@@ -20,7 +20,7 @@ interface CreateProjectFormProps {
 }
 
 const createProjectFormProps = ({
-	onSubmit,
+	_onSubmit,
 	onCancel,
 	isLoading,
 }: CreateProjectFormProps) => {
@@ -54,8 +54,8 @@ const ProjectNameField = ({
 	errors,
 	register,
 }: {
-	errors: { name?: { message?: string } };
-	register: (name: string) => { name: string };
+	errors: FieldErrors<ProjectFormData>;
+	register: UseFormRegister<ProjectFormData>;
 }) => (
 	<div>
 		<label htmlFor="name" className="block text-sm font-medium">
@@ -77,8 +77,8 @@ const DescriptionField = ({
 	errors,
 	register,
 }: {
-	errors: { description?: { message?: string } };
-	register: (name: string) => { name: string };
+	errors: FieldErrors<ProjectFormData>;
+	register: UseFormRegister<ProjectFormData>;
 }) => (
 	<div>
 		<label htmlFor="description" className="block text-sm font-medium">Description</label>
@@ -129,7 +129,7 @@ const CreateProjectContent = ({
 	onCancel,
 	onSubmit,
 	register,
-}: ReturnType<typeof createProjectFormProps>) => (
+}: ReturnType<typeof createProjectFormProps> & { onSubmit: (data: ProjectFormData) => void }) => (
 	<form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">
 		<ProjectNameField errors={errors} register={register} />
 		<DescriptionField errors={errors} register={register} />

@@ -1,4 +1,3 @@
-/* oxlint-disable oxc/no-async-await */
 /**
  * Agent session API - create and manage per-session sandboxes for chat.
  * Used by chat to run tools in a scoped filesystem per conversation.
@@ -6,7 +5,7 @@
 
 import client from "./client";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+const API_URL = client.getBackendURL();
 
 interface AgentSessionCreateRequest {
 	project_id?: string | null;
@@ -40,32 +39,39 @@ const isAgentSessionResponse = (
 	);
 };
 
-const createAgentSession = async (
+const createAgentSession = (
 	body: AgentSessionCreateRequest,
 ): Promise<AgentSessionResponse> => {
-	const headers = Object.assign(
-		{ "Content-Type": "application/json" },
-		client.getAuthHeaders(),
-	);
-	const res = await fetch(`${API_URL}/api/v1/agent/sessions`, {
+	const headers: Record<string, string> = {
+		"Content-Type": "application/json",
+	};
+	Object.assign(headers, client.getAuthHeaders());
+
+	return fetch(`${API_URL}/api/v1/agent/sessions`, {
 		body: JSON.stringify(body),
 		headers,
 		method: "POST",
-	});
-	if (!res.ok) {
-		const text = await res.text();
-		throw new Error(`Agent session create failed: ${res.status} ${text}`);
-	}
-	const data = await res.json();
-	if (!isAgentSessionResponse(data)) {
-		throw new Error("Invalid agent session response");
-	}
-	return data;
+	})
+		.then((res) => {
+			if (!res.ok) {
+				return res.text().then((text) => {
+					throw new Error(
+						`Agent session create failed: ${res.status} ${text}`,
+					);
+				});
+			}
+			return res.json();
+		})
+		.then((data: unknown) => {
+			if (!isAgentSessionResponse(data)) {
+				throw new Error("Invalid agent session response");
+			}
+			return data;
+		});
 };
 
 const agentApi = {
 	createAgentSession,
 };
 
-// eslint-disable-next-line import/no-default-export
-export default agentApi;
+export { agentApi, createAgentSession };

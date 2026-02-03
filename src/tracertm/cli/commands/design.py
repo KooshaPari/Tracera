@@ -117,7 +117,7 @@ def _load_designs_config(trace_dir: Path) -> dict[Any, Any]:
         raise typer.Exit(code=1)
 
     loaded = yaml.safe_load(designs_path.read_text(encoding="utf-8"))
-    return loaded if isinstance(loaded, dict) else {}
+    return loaded if isinstance(loaded, dict[str, Any]) else {}
 
 
 def _save_designs_config(trace_dir: Path, config: dict[Any, Any]) -> None:
@@ -153,7 +153,7 @@ def _load_components_config(trace_dir: Path) -> dict[Any, Any]:
         return dict(COMPONENTS_YAML_TEMPLATE)
 
     loaded = yaml.safe_load(components_path.read_text(encoding="utf-8"))
-    return loaded if isinstance(loaded, dict) else {}
+    return loaded if isinstance(loaded, dict[str, Any]) else {}
 
 
 def _save_components_config(trace_dir: Path, config: dict[Any, Any]) -> None:
@@ -169,7 +169,7 @@ def _save_components_config(trace_dir: Path, config: dict[Any, Any]) -> None:
 
     # Update metadata
     metadata = config.get("metadata")
-    if isinstance(metadata, dict):
+    if isinstance(metadata, dict[str, Any]):
         metadata["last_updated"] = datetime.now().isoformat()
         metadata["total_components"] = len(config.get("components", []))
 
@@ -264,9 +264,9 @@ def init_design_integration(
         figma_token = typer.prompt("Figma access token", default="", hide_input=True)
 
     # Create designs.yaml
-    designs_config = dict(DESIGNS_YAML_TEMPLATE)
+    designs_config = dict[str, Any](DESIGNS_YAML_TEMPLATE)
     figma_config = designs_config.get("figma")
-    if isinstance(figma_config, dict):
+    if isinstance(figma_config, dict[str, Any]):
         figma_config["file_key"] = figma_file_key
         figma_config["access_token"] = figma_token
 
@@ -274,9 +274,9 @@ def init_design_integration(
         _save_designs_config(trace_dir, designs_config)
 
         # Create components.yaml
-        components_config = dict(COMPONENTS_YAML_TEMPLATE)
+        components_config = dict[str, Any](COMPONENTS_YAML_TEMPLATE)
         metadata = components_config.get("metadata")
-        if isinstance(metadata, dict):
+        if isinstance(metadata, dict[str, Any]):
             metadata["created_at"] = datetime.now().isoformat()
 
         _save_components_config(trace_dir, components_config)

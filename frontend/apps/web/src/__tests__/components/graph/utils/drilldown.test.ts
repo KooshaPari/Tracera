@@ -163,7 +163,11 @@ describe("Drill-Down Navigation", () => {
 	describe(createDrillDownContext, () => {
 		it("should create context for current item", () => {
 			const hierarchy = buildHierarchy(items, links);
-			const context = createDrillDownContext("mod", items, hierarchy);
+			const context = createDrillDownContext({
+				hierarchyMap: hierarchy,
+				itemId: "mod",
+				items,
+			});
 
 			expect(context.itemId).toBe("mod");
 			expect(context.itemTitle).toBe("auth-module");
@@ -172,7 +176,11 @@ describe("Drill-Down Navigation", () => {
 
 		it("should include parent information", () => {
 			const hierarchy = buildHierarchy(items, links);
-			const context = createDrillDownContext("mod", items, hierarchy);
+			const context = createDrillDownContext({
+				hierarchyMap: hierarchy,
+				itemId: "mod",
+				items,
+			});
 
 			expect(context.parentId).toBe("repo");
 			expect(context.parentTitle).toBe("main-repo");
@@ -181,16 +189,28 @@ describe("Drill-Down Navigation", () => {
 		it("should indicate children availability", () => {
 			const hierarchy = buildHierarchy(items, links);
 
-			const parentContext = createDrillDownContext("mod", items, hierarchy);
+			const parentContext = createDrillDownContext({
+				hierarchyMap: hierarchy,
+				itemId: "mod",
+				items,
+			});
 			expect(parentContext.childrenAvailable).toBe(true);
 
-			const leafContext = createDrillDownContext("func", items, hierarchy);
+			const leafContext = createDrillDownContext({
+				hierarchyMap: hierarchy,
+				itemId: "func",
+				items,
+			});
 			expect(leafContext.childrenAvailable).toBe(false);
 		});
 
 		it("should include breadcrumbs", () => {
 			const hierarchy = buildHierarchy(items, links);
-			const context = createDrillDownContext("file", items, hierarchy);
+			const context = createDrillDownContext({
+				hierarchyMap: hierarchy,
+				itemId: "file",
+				items,
+			});
 
 			expect(context.breadcrumbs.length).toBeGreaterThan(0);
 		});
@@ -199,21 +219,33 @@ describe("Drill-Down Navigation", () => {
 	describe(createDrillDownNodeGroups, () => {
 		it("should create groups for item children", () => {
 			const hierarchy = buildHierarchy(items, links);
-			const groups = createDrillDownNodeGroups("proj", items, hierarchy);
+			const groups = createDrillDownNodeGroups({
+				hierarchyMap: hierarchy,
+				itemId: "proj",
+				items,
+			});
 
 			expect(groups.length).toBeGreaterThan(0);
 		});
 
 		it("should not create groups for leaf items", () => {
 			const hierarchy = buildHierarchy(items, links);
-			const groups = createDrillDownNodeGroups("func", items, hierarchy);
+			const groups = createDrillDownNodeGroups({
+				hierarchyMap: hierarchy,
+				itemId: "func",
+				items,
+			});
 
 			expect(groups.length).toBe(0);
 		});
 
 		it("should include drill-down level in groups", () => {
 			const hierarchy = buildHierarchy(items, links);
-			const groups = createDrillDownNodeGroups("proj", items, hierarchy);
+			const groups = createDrillDownNodeGroups({
+				hierarchyMap: hierarchy,
+				itemId: "proj",
+				items,
+			});
 
 			for (const group of groups) {
 				expect(group.level).toBeDefined();
@@ -222,7 +254,12 @@ describe("Drill-Down Navigation", () => {
 
 		it("should handle max items per group", () => {
 			const hierarchy = buildHierarchy(items, links);
-			const groups = createDrillDownNodeGroups("proj", items, hierarchy, 1);
+			const groups = createDrillDownNodeGroups({
+				hierarchyMap: hierarchy,
+				itemId: "proj",
+				items,
+				maxItemsPerGroup: 1,
+			});
 
 			// With maxItemsPerGroup=1, single-child groups may split
 			for (const group of groups) {

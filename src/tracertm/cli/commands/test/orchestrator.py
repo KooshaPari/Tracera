@@ -16,7 +16,7 @@ import sys
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterable, List, Optional
+from typing import Iterable, List, Optional, Any
 
 from tracertm.cli.commands.test.dependencies import TestDependencies
 
@@ -208,14 +208,14 @@ class TestOrchestrator:
         stages: List[TestStage] = []
         for config in stage_configs:
             dep_map = config.get("dependency_map")
-            if not isinstance(dep_map, dict):
+            if not isinstance(dep_map, dict[str, Any]):
                 dep_map = None
             extra_paths_obj = config.get("extra_paths", [])
-            extra_paths = extra_paths_obj if isinstance(extra_paths_obj, list) else []
+            extra_paths = extra_paths_obj if isinstance(extra_paths_obj, list[Any]) else []
             paths = _collect_existing_paths(dep_map, extra_paths)
 
             ignore_list_obj = config.get("ignore", [])
-            ignore_list = ignore_list_obj if isinstance(ignore_list_obj, list) else []
+            ignore_list = ignore_list_obj if isinstance(ignore_list_obj, list[Any]) else []
             ignore_paths = _filter_existing_paths(ignore_list)
 
             if not paths:
@@ -225,7 +225,7 @@ class TestOrchestrator:
             display = config.get("display", "")
             desc = config.get("description", "")
             deps = config.get("depends_on", [])
-            if isinstance(name, str) and isinstance(display, str) and isinstance(desc, str) and isinstance(deps, list):
+            if isinstance(name, str) and isinstance(display, str) and isinstance(desc, str) and isinstance(deps, list[Any]):
                 stage = TestStage(
                     name=name,
                     display_name=display,
@@ -342,7 +342,7 @@ def _files_from_dependencies(dep_map: dict[str, dict[str, object]] | None) -> li
         return []
     files: set[str] = set()
     for info in dep_map.values():
-        if isinstance(info, dict):
+        if isinstance(info, dict[str, Any]):
             file_val = info.get("file")
             if isinstance(file_val, str):
                 files.add(file_val)

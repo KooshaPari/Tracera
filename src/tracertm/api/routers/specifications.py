@@ -12,6 +12,7 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from typing import Any
 from tracertm.api.deps import auth_guard, get_db, get_event_bus
 from tracertm.infrastructure.event_bus import EventBus
 from tracertm.infrastructure.event_publisher_utils import safe_publish
@@ -94,7 +95,7 @@ router = APIRouter(prefix="/specifications", tags=["Specifications"])
 @router.post("/adrs", response_model=ADRResponse, status_code=201)
 async def create_adr_spec(
     adr: ADRCreate,
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     event_bus: EventBus = Depends(get_event_bus),
 ):
@@ -154,7 +155,7 @@ async def create_adr_spec(
 @router.get("/adrs/{adr_id}", response_model=ADRResponse)
 async def get_adr_spec(
     adr_id: str = Path(..., description="ADR ID"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Retrieve a specific ADR by ID.
@@ -181,7 +182,7 @@ async def get_adr_spec(
 async def update_adr_spec(
     adr_id: str = Path(..., description="ADR ID"),
     updates: ADRUpdate | None = Body(None),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     event_bus: EventBus = Depends(get_event_bus),
 ):
@@ -231,7 +232,7 @@ async def update_adr_spec(
 @router.delete("/adrs/{adr_id}", status_code=204)
 async def delete_adr_spec(
     adr_id: str = Path(..., description="ADR ID"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     event_bus: EventBus = Depends(get_event_bus),
 ):
@@ -272,7 +273,7 @@ async def list_adrs_for_project(
     project_id: str = Path(..., description="Project ID"),
     status: str | None = Query(None, description="Filter by ADR status"),
     tags: list[str] | None = Query(None, description="Filter by tags"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """List all ADRs for a project with optional filtering.
@@ -299,7 +300,7 @@ async def list_adrs_for_project(
 @router.post("/adrs/{adr_id}/verify", response_model=VerificationResult)
 async def verify_adr_compliance(
     adr_id: str = Path(..., description="ADR ID"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Verify ADR compliance with decision patterns and traceability.
@@ -371,7 +372,7 @@ async def verify_adr_compliance(
             data={
                 "description": "ADR verification run",
                 "score": score,
-                "performed_by": claims.get("sub") if isinstance(claims, dict) else None,
+                "performed_by": claims.get("sub") if isinstance(claims, dict[str, Any]) else None,
             },
         )
         await db.commit()
@@ -388,7 +389,7 @@ async def verify_adr_compliance(
 @router.post("/contracts", response_model=ContractResponse, status_code=201)
 async def create_contract_spec(
     contract: ContractCreate,
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     event_bus: EventBus = Depends(get_event_bus),
 ):
@@ -447,7 +448,7 @@ async def create_contract_spec(
 @router.get("/contracts/{contract_id}", response_model=ContractResponse)
 async def get_contract_spec(
     contract_id: str = Path(..., description="Contract ID"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Retrieve a specific contract by ID.
@@ -474,7 +475,7 @@ async def get_contract_spec(
 async def update_contract_spec(
     contract_id: str = Path(..., description="Contract ID"),
     updates: ContractUpdate | None = Body(None),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Update a contract.
@@ -510,7 +511,7 @@ async def update_contract_spec(
 @router.delete("/contracts/{contract_id}", status_code=204)
 async def delete_contract_spec(
     contract_id: str = Path(..., description="Contract ID"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Delete a contract.
@@ -535,7 +536,7 @@ async def list_contracts_for_project(
     item_id: str | None = Query(None, description="Filter by item ID"),
     contract_type: str | None = Query(None, description="Filter by contract type"),
     status: str | None = Query(None, description="Filter by status"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """List all contracts for a project with optional filtering.
@@ -563,7 +564,7 @@ async def list_contracts_for_project(
 @router.post("/contracts/{contract_id}/verify", response_model=VerificationResult)
 async def verify_contract_compliance(
     contract_id: str = Path(..., description="Contract ID"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Verify contract compliance and specification completeness.
@@ -631,7 +632,7 @@ async def verify_contract_compliance(
             data={
                 "description": "Contract verification run",
                 "score": score,
-                "performed_by": claims.get("sub") if isinstance(claims, dict) else None,
+                "performed_by": claims.get("sub") if isinstance(claims, dict[str, Any]) else None,
             },
         )
         await db.commit()
@@ -648,7 +649,7 @@ async def verify_contract_compliance(
 @router.post("/features", response_model=FeatureResponse, status_code=201)
 async def create_feature_spec(
     feature: FeatureCreate,
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     event_bus: EventBus = Depends(get_event_bus),
 ):
@@ -707,7 +708,7 @@ async def create_feature_spec(
 async def get_feature_spec(
     feature_id: str = Path(..., description="Feature ID"),
     include_scenarios: bool = Query(False, description="Include associated scenarios"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Retrieve a specific feature by ID.
@@ -743,7 +744,7 @@ async def get_feature_spec(
 async def update_feature_spec(
     feature_id: str = Path(..., description="Feature ID"),
     updates: FeatureUpdate | None = Body(None),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Update a feature.
@@ -782,7 +783,7 @@ async def update_feature_spec(
 @router.delete("/features/{feature_id}", status_code=204)
 async def delete_feature_spec(
     feature_id: str = Path(..., description="Feature ID"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Delete a feature.
@@ -806,7 +807,7 @@ async def list_features_for_project(
     project_id: str = Path(..., description="Project ID"),
     status: str | None = Query(None, description="Filter by status"),
     tags: list[str] | None = Query(None, description="Filter by tags"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """List all features for a project with optional filtering.
@@ -839,7 +840,7 @@ async def list_features_for_project(
 async def create_scenario_spec(
     feature_id: str = Path(..., description="Feature ID"),
     scenario: ScenarioCreate | None = Body(None),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     event_bus: EventBus = Depends(get_event_bus),
 ):
@@ -908,7 +909,7 @@ async def create_scenario_spec(
 async def list_scenarios_for_feature(
     feature_id: str = Path(..., description="Feature ID"),
     status: str | None = Query(None, description="Filter by status"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """List all scenarios for a feature.
@@ -942,7 +943,7 @@ async def list_scenarios_for_feature(
 async def list_scenarios_for_project(
     project_id: str = Path(..., description="Project ID"),
     status: str | None = Query(None, description="Filter by status"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """List all scenarios for a project.
@@ -971,7 +972,7 @@ async def list_scenario_activities_for_project(
     event_type: str | None = Query(None, description="Filter by event type"),
     since: datetime | None = Query(None, description="Return events since this time"),
     until: datetime | None = Query(None, description="Return events until this time"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     repo = EventRepository(db)
@@ -981,11 +982,11 @@ async def list_scenario_activities_for_project(
             "id": str(event.id),
             "scenario_id": event.entity_id,
             "activity_type": event.event_type,
-            "from_value": event.data.get("from_value") if isinstance(event.data, dict) else None,
-            "to_value": event.data.get("to_value") if isinstance(event.data, dict) else None,
-            "description": event.data.get("description") if isinstance(event.data, dict) else None,
-            "performed_by": event.data.get("performed_by") if isinstance(event.data, dict) else None,
-            "metadata": event.data if isinstance(event.data, dict) else {},
+            "from_value": event.data.get("from_value") if isinstance(event.data, dict[str, Any]) else None,
+            "to_value": event.data.get("to_value") if isinstance(event.data, dict[str, Any]) else None,
+            "description": event.data.get("description") if isinstance(event.data, dict[str, Any]) else None,
+            "performed_by": event.data.get("performed_by") if isinstance(event.data, dict[str, Any]) else None,
+            "metadata": event.data if isinstance(event.data, dict[str, Any]) else {},
             "created_at": event.created_at,
         }
         for event in events
@@ -1008,7 +1009,7 @@ async def list_scenario_activities_for_project(
 @router.get("/scenarios/{scenario_id}", response_model=ScenarioResponse)
 async def get_scenario_spec(
     scenario_id: str = Path(..., description="Scenario ID"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Retrieve a specific scenario by ID.
@@ -1036,7 +1037,7 @@ async def get_scenario_activities(
     scenario_id: str = Path(..., description="Scenario ID"),
     limit: int = Query(100, description="Max activities to return"),
     offset: int = Query(0, description="Offset for pagination"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     repo = EventRepository(db)
@@ -1046,11 +1047,11 @@ async def get_scenario_activities(
             "id": str(event.id),
             "scenario_id": scenario_id,
             "activity_type": event.event_type,
-            "from_value": event.data.get("from_value") if isinstance(event.data, dict) else None,
-            "to_value": event.data.get("to_value") if isinstance(event.data, dict) else None,
-            "description": event.data.get("description") if isinstance(event.data, dict) else None,
-            "performed_by": event.data.get("performed_by") if isinstance(event.data, dict) else None,
-            "metadata": event.data if isinstance(event.data, dict) else {},
+            "from_value": event.data.get("from_value") if isinstance(event.data, dict[str, Any]) else None,
+            "to_value": event.data.get("to_value") if isinstance(event.data, dict[str, Any]) else None,
+            "description": event.data.get("description") if isinstance(event.data, dict[str, Any]) else None,
+            "performed_by": event.data.get("performed_by") if isinstance(event.data, dict[str, Any]) else None,
+            "metadata": event.data if isinstance(event.data, dict[str, Any]) else {},
             "created_at": event.created_at,
         }
         for event in events
@@ -1067,7 +1068,7 @@ async def get_scenario_activities(
 async def update_scenario_spec(
     scenario_id: str = Path(..., description="Scenario ID"),
     updates: ScenarioUpdate | None = Body(None),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     event_bus: EventBus = Depends(get_event_bus),
 ):
@@ -1120,7 +1121,7 @@ async def update_scenario_spec(
 @router.delete("/scenarios/{scenario_id}", status_code=204)
 async def delete_scenario_spec(
     scenario_id: str = Path(..., description="Scenario ID"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
     event_bus: EventBus = Depends(get_event_bus),
 ):
@@ -1166,7 +1167,7 @@ async def delete_scenario_spec(
 @router.post("/scenarios/{scenario_id}/run", response_model=ScenarioRunResult)
 async def run_scenario(
     scenario_id: str = Path(..., description="Scenario ID"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Run a scenario and capture results.
@@ -1246,7 +1247,7 @@ async def run_scenario(
 @router.get("/projects/{project_id}/summary", response_model=SpecificationsSummary)
 async def get_specifications_summary(
     project_id: str = Path(..., description="Project ID"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     """Get a summary of all specifications in a project.

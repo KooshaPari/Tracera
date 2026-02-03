@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ScenarioDetailView } from "@/views/ScenarioDetailView";
 import { requireAuth } from "@/lib/route-guards";
+import { ScenarioDetailView } from "@/views/ScenarioDetailView";
 
 export const Route = createFileRoute(
 	"/projects/$projectId/features/$featureId/scenarios/$scenarioId" as any,
@@ -9,6 +9,4 @@ export const Route = createFileRoute(
 	component: ScenarioDetailPage,
 });
 
-function ScenarioDetailPage() {
-	return <ScenarioDetailView />;
-}
+const ScenarioDetailPage = () => <ScenarioDetailView />;

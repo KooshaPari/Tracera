@@ -11,6 +11,7 @@ import tempfile
 import uuid
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 from tracertm.agent.types import (
     SandboxConfig,
@@ -60,7 +61,7 @@ class LocalFilesystemSandboxProvider:
         logger.debug("Local sandbox created: %s at %s", sandbox_id, path)
         return metadata
 
-    async def execute_command(self, sandbox_id: str, command: str) -> dict:
+    async def execute_command(self, sandbox_id: str, command: str) -> dict[str, Any]:
         """Run command in the sandbox root. Returns dict with stdout, stderr, returncode.
 
         The command string is safely parsed into arguments using shlex to prevent
@@ -102,7 +103,7 @@ class LocalFilesystemSandboxProvider:
 
         return await asyncio.to_thread(run)
 
-    async def write_file(self, sandbox_id: str, path: str, content: str) -> dict:
+    async def write_file(self, sandbox_id: str, path: str, content: str) -> dict[str, Any]:
         """Write file under sandbox root. Path is relative to sandbox root."""
         if sandbox_id not in self._metadata:
             raise ValueError(f"Sandbox not found: {sandbox_id}")

@@ -105,7 +105,7 @@ class TraceRTMHttpClient:
                 message = response.text
                 try:
                     payload = response.json()
-                    if isinstance(payload, dict) and payload.get("detail"):
+                    if isinstance(payload, dict[str, Any]) and payload.get("detail"):
                         message = str(payload.get("detail"))
                 except Exception:
                     payload = None
@@ -114,7 +114,7 @@ class TraceRTMHttpClient:
             payload_val: Any | None = None
             try:
                 payload_val = response.json()
-                if isinstance(payload_val, dict) and payload_val.get("detail"):
+                if isinstance(payload_val, dict[str, Any]) and payload_val.get("detail"):
                     message = str(payload_val.get("detail"))
             except Exception:
                 payload_val = None

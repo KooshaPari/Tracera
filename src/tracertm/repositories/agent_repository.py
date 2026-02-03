@@ -7,6 +7,7 @@ from uuid import uuid4
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from typing import Any
 from tracertm.models.agent import Agent
 
 
@@ -21,7 +22,7 @@ class AgentRepository:
         project_id: str | uuid.UUID,
         name: str,
         agent_type: str,
-        metadata: dict | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> Agent:
         """Create a new agent."""
         agent = Agent(

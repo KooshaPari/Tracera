@@ -1,11 +1,10 @@
 "use client";
 
 import "swagger-ui-react/swagger-ui.css";
-
 import { Copy, Download, Moon, Sun } from "lucide-react";
-import { type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
-import SwaggerUI, { type SwaggerUIProps } from "swagger-ui-react";
+import { type ComponentProps, type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { logger } from "@/lib/logger";
+import SwaggerUI from "swagger-ui-react";
 
 interface SwaggerUIWrapperProps {
 	specUrl?: string;
@@ -18,6 +17,16 @@ interface SwaggerUIWrapperProps {
 	requestInterceptor?: SwaggerUIProps["requestInterceptor"];
 	responseInterceptor?: SwaggerUIProps["responseInterceptor"];
 }
+
+type SwaggerUIProps = ComponentProps<typeof SwaggerUI>;
+
+type SwaggerRequest = Parameters<
+	NonNullable<SwaggerUIProps["requestInterceptor"]>
+>[0];
+
+type SwaggerResponse = Parameters<
+	NonNullable<SwaggerUIProps["responseInterceptor"]>
+>[0];
 
 const COPY_RESET_MS = 2000;
 const DEFAULT_MODELS_EXPAND_DEPTH = 1;
@@ -53,6 +62,44 @@ const downloadOpenApiJson = (data: unknown): void => {
 const resolveDarkModePreference = (): boolean =>
 	document.documentElement.classList.contains("dark") ||
 	globalThis.matchMedia("(prefers-color-scheme: dark)").matches;
+
+const writeToClipboard = async (value: string) => {
+	if (navigator.clipboard?.writeText) {
+		await navigator.clipboard.writeText(value);
+		return;
+	}
+
+	const textarea = document.createElement("textarea");
+	textarea.value = value;
+	textarea.setAttribute("readonly", "true");
+	textarea.style.position = "absolute";
+	textarea.style.left = "-9999px";
+	document.body.append(textarea);
+	textarea.select();
+	document.execCommand("copy");
+	document.body.removeChild(textarea);
+};
+
+const fetchSpecFromUrl = async (specUrl?: string) => {
+	if (!specUrl) {
+		return null;
+	}
+
+	const response = await fetch(specUrl);
+	return response.json();
+};
+
+const setHeader = (req: SwaggerRequest, name: string, value: string) => {
+	const headers = req["headers"];
+	if (headers && typeof headers.set === "function") {
+		headers.set(name, value);
+	}
+};
+
+const normalizeSwaggerProps = (props: SwaggerUIWrapperProps) => ({
+	...SWAGGER_DEFAULTS,
+	...props,
+});
 
 const useSpecData = (specUrl?: string, spec?: object) => {
 	const [specData, setSpecData] = useState<object | null>(null);
@@ -105,20 +152,7 @@ const useCopySpecUrl = (specUrl?: string) => {
 
 		const fullUrl = new URL(specUrl, globalThis.location.origin).toString();
 		try {
-			if (navigator.clipboard?.writeText) {
-				await navigator.clipboard.writeText(fullUrl);
-			} else {
-				const textarea = document.createElement("textarea");
-				textarea.value = fullUrl;
-				textarea.setAttribute("readonly", "true");
-				textarea.style.position = "absolute";
-				textarea.style.left = "-9999px";
-				document.body.append(textarea);
-				textarea.select();
-				document.execCommand("copy");
-				document.body.removeChild(textarea);
-			}
-
+			await writeToClipboard(fullUrl);
 			setCopied(true);
 			window.setTimeout(() => setCopied(false), COPY_RESET_MS);
 		} catch (error) {
@@ -128,6 +162,98 @@ const useCopySpecUrl = (specUrl?: string) => {
 
 	return { copied, copySpecUrl };
 };
+
+const useDownloadSpec = (resolvedSpec: object | null, specUrl?: string) =>
+	useCallback(async () => {
+		const dataToDownload = resolvedSpec ?? (await fetchSpecFromUrl(specUrl));
+		if (!dataToDownload) {
+			return;
+		}
+
+		downloadOpenApiJson(dataToDownload);
+	}, [resolvedSpec, specUrl]);
+
+const useSwaggerInterceptors = (
+	requestInterceptor?: SwaggerUIProps["requestInterceptor"],
+	responseInterceptor?: SwaggerUIProps["responseInterceptor"],
+) => {
+	const defaultRequestInterceptor = useCallback(
+		(req: SwaggerRequest) => {
+			const isStorageAvailable =
+				typeof localStorage !== "undefined" &&
+				typeof localStorage.getItem === "function";
+			const token = isStorageAvailable ? localStorage.getItem("api_token") : null;
+			const apiKey = isStorageAvailable ? localStorage.getItem("api_key") : null;
+
+			if (token) {
+				setHeader(req, "Authorization", `Bearer ${token}`);
+			}
+			if (apiKey) {
+				setHeader(req, "X-API-Key", apiKey);
+			}
+
+			return requestInterceptor ? requestInterceptor(req) : req;
+		},
+		[requestInterceptor],
+	);
+
+	const defaultResponseInterceptor = useCallback(
+		(res: SwaggerResponse) => {
+			logger.info("API Response:", {
+				status: res["status"],
+				url: res["url"],
+			});
+
+			return responseInterceptor ? responseInterceptor(res) : res;
+		},
+		[responseInterceptor],
+	);
+
+	return { defaultRequestInterceptor, defaultResponseInterceptor };
+};
+
+const useSwaggerProps = (params: {
+	deepLinking: boolean;
+	displayRequestDuration: boolean;
+	filter: boolean;
+	persistAuthorization: boolean;
+	requestInterceptor: SwaggerUIProps["requestInterceptor"];
+	responseInterceptor: SwaggerUIProps["responseInterceptor"];
+	resolvedSpec: object | null;
+	specUrl?: string;
+	tryItOutEnabled: boolean;
+}) =>
+	useMemo<SwaggerUIProps>(
+		() => ({
+			deepLinking: params.deepLinking,
+			defaultModelExpandDepth: DEFAULT_MODELS_EXPAND_DEPTH,
+			defaultModelsExpandDepth: DEFAULT_MODELS_EXPAND_DEPTH,
+			displayOperationId: false,
+			displayRequestDuration: params.displayRequestDuration,
+			docExpansion: "list",
+			filter: params.filter,
+			persistAuthorization: params.persistAuthorization,
+			requestInterceptor: params.requestInterceptor,
+			responseInterceptor: params.responseInterceptor,
+			showCommonExtensions: false,
+			showExtensions: false,
+			spec: params.resolvedSpec ?? undefined,
+			supportedSubmitMethods: SUPPORTED_SUBMIT_METHODS,
+			tryItOutEnabled: params.tryItOutEnabled,
+			url: params.resolvedSpec ? undefined : params.specUrl,
+		}),
+		[
+			params.deepLinking,
+			params.displayRequestDuration,
+			params.filter,
+			params.persistAuthorization,
+			params.requestInterceptor,
+			params.responseInterceptor,
+			params.resolvedSpec,
+			params.specUrl,
+			params.tryItOutEnabled,
+		],
+	);
 
 const LoadingState = ({ label }: { label: string }) => (
 	<div className="swagger-loading">
@@ -192,6 +318,19 @@ const SwaggerToolbar = ({
 		</div>
 	</div>
 );
+
+const SwaggerContent = ({
+	hasSpec,
+	swaggerProps,
+}: {
+	hasSpec: boolean;
+	swaggerProps: SwaggerUIProps;
+}) =>
+	hasSpec ? (
+		<SwaggerUI {...swaggerProps} />
+	) : (
+		<LoadingState label="Loading API Documentation..." />
+	);
 
 const SWAGGER_STYLES = `
   .swagger-ui-container {
@@ -350,105 +489,26 @@ const SWAGGER_STYLES = `
   }
 `;
 
-export const SwaggerUIWrapper = ({
-	specUrl = SWAGGER_DEFAULTS.specUrl,
-	spec,
-	tryItOutEnabled = SWAGGER_DEFAULTS.tryItOutEnabled,
-	persistAuthorization = SWAGGER_DEFAULTS.persistAuthorization,
-	displayRequestDuration = SWAGGER_DEFAULTS.displayRequestDuration,
-	filter = SWAGGER_DEFAULTS.filter,
-	deepLinking = SWAGGER_DEFAULTS.deepLinking,
-	requestInterceptor,
-	responseInterceptor,
-}: SwaggerUIWrapperProps) => {
+export const SwaggerUIWrapper = (props: SwaggerUIWrapperProps) => {
+	const normalized = normalizeSwaggerProps(props);
 	const { darkMode, toggleDarkMode } = useDarkMode();
-	const { copied, copySpecUrl } = useCopySpecUrl(specUrl);
-	const specData = useSpecData(specUrl, spec);
-	const resolvedSpec = specData ?? spec ?? null;
-
-	const downloadSpec = useCallback(async () => {
-		const dataToDownload = resolvedSpec;
-		if (dataToDownload) {
-			downloadOpenApiJson(dataToDownload);
-			return;
-		}
-
-		if (!specUrl) {
-			return;
-		}
-
-		const response = await fetch(specUrl);
-		const data = await response.json();
-		downloadOpenApiJson(data);
-	}, [resolvedSpec, specUrl]);
-
-	const defaultRequestInterceptor = useCallback<
-		NonNullable<SwaggerUIProps["requestInterceptor"]>
-	>(
-		(req) => {
-			const isStorageAvailable =
-				typeof localStorage !== "undefined" &&
-				typeof localStorage.getItem === "function";
-			const token = isStorageAvailable ? localStorage.getItem("api_token") : null;
-			const apiKey = isStorageAvailable ? localStorage.getItem("api_key") : null;
-
-			if (token) {
-				req.headers.set("Authorization", `Bearer ${token}`);
-			}
-			if (apiKey) {
-				req.headers.set("X-API-Key", apiKey);
-			}
-
-			return requestInterceptor ? requestInterceptor(req) : req;
-		},
-		[requestInterceptor],
-	);
-
-	const defaultResponseInterceptor = useCallback<
-		NonNullable<SwaggerUIProps["responseInterceptor"]>
-	>(
-		(res) => {
-			logger.info("API Response:", {
-				status: res.status,
-				url: res.url,
-			});
-
-			return responseInterceptor ? responseInterceptor(res) : res;
-		},
-		[responseInterceptor],
-	);
-
-	const swaggerProps = useMemo<SwaggerUIProps>(
-		() => ({
-			deepLinking,
-			defaultModelExpandDepth: DEFAULT_MODELS_EXPAND_DEPTH,
-			defaultModelsExpandDepth: DEFAULT_MODELS_EXPAND_DEPTH,
-			displayOperationId: false,
-			displayRequestDuration,
-			docExpansion: "list",
-			filter,
-			persistAuthorization,
-			requestInterceptor: defaultRequestInterceptor,
-			responseInterceptor: defaultResponseInterceptor,
-			showCommonExtensions: false,
-			showExtensions: false,
-			spec: resolvedSpec ?? undefined,
-			supportedSubmitMethods: SUPPORTED_SUBMIT_METHODS,
-			tryItOutEnabled,
-			url: resolvedSpec ? undefined : specUrl,
-		}),
-		[
-			deepLinking,
-			displayRequestDuration,
-			filter,
-			persistAuthorization,
-			defaultRequestInterceptor,
-			defaultResponseInterceptor,
-			resolvedSpec,
-			specUrl,
-			tryItOutEnabled,
-		],
-	);
+	const { copied, copySpecUrl } = useCopySpecUrl(normalized.specUrl);
+	const specData = useSpecData(normalized.specUrl, normalized.spec);
+	const resolvedSpec = specData ?? normalized.spec ?? null;
+	const { defaultRequestInterceptor, defaultResponseInterceptor } =
+		useSwaggerInterceptors(normalized.requestInterceptor, normalized.responseInterceptor);
+	const swaggerProps = useSwaggerProps({
+		deepLinking: normalized.deepLinking,
+		displayRequestDuration: normalized.displayRequestDuration,
+		filter: normalized.filter,
+		persistAuthorization: normalized.persistAuthorization,
+		requestInterceptor: defaultRequestInterceptor,
+		resolvedSpec,
+		responseInterceptor: defaultResponseInterceptor,
+		specUrl: normalized.specUrl,
+		tryItOutEnabled: normalized.tryItOutEnabled,
+	});
+	const downloadSpec = useDownloadSpec(resolvedSpec, normalized.specUrl);
 
 	return (
 		<div className={`swagger-ui-container ${darkMode ? "dark-mode" : ""}`}>
@@ -459,11 +519,10 @@ export const SwaggerUIWrapper = ({
 				onDownload={downloadSpec}
 				onToggleDarkMode={toggleDarkMode}
 			/>
-			{resolvedSpec || specUrl ? (
-				<SwaggerUI {...swaggerProps} />
-			) : (
-				<LoadingState label="Loading API Documentation..." />
-			)}
+			<SwaggerContent
+				hasSpec={Boolean(resolvedSpec || normalized.specUrl)}
+				swaggerProps={swaggerProps}
+			/>
 			<style>{SWAGGER_STYLES}</style>
 		</div>
 	);

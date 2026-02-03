@@ -457,7 +457,7 @@ class ApiClient:
                 response_payload = exc.response.json()
                 conflicts_raw: list[Any] = response_payload.get("conflicts", [])
                 conflicts: list[Conflict] = [
-                    Conflict.from_dict(c) if isinstance(c, dict) else c
+                    Conflict.from_dict(c) if isinstance(c, dict[str, Any]) else c
                     for c in conflicts_raw
                     if isinstance(c, (dict, Conflict))
                 ]

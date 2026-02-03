@@ -3,6 +3,7 @@
 import os
 import time
 from datetime import UTC, datetime
+from typing import Any
 
 from fastapi import APIRouter
 from pydantic import BaseModel
@@ -160,7 +161,7 @@ async def get_canary_health(
 @router.get("/readiness")
 async def get_readiness(
     # db: AsyncSession = Depends(get_db),
-) -> dict:
+) -> dict[str, Any]:
     """Kubernetes readiness probe endpoint.
 
     Returns:
@@ -181,7 +182,7 @@ async def get_readiness(
 
 
 @router.get("/liveness")
-async def get_liveness() -> dict:
+async def get_liveness() -> dict[str, Any]:
     """Kubernetes liveness probe endpoint.
 
     Returns:

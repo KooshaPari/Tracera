@@ -43,7 +43,7 @@ async def init_project(ctx: Context, progress: Progress = Progress()) -> str:
         message="What's your project called?",
         response_type=None,
     )
-    data = name_result.data if isinstance(name_result.data, dict) else {}
+    data = name_result.data if isinstance(name_result.data, dict[str, Any]) else {}
     project_name = (
         data.get("value", "MyProject")
         if isinstance(name_result, AcceptedElicitation)

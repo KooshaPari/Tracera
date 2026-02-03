@@ -9,6 +9,9 @@
 
 import type { Item, Link } from "@tracertm/types";
 
+const INDEX_ENTRY_BYTES = Number("40");
+const BYTES_PER_KILOBYTE = Number("1024");
+
 /**
  * Pre-computed indices for O(1) lookups
  */
@@ -35,10 +38,13 @@ export interface GraphIndices {
  * const related = getRelatedItems(nodeId, links, indices);  // O(1)
  * ```
  */
-export function buildGraphIndices(items: Item[], links: Link[]): GraphIndices {
+export const buildGraphIndices = (
+	items: Item[],
+	links: Link[],
+): GraphIndices => {
 	const incomingByTarget = new Map<string, Link[]>();
 	const outgoingBySource = new Map<string, Link[]>();
-	const nodeById = new Map<string, Item>(items.map((i) => [i.id, i]));
+	const nodeById = new Map<string, Item>(items.map((item) => [item.id, item]));
 	const linksBySourceTarget = new Map<string, Map<string, string>>();
 
 	// Build index structures
@@ -64,11 +70,11 @@ export function buildGraphIndices(items: Item[], links: Link[]): GraphIndices {
 
 	return {
 		incomingByTarget,
-		outgoingBySource,
-		nodeById,
 		linksBySourceTarget,
+		nodeById,
+		outgoingBySource,
 	};
-}
+};
 
 /**
  * Get related items for a node (incoming + outgoing connections)
@@ -76,7 +82,7 @@ export function buildGraphIndices(items: Item[], links: Link[]): GraphIndices {
  * Time: O(1) with indices vs O(n) without
  * Typical improvement: 200-500ms → <10ms
  */
-export function getRelatedItems(
+export const getRelatedItems = (
 	nodeId: string,
 	indices: GraphIndices,
 ): {
@@ -84,7 +90,7 @@ export function getRelatedItems(
 	outgoing: Link[];
 	relatedItemIds: Set<string>;
 	relatedItems: Item[];
-} {
+} => {
 	const incoming = indices.incomingByTarget.get(nodeId) || [];
 	const outgoing = indices.outgoingBySource.get(nodeId) || [];
 
@@ -112,47 +118,81 @@ export function getRelatedItems(
 		relatedItemIds,
 		relatedItems,
 	};
-}
+};
 
 /**
  * Get link type between two nodes
  *
  * Time: O(1) with index vs O(m) with linear search
  */
-export function getLinkType(
+export const getLinkType = (
 	sourceId: string,
 	targetId: string,
 	indices: GraphIndices,
-): string | null {
-	return indices.linksBySourceTarget.get(sourceId)?.get(targetId) ?? null;
-}
+): string | null =>
+	indices.linksBySourceTarget.get(sourceId)?.get(targetId) ?? null;
 
 /**
  * Get all neighbors of a node (1 hop)
  *
  * Time: O(k) where k = number of neighbors (much better than O(m))
  */
-export function getNeighbors(
+export const getNeighbors = (
 	nodeId: string,
 	indices: GraphIndices,
 ): {
 	incoming: string[];
 	outgoing: string[];
 	all: string[];
-} {
+} => {
 	const incoming = (indices.incomingByTarget.get(nodeId) || []).map(
-		(l) => l.sourceId,
+		(link) => link.sourceId,
 	);
 	const outgoing = (indices.outgoingBySource.get(nodeId) || []).map(
-		(l) => l.targetId,
+		(link) => link.targetId,
 	);
 
 	return {
+		all: [...new Set([...incoming, ...outgoing])],
 		incoming,
 		outgoing,
-		all: [...new Set([...incoming, ...outgoing])],
 	};
-}
+};
+
+const ensureDepthSet = (
+	byDepth: Map<number, Set<string>>,
+	depthLevel: number,
+): Set<string> => {
+	const existing = byDepth.get(depthLevel);
+	if (existing) {
+		return existing;
+	}
+	const created = new Set<string>();
+	byDepth.set(depthLevel, created);
+	return created;
+};
+
+const enqueueNeighbors = (options: {
+	currentDepth: number;
+	currentId: string;
+	indices: GraphIndices;
+	maxDepth: number;
+	queue: Array<[string, number]>;
+	visited: Set<string>;
+}): void => {
+	const { currentDepth, currentId, indices, maxDepth, queue, visited } = options;
+	if (currentDepth >= maxDepth) {
+		return;
+	}
+	const neighbors = getNeighbors(currentId, indices);
+	for (const neighborId of neighbors.all) {
+		if (visited.has(neighborId)) {
+			continue;
+		}
+		visited.add(neighborId);
+		queue.push([neighborId, currentDepth + 1]);
+	}
+};
 
 /**
  * Get all neighbors at a given depth using BFS
@@ -160,53 +200,50 @@ export function getNeighbors(
  * Explores graph layer by layer, perfect for progressive exploration.
  * Time: O(n + m) for full traversal, but can be limited by depth
  */
-export function getNeighborsAtDepth(
+export const getNeighborsAtDepth = (
 	nodeId: string,
 	depth: number,
 	indices: GraphIndices,
 ): {
 	byDepth: Map<number, Set<string>>;
 	allNodes: Set<string>;
-} {
+} => {
 	const byDepth = new Map<number, Set<string>>();
 	const allNodes = new Set<string>();
-	const visited = new Set<string>();
-
-	const queue: [string, number][] = [[nodeId, 0]];
-	visited.add(nodeId);
+	const visited = new Set<string>([nodeId]);
+	const queue: Array<[string, number]> = [[nodeId, 0]];
 
 	while (queue.length > 0) {
-		const [currentId, currentDepth] = queue.shift()!;
-
-		if (!byDepth.has(currentDepth)) {
-			byDepth.set(currentDepth, new Set());
+		const entry = queue.shift();
+		if (!entry) {
+			continue;
 		}
-		byDepth.get(currentDepth)!.add(currentId);
+		const [currentId, currentDepth] = entry;
+		const depthSet = ensureDepthSet(byDepth, currentDepth);
+		depthSet.add(currentId);
 		allNodes.add(currentId);
-
-		if (currentDepth < depth) {
-			const neighbors = getNeighbors(currentId, indices);
-			for (const neighborId of neighbors.all) {
-				if (!visited.has(neighborId)) {
-					visited.add(neighborId);
-					queue.push([neighborId, currentDepth + 1]);
-				}
-			}
-		}
+		enqueueNeighbors({
+			currentDepth,
+			currentId,
+			indices,
+			maxDepth: depth,
+			queue,
+			visited,
+		});
 	}
 
-	return { byDepth, allNodes };
-}
+	return { allNodes, byDepth };
+};
 
 /**
  * Get incoming connections with counts by type
  *
  * Useful for showing connection summary in detail panel
  */
-export function getIncomingByType(
+export const getIncomingByType = (
 	nodeId: string,
 	indices: GraphIndices,
-): Record<string, number> {
+): Record<string, number> => {
 	const incoming = indices.incomingByTarget.get(nodeId) || [];
 	const byType: Record<string, number> = {};
 
@@ -215,15 +252,15 @@ export function getIncomingByType(
 	}
 
 	return byType;
-}
+};
 
 /**
  * Get outgoing connections with counts by type
  */
-export function getOutgoingByType(
+export const getOutgoingByType = (
 	nodeId: string,
 	indices: GraphIndices,
-): Record<string, number> {
+): Record<string, number> => {
 	const outgoing = indices.outgoingBySource.get(nodeId) || [];
 	const byType: Record<string, number> = {};
 
@@ -232,7 +269,7 @@ export function getOutgoingByType(
 	}
 
 	return byType;
-}
+};
 
 /**
  * Statistics about the graph indices
@@ -251,11 +288,11 @@ export interface GraphIndexStats {
  * Get statistics about graph indices
  * Useful for understanding graph structure and performance characteristics
  */
-export function getGraphIndexStats(
+export const getGraphIndexStats = (
 	items: Item[],
 	links: Link[],
 	indices: GraphIndices,
-): GraphIndexStats {
+): GraphIndexStats => {
 	const totalItems = items.length;
 	const totalLinks = links.length;
 
@@ -275,24 +312,26 @@ export function getGraphIndexStats(
 
 	// Rough memory estimate (very approximate)
 	// Each index entry: ~40 bytes overhead
-	const indexMemoryBytes = (totalItems + totalLinks) * 40;
-	const indexMemoryMB = indexMemoryBytes / 1024 / 1024;
+	const indexMemoryBytes = (totalItems + totalLinks) * INDEX_ENTRY_BYTES;
+	const indexMemoryMB =
+		indexMemoryBytes / BYTES_PER_KILOBYTE / BYTES_PER_KILOBYTE;
 
 	return {
-		totalItems,
-		totalLinks,
 		avgIncomingPerNode: totalIncoming / totalItems || 0,
 		avgOutgoingPerNode: totalOutgoing / totalItems || 0,
+		indexMemoryMB,
 		maxIncoming,
 		maxOutgoing,
-		indexMemoryMB,
+		totalItems,
+		totalLinks,
 	};
-}
+};
 
 /**
  * Invalidate indices when graph changes
  * Creates new indices from updated data
  */
-export function invalidateIndices(items: Item[], links: Link[]): GraphIndices {
-	return buildGraphIndices(items, links);
-}
+export const invalidateIndices = (
+	items: Item[],
+	links: Link[],
+): GraphIndices => buildGraphIndices(items, links);

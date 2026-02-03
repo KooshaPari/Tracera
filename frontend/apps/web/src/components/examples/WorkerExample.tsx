@@ -4,6 +4,7 @@
  * Demonstrates how to use the worker hooks in a React component
  */
 
+import { useState } from "react";
 import {
 	useDataTransformWorker,
 	useExportImportWorker,
@@ -11,90 +12,57 @@ import {
 	useSearchIndexWorker,
 	useWorkerSupport,
 } from "@/hooks/useWorker";
-import { useState } from "react";
-
-const NODE_HEIGHT = 50;
-const NODE_WIDTH = 100;
-const NODE_COUNT = 3;
-const CATEGORY_MODULO = 3;
-const MAX_ITEMS_DISPLAY = 10;
-const DATA_LENGTH = 1000;
-const TITLE_WEIGHT = 2;
-const DEFAULT_WEIGHT = 1;
-const MAX_DISTANCE = 2;
-
-const defaultNodes = [
-	{ height: NODE_HEIGHT, id: "A", width: NODE_WIDTH },
-	{ height: NODE_HEIGHT, id: "B", width: NODE_WIDTH },
-	{ height: NODE_HEIGHT, id: "C", width: NODE_WIDTH },
-];
-
-const defaultEdges = [
-	{ id: "AB", source: "A", target: "B" },
-	{ id: "BC", source: "B", target: "C" },
-];
-
-const layoutOptions = { direction: "TB", type: "dagre" as const };
-
-const categoryList = ["A", "B", "C"] as const;
-
-const generateData = (length: number) =>
-	Array.from({ length }, (_, i) => ({
-		category: categoryList[i % CATEGORY_MODULO],
-		id: i,
-		value: Math.random() * 100,
-	}));
-
-const indexFieldWeights = {
-	content: DEFAULT_WEIGHT,
-	title: TITLE_WEIGHT,
-};
-
-const searchOptions = {
-	fuzzy: true,
-	maxDistance: MAX_DISTANCE,
-};
 
 export function GraphLayoutExample() {
 	const { worker, status, createProgressCallback } = useGraphLayoutWorker();
-	const [layoutResult, setLayoutResult] = useState<unknown>(null);
+	const [layoutResult, setLayoutResult] = useState<Record<string, unknown> | null>(
+		null,
+	);
 
 	const handleComputeLayout = async () => {
 		if (!worker) {
 			return;
 		}
 
+		const nodes = [
+			{ height: 50, id: "A", width: 100 },
+			{ height: 50, id: "B", width: 100 },
+			{ height: 50, id: "C", width: 100 },
+		];
+
+		const edges = [
+			{ id: "AB", source: "A", target: "B" },
+			{ id: "BC", source: "B", target: "C" },
+		];
+
 		const onProgress = createProgressCallback();
 
 		try {
 			const result = await worker.computeLayout(
-				defaultNodes,
-				defaultEdges,
-				layoutOptions,
+				nodes,
+				edges,
+				{ direction: "TB", type: "dagre" },
 				onProgress,
 			);
-			setLayoutResult(result);
+			setLayoutResult(result as unknown as Record<string, unknown>);
 		} catch {
 			// Error handling is managed through status.error
 		}
 	};
-
-	const statusMessage = status.isReady ? "Ready" : "Loading...";
-	const progressPercent = status.progress.toFixed(0);
 
 	return (
 		<div className="p-4 border rounded">
 			<h2 className="text-lg font-bold mb-4">Graph Layout Worker</h2>
 
 			<div className="mb-4">
-				<div>Status: {statusMessage}</div>
+				<div>Status: {status.isReady ? "✅ Ready" : "⏳ Loading..."}</div>
 				{status.error && (
 					<div className="text-red-500">Error: {status.error.message}</div>
 				)}
 				{status.progress > 0 && (
 					<div className="mt-2">
 						<div className="text-sm mb-1">
-							Progress: {progressPercent}%
+							Progress: {status.progress.toFixed(0)}%
 						</div>
 						<div className="w-full bg-gray-200 rounded">
 							<div
@@ -126,20 +94,35 @@ export function GraphLayoutExample() {
 	);
 }
 
+interface TransformResult {
+	aggregated: unknown;
+	sorted: Array<{ id: number; value: number }>;
+	stats: unknown;
+}
+
 export function DataTransformExample() {
 	const { worker, status } = useDataTransformWorker();
-	const [result, setResult] = useState<unknown>(null);
+	const [result, setResult] = useState<TransformResult | null>(null);
 
 	const handleTransform = async () => {
 		if (!worker) {
 			return;
 		}
 
-		const data = generateData(DATA_LENGTH);
+		const data = Array.from({ length: 1000 }, (_, i) => ({
+			category: ["A", "B", "C"][i % 3],
+			id: i,
+			value: Math.random() * 100,
+		}));
 
 		try {
+			// Sort data
 			const sorted = await worker.sortData(data, "value", "desc");
+
+			// Calculate statistics
 			const stats = await worker.calculateStatistics(data, "value");
+
+			// Aggregate by category
 			const aggregated = await worker.aggregateData(
 				data,
 				"category",
@@ -149,7 +132,7 @@ export function DataTransformExample() {
 
 			setResult({
 				aggregated,
-				sorted: sorted.slice(0, MAX_ITEMS_DISPLAY),
+				sorted: sorted.slice(0, 10) as Array<{ id: number; value: number }>,
 				stats,
 			});
 		} catch {
@@ -180,7 +163,7 @@ export function DataTransformExample() {
 					<div>
 						<h3 className="font-semibold">Top 10 (sorted):</h3>
 						<ul className="mt-1 text-sm">
-							{result.sorted.map((item: { id: number; value: number }) => (
+							{result.sorted.map((item) => (
 								<li key={item.id}>
 									ID: {item.id}, Value: {item.value.toFixed(2)}
 								</li>
@@ -199,12 +182,6 @@ export function DataTransformExample() {
 	);
 }
 
-const sampleExportData = [
-	{ age: 30, id: 1, name: "Alice" },
-	{ age: 25, id: 2, name: "Bob" },
-	{ age: 35, id: 3, name: "Charlie" },
-];
-
 export function ExportImportExample() {
 	const { worker, status } = useExportImportWorker();
 	const [exported, setExported] = useState("");
@@ -214,8 +191,14 @@ export function ExportImportExample() {
 			return;
 		}
 
+		const data = [
+			{ age: 30, id: 1, name: "Alice" },
+			{ age: 25, id: 2, name: "Bob" },
+			{ age: 35, id: 3, name: "Charlie" },
+		];
+
 		try {
-			const ndjson = await worker.generateNDJSON(sampleExportData);
+			const ndjson = await worker.generateNDJSON(data);
 			setExported(ndjson);
 		} catch {
 			// Error handling is managed through status.error
@@ -229,6 +212,7 @@ export function ExportImportExample() {
 
 		try {
 			const data = await worker.parseNDJSON(exported);
+
 			// eslint-disable-next-line no-console
 			console.log(`Imported ${data.length} items`);
 		} catch {
@@ -269,49 +253,49 @@ export function ExportImportExample() {
 	);
 }
 
-const sampleDocuments = [
-	{
-		id: "1",
-		fields: {
-			content: "React is a JavaScript library for building user interfaces",
-			title: "Introduction to React",
-		},
-	},
-	{
-		id: "2",
-		fields: {
-			content: "Vue is a progressive framework for building user interfaces",
-			title: "Vue.js Basics",
-		},
-	},
-	{
-		id: "3",
-		fields: {
-			content: "Angular is a platform for building web applications",
-			title: "Angular Guide",
-		},
-	},
-];
-
 export function SearchIndexExample() {
 	const { worker, status } = useSearchIndexWorker();
-	const [index, setIndex] = useState<unknown>(null);
+	const [index, setIndex] = useState<Record<string, unknown> | null>(null);
 	const [query, setQuery] = useState("");
-	const [results, setResults] = useState<
-		ReadonlyArray<{ id: string; score: number }>
-	>([]);
+	const [results, setResults] = useState<Array<{ id: string; score: number }>>(
+		[],
+	);
 
 	const handleBuildIndex = async () => {
 		if (!worker) {
 			return;
 		}
 
+		const documents = [
+			{
+				fields: {
+					content: "React is a JavaScript library for building user interfaces",
+					title: "Introduction to React",
+				},
+				id: "1",
+			},
+			{
+				fields: {
+					content: "Vue is a progressive framework for building user interfaces",
+					title: "Vue.js Basics",
+				},
+				id: "2",
+			},
+			{
+				fields: {
+					content: "Angular is a platform for building web applications",
+					title: "Angular Guide",
+				},
+				id: "3",
+			},
+		];
+
 		try {
-			const newIndex = await worker.buildIndex(
-				sampleDocuments,
-				indexFieldWeights,
-			);
-			setIndex(newIndex);
+			const newIndex = await worker.buildIndex(documents, {
+				title: 2, // Title has 2x weight
+				content: 1, // Content has default weight
+			});
+			setIndex(newIndex as unknown as Record<string, unknown>);
 		} catch {
 			// Error handling is managed through status.error
 		}
@@ -323,7 +307,14 @@ export function SearchIndexExample() {
 		}
 
 		try {
-			const searchResults = await worker.search(index, query, searchOptions);
+			const searchResults = await worker.search(
+				index as unknown,
+				query,
+				{
+					fuzzy: true,
+					maxDistance: 2,
+				},
+			);
 			setResults(searchResults);
 		} catch {
 			// Error handling is managed through status.error
@@ -367,9 +358,7 @@ export function SearchIndexExample() {
 								<ul className="mt-2 space-y-2">
 									{results.map((result) => (
 										<li key={result.id} className="p-2 bg-gray-100 rounded">
-											<div className="font-medium">
-												Document {result.id}
-											</div>
+											<div className="font-medium">Document {result.id}</div>
 											<div className="text-sm text-gray-600">
 												Score: {result.score.toFixed(2)}
 											</div>
@@ -392,18 +381,21 @@ export function WorkerSupportCheck() {
 		return <div>Checking Web Worker support...</div>;
 	}
 
-	const containerClass = supported ? "bg-green-50" : "bg-red-50";
-	const messageClass = supported ? "text-green-700" : "text-red-700";
-	const supportMessage = supported
-		? "Web Workers are supported in this browser"
-		: "Web Workers are not supported. Some features may be unavailable or slower.";
-
 	return (
-		<div className={`p-4 border rounded ${containerClass}`}>
+		<div
+			className={`p-4 border rounded ${supported ? "bg-green-50" : "bg-red-50"}`}
+		>
 			<h3 className="font-semibold mb-2">Web Worker Support</h3>
-			<div className={messageClass}>
-				{supported ? "✓" : "✗"} {supportMessage}
-			</div>
+			{supported ? (
+				<div className="text-green-700">
+					✅ Web Workers are supported in this browser
+				</div>
+			) : (
+				<div className="text-red-700">
+					❌ Web Workers are not supported. Some features may be unavailable or
+					slower.
+				</div>
+			)}
 		</div>
 	);
 }

@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import type { ReactNode } from "react";
-import { logger } from "@/lib/logger";
 import { EnhancedErrorState } from "./EnhancedErrorState";
+import { logger } from "@/lib/logger";
 
 interface Props {
 	children: ReactNode;
@@ -20,11 +20,11 @@ export class GraphErrorBoundary extends Component<Props, State> {
 		this.state = { error: null, hasError: false };
 	}
 
-	static override getDerivedStateFromError(error: Error): State {
+	static getDerivedStateFromError(error: Error): State {
 		return { error, hasError: true };
 	}
 
-	override componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+	componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
 		logger.error("Graph error boundary caught:", error, errorInfo);
 		this.props.onError?.(error, errorInfo);
 	}
@@ -33,7 +33,7 @@ export class GraphErrorBoundary extends Component<Props, State> {
 		this.setState({ error: null, hasError: false });
 	};
 
-	override render() {
+	render() {
 		if (this.state.hasError && this.state.error) {
 			if (this.props.fallback) {
 				return this.props.fallback(this.state.error, this.reset);

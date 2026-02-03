@@ -1,6 +1,6 @@
 type PreflightResult = {
-	ok: boolean;
 	errors: string[];
+	ok: boolean;
 };
 
 type PreflightCheck = {
@@ -8,64 +8,70 @@ type PreflightCheck = {
 	url: string;
 };
 
-const DEFAULT_TIMEOUT_MS = 8000;
+type PreflightState = "checking" | "healthy" | "unhealthy";
 
-async function fetchWithTimeout(url: string, timeoutMs = DEFAULT_TIMEOUT_MS) {
-	const controller = new AbortController();
-	const timer = setTimeout(() => controller.abort(), timeoutMs);
-	try {
-		const response = await fetch(url, {
-			method: "GET",
-			credentials: "omit",
-			mode: "cors",
-			signal: controller.signal,
-		});
-		return response;
-	} finally {
-		clearTimeout(timer);
-	}
-}
+type PreflightUpdate = {
+	error?: string;
+	hint?: string;
+	isRetrying?: boolean;
+	ok: boolean;
+};
 
-function renderPreflightLoading(checks: PreflightCheck[]): void {
-	const root = document.getElementById("root");
-	if (!root) {
-		throw new Error("Root element not found");
-	}
+type HealthCheckResult = {
+	error: string | null;
+	hint?: string;
+};
 
-	const items = checks
-		.map(
-			(check) =>
-				`<li data-check="${check.name}" data-state="checking" class="preflight-item" style="display:none;align-items:flex-start;gap:12px;padding:12px;border-radius:12px;margin-bottom:10px;">
-					<span data-status style="width:16px;height:16px;border-radius:999px;background:#f59e0b;display:inline-block;margin-top:4px;"></span>
-					<div style="flex:1;">
-						<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-							<span data-label style="color:#e6edf3;font-weight:600;">${check.name}</span>
-							<span data-icon style="font-size:14px;color:#f59e0b;">…</span>
-							<span data-status-text style="font-size:12px;color:#fcd34d;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;">Checking</span>
-						</div>
-					<div data-error style="margin-top:4px;color:#fca5a5;font-size:13px;display:none;"></div>
-					<div data-hint style="margin-top:4px;color:#f59e0b;font-size:12px;display:none;"></div>
-					<div data-skeleton class="preflight-skeleton" style="width:60%;margin-top:6px;display:none;"></div>
-				</div>
-					<button data-retry style="margin-left:8px;display:none;padding:6px 10px;border-radius:8px;border:1px solid #f59e0b;background:#f59e0b;color:#0b0f14;font-weight:600;cursor:pointer;">Retry</button>
-				</li>`,
-		)
-		.join("");
+type InfraStatus = "degraded" | "healthy" | "unknown" | "unhealthy";
 
-	const infraItems: string[] = [];
-	const infraSkeleton = infraItems
-		.map(
-			(name) =>
-				`<li data-infra="${name}" data-state="checking" class="infra-item" style="display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;margin-bottom:8px;">
-					<span data-infra-status style="width:12px;height:12px;border-radius:999px;background:#f59e0b;display:inline-block;"></span>
-					<span style="flex:1;color:#e6edf3;">${name}</span>
-					<span data-infra-text style="font-size:11px;color:#fcd34d;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;">Checking</span>
-					<div class="preflight-skeleton" style="width:120px;"></div>
-				</li>`,
-		)
-		.join("");
+type InfraDisplay = {
+	color: string;
+	label: string;
+	state: PreflightState;
+};
 
-	root.innerHTML = `
+const DEFAULT_TIMEOUT_MS = Number("8000");
+const FULL_PERCENT = Number("100");
+const RELOAD_DELAY_MS = Number("240");
+const HTTP_UNAUTHORIZED = Number("401");
+const HTTP_FORBIDDEN = Number("403");
+
+const PREFLIGHT_STATE_COLORS: Record<PreflightState, string> = {
+	checking: "#f59e0b",
+	healthy: "#22c55e",
+	unhealthy: "#ef4444",
+};
+
+const INFRA_STATUS_COLORS: Record<InfraStatus, string> = {
+	degraded: "#f59e0b",
+	healthy: "#22c55e",
+	unknown: "#6b7280",
+	unhealthy: "#ef4444",
+};
+
+const INFRA_STATUS_LABELS: Record<InfraStatus, string> = {
+	degraded: "Degraded",
+	healthy: "Healthy",
+	unknown: "Checking",
+	unhealthy: "Down",
+};
+
+const INFRA_STATUS_STATES: Record<InfraStatus, PreflightState> = {
+	degraded: "checking",
+	healthy: "healthy",
+	unknown: "checking",
+	unhealthy: "unhealthy",
+};
+
+const PREFLIGHT_STATUS_ICONS: Record<PreflightState, string> = {
+	checking: "…",
+	healthy: "✓",
+	unhealthy: "✕",
+};
+
+const PREFLIGHT_ITEMS_TOKEN = "__PREFLIGHT_ITEMS__";
+const PREFLIGHT_INFRA_TOKEN = "__PREFLIGHT_INFRA__";
+const PREFLIGHT_TEMPLATE = `
 		<style>
 		@keyframes shimmer {
 			0% { background-position: -400px 0; }
@@ -106,24 +112,98 @@ function renderPreflightLoading(checks: PreflightCheck[]): void {
 				<div style="height:10px;background:#111827;border-radius:999px;overflow:hidden;margin-bottom:16px;">
 					<div data-progress style="width:0%;height:100%;background:#f59e0b;transition:width 200ms ease;"></div>
 				</div>
-				<ul data-preflight-list style="list-style:none;padding:0;margin:0;display:none;">${items}</ul>
-				${
-					infraItems.length
-						? `<details data-infra-panel style="margin-top:18px;padding-top:12px;border-top:1px solid #1f2a37;display:none;">
-					<summary style="cursor:pointer;color:#9aa4b2;font-weight:600;">Infrastructure checks</summary>
-					<ul data-infra-list style="list-style:none;padding:0;margin:12px 0 0 0;">${infraSkeleton}</ul>
-				</details>`
-						: ""
-				}
+				<ul data-preflight-list style="list-style:none;padding:0;margin:0;display:none;">${PREFLIGHT_ITEMS_TOKEN}</ul>
+				${PREFLIGHT_INFRA_TOKEN}
 				<div data-preflight-footer style="margin-top:16px;color:#9aa4b2;font-size:14px;display:none;">
 					Status updates will appear as checks complete.
 				</div>
 			</div>
 		</div>
 	`;
-}
 
-function revealFailurePanel(): void {
+const fetchWithTimeout = async (
+	url: string,
+	timeoutMs = DEFAULT_TIMEOUT_MS,
+): Promise<Response> => {
+	const controller = new AbortController();
+	const timer = setTimeout(() => controller.abort(), timeoutMs);
+	try {
+		const response = await fetch(url, {
+			credentials: "omit",
+			method: "GET",
+			mode: "cors",
+			signal: controller.signal,
+		});
+		return response;
+	} finally {
+		clearTimeout(timer);
+	}
+};
+
+const buildCheckItems = (checks: PreflightCheck[]): string =>
+	checks
+		.map(
+			(check) =>
+				`<li data-check="${check.name}" data-state="checking" class="preflight-item" style="display:none;align-items:flex-start;gap:12px;padding:12px;border-radius:12px;margin-bottom:10px;">
+					<span data-status style="width:16px;height:16px;border-radius:999px;background:#f59e0b;display:inline-block;margin-top:4px;"></span>
+					<div style="flex:1;">
+						<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+							<span data-label style="color:#e6edf3;font-weight:600;">${check.name}</span>
+							<span data-icon style="font-size:14px;color:#f59e0b;">…</span>
+							<span data-status-text style="font-size:12px;color:#fcd34d;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;">Checking</span>
+						</div>
+					<div data-error style="margin-top:4px;color:#fca5a5;font-size:13px;display:none;"></div>
+					<div data-hint style="margin-top:4px;color:#f59e0b;font-size:12px;display:none;"></div>
+					<div data-skeleton class="preflight-skeleton" style="width:60%;margin-top:6px;display:none;"></div>
+				</div>
+					<button data-retry style="margin-left:8px;display:none;padding:6px 10px;border-radius:8px;border:1px solid #f59e0b;background:#f59e0b;color:#0b0f14;font-weight:600;cursor:pointer;">Retry</button>
+				</li>`,
+		)
+		.join("");
+
+const buildInfraSkeleton = (infraItems: string[]): string =>
+	infraItems
+		.map(
+			(name) =>
+				`<li data-infra="${name}" data-state="checking" class="infra-item" style="display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;margin-bottom:8px;">
+					<span data-infra-status style="width:12px;height:12px;border-radius:999px;background:#f59e0b;display:inline-block;"></span>
+					<span style="flex:1;color:#e6edf3;">${name}</span>
+					<span data-infra-text style="font-size:11px;color:#fcd34d;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;">Checking</span>
+					<div class="preflight-skeleton" style="width:120px;"></div>
+				</li>`,
+		)
+		.join("");
+
+const buildInfraSection = (infraItems: string[]): string => {
+	if (infraItems.length === 0) {
+		return "";
+	}
+
+	const infraSkeleton = buildInfraSkeleton(infraItems);
+	return `
+			<details data-infra-panel style="margin-top:18px;padding-top:12px;border-top:1px solid #1f2a37;display:none;">
+				<summary style="cursor:pointer;color:#9aa4b2;font-weight:600;">Infrastructure checks</summary>
+				<ul data-infra-list style="list-style:none;padding:0;margin:12px 0 0 0;">${infraSkeleton}</ul>
+			</details>`;
+};
+
+const renderPreflightLoading = (checks: PreflightCheck[]): void => {
+	const root = document.getElementById("root");
+	if (!root) {
+		throw new Error("Root element not found");
+	}
+
+	const items = buildCheckItems(checks);
+	const infraItems: string[] = [];
+	const infraSection = buildInfraSection(infraItems);
+
+	root.innerHTML = PREFLIGHT_TEMPLATE.replace(PREFLIGHT_ITEMS_TOKEN, items).replace(
+		PREFLIGHT_INFRA_TOKEN,
+		infraSection,
+	);
+};
+
+const revealFailurePanel = (): void => {
 	const list = document.querySelector(
 		"[data-preflight-list]",
 	) as HTMLElement | null;
@@ -142,23 +222,38 @@ function revealFailurePanel(): void {
 	if (footer) {
 		footer.style.display = "block";
 	}
-}
+};
 
-function revealItem(name: string): void {
+const revealItem = (name: string): void => {
 	const item = document.querySelector(
 		`[data-check="${name}"]`,
 	) as HTMLElement | null;
 	if (item) {
 		item.style.display = "flex";
 	}
-}
+};
 
-function updatePreflightCheck(
-	name: string,
-	ok: boolean,
-	error?: string,
-	hint?: string,
-): void {
+const getPreflightState = (update: PreflightUpdate): PreflightState => {
+	if (update.ok) {
+		return "healthy";
+	}
+	if (update.isRetrying) {
+		return "checking";
+	}
+	return "unhealthy";
+};
+
+const getStatusLabel = (update: PreflightUpdate): string => {
+	if (update.ok) {
+		return "Healthy";
+	}
+	if (update.isRetrying) {
+		return "Retrying";
+	}
+	return "Down";
+};
+
+const updatePreflightCheck = (name: string, update: PreflightUpdate): void => {
 	const item = document.querySelector(`[data-check="${name}"]`);
 	if (!item) return;
 	const status = item.querySelector("[data-status]") as HTMLElement | null;
@@ -172,72 +267,69 @@ function updatePreflightCheck(
 	const statusText = item.querySelector(
 		"[data-status-text]",
 	) as HTMLElement | null;
-	const isRetrying = error?.toLowerCase().startsWith("retrying") ?? false;
-	const state = ok ? "healthy" : isRetrying ? "checking" : "unhealthy";
-	if (!ok && !isRetrying) {
+	const state = getPreflightState(update);
+
+	if (!update.ok && !update.isRetrying) {
 		revealItem(name);
 		revealFailurePanel();
 	}
+
 	if (status) {
-		status.style.background =
-			state === "healthy"
-				? "#22c55e"
-				: state === "checking"
-					? "#f59e0b"
-					: "#ef4444";
+		status.style.background = PREFLIGHT_STATE_COLORS[state];
 	}
 	if (icon) {
-		icon.textContent =
-			state === "healthy" ? "✓" : state === "checking" ? "…" : "✕";
-		icon.style.color =
-			state === "healthy"
-				? "#22c55e"
-				: state === "checking"
-					? "#f59e0b"
-					: "#ef4444";
+		icon.textContent = PREFLIGHT_STATUS_ICONS[state];
+		icon.style.color = PREFLIGHT_STATE_COLORS[state];
 	}
 	if (errorEl) {
-		errorEl.textContent = error || "";
-		errorEl.style.display = ok ? "none" : "block";
-		errorEl.style.color = isRetrying ? "#f59e0b" : "#fca5a5";
+		errorEl.textContent = update.error || "";
+		errorEl.style.display = update.ok ? "none" : "block";
+		errorEl.style.color = update.isRetrying ? "#f59e0b" : "#fca5a5";
 	}
 	if (hintEl) {
-		hintEl.textContent = hint || "";
-		hintEl.style.display = hint && !ok ? "block" : "none";
+		hintEl.textContent = update.hint || "";
+		hintEl.style.display = update.hint && !update.ok ? "block" : "none";
 	}
 	if (skeleton) {
-		skeleton.style.display = ok ? "none" : "block";
+		skeleton.style.display = update.ok ? "none" : "block";
 	}
 	if (retryBtn) {
-		retryBtn.style.display = ok ? "none" : "inline-flex";
+		retryBtn.style.display = update.ok ? "none" : "inline-flex";
 	}
 	item.setAttribute("data-state", state);
 	if (statusText) {
-		statusText.textContent = ok ? "Healthy" : isRetrying ? "Retrying" : "Down";
-		statusText.style.color = ok
-			? "#22c55e"
-			: isRetrying
-				? "#f59e0b"
-				: "#ef4444";
+		const statusLabel = getStatusLabel(update);
+		statusText.textContent = statusLabel;
+		statusText.style.color = PREFLIGHT_STATE_COLORS[state];
 	}
-}
+};
 
-function updatePreflightProgress(percent: number): void {
+const updatePreflightProgress = (percent: number): void => {
 	const bar = document.querySelector("[data-progress]") as HTMLElement | null;
 	if (bar) {
 		bar.style.width = `${percent}%`;
-		bar.style.background = percent >= 100 ? "#22c55e" : "#f59e0b";
+		bar.style.background =
+			percent >= FULL_PERCENT
+				? PREFLIGHT_STATE_COLORS.healthy
+				: PREFLIGHT_STATE_COLORS.checking;
 	}
-}
+};
 
-function updateInfraStatus(map: Record<string, string>): void {
+const getInfraDisplay = (status: InfraStatus): InfraDisplay => ({
+	color: INFRA_STATUS_COLORS[status],
+	label: INFRA_STATUS_LABELS[status],
+	state: INFRA_STATUS_STATES[status],
+});
+
+const updateInfraStatus = (map: Record<string, string>): void => {
 	const list = document.querySelector("[data-infra-list]");
 	if (!list) return;
 
-	const entries = Array.from(list.querySelectorAll("[data-infra]"));
+	const entries = [...list.querySelectorAll("[data-infra]")];
 	entries.forEach((entry) => {
 		const key = entry.getAttribute("data-infra") || "";
-		const status = map[key] || "unknown";
+		const status = (map[key] || "unknown") as InfraStatus;
+		const display = getInfraDisplay(status);
 		const dot = entry.querySelector(
 			"[data-infra-status]",
 		) as HTMLElement | null;
@@ -246,57 +338,28 @@ function updateInfraStatus(map: Record<string, string>): void {
 		) as HTMLElement | null;
 		const text = entry.querySelector("[data-infra-text]") as HTMLElement | null;
 		if (dot) {
-			dot.style.background =
-				status === "healthy"
-					? "#22c55e"
-					: status === "degraded"
-						? "#f59e0b"
-						: status === "unhealthy"
-							? "#ef4444"
-							: "#6b7280";
+			dot.style.background = display.color;
 		}
 		if (shimmer) {
 			shimmer.style.display = status === "unknown" ? "block" : "none";
 		}
-		entry.setAttribute(
-			"data-state",
-			status === "healthy"
-				? "healthy"
-				: status === "degraded" || status === "unknown"
-					? "checking"
-					: "unhealthy",
-		);
+		entry.setAttribute("data-state", display.state);
 		if (text) {
-			const label =
-				status === "healthy"
-					? "Healthy"
-					: status === "degraded"
-						? "Degraded"
-						: status === "unhealthy"
-							? "Down"
-							: "Checking";
-			text.textContent = label;
-			text.style.color =
-				status === "healthy"
-					? "#22c55e"
-					: status === "degraded"
-						? "#f59e0b"
-						: status === "unhealthy"
-							? "#ef4444"
-							: "#f59e0b";
+			text.textContent = display.label;
+			text.style.color = display.color;
 		}
 	});
-}
+};
 
-function pulseItem(element: Element | null): void {
+const pulseItem = (element: Element | null): void => {
 	if (!element) return;
 	element.classList.remove("preflight-fade");
 	requestAnimationFrame(() => {
 		element.classList.add("preflight-fade");
 	});
-}
+};
 
-function fadeOutAndReload(): void {
+const fadeOutAndReload = (): void => {
 	const card = document.querySelector(
 		"[data-preflight-card]",
 	) as HTMLElement | null;
@@ -306,12 +369,10 @@ function fadeOutAndReload(): void {
 	}
 	card.style.transition = "opacity 220ms ease";
 	card.style.opacity = "0";
-	setTimeout(() => window.location.reload(), 240);
-}
+	setTimeout(() => window.location.reload(), RELOAD_DELAY_MS);
+};
 
-async function checkHealth(
-	target: string,
-): Promise<{ error: string | null; hint?: string }> {
+const checkHealth = async (target: string): Promise<HealthCheckResult> => {
 	const normalized = target.replace(/\/$/, "");
 	const explicit = normalized.includes("/api/");
 	const paths = explicit ? [""] : ["/health", "/api/v1/health"];
@@ -323,7 +384,10 @@ async function checkHealth(
 			if (response.ok) {
 				return { error: null };
 			}
-			if (response.status === 401 || response.status === 403) {
+			if (
+				response.status === HTTP_UNAUTHORIZED ||
+				response.status === HTTP_FORBIDDEN
+			) {
 				return {
 					error: `Health check failed for ${normalized}`,
 					hint: "Blocked by auth; verify health endpoints allow public GET.",
@@ -335,7 +399,7 @@ async function checkHealth(
 					hint: "Blocked by CORS. Check allowed origins for this service.",
 				};
 			}
-		} catch {
+		} catch (error) {
 			const message =
 				error instanceof DOMException ? error.name : String(error);
 			if (message === "AbortError") {
@@ -352,11 +416,11 @@ async function checkHealth(
 		error: `Health check failed for ${normalized}`,
 		hint: "Check service URL and local firewall/CORS settings.",
 	};
-}
+};
 
-async function fetchPythonInfra(
+const fetchPythonInfra = async (
 	baseUrl: string,
-): Promise<Record<string, string>> {
+): Promise<Record<string, string>> => {
 	const normalized = baseUrl.replace(/\/$/, "");
 	const status: Record<string, string> = {};
 
@@ -372,79 +436,138 @@ async function fetchPythonInfra(
 
 		const components = data.components || {};
 		const integration = data.integration || {};
-		if (components.database?.status) {
-			status.postgres = components.database.status;
+		if (components["database"]?.status) {
+			status.postgres = components["database"].status;
 		}
-		if (components.redis?.status) {
-			status.redis = components.redis.status;
+		if (components["redis"]?.status) {
+			status.redis = components["redis"].status;
 		}
-		if (components.nats?.status) {
-			status.nats = components.nats.status;
+		if (components["nats"]?.status) {
+			status.nats = components["nats"].status;
 		}
-		if (integration.go_backend?.status) {
-			status.go_backend = integration.go_backend.status;
+		if (integration["go_backend"]?.status) {
+			status.go_backend = integration["go_backend"].status;
 		}
 	} catch {
 		return status;
 	}
 
 	return status;
-}
+};
 
-export async function runFrontendPreflight(): Promise<PreflightResult> {
-	const errors: string[] = [];
+const getDevHost = (): string =>
+	window.location.hostname && window.location.hostname !== "localhost"
+		? window.location.hostname
+		: "127.0.0.1";
+
+const buildChecks = (): PreflightCheck[] => {
 	const checks: PreflightCheck[] = [];
-	const statusMap = new Map<string, boolean>();
-	const devHost =
-		window.location.hostname && window.location.hostname !== "localhost"
-			? window.location.hostname
-			: "127.0.0.1";
-
 	if (import.meta.env.PROD) {
 		const baseUrl = import.meta.env?.VITE_API_URL || window.location.origin;
 		checks.push({ name: "backend", url: baseUrl });
-	} else {
-		// Use single Caddy URL when app is served via gateway (port 4000) or VITE_API_URL points at Caddy
-		const useCaddy =
-			window.location.port === "4000" ||
-			(import.meta.env?.VITE_API_URL ?? "").includes(":4000");
-		const caddyBase =
-			window.location.port === "4000"
-				? window.location.origin
-				: (import.meta.env?.VITE_API_URL ?? "").replace(/\/$/, "") ||
-					`http://${devHost}:4000`;
-
-		if (useCaddy) {
-			checks.push({ name: "backend", url: caddyBase });
-		} else {
-			checks.push({
-				name: "python-backend",
-				url: `http://${devHost}:8000`,
-			});
-			checks.push({ name: "go-backend", url: `http://${devHost}:8080` });
-		}
+		return checks;
 	}
+
+	// Use single Caddy URL when app is served via gateway (port 4000) or VITE_API_URL points at Caddy
+	const devHost = getDevHost();
+	const useCaddy =
+		window.location.port === "4000" ||
+		(import.meta.env?.VITE_API_URL ?? "").includes(":4000");
+	const caddyBase =
+		window.location.port === "4000"
+			? window.location.origin
+			: (import.meta.env?.VITE_API_URL ?? "").replace(/\/$/, "") ||
+				`http://${devHost}:4000`;
+
+	if (useCaddy) {
+		checks.push({ name: "backend", url: caddyBase });
+		return checks;
+	}
+
+	checks.push({ name: "python-backend", url: `http://${devHost}:8000` });
+	checks.push({ name: "go-backend", url: `http://${devHost}:8080` });
+	return checks;
+};
+
+const updateInfraIfNeeded = async (
+	check: PreflightCheck,
+	ok: boolean,
+): Promise<void> => {
+	if (
+		!check.name.includes("python-backend") ||
+		!ok ||
+		!document.querySelector("[data-infra-list]")
+	) {
+		return;
+	}
+	const infra = await fetchPythonInfra(check.url);
+	updateInfraStatus(infra);
+};
+
+const updateProgress = (completed: number, total: number): void => {
+	const percent = Math.round((completed / total) * FULL_PERCENT);
+	updatePreflightProgress(percent);
+};
+
+const wireRetryButton = (
+	check: PreflightCheck,
+	retryHandler: () => void,
+): void => {
+	const item = document.querySelector(`[data-check="${check.name}"]`);
+	const retryBtn = item?.querySelector(
+		"[data-retry]",
+	) as HTMLButtonElement | null;
+	if (retryBtn) {
+		retryBtn.onclick = () => {
+			retryHandler();
+		};
+	}
+};
+
+const handleCheckResult = async (options: {
+	check: PreflightCheck;
+	completed: number;
+	error: string | null;
+	errors: string[];
+	hint?: string;
+	statusMap: Map<string, boolean>;
+	total: number;
+}): Promise<number> => {
+	const { check, completed, errors, hint, statusMap, total, error } = options;
+	const ok = !error;
+	statusMap.set(check.name, ok);
+	updatePreflightCheck(check.name, { error: error || undefined, hint, ok });
+	await updateInfraIfNeeded(check, ok);
+	if (error) {
+		errors.push(`${check.name}: ${error}`);
+	}
+	const nextCompleted = completed + 1;
+	updateProgress(nextCompleted, total);
+	return nextCompleted;
+};
+
+export const runFrontendPreflight = async (): Promise<PreflightResult> => {
+	const errors: string[] = [];
+	const checks = buildChecks();
+	const statusMap = new Map<string, boolean>();
 
 	renderPreflightLoading(checks);
 	let completed = 0;
 
-	const retryCheck = async (check: PreflightCheck) => {
+	const retryCheck = async (check: PreflightCheck): Promise<void> => {
 		const item = document.querySelector(`[data-check="${check.name}"]`);
 		pulseItem(item);
-		updatePreflightCheck(check.name, false, "Retrying...");
+		updatePreflightCheck(check.name, {
+			error: "Retrying...",
+			isRetrying: true,
+			ok: false,
+		});
 		const { error, hint } = await checkHealth(check.url);
 		const ok = !error;
 		statusMap.set(check.name, ok);
-		updatePreflightCheck(check.name, ok, error || undefined, hint);
-		if (
-			check.name.includes("python-backend") &&
-			ok &&
-			document.querySelector("[data-infra-list]")
-		) {
-			const infra = await fetchPythonInfra(check.url);
-			updateInfraStatus(infra);
-		}
-		const allOk = Array.from(statusMap.values()).every(Boolean);
+		updatePreflightCheck(check.name, { error: error || undefined, hint, ok });
+		await updateInfraIfNeeded(check, ok);
+		const allOk = [...statusMap.values()].every(Boolean);
 		if (allOk) {
 			fadeOutAndReload();
 		}
@@ -452,37 +575,24 @@ export async function runFrontendPreflight(): Promise<PreflightResult> {
 
 	for (const check of checks) {
 		const { error, hint } = await checkHealth(check.url);
-		const ok = !error;
-		statusMap.set(check.name, ok);
-		updatePreflightCheck(check.name, ok, error || undefined, hint);
-		if (
-			check.name.includes("python-backend") &&
-			ok &&
-			document.querySelector("[data-infra-list]")
-		) {
-			const infra = await fetchPythonInfra(check.url);
-			updateInfraStatus(infra);
-		}
-		const item = document.querySelector(`[data-check="${check.name}"]`);
-		const retryBtn = item?.querySelector(
-			"[data-retry]",
-		) as HTMLButtonElement | null;
-		if (retryBtn) {
-			retryBtn.onclick = () => {
-				retryCheck(check);
-			};
-		}
-		if (error) {
-			errors.push(`${check.name}: ${error}`);
-		}
-		completed += 1;
-		updatePreflightProgress(Math.round((completed / checks.length) * 100));
+		completed = await handleCheckResult({
+			check,
+			completed,
+			error,
+			errors,
+			hint,
+			statusMap,
+			total: checks.length,
+		});
+		wireRetryButton(check, () => {
+			retryCheck(check);
+		});
 	}
 
-	return { ok: errors.length === 0, errors };
-}
+	return { errors, ok: errors.length === 0 };
+};
 
-export function renderPreflightFailure(result: PreflightResult): void {
+export const renderPreflightFailure = (result: PreflightResult): void => {
 	const root = document.getElementById("root");
 	if (!root) {
 		throw new Error("Root element not found");
@@ -518,4 +628,4 @@ export function renderPreflightFailure(result: PreflightResult): void {
 	if (refresh) {
 		refresh.onclick = () => fadeOutAndReload();
 	}
-}
+};

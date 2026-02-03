@@ -6,6 +6,7 @@ from uuid import uuid4
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from typing import Any
 from tracertm.models.link import Link
 
 
@@ -23,7 +24,7 @@ class LinkRepository:
         link_type: str,
         graph_id: str | None = None,
         link_metadata: dict | None = None,
-        metadata: dict | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> Link:
         """Create new link."""
         if graph_id is None:

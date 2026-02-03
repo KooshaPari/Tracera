@@ -62,8 +62,8 @@ class GoBackendClient:
         method: str,
         path: str,
         json_data: dict | None = None,
-        params: dict | None = None,
-    ) -> dict:
+        params: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """Make an HTTP request with retry logic.
 
         Args:
@@ -108,7 +108,7 @@ class GoBackendClient:
         except Exception as e:
             raise GoBackendError(f"Unexpected error during request: {e!s}") from e
 
-    async def get_item(self, item_id: str) -> dict:
+    async def get_item(self, item_id: str) -> dict[str, Any]:
         """Get an item by ID from Go backend.
 
         Args:
@@ -119,7 +119,7 @@ class GoBackendClient:
         """
         return await self._request("GET", f"/api/v1/items/{item_id}")
 
-    async def create_link(self, source_id: str, target_id: str, link_type: str, metadata: dict | None = None) -> dict:
+    async def create_link(self, source_id: str, target_id: str, link_type: str, metadata: dict[str, Any] | None = None) -> dict[str, Any]:
         """Create a link between two items.
 
         Args:
@@ -139,7 +139,7 @@ class GoBackendClient:
         }
         return await self._request("POST", "/api/v1/links", json_data=payload)
 
-    async def search_items(self, query: str, filters: dict | None = None) -> dict:
+    async def search_items(self, query: str, filters: dict[str, Any] | None = None) -> dict[str, Any]:
         """Search items in Go backend.
 
         Args:
@@ -155,7 +155,7 @@ class GoBackendClient:
 
         return await self._request("GET", "/api/v1/search/items", params=params)
 
-    async def get_project_items(self, project_id: str, item_type: str | None = None) -> dict:
+    async def get_project_items(self, project_id: str, item_type: str | None = None) -> dict[str, Any]:
         """Get all items for a project.
 
         Args:
@@ -171,7 +171,7 @@ class GoBackendClient:
 
         return await self._request("GET", f"/api/v1/projects/{project_id}/items", params=params)
 
-    async def update_item(self, item_id: str, update_data: dict) -> dict:
+    async def update_item(self, item_id: str, update_data: dict[str, Any]) -> dict[str, Any]:
         """Update an item.
 
         Args:
@@ -183,7 +183,7 @@ class GoBackendClient:
         """
         return await self._request("PATCH", f"/api/v1/items/{item_id}", json_data=update_data)
 
-    async def delete_item(self, item_id: str) -> dict:
+    async def delete_item(self, item_id: str) -> dict[str, Any]:
         """Delete an item.
 
         Args:
@@ -194,7 +194,7 @@ class GoBackendClient:
         """
         return await self._request("DELETE", f"/api/v1/items/{item_id}")
 
-    async def get_graph_data(self, project_id: str, root_item_id: str | None = None, depth: int = 3) -> dict:
+    async def get_graph_data(self, project_id: str, root_item_id: str | None = None, depth: int = 3) -> dict[str, Any]:
         """Get graph data for visualization.
 
         Args:
@@ -211,7 +211,7 @@ class GoBackendClient:
 
         return await self._request("GET", f"/api/v1/projects/{project_id}/graph", params=params)
 
-    async def health_check(self) -> dict:
+    async def health_check(self) -> dict[str, Any]:
         """Check Go backend health.
 
         Returns:
@@ -245,7 +245,7 @@ def generate_cache_key(prefix: str, *args: Any) -> str:
     h = hashlib.sha256()
     h.update(prefix.encode())
     for arg in args:
-        if isinstance(arg, dict):
+        if isinstance(arg, dict[str, Any]):
             h.update(json.dumps(arg, sort_keys=True).encode())
         else:
             h.update(str(arg).encode())

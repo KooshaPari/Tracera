@@ -490,7 +490,7 @@ async def execute_tool(
         return {"success": False, "error": str(e)}
 
 
-def _read_file(params: dict, base_dir: str | None) -> dict:
+def _read_file(params: dict, base_dir: str | None) -> dict[str, Any]:
     """Read file contents."""
     path = params["path"]
     if base_dir and not pathlib.Path(path).is_absolute():
@@ -529,7 +529,7 @@ def _read_file(params: dict, base_dir: str | None) -> dict:
     }
 
 
-def _write_file(params: dict, base_dir: str | None) -> dict:
+def _write_file(params: dict, base_dir: str | None) -> dict[str, Any]:
     """Write content to file."""
     path = pathlib.Path(params["path"])
     content = params["content"]
@@ -552,7 +552,7 @@ def _write_file(params: dict, base_dir: str | None) -> dict:
     }
 
 
-def _edit_file(params: dict, base_dir: str | None) -> dict:
+def _edit_file(params: dict, base_dir: str | None) -> dict[str, Any]:
     """Edit file by replacing a string."""
     path = pathlib.Path(params["path"])
     old_string = params["old_string"]
@@ -587,7 +587,7 @@ def _edit_file(params: dict, base_dir: str | None) -> dict:
     }
 
 
-def _list_directory(params: dict, base_dir: str | None) -> dict:
+def _list_directory(params: dict, base_dir: str | None) -> dict[str, Any]:
     """List directory contents."""
     path = pathlib.Path(params.get("path", base_dir or "."))
     pattern = params.get("pattern", "*")
@@ -639,7 +639,7 @@ def _list_directory(params: dict, base_dir: str | None) -> dict:
     }
 
 
-def _search_files(params: dict, base_dir: str | None) -> dict:
+def _search_files(params: dict, base_dir: str | None) -> dict[str, Any]:
     """Search for pattern in files."""
     pattern = params["pattern"]
     path = pathlib.Path(params.get("path", base_dir or "."))
@@ -720,7 +720,7 @@ def _search_files(params: dict, base_dir: str | None) -> dict:
     }
 
 
-async def _run_command(params: dict, base_dir: str | None) -> dict:
+async def _run_command(params: dict, base_dir: str | None) -> dict[str, Any]:
     """Execute a shell command with security restrictions."""
     command = params["command"]
     working_dir = params.get("working_directory", base_dir or ".")
@@ -792,7 +792,7 @@ async def _execute_tracertm_tool(
     tool_name: str,
     params: dict,
     db_session: Any,
-) -> dict:
+) -> dict[str, Any]:
     """Execute TraceRTM-specific tools."""
     # These will use the existing TraceRTM repositories/services
     # For now, return a placeholder - will be implemented with actual DB access

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from typing import Any
 from tracertm.api.deps import auth_guard, get_db
 from tracertm.repositories.event_repository import EventRepository
 from tracertm.schemas.specification import (
@@ -17,7 +18,7 @@ router = APIRouter(prefix="/contracts", tags=["Contracts"])
 @router.post("/", response_model=ContractRead, status_code=201)
 async def create_contract(
     contract: ContractCreate,
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     service = ContractService(db)
@@ -37,7 +38,7 @@ async def create_contract(
 @router.get("/{contract_id}", response_model=ContractRead)
 async def get_contract(
     contract_id: str,
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     service = ContractService(db)
@@ -51,7 +52,7 @@ async def get_contract(
 async def get_contract_activities(
     contract_id: str,
     limit: int = Query(100, description="Max activities to return"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     repo = EventRepository(db)
@@ -61,11 +62,11 @@ async def get_contract_activities(
             "id": str(event.id),
             "contract_id": contract_id,
             "activity_type": event.event_type,
-            "from_value": event.data.get("from_value") if isinstance(event.data, dict) else None,
-            "to_value": event.data.get("to_value") if isinstance(event.data, dict) else None,
-            "description": event.data.get("description") if isinstance(event.data, dict) else None,
-            "performed_by": event.data.get("performed_by") if isinstance(event.data, dict) else None,
-            "metadata": event.data if isinstance(event.data, dict) else {},
+            "from_value": event.data.get("from_value") if isinstance(event.data, dict[str, Any]) else None,
+            "to_value": event.data.get("to_value") if isinstance(event.data, dict[str, Any]) else None,
+            "description": event.data.get("description") if isinstance(event.data, dict[str, Any]) else None,
+            "performed_by": event.data.get("performed_by") if isinstance(event.data, dict[str, Any]) else None,
+            "metadata": event.data if isinstance(event.data, dict[str, Any]) else {},
             "created_at": event.created_at,
         }
         for event in events
@@ -78,7 +79,7 @@ async def get_contract_activities(
 async def update_contract(
     contract_id: str,
     updates: ContractUpdate,
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     service = ContractService(db)
@@ -92,7 +93,7 @@ async def update_contract(
 @router.delete("/{contract_id}", status_code=204)
 async def delete_contract(
     contract_id: str,
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     service = ContractService(db)
@@ -105,7 +106,7 @@ async def delete_contract(
 async def list_contracts(
     project_id: str = Query(..., description="Project ID"),
     item_id: str | None = Query(None, description="Filter by Item ID"),
-    claims: dict = Depends(auth_guard),
+    claims: dict[str, Any] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
 ):
     service = ContractService(db)

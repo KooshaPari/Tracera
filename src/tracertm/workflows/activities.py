@@ -332,7 +332,7 @@ async def run_agent_turn(
             set_allowed_paths([path])
 
         messages = json.loads(messages_json) if messages_json else []
-        if not isinstance(messages, list):
+        if not isinstance(messages, list[Any]):
             messages = []
 
         from tracertm.services.ai_service import get_ai_service

@@ -10,6 +10,7 @@ from __future__ import annotations
 import importlib
 import logging
 from collections.abc import Callable
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +27,7 @@ class ToolRegistry:
         self,
         tool_name: str,
         module_path: str,
-        metadata: dict | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> None:
         """
         Register a tool loader without importing the module.
@@ -59,7 +60,7 @@ class ToolRegistry:
         for tool_name in self._tool_loaders:
             self.load_tool(tool_name)
 
-    def get_tool_metadata(self, tool_name: str) -> dict | None:
+    def get_tool_metadata(self, tool_name: str) -> dict[str, Any] | None:
         """Get cached metadata for a tool without loading it."""
         return self._tool_metadata.get(tool_name)
 

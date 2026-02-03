@@ -65,7 +65,7 @@ class AuthMiddleware(Middleware):
                 return
 
             auth = getattr(ctx, "auth", None)
-            if not isinstance(auth, dict):
+            if not isinstance(auth, dict[str, Any]):
                 logger.warning(f"Auth context invalid for tool: {tool_name}")
                 next_fn = getattr(ctx, "next", None)
                 if next_fn is not None and callable(next_fn):
@@ -257,7 +257,7 @@ class RateLimitMiddleware(Middleware):
             return "global"
 
         auth = getattr(ctx, "auth", None)
-        if isinstance(auth, dict):
+        if isinstance(auth, dict[str, Any]):
             auth_d = cast(dict[str, Any], auth)
             claims = auth_d.get("claims", {})
             return str(claims.get("sub", "anonymous"))

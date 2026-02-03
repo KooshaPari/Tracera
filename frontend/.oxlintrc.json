@@ -222,6 +222,27 @@
 				"eslint/sort-keys": "off",
 				"eslint/id-length": "off"
 			}
+		},
+		{
+			"files": ["**/components/examples/**/*.tsx", "**/components/examples/**/*.ts"],
+			"rules": {
+				"react/jsx-max-depth": ["error", { "max": 8 }],
+				"eslint/max-lines-per-function": "off",
+				"complexity": "off",
+				"eslint/max-statements": "off",
+				"eslint/no-magic-numbers": "off",
+				"react-perf/jsx-no-new-function-as-prop": "off",
+				"react-perf/jsx-no-new-object-as-prop": "off",
+				"react-perf/jsx-no-new-array-as-prop": "off",
+				"eslint/sort-imports": "off",
+				"import/order": "off",
+				"eslint/func-style": "off",
+				"eslint/sort-keys": "off",
+				"eslint/id-length": "off",
+				"typescript/explicit-function-return-type": "off",
+				"typescript/explicit-module-boundary-types": "off",
+				"react/no-array-index-key": "off"
+			}
 		}
 	]
 }

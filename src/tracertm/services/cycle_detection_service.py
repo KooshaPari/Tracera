@@ -7,7 +7,7 @@ Prevents circular dependencies in depends_on relationships.
 import asyncio
 import uuid
 from types import SimpleNamespace
-from typing import cast
+from typing import cast, Any
 
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -120,7 +120,7 @@ class CycleDetectionService:
         project_id: str | uuid.UUID,
         link_type: str = "depends_on",
         link_types: list[str] | None = None,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """
         Detect all cycles in the dependency graph (async version).
 
@@ -272,7 +272,7 @@ class CycleDetectionService:
 
     def detect_missing_dependencies(
         self, project_id: str | uuid.UUID, link_type: str = "depends_on"
-    ) -> dict:
+    ) -> dict[str, Any]:
         """
         Detect missing dependencies (items that reference non-existent items) (Story 4.6, FR22).
 
@@ -334,7 +334,7 @@ class CycleDetectionService:
             "missing_dependencies": missing_deps,
         }
 
-    def detect_orphans(self, project_id: str | uuid.UUID, link_type: str | None = None) -> dict:
+    def detect_orphans(self, project_id: str | uuid.UUID, link_type: str | None = None) -> dict[str, Any]:
         """
         Detect orphaned items (items with no links) (Story 4.6, FR22).
 
@@ -394,7 +394,7 @@ class CycleDetectionService:
         item_id: str | uuid.UUID,
         max_depth: int = 10,
         link_type: str = "depends_on",
-    ) -> dict:
+    ) -> dict[str, Any]:
         """
         Analyze impact of changing an item (Story 4.6, FR22, NFR-R2).
 

@@ -30,7 +30,7 @@ import {
 	loginWithToastStore,
 	shouldLogoutOnError,
 } from "./auth";
-import agentApi from "./agent";
+import { agentApi } from "./agent";
 import client from "./client";
 import componentLibraryApi from "./component-library";
 

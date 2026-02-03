@@ -7,16 +7,14 @@ import { useEffect } from "react";
  * Automatically redirects to WorkOS hosted UI for authentication.
  * No custom UI - delegates fully to WorkOS AuthKit.
  */
-function Login() {
+const Login = () => {
 	const { user, isLoading, signIn } = useAuth();
 
 	useEffect(() => {
 		if (user && !isLoading) {
-			// Already logged in, redirect to dashboard
 			globalThis.location.href = "/home";
 		} else if (!isLoading && !user) {
-			// Not logged in, immediately redirect to WorkOS
-			undefined;
+			signIn?.();
 		}
 	}, [user, isLoading, signIn]);
 
@@ -28,7 +26,7 @@ function Login() {
 			</div>
 		</div>
 	);
-}
+};
 
 export const Route = createFileRoute("/auth/login")({
 	component: Login,

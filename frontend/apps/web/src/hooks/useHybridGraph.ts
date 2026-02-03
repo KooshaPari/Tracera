@@ -1,4 +1,4 @@
-import { _useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { Edge, Node } from "@xyflow/react";
 import type Graph from "graphology";
 import { createGraphologyAdapter } from "@/lib/graphology/adapter";
@@ -19,11 +19,11 @@ export interface HybridGraphState {
 	performanceMode: "reactflow" | "webgl";
 }
 
-export function useHybridGraph(
+export const useHybridGraph = (
 	nodes: Node[],
 	edges: Edge[],
 	config: HybridGraphConfig = {},
-) {
+) => {
 	const {
 		nodeThreshold = NODE_THRESHOLD,
 		forceReactFlow = false,
@@ -68,4 +68,4 @@ export function useHybridGraph(
 		selectedNodeId,
 		setSelectedNodeId,
 	};
-}
+};

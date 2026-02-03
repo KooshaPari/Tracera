@@ -662,10 +662,10 @@ class LocalStorageManager:
 
         project_config = yaml.safe_load(project_yaml_path.read_text(encoding="utf-8"))
         default_counters: dict[str, int] = {"epic": 0, "story": 0, "test": 0, "task": 0}
-        if project_config is None or not isinstance(project_config, dict):
+        if project_config is None or not isinstance(project_config, dict[str, Any]):
             return default_counters
         counters_raw = project_config.get("counters", default_counters)
-        if isinstance(counters_raw, dict):
+        if isinstance(counters_raw, dict[str, Any]):
             return counters_raw
         return default_counters
 
@@ -1204,7 +1204,7 @@ class ItemStorage:
             content_hash = self._hash_content(markdown_content)
 
             # Store content hash in metadata
-            current_metadata = dict(item.item_metadata)
+            current_metadata = dict[str, Any](item.item_metadata)
             current_metadata["content_hash"] = content_hash
             item.item_metadata = current_metadata
             session.commit()
@@ -1272,7 +1272,7 @@ class ItemStorage:
                 item.owner = owner
             if metadata is not None:
                 # Merge metadata (preserving existing keys)
-                current_metadata = dict(item.item_metadata)
+                current_metadata = dict[str, Any](item.item_metadata)
                 current_metadata.update(metadata)
                 item.item_metadata = current_metadata
 
@@ -1287,7 +1287,7 @@ class ItemStorage:
             content_hash = self._hash_content(markdown_content)
 
             # Update content hash
-            current_metadata = dict(item.item_metadata)
+            current_metadata = dict[str, Any](item.item_metadata)
             current_metadata["content_hash"] = content_hash
             item.item_metadata = current_metadata
             session.commit()

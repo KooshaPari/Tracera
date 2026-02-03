@@ -66,7 +66,7 @@ class JiraImportService:
         if "issues" not in data:
             errors.append("Missing 'issues' field")
 
-        if not isinstance(data.get("issues"), list):
+        if not isinstance(data.get("issues"), list[Any]):
             errors.append("'issues' must be a list")
 
         # Validate each issue
