@@ -599,6 +599,7 @@ from tracertm.api.middleware import AuthenticationMiddleware, CacheHeadersMiddle
 from tracertm.api.routers import adrs, auth, blockchain, contracts, execution, features, mcp, notifications, quality
 
 # Try to import Brotli compression (optional dependency)
+BrotliMiddleware = None
 try:
     from brotli_asgi import BrotliMiddleware  # type: ignore[import-untyped,import-not-found]
     brotli_available = True
@@ -608,7 +609,7 @@ except ImportError:
 
 # Add performance middlewares (order matters - outermost first)
 # 1. Brotli compression for smaller JSON responses (20-30% savings)
-if brotli_available:
+if brotli_available and BrotliMiddleware is not None:
     app.add_middleware(
         BrotliMiddleware,
         quality=4,  # Balance between speed and compression (1-11)
@@ -649,6 +650,13 @@ from tracertm.api.handlers.items import (
     execute_item_query,
     resolve_view_matches,
     try_get_from_cache,
+)
+from tracertm.api.handlers.links import (
+    build_links_response,
+    detect_link_columns,
+    execute_links_query,
+    parse_exclude_types,
+    try_get_links_from_cache,
 )
 from tracertm.services.cache_service import CacheService
 
@@ -1027,25 +1035,10 @@ async def list_links(
         src_col, tgt_col, typ_col, meta_col = await detect_link_columns(db)
 
         # Query links based on filter criteria
-        if project_id:
-            total_count, links_result = await query_links_by_project(
-                db, project_id, exclude_types_list, src_col, tgt_col, typ_col, meta_col, skip, limit
-            )
-        elif source_id and target_id:
-            total_count, links_result = await query_links_by_source_and_target(
-                db, source_id, target_id, exclude_types_list, src_col, tgt_col, typ_col, meta_col, skip, limit
-            )
-        elif source_id:
-            total_count, links_result = await query_links_by_source(
-                db, source_id, exclude_types_list, src_col, tgt_col, typ_col, meta_col, skip, limit
-            )
-        elif target_id:
-            total_count, links_result = await query_links_by_target(
-                db, target_id, exclude_types_list, src_col, tgt_col, typ_col, meta_col, skip, limit
-            )
-        else:
-            total_count = 0
-            links_result = None
+        total_count, links_result = await execute_links_query(
+            db, project_id, source_id, target_id, exclude_types_list,
+            src_col, tgt_col, typ_col, meta_col, skip, limit
+        )
 
         # Build response
         result = build_links_response(links_result, total_count, project_id)
@@ -1065,6 +1058,7 @@ async def list_links(
             e,
         )
         raise HTTPException(status_code=500, detail="Internal server error") from e
+
 
 @app.get("/api/v1/links/grouped")
 async def list_links_grouped(

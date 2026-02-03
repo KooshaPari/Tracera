@@ -480,6 +480,56 @@ async def try_get_links_from_cache(
     return cache_key, cached
 
 
+async def execute_links_query(
+    db: AsyncSession,
+    project_id: str | None,
+    source_id: str | None,
+    target_id: str | None,
+    exclude_types_list: list[str],
+    src_col: str,
+    tgt_col: str,
+    typ_col: str,
+    meta_col: str,
+    skip: int,
+    limit: int | None,
+) -> tuple[int, Any]:
+    """Execute the appropriate links query based on filter criteria.
+
+    Args:
+        db: Database session
+        project_id: Optional project ID filter
+        source_id: Optional source item ID filter
+        target_id: Optional target item ID filter
+        exclude_types_list: List of link types to exclude
+        src_col: Source column name
+        tgt_col: Target column name
+        typ_col: Type column name
+        meta_col: Metadata column name
+        skip: Number of records to skip
+        limit: Maximum number of records to return
+
+    Returns:
+        Tuple of (total_count, query_result)
+    """
+    if project_id:
+        return await query_links_by_project(
+            db, project_id, exclude_types_list, src_col, tgt_col, typ_col, meta_col, skip, limit
+        )
+    if source_id and target_id:
+        return await query_links_by_source_and_target(
+            db, source_id, target_id, exclude_types_list, src_col, tgt_col, typ_col, meta_col, skip, limit
+        )
+    if source_id:
+        return await query_links_by_source(
+            db, source_id, exclude_types_list, src_col, tgt_col, typ_col, meta_col, skip, limit
+        )
+    if target_id:
+        return await query_links_by_target(
+            db, target_id, exclude_types_list, src_col, tgt_col, typ_col, meta_col, skip, limit
+        )
+    return 0, None
+
+
 def build_links_response(
     links_result: Any | None,
     total_count: int,
