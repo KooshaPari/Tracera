@@ -45,8 +45,9 @@ describe("Type Guards", () => {
 			if (isRequirementItem(item)) {
 				// TypeScript should allow accessing RequirementItem-specific properties
 				const adrId = item.adrId; // Should compile
-				const _contractId = item.contractId; // Should compile
+				const contractId = item.contractId; // Should compile
 				expect(adrId).toBeUndefined(); // These are optional
+				expect(contractId).toBeUndefined();
 			}
 		});
 	});
@@ -68,8 +69,9 @@ describe("Type Guards", () => {
 			const item = createMockItem("test");
 			if (isTestItem(item)) {
 				const testType = item.testType; // Should compile
-				const _automationStatus = item.automationStatus; // Should compile
+				const automationStatus = item.automationStatus; // Should compile
 				expect(testType).toBeUndefined(); // Optional properties
+				expect(automationStatus).toBeUndefined();
 			}
 		});
 	});
@@ -89,8 +91,9 @@ describe("Type Guards", () => {
 			const item = createMockItem("epic");
 			if (isEpicItem(item)) {
 				const acceptanceCriteria = item.acceptanceCriteria; // Should compile
-				const _businessValue = item.businessValue; // Should compile
+				const businessValue = item.businessValue; // Should compile
 				expect(acceptanceCriteria).toBeUndefined();
+				expect(businessValue).toBeUndefined();
 			}
 		});
 	});
@@ -110,10 +113,13 @@ describe("Type Guards", () => {
 			const item = createMockItem("user_story");
 			if (isUserStoryItem(item)) {
 				const asA = item.asA; // Should compile
-				const _iWant = item.iWant; // Should compile
-				const _soThat = item.soThat; // Should compile
-				const _storyPoints = item.storyPoints; // Should compile
+				const iWant = item.iWant; // Should compile
+				const soThat = item.soThat; // Should compile
+				const storyPoints = item.storyPoints; // Should compile
 				expect(asA).toBeUndefined();
+				expect(iWant).toBeUndefined();
+				expect(soThat).toBeUndefined();
+				expect(storyPoints).toBeUndefined();
 			}
 		});
 	});
@@ -132,8 +138,9 @@ describe("Type Guards", () => {
 			const item = createMockItem("task");
 			if (isTaskItem(item)) {
 				const estimatedHours = item.estimatedHours; // Should compile
-				const _actualHours = item.actualHours; // Should compile
+				const actualHours = item.actualHours; // Should compile
 				expect(estimatedHours).toBeUndefined();
+				expect(actualHours).toBeUndefined();
 			}
 		});
 	});
@@ -153,9 +160,11 @@ describe("Type Guards", () => {
 			const item = createMockItem("bug");
 			if (isDefectItem(item)) {
 				const severity = item.severity; // Should compile
-				const _reproducible = item.reproducible; // Should compile
-				const _stepsToReproduce = item.stepsToReproduce; // Should compile
+				const reproducible = item.reproducible; // Should compile
+				const stepsToReproduce = item.stepsToReproduce; // Should compile
 				expect(severity).toBeUndefined();
+				expect(reproducible).toBeUndefined();
+				expect(stepsToReproduce).toBeUndefined();
 			}
 		});
 	});

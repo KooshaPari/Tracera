@@ -5,6 +5,7 @@ Provides a reactive interface between LocalStorageManager and Textual TUI compon
 """
 
 from collections.abc import Callable
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -12,6 +13,29 @@ from tracertm.models import Item, Link, Project
 from tracertm.storage.conflict_resolver import Conflict
 from tracertm.storage.local_storage import LocalStorageManager
 from tracertm.storage.sync_engine import SyncEngine, SyncState, SyncStatus
+
+
+@dataclass
+class ItemCreateConfig:
+    """Configuration for creating items."""
+    external_id: str | None = None
+    description: str | None = None
+    status: str = "todo"
+    priority: str = "medium"
+    owner: str | None = None
+    parent_id: str | None = None
+    metadata: dict[str, Any] | None = None
+
+
+@dataclass
+class ItemUpdateConfig:
+    """Configuration for updating items."""
+    title: str | None = None
+    description: str | None = None
+    status: str | None = None
+    priority: str | None = None
+    owner: str | None = None
+    metadata: dict[str, Any] | None = None
 
 
 class StorageAdapter:
@@ -135,13 +159,7 @@ class StorageAdapter:
         project: Project,
         title: str,
         item_type: str,
-        external_id: str | None = None,
-        description: str | None = None,
-        status: str = "todo",
-        priority: str = "medium",
-        owner: str | None = None,
-        parent_id: str | None = None,
-        metadata: dict[str, Any] | None = None,
+        config: ItemCreateConfig | None = None,
     ) -> Item:
         """
         Create a new item.
@@ -150,30 +168,25 @@ class StorageAdapter:
             project: Project instance
             title: Item title
             item_type: Type (epic, story, test, task)
-            external_id: External ID (e.g., EPIC-001)
-            description: Item description
-            status: Item status
-            priority: Item priority
-            owner: Item owner
-            parent_id: Parent item ID
-            metadata: Additional metadata
+            config: Item creation configuration
 
         Returns:
             Created item
         """
+        cfg = config or ItemCreateConfig()
         project_storage = self.storage.get_project_storage(project.name)
         item_storage = project_storage.get_item_storage(project)
 
         item = item_storage.create_item(
             title=title,
             item_type=item_type,
-            external_id=external_id,
-            description=description,
-            status=status,
-            priority=priority,
-            owner=owner,
-            parent_id=parent_id,
-            metadata=metadata,
+            external_id=cfg.external_id,
+            description=cfg.description,
+            status=cfg.status,
+            priority=cfg.priority,
+            owner=cfg.owner,
+            parent_id=cfg.parent_id,
+            metadata=cfg.metadata,
         )
 
         # Notify listeners
@@ -185,12 +198,7 @@ class StorageAdapter:
         self,
         project: Project,
         item_id: str,
-        title: str | None = None,
-        description: str | None = None,
-        status: str | None = None,
-        priority: str | None = None,
-        owner: str | None = None,
-        metadata: dict[str, Any] | None = None,
+        config: ItemUpdateConfig | None = None,
     ) -> Item:
         """
         Update an existing item.
@@ -198,27 +206,23 @@ class StorageAdapter:
         Args:
             project: Project instance
             item_id: Item ID
-            title: New title
-            description: New description
-            status: New status
-            priority: New priority
-            owner: New owner
-            metadata: New metadata
+            config: Item update configuration
 
         Returns:
             Updated item
         """
+        cfg = config or ItemUpdateConfig()
         project_storage = self.storage.get_project_storage(project.name)
         item_storage = project_storage.get_item_storage(project)
 
         item = item_storage.update_item(
             item_id=item_id,
-            title=title,
-            description=description,
-            status=status,
-            priority=priority,
-            owner=owner,
-            metadata=metadata,
+            title=cfg.title,
+            description=cfg.description,
+            status=cfg.status,
+            priority=cfg.priority,
+            owner=cfg.owner,
+            metadata=cfg.metadata,
         )
 
         # Notify listeners

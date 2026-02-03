@@ -3,8 +3,23 @@
  */
 
 import { beforeEach, describe, expect, it } from "vitest";
+import type { Item, ItemStatus, Priority, ViewType } from "@tracertm/types";
 import { useItemsStore } from "../../stores/items-store";
-import { createMockItem } from "../mocks/data";
+
+const createMockItem = (overrides: Partial<Item> = {}): Item => ({
+	createdAt: new Date().toISOString(),
+	description: "Test item",
+	id: "item-1",
+	priority: "medium" as Priority,
+	projectId: "proj-1",
+	status: "todo" as ItemStatus,
+	title: "Test item",
+	type: "feature",
+	updatedAt: new Date().toISOString(),
+	version: 1,
+	view: "FEATURE" as ViewType,
+	...overrides,
+});
 
 describe("itemsStore", () => {
 	beforeEach(() => {

@@ -29,7 +29,7 @@ class AccountRepository:
             name=name,
             slug=slug,
             account_type=account_type,
-            metadata=metadata or {},
+            account_metadata=metadata or {},
         )
         self.db.add(account)
         await self.db.flush()

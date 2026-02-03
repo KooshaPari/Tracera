@@ -16,7 +16,7 @@ interface GraphViewProps {
 }
 
 export function GraphView({ projectId }: GraphViewProps) {
-	const navigate = useNavigate();
+	const _navigate = useNavigate();
 
 	// ✅ NEW: Progressive edge loading state
 	const MAX_EDGES_INITIAL = 500;
@@ -98,7 +98,7 @@ export function GraphView({ projectId }: GraphViewProps) {
 		setVisibleEdgeCount((prev) => Math.min(prev + 500, links.length));
 	};
 
-	const handleNavigateToItem = (itemId: string) => {};
+	const handleNavigateToItem = (_itemId: string) => {};
 
 	return (
 		<div className="space-y-4 animate-in-fade-up">

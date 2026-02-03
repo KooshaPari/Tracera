@@ -36,7 +36,7 @@ def should_skip_rate_limiting(request: Request | None, claims: dict[str, Any] | 
         return True
 
     # Skip for bulk endpoints (POST /api/v1/items, POST /api/v1/links)
-    if request.method == "POST" and request.url.path in ["/api/v1/items", "/api/v1/links"]:
+    if request.method == "POST" and request.url.path in {"/api/v1/items", "/api/v1/links"}:
         # Allow for public access (no auth) - bulk operations typically don't have auth
         if not claims or claims.get("role") == "public":
             return True

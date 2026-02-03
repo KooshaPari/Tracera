@@ -26,7 +26,7 @@ const NodeErrorSkeletonComponent = ({
 		(typeof data["error"] === "string" ? data["error"] : "Error");
 	const onRetryClick = useCallback(
 		() => data.onRetry?.(data.id),
-		[data.id, data.onRetry],
+		[data],
 	);
 
 	return (

@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import type { RealtimeEvent } from "../api/websocket";
-import { useWebSocketStore } from "../stores/websocketStore";
+import type { WebSocketState } from "../stores/websocket-store";
+import { useWebSocketStore } from "../stores/websocket-store";
 
 export function useWebSocket() {
 	const { isConnected, connect, disconnect, subscribe } = useWebSocketStore();
@@ -29,9 +30,9 @@ export function useRealtimeSubscription(
 }
 
 export function useRealtimeEvents() {
-	return useWebSocketStore((state) => state.events);
+	return useWebSocketStore((state: WebSocketState) => state.events);
 }
 
 export function useLastRealtimeEvent() {
-	return useWebSocketStore((state) => state.lastEvent);
+	return useWebSocketStore((state: WebSocketState) => state.lastEvent);
 }

@@ -4,8 +4,17 @@
 
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
-import { useProjectStore } from "../../stores/projectStore";
-import { createMockProject } from "../mocks/data";
+import type { Project } from "@tracertm/types";
+import { useProjectStore } from "../../stores/project-store";
+
+const createMockProject = (overrides: Partial<Project> = {}): Project => ({
+	createdAt: new Date().toISOString(),
+	description: "Test Project",
+	id: "proj-1",
+	name: "Test Project",
+	updatedAt: new Date().toISOString(),
+	...overrides,
+});
 
 describe("projectStore", () => {
 	beforeEach(() => {

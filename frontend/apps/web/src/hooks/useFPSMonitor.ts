@@ -17,7 +17,7 @@ export function useFPSMonitor(enabled = true): FPSStats {
 
 	const frameTimesRef = useRef<number[]>([]);
 	const lastFrameTimeRef = useRef<number>(performance.now());
-	const rafIdRef = useRef<number>();
+	const rafIdRef = useRef<number | undefined>(undefined);
 
 	useEffect(() => {
 		if (!enabled) {

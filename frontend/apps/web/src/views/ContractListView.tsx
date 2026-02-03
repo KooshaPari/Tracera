@@ -2,8 +2,7 @@ import type { Contract, ContractStatus } from "@tracertm/types";
 import type { FC } from "react";
 import { useCallback, useMemo, useState } from "react";
 import { useNavigate, useSearch } from "@tanstack/react-router";
-import { AlertCircle, Plus, Search, Shield } from "lucide-react";
-import { toast } from "sonner";
+import { AlertCircle, Plus } from "lucide-react";
 import {
 	Button,
 	Card,

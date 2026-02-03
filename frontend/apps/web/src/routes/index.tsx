@@ -2,10 +2,6 @@ import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useIsAuthenticated } from "@/hooks/useAuth";
 import { LandingPage } from "@/views";
 
-export const Route = createFileRoute("/")({
-	component: IndexComponent,
-});
-
 const hasStoredTokenOrIsE2E = (): boolean => {
 	if (typeof globalThis.window === "undefined") {
 		return false;
@@ -33,3 +29,7 @@ const IndexComponent = () => {
 
 	return <LandingPage />;
 };
+
+export const Route = createFileRoute("/")({
+	component: IndexComponent,
+});

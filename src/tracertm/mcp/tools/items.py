@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, TypedDict
 
 from fastmcp.exceptions import ToolError
 from sqlalchemy import func, select
@@ -23,6 +23,37 @@ from tracertm.mcp.tools.base_async import (
     wrap_success,
 )
 from tracertm.models.item import Item
+
+
+class CreateItemOptions(TypedDict, total=False):
+    """Optional fields for create_item. MCP clients send as one object."""
+
+    description: str | None
+    status: str
+    priority: str
+    owner: str | None
+    parent_id: str | None
+    metadata: dict[str, Any] | None
+
+
+class UpdateItemOptions(TypedDict, total=False):
+    """Optional fields for update_item. MCP clients send as one object."""
+
+    title: str | None
+    description: str | None
+    status: str | None
+    priority: str | None
+    owner: str | None
+    metadata: dict[str, Any] | None
+
+
+class QueryItemsFilters(TypedDict, total=False):
+    """Filters for query_items. MCP clients send as one object."""
+
+    view: str | None
+    item_type: str | None
+    status: str | None
+    owner: str | None
 
 
 def _item_to_dict(item: Item) -> dict[str, Any]:
@@ -49,12 +80,7 @@ async def create_item(
     title: str,
     view: str,
     item_type: str,
-    description: str | None = None,
-    status: str = "todo",
-    priority: str = "medium",
-    owner: str | None = None,
-    parent_id: str | None = None,
-    metadata: dict[str, Any] | None = None,
+    options: CreateItemOptions | None = None,
     ctx: Any | None = None,
 ) -> dict[str, Any]:
     """Create a new traceable item.
@@ -63,12 +89,8 @@ async def create_item(
         title: Item title (required)
         view: View category (FEATURE, REQUIREMENT, TEST, etc.)
         item_type: Specific type within the view
-        description: Detailed description
-        status: Item status (todo, in_progress, done, etc.)
-        priority: Priority level (low, medium, high, critical)
-        owner: Owner/assignee
-        parent_id: Parent item ID for hierarchical items
-        metadata: Additional metadata as key-value pairs
+        options: Optional dict with description, status, priority, owner, parent_id, metadata
+        ctx: MCP context
 
     Returns:
         Created item details
@@ -79,9 +101,15 @@ async def create_item(
         raise ToolError("title, view, and item_type are required.")
 
     view = view.upper()
+    opts = options or {}
+    description = opts.get("description")
+    status = opts.get("status", "todo")
+    priority = opts.get("priority", "medium")
+    owner = opts.get("owner")
+    parent_id = opts.get("parent_id")
+    metadata = opts.get("metadata")
 
     async with get_mcp_session() as session:
-        # Generate external ID
         count_result = await session.execute(
             select(func.count(Item.id)).filter(Item.project_id == project_id, Item.view == view)
         )
@@ -156,27 +184,37 @@ async def get_item(
         return wrap_success(_item_to_dict(item), "get", ctx)
 
 
+def _apply_item_updates(item: Item, opts: UpdateItemOptions) -> None:
+    """Apply optional update fields to an Item. Mutates item in place."""
+    if opts.get("title") is not None:
+        item.title = opts["title"]
+    if opts.get("description") is not None:
+        item.description = opts["description"]
+    if opts.get("status") is not None:
+        item.status = opts["status"]
+    if opts.get("priority") is not None:
+        item.priority = opts["priority"]
+    if opts.get("owner") is not None:
+        item.owner = opts["owner"]
+    if opts.get("metadata") is not None:
+        current = item.item_metadata or {}
+        current.update(opts["metadata"])
+        item.item_metadata = current
+    item.updated_at = datetime.now(UTC)
+
+
 @mcp.tool(description="Update an existing item")
 async def update_item(
     item_id: str,
-    title: str | None = None,
-    description: str | None = None,
-    status: str | None = None,
-    priority: str | None = None,
-    owner: str | None = None,
-    metadata: dict[str, Any] | None = None,
+    options: UpdateItemOptions | None = None,
     ctx: Any | None = None,
 ) -> dict[str, Any]:
     """Update an existing item's fields.
 
     Args:
         item_id: Item ID to update (required)
-        title: New title
-        description: New description
-        status: New status
-        priority: New priority
-        owner: New owner
-        metadata: Metadata to merge (updates only specified keys)
+        options: Optional dict with title, description, status, priority, owner, metadata
+        ctx: MCP context
 
     Returns:
         Updated item details
@@ -185,11 +223,11 @@ async def update_item(
         raise ToolError("item_id is required.")
 
     project_id = await require_project()
+    opts = options or {}
 
     with get_session() as session:
         item = (
-            session
-            .query(Item)
+            session.query(Item)
             .filter(
                 Item.project_id == project_id,
                 Item.deleted_at.is_(None),
@@ -201,24 +239,7 @@ async def update_item(
         if not item:
             raise ToolError(f"Item not found: {item_id}")
 
-        # Update fields if provided
-        if title is not None:
-            item.title = title
-        if description is not None:
-            item.description = description
-        if status is not None:
-            item.status = status
-        if priority is not None:
-            item.priority = priority
-        if owner is not None:
-            item.owner = owner
-        if metadata is not None:
-            # Merge metadata
-            current = item.item_metadata or {}
-            current.update(metadata)
-            item.item_metadata = current
-
-        item.updated_at = datetime.now(UTC)
+        _apply_item_updates(item, opts)
 
         try:
             session.commit()
@@ -275,27 +296,23 @@ async def delete_item(
 
 @mcp.tool(description="Query items with filters")
 async def query_items(
-    view: str | None = None,
-    item_type: str | None = None,
-    status: str | None = None,
-    owner: str | None = None,
+    filters: QueryItemsFilters | None = None,
     limit: int = 50,
     ctx: Any | None = None,
 ) -> dict[str, Any]:
     """Query items with optional filters.
 
     Args:
-        view: Filter by view (FEATURE, REQUIREMENT, TEST, etc.)
-        item_type: Filter by item type
-        status: Filter by status
-        owner: Filter by owner
+        filters: Optional dict with view, item_type, status, owner
         limit: Maximum results (default 50, max 500)
+        ctx: MCP context
 
     Returns:
         List of matching items
     """
     project_id = await require_project()
     limit = min(limit, 500)
+    flt = filters or {}
 
     with get_session() as session:
         query = session.query(Item).filter(
@@ -303,14 +320,14 @@ async def query_items(
             Item.deleted_at.is_(None),
         )
 
-        if view:
-            query = query.filter(Item.view == view.upper())
-        if item_type:
-            query = query.filter(Item.item_type == item_type)
-        if status:
-            query = query.filter(Item.status == status)
-        if owner:
-            query = query.filter(Item.owner == owner)
+        if flt.get("view"):
+            query = query.filter(Item.view == (flt["view"] or "").upper())
+        if flt.get("item_type"):
+            query = query.filter(Item.item_type == flt["item_type"])
+        if flt.get("status"):
+            query = query.filter(Item.status == flt["status"])
+        if flt.get("owner"):
+            query = query.filter(Item.owner == flt["owner"])
 
         items = query.limit(limit).all()
 

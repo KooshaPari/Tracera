@@ -9,7 +9,7 @@
 
 set -e
 
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
 # Colors
@@ -55,7 +55,7 @@ generate_grpc_code() {
   echo ""
 
   # Prefer buf if available (lint + managed mode + consistent output)
-  if command -v buf &> /dev/null; then
+  if command -v buf &> /dev/null && [ "${SKIP_BUF:-}" != "1" ]; then
     echo -e "${YELLOW}Using buf generate (buf.gen.yaml)...${NC}"
     if buf generate; then
       echo -e "${GREEN}✅ buf generate completed${NC}"
@@ -92,7 +92,7 @@ generate_grpc_code() {
     --go_opt=paths=source_relative \
     --go-grpc_out=backend/pkg/proto \
     --go-grpc_opt=paths=source_relative \
-    proto/tracertm.proto
+    proto/tracertm/v1/tracertm.proto
 
   if [ $? -eq 0 ]; then
     echo -e "${GREEN}✅ Go code generated successfully${NC}"
@@ -111,10 +111,17 @@ generate_grpc_code() {
     pip install grpcio-tools
   fi
 
-  python -m grpc_tools.protoc -I. \
+  GRPC_TOOLS_PROTO_PATH="$(python - <<'PY'
+import os
+import grpc_tools
+print(os.path.join(os.path.dirname(grpc_tools.__file__), "_proto"))
+PY
+)"
+
+  env -u PROTOC_INCLUDE python -m grpc_tools.protoc -Iproto -I"$GRPC_TOOLS_PROTO_PATH" \
     --python_out=src/tracertm/proto \
     --grpc_python_out=src/tracertm/proto \
-    proto/tracertm.proto
+    proto/tracertm/v1/tracertm.proto
 
   if [ $? -eq 0 ]; then
     echo -e "${GREEN}✅ Python code generated successfully${NC}"
@@ -156,7 +163,7 @@ EOF
       protoc -I. \
         --js_out=import_style=commonjs:frontend/apps/web/src/api/grpc \
         --grpc-web_out=import_style=typescript,mode=grpcwebtext:frontend/apps/web/src/api/grpc \
-        proto/tracertm.proto
+        proto/tracertm/v1/tracertm.proto
 
       if [ $? -eq 0 ]; then
         echo -e "${GREEN}✅ TypeScript code generated successfully${NC}"

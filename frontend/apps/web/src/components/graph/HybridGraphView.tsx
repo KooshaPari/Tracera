@@ -1,5 +1,6 @@
-import { memo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import type { Edge, Node } from "@xyflow/react";
+import type { Item, Link } from "@tracertm/types";
 import { FlowGraphViewInner } from "./FlowGraphViewInner";
 import { SigmaGraphView } from "./SigmaGraphView";
 import { RichNodeDetailPanel } from "./sigma/RichNodeDetailPanel";
@@ -31,6 +32,39 @@ export const HybridGraphView = memo(function HybridGraphView({
 		useHybridGraph(nodes, edges, config);
 
 	const [detailPanelNode, setDetailPanelNode] = useState<any>(null);
+	const reactFlowItems = useMemo(() => {
+		const timestamp = new Date().toISOString();
+		return nodes
+			.map((node) => {
+				const data = node.data as Record<string, unknown> | undefined;
+				const item = data?.["item"];
+				if (item) {
+					return item as Item;
+				}
+				return {
+					createdAt: timestamp,
+					id: node.id,
+					priority: "medium",
+					projectId: "unknown",
+					status: "todo",
+					title: node.id,
+					type: node.type || "node",
+					updatedAt: timestamp,
+					version: 1,
+					view: "feature",
+				} satisfies Item;
+			})
+			.filter((item): item is Item => Boolean(item));
+	}, [nodes]);
+	const reactFlowLinks = useMemo(() => {
+		return edges
+			.map((edge) => {
+				const data = edge.data as Record<string, unknown> | undefined;
+				const link = data?.["link"];
+				return link as Link | undefined;
+			})
+			.filter((link): link is Link => Boolean(link));
+	}, [edges]);
 
 	// Handle node click
 	const handleNodeClick = (nodeId: string) => {
@@ -40,10 +74,12 @@ export const HybridGraphView = memo(function HybridGraphView({
 		if (useWebGL) {
 			const node = nodes.find((n) => n.id === nodeId);
 			if (node) {
+				const nodeData =
+					(node.data as Record<string, unknown> | undefined) ?? {};
 				setDetailPanelNode({
-					data: node.data || {},
+					data: nodeData,
 					id: node.id,
-					label: node.data?.label || node.id,
+					label: (nodeData["label"] as string | undefined) || node.id,
 					type: node.type || "default",
 				});
 			}
@@ -99,9 +135,9 @@ export const HybridGraphView = memo(function HybridGraphView({
 			) : (
 				// ReactFlow mode (<10k nodes)
 				<FlowGraphViewInner
-					nodes={nodes}
-					edges={edges}
-					onNodeSelect={handleNodeClick}
+					items={reactFlowItems}
+					links={reactFlowLinks}
+					onNavigateToItem={handleNodeClick}
 				/>
 			)}
 

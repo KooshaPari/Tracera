@@ -20,6 +20,11 @@ from typing import Any
 
 import yaml
 
+# Minimum lines required for a table-based history section
+_HISTORY_MIN_LINES = 3
+# Expected column count for history table rows
+_HISTORY_COLUMNS = 4
+
 
 @dataclass
 class LinkData:
@@ -491,7 +496,7 @@ def _parse_history_table(table_content: str) -> list[dict[str, str]]:
     lines = [line.strip() for line in table_content.split("\n") if line.strip()]
 
     # Skip header and separator rows
-    if len(lines) < 3:
+    if len(lines) < _HISTORY_MIN_LINES:
         return history
 
     # Parse data rows (skip first 2 lines: header and separator)
@@ -502,7 +507,7 @@ def _parse_history_table(table_content: str) -> list[dict[str, str]]:
         # Split by | and clean up
         cells = [cell.strip() for cell in line.split("|")[1:-1]]
 
-        if len(cells) >= 4:
+        if len(cells) >= _HISTORY_COLUMNS:
             history.append({
                 "version": cells[0],
                 "date": cells[1],

@@ -10,33 +10,35 @@
  * - Edge cases
  */
 
+import type { ComponentProps } from "react";
 import { render, screen } from "@testing-library/react";
 import { FileText, Plus } from "lucide-react";
 import { describe, expect, it } from "vitest";
 import { PageHeader } from "@/components/layout/PageHeader";
 
+const renderHeader = (props: ComponentProps<typeof PageHeader>) =>
+	render(<PageHeader {...props} />);
+
 describe("PageHeader Component", () => {
 	describe("Basic Rendering", () => {
 		it("should render with title only", () => {
-			render(<PageHeader title="Dashboard" />);
+			renderHeader({ title: "Dashboard" });
 
 			expect(screen.getByText("Dashboard")).toBeInTheDocument();
 		});
 
 		it("should render title with correct styling", () => {
-			render(<PageHeader title="Dashboard" />);
+			renderHeader({ title: "Dashboard" });
 
 			const title = screen.getByText("Dashboard");
 			expect(title).toHaveClass("text-2xl", "font-bold");
 		});
 
 		it("should render description when provided", () => {
-			render(
-				<PageHeader
-					title="Projects"
-					description="Manage all your requirements projects"
-				/>,
-			);
+			renderHeader({
+				description: "Manage all your requirements projects",
+				title: "Projects",
+			});
 
 			expect(
 				screen.getByText("Manage all your requirements projects"),
@@ -44,7 +46,7 @@ describe("PageHeader Component", () => {
 		});
 
 		it("should not render description when not provided", () => {
-			const { container } = render(<PageHeader title="Dashboard" />);
+			const { container } = renderHeader({ title: "Dashboard" });
 
 			const description = container.querySelector(".text-sm.text-gray-600");
 			expect(description).not.toBeInTheDocument();
@@ -53,30 +55,26 @@ describe("PageHeader Component", () => {
 
 	describe("Icon Display", () => {
 		it("should render icon when provided", () => {
-			render(
-				<PageHeader
-					title="Documents"
-					icon={<FileText data-testid="header-icon" />}
-				/>,
-			);
+			renderHeader({
+				icon: <FileText data-testid="header-icon" />,
+				title: "Documents",
+			});
 
 			expect(screen.getByTestId("header-icon")).toBeInTheDocument();
 		});
 
 		it("should not render icon container when icon not provided", () => {
-			render(<PageHeader title="Dashboard" />);
+			const { container } = renderHeader({ title: "Dashboard" });
 
 			const iconContainer = container.querySelector(".w-10.h-10");
 			expect(iconContainer).not.toBeInTheDocument();
 		});
 
 		it("should render icon with correct container styles", () => {
-			render(
-				<PageHeader
-					title="Documents"
-					icon={<FileText data-testid="header-icon" />}
-				/>,
-			);
+			const { container } = renderHeader({
+				icon: <FileText data-testid="header-icon" />,
+				title: "Documents",
+			});
 
 			const iconContainer = container.querySelector(".w-10.h-10");
 			expect(iconContainer).toHaveClass(
@@ -87,12 +85,10 @@ describe("PageHeader Component", () => {
 		});
 
 		it("should render icon with proper color classes", () => {
-			render(
-				<PageHeader
-					title="Documents"
-					icon={<FileText data-testid="header-icon" />}
-				/>,
-			);
+			const { container } = renderHeader({
+				icon: <FileText data-testid="header-icon" />,
+				title: "Documents",
+			});
 
 			const iconContainer = container.querySelector(".text-primary-600");
 			expect(iconContainer).toBeInTheDocument();
@@ -101,33 +97,29 @@ describe("PageHeader Component", () => {
 
 	describe("Actions", () => {
 		it("should render actions when provided", () => {
-			render(
-				<PageHeader
-					title="Projects"
-					actions={
-						<button data-testid="create-button">
-							<Plus /> Create
-						</button>
-					}
-				/>,
-			);
+			renderHeader({
+				actions: (
+					<button data-testid="create-button">
+						<Plus /> Create
+					</button>
+				),
+				title: "Projects",
+			});
 
 			expect(screen.getByTestId("create-button")).toBeInTheDocument();
 		});
 
 		it("should render multiple actions", () => {
-			render(
-				<PageHeader
-					title="Projects"
-					actions={
-						<>
-							<button data-testid="action-1">Action 1</button>
-							<button data-testid="action-2">Action 2</button>
-							<button data-testid="action-3">Action 3</button>
-						</>
-					}
-				/>,
-			);
+			renderHeader({
+				actions: (
+					<>
+						<button data-testid="action-1">Action 1</button>
+						<button data-testid="action-2">Action 2</button>
+						<button data-testid="action-3">Action 3</button>
+					</>
+				),
+				title: "Projects",
+			});
 
 			expect(screen.getByTestId("action-1")).toBeInTheDocument();
 			expect(screen.getByTestId("action-2")).toBeInTheDocument();
@@ -135,7 +127,7 @@ describe("PageHeader Component", () => {
 		});
 
 		it("should not render actions container when actions not provided", () => {
-			render(<PageHeader title="Dashboard" />);
+			const { container } = renderHeader({ title: "Dashboard" });
 
 			const actionsContainer = container.querySelector(
 				".flex.items-center.space-x-2",
@@ -144,17 +136,15 @@ describe("PageHeader Component", () => {
 		});
 
 		it("should render complex action components", () => {
-			render(
-				<PageHeader
-					title="Projects"
-					actions={
-						<div data-testid="complex-actions" className="flex gap-2">
-							<button>Export</button>
-							<button>Import</button>
-						</div>
-					}
-				/>,
-			);
+			renderHeader({
+				actions: (
+					<div data-testid="complex-actions" className="flex gap-2">
+						<button>Export</button>
+						<button>Import</button>
+					</div>
+				),
+				title: "Projects",
+			});
 
 			expect(screen.getByTestId("complex-actions")).toBeInTheDocument();
 		});
@@ -162,16 +152,14 @@ describe("PageHeader Component", () => {
 
 	describe("Breadcrumbs", () => {
 		it("should render breadcrumbs when provided", () => {
-			render(
-				<PageHeader
-					title="Project Details"
-					breadcrumbs={[
-						{ href: "/", label: "Home" },
-						{ href: "/projects", label: "Projects" },
-						{ label: "Project 1" },
-					]}
-				/>,
-			);
+			renderHeader({
+				breadcrumbs: [
+					{ href: "/", label: "Home" },
+					{ href: "/projects", label: "Projects" },
+					{ label: "Project 1" },
+				],
+				title: "Project Details",
+			});
 
 			expect(screen.getByText("Home")).toBeInTheDocument();
 			expect(screen.getByText("Projects")).toBeInTheDocument();
@@ -179,12 +167,10 @@ describe("PageHeader Component", () => {
 		});
 
 		it("should render clickable breadcrumb links", () => {
-			render(
-				<PageHeader
-					title="Project Details"
-					breadcrumbs={[{ href: "/", label: "Home" }, { label: "Projects" }]}
-				/>,
-			);
+			renderHeader({
+				breadcrumbs: [{ href: "/", label: "Home" }, { label: "Projects" }],
+				title: "Project Details",
+			});
 
 			const homeLink = screen.getByText("Home");
 			expect(homeLink).toBeInTheDocument();
@@ -193,15 +179,10 @@ describe("PageHeader Component", () => {
 		});
 
 		it("should render current breadcrumb without link", () => {
-			render(
-				<PageHeader
-					title="Project Details"
-					breadcrumbs={[
-						{ href: "/", label: "Home" },
-						{ label: "Current Page" },
-					]}
-				/>,
-			);
+			renderHeader({
+				breadcrumbs: [{ href: "/", label: "Home" }, { label: "Current Page" }],
+				title: "Project Details",
+			});
 
 			const currentCrumb = screen.getByText("Current Page");
 			expect(currentCrumb.tagName).toBe("SPAN");
@@ -209,16 +190,14 @@ describe("PageHeader Component", () => {
 		});
 
 		it("should render breadcrumb separators", () => {
-			render(
-				<PageHeader
-					title="Project Details"
-					breadcrumbs={[
-						{ href: "/", label: "Home" },
-						{ href: "/projects", label: "Projects" },
-						{ label: "Current" },
-					]}
-				/>,
-			);
+			const { container } = renderHeader({
+				breadcrumbs: [
+					{ href: "/", label: "Home" },
+					{ href: "/projects", label: "Projects" },
+					{ label: "Current" },
+				],
+				title: "Project Details",
+			});
 
 			const separators = container.querySelectorAll("svg");
 			// Should have 2 separators (between 3 items)
@@ -226,26 +205,24 @@ describe("PageHeader Component", () => {
 		});
 
 		it("should not render breadcrumbs when not provided", () => {
-			render(<PageHeader title="Dashboard" />);
+			const { container } = renderHeader({ title: "Dashboard" });
 
 			const nav = container.querySelector('nav[aria-label="Breadcrumb"]');
 			expect(nav).not.toBeInTheDocument();
 		});
 
 		it("should not render breadcrumbs when empty array", () => {
-			render(<PageHeader title="Dashboard" breadcrumbs={[]} />);
+			const { container } = renderHeader({ breadcrumbs: [], title: "Dashboard" });
 
 			const nav = container.querySelector('nav[aria-label="Breadcrumb"]');
 			expect(nav).not.toBeInTheDocument();
 		});
 
 		it("should have proper breadcrumb styling", () => {
-			render(
-				<PageHeader
-					title="Project Details"
-					breadcrumbs={[{ href: "/", label: "Home" }, { label: "Projects" }]}
-				/>,
-			);
+			const { container } = renderHeader({
+				breadcrumbs: [{ href: "/", label: "Home" }, { label: "Projects" }],
+				title: "Project Details",
+			});
 
 			const breadcrumbList = container.querySelector(
 				".flex.items-center.space-x-2",
@@ -256,19 +233,17 @@ describe("PageHeader Component", () => {
 
 	describe("Combined Props", () => {
 		it("should render all props together", () => {
-			render(
-				<PageHeader
-					title="Project Details"
-					description="View and manage project requirements"
-					icon={<FileText data-testid="project-icon" />}
-					breadcrumbs={[
-						{ href: "/", label: "Home" },
-						{ href: "/projects", label: "Projects" },
-						{ label: "Project 1" },
-					]}
-					actions={<button data-testid="edit-button">Edit</button>}
-				/>,
-			);
+			renderHeader({
+				actions: <button data-testid="edit-button">Edit</button>,
+				breadcrumbs: [
+					{ href: "/", label: "Home" },
+					{ href: "/projects", label: "Projects" },
+					{ label: "Project 1" },
+				],
+				description: "View and manage project requirements",
+				icon: <FileText data-testid="project-icon" />,
+				title: "Project Details",
+			});
 
 			expect(screen.getByText("Project Details")).toBeInTheDocument();
 			expect(
@@ -280,21 +255,20 @@ describe("PageHeader Component", () => {
 		});
 
 		it("should render title and icon only", () => {
-			render(
-				<PageHeader title="Documents" icon={<FileText data-testid="icon" />} />,
-			);
+			renderHeader({
+				icon: <FileText data-testid="icon" />,
+				title: "Documents",
+			});
 
 			expect(screen.getByText("Documents")).toBeInTheDocument();
 			expect(screen.getByTestId("icon")).toBeInTheDocument();
 		});
 
 		it("should render title and description only", () => {
-			render(
-				<PageHeader
-					title="Settings"
-					description="Configure your application preferences"
-				/>,
-			);
+			renderHeader({
+				description: "Configure your application preferences",
+				title: "Settings",
+			});
 
 			expect(screen.getByText("Settings")).toBeInTheDocument();
 			expect(
@@ -305,30 +279,31 @@ describe("PageHeader Component", () => {
 
 	describe("Layout and Styling", () => {
 		it("should have border at bottom", () => {
-			render(<PageHeader title="Dashboard" />);
+			const { container } = renderHeader({ title: "Dashboard" });
 
 			const header = container.querySelector(".border-b");
 			expect(header).toBeInTheDocument();
 		});
 
 		it("should have correct background color", () => {
-			render(<PageHeader title="Dashboard" />);
+			const { container } = renderHeader({ title: "Dashboard" });
 
 			const header = container.querySelector(".bg-white");
 			expect(header).toBeInTheDocument();
 		});
 
 		it("should have correct padding", () => {
-			render(<PageHeader title="Dashboard" />);
+			const { container } = renderHeader({ title: "Dashboard" });
 
 			const contentContainer = container.querySelector(".px-6.py-4");
 			expect(contentContainer).toBeInTheDocument();
 		});
 
 		it("should have flex layout for title and actions", () => {
-			render(
-				<PageHeader title="Dashboard" actions={<button>Action</button>} />,
-			);
+			const { container } = renderHeader({
+				actions: <button>Action</button>,
+				title: "Dashboard",
+			});
 
 			const flexContainer = container.querySelector(
 				".flex.items-start.justify-between",
@@ -339,7 +314,7 @@ describe("PageHeader Component", () => {
 
 	describe("Dark Mode", () => {
 		it("should have dark mode classes for border", () => {
-			render(<PageHeader title="Dashboard" />);
+			const { container } = renderHeader({ title: "Dashboard" });
 
 			const header = container.querySelector(
 				String.raw`.dark\:border-gray-800`,
@@ -348,21 +323,21 @@ describe("PageHeader Component", () => {
 		});
 
 		it("should have dark mode classes for background", () => {
-			render(<PageHeader title="Dashboard" />);
+			const { container } = renderHeader({ title: "Dashboard" });
 
 			const header = container.querySelector(String.raw`.dark\:bg-gray-900`);
 			expect(header).toBeInTheDocument();
 		});
 
 		it("should have dark mode classes for title", () => {
-			render(<PageHeader title="Dashboard" />);
+			renderHeader({ title: "Dashboard" });
 
 			const title = screen.getByText("Dashboard");
 			expect(title).toHaveClass("dark:text-gray-100");
 		});
 
 		it("should have dark mode classes for description", () => {
-			render(<PageHeader title="Dashboard" description="Welcome back" />);
+			renderHeader({ description: "Welcome back", title: "Dashboard" });
 
 			const description = screen.getByText("Welcome back");
 			expect(description).toHaveClass("dark:text-gray-400");
@@ -372,51 +347,47 @@ describe("PageHeader Component", () => {
 	describe("Edge Cases", () => {
 		it("should handle very long titles", () => {
 			const longTitle = "A".repeat(200);
-			render(<PageHeader title={longTitle} />);
+			renderHeader({ title: longTitle });
 
 			expect(screen.getByText(longTitle)).toBeInTheDocument();
 		});
 
 		it("should handle very long descriptions", () => {
 			const longDescription = "B".repeat(500);
-			render(<PageHeader title="Title" description={longDescription} />);
+			renderHeader({ description: longDescription, title: "Title" });
 
 			expect(screen.getByText(longDescription)).toBeInTheDocument();
 		});
 
 		it("should handle special characters in title", () => {
-			render(<PageHeader title="<Project> & 'Details'" />);
+			renderHeader({ title: "<Project> & 'Details'" });
 
 			expect(screen.getByText("<Project> & 'Details'")).toBeInTheDocument();
 		});
 
 		it("should handle special characters in description", () => {
-			render(<PageHeader title="Title" description="<Data> & 'information'" />);
+			renderHeader({ description: "<Data> & 'information'", title: "Title" });
 
 			expect(screen.getByText("<Data> & 'information'")).toBeInTheDocument();
 		});
 
 		it("should handle empty string title", () => {
-			render(<PageHeader title="" />);
-
-			render(<PageHeader title="" />);
+			const { container } = renderHeader({ title: "" });
 			const title = container.querySelector(".text-2xl");
 			expect(title).toBeInTheDocument();
 		});
 
 		it("should handle complex React nodes in actions", () => {
-			render(
-				<PageHeader
-					title="Dashboard"
-					actions={
-						<div data-testid="complex">
-							<button>A</button>
-							<div>B</div>
-							<span>C</span>
-						</div>
-					}
-				/>,
-			);
+			renderHeader({
+				actions: (
+					<div data-testid="complex">
+						<button>A</button>
+						<div>B</div>
+						<span>C</span>
+					</div>
+				),
+				title: "Dashboard",
+			});
 
 			expect(screen.getByTestId("complex")).toBeInTheDocument();
 		});

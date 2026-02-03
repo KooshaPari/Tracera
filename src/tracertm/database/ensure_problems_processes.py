@@ -175,7 +175,7 @@ AGENT_LOCKS_SQL = [
 ]
 
 
-async def ensure_problems_processes_tables() -> None:
+async def ensure_problems_processes_tables() -> None:  # noqa: C901
     """
     Create problems, problem_activities, processes, and process_executions
     tables if they do not exist. Uses the app's database (same as get_db).

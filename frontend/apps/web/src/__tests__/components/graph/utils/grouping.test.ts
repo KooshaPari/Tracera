@@ -1,7 +1,6 @@
 // Tests for grouping algorithms
 
 import type { Item, Link, LinkType } from "@tracertm/types";
-import { beforeEach, describe, expect, it } from "vitest";
 import {
 	calculateGroupCohesion,
 	calculateGroupSeparation,
@@ -23,7 +22,7 @@ function createItem(id: string, title: string, type: string): Item {
 		type,
 		updatedAt: new Date().toISOString(),
 		version: 1,
-		view: "technical",
+		view: "architecture",
 	};
 }
 
@@ -36,10 +35,12 @@ function createLink(
 		createdAt: new Date().toISOString(),
 		description: `Link from ${sourceId} to ${targetId}`,
 		id: `link-${sourceId}-${targetId}`,
+		projectId: "p1",
 		sourceId,
 		targetId,
 		type: type as LinkType,
 		updatedAt: new Date().toISOString(),
+		version: 1,
 	};
 }
 
@@ -89,7 +90,7 @@ describe("Grouping Algorithms", () => {
 			const groups = groupByLinkTargets(items, links);
 			const group = groups.find((g) => g.itemIds.includes("item1"));
 
-			expect(group?.metadata?.commonTargets).toBeDefined();
+			expect(group?.metadata?.["commonTargets"]).toBeDefined();
 		});
 	});
 
@@ -136,6 +137,10 @@ describe("Grouping Algorithms", () => {
 		it("should have cohesion of 1 for connected components", () => {
 			const groups = groupByPaths(items, links);
 			const group = groups[0];
+			expect(group).toBeDefined();
+			if (!group) {
+				return;
+			}
 
 			expect(group.metrics?.cohesion).toBe(1);
 		});
@@ -177,6 +182,10 @@ describe("Grouping Algorithms", () => {
 		it("should include title similarity metrics", () => {
 			const groups = groupBySemantic(items);
 			const group = groups[0];
+			expect(group).toBeDefined();
+			if (!group) {
+				return;
+			}
 
 			expect(group.metrics?.commonality).toBeDefined();
 			expect(group.metrics?.commonality).toBeGreaterThanOrEqual(0);

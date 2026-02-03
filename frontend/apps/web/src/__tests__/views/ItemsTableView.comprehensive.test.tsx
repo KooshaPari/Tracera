@@ -272,8 +272,9 @@ describe(ItemsTableView, () => {
 
 		// Select all checkbox should be present
 		const checkboxes = screen.getAllByRole("checkbox");
-		if (checkboxes.length > 0) {
-			await user.click(checkboxes[0]);
+		const firstCheckbox = checkboxes[0];
+		if (firstCheckbox) {
+			await user.click(firstCheckbox);
 			// Bulk actions should appear
 		}
 	});

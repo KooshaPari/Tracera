@@ -83,7 +83,7 @@ TraceRTM uses gRPC for inter-service communication:
 
 ### Service Definitions
 
-**Location:** `proto/tracertm.proto`
+**Location:** `proto/tracertm/v1/tracertm.proto`
 
 **Services:**
 
@@ -105,7 +105,7 @@ TraceRTM uses gRPC for inter-service communication:
 
 ### Step 1: Define Service in Proto
 
-Edit `proto/tracertm.proto`:
+Edit `proto/tracertm/v1/tracertm.proto`:
 
 ```protobuf
 service MyNewService {
@@ -267,7 +267,7 @@ See [Testing gRPC Services](#testing-grpc-services) below.
 
 ### Step 1: Update Proto Definition
 
-Edit `proto/tracertm.proto` to add fields or modify messages:
+Edit `proto/tracertm/v1/tracertm.proto` to add fields or modify messages:
 
 ```protobuf
 message ImpactRequest {
@@ -610,7 +610,7 @@ uv pip install grpcio-tools
 
 #### Problem: Import path errors in generated Go code
 
-Check `proto/tracertm.proto`:
+Check `proto/tracertm/v1/tracertm.proto`:
 ```protobuf
 option go_package = "github.com/kooshapari/tracertm-backend/pkg/proto";
 ```

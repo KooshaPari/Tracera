@@ -10,12 +10,81 @@ from __future__ import annotations
 import asyncio
 import gzip
 import json
+import os
 import re
-import subprocess  # noqa: S404
 from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, cast
+
+
+def _path_write_text(path_str: str, content: str, encoding: str = "utf-8") -> None:
+    """Sync helper: write text to path (run via asyncio.to_thread)."""
+    Path(path_str).write_text(content, encoding=encoding)
+
+
+def _path_read_text(path_str: str, encoding: str = "utf-8") -> str:
+    """Sync helper: read text from path (run via asyncio.to_thread)."""
+    return Path(path_str).read_text(encoding=encoding)
+
+
+def _path_exists(path_str: str) -> bool:
+    """Sync helper: path exists (run via asyncio.to_thread)."""
+    return Path(path_str).exists()
+
+
+def _path_cwd() -> Path:
+    """Sync helper: current working directory (run via asyncio.to_thread)."""
+    return Path.cwd()
+
+
+def _load_data_from_path(path: str) -> Any:
+    """Sync helper: load import data from file path (run via asyncio.to_thread)."""
+    p = Path(path)
+    if not p.exists():
+        raise ToolError(f"File not found: {path}")
+    if p.suffix.lower() in {".yaml", ".yml"}:
+        result = yaml.safe_load(p.read_text(encoding="utf-8"))
+        if result is None:
+            raise ToolError(f"Failed to parse YAML file: {path}")
+        return result
+    return json.loads(p.read_text(encoding="utf-8"))
+
+
+def _list_ingestable_paths(dir_path: str, recursive: bool) -> list[tuple[str, str]]:
+    """Sync helper: list (path_str, suffix) for ingestable files (run via asyncio.to_thread)."""
+    directory = Path(dir_path)
+    if not directory.exists():
+        raise ToolError(f"Directory not found: {dir_path}")
+    patterns = {".md", ".mdx", ".yaml", ".yml"}
+    files = directory.rglob("*") if recursive else directory.iterdir()
+    return [
+        (str(p), p.suffix.lower())
+        for p in files
+        if p.is_file() and p.suffix.lower() in patterns
+    ]
+
+
+def _backup_write(output_path_str: str, backup_data: dict[str, Any], compress: bool) -> None:
+    """Sync helper: write backup to path (run via asyncio.to_thread)."""
+    output_path = Path(output_path_str)
+    if compress:
+        with gzip.open(output_path, "wt", encoding="utf-8") as f:
+            json.dump(backup_data, f, indent=2, default=str)
+    else:
+        output_path.write_text(json.dumps(backup_data, indent=2, default=str), encoding="utf-8")
+
+
+def _backup_read(path_str: str) -> dict[str, Any]:
+    """Sync helper: read backup from path (run via asyncio.to_thread)."""
+    backup_file = Path(path_str)
+    if not backup_file.exists():
+        raise ToolError(f"Backup file not found: {path_str}")
+    if backup_file.suffix == ".gz":
+        with gzip.open(backup_file, "rt", encoding="utf-8") as f:
+            return json.load(f)
+    return json.loads(backup_file.read_text(encoding="utf-8"))
+
 
 import yaml
 from fastmcp.exceptions import ToolError
@@ -722,10 +791,9 @@ async def export_manage(
 
     output = payload.get("output")
     if output:
-        output_path = Path(output)
-        output_path.write_text(content, encoding="utf-8")
+        await asyncio.to_thread(_path_write_text, output, content)
         return _wrap(
-            {"format": action, "output": str(output_path), "bytes": len(content)},
+            {"format": action, "output": str(output), "bytes": len(content)},
             ctx,
             action,
         )
@@ -743,42 +811,30 @@ async def import_manage(
     action = action.lower()
     project_name = payload.get("project_name")
 
-    def _load_data() -> Any:
+    def _load_data_no_path() -> Any:
         data = payload.get("data")
         if isinstance(data, dict[str, Any]):
             return data
         content = payload.get("content")
-        path = payload.get("path")
         if content:
             try:
                 return json.loads(content)
             except json.JSONDecodeError:
-                import yaml
-
                 result = yaml.safe_load(content)
                 if result is None:
                     raise ToolError("Failed to parse YAML content")
                 return result
-        if path:
-            file_path = Path(path)
-            if not file_path.exists():
-                raise ToolError(f"File not found: {path}")
-            if file_path.suffix.lower() in {".yaml", ".yml"}:
-                import yaml
-
-                result = yaml.safe_load(file_path.read_text(encoding="utf-8"))
-                if result is None:
-                    raise ToolError(f"Failed to parse YAML file: {path}")
-                return result
-            return json.loads(file_path.read_text(encoding="utf-8"))
         raise ToolError("Provide data, content, or path for import.")
 
+    path = payload.get("path")
+    if path:
+        data = await asyncio.to_thread(_load_data_from_path, path)
+    else:
+        data = _load_data_no_path()
+
     if action == "validate":
-        data = _load_data()
         errors = import_cmd_module._validate_import_data(data)
         return _wrap({"errors": errors, "valid": len(errors) == 0}, ctx, action)
-
-    data = _load_data()
 
     if action == "json":
         errors = import_cmd_module._validate_import_data(data)
@@ -838,22 +894,17 @@ async def ingest_manage(
         elif action in {"yaml", "yml"}:
             result = service.ingest_yaml(file_path, project_id, view, dry_run, validate)
         elif action == "directory":
-            directory = Path(file_path)
-            if not directory.exists():
-                raise ToolError(f"Directory not found: {file_path}")
             recursive = bool(payload.get("recursive", True))
-            patterns = {".md", ".mdx", ".yaml", ".yml"}
-            files = directory.rglob("*") if recursive else directory.iterdir()
+            paths_suffixes = await asyncio.to_thread(_list_ingestable_paths, file_path, recursive)
             results = []
-            for path in files:
-                if path.is_file() and path.suffix.lower() in patterns:
-                    if path.suffix.lower() in {".md", ".markdown"}:
-                        res = service.ingest_markdown(str(path), project_id, view, dry_run, validate)
-                    elif path.suffix.lower() == ".mdx":
-                        res = service.ingest_mdx(str(path), project_id, view, dry_run, validate)
-                    else:
-                        res = service.ingest_yaml(str(path), project_id, view, dry_run, validate)
-                    results.append({"path": str(path), "result": res})
+            for path_str, suffix in paths_suffixes:
+                if suffix in {".md", ".markdown"}:
+                    res = service.ingest_markdown(path_str, project_id, view, dry_run, validate)
+                elif suffix == ".mdx":
+                    res = service.ingest_mdx(path_str, project_id, view, dry_run, validate)
+                else:
+                    res = service.ingest_yaml(path_str, project_id, view, dry_run, validate)
+                results.append({"path": path_str, "result": res})
             if not dry_run:
                 session.commit()
             return _wrap({"count": len(results), "results": results}, ctx, action)
@@ -909,27 +960,15 @@ async def backup_manage(
                             row[key] = value.isoformat()
                 backup_data["tables"][table] = records
 
-        output_path = Path(output)
-        if compress:
-            with gzip.open(output_path, "wt", encoding="utf-8") as f:
-                json.dump(backup_data, f, indent=2, default=str)
-        else:
-            output_path.write_text(json.dumps(backup_data, indent=2, default=str), encoding="utf-8")
+        await asyncio.to_thread(_backup_write, output, backup_data, compress)
 
-        return _wrap({"output": str(output_path), "tables": len(backup_data["tables"])}, ctx, action)
+        return _wrap({"output": str(output), "tables": len(backup_data["tables"])}, ctx, action)
 
     if action == "restore":
         path = payload.get("path")
         if not path:
             raise ToolError("path is required for restore.")
-        backup_file = Path(path)
-        if not backup_file.exists():
-            raise ToolError(f"Backup file not found: {path}")
-        if backup_file.suffix == ".gz":
-            with gzip.open(backup_file, "rt", encoding="utf-8") as f:
-                backup_data = json.load(f)
-        else:
-            backup_data = json.loads(backup_file.read_text(encoding="utf-8"))
+        backup_data = await asyncio.to_thread(_backup_read, path)
 
         if not isinstance(backup_data, dict[str, Any]) or "tables" not in backup_data:
             raise ToolError("Invalid backup format.")
@@ -962,7 +1001,8 @@ async def watch_manage(
     action = action.lower()
 
     if action == "start":
-        path = Path(payload.get("path") or Path.cwd())
+        path_raw = payload.get("path")
+        path = Path(path_raw) if path_raw else await asyncio.to_thread(_path_cwd)
         debounce = int(payload.get("debounce", 500))
         auto_sync = bool(payload.get("auto_sync", False))
         storage = LocalStorageManager()
@@ -1464,8 +1504,13 @@ async def tui_manage(
         if not spawn:
             return _wrap({"command": " ".join(cmd), "spawned": False}, ctx, action)
 
-        process = subprocess.Popen(cmd)  # noqa: S603
-        return _wrap({"command": " ".join(cmd), "spawned": True, "pid": process.pid}, ctx, action)
+        proc = await asyncio.create_subprocess_exec(
+            *cmd,
+            cwd=os.getcwd(),
+            stdout=asyncio.subprocess.DEVNULL,
+            stderr=asyncio.subprocess.DEVNULL,
+        )
+        return _wrap({"command": " ".join(cmd), "spawned": True, "pid": proc.pid}, ctx, action)
 
     raise ToolError(f"Unknown tui action: {action}")
 
@@ -1546,7 +1591,7 @@ async def chaos_manage(
             view = payload.get("view", "FEATURE")
             if not file_path:
                 raise ToolError("path is required for explode.")
-            content = Path(file_path).read_text(encoding="utf-8")
+            content = await asyncio.to_thread(_path_read_text, file_path, "utf-8")
             items_created = await service.explode_file(content, pid, view)
             await session.commit()
             return _wrap({"items_created": items_created}, ctx, action)
@@ -1698,10 +1743,13 @@ async def design_manage(
             return _wrap({"dry_run": True, "direction": direction}, ctx, action)
         designs_config = design_module._load_designs_config(trace_dir)
         components_config = design_module._load_components_config(trace_dir)
+        cwd = os.getcwd()
         if direction in ("pull", "both"):
-            subprocess.run(["bun", "run", "figma:pull"], cwd=Path.cwd())  # noqa: S603 S607
+            proc = await asyncio.create_subprocess_exec("bun", "run", "figma:pull", cwd=cwd)
+            await proc.wait()
         if direction in ("push", "both"):
-            subprocess.run(["bun", "run", "figma:push"], cwd=Path.cwd())  # noqa: S603 S607
+            proc = await asyncio.create_subprocess_exec("bun", "run", "figma:push", cwd=cwd)
+            await proc.wait()
         designs_config["last_sync"] = datetime.now(UTC).isoformat()
         design_module._save_designs_config(trace_dir, designs_config)
         for component in components_config.get("components", []):
@@ -1722,12 +1770,14 @@ async def design_manage(
             components_list if all_components else [c for c in components_list if c.get("name") == component]
         )
         generated = []
+        cwd = os.getcwd()
         for comp in target_components:
             comp_name = comp.get("name")
-            subprocess.run(
-                ["bun", "run", "storybook:generate", comp_name, "--template", template],
-                cwd=Path.cwd(),
-            )  # noqa: S603 S607
+            proc = await asyncio.create_subprocess_exec(
+                "bun", "run", "storybook:generate", comp_name, "--template", template,
+                cwd=cwd,
+            )
+            await proc.wait()
             comp["has_story"] = True
             generated.append(comp_name)
         design_module._save_components_config(trace_dir, components_config)
@@ -1749,23 +1799,23 @@ async def design_manage(
         target_components = (
             components_list if all_components else [c for c in components_list if c.get("name") == component]
         )
+        cwd = os.getcwd()
         exported = []
         for comp in target_components:
             if not comp.get("has_story"):
                 continue
-            subprocess.run(
-                [
-                    "bun",
-                    "run",
-                    "figma:export",
-                    comp.get("name"),
-                    "--file-key",
-                    figma_file_key,
-                    "--token",
-                    figma_token,
-                ],
-                cwd=Path.cwd(),
-            )  # noqa: S603 S607  # noqa: S603 S607
+            proc = await asyncio.create_subprocess_exec(
+                "bun",
+                "run",
+                "figma:export",
+                comp.get("name"),
+                "--file-key",
+                figma_file_key,
+                "--token",
+                figma_token,
+                cwd=cwd,
+            )
+            await proc.wait()
             exported.append(comp.get("name"))
         return _wrap({"exported": exported}, ctx, action)
 

@@ -6,6 +6,7 @@
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
+import type { StreamChunk } from "../../lib/graph/IncrementalGraphBuilder";
 import { IncrementalGraphBuilder } from "../../lib/graph/IncrementalGraphBuilder";
 import { useIncrementalGraph } from "../../hooks/useIncrementalGraph";
 
@@ -18,7 +19,7 @@ describe(IncrementalGraphBuilder, () => {
 		it("parses stream chunks correctly", async () => {
 			const builder = new IncrementalGraphBuilder();
 
-			const chunks = [
+			const chunks: StreamChunk[] = [
 				{
 					data: { totalEdges: 1, totalNodes: 2 },
 					timestamp: Date.now(),

@@ -7,9 +7,9 @@
 
 syntax = "proto3";
 
-package tracertm;
+package tracertm.v1;
 
-option go_package = "github.com/kooshapari/tracertm-backend/pkg/proto";
+option go_package = "github.com/kooshapari/tracertm-backend/pkg/proto/tracertm/v1";
 
 // ============================================================================
 // GraphService - Provided by Go, Consumed by Python
@@ -18,20 +18,20 @@ option go_package = "github.com/kooshapari/tracertm-backend/pkg/proto";
 // GraphService provides graph analysis and traversal operations
 service GraphService {
   // AnalyzeImpact performs impact analysis for a given item
-  rpc AnalyzeImpact(ImpactRequest) returns (ImpactResponse);
+  rpc AnalyzeImpact(AnalyzeImpactRequest) returns (AnalyzeImpactResponse);
 
   // FindCycles detects circular dependencies in the graph
-  rpc FindCycles(CycleRequest) returns (CycleResponse);
+  rpc FindCycles(FindCyclesRequest) returns (FindCyclesResponse);
 
   // CalculatePath finds the shortest path between two items
-  rpc CalculatePath(PathRequest) returns (PathResponse);
+  rpc CalculatePath(CalculatePathRequest) returns (CalculatePathResponse);
 
   // StreamGraphUpdates streams real-time graph changes
-  rpc StreamGraphUpdates(GraphStreamRequest) returns (stream GraphUpdate);
+  rpc StreamGraphUpdates(StreamGraphUpdatesRequest) returns (stream StreamGraphUpdatesResponse);
 }
 
 // Request to analyze impact of changes to an item
-message ImpactRequest {
+message AnalyzeImpactRequest {
   string item_id = 1;
   string project_id = 2;
   // Direction: "upstream" (what depends on this), "downstream" (what this depends on), "both"
@@ -41,7 +41,7 @@ message ImpactRequest {
 }
 
 // Response containing impact analysis results
-message ImpactResponse {
+message AnalyzeImpactResponse {
   string item_id = 1;
   repeated ImpactedItem impacted_items = 2;
   int32 total_count = 3;
@@ -61,14 +61,14 @@ message ImpactedItem {
 }
 
 // Request to find circular dependencies
-message CycleRequest {
+message FindCyclesRequest {
   string project_id = 1;
   repeated string link_types = 2; // Filter by link types
   int32 max_cycle_length = 3; // Maximum cycle size to detect
 }
 
 // Response containing detected cycles
-message CycleResponse {
+message FindCyclesResponse {
   repeated Cycle cycles = 1;
   int32 total_count = 2;
   bool has_cycles = 3;
@@ -83,7 +83,7 @@ message Cycle {
 }
 
 // Request to calculate shortest path
-message PathRequest {
+message CalculatePathRequest {
   string project_id = 1;
   string source_item_id = 2;
   string target_item_id = 3;
@@ -91,7 +91,7 @@ message PathRequest {
 }
 
 // Response containing path information
-message PathResponse {
+message CalculatePathResponse {
   repeated string item_ids = 1; // Items in the path (source to target)
   repeated string link_types = 2; // Link types connecting the path
   int32 path_length = 3;
@@ -100,13 +100,13 @@ message PathResponse {
 }
 
 // Request to stream graph updates
-message GraphStreamRequest {
+message StreamGraphUpdatesRequest {
   string project_id = 1;
   repeated string event_types = 2; // Filter: "item_created", "item_updated", "link_created", etc.
 }
 
 // Real-time graph update event
-message GraphUpdate {
+message StreamGraphUpdatesResponse {
   string event_type = 1;
   string item_id = 2;
   string project_id = 3;
@@ -121,20 +121,20 @@ message GraphUpdate {
 // AIService provides AI-powered analysis and suggestions
 service AIService {
   // AnalyzeRequirement performs NLP analysis on a requirement
-  rpc AnalyzeRequirement(RequirementRequest) returns (RequirementResponse);
+  rpc AnalyzeRequirement(AnalyzeRequirementRequest) returns (AnalyzeRequirementResponse);
 
   // GenerateSuggestions streams AI-generated suggestions
-  rpc GenerateSuggestions(SuggestionRequest) returns (stream Suggestion);
+  rpc GenerateSuggestions(GenerateSuggestionsRequest) returns (stream GenerateSuggestionsResponse);
 
   // DetectEquivalences finds semantically equivalent items
-  rpc DetectEquivalences(EquivalenceRequest) returns (EquivalenceResponse);
+  rpc DetectEquivalences(DetectEquivalencesRequest) returns (DetectEquivalencesResponse);
 
   // ExtractEntities extracts named entities from text
-  rpc ExtractEntities(EntityRequest) returns (EntityResponse);
+  rpc ExtractEntities(ExtractEntitiesRequest) returns (ExtractEntitiesResponse);
 }
 
 // Request to analyze a requirement
-message RequirementRequest {
+message AnalyzeRequirementRequest {
   string item_id = 1;
   string text = 2;
   string item_type = 3; // "requirement", "story", "task", etc.
@@ -142,7 +142,7 @@ message RequirementRequest {
 }
 
 // Response containing requirement analysis
-message RequirementResponse {
+message AnalyzeRequirementResponse {
   string item_id = 1;
   QualityMetrics quality = 2;
   repeated string tags = 3; // Auto-generated tags
@@ -163,7 +163,7 @@ message QualityMetrics {
 }
 
 // Request for AI suggestions
-message SuggestionRequest {
+message GenerateSuggestionsRequest {
   string context = 1; // Context for suggestions
   string project_id = 2;
   string suggestion_type = 3; // "links", "tags", "related_items", "improvements"
@@ -171,7 +171,7 @@ message SuggestionRequest {
 }
 
 // A single AI-generated suggestion
-message Suggestion {
+message GenerateSuggestionsResponse {
   string type = 1;
   string content = 2;
   double confidence = 3;
@@ -180,7 +180,7 @@ message Suggestion {
 }
 
 // Request to detect equivalences
-message EquivalenceRequest {
+message DetectEquivalencesRequest {
   string item_id = 1;
   string text = 2;
   string project_id = 3;
@@ -188,7 +188,7 @@ message EquivalenceRequest {
 }
 
 // Response containing detected equivalences
-message EquivalenceResponse {
+message DetectEquivalencesResponse {
   string item_id = 1;
   repeated EquivalentItem equivalents = 2;
   int32 total_count = 3;
@@ -204,14 +204,14 @@ message EquivalentItem {
 }
 
 // Request to extract entities
-message EntityRequest {
+message ExtractEntitiesRequest {
   string text = 1;
   string item_id = 2;
   repeated string entity_types = 3; // Filter: "person", "organization", "technology", etc.
 }
 
 // Response containing extracted entities
-message EntityResponse {
+message ExtractEntitiesResponse {
   repeated Entity entities = 1;
   int32 total_count = 2;
 }

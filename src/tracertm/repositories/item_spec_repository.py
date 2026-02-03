@@ -24,6 +24,16 @@ from uuid import uuid4
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+# Constants for spec metrics calculation
+_FAKINESS_MIN_RUNS = 5
+_FAKINESS_WINDOW_DEFAULT = 20
+_FAKINESS_HIGH_THRESHOLD = 0.3
+_PERFORMANCE_P95_MIN_SAMPLES = 20
+_PERFORMANCE_P99_MIN_SAMPLES = 100
+_PERFORMANCE_TREND_MIN_SAMPLES = 10
+_PERFORMANCE_RECENT_SAMPLES = 5
+_PERFORMANCE_OLDER_SAMPLES = 5
+
 
 # Type Enums for specifications
 class RequirementType(StrEnum):
@@ -546,10 +556,10 @@ class TestSpecRepository(BaseSpecRepository):
     async def _recalculate_flakiness(self, spec: Any) -> None:
         """Recalculate flakiness score based on recent runs."""
         history = spec.run_history or []
-        window_size = getattr(spec, "flakiness_window_runs", 20)
+        window_size = getattr(spec, "flakiness_window_runs", _FAKINESS_WINDOW_DEFAULT)
         window = history[:window_size]
 
-        if len(window) < 5:
+        if len(window) < _FAKINESS_MIN_RUNS:
             # Not enough data
             spec.flakiness_score = None
             return
@@ -565,7 +575,7 @@ class TestSpecRepository(BaseSpecRepository):
 
         # Detect flaky patterns
         patterns = []
-        if spec.flakiness_score > 0.3:
+        if spec.flakiness_score > _FAKINESS_HIGH_THRESHOLD:
             patterns.append("high_transition_rate")
         spec.flaky_patterns = patterns
 
@@ -582,13 +592,13 @@ class TestSpecRepository(BaseSpecRepository):
 
         spec.avg_duration_ms = sum(durations) / n
         spec.p50_duration_ms = durations_sorted[n // 2]
-        spec.p95_duration_ms = durations_sorted[int(n * 0.95)] if n >= 20 else None
-        spec.p99_duration_ms = durations_sorted[int(n * 0.99)] if n >= 100 else None
+        spec.p95_duration_ms = durations_sorted[int(n * 0.95)] if n >= _PERFORMANCE_P95_MIN_SAMPLES else None
+        spec.p99_duration_ms = durations_sorted[int(n * 0.99)] if n >= _PERFORMANCE_P99_MIN_SAMPLES else None
 
         # Determine trend
-        if n >= 10:
-            recent = durations[:5]
-            older = durations[5:10]
+        if n >= _PERFORMANCE_TREND_MIN_SAMPLES:
+            recent = durations[:_PERFORMANCE_RECENT_SAMPLES]
+            older = durations[_PERFORMANCE_RECENT_SAMPLES:_PERFORMANCE_RECENT_SAMPLES + _PERFORMANCE_OLDER_SAMPLES]
             recent_avg = sum(recent) / len(recent)
             older_avg = sum(older) / len(older)
 

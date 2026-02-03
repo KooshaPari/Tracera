@@ -313,10 +313,10 @@ export function useGraphPerformanceMonitor({
 	visibleEdges,
 	lodDistribution,
 	cacheStats,
-	enabled = process.env.NODE_ENV === "development",
+	enabled = process.env["NODE_ENV"] === "development",
 	reportInterval = 5000,
-	logToConsole = process.env.NODE_ENV === "development",
-	persistToStorage = process.env.NODE_ENV === "development",
+	logToConsole = process.env["NODE_ENV"] === "development",
+	persistToStorage = process.env["NODE_ENV"] === "development",
 	onMetricsUpdate,
 }: UseGraphPerformanceMonitorConfig): GraphPerformanceMonitor {
 	const [currentMetrics, setCurrentMetrics] =
@@ -484,8 +484,7 @@ export function useGraphPerformanceMonitor({
 		// Console logging
 		if (logToConsole) {
 			logger.group(
-				`%c[Graph Performance] ${new Date(metrics.timestamp).toLocaleTimeString()}`,
-				"color: #10b981; font-weight: bold",
+				`[Graph Performance] ${new Date(metrics.timestamp).toLocaleTimeString()}`,
 			);
 
 			logger.info(
@@ -663,7 +662,7 @@ export function useGraphPerformanceMonitor({
  */
 export function createProfilerCallback(
 	monitorId: string,
-	logToConsole: boolean = process.env.NODE_ENV === "development",
+logToConsole: boolean = process.env["NODE_ENV"] === "development",
 ) {
 	return (
 		id: string,
@@ -689,7 +688,7 @@ export function createProfilerCallback(
 		}
 
 		// Store in sessionStorage for debugging
-		if (process.env.NODE_ENV === "development") {
+		if (process.env["NODE_ENV"] === "development") {
 			try {
 				const key = `trace_profiler_${monitorId}`;
 				const stored = sessionStorage.getItem(key);
@@ -718,7 +717,7 @@ export function createProfilerCallback(
  */
 export const perfMark = {
 	end: (name: string) => {
-		if (process.env.NODE_ENV === "development") {
+		if (process.env["NODE_ENV"] === "development") {
 			performance.mark(`${name}-end`);
 			try {
 				performance.measure(name, `${name}-start`, `${name}-end`);
@@ -736,7 +735,7 @@ export const perfMark = {
 		}
 	},
 	start: (name: string) => {
-		if (process.env.NODE_ENV === "development") {
+		if (process.env["NODE_ENV"] === "development") {
 			performance.mark(`${name}-start`);
 		}
 	},

@@ -7,6 +7,11 @@ Displays real-time sync status, pending changes, and conflict notifications.
 from datetime import UTC, datetime
 from typing import Any
 
+# Time thresholds for relative time formatting
+_SECONDS_PER_MINUTE = 60
+_SECONDS_PER_HOUR = 3600
+_SECONDS_PER_DAY = 86400
+
 try:
     from textual.app import ComposeResult
     from textual.containers import Horizontal as TextualHorizontal
@@ -190,15 +195,15 @@ if TEXTUAL_AVAILABLE:
 
             seconds = int(delta.total_seconds())
 
-            if seconds < 60:
+            if seconds < _SECONDS_PER_MINUTE:
                 return "just now"
-            if seconds < 3600:
-                minutes = seconds // 60
+            if seconds < _SECONDS_PER_HOUR:
+                minutes = seconds // _SECONDS_PER_MINUTE
                 return f"{minutes} minute{'s' if minutes != 1 else ''} ago"
-            if seconds < 86400:
-                hours = seconds // 3600
+            if seconds < _SECONDS_PER_DAY:
+                hours = seconds // _SECONDS_PER_HOUR
                 return f"{hours} hour{'s' if hours != 1 else ''} ago"
-            days = seconds // 86400
+            days = seconds // _SECONDS_PER_DAY
             return f"{days} day{'s' if days != 1 else ''} ago"
 
         def set_online(self, online: bool) -> None:

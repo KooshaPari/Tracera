@@ -321,8 +321,8 @@ export const useProgress = (client: MCPClient | null): UseProgressState & {
 			return;
 		}
 
-		const unsubscribe = client.subscribeToProgress(
-			(notification: ProgressNotification) => {
+		const unsubscribe = client.subscribeToProgress({
+			onProgress: (notification: ProgressNotification) => {
 				setState({
 					isTracking: true,
 					message: notification.message || null,
@@ -330,11 +330,11 @@ export const useProgress = (client: MCPClient | null): UseProgressState & {
 					total: notification.total || null,
 				});
 			},
-			(error: Error) => {
+			onError: (error: Error) => {
 				logger.error("Progress tracking error:", error);
 				setState((prev) => ({ ...prev, isTracking: false }));
 			},
-		);
+		});
 
 		unsubscribeRef.current = unsubscribe;
 		setState((prev) => ({ ...prev, isTracking: true }));

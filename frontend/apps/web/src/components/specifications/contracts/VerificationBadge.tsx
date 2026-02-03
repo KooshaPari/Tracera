@@ -1,3 +1,4 @@
+import type { CSSProperties, ReactElement, ReactNode } from "react";
 import { Badge } from "@tracertm/ui";
 import { motion } from "framer-motion";
 import {
@@ -22,7 +23,7 @@ const HOVER_ANIMATION_DURATION = Number("0.2");
 const ZERO_OFFSET = Number("0");
 const NEGATIVE_OFFSET = Number("-10");
 
-const TOOLTIP_STYLE: React.CSSProperties = { pointerEvents: "none" };
+const TOOLTIP_STYLE: CSSProperties = { pointerEvents: "none" };
 
 const PULSE_ANIMATION = {
 	opacity: PULSE_OPACITY,
@@ -34,8 +35,6 @@ const TOOLTIP_HOVER = { opacity: 1, y: ZERO_OFFSET };
 const TOOLTIP_TRANSITION = { duration: HOVER_ANIMATION_DURATION };
 
 const DEFAULT_TIMESTAMP = "just now";
-const DEFAULT_FALLBACK_FORMAT = "Last run: —";
-
 const DEFAULT_CLASSNAME = "";
 
 const STATUS_COLOR_FALLBACK = "#94a3b8";
@@ -105,7 +104,7 @@ interface VerificationBadgeProps {
 
 interface ResultRowProps {
 	count: number;
-	icon: React.ReactNode;
+	icon: ReactNode;
 	label: string;
 }
 
@@ -133,7 +132,7 @@ const formatTimestamp = (isoString: string): string => {
 	}
 };
 
-const ResultRow = ({ count, icon, label }: ResultRowProps): JSX.Element => (
+const ResultRow = ({ count, icon, label }: ResultRowProps): ReactElement => (
 	<div className="flex items-center gap-1">
 		{icon}
 		<span className="text-xs">
@@ -150,7 +149,7 @@ const ResultSummary = ({
 	failedCount?: number;
 	passedCount?: number;
 	totalCount?: number;
-}): JSX.Element | null => {
+}): ReactElement | null => {
 	if (totalCount === undefined) {
 		return null;
 	}
@@ -185,7 +184,7 @@ const ResultSummary = ({
 	);
 };
 
-const DetailsBlock = ({ details }: { details?: string }): JSX.Element | null => {
+const DetailsBlock = ({ details }: { details?: string }): ReactElement | null => {
 	if (!details) {
 		return null;
 	}
@@ -204,7 +203,7 @@ const TimestampBlock = ({
 }: {
 	lastVerifiedAt?: string;
 	showTimestamp: boolean;
-}): JSX.Element | null => {
+}): ReactElement | null => {
 	if (!lastVerifiedAt || !showTimestamp) {
 		return null;
 	}
@@ -233,7 +232,7 @@ const TooltipContent = ({
 	showDetails: boolean;
 	showTimestamp: boolean;
 	totalCount?: number;
-}): JSX.Element | null => {
+}): ReactElement | null => {
 	const hasDetails = showDetails && (lastVerifiedAt || details || totalCount);
 	if (!hasDetails) {
 		return null;
@@ -273,7 +272,7 @@ export const VerificationBadge = ({
 	showTimestamp = true,
 	showDetails = true,
 	className = DEFAULT_CLASSNAME,
-}: VerificationBadgeProps): JSX.Element => {
+}: VerificationBadgeProps): ReactElement => {
 	const config = STATUS_CONFIG[status];
 	const Icon = config.icon;
 	const animation = status === "pending" ? PULSE_ANIMATION : undefined;
@@ -323,7 +322,7 @@ export const PassVerificationBadge = ({
 	passedCount,
 	totalCount,
 	showTimestamp = true,
-}: PassVerificationBadgeProps): JSX.Element => (
+}: PassVerificationBadgeProps): ReactElement => (
 	<VerificationBadge
 		status="pass"
 		lastVerifiedAt={lastVerifiedAt}
@@ -350,7 +349,7 @@ export const FailVerificationBadge = ({
 	totalCount,
 	details,
 	showTimestamp = true,
-}: FailVerificationBadgeProps): JSX.Element => (
+}: FailVerificationBadgeProps): ReactElement => (
 	<VerificationBadge
 		status="fail"
 		lastVerifiedAt={lastVerifiedAt}
@@ -370,7 +369,7 @@ interface PendingVerificationBadgeProps {
 export const PendingVerificationBadge = ({
 	lastVerifiedAt,
 	showTimestamp = true,
-}: PendingVerificationBadgeProps): JSX.Element => (
+}: PendingVerificationBadgeProps): ReactElement => (
 	<VerificationBadge
 		status="pending"
 		lastVerifiedAt={lastVerifiedAt}
@@ -379,7 +378,7 @@ export const PendingVerificationBadge = ({
 	/>
 );
 
-export const UnverifiedBadge = (): JSX.Element => (
+export const UnverifiedBadge = (): ReactElement => (
 	<VerificationBadge
 		status="unknown"
 		showTimestamp={false}

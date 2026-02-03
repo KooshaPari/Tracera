@@ -32,10 +32,9 @@ from fastapi import Depends, FastAPI, HTTPException, Request, WebSocket, WebSock
 
 # ClientDisconnected: uvicorn raises when sending on closed WebSocket (wrapped as WebSocketDisconnect by Starlette)
 try:
-    from uvicorn.protocols.utils import ClientDisconnected
+    from uvicorn.protocols.utils import ClientDisconnected  # noqa: F401
 except ImportError:
-    _ClientDisconnectedFallback = type("ClientDisconnected", (Exception,), {})
-    ClientDisconnected = _ClientDisconnectedFallback  # type: ignore[assignment,misc]
+    ClientDisconnected = type("ClientDisconnected", (Exception,), {})
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel
@@ -63,16 +62,17 @@ except ImportError:
 
 from datetime import UTC
 
-import tracertm.repositories.item_repository as item_repository
-import tracertm.repositories.link_repository as link_repository
-import tracertm.repositories.project_repository as project_repository
-import tracertm.services.cycle_detection_service as cycle_detection_service
-import tracertm.services.impact_analysis_service as impact_analysis_service
-import tracertm.services.performance_service as performance_service
-import tracertm.services.shortest_path_service as shortest_path_service
-import tracertm.services.traceability_matrix_service as traceability_matrix_service
-import tracertm.services.traceability_service as traceability_service
+from tracertm.repositories import item_repository
+from tracertm.repositories import link_repository
+from tracertm.repositories import project_repository
+from tracertm.services import cycle_detection_service
+from tracertm.services import impact_analysis_service
+from tracertm.services import performance_service
+from tracertm.services import shortest_path_service
+from tracertm.services import traceability_matrix_service
+from tracertm.services import traceability_service
 from tracertm.core.concurrency import ConcurrencyError
+from tracertm.models.integration import IntegrationCredential
 from tracertm.models.item import Item
 from tracertm.models.link import Link
 from tracertm.schemas.execution import (
@@ -83,6 +83,11 @@ from tracertm.schemas.execution import (
 from tracertm.services import workos_auth_service
 from tracertm.services.cache_service import RedisUnavailableError
 from tracertm.services.temporal_service import TemporalService
+
+# Imported extracted modules to reduce C901 complexity
+from tracertm.api.config.rate_limiting import enforce_rate_limit
+from tracertm.api.config.startup import startup_initialization
+from tracertm.api.handlers.websocket import websocket_endpoint as _websocket_endpoint_impl
 
 logger = logging.getLogger(__name__)
 
@@ -206,17 +211,17 @@ def check_project_access(*_: Any, **__: Any) -> bool:
 
 
 # System admin: emails listed in TRACERTM_SYSTEM_ADMIN_EMAILS (comma-separated) get full access.
-_ADMIN_EMAILS_CACHE: frozenset[str] | None = None
+_admin_emails_cache: frozenset[str] | None = None
 _admin_user_ids: set[str] = set()
 
 
 def _system_admin_emails() -> frozenset[str]:
-    global _ADMIN_EMAILS_CACHE
-    if _ADMIN_EMAILS_CACHE is not None:
-        return _ADMIN_EMAILS_CACHE
+    global _admin_emails_cache
+    if _admin_emails_cache is not None:
+        return _admin_emails_cache
     raw = os.getenv("TRACERTM_SYSTEM_ADMIN_EMAILS", "kooshapari@gmail.com").strip()
     emails = frozenset(e.strip().lower() for e in raw.split(",") if e.strip())
-    _ADMIN_EMAILS_CACHE = emails
+    _admin_emails_cache = emails
     return emails
 
 
@@ -372,7 +377,7 @@ def ensure_project_access(project_id: str | None, claims: dict[str, Any] | None)
         raise HTTPException(status_code=403, detail="Project access denied")
 
 
-def ensure_credential_access(credential, claims: dict[str, Any] | None) -> None:
+def ensure_credential_access(credential: IntegrationCredential | None, claims: dict[str, Any] | None) -> None:
     """Check access to a credential (project or user scoped)."""
     if credential is None:
         raise HTTPException(status_code=404, detail="Credential not found")
@@ -386,331 +391,21 @@ def ensure_credential_access(credential, claims: dict[str, Any] | None) -> None:
 
 _rate_limit_counts: defaultdict[tuple[str, str, str], int] = defaultdict(int)
 
-
-def enforce_rate_limit(request: Request | None, claims: dict[str, Any] | None) -> None:
-    """Apply simple rate limiting hook."""
-    # Skip rate limiting when request is not injected (e.g. in tests) to avoid AttributeError
-    if request is None:
-        return
-    # Skip rate limiting for bulk operations (POST /api/v1/items, POST /api/v1/links)
-    if request:
-        # Check for bulk operation header first (works for both GET and POST)
-        if request.headers.get("X-Bulk-Operation") == "true":
-            return
-        # Skip rate limiting for POST /api/v1/items and POST /api/v1/links (bulk endpoints)
-        if request.method == "POST" and request.url.path in ["/api/v1/items", "/api/v1/links"]:
-            # Allow for public access (no auth) - bulk operations typically don't have auth
-            if not claims or claims.get("role") == "public":
-                return
-
-    limiter_class = RateLimiter
-    limiter = limiter_class()
-    client_ip = get_client_ip(request) if inspect.signature(get_client_ip).parameters else get_client_ip()
-    if is_whitelisted(client_ip):
-        return
-    if claims and claims.get("bypass_rate_limit"):
-        return
-
-    key = claims.get("sub") if claims else None
-    key = key or request.headers.get("X-User-ID") or client_ip or "anonymous"
-    limit_info = get_endpoint_limit(request.method, request.url.path)
-    resolved_limit: int | None = None
-    if isinstance(limit_info, dict):
-        val = limit_info.get("limit")
-        resolved_limit = val if isinstance(val, int) else None
-    elif isinstance(limit_info, int):
-        resolved_limit = limit_info
-
-    allowed = limiter.check_limit(key, method=request.method, path=request.url.path, limit=resolved_limit)
-
-    rate_key = (key, request.method, request.url.path)
-    if rate_key not in _rate_limit_counts:
-        _rate_limit_counts[rate_key] = 0
-    _rate_limit_counts[rate_key] += 1
-    if allowed is False:
-        pass
-    elif resolved_limit is not None and _rate_limit_counts[rate_key] > (resolved_limit or 0):
-        allowed = False
-
-    if not allowed:
-        retry_after = getattr(limiter, "get_retry_after", lambda *args, **kwargs: None)(key, request.method, request.url.path)
-        message = getattr(limiter, "get_message", lambda *args, **kwargs: "Rate limit exceeded")(key, request.method, request.url.path)
-        headers = {"Retry-After": str(retry_after)} if retry_after is not None else None
-        raise HTTPException(status_code=429, detail=message, headers=headers)
+# enforce_rate_limit function now imported from tracertm.api.config.rate_limiting
 
 
 @asynccontextmanager
 async def _lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Startup then yield then shutdown (replaces deprecated on_event)."""
-    # Startup
-    await _startup_event_impl(app)
+    # Startup - now using extracted module to reduce complexity
+    await startup_initialization(app)
     try:
         yield
     finally:
         await _shutdown_event_impl(app)
 
 
-async def _startup_event_impl(app: FastAPI) -> None:
-    """Initialize NATS connection, event bus, and Go backend client on startup."""
-    from tracertm.preflight import build_api_checks, run_preflight
-
-    # Preflight: all services are required. Run checks for everything except the two we poll with retries.
-    required_poll = ("go-backend", "temporal-host")
-    optional_poll: tuple[str, ...] = ()
-    all_checks = build_api_checks()
-    excluded = set(required_poll + optional_poll)
-    checked_now = [c.name for c in all_checks if c.name not in excluded and c.url and c.url.strip()]
-    run_preflight(
-        "python-api",
-        all_checks,
-        strict=True,
-        exclude_names=required_poll + optional_poll,
-    )
-    if checked_now:
-        logger.info(
-            "[python-api] All required checks passed: %s (all of concern). Now polling with retries: %s",
-            ", ".join(checked_now),
-            ", ".join(required_poll),
-        )
-    # Wait & poll required services in parallel; retry indefinitely with progressive backoff (cap 30s).
-    await _poll_services(
-        "python-api",
-        required_names=required_poll,
-        optional_names=optional_poll,
-        interval_initial=2.0,
-        interval_max=30.0,
-    )
-
-    # Ensure problems/processes tables exist (same DB as get_db; idempotent)
-    try:
-        from tracertm.database.ensure_problems_processes import (
-            ensure_problems_processes_tables,
-        )
-
-        await ensure_problems_processes_tables()
-    except Exception as e:
-        logger.warning("ensure_problems_processes_tables: %s", e)
-
-    # Initialize Go Backend Client
-    try:
-        from tracertm.clients.go_client import GoBackendClient
-
-        go_backend_url = os.getenv("GO_BACKEND_URL", "http://localhost:8080")
-        service_token = os.getenv("SERVICE_TOKEN", "")
-
-        go_client = GoBackendClient(go_backend_url, service_token)
-        app.state.go_client = go_client
-        logger.info(f"Go Backend Client initialized at {go_backend_url}")
-    except Exception as e:
-        # Required dependency: fail clearly (CLAUDE.md).
-        raise RuntimeError(f"Go backend unavailable: {e}") from e
-
-    # NATS bridge: on by default (no optionality); set NATS_BRIDGE_ENABLED=false to disable.
-    nats_enabled = os.getenv("NATS_BRIDGE_ENABLED", "true").lower() == "true"
-    if not nats_enabled:
-        return
-
-    try:
-        from tracertm.infrastructure import EventBus, NATSClient
-
-        # Initialize NATS client
-        nats_url = os.getenv("NATS_URL", "nats://localhost:4222")
-        nats_creds = os.getenv("NATS_CREDS_PATH")
-
-        nats_client = NATSClient(url=nats_url, creds_path=nats_creds)
-        await nats_client.connect()
-
-        # Initialize event bus
-        event_bus = EventBus(nats_client)
-
-        # Store in app state for access in routers
-        app.state.nats_client = nats_client
-        app.state.event_bus = event_bus
-
-        # Agent service: DB + Redis cache + NATS (agent.session.created)
-        from tracertm.agent import AgentService
-        from tracertm.agent.session_store import SessionSandboxStoreDB
-        from tracertm.api.deps import get_cache_service
-        try:
-            cache_service = get_cache_service()
-            session_store = SessionSandboxStoreDB(cache_service=cache_service)
-        except Exception:
-            session_store = SessionSandboxStoreDB()
-        app.state.agent_service = AgentService(
-            session_store=session_store,
-            event_bus=event_bus,
-        )
-
-        # Get cache service for invalidation
-        from tracertm.api.deps import get_cache_service
-        cache_service = get_cache_service()
-
-        # Subscribe to Go-originated events
-        async def handle_item_created(event: dict[str, Any]) -> None:
-            """Handle item.created events from NATS."""
-            entity_id = event.get("entity_id")
-            project_id = event.get("project_id")
-            entity_type = event.get("entity_type")
-
-            logger.info(f"Received item.created event: {entity_id} (type: {entity_type}, project: {project_id})")
-
-            # Invalidate relevant caches for this project
-            if project_id:
-                try:
-                    # Invalidate project-wide caches that depend on items
-                    await cache_service.clear_prefix(f"items:{project_id}")
-                    await cache_service.clear_prefix(f"graph:{project_id}")
-                    await cache_service.invalidate("project", project_id=project_id)
-
-                    logger.debug(f"Invalidated caches for project {project_id} after item creation")
-                except (RedisUnavailableError, RuntimeError):
-                    raise
-                except Exception as e:
-                    raise RedisUnavailableError(f"Redis unavailable: {e}") from e
-
-            # Trigger workflows if needed (e.g., for requirements)
-            if entity_type == "requirement":
-                logger.info(f"Requirement created: {entity_id}, ready for AI analysis workflow")
-                # Future: Queue for AI analysis, traceability checks, etc.
-
-        async def handle_item_updated(event: dict[str, Any]) -> None:
-            """Handle item.updated events from NATS."""
-            entity_id = event.get("entity_id")
-            project_id = event.get("project_id")
-            entity_type = event.get("entity_type")
-
-            logger.info(f"Received item.updated event: {entity_id} (type: {entity_type}, project: {project_id})")
-
-            # Invalidate relevant caches
-            if project_id:
-                try:
-                    await cache_service.clear_prefix(f"items:{project_id}")
-                    await cache_service.clear_prefix(f"graph:{project_id}")
-                    await cache_service.clear_prefix(f"impact:{project_id}")
-                    await cache_service.invalidate("project", project_id=project_id)
-
-                    logger.debug(f"Invalidated caches for project {project_id} after item update")
-                except (RedisUnavailableError, RuntimeError):
-                    raise
-                except Exception as e:
-                    raise RedisUnavailableError(f"Redis unavailable: {e}") from e
-
-        async def handle_item_deleted(event: dict[str, Any]) -> None:
-            """Handle item.deleted events from NATS."""
-            entity_id = event.get("entity_id")
-            project_id = event.get("project_id")
-
-            logger.info(f"Received item.deleted event: {entity_id} (project: {project_id})")
-
-            # Invalidate relevant caches
-            if project_id:
-                try:
-                    await cache_service.clear_prefix(f"items:{project_id}")
-                    await cache_service.clear_prefix(f"graph:{project_id}")
-                    await cache_service.clear_prefix(f"links:{project_id}")
-                    await cache_service.invalidate("project", project_id=project_id)
-
-                    logger.debug(f"Invalidated caches for project {project_id} after item deletion")
-                except (RedisUnavailableError, RuntimeError):
-                    raise
-                except Exception as e:
-                    raise RedisUnavailableError(f"Redis unavailable: {e}") from e
-
-        async def handle_link_created(event: dict[str, Any]) -> None:
-            """Handle link.created events from NATS."""
-            entity_id = event.get("entity_id")
-            project_id = event.get("project_id")
-
-            logger.info(f"Received link.created event: {entity_id} (project: {project_id})")
-
-            # Invalidate relevant caches - links affect graph and traceability
-            if project_id:
-                try:
-                    await cache_service.clear_prefix(f"links:{project_id}")
-                    await cache_service.clear_prefix(f"graph:{project_id}")
-                    await cache_service.clear_prefix(f"ancestors:{project_id}")
-                    await cache_service.clear_prefix(f"descendants:{project_id}")
-                    await cache_service.clear_prefix(f"impact:{project_id}")
-
-                    logger.debug(f"Invalidated caches for project {project_id} after link creation")
-                except (RedisUnavailableError, RuntimeError):
-                    raise
-                except Exception as e:
-                    raise RedisUnavailableError(f"Redis unavailable: {e}") from e
-
-        async def handle_link_deleted(event: dict[str, Any]) -> None:
-            """Handle link.deleted events from NATS."""
-            entity_id = event.get("entity_id")
-            project_id = event.get("project_id")
-
-            logger.info(f"Received link.deleted event: {entity_id} (project: {project_id})")
-
-            # Invalidate relevant caches
-            if project_id:
-                try:
-                    await cache_service.clear_prefix(f"links:{project_id}")
-                    await cache_service.clear_prefix(f"graph:{project_id}")
-                    await cache_service.clear_prefix(f"ancestors:{project_id}")
-                    await cache_service.clear_prefix(f"descendants:{project_id}")
-                    await cache_service.clear_prefix(f"impact:{project_id}")
-
-                    logger.debug(f"Invalidated caches for project {project_id} after link deletion")
-                except (RedisUnavailableError, RuntimeError):
-                    raise
-                except Exception as e:
-                    raise RedisUnavailableError(f"Redis unavailable: {e}") from e
-
-        async def handle_project_updated(event: dict[str, Any]) -> None:
-            """Handle project.updated events from NATS."""
-            project_id = event.get("project_id")
-
-            logger.info("Received project.updated event: %s", project_id)
-
-            # Invalidate project-level caches
-            if project_id:
-                try:
-                    await cache_service.invalidate_project(project_id)
-                    await cache_service.clear_prefix("projects")  # Invalidate project list
-
-                    logger.debug(f"Invalidated all caches for project {project_id} after project update")
-                except (RedisUnavailableError, RuntimeError):
-                    raise
-                except Exception as e:
-                    raise RedisUnavailableError(f"Redis unavailable: {e}") from e
-
-        async def handle_project_deleted(event: dict[str, Any]) -> None:
-            """Handle project.deleted events from NATS."""
-            project_id = event.get("project_id")
-
-            logger.info(f"Received project.deleted event: {project_id}")
-
-            # Invalidate all project-related caches
-            if project_id:
-                try:
-                    await cache_service.invalidate_project(project_id)
-                    await cache_service.clear_prefix("projects")  # Invalidate project list
-
-                    logger.debug(f"Invalidated all caches for deleted project {project_id}")
-                except (RedisUnavailableError, RuntimeError):
-                    raise
-                except Exception as e:
-                    raise RedisUnavailableError(f"Redis unavailable: {e}") from e
-
-        # Subscribe to events from Go backend
-        await event_bus.subscribe(EventBus.EVENT_ITEM_CREATED, handle_item_created)
-        await event_bus.subscribe(EventBus.EVENT_ITEM_UPDATED, handle_item_updated)
-        await event_bus.subscribe(EventBus.EVENT_ITEM_DELETED, handle_item_deleted)
-        await event_bus.subscribe(EventBus.EVENT_LINK_CREATED, handle_link_created)
-        await event_bus.subscribe(EventBus.EVENT_LINK_DELETED, handle_link_deleted)
-        await event_bus.subscribe(EventBus.EVENT_PROJECT_UPDATED, handle_project_updated)
-        await event_bus.subscribe(EventBus.EVENT_PROJECT_DELETED, handle_project_deleted)
-
-        logger.info(f"NATS bridge initialized successfully at {nats_url}")
-
-    except Exception as e:
-        # Required dependency: fail clearly (CLAUDE.md).
-        raise RuntimeError(f"NATS unavailable: {e}") from e
-
+# _startup_event_impl function now replaced by startup_initialization from tracertm.api.config.startup
 
 async def _shutdown_event_impl(app: FastAPI) -> None:
     """Close connections on shutdown."""
@@ -951,9 +646,11 @@ async def _poll_services(
 # External clients must use the gateway; allow gateway (4000) + frontend origins
 CORS_ORIGINS = os.getenv(
     "CORS_ORIGINS",
-    "http://localhost:4000,http://127.0.0.1:4000,"
-    "http://localhost:5173,http://127.0.0.1:5173,"
-    "http://localhost:3000,http://127.0.0.1:3000"
+    (
+        "http://localhost:4000,http://127.0.0.1:4000,"
+        "http://localhost:5173,http://127.0.0.1:5173,"
+        "http://localhost:3000,http://127.0.0.1:3000"
+    )
 ).split(",")
 
 app.add_middleware(
@@ -971,14 +668,14 @@ from tracertm.api.routers import adrs, auth, blockchain, contracts, execution, f
 # Try to import Brotli compression (optional dependency)
 try:
     from brotli_asgi import BrotliMiddleware  # type: ignore[import-untyped,import-not-found]
-    BROTLI_AVAILABLE = True
+    brotli_available = True
 except ImportError:
-    BROTLI_AVAILABLE = False
+    brotli_available = False
     logger.info("brotli-asgi not installed - response compression disabled")
 
 # Add performance middlewares (order matters - outermost first)
 # 1. Brotli compression for smaller JSON responses (20-30% savings)
-if BROTLI_AVAILABLE:
+if brotli_available:
     app.add_middleware(
         BrotliMiddleware,
         quality=4,  # Balance between speed and compression (1-11)
@@ -1013,6 +710,23 @@ app.add_middleware(AuthenticationMiddleware)
 
 
 from tracertm.api.deps import get_cache_service, get_db
+from tracertm.api.handlers.items import (
+    build_list_response,
+    build_query_conditions,
+    execute_item_query,
+    resolve_view_matches,
+    try_get_from_cache,
+)
+from tracertm.api.handlers.links import (
+    build_links_response,
+    detect_link_columns,
+    parse_exclude_types,
+    query_links_by_project,
+    query_links_by_source,
+    query_links_by_source_and_target,
+    query_links_by_target,
+    try_get_links_from_cache,
+)
 from tracertm.services.cache_service import CacheService
 
 
@@ -1062,8 +776,10 @@ async def api_health_check(
         # Preflight: require key Python tables (Alembic migrations applied)
         result = await db.execute(
             text(
-                "SELECT EXISTS (SELECT 1 FROM information_schema.tables "
-                "WHERE table_schema = 'public' AND table_name = 'test_cases')"
+
+                    "SELECT EXISTS (SELECT 1 FROM information_schema.tables "
+                    "WHERE table_schema = 'public' AND table_name = 'test_cases')"
+
             )
         )
         tables_ok = result.scalar() is True
@@ -1397,130 +1113,23 @@ async def _list_items_impl(
         ensure_project_access(project_id, claims)
 
     # Try to get from cache (only for simple queries without view resolution)
-    cache_key = None
-    if project_id and not view:  # Simple case - cacheable
-        cache_key = cache._generate_key(
-            "items",
-            project_id=project_id,
-            status=status or "",
-            parent_id=parent_id or "",
-            skip=skip,
-            limit=limit,
-        )
-        cached = await cache.get(cache_key)
-        if cached is not None:
-            return cached
+    cache_key, cached = await try_get_from_cache(
+        cache, project_id, view, status, parent_id, skip, limit
+    )
+    if cached is not None:
+        return cached
 
-    def normalize_view_name(name: str) -> str:
-        return re.sub(r"[^a-z0-9]", "", name.lower())
+    # Resolve view name to actual view values
+    matches = await resolve_view_matches(view, project_id, db)
 
-    def view_matches(requested: str, candidate: str) -> bool:
-        if not requested or not candidate:
-            return False
-        req = normalize_view_name(requested)
-        cand = normalize_view_name(candidate)
-        if not req or not cand:
-            return False
-        if cand == req:
-            return True
-        if cand == f"{req}s" or req == f"{cand}s":
-            return True
-        return bool(cand.startswith(req) or req.startswith(cand))
+    # Build query conditions
+    conditions = build_query_conditions(project_id, status, parent_id, matches)
 
-    async def resolve_view_matches() -> list[str]:
-        if not view:
-            return []
-        alias_map = {
-            "feature": ["features", "requirements", "user-requirements", "user_stories", "user-stories"],
-            "requirements": ["requirements", "user-requirements", "user_requirements"],
-            "user-requirements": ["user-requirements", "user_requirements", "requirements"],
-            "technical": ["technical-requirements", "technical_requirements"],
-            "technical-requirements": ["technical-requirements", "technical_requirements"],
-            "ui": ["ui-components", "ui_components", "wireframe", "wireframes", "ui"],
-            "ui-components": ["ui-components", "ui_components", "wireframe", "wireframes"],
-            "api": ["api_endpoints", "api-endpoints", "api"],
-            "database": ["database", "data-model", "data_model"],
-            "data-model": ["data-model", "data_model", "database"],
-            "journey": ["journey"],
-            "test": ["tests", "qa", "test"],
-            "qa": ["qa", "tests", "test"],
-            "infra": ["infra", "infrastructure"],
-            "performance": ["performance"],
-            "security": ["security"],
-        }
-        if project_id:
-            result = await db.execute(
-                select(Item.view)
-                .where(Item.project_id == project_id, Item.deleted_at.is_(None))
-                .distinct()
-            )
-            candidates = [row[0] for row in result.all()]
-            requested = normalize_view_name(view)
-            alias_candidates = alias_map.get(view, alias_map.get(requested, []))
-            if alias_candidates:
-                for alias in alias_candidates:
-                    if alias in candidates:
-                        candidates.append(alias)
-            matches = [candidate for candidate in candidates if view_matches(view, candidate)]
-            return matches or [view]
-        if view.endswith("s"):
-            return [view, view[:-1]]
-        return [view, f"{view}s"]
+    # Execute query
+    total_count, items = await execute_item_query(db, conditions, skip, limit)
 
-    try:
-        conditions = [Item.deleted_at.is_(None)]
-        if project_id:
-            conditions.append(Item.project_id == project_id)
-        if status:
-            conditions.append(Item.status == status)
-        if parent_id:
-            conditions.append(Item.parent_id == parent_id)
-        if view:
-            matches = await resolve_view_matches()
-            if matches:
-                conditions.append(Item.view.in_(matches))
-
-        count_query = select(func.count(Item.id)).where(*conditions)
-        count_result = await db.execute(count_query)
-        total_count = count_result.scalar() or 0
-
-        items_query = (
-            select(Item)
-            .where(*conditions)
-            .order_by(Item.created_at.desc())
-            .offset(skip)
-        )
-        items_query = items_query.limit(limit) if limit is not None and limit > 0 else items_query
-        items_result = await db.execute(items_query)
-        items = list(items_result.scalars().all())
-    except (OperationalError, ProgrammingError) as exc:
-        # Required dependency: fail clearly; do not return empty (CLAUDE.md).
-        raise HTTPException(
-            status_code=503,
-            detail=f"Database/schema not ready: {exc}",
-        ) from exc
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
-
-    items = items or []
-    sliced = items if limit is not None and limit > 0 else items
-
-    result = {
-        "total": total_count,
-        "items": [
-            {
-                "id": str(getattr(item, "id", "")),
-                "project_id": str(getattr(item, "project_id", project_id)),
-                "title": getattr(item, "title", ""),
-                "view": getattr(item, "view", ""),
-                "type": getattr(item, "item_type", getattr(item, "view", "")),  # Include type field
-                "status": getattr(item, "status", ""),
-                "priority": getattr(item, "priority", "medium"),
-                "created_at": getattr(item, "created_at", None).isoformat() if hasattr(item, "created_at") and getattr(item, "created_at", None) else None,
-            }
-            for item in sliced
-        ],
-    }
+    # Build response
+    result = build_list_response(items, total_count, project_id, limit)
 
     # Cache the result if we have a cache key
     if cache_key:
@@ -1573,23 +1182,6 @@ async def get_item(
             status_code=500,
             detail="Internal server error",
         ) from e
-
-
-def _link_row_to_dict(row: Any, project_id: str | None) -> dict[str, Any]:
-    """Build a link dict from a raw SQL row; safe for None/missing attributes.
-    Supports both naming conventions: source_item_id/source_id, target_item_id/target_id, link_type/type.
-    """
-    return {
-        "id": str(getattr(row, "id", "") or ""),
-        "source_id": str(
-            getattr(row, "source_item_id", None) or getattr(row, "source_id", "") or ""
-        ),
-        "target_id": str(
-            getattr(row, "target_item_id", None) or getattr(row, "target_id", "") or ""
-        ),
-        "type": getattr(row, "link_type", None) or getattr(row, "type", "") or "",
-        "project_id": project_id or "",
-    }
 
 
 # Links endpoints
@@ -1650,15 +1242,19 @@ async def list_links(
             # Find schema where links table lives (current_schema() may not match)
             schema_row = await db.execute(
                 text(
-                    "SELECT table_schema FROM information_schema.tables "
-                    "WHERE table_name = 'links' ORDER BY table_schema LIMIT 1"
+
+                        "SELECT table_schema FROM information_schema.tables "
+                        "WHERE table_name = 'links' ORDER BY table_schema LIMIT 1"
+
                 ),
             )
             schema_name = (schema_row.scalar() or "public")
             cols_result = await db.execute(
                 text(
-                    "SELECT column_name FROM information_schema.columns "
-                    "WHERE table_schema = :schema AND table_name = 'links'"
+
+                        "SELECT column_name FROM information_schema.columns "
+                        "WHERE table_schema = :schema AND table_name = 'links'"
+
                 ),
                 {"schema": schema_name},
             )

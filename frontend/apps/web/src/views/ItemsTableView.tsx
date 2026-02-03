@@ -15,7 +15,6 @@ import {
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-	Skeleton,
 } from "@tracertm/ui";
 import {
 	AlertCircle,
@@ -25,7 +24,6 @@ import {
 	Clock,
 	ExternalLink,
 	Filter,
-	Loader,
 	MoreVertical,
 	Plus,
 	Search,
@@ -657,7 +655,7 @@ export function ItemsTableView({
 	const closeCreateModal = useCallback(() => {}, [navigate]);
 
 	const handleItemNavigate = useCallback(
-		(item: any) => {},
+		(_item: any) => {},
 		[navigate, effectiveProjectId, view, location.pathname],
 	);
 

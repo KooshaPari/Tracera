@@ -5,8 +5,8 @@ import { HybridGraphView } from "@/components/graph/HybridGraphView";
 
 // Mock child components
 vi.mock("@/components/graph/FlowGraphViewInner", () => ({
-	FlowGraphViewInner: ({ nodes }: { nodes: unknown[] }) => (
-		<div data-testid="reactflow-mode">ReactFlow: {nodes.length} nodes</div>
+	FlowGraphViewInner: ({ items }: { items: unknown[] }) => (
+		<div data-testid="reactflow-mode">ReactFlow: {items.length} nodes</div>
 	),
 }));
 

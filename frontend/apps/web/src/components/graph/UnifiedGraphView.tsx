@@ -8,6 +8,7 @@ import type {
 	EquivalenceLink,
 	Item,
 	Link,
+	DimensionFilter,
 } from "@tracertm/types";
 import { cn } from "@tracertm/ui";
 import { Badge } from "@tracertm/ui/components/Badge";
@@ -42,7 +43,6 @@ import {
 } from "lucide-react";
 import { memo, useCallback, useMemo, useState } from "react";
 import { DimensionFilters, applyDimensionFilters } from "./DimensionFilters";
-import type { DimensionFilter } from "./DimensionFilters";
 import { FlowGraphViewInner } from "./FlowGraphViewInner";
 import { GraphViewContainer } from "./GraphViewContainer";
 import type { GraphViewMode } from "./GraphViewContainer";
@@ -231,7 +231,10 @@ function filterByDimensions(
 		return { filteredItems: items, filteredLinks: links };
 	}
 
-	const filteredItems = applyDimensionFilters(items, filters);
+		const filteredItems = applyDimensionFilters(
+			items as Array<{ dimensions?: Record<string, unknown> }>,
+			filters,
+		) as Item[];
 	const itemIds = new Set(filteredItems.map((i) => i.id));
 	const filteredLinks = links.filter(
 		(link) => itemIds.has(link.sourceId) && itemIds.has(link.targetId),
@@ -424,7 +427,7 @@ const JourneySelector = memo(function JourneySelector({
 			value={activeJourney?.id || "none"}
 			onValueChange={(value) => {
 				if (value === "none") {
-					onChange();
+					onChange(undefined);
 				} else {
 					onChange(availableJourneys.find((j) => j.id === value));
 				}
@@ -664,13 +667,12 @@ function PivotView({
 				</div>
 
 				<div className="p-4">
-					<PivotNavigation
-						currentItem={focusedItem}
-						currentPerspective={currentPerspective}
-						equivalentItems={pivotTargets}
-						onPivot={onPivot}
-						showEmpty
-					/>
+						<PivotNavigation
+							currentPerspective={currentPerspective}
+							equivalentItems={pivotTargets}
+							onPivot={onPivot}
+							showEmpty
+						/>
 				</div>
 
 				{pivotTargets.length > 0 && (

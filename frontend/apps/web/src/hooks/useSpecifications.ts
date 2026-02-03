@@ -23,6 +23,11 @@ import type {
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
+const asNumber = (value: unknown, fallback = 0): number =>
+	typeof value === "number" ? value : fallback;
+const asBoolean = (value: unknown, fallback = false): boolean =>
+	typeof value === "boolean" ? value : fallback;
+
 // Helper to get auth token for fetch requests (object so it can be spread into headers)
 function getAuthHeaders(): Record<string, string> {
 	const token =
@@ -41,116 +46,120 @@ function getAuthHeaders(): Record<string, string> {
 // =============================================================================
 
 function transformADR(data: Record<string, unknown>): ADR {
+	const payload = data as Record<string, any>;
 	return {
-		adrNumber: data["adr_number"],
-		complianceScore: data["compliance_score"],
-		consequences: data["consequences"],
-		consideredOptions: data["considered_options"],
-		context: data["context"],
-		createdAt: data["created_at"],
-		date: data["date"],
-		deciders: data["deciders"],
-		decision: data["decision"],
-		decisionDrivers: data["decision_drivers"],
-		id: data["id"],
-		lastVerifiedAt: data["last_verified_at"],
-		metadata: data["metadata"],
-		projectId: data["project_id"],
-		relatedAdrs: data["related_adrs"],
-		relatedRequirements: data["related_requirements"],
-		stakeholders: data["stakeholders"],
-		status: data.status,
-		supersededBy: data["superseded_by"],
-		supersedes: data["supersedes"],
-		tags: data["tags"],
-		title: data["title"],
-		updatedAt: data["updated_at"],
-		verificationNotes: data["verification_notes"],
-		version: data["version"],
+		adrNumber: payload["adr_number"],
+		complianceScore: payload["compliance_score"],
+		consequences: payload["consequences"],
+		consideredOptions: payload["considered_options"],
+		context: payload["context"],
+		createdAt: payload["created_at"],
+		date: payload["date"],
+		deciders: payload["deciders"],
+		decision: payload["decision"],
+		decisionDrivers: payload["decision_drivers"],
+		id: payload["id"],
+		lastVerifiedAt: payload["last_verified_at"],
+		metadata: payload["metadata"],
+		projectId: payload["project_id"],
+		relatedAdrs: payload["related_adrs"],
+		relatedRequirements: payload["related_requirements"],
+		stakeholders: payload["stakeholders"],
+		status: payload["status"],
+		supersededBy: payload["superseded_by"],
+		supersedes: payload["supersedes"],
+		tags: payload["tags"],
+		title: payload["title"],
+		updatedAt: payload["updated_at"],
+		verificationNotes: payload["verification_notes"],
+		version: payload["version"],
 	};
 }
 
 function transformContract(data: Record<string, unknown>): Contract {
+	const payload = data as Record<string, any>;
 	return {
-		contractNumber: data["contract_number"],
-		contractType: data["contract_type"],
-		createdAt: data["created_at"],
-		description: data["description"],
-		executableSpec: data["executable_spec"],
-		id: data["id"],
-		initialState: data["initial_state"],
-		invariants: data["invariants"],
-		itemId: data["item_id"],
-		lastVerifiedAt: data["last_verified_at"],
-		metadata: data["metadata"],
-		postconditions: data["postconditions"],
-		preconditions: data["preconditions"],
-		projectId: data["project_id"],
-		specLanguage: data["spec_language"],
-		states: data["states"],
-		status: data.status,
-		tags: data["tags"],
-		title: data["title"],
-		transitions: data["transitions"],
-		updatedAt: data["updated_at"],
-		verificationResult: data["verification_result"],
-		version: data["version"],
+		contractNumber: payload["contract_number"],
+		contractType: payload["contract_type"],
+		createdAt: payload["created_at"],
+		description: payload["description"],
+		executableSpec: payload["executable_spec"],
+		id: payload["id"],
+		initialState: payload["initial_state"],
+		invariants: payload["invariants"],
+		itemId: payload["item_id"],
+		lastVerifiedAt: payload["last_verified_at"],
+		metadata: payload["metadata"],
+		postconditions: payload["postconditions"],
+		preconditions: payload["preconditions"],
+		projectId: payload["project_id"],
+		specLanguage: payload["spec_language"],
+		states: payload["states"],
+		status: payload["status"],
+		tags: payload["tags"],
+		title: payload["title"],
+		transitions: payload["transitions"],
+		updatedAt: payload["updated_at"],
+		verificationResult: payload["verification_result"],
+		version: payload["version"],
 	};
 }
 
 function transformFeature(data: Record<string, unknown>): Feature {
+	const payload = data as Record<string, any>;
 	return {
-		asA: data["as_a"],
-		createdAt: data["created_at"],
-		description: data["description"],
-		failedScenarios: data["failed_scenarios"] || 0,
-		featureNumber: data["feature_number"],
-		filePath: data["file_path"],
-		iWant: data["i_want"],
-		id: data["id"],
-		metadata: data["metadata"],
-		name: data.name,
-		passedScenarios: data["passed_scenarios"] || 0,
-		pendingScenarios: data["pending_scenarios"] || 0,
-		projectId: data["project_id"],
-		relatedAdrs: data["related_adrs"],
-		relatedRequirements: data["related_requirements"],
-		scenarioCount: data["scenario_count"] || 0,
-		soThat: data["so_that"],
-		status: data.status,
-		tags: data["tags"],
-		updatedAt: data["updated_at"],
-		version: data["version"],
+		asA: payload["as_a"],
+		createdAt: payload["created_at"],
+		description: payload["description"],
+		failedScenarios: asNumber(payload["failed_scenarios"]),
+		featureNumber: payload["feature_number"],
+		filePath: payload["file_path"],
+		iWant: payload["i_want"],
+		id: payload["id"],
+		metadata: payload["metadata"],
+		name: payload["name"],
+		passedScenarios: asNumber(payload["passed_scenarios"]),
+		pendingScenarios: asNumber(payload["pending_scenarios"]),
+		projectId: payload["project_id"],
+		relatedAdrs: payload["related_adrs"],
+		relatedRequirements: payload["related_requirements"],
+		scenarioCount: asNumber(payload["scenario_count"]),
+		soThat: payload["so_that"],
+		status: payload["status"],
+		tags: payload["tags"],
+		updatedAt: payload["updated_at"],
+		version: payload["version"],
 	};
 }
 
 function transformScenario(data: Record<string, unknown>): Scenario {
+	const payload = data as Record<string, any>;
 	return {
-		background: data["background"],
-		createdAt: data["created_at"],
-		description: data["description"],
-		examples: data["examples"],
-		executionCount: data["execution_count"] || 0,
-		featureId: data["feature_id"],
-		gherkinText: data["gherkin_text"],
-		givenSteps: data["given_steps"] || [],
-		id: data["id"],
-		isOutline: data["is_outline"] || false,
-		lastRunAt: data["last_run_at"],
-		lastRunDurationMs: data["last_run_duration_ms"],
-		lastRunResult: data["last_run_result"],
-		metadata: data["metadata"],
-		passRate: data["pass_rate"] || 0,
-		requirementIds: data["requirement_ids"],
-		scenarioNumber: data["scenario_number"],
-		status: data.status,
-		tags: data["tags"],
-		testCaseIds: data["test_case_ids"],
-		thenSteps: data["then_steps"] || [],
-		title: data["title"],
-		updatedAt: data["updated_at"],
-		version: data["version"],
-		whenSteps: data["when_steps"] || [],
+		background: payload["background"],
+		createdAt: payload["created_at"],
+		description: payload["description"],
+		examples: payload["examples"],
+		executionCount: asNumber(payload["execution_count"]),
+		featureId: payload["feature_id"],
+		gherkinText: payload["gherkin_text"],
+		givenSteps: (payload["given_steps"] as ScenarioStep[] | undefined) ?? [],
+		id: payload["id"],
+		isOutline: asBoolean(payload["is_outline"]),
+		lastRunAt: payload["last_run_at"],
+		lastRunDurationMs: payload["last_run_duration_ms"],
+		lastRunResult: payload["last_run_result"],
+		metadata: payload["metadata"],
+		passRate: asNumber(payload["pass_rate"]),
+		requirementIds: payload["requirement_ids"],
+		scenarioNumber: payload["scenario_number"],
+		status: payload["status"],
+		tags: payload["tags"],
+		testCaseIds: payload["test_case_ids"],
+		thenSteps: (payload["then_steps"] as ScenarioStep[] | undefined) ?? [],
+		title: payload["title"],
+		updatedAt: payload["updated_at"],
+		version: payload["version"],
+		whenSteps: (payload["when_steps"] as ScenarioStep[] | undefined) ?? [],
 	};
 }
 
@@ -274,8 +283,8 @@ async function updateADR(
 	if (data["consequences"] !== undefined) {
 		body["consequences"] = data["consequences"];
 	}
-	if (data.status !== undefined) {
-		body.status = data.status;
+	if (data["status"] !== undefined) {
+		body["status"] = data["status"];
 	}
 	if (data["decisionDrivers"] !== undefined) {
 		body["decision_drivers"] = data["decisionDrivers"];
@@ -342,15 +351,15 @@ async function fetchADRActivities(adrId: string): Promise<ADRActivity[]> {
 		throw new Error("Failed to fetch ADR activities");
 	}
 	const data = await res.json();
-	return (data["activities"] || []).map((a: Record<string, unknown>) => ({
-		activityType: a.activity_type,
-		adrId: a.adr_id,
-		createdAt: a.created_at,
-		description: a.description,
-		fromValue: a.from_value,
-		id: a.id,
-		performedBy: a.performed_by,
-		toValue: a.to_value,
+	return (data["activities"] || []).map((a: Record<string, any>) => ({
+		activityType: a["activity_type"],
+		adrId: a["adr_id"],
+		createdAt: a["created_at"],
+		description: a["description"],
+		fromValue: a["from_value"],
+		id: a["id"],
+		performedBy: a["performed_by"],
+		toValue: a["to_value"],
 	}));
 }
 
@@ -365,15 +374,15 @@ async function fetchContractActivities(
 		throw new Error("Failed to fetch contract activities");
 	}
 	const data = await res.json();
-	return (data["activities"] || []).map((a: Record<string, unknown>) => ({
-		activityType: a.activity_type,
-		contractId: a.contract_id,
-		createdAt: a.created_at,
-		description: a.description,
-		fromValue: a.from_value,
-		id: a.id,
-		performedBy: a.performed_by,
-		toValue: a.to_value,
+	return (data["activities"] || []).map((a: Record<string, any>) => ({
+		activityType: a["activity_type"],
+		contractId: a["contract_id"],
+		createdAt: a["created_at"],
+		description: a["description"],
+		fromValue: a["from_value"],
+		id: a["id"],
+		performedBy: a["performed_by"],
+		toValue: a["to_value"],
 	}));
 }
 
@@ -390,15 +399,15 @@ async function fetchFeatureActivities(
 		throw new Error("Failed to fetch feature activities");
 	}
 	const data = await res.json();
-	return (data["activities"] || []).map((a: Record<string, unknown>) => ({
-		activityType: a.activity_type,
-		createdAt: a.created_at,
-		description: a.description,
-		featureId: a.feature_id,
-		fromValue: a.from_value,
-		id: a.id,
-		performedBy: a.performed_by,
-		toValue: a.to_value,
+	return (data["activities"] || []).map((a: Record<string, any>) => ({
+		activityType: a["activity_type"],
+		createdAt: a["created_at"],
+		description: a["description"],
+		featureId: a["feature_id"],
+		fromValue: a["from_value"],
+		id: a["id"],
+		performedBy: a["performed_by"],
+		toValue: a["to_value"],
 	}));
 }
 
@@ -423,15 +432,15 @@ async function fetchScenarioActivities(
 	const data = await res.json();
 	return {
 		activities: (data["activities"] || []).map(
-			(a: Record<string, unknown>) => ({
-				activityType: a.activity_type,
-				createdAt: a.created_at,
-				description: a.description,
-				fromValue: a.from_value,
-				id: a.id,
-				performedBy: a.performed_by,
-				scenarioId: a.scenario_id,
-				toValue: a.to_value,
+			(a: Record<string, any>) => ({
+				activityType: a["activity_type"],
+				createdAt: a["created_at"],
+				description: a["description"],
+				fromValue: a["from_value"],
+				id: a["id"],
+				performedBy: a["performed_by"],
+				scenarioId: a["scenario_id"],
+				toValue: a["to_value"],
 			}),
 		),
 		total: data["total"] || 0,
@@ -495,15 +504,15 @@ async function fetchProjectScenarioActivities(
 		throw new Error("Failed to fetch scenario activities");
 	}
 	const data = await res.json();
-	return (data["activities"] || []).map((a: Record<string, unknown>) => ({
-		activityType: a.activity_type,
-		createdAt: a.created_at,
-		description: a.description,
-		fromValue: a.from_value,
-		id: a.id,
-		performedBy: a.performed_by,
-		scenarioId: a.scenario_id,
-		toValue: a.to_value,
+	return (data["activities"] || []).map((a: Record<string, any>) => ({
+		activityType: a["activity_type"],
+		createdAt: a["created_at"],
+		description: a["description"],
+		fromValue: a["from_value"],
+		id: a["id"],
+		performedBy: a["performed_by"],
+		scenarioId: a["scenario_id"],
+		toValue: a["to_value"],
 	}));
 }
 
@@ -640,8 +649,8 @@ async function updateContract(
 	if (data["description"] !== undefined) {
 		body["description"] = data["description"];
 	}
-	if (data.status !== undefined) {
-		body.status = data.status;
+	if (data["status"] !== undefined) {
+		body["status"] = data["status"];
 	}
 	if (data["preconditions"] !== undefined) {
 		body["preconditions"] = data["preconditions"];
@@ -820,8 +829,8 @@ async function updateFeature(
 	data: UpdateFeatureData,
 ): Promise<{ id: string; version: number }> {
 	const body: Record<string, unknown> = {};
-	if (data.name !== undefined) {
-		body.name = data.name;
+	if (data["name"] !== undefined) {
+		body["name"] = data["name"];
 	}
 	if (data["description"] !== undefined) {
 		body["description"] = data["description"];
@@ -835,8 +844,8 @@ async function updateFeature(
 	if (data["soThat"] !== undefined) {
 		body["so_that"] = data["soThat"];
 	}
-	if (data.status !== undefined) {
-		body.status = data.status;
+	if (data["status"] !== undefined) {
+		body["status"] = data["status"];
 	}
 	if (data["filePath"] !== undefined) {
 		body["file_path"] = data["filePath"];
@@ -1049,11 +1058,11 @@ async function runScenario(id: string): Promise<{
 	}
 	const result = await res.json();
 	return {
-		executionCount: result["execution_count"],
+		executionCount: asNumber(result["execution_count"]),
 		id: result["id"],
 		lastRunAt: result["last_run_at"],
 		lastRunResult: result["last_run_result"],
-		status: result.status,
+		status: result["status"],
 	};
 }
 
@@ -1095,9 +1104,11 @@ export function useCreateADR() {
 	return useMutation({
 		mutationFn: createADR,
 		onSuccess: (_, variables) => {
-			undefined;
-			undefined;
-			undefined;
+			void queryClient.invalidateQueries({ queryKey: ["adrs"] });
+			void queryClient.invalidateQueries({ queryKey: ["adrStats"] });
+			return queryClient.invalidateQueries({
+				queryKey: ["specificationSummary", variables.projectId],
+			});
 		},
 	});
 }
@@ -1108,9 +1119,9 @@ export function useUpdateADR() {
 		mutationFn: ({ id, data }: { id: string; data: UpdateADRData }) =>
 			updateADR(id, data),
 		onSuccess: (_, { id }) => {
-			undefined;
-			undefined;
-			undefined;
+			void queryClient.invalidateQueries({ queryKey: ["adrs", id] });
+			void queryClient.invalidateQueries({ queryKey: ["adrs"] });
+			return queryClient.invalidateQueries({ queryKey: ["adrStats"] });
 		},
 	});
 }
@@ -1120,9 +1131,9 @@ export function useDeleteADR() {
 	return useMutation({
 		mutationFn: deleteADR,
 		onSuccess: () => {
-			undefined;
-			undefined;
-			undefined;
+			void queryClient.invalidateQueries({ queryKey: ["adrs"] });
+			void queryClient.invalidateQueries({ queryKey: ["adrStats"] });
+			return queryClient.invalidateQueries({ queryKey: ["specificationSummary"] });
 		},
 	});
 }
@@ -1133,11 +1144,10 @@ export function useVerifyADR() {
 		mutationFn: ({ id, notes }: { id: string; notes: string }) =>
 			verifyADR(id, notes),
 		onSuccess: (_, { id }) => {
-			undefined;
-			undefined;
-			undefined;
-			undefined;
-			undefined;
+			void queryClient.invalidateQueries({ queryKey: ["adrs", id] });
+			void queryClient.invalidateQueries({ queryKey: ["adrs"] });
+			void queryClient.invalidateQueries({ queryKey: ["adrStats"] });
+			return queryClient.invalidateQueries({ queryKey: ["specificationSummary"] });
 		},
 	});
 }
@@ -1235,9 +1245,11 @@ export function useCreateContract() {
 	return useMutation({
 		mutationFn: createContract,
 		onSuccess: (_, variables) => {
-			undefined;
-			undefined;
-			undefined;
+			void queryClient.invalidateQueries({ queryKey: ["contracts"] });
+			void queryClient.invalidateQueries({ queryKey: ["contractStats"] });
+			return queryClient.invalidateQueries({
+				queryKey: ["specificationSummary", variables.projectId],
+			});
 		},
 	});
 }
@@ -1248,8 +1260,8 @@ export function useUpdateContract() {
 		mutationFn: ({ id, data }: { id: string; data: UpdateContractData }) =>
 			updateContract(id, data),
 		onSuccess: (_, { id }) => {
-			undefined;
-			undefined;
+			void queryClient.invalidateQueries({ queryKey: ["contracts", id] });
+			return queryClient.invalidateQueries({ queryKey: ["contracts"] });
 		},
 	});
 }
@@ -1259,9 +1271,9 @@ export function useDeleteContract() {
 	return useMutation({
 		mutationFn: deleteContract,
 		onSuccess: () => {
-			undefined;
-			undefined;
-			undefined;
+			void queryClient.invalidateQueries({ queryKey: ["contracts"] });
+			void queryClient.invalidateQueries({ queryKey: ["contractStats"] });
+			return queryClient.invalidateQueries({ queryKey: ["specificationSummary"] });
 		},
 	});
 }
@@ -1271,10 +1283,10 @@ export function useVerifyContract() {
 	return useMutation({
 		mutationFn: (id: string) => verifyContract(id),
 		onSuccess: (_, id) => {
-			undefined;
-			undefined;
-			undefined;
-			undefined;
+			void queryClient.invalidateQueries({ queryKey: ["contracts", id] });
+			void queryClient.invalidateQueries({ queryKey: ["contracts"] });
+			void queryClient.invalidateQueries({ queryKey: ["contractStats"] });
+			return queryClient.invalidateQueries({ queryKey: ["specificationSummary"] });
 		},
 	});
 }
@@ -1312,9 +1324,11 @@ export function useCreateFeature() {
 	return useMutation({
 		mutationFn: createFeature,
 		onSuccess: (_, variables) => {
-			undefined;
-			undefined;
-			undefined;
+			void queryClient.invalidateQueries({ queryKey: ["features"] });
+			void queryClient.invalidateQueries({ queryKey: ["featureStats"] });
+			return queryClient.invalidateQueries({
+				queryKey: ["specificationSummary", variables.projectId],
+			});
 		},
 	});
 }
@@ -1325,8 +1339,8 @@ export function useUpdateFeature() {
 		mutationFn: ({ id, data }: { id: string; data: UpdateFeatureData }) =>
 			updateFeature(id, data),
 		onSuccess: (_, { id }) => {
-			undefined;
-			undefined;
+			void queryClient.invalidateQueries({ queryKey: ["features", id] });
+			return queryClient.invalidateQueries({ queryKey: ["features"] });
 		},
 	});
 }
@@ -1336,9 +1350,9 @@ export function useDeleteFeature() {
 	return useMutation({
 		mutationFn: deleteFeature,
 		onSuccess: () => {
-			undefined;
-			undefined;
-			undefined;
+			void queryClient.invalidateQueries({ queryKey: ["features"] });
+			void queryClient.invalidateQueries({ queryKey: ["featureStats"] });
+			return queryClient.invalidateQueries({ queryKey: ["specificationSummary"] });
 		},
 	});
 }
@@ -1376,10 +1390,10 @@ export function useCreateScenario() {
 	return useMutation({
 		mutationFn: createScenario,
 		onSuccess: (_, variables) => {
-			undefined;
-			undefined;
-			undefined;
-			undefined;
+			void queryClient.invalidateQueries({ queryKey: ["scenarios"] });
+			void queryClient.invalidateQueries({ queryKey: ["projectScenarios"] });
+			void queryClient.invalidateQueries({ queryKey: ["featureStats"] });
+			return queryClient.invalidateQueries({ queryKey: ["specificationSummary"] });
 		},
 	});
 }
@@ -1390,9 +1404,9 @@ export function useUpdateScenario() {
 		mutationFn: ({ id, data }: { id: string; data: UpdateScenarioData }) =>
 			updateScenario(id, data),
 		onSuccess: (_, { id }) => {
-			undefined;
-			undefined;
-			undefined;
+			void queryClient.invalidateQueries({ queryKey: ["scenarios", id] });
+			void queryClient.invalidateQueries({ queryKey: ["scenarios"] });
+			return queryClient.invalidateQueries({ queryKey: ["featureStats"] });
 		},
 	});
 }
@@ -1402,10 +1416,10 @@ export function useDeleteScenario() {
 	return useMutation({
 		mutationFn: deleteScenario,
 		onSuccess: () => {
-			undefined;
-			undefined;
-			undefined;
-			undefined;
+			void queryClient.invalidateQueries({ queryKey: ["scenarios"] });
+			void queryClient.invalidateQueries({ queryKey: ["projectScenarios"] });
+			void queryClient.invalidateQueries({ queryKey: ["featureStats"] });
+			return queryClient.invalidateQueries({ queryKey: ["specificationSummary"] });
 		},
 	});
 }
@@ -1415,11 +1429,10 @@ export function useRunScenario() {
 	return useMutation({
 		mutationFn: runScenario,
 		onSuccess: (_, id) => {
-			undefined;
-			undefined;
-			undefined;
-			undefined;
-			undefined;
+			void queryClient.invalidateQueries({ queryKey: ["scenarios", id] });
+			void queryClient.invalidateQueries({ queryKey: ["scenarios"] });
+			void queryClient.invalidateQueries({ queryKey: ["featureStats"] });
+			return queryClient.invalidateQueries({ queryKey: ["specificationSummary"] });
 		},
 	});
 }

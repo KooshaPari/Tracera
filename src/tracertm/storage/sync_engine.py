@@ -12,6 +12,8 @@ Key Features:
 - Atomic operations with transaction support
 """
 
+from __future__ import annotations
+
 import asyncio
 import hashlib
 import json
@@ -26,10 +28,20 @@ from sqlalchemy import text
 
 from tracertm.storage.conflict_resolver import ConflictStrategy, VectorClock
 
+from tracertm.database.connection import DatabaseConnection
+from tracertm.storage.local_storage import LocalStorageManager
+
 if TYPE_CHECKING:
     from tracertm.api.client import TraceRTMClient
-    from tracertm.database.connection import DatabaseConnection
-    from tracertm.storage.local_storage import LocalStorageManager
+
+
+@dataclass
+class SyncConfig:
+    """Configuration for sync engine behavior."""
+    conflict_strategy: ConflictStrategy = ConflictStrategy.LAST_WRITE_WINS
+    max_retries: int = 3
+    retry_delay: float = 1.0
+
 
 logger = logging.getLogger(__name__)
 
@@ -181,7 +193,7 @@ class ChangeDetector:
 class SyncQueue:
     """Manages the sync queue table in SQLite."""
 
-    def __init__(self, db_connection: "DatabaseConnection") -> None:
+    def __init__(self, db_connection: DatabaseConnection) -> None:
         """
         Initialize sync queue manager.
 
@@ -369,7 +381,7 @@ class SyncQueue:
 class SyncStateManager:
     """Manages sync state metadata."""
 
-    def __init__(self, db_connection: "DatabaseConnection") -> None:
+    def __init__(self, db_connection: DatabaseConnection) -> None:
         """
         Initialize sync state manager.
 
@@ -522,12 +534,10 @@ class SyncEngine:
 
     def __init__(
         self,
-        db_connection: "DatabaseConnection",
-        api_client: "TraceRTMClient",
-        storage_manager: "LocalStorageManager",
-        conflict_strategy: ConflictStrategy = ConflictStrategy.LAST_WRITE_WINS,
-        max_retries: int = 3,
-        retry_delay: float = 1.0,
+        db_connection: DatabaseConnection,
+        api_client: TraceRTMClient,
+        storage_manager: LocalStorageManager,
+        config: SyncConfig | None = None,
     ) -> None:
         """
         Initialize sync engine.
@@ -536,16 +546,15 @@ class SyncEngine:
             db_connection: DatabaseConnection instance
             api_client: API client for remote operations
             storage_manager: LocalStorageManager instance
-            conflict_strategy: Strategy for conflict resolution
-            max_retries: Maximum retry attempts for failed syncs
-            retry_delay: Initial delay between retries (seconds)
+            config: Sync configuration
         """
+        cfg = config or SyncConfig()
         self.db: DatabaseConnection = db_connection
         self.api: TraceRTMClient = api_client
         self.storage: LocalStorageManager = storage_manager
-        self.conflict_strategy: ConflictStrategy = conflict_strategy
-        self.max_retries: int = max_retries
-        self.retry_delay: float = retry_delay
+        self.conflict_strategy: ConflictStrategy = cfg.conflict_strategy
+        self.max_retries: int = cfg.max_retries
+        self.retry_delay: float = cfg.retry_delay
 
         self.queue: SyncQueue = SyncQueue(db_connection)
         self.state_manager: SyncStateManager = SyncStateManager(db_connection)
@@ -1040,9 +1049,9 @@ async def exponential_backoff(attempt: int, initial_delay: float = 1.0, max_dela
 
 
 def create_sync_engine(
-    db_connection: "DatabaseConnection",
-    api_client: "TraceRTMClient",
-    storage_manager: "LocalStorageManager",
+    db_connection: DatabaseConnection,
+    api_client: TraceRTMClient,
+    storage_manager: LocalStorageManager,
     **kwargs: Any,
 ) -> SyncEngine:
     """

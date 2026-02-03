@@ -113,7 +113,7 @@ async def _sync_manage_impl(
 
 
 @mcp.tool(description="Unified backup operations")
-def backup_manage(
+def backup_manage(  # noqa: C901, PLR0912, PLR0915
     action: str,
     payload: dict[str, Any] | None = None,
     ctx: Any | None = None,
@@ -130,7 +130,7 @@ def backup_manage(
 
     storage = LocalStorageManager()
 
-    if action == "backup":
+    if action == "backup":  # noqa: PLR1702
         project_id = payload.get("project_id")
         output = payload.get("output")
         compress = bool(payload.get("compress", True))

@@ -2,6 +2,7 @@
 // Tests integration with UnifiedGraphView and graph workflows
 
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import type { Item, Link } from "@tracertm/types";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { JourneyExplorer } from "@/components/graph/JourneyExplorer";
@@ -11,15 +12,17 @@ import type { DerivedJourney } from "@/components/graph/JourneyExplorer";
 // TEST DATA
 // =============================================================================
 
+const now = new Date().toISOString();
+
 const createMockItem = (id: string, title: string, type: string): Item => ({
-	createdAt: new Date().toISOString(),
+	createdAt: now,
 	id,
 	priority: "high" as any,
 	projectId: "proj-1",
 	status: "done",
 	title,
 	type,
-	updatedAt: new Date().toISOString(),
+	updatedAt: now,
 	version: 1,
 	view: "technical" as any,
 });
@@ -30,13 +33,17 @@ const createMockLink = (
 	targetId: string,
 	type: string,
 ): Link => ({
-	createdAt: new Date().toISOString(),
+	createdAt: now,
 	id,
 	projectId: "proj-1",
 	sourceId,
 	targetId,
 	type: type as any,
+	updatedAt: now,
+	version: 1,
 });
+
+const setupUser = () => userEvent.setup();
 
 // Complex workflow scenario
 const createComplexScenario = () => {
@@ -298,22 +305,23 @@ describe("JourneyExplorer - Integration Tests", () => {
 	});
 
 	describe("Journey Lifecycle Management", () => {
-		it("should create new journey with correct data", async () => {
-			const onJourneyCreate = vi.fn();
+			it("should create new journey with correct data", async () => {
+				const onJourneyCreate = vi.fn();
 
 			const journeys: DerivedJourney[] = [];
 
-			render(
-				<JourneyExplorer
-					items={mockItems}
-					links={mockLinks}
-					journeys={journeys}
-					onJourneyCreate={onJourneyCreate}
-				/>,
-			);
+				render(
+					<JourneyExplorer
+						items={mockItems}
+						links={mockLinks}
+						journeys={journeys}
+						onJourneyCreate={onJourneyCreate}
+					/>,
+				);
 
-			// Create journey
-			const createButtons = screen
+				const user = setupUser();
+				// Create journey
+				const createButtons = screen
 				.getAllByRole("button")
 				.filter((btn) => btn.querySelector('[data-lucide="plus"]') !== null);
 
@@ -339,8 +347,8 @@ describe("JourneyExplorer - Integration Tests", () => {
 			}
 		});
 
-		it("should delete journey on confirmation", async () => {
-			const onJourneyDelete = vi.fn();
+			it("should delete journey on confirmation", async () => {
+				const onJourneyDelete = vi.fn();
 
 			const journeys: DerivedJourney[] = [
 				{
@@ -353,16 +361,17 @@ describe("JourneyExplorer - Integration Tests", () => {
 				},
 			];
 
-			render(
-				<JourneyExplorer
-					items={mockItems}
-					links={mockLinks}
-					journeys={journeys}
-					onJourneyDelete={onJourneyDelete}
-				/>,
-			);
+				render(
+					<JourneyExplorer
+						items={mockItems}
+						links={mockLinks}
+						journeys={journeys}
+						onJourneyDelete={onJourneyDelete}
+					/>,
+				);
 
-			const deleteButtons = screen
+				const user = setupUser();
+				const deleteButtons = screen
 				.getAllByRole("button")
 				.filter((btn) => btn.querySelector('[data-lucide="trash-2"]') !== null);
 
@@ -372,8 +381,8 @@ describe("JourneyExplorer - Integration Tests", () => {
 			}
 		});
 
-		it("should update journey properties", async () => {
-			const onJourneyUpdate = vi.fn();
+			it("should update journey properties", async () => {
+				const onJourneyUpdate = vi.fn();
 
 			const journeys: DerivedJourney[] = [
 				{
@@ -386,17 +395,18 @@ describe("JourneyExplorer - Integration Tests", () => {
 				},
 			];
 
-			render(
-				<JourneyExplorer
-					items={mockItems}
-					links={mockLinks}
-					journeys={journeys}
-					onJourneyUpdate={onJourneyUpdate}
-				/>,
-			);
+				render(
+					<JourneyExplorer
+						items={mockItems}
+						links={mockLinks}
+						journeys={journeys}
+						onJourneyUpdate={onJourneyUpdate}
+					/>,
+				);
 
-			// Click edit button
-			const editButtons = screen
+				const user = setupUser();
+				// Click edit button
+				const editButtons = screen
 				.getAllByRole("button")
 				.filter((btn) => btn.textContent?.includes("Edit"));
 
@@ -408,8 +418,8 @@ describe("JourneyExplorer - Integration Tests", () => {
 	});
 
 	describe("Export Workflow", () => {
-		it("should export selected journeys as JSON", async () => {
-			const onExport = vi.fn();
+			it("should export selected journeys as JSON", async () => {
+				const onExport = vi.fn();
 
 			const journeys: DerivedJourney[] = [
 				{
@@ -424,18 +434,19 @@ describe("JourneyExplorer - Integration Tests", () => {
 				},
 			];
 
-			render(
-				<JourneyExplorer
-					items={mockItems}
-					links={mockLinks}
-					journeys={journeys}
-					selectedJourneyIds={["j-1"]}
-					onExport={onExport}
-				/>,
-			);
+				render(
+					<JourneyExplorer
+						items={mockItems}
+						links={mockLinks}
+						journeys={journeys}
+						selectedJourneyIds={["j-1"]}
+						onExport={onExport}
+					/>,
+				);
 
-			// Open export dialog
-			const downloadButtons = screen
+				const user = setupUser();
+				// Open export dialog
+				const downloadButtons = screen
 				.getAllByRole("button")
 				.filter(
 					(btn) => btn.querySelector('[data-lucide="download"]') !== null,
@@ -452,8 +463,8 @@ describe("JourneyExplorer - Integration Tests", () => {
 			}
 		});
 
-		it("should export selected journeys as CSV", async () => {
-			const onExport = vi.fn();
+			it("should export selected journeys as CSV", async () => {
+				const onExport = vi.fn();
 
 			const journeys: DerivedJourney[] = [
 				{
@@ -466,17 +477,18 @@ describe("JourneyExplorer - Integration Tests", () => {
 				},
 			];
 
-			render(
-				<JourneyExplorer
-					items={mockItems}
-					links={mockLinks}
-					journeys={journeys}
-					selectedJourneyIds={["j-1"]}
-					onExport={onExport}
-				/>,
-			);
+				render(
+					<JourneyExplorer
+						items={mockItems}
+						links={mockLinks}
+						journeys={journeys}
+						selectedJourneyIds={["j-1"]}
+						onExport={onExport}
+					/>,
+				);
 
-			const downloadButtons = screen
+				const user = setupUser();
+				const downloadButtons = screen
 				.getAllByRole("button")
 				.filter(
 					(btn) => btn.querySelector('[data-lucide="download"]') !== null,
@@ -492,8 +504,8 @@ describe("JourneyExplorer - Integration Tests", () => {
 			}
 		});
 
-		it("should export journeys as SVG visualization", async () => {
-			const onExport = vi.fn();
+			it("should export journeys as SVG visualization", async () => {
+				const onExport = vi.fn();
 
 			const journeys: DerivedJourney[] = [
 				{
@@ -506,17 +518,18 @@ describe("JourneyExplorer - Integration Tests", () => {
 				},
 			];
 
-			render(
-				<JourneyExplorer
-					items={mockItems}
-					links={mockLinks}
-					journeys={journeys}
-					selectedJourneyIds={["j-1"]}
-					onExport={onExport}
-				/>,
-			);
+				render(
+					<JourneyExplorer
+						items={mockItems}
+						links={mockLinks}
+						journeys={journeys}
+						selectedJourneyIds={["j-1"]}
+						onExport={onExport}
+					/>,
+				);
 
-			const downloadButtons = screen
+				const user = setupUser();
+				const downloadButtons = screen
 				.getAllByRole("button")
 				.filter(
 					(btn) => btn.querySelector('[data-lucide="download"]') !== null,
@@ -558,8 +571,8 @@ describe("JourneyExplorer - Integration Tests", () => {
 			expect(screen.getByText("50")).toBeInTheDocument();
 		});
 
-		it("should filter large journey set efficiently", async () => {
-			const journeys: DerivedJourney[] = Array.from({ length: 50 }, (_, i) => ({
+			it("should filter large journey set efficiently", async () => {
+				const journeys: DerivedJourney[] = Array.from({ length: 50 }, (_, i) => ({
 				color: "#9333ea",
 				id: `j-${i}`,
 				links: [],
@@ -568,16 +581,17 @@ describe("JourneyExplorer - Integration Tests", () => {
 				type: "user_flow",
 			}));
 
-			render(
-				<JourneyExplorer
-					items={mockItems}
-					links={mockLinks}
-					journeys={journeys}
-				/>,
-			);
+				render(
+					<JourneyExplorer
+						items={mockItems}
+						links={mockLinks}
+						journeys={journeys}
+					/>,
+				);
 
-			const searchInput = screen.getByPlaceholderText("Search journeys...");
-			await user.type(searchInput, "Journey 4");
+				const user = setupUser();
+				const searchInput = screen.getByPlaceholderText("Search journeys...");
+				await user.type(searchInput, "Journey 4");
 
 			// Should show filtered results
 			expect(screen.getByText("Journey 4")).toBeInTheDocument();

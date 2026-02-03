@@ -48,7 +48,7 @@ export const EnhancedErrorState = memo(function EnhancedErrorState({
 				: error);
 
 	const handleCopyError = () => {
-		const errorText = `Error: ${errorDetails.message}\n${errorDetails.stack || ""}`;
+		const _errorText = `Error: ${errorDetails.message}\n${errorDetails.stack || ""}`;
 		undefined;
 	};
 

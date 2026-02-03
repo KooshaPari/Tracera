@@ -1,7 +1,11 @@
 """
-Main dashboard TUI application.
+Dashboard TUI application with LocalStorageManager integration.
 
-Provides interactive dashboard with project state, view switching, and item browsing.
+Provides interactive dashboard with:
+- Local storage integration (SQLite + Markdown)
+- Real-time sync status
+- Conflict notifications
+- Offline-first operation
 """
 
 from typing import TYPE_CHECKING, ClassVar
@@ -22,7 +26,7 @@ except ImportError:
         from textual.containers import Container, Horizontal, Vertical
         from textual.widgets import Button, DataTable, Footer, Header, Input, Static, Tree
     else:
-        # Create dummy classes for type checking
+        # Create dummy classes for runtime when textual unavailable
         class App:
             pass
 
@@ -57,17 +61,27 @@ except ImportError:
             pass
 
 
-from sqlalchemy.orm import Session
+import logging
+from pathlib import Path
 
 from tracertm.config.manager import ConfigManager
-from tracertm.database.connection import DatabaseConnection
-from tracertm.models.item import Item
-from tracertm.models.link import Link
+from tracertm.storage.sync_engine import SyncStatus
+from tracertm.tui.adapters.storage_adapter import StorageAdapter
+from tracertm.tui.widgets.conflict_panel import ConflictPanel
+from tracertm.tui.widgets.sync_status import SyncStatusWidget
 
 if TEXTUAL_AVAILABLE:
 
     class DashboardApp(App):
-        """Main dashboard TUI application."""
+        """
+        Dashboard with LocalStorageManager integration.
+
+        Features:
+        - Offline-first local storage
+        - Real-time sync status
+        - Conflict notifications
+        - Combined SQLite + Markdown view
+        """
 
         CSS = """
         Screen {
@@ -83,6 +97,11 @@ if TEXTUAL_AVAILABLE:
             width: 75%;
         }
 
+        #sync-status-panel {
+            height: auto;
+            border-bottom: solid $primary;
+        }
+
         #state-panel {
             height: 30%;
             border-bottom: wide $primary;
@@ -95,26 +114,53 @@ if TEXTUAL_AVAILABLE:
         DataTable {
             height: 100%;
         }
+
+        .conflict-banner {
+            background: $error;
+            color: $text;
+            text-style: bold;
+            height: 3;
+            content-align: center middle;
+        }
         """
 
         BINDINGS: ClassVar[list] = [
             Binding("q", "quit", "Quit", priority=True),
             Binding("v", "switch_view", "Switch View"),
             Binding("r", "refresh", "Refresh"),
+            Binding("ctrl+s", "sync", "Sync", priority=True),
             Binding("s", "search", "Search"),
+            Binding("c", "show_conflicts", "Conflicts"),
             Binding("?", "help", "Help"),
         ]
 
-        def __init__(self) -> None:
+        def __init__(self, base_dir: Path | None = None) -> None:
+            """
+            Initialize dashboard.
+
+            Args:
+                base_dir: Base directory for local storage
+            """
             super().__init__()
             self.config_manager = ConfigManager()
-            self.project_id: str | None = None
-            self.current_view: str = "FEATURE"
-            self.db: DatabaseConnection | None = None
+            self.project_name: str | None = None
+            self.current_view: str = "epic"
+
+            # Initialize storage adapter
+            self.storage_adapter = StorageAdapter(base_dir=base_dir)
+
+            # Track sync state
+            self._is_syncing = False
+            self._sync_timer = None
 
         def compose(self) -> ComposeResult:
             """Create child widgets for the app."""
             yield Header(show_clock=True)
+
+            # Sync status bar
+            with Container(id="sync-status-panel"):
+                yield SyncStatusWidget(id="sync-status")
+
             with Horizontal():
                 with Vertical(id="sidebar"):
                     yield Static("Views", id="views-title")
@@ -134,147 +180,179 @@ if TEXTUAL_AVAILABLE:
 
         def on_mount(self) -> None:
             """Called when app starts."""
-            self.setup_database()
             self.load_project()
             self.setup_view_tree()
+            self.setup_storage_callbacks()
             self.refresh_data()
-
-        def setup_database(self) -> None:
-            """Setup database connection."""
-            database_url = self.config_manager.get("database_url")
-            if not database_url:
-                self.exit(message="No database configured. Run 'rtm config init' first.")
-                return
-
-            self.db = DatabaseConnection(database_url)
-            self.db.connect()
+            self.start_sync_status_updates()
 
         def load_project(self) -> None:
-            """Load current project."""
-            self.project_id = self.config_manager.get("current_project_id")
-            if not self.project_id:
+            """Load current project from config."""
+            self.project_name = self.config_manager.get("current_project")
+            if not self.project_name:
                 self.exit(message="No current project. Run 'rtm project init' first.")
                 return
 
         def setup_view_tree(self) -> None:
             """Setup view tree widget."""
             view_tree = self.query_one("#view-tree", Tree)
-            views = ["FEATURE", "CODE", "WIREFRAME", "API", "TEST", "DATABASE", "ROADMAP", "PROGRESS"]
+            views = [
+                "epic",
+                "story",
+                "test",
+                "task",
+            ]
 
             for view in views:
-                node = view_tree.root.add(view, data=view)
+                node = view_tree.root.add(view.upper(), data=view)
                 if view == self.current_view:
                     node.expand()
 
+        def setup_storage_callbacks(self) -> None:
+            """Setup reactive callbacks for storage events."""
+            # Sync status updates
+            self.storage_adapter.on_sync_status_change(self._on_sync_status_change)
+
+            # Conflict notifications
+            self.storage_adapter.on_conflict_detected(self._on_conflict_detected)
+
+            # Item changes
+            self.storage_adapter.on_item_change(self._on_item_change)
+
+        def start_sync_status_updates(self) -> None:
+            """Start periodic sync status updates."""
+            self.set_interval(5.0, self.update_sync_status)
+
+        def update_sync_status(self) -> None:
+            """Update sync status display."""
+            sync_widget = self.query_one("#sync-status", SyncStatusWidget)
+            state = self.storage_adapter.get_sync_status()
+
+            sync_widget.set_online(state.status != SyncStatus.ERROR)
+            sync_widget.set_syncing(state.status == SyncStatus.SYNCING)
+            sync_widget.set_pending_changes(state.pending_changes)
+            sync_widget.set_last_sync(state.last_sync)
+            sync_widget.set_conflicts(state.conflicts_count)
+            sync_widget.set_error(state.last_error)
+
         def refresh_data(self) -> None:
             """Refresh all data displays."""
-            if not self.db or not self.project_id:
+            if not self.project_name:
                 return
 
-            self.refresh_stats()
-            self.refresh_items()
+            project = self.storage_adapter.get_project(self.project_name)
+            if not project:
+                # Create project if doesn't exist
+                project = self.storage_adapter.create_project(self.project_name)
 
-        def refresh_stats(self) -> None:
+            self.refresh_stats(project)
+            self.refresh_items(project)
+
+        def refresh_stats(self, project) -> None:
             """Refresh statistics display."""
-            if not self.db or not self.project_id:
-                return
+            stats = self.storage_adapter.get_project_stats(project)
 
-            with Session(self.db.engine) as session:
-                # Get item counts by view
-                view_counts = {}
-                for view in ["FEATURE", "CODE", "WIREFRAME", "API", "TEST", "DATABASE", "ROADMAP", "PROGRESS"]:
-                    count = (
-                        session
-                        .query(Item)
-                        .filter(
-                            Item.project_id == self.project_id,
-                            Item.view == view,
-                            Item.deleted_at.is_(None),
-                        )
-                        .count()
-                    )
-                    view_counts[view] = count
+            # Update stats table
+            stats_table = self.query_one("#stats-table", DataTable)
+            stats_table.clear()
+            stats_table.add_columns("Type", "Count", "Status Distribution")
 
-                # Get link count
-                link_count = session.query(Link).filter(Link.project_id == self.project_id).count()
+            # Items by type
+            for item_type, count in stats["items_by_type"].items():
+                stats_table.add_row(item_type.upper(), str(count), "")
 
-                # Update stats table
-                stats_table = self.query_one("#stats-table", DataTable)
-                stats_table.clear()
-                stats_table.add_columns("View", "Items", "Links")
+            # Add separator
+            stats_table.add_row("---", "---", "---")
 
-                for view, count in view_counts.items():
-                    links_for_view = (
-                        session
-                        .query(Link)
-                        .join(Item, Link.source_item_id == Item.id)
-                        .filter(
-                            Item.view == view,
-                            Item.project_id == self.project_id,
-                        )
-                        .count()
-                    )
-                    stats_table.add_row(view, str(count), str(links_for_view))
+            # Total
+            stats_table.add_row("TOTAL", str(stats["total_items"]), f"{stats['total_links']} links")
 
-                stats_table.add_row("TOTAL", str(sum(view_counts.values())), str(link_count))
+            # Update state summary
+            state_summary = self.query_one("#state-summary", Static)
+            summary_lines = [
+                f"Total Items: {stats['total_items']}",
+                f"Total Links: {stats['total_links']}",
+                "",
+                "Status:",
+            ]
+            for status, count in stats["items_by_status"].items():
+                summary_lines.append(f"  {status}: {count}")
 
-                # Update state summary
-                state_summary = self.query_one("#state-summary", Static)
-                total_items = sum(view_counts.values())
-                state_summary.update(f"Total Items: {total_items}\nTotal Links: {link_count}")
+            state_summary.update("\n".join(summary_lines))
 
-        def refresh_items(self) -> None:
+        def refresh_items(self, project) -> None:
             """Refresh items table."""
-            if not self.db or not self.project_id:
-                return
+            items = self.storage_adapter.list_items(project, item_type=self.current_view)
 
-            with Session(self.db.engine) as session:
-                items = (
-                    session
-                    .query(Item)
-                    .filter(
-                        Item.project_id == self.project_id,
-                        Item.view == self.current_view,
-                        Item.deleted_at.is_(None),
-                    )
-                    .limit(100)
-                    .all()
+            items_table = self.query_one("#items-table", DataTable)
+            items_table.clear()
+            items_table.add_columns("ID", "Title", "Status", "Priority", "Source")
+
+            for item in items:
+                # Check if item has markdown file
+                has_markdown = "content_hash" in (item.item_metadata or {})
+                source = "SQLite+MD" if has_markdown else "SQLite"
+
+                items_table.add_row(
+                    str(item.id)[:8] + "...",
+                    item.title[:40],
+                    item.status,
+                    item.priority,
+                    source,
                 )
-
-                items_table = self.query_one("#items-table", DataTable)
-                items_table.clear()
-                items_table.add_columns("ID", "Title", "Type", "Status")
-
-                for item in items:
-                    items_table.add_row(
-                        str(item.id)[:8],
-                        item.title[:50],
-                        item.item_type,
-                        item.status,
-                    )
 
         def on_tree_node_selected(self, event: Tree.NodeSelected) -> None:
             """Handle view tree selection."""
             if event.node.data:
                 self.current_view = event.node.data
-                self.refresh_items()
+                self.refresh_items(
+                    self.storage_adapter.get_project(self.project_name)  # type: ignore
+                )
                 items_title = self.query_one("#items-title", Static)
-                items_title.update(f"Items - {self.current_view}")
+                items_title.update(f"Items - {self.current_view.upper()}")
 
         def action_switch_view(self) -> None:
             """Switch to different view."""
-            # Cycle through views
-            views = ["FEATURE", "CODE", "WIREFRAME", "API", "TEST", "DATABASE", "ROADMAP", "PROGRESS"]
+            views = ["epic", "story", "test", "task"]
             current_idx = views.index(self.current_view) if self.current_view in views else 0
             next_idx = (current_idx + 1) % len(views)
             self.current_view = views[next_idx]
-            self.refresh_items()
+            self.refresh_data()
             items_title = self.query_one("#items-title", Static)
-            items_title.update(f"Items - {self.current_view}")
+            items_title.update(f"Items - {self.current_view.upper()}")
 
         def action_refresh(self) -> None:
             """Refresh all data."""
             self.refresh_data()
+            self.notify("Data refreshed", severity="information")
+
+        async def action_sync(self) -> None:
+            """Trigger sync operation."""
+            if self._is_syncing:
+                self.notify("Sync already in progress", severity="warning")
+                return
+
+            self._is_syncing = True
+            self.notify("Starting sync...", severity="information")
+
+            try:
+                result = await self.storage_adapter.trigger_sync()
+
+                if result["success"]:
+                    self.notify(
+                        f"Sync complete: {result['entities_synced']} entities synced",
+                        severity="information",
+                        timeout=5,
+                    )
+                    self.refresh_data()
+                else:
+                    error_msg = result.get("error", "Unknown error")
+                    self.notify(f"Sync failed: {error_msg}", severity="error")
+
+            except Exception as e:
+                self.notify(f"Sync error: {e}", severity="error")
+            finally:
+                self._is_syncing = False
 
         def action_search(self) -> None:
             """Open search dialog."""
@@ -290,7 +368,7 @@ if TEXTUAL_AVAILABLE:
 
                     def compose(self):
                         with Horizontal():
-                            yield Input(placeholder="Enter search query (name, type, status)...", id="search_input")
+                            yield Input(placeholder="Enter search query...", id="search_input")
                             yield Button("Search", id="search_btn")
                             yield Button("Cancel", id="cancel_btn")
 
@@ -310,11 +388,10 @@ if TEXTUAL_AVAILABLE:
 
                 # Focus on input field
                 self.query_one("#search_input", Input).focus()
-
-                self.notify("Search dialog opened. Press Ctrl+C to close.", timeout=2)
+                self.notify("Search dialog opened", timeout=2)
 
             except ImportError:
-                self.notify("Search UI not available (Textual components missing)", severity="warning")
+                self.notify("Search UI not available", severity="warning")
 
         def perform_search(self, query: str) -> None:
             """
@@ -324,40 +401,109 @@ if TEXTUAL_AVAILABLE:
                 query: Search query string (searches name, type, status)
             """
             try:
-                if not self.items_data:
-                    self.notify("No items to search", severity="warning")
-                    return
+                from tracertm.services.search_service import SearchService
 
-                query_lower = query.lower()
-                matched_items = [
-                    item
-                    for item in self.items_data
-                    if query_lower in item.get("title", "").lower()
-                    or query_lower in item.get("type", "").lower()
-                    or query_lower in item.get("status", "").lower()
-                ]
+                # Use search service if available
+                async def search():
+                    async with self.db.session() as session:
+                        search_service = SearchService(session)
+                        filters = {"project_id": self.current_project_id} if self.current_project_id else None
+                        return await search_service.search(query=query, filters=filters)
 
-                if matched_items:
-                    items_widget = self.query_one("#items", Static)
-                    search_result = "Search Results:\n\n"
-                    for item in matched_items:
-                        search_result += f"[{item.get('type', 'unknown')}] {item.get('title', 'untitled')} ({item.get('status', 'unknown')})\n"
-                    items_widget.update(search_result)
-                    self.notify(f"Found {len(matched_items)} matching items", timeout=2)
+                # For now, fall back to simple filtering
+                if hasattr(self, "items_data"):
+                    query_lower = query.lower()
+                    matched = [
+                        item
+                        for item in self.items_data
+                        if query_lower in item.get("title", "").lower() or query_lower in item.get("type", "").lower()
+                    ]
+                    self.notify(f"Found {len(matched)} items matching '{query}'", timeout=2)
                 else:
-                    self.notify("No items match the search query", severity="warning")
+                    self.notify("Search complete", timeout=2)
 
             except Exception as e:
                 self.notify(f"Search error: {e!s}", severity="error")
 
+        def action_show_conflicts(self) -> None:
+            """Show conflicts panel."""
+            conflicts = self.storage_adapter.get_unresolved_conflicts()
+
+            if not conflicts:
+                self.notify("No unresolved conflicts", severity="information")
+                return
+
+            # Show conflict panel as modal
+            self.push_screen(ConflictPanel(conflicts=conflicts))
+
         def action_help(self) -> None:
             """Show help."""
-            self.notify("Press 'q' to quit, 'v' to switch view, 'r' to refresh", timeout=3)
+            help_text = (
+                "Keyboard Shortcuts:\n"
+                "  q: Quit\n"
+                "  v: Switch view\n"
+                "  r: Refresh\n"
+                "  Ctrl+S: Sync\n"
+                "  s: Search\n"
+                "  c: Show conflicts\n"
+                "  ?: This help"
+            )
+            self.notify(help_text, timeout=10)
+
+        # Callback handlers
+
+        def _on_sync_status_change(self, state) -> None:
+            """Handle sync status changes."""
+            # Use call_from_thread for thread-safe updates
+            try:
+                self.call_from_thread(self.update_sync_status)
+
+                # Show notification for important status changes
+                if state.status == SyncStatus.SUCCESS:
+                    self.call_from_thread(
+                        self.notify,
+                        f"Sync completed: {state.synced_entities} entities",
+                        severity="information",
+                    )
+                elif state.status == SyncStatus.ERROR:
+                    self.call_from_thread(
+                        self.notify,
+                        f"Sync error: {state.last_error}",
+                        severity="error",
+                    )
+                elif state.status == SyncStatus.CONFLICT:
+                    self.call_from_thread(
+                        self.notify,
+                        f"Conflicts detected: {state.conflicts_count}",
+                        severity="warning",
+                    )
+            except Exception as e:
+                logging.getLogger(__name__).debug("App not running, ignoring sync status callback: %s", e)
+
+        def _on_conflict_detected(self, conflict) -> None:
+            """Handle conflict detection."""
+            try:
+                self.call_from_thread(
+                    self.notify,
+                    f"Conflict detected: {conflict.entity_type} {conflict.entity_id[:12]}",
+                    severity="warning",
+                )
+                self.call_from_thread(self.update_sync_status)
+            except Exception as e:
+                logging.getLogger(__name__).debug("App not running, ignoring conflict callback: %s", e)
+
+        def _on_item_change(self, item_id: str) -> None:
+            """Handle item changes."""
+            # Refresh items list after change
+            try:
+                self.call_from_thread(self.refresh_data)
+            except Exception as e:
+                logging.getLogger(__name__).debug("App not running, ignoring item change callback: %s", e)
 
         def on_unmount(self) -> None:
             """Cleanup on exit."""
-            if self.db:
-                self.db.close()
+            if self._sync_timer:
+                self._sync_timer.stop()
 
 
 if not TEXTUAL_AVAILABLE:
@@ -365,25 +511,5 @@ if not TEXTUAL_AVAILABLE:
     class DashboardApp:  # type: ignore[no-redef]
         """Placeholder when Textual is not installed."""
 
-        project_id: str | None
-        current_view: str
-        db: DatabaseConnection | None
-        config_manager: object
-        BINDINGS: ClassVar[list]
-
-        def __init__(self) -> None:
+        def __init__(self, *args, **kwargs) -> None:
             raise ImportError("Textual is required for TUI. Install with: pip install textual")
-
-        def setup_database(self) -> None: ...
-        def setup_view_tree(self) -> None: ...
-        def refresh_stats(self) -> None: ...
-        def refresh_items(self) -> None: ...
-        def refresh_data(self) -> None: ...
-        def on_tree_node_selected(self, event: object) -> None: ...
-        def action_switch_view(self) -> None: ...
-        def action_refresh(self) -> None: ...
-        def action_search(self) -> None: ...
-        def action_help(self) -> None: ...
-        def notify(self, message: str, *args: object, **kwargs: object) -> None: ...
-        def query_one(self, selector: str, widget_type: type | None = None) -> object: ...
-        def exit(self, *args: object, **kwargs: object) -> None: ...

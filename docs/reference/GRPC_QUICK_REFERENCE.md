@@ -491,7 +491,7 @@ make proto-watch
 
 | File/Directory                    | Purpose                                |
 |-----------------------------------|----------------------------------------|
-| `proto/tracertm.proto`            | Service definitions                    |
+| `proto/tracertm/v1/tracertm.proto`            | Service definitions                    |
 | `scripts/generate-grpc.sh`        | Code generation script                 |
 | `scripts/python/test_grpc.py`     | gRPC integration test                  |
 | `tests/grpc/test_helpers.py`      | Python test utilities                  |

@@ -9,14 +9,14 @@ import { requireAuth } from "@/lib/route-guards";
  * /projects/:projectId/views/:viewType/:itemId
  */
 const ItemRedirectComponent = () => {
-	const params = useParams();
+	const { itemId = "" } = useParams({ from: "/items/$itemId" });
 	const navigate = useNavigate();
-	const { data: item, error, isLoading } = useItem(params.itemId);
+	const { data: item, error, isLoading } = useItem(itemId);
 
 	useEffect(() => {
 		if (item) {
 			// Redirect to new URL format
-			navigate(`/projects/${item.projectId}/views/items/${item.id}`);
+			navigate({ to: `/projects/${item.projectId}/views/items/${item.id}` });
 		}
 	}, [item, navigate]);
 

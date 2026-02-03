@@ -60,7 +60,7 @@ export const useWorker = <T extends object>(
 
 		const initWorker = async () => {
 			try {
-				setStatus((prev) => ({ ...prev, isLoading: true, error: null }));
+				setStatus((prev) => ({ ...prev, error: null, isLoading: true }));
 
 				const worker = workerFactory();
 				workerRef.current = worker;
@@ -88,7 +88,7 @@ export const useWorker = <T extends object>(
 			}
 		};
 
-		void initWorker();
+		initWorker();
 
 		return () => {
 			mounted = false;

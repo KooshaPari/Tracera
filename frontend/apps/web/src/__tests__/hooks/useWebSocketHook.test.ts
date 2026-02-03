@@ -4,7 +4,7 @@
 
 import { beforeEach, describe, expect, it } from "vitest";
 import type { RealtimeEvent } from "../../api/websocket";
-import { useWebSocketStore } from "../../stores/websocketStore";
+import { useWebSocketStore } from "../../stores/websocket-store";
 
 describe("WebSocket Hooks and Store", () => {
 	const mockRealtimeEvent: RealtimeEvent = {

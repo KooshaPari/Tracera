@@ -25,6 +25,13 @@ declare global {
 		__TRACERTM_DEVTOOLS__?: boolean;
 		__wsCheckInterval?: ReturnType<typeof setInterval>;
 	}
+
+	// Test setup: user-event instance (see test/setup.ts)
+	interface GlobalThis {
+		user?: ReturnType<
+			typeof import("@testing-library/user-event").default.setup
+		>;
+	}
 }
 
 // Module declarations

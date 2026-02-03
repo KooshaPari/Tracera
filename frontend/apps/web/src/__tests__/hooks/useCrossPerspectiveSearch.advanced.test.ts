@@ -1,6 +1,5 @@
 import { act, renderHook } from "@testing-library/react";
 import type { Item, Link } from "@tracertm/types";
-import { describe, expect, it, vi } from "vitest";
 import {
 	performCrossPerspectiveSearch,
 	useCrossPerspectiveSearch,
@@ -19,75 +18,111 @@ describe("useCrossPerspectiveSearch - Advanced Features", () => {
 			description: "User login and session management",
 			id: "1",
 			perspective: "feature",
+			priority: "medium",
+			createdAt: new Date().toISOString(),
 			projectId: "proj-1",
 			status: "done",
 			title: "Authentication System",
 			type: "Feature",
+			updatedAt: new Date().toISOString(),
+			version: 1,
 			view: "feature",
 		},
 		{
 			description: "REST API for user authentication",
 			id: "2",
 			perspective: "api",
+			priority: "medium",
+			createdAt: new Date().toISOString(),
 			projectId: "proj-1",
 			status: "done",
 			title: "Login API Endpoint",
 			type: "API",
+			updatedAt: new Date().toISOString(),
+			version: 1,
 			view: "api",
 		},
 		{
 			description: "Business logic for user management",
 			id: "3",
 			perspective: "code",
+			priority: "medium",
+			createdAt: new Date().toISOString(),
 			projectId: "proj-1",
 			status: "in_progress",
 			title: "User Service",
 			type: "Service",
+			updatedAt: new Date().toISOString(),
+			version: 1,
 			view: "code",
 		},
 		{
 			description: "Unit tests for authentication",
 			id: "4",
 			perspective: "test",
+			priority: "medium",
+			createdAt: new Date().toISOString(),
 			projectId: "proj-1",
 			status: "done",
 			title: "Login Tests",
 			type: "Test",
+			updatedAt: new Date().toISOString(),
+			version: 1,
 			view: "test",
 		},
 		{
 			description: "PostgreSQL table definitions",
 			id: "5",
 			perspective: "database",
+			priority: "medium",
+			createdAt: new Date().toISOString(),
 			projectId: "proj-1",
 			status: "done",
 			title: "User Database Schema",
 			type: "Schema",
+			updatedAt: new Date().toISOString(),
+			version: 1,
 			view: "database",
 		},
 	];
+	const baseItem = mockItems[0];
+	if (!baseItem) {
+		throw new Error("Expected mock items to be defined");
+	}
 
 	const mockLinks: Link[] = [
 		{
 			confidence: 0.95,
+			createdAt: new Date().toISOString(),
 			id: "link-1",
+			projectId: "proj-1",
 			sourceId: "1",
 			targetId: "2",
 			type: "manifests_as",
+			updatedAt: new Date().toISOString(),
+			version: 1,
 		},
 		{
 			confidence: 0.9,
+			createdAt: new Date().toISOString(),
 			id: "link-2",
+			projectId: "proj-1",
 			sourceId: "2",
 			targetId: "3",
 			type: "represents",
+			updatedAt: new Date().toISOString(),
+			version: 1,
 		},
 		{
 			confidence: 0.85,
+			createdAt: new Date().toISOString(),
 			id: "link-3",
+			projectId: "proj-1",
 			sourceId: "1",
 			targetId: "4",
 			type: "same_as",
+			updatedAt: new Date().toISOString(),
+			version: 1,
 		},
 	];
 
@@ -124,7 +159,12 @@ describe("useCrossPerspectiveSearch - Advanced Features", () => {
 			// Cache hit count should increase
 			act(() => {
 				const stats2 = result.current.getCacheStats();
-				expect(stats2.entries[0].hits).toBe(1);
+				const entry = stats2.entries[0];
+				expect(entry).toBeDefined();
+				if (!entry) {
+					return;
+				}
+				expect(entry.hits).toBe(1);
 			});
 		});
 
@@ -188,8 +228,13 @@ describe("useCrossPerspectiveSearch - Advanced Features", () => {
 			act(() => {
 				const fullHistory = result.current.getFullHistory();
 				expect(fullHistory).toHaveLength(1);
-				expect(fullHistory[0].query).toBe("authentication");
-				expect(fullHistory[0].filters).toEqual(filters);
+				const first = fullHistory[0];
+				expect(first).toBeDefined();
+				if (!first) {
+					return;
+				}
+				expect(first.query).toBe("authentication");
+				expect(first.filters).toEqual(filters);
 			});
 		});
 
@@ -248,15 +293,15 @@ describe("useCrossPerspectiveSearch - Advanced Features", () => {
 		it("should save a search with results", () => {
 			const { result } = renderHook(() => useCrossPerspectiveSearch());
 
-			const searchResults: CrossPerspectiveSearchResult[] = [
-				{
-					equivalences: [],
-					item: mockItems[0],
-					matchType: "title",
-					perspective: "feature",
-					score: 100,
-				},
-			];
+				const searchResults: CrossPerspectiveSearchResult[] = [
+					{
+						equivalences: [],
+						item: baseItem,
+						matchType: "title",
+						perspective: "feature",
+						score: 100,
+					},
+				];
 
 			let savedId: string;
 			act(() => {
@@ -380,11 +425,11 @@ describe("useCrossPerspectiveSearch - Advanced Features", () => {
 
 	describe("Search Performance", () => {
 		it("should complete search in under 300ms for 1000 items", () => {
-			const largeItemSet = Array.from({ length: 1000 }, (_, i) => ({
-				...mockItems[0],
-				id: `item-${i}`,
-				title: `Item ${i} ${i % 2 === 0 ? "test" : "other"}`,
-			}));
+				const largeItemSet = Array.from({ length: 1000 }, (_, i) => ({
+					...baseItem,
+					id: `item-${i}`,
+					title: `Item ${i} ${i % 2 === 0 ? "test" : "other"}`,
+				}));
 
 			const { result } = renderHook(() => useCrossPerspectiveSearch());
 
@@ -444,14 +489,17 @@ describe("useCrossPerspectiveSearch - Advanced Features", () => {
 			);
 
 			// Check that each group's results are sorted by score descending
-			for (const group of results) {
-				for (let i = 0; i < group.results.length - 1; i++) {
-					expect(group.results[i].score).toBeGreaterThanOrEqual(
-						group.results[i + 1].score,
-					);
+				for (const group of results) {
+					for (let i = 0; i < group.results.length - 1; i++) {
+						const current = group.results[i];
+						const next = group.results[i + 1];
+						if (!current || !next) {
+							continue;
+						}
+						expect(current.score).toBeGreaterThanOrEqual(next.score);
+					}
 				}
-			}
-		});
+			});
 
 		it("should correctly identify match types", () => {
 			const results = performCrossPerspectiveSearch(
@@ -638,15 +686,18 @@ describe("useCrossPerspectiveSearch - Advanced Features", () => {
 
 			for (const group of results) {
 				for (const result of group.results) {
-					if (result.equivalences.length > 1) {
-						for (let i = 0; i < result.equivalences.length - 1; i++) {
-							expect(result.equivalences[i].confidence).toBeGreaterThanOrEqual(
-								result.equivalences[i + 1].confidence,
-							);
+						if (result.equivalences.length > 1) {
+							for (let i = 0; i < result.equivalences.length - 1; i++) {
+								const current = result.equivalences[i];
+								const next = result.equivalences[i + 1];
+								if (!current || !next) {
+									continue;
+								}
+								expect(current.confidence).toBeGreaterThanOrEqual(next.confidence);
+							}
 						}
 					}
 				}
-			}
 		});
 	});
 });

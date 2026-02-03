@@ -1,0 +1,505 @@
+"""Link listing handlers and helpers for reducing complexity."""
+
+from typing import Any
+
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from tracertm.services.cache_service import CacheService
+
+
+def parse_exclude_types(exclude_types: str | None) -> list[str]:
+    """Parse comma-separated exclude_types string into a list.
+
+    Args:
+        exclude_types: Comma-separated string of link types to exclude
+
+    Returns:
+        List of trimmed type strings, empty list if input is None
+    """
+    if not exclude_types:
+        return []
+    return [t.strip() for t in exclude_types.split(",") if t.strip()]
+
+
+def link_row_to_dict(row: Any, project_id: str | None) -> dict[str, Any]:
+    """Build a link dict from a raw SQL row; safe for None/missing attributes.
+
+    Supports both naming conventions:
+    - source_item_id/source_id
+    - target_item_id/target_id
+    - link_type/type
+
+    Args:
+        row: SQL result row with link data
+        project_id: Optional project ID to include in result
+
+    Returns:
+        Dictionary with normalized link data
+    """
+    return {
+        "id": str(getattr(row, "id", "") or ""),
+        "source_id": str(
+            getattr(row, "source_item_id", None) or getattr(row, "source_id", "") or ""
+        ),
+        "target_id": str(
+            getattr(row, "target_item_id", None) or getattr(row, "target_id", "") or ""
+        ),
+        "type": getattr(row, "link_type", None) or getattr(row, "type", "") or "",
+        "project_id": project_id or "",
+    }
+
+
+async def detect_link_columns(db: AsyncSession) -> tuple[str, str, str, str]:
+    """Detect actual column names from the database to support mixed schemas.
+
+    Queries the database schema to find the actual column names used for links,
+    supporting both Alembic 000 naming (source_item_id, target_item_id, link_type)
+    and Go/045 naming (source_id, target_id, type).
+
+    Args:
+        db: Database session
+
+    Returns:
+        Tuple of (source_column, target_column, type_column, metadata_column)
+    """
+    src_col = "source_id"
+    tgt_col = "target_id"
+    typ_col = "type"
+    meta_col = "metadata"
+
+    try:
+        # Find schema where links table lives
+        schema_row = await db.execute(
+            text(
+                "SELECT table_schema FROM information_schema.tables "
+                "WHERE table_name = 'links' ORDER BY table_schema LIMIT 1"
+            ),
+        )
+        schema_name = schema_row.scalar() or "public"
+
+        # Get column names for links table
+        cols_result = await db.execute(
+            text(
+                "SELECT column_name FROM information_schema.columns "
+                "WHERE table_schema = :schema AND table_name = 'links'"
+            ),
+            {"schema": schema_name},
+        )
+        cols = {row[0] for row in cols_result}
+
+        if not cols:
+            # Table not found in info_schema; use Go-style names
+            return "source_id", "target_id", "link_type", "metadata"
+
+        # Detect source column
+        if "source_item_id" in cols and "source_id" not in cols:
+            src_col = "source_item_id"
+        elif "source_id" in cols:
+            src_col = "source_id"
+
+        # Detect target column
+        if "target_item_id" in cols and "target_id" not in cols:
+            tgt_col = "target_item_id"
+        elif "target_id" in cols:
+            tgt_col = "target_id"
+
+        # Detect type column
+        if "link_type" in cols and "type" not in cols:
+            typ_col = "link_type"
+        elif "type" in cols:
+            typ_col = "type"
+
+        # Detect metadata column
+        if "metadata" in cols and "link_metadata" not in cols:
+            meta_col = "metadata"
+        elif "link_metadata" in cols:
+            meta_col = "link_metadata"
+        else:
+            meta_col = "metadata"  # fallback if neither column present
+
+    except Exception:
+        # On any error, fallback to default naming
+        return "source_id", "target_id", "link_type", "metadata"
+
+    return src_col, tgt_col, typ_col, meta_col
+
+
+def build_exclude_types_clause(
+    exclude_types_list: list[str],
+    typ_col: str,
+) -> str:
+    """Build SQL WHERE clause fragment for excluding link types.
+
+    Args:
+        exclude_types_list: List of link types to exclude
+        typ_col: Name of the type column in the database
+
+    Returns:
+        SQL WHERE clause fragment, empty string if no types to exclude
+    """
+    if not exclude_types_list:
+        return ""
+
+    placeholders = ", ".join([f":exclude_type_{i}" for i in range(len(exclude_types_list))])
+    return f" AND {typ_col} NOT IN ({placeholders})"
+
+
+def build_exclude_types_params(exclude_types_list: list[str]) -> dict[str, str]:
+    """Build parameter dictionary for exclude types SQL clause.
+
+    Args:
+        exclude_types_list: List of link types to exclude
+
+    Returns:
+        Dictionary mapping parameter names to values
+    """
+    if not exclude_types_list:
+        return {}
+
+    return {f"exclude_type_{i}": t for i, t in enumerate(exclude_types_list)}
+
+
+async def query_links_by_project(
+    db: AsyncSession,
+    project_id: str,
+    exclude_types_list: list[str],
+    src_col: str,
+    tgt_col: str,
+    typ_col: str,
+    meta_col: str,
+    skip: int,
+    limit: int | None,
+) -> tuple[int, Any]:
+    """Query links filtered by project ID.
+
+    Args:
+        db: Database session
+        project_id: Project ID to filter by
+        exclude_types_list: List of link types to exclude
+        src_col: Source column name
+        tgt_col: Target column name
+        typ_col: Type column name
+        meta_col: Metadata column name
+        skip: Number of records to skip
+        limit: Maximum number of records to return, None for no limit
+
+    Returns:
+        Tuple of (total_count, query_result)
+    """
+    # Build count query
+    count_sql = f"""
+        SELECT COUNT(DISTINCT l.id)
+        FROM links l
+        INNER JOIN items i1 ON l.{src_col} = i1.id
+        INNER JOIN items i2 ON l.{tgt_col} = i2.id
+        WHERE (i1.project_id = :project_id OR i2.project_id = :project_id)
+          AND i1.deleted_at IS NULL
+          AND i2.deleted_at IS NULL
+    """
+    count_sql += build_exclude_types_clause(exclude_types_list, typ_col)
+
+    count_params = {"project_id": project_id}
+    count_params.update(build_exclude_types_params(exclude_types_list))
+
+    count_result = await db.execute(text(count_sql), count_params)
+    total_count = count_result.scalar() or 0
+
+    # Build data query
+    base_sql = f"""
+        SELECT DISTINCT l.id, l.{src_col}, l.{tgt_col}, l.{typ_col}, l.created_at, l.{meta_col}
+        FROM links l
+        INNER JOIN items i1 ON l.{src_col} = i1.id
+        INNER JOIN items i2 ON l.{tgt_col} = i2.id
+        WHERE (i1.project_id = :project_id OR i2.project_id = :project_id)
+          AND i1.deleted_at IS NULL
+          AND i2.deleted_at IS NULL
+    """
+    base_sql += build_exclude_types_clause(exclude_types_list, typ_col)
+    base_sql += " ORDER BY l.created_at DESC"
+
+    params = {"project_id": project_id}
+    params.update(build_exclude_types_params(exclude_types_list))
+
+    if limit is not None and limit > 0:
+        base_sql += " LIMIT :limit OFFSET :skip"
+        params.update({"limit": limit, "skip": skip})
+
+    links_result = await db.execute(text(base_sql), params)
+    return total_count, links_result
+
+
+async def query_links_by_source_and_target(
+    db: AsyncSession,
+    source_id: str,
+    target_id: str,
+    exclude_types_list: list[str],
+    src_col: str,
+    tgt_col: str,
+    typ_col: str,
+    meta_col: str,
+    skip: int,
+    limit: int | None,
+) -> tuple[int, Any]:
+    """Query links filtered by both source and target IDs.
+
+    Args:
+        db: Database session
+        source_id: Source item ID
+        target_id: Target item ID
+        exclude_types_list: List of link types to exclude
+        src_col: Source column name
+        tgt_col: Target column name
+        typ_col: Type column name
+        meta_col: Metadata column name
+        skip: Number of records to skip
+        limit: Maximum number of records to return, None for no limit
+
+    Returns:
+        Tuple of (total_count, query_result)
+    """
+    # Build count query
+    count_sql = f"""
+        SELECT COUNT(*) FROM links
+        WHERE {src_col} = :source_id AND {tgt_col} = :target_id
+    """
+    count_sql += build_exclude_types_clause(exclude_types_list, typ_col)
+
+    count_params = {"source_id": source_id, "target_id": target_id}
+    count_params.update(build_exclude_types_params(exclude_types_list))
+
+    count_result = await db.execute(text(count_sql), count_params)
+    total_count = count_result.scalar() or 0
+
+    # Build data query
+    base_sql = f"""
+        SELECT id, {src_col}, {tgt_col}, {typ_col}, created_at, {meta_col}
+        FROM links
+        WHERE {src_col} = :source_id AND {tgt_col} = :target_id
+    """
+    base_sql += build_exclude_types_clause(exclude_types_list, typ_col)
+    base_sql += " ORDER BY created_at DESC"
+
+    params = {"source_id": source_id, "target_id": target_id}
+    params.update(build_exclude_types_params(exclude_types_list))
+
+    if limit is not None and limit > 0:
+        base_sql += " LIMIT :limit OFFSET :skip"
+        params.update({"limit": limit, "skip": skip})
+
+    links_result = await db.execute(text(base_sql), params)
+    return total_count, links_result
+
+
+async def query_links_by_source(
+    db: AsyncSession,
+    source_id: str,
+    exclude_types_list: list[str],
+    src_col: str,
+    tgt_col: str,
+    typ_col: str,
+    meta_col: str,
+    skip: int,
+    limit: int | None,
+) -> tuple[int, Any]:
+    """Query links filtered by source ID.
+
+    Args:
+        db: Database session
+        source_id: Source item ID
+        exclude_types_list: List of link types to exclude
+        src_col: Source column name
+        tgt_col: Target column name
+        typ_col: Type column name
+        meta_col: Metadata column name
+        skip: Number of records to skip
+        limit: Maximum number of records to return, None for no limit
+
+    Returns:
+        Tuple of (total_count, query_result)
+    """
+    # Build count query
+    count_sql = f"SELECT COUNT(*) FROM links WHERE {src_col} = :source_id"
+    count_sql += build_exclude_types_clause(exclude_types_list, typ_col)
+
+    count_params = {"source_id": source_id}
+    count_params.update(build_exclude_types_params(exclude_types_list))
+
+    count_result = await db.execute(text(count_sql), count_params)
+    total_count = count_result.scalar() or 0
+
+    # Build data query
+    base_sql = f"""
+        SELECT id, {src_col}, {tgt_col}, {typ_col}, created_at, {meta_col}
+        FROM links
+        WHERE {src_col} = :source_id
+    """
+    base_sql += build_exclude_types_clause(exclude_types_list, typ_col)
+    base_sql += " ORDER BY created_at DESC"
+
+    params = {"source_id": source_id}
+    params.update(build_exclude_types_params(exclude_types_list))
+
+    if limit is not None and limit > 0:
+        base_sql += " LIMIT :limit OFFSET :skip"
+        params.update({"limit": limit, "skip": skip})
+
+    links_result = await db.execute(text(base_sql), params)
+    return total_count, links_result
+
+
+async def query_links_by_target(
+    db: AsyncSession,
+    target_id: str,
+    exclude_types_list: list[str],
+    src_col: str,
+    tgt_col: str,
+    typ_col: str,
+    meta_col: str,
+    skip: int,
+    limit: int | None,
+) -> tuple[int, Any]:
+    """Query links filtered by target ID.
+
+    Args:
+        db: Database session
+        target_id: Target item ID
+        exclude_types_list: List of link types to exclude
+        src_col: Source column name
+        tgt_col: Target column name
+        typ_col: Type column name
+        meta_col: Metadata column name
+        skip: Number of records to skip
+        limit: Maximum number of records to return, None for no limit
+
+    Returns:
+        Tuple of (total_count, query_result)
+    """
+    # Build count query
+    count_sql = f"SELECT COUNT(*) FROM links WHERE {tgt_col} = :target_id"
+    count_sql += build_exclude_types_clause(exclude_types_list, typ_col)
+
+    count_params = {"target_id": target_id}
+    count_params.update(build_exclude_types_params(exclude_types_list))
+
+    count_result = await db.execute(text(count_sql), count_params)
+    total_count = count_result.scalar() or 0
+
+    # Build data query
+    base_sql = f"""
+        SELECT id, {src_col}, {tgt_col}, {typ_col}, created_at, {meta_col}
+        FROM links
+        WHERE {tgt_col} = :target_id
+    """
+    base_sql += build_exclude_types_clause(exclude_types_list, typ_col)
+    base_sql += " ORDER BY created_at DESC"
+
+    params = {"target_id": target_id}
+    params.update(build_exclude_types_params(exclude_types_list))
+
+    if limit is not None and limit > 0:
+        base_sql += " LIMIT :limit OFFSET :skip"
+        params.update({"limit": limit, "skip": skip})
+
+    links_result = await db.execute(text(base_sql), params)
+    return total_count, links_result
+
+
+def generate_links_cache_key(
+    cache: CacheService,
+    project_id: str,
+    source_id: str,
+    target_id: str,
+    skip: int,
+    limit: int,
+    exclude_types: str,
+) -> str:
+    """Generate cache key for links query.
+
+    Args:
+        cache: Cache service instance
+        project_id: Project ID
+        source_id: Source item ID or empty string
+        target_id: Target item ID or empty string
+        skip: Number of records to skip
+        limit: Maximum number of records to return
+        exclude_types: Comma-separated list of types to exclude or empty string
+
+    Returns:
+        Cache key string
+    """
+    return cache._generate_key(
+        "links",
+        project_id=project_id,
+        source_id=source_id,
+        target_id=target_id,
+        skip=skip,
+        limit=limit,
+        exclude_types=exclude_types,
+    )
+
+
+async def try_get_links_from_cache(
+    cache: CacheService,
+    project_id: str | None,
+    source_id: str | None,
+    target_id: str | None,
+    skip: int,
+    limit: int,
+    exclude_types: str | None,
+) -> tuple[str | None, dict[str, Any] | None]:
+    """Attempt to get cached result for links query.
+
+    Args:
+        cache: Cache service instance
+        project_id: Optional project ID
+        source_id: Optional source item ID
+        target_id: Optional target item ID
+        skip: Number of records to skip
+        limit: Maximum number of records to return
+        exclude_types: Optional comma-separated list of types to exclude
+
+    Returns:
+        Tuple of (cache_key, cached_result). Both may be None if caching
+        is not applicable or cache miss.
+    """
+    # Only cache when project_id is specified
+    if not project_id:
+        return None, None
+
+    cache_key = generate_links_cache_key(
+        cache,
+        project_id,
+        source_id or "",
+        target_id or "",
+        skip,
+        limit,
+        exclude_types or "",
+    )
+    cached = await cache.get(cache_key)
+    return cache_key, cached
+
+
+def build_links_response(
+    links_result: Any | None,
+    total_count: int,
+    project_id: str | None,
+) -> dict[str, Any]:
+    """Build the final links list response.
+
+    Args:
+        links_result: Database query result with link rows
+        total_count: Total count of matching links
+        project_id: Optional project ID to include in link dicts
+
+    Returns:
+        Dictionary with total count and list of links
+    """
+    links_list = []
+    if links_result:
+        links_list.extend(link_row_to_dict(row, project_id) for row in links_result)
+
+    return {
+        "total": total_count,
+        "links": links_list,
+    }

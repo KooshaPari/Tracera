@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
-import { useConnectionStatusStore } from "@/stores/connectionStatusStore";
+import type { ConnectionStatusState } from "@/stores/connection-status-store";
+import { useConnectionStatusStore } from "@/stores/connection-status-store";
 import { client } from "@/api/client";
 
 const { apiClient } = client;
@@ -16,10 +17,10 @@ const RETRY_DELAY_MS = 2000;
  */
 export function useConnectionHealth(): void {
 	const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-	const setOnline = useConnectionStatusStore((s) => s.setOnline);
-	const setLost = useConnectionStatusStore((s) => s.setLost);
-	const setReconnecting = useConnectionStatusStore((s) => s.setReconnecting);
-	const setConnecting = useConnectionStatusStore((s) => s.setConnecting);
+	const setOnline = useConnectionStatusStore((s: ConnectionStatusState) => s.setOnline);
+	const setLost = useConnectionStatusStore((s: ConnectionStatusState) => s.setLost);
+	const setReconnecting = useConnectionStatusStore((s: ConnectionStatusState) => s.setReconnecting);
+	const setConnecting = useConnectionStatusStore((s: ConnectionStatusState) => s.setConnecting);
 
 	useEffect(() => {
 		let cancelled = false;

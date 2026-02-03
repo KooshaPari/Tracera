@@ -310,13 +310,13 @@ function ComponentLibraryExplorerComponent({
 								<Component className="h-3 w-3" />
 								{stats.total} components
 							</span>
-							{currentLibrary.storybookUrl && (
-								<a
-									href={currentLibrary.storybookUrl}
-									target="_blank"
-									rel="noopener noreferrer"
-									className="flex items-center gap-1 hover:text-foreground"
-								>
+								{currentLibrary.sourceUrl && (
+									<a
+										href={currentLibrary.sourceUrl}
+										target="_blank"
+										rel="noopener noreferrer"
+										className="flex items-center gap-1 hover:text-foreground"
+									>
 									<BookOpen className="h-3 w-3" />
 									Storybook
 									<ExternalLink className="h-2.5 w-2.5" />
@@ -509,11 +509,7 @@ function CategorySection({
 
 	return (
 		<Collapsible open={isExpanded} onOpenChange={onToggle}>
-			<CollapsibleTrigger asChild>
-				<Button
-					variant="ghost"
-					className="w-full justify-start gap-2 h-8 px-2 mb-1"
-				>
+				<CollapsibleTrigger className="w-full justify-start gap-2 h-8 px-2 mb-1 inline-flex items-center">
 					{isExpanded ? (
 						<ChevronDown className="h-3.5 w-3.5" />
 					) : (
@@ -524,8 +520,7 @@ function CategorySection({
 					<Badge variant="secondary" className="ml-auto text-xs">
 						{components.length}
 					</Badge>
-				</Button>
-			</CollapsibleTrigger>
+				</CollapsibleTrigger>
 			<CollapsibleContent>
 				<div className="pl-6 space-y-0.5 mb-2">
 					{components.map((component) => (

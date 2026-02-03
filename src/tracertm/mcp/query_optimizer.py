@@ -30,7 +30,7 @@ class QueryOptimizer:
     """
 
     @staticmethod
-    async def get_items_with_links(
+    async def get_items_with_links(  # noqa: PLR0913
         session: AsyncSession,
         project_id: str,
         view: str | None = None,

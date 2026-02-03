@@ -13,6 +13,7 @@
  * - Rich node detail panel for WebGL mode
  */
 
+import type { Item, Link } from "@tracertm/types";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import type { Edge, Node } from "@xyflow/react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -61,6 +62,41 @@ export const HybridGraphViewEnhanced = memo(function HybridGraphViewEnhanced({
 
 	const [detailPanelNode, setDetailPanelNode] = useState<any>(null);
 	const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
+
+	// Derive items/links from nodes/edges for FlowGraphViewInner (same as HybridGraphView)
+	const reactFlowItems = useMemo((): Item[] => {
+		const timestamp = new Date().toISOString();
+		return nodes
+			.map((node) => {
+				const data = node.data as Record<string, unknown> | undefined;
+				const item = data?.["item"];
+				if (item) {
+					return item as Item;
+				}
+				return {
+					createdAt: timestamp,
+					id: node.id,
+					priority: "medium",
+					projectId: "unknown",
+					status: "todo",
+					title: node.id,
+					type: node.type || "node",
+					updatedAt: timestamp,
+					version: 1,
+					view: "FEATURE",
+				} satisfies Item;
+			})
+			.filter((item): item is Item => Boolean(item));
+	}, [nodes]);
+	const reactFlowLinks = useMemo((): Link[] => {
+		return edges
+			.map((edge) => {
+				const data = edge.data as Record<string, unknown> | undefined;
+				const link = data?.["link"];
+				return link as Link | undefined;
+			})
+			.filter((link): link is Link => Boolean(link));
+	}, [edges]);
 	const [showTransition, setShowTransition] = useState(false);
 	const [previousMode, setPreviousMode] = useState<"reactflow" | "webgl">(
 		useWebGL ? "webgl" : "reactflow",
@@ -85,6 +121,7 @@ export const HybridGraphViewEnhanced = memo(function HybridGraphViewEnhanced({
 
 			return () => clearTimeout(timer);
 		}
+		return undefined;
 	}, [useWebGL, previousMode]);
 
 	// Performance warnings
@@ -290,9 +327,9 @@ export const HybridGraphViewEnhanced = memo(function HybridGraphViewEnhanced({
 						className="h-full w-full"
 					>
 						<FlowGraphViewInner
-							nodes={nodes}
-							edges={edges}
-							onNodeSelect={handleNodeClick}
+							items={reactFlowItems}
+							links={reactFlowLinks}
+							onNavigateToItem={handleNodeClick}
 						/>
 					</motion.div>
 				)}

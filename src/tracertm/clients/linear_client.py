@@ -3,6 +3,14 @@
 from datetime import UTC, datetime
 from typing import Any
 
+# HTTP status codes
+_STATUS_SERVER_ERROR = 500
+_STATUS_TOO_MANY_REQUESTS = 429
+_STATUS_UNAUTHORIZED = 401
+
+# Identifier format: TEAM-NUMBER (e.g. TEAM-123)
+_MIN_IDENTIFIER_PARTS = 2
+
 import httpx
 from tenacity import (
     retry,
@@ -80,7 +88,7 @@ class LinearClient:
         retry=retry_if_exception(
             lambda e: (
                 isinstance(e, (httpx.NetworkError, httpx.TimeoutException))
-                or (isinstance(e, httpx.HTTPStatusError) and e.response.status_code >= 500)
+                or (isinstance(e, httpx.HTTPStatusError) and e.response.status_code >= _STATUS_SERVER_ERROR)
             )
         ),
         reraise=True,
@@ -96,11 +104,11 @@ class LinearClient:
             self.GRAPHQL_URL,
             json={"query": query, "variables": variables or {}},
         )
-        if response.status_code >= 500:
+        if response.status_code >= _STATUS_SERVER_ERROR:
             response.raise_for_status()
         return response
 
-    async def _query(
+    async def _query(  # noqa: C901
         self,
         query: str,
         variables: dict | None = None,
@@ -109,7 +117,7 @@ class LinearClient:
         response = await self._query_once(query, variables)
 
         # Handle rate limiting
-        if response.status_code == 429:
+        if response.status_code == _STATUS_TOO_MANY_REQUESTS:
             reset_after = response.headers.get("Retry-After")
             reset_at = None
             if reset_after:
@@ -120,7 +128,7 @@ class LinearClient:
             raise LinearRateLimitError(reset_at)
 
         # Handle auth errors
-        if response.status_code == 401:
+        if response.status_code == _STATUS_UNAUTHORIZED:
             raise LinearAuthError("Invalid API key")
 
         response.raise_for_status()
@@ -385,9 +393,9 @@ class LinearClient:
 
     async def get_issue_by_identifier(self, identifier: str) -> dict[str, Any]:
         """Get an issue by identifier (e.g., 'TEAM-123')."""
-        # Parse the identifier
+        # Parse the identifier (e.g. TEAM-123 => team_key + issue_number)
         parts = identifier.split("-")
-        if len(parts) < 2:
+        if len(parts) < _MIN_IDENTIFIER_PARTS:
             raise ValueError(f"Invalid issue identifier: {identifier}")
 
         team_key = parts[0]
@@ -440,7 +448,7 @@ class LinearClient:
             raise LinearNotFoundError(f"Issue {identifier} not found")
         return issues[0]
 
-    async def create_issue(
+    async def create_issue(  # noqa: C901, PLR0913
         self,
         team_id: str,
         title: str,
@@ -499,7 +507,7 @@ class LinearClient:
         result = await self._query(query, {"input": input_data})
         return result.get("issueCreate", {}).get("issue", {})
 
-    async def update_issue(
+    async def update_issue(  # noqa: C901, PLR0913
         self,
         issue_id: str,
         title: str | None = None,

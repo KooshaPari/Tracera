@@ -34,7 +34,7 @@ export function ExportView() {
 
 		setIsExporting(true);
 		try {
-			const blob = await api.exportImport.export(projectId, format);
+			const blob = await api.exportImport.exportProject(projectId, format);
 			const url = globalThis.URL.createObjectURL(blob);
 			const a = document.createElement("a");
 			a.href = url;

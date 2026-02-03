@@ -39,7 +39,7 @@ def _get_project_id(project_id: str | None = None) -> str:
 
 
 @mcp.tool(description="Stream impact analysis with progress updates")
-async def stream_impact_analysis(
+async def stream_impact_analysis(  # noqa: C901, PLR0912
     item_id: str,
     max_depth: int = 5,
     progress: Progress = Progress(),
@@ -171,7 +171,7 @@ async def stream_impact_analysis(
 
 
 @mcp.tool(description="Get traceability matrix page")
-def get_matrix_page(
+def get_matrix_page(  # noqa: PLR0913
     project_id: str | None = None,
     page: int = 1,
     page_size: int = 50,
@@ -259,7 +259,7 @@ def get_matrix_page(
 
 
 @mcp.tool(description="Get impact at specific depth level")
-def get_impact_by_depth(
+def get_impact_by_depth(  # noqa: C901, PLR0912
     item_id: str,
     depth: int,
     ctx: Any | None = None,
@@ -379,7 +379,7 @@ def get_impact_by_depth(
 
 
 @mcp.tool(description="Get paginated items list")
-def get_items_page(
+def get_items_page(  # noqa: PLR0913
     project_id: str | None = None,
     page: int = 1,
     page_size: int = 50,
@@ -469,7 +469,7 @@ def get_items_page(
 
 
 @mcp.tool(description="Get paginated links list")
-def get_links_page(
+def get_links_page(  # noqa: PLR0913
     project_id: str | None = None,
     page: int = 1,
     page_size: int = 50,

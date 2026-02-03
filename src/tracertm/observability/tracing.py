@@ -103,7 +103,7 @@ def get_tracer() -> Tracer:
     return _tracer
 
 
-def trace_method(
+def trace_method(  # noqa: C901
     span_name: str | None = None,
     attributes: dict[str, Any] | None = None,
 ) -> Callable:
@@ -122,7 +122,7 @@ def trace_method(
         ...     return arg1 + arg2
     """
 
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: Callable) -> Callable:  # noqa: C901
         @wraps(func)
         def sync_wrapper(*args: Any, **kwargs: Any) -> Any:
             tracer = get_tracer()

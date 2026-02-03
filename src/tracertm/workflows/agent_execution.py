@@ -8,6 +8,7 @@ durability across workflow restarts.
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass
 from datetime import timedelta
 from typing import Any
 
@@ -19,6 +20,15 @@ with workflow.unsafe.imports_passed_through():
     from tracertm.workflows import checkpoint_activities
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class AgentRunConfig:
+    """Configuration for agent execution."""
+    max_turns: int = 50
+    checkpoint_interval: int = 5
+    model: str = "claude-sonnet-4-20250514"
+    system_prompt: str | None = None
 
 
 @workflow.defn(name="AgentExecutionWorkflow")
@@ -49,31 +59,26 @@ class AgentExecutionWorkflow:
         self,
         session_id: str,
         initial_messages: list[dict] | None = None,
-        max_turns: int = 50,
-        checkpoint_interval: int = 5,
-        model: str = "claude-sonnet-4-20250514",
-        system_prompt: str | None = None,
+        config: AgentRunConfig | None = None,
     ) -> dict[str, Any]:
         """Execute agent with automatic checkpointing.
 
         Args:
             session_id: Agent session ID (must exist in database)
             initial_messages: Starting conversation messages (or resume from checkpoint)
-            max_turns: Maximum conversation turns before stopping
-            checkpoint_interval: Create checkpoint every N turns (default: 5)
-            model: AI model to use
-            system_prompt: Optional system prompt
+            config: Agent run configuration
 
         Returns:
             dict: Execution summary with final state and checkpoint info
         """
+        cfg = config or AgentRunConfig()
         self._session_id = session_id
         self._turn_count = 0
         self._last_checkpoint_turn = 0
 
         workflow.logger.info(
             f"Starting agent execution for session {session_id} "
-            f"(max_turns={max_turns}, checkpoint_interval={checkpoint_interval})"
+            f"(max_turns={cfg.max_turns}, checkpoint_interval={cfg.checkpoint_interval})"
         )
 
         # Initialize conversation state
@@ -81,8 +86,8 @@ class AgentExecutionWorkflow:
         conversation_state = {
             "messages": messages,
             "session_id": session_id,
-            "model": model,
-            "system_prompt": system_prompt,
+            "model": cfg.model,
+            "system_prompt": cfg.system_prompt,
         }
 
         # Try to resume from latest checkpoint if no initial messages provided
@@ -109,7 +114,7 @@ class AgentExecutionWorkflow:
                 workflow.logger.warning(f"Failed to load checkpoint, starting fresh: {e}")
 
         # Main conversation loop
-        for turn in range(self._turn_count, max_turns):
+        for turn in range(self._turn_count, cfg.max_turns):
             self._turn_count = turn + 1
 
             # Execute AI turn with tools
@@ -119,8 +124,8 @@ class AgentExecutionWorkflow:
                     args=[
                         session_id,
                         conversation_state["messages"],
-                        model,
-                        system_prompt,
+                        cfg.model,
+                        cfg.system_prompt,
                     ],
                     start_to_close_timeout=timedelta(minutes=5),
                     heartbeat_timeout=timedelta(seconds=30),
@@ -157,11 +162,11 @@ class AgentExecutionWorkflow:
                 raise
 
             # Create checkpoint at intervals
-            if (self._turn_count - self._last_checkpoint_turn) >= checkpoint_interval:
+            if (self._turn_count - self._last_checkpoint_turn) >= cfg.checkpoint_interval:
                 await self._create_checkpoint(conversation_state)
 
         # Max turns reached
-        workflow.logger.info(f"Agent execution hit max_turns ({max_turns})")
+        workflow.logger.info(f"Agent execution hit max_turns ({cfg.max_turns})")
         await self._create_checkpoint(conversation_state)
         return {
             "status": "max_turns_reached",
@@ -272,11 +277,15 @@ class AgentExecutionResumeWorkflow:
             raise ValueError(f"No checkpoint found for session {session_id}")
 
         # Resume execution using main workflow
+        state = checkpoint_data.get("state_snapshot") or {}
+        config = AgentRunConfig(
+            max_turns=checkpoint_data.get("turn_number", 0) + max_additional_turns,
+            checkpoint_interval=checkpoint_interval,
+            model=state.get("model", "claude-sonnet-4-20250514"),
+            system_prompt=state.get("system_prompt"),
+        )
         return await AgentExecutionWorkflow().run(
             session_id=session_id,
-            initial_messages=checkpoint_data["state_snapshot"].get("messages", []),
-            max_turns=checkpoint_data["turn_number"] + max_additional_turns,
-            checkpoint_interval=checkpoint_interval,
-            model=checkpoint_data["state_snapshot"].get("model", "claude-sonnet-4-20250514"),
-            system_prompt=checkpoint_data["state_snapshot"].get("system_prompt"),
+            initial_messages=state.get("messages", []),
+            config=config,
         )

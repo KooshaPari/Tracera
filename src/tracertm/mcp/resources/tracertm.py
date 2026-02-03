@@ -10,6 +10,16 @@ from tracertm.config.manager import ConfigManager
 from tracertm.mcp.core import mcp
 from tracertm.storage.local_storage import LocalStorageManager
 
+# Default limit and truncation thresholds for list resources
+_DEFAULT_LIST_LIMIT = 100
+# Tree/view limits to avoid huge responses
+_MAX_TREE_DEPTH = 5
+_MAX_ROOTS_DISPLAY = 20
+# Maximum items to display in lists
+_MAX_ITEM_LIST_DISPLAY = 10
+# Maximum children to display in tree view
+_MAX_TREE_CHILDREN_DISPLAY = 10
+
 
 def _get_project_id() -> str | None:
     """Get current project ID from config."""
@@ -165,7 +175,7 @@ def items_resource(project_id: str) -> str:
             return _format_yaml({
                 "items": result,
                 "total": len(result),
-                "truncated": len(result) >= 100,
+                "truncated": len(result) >= _DEFAULT_LIST_LIMIT,
             })
     except Exception as e:
         return f"# Error loading items: {e}"
@@ -191,7 +201,7 @@ def links_resource(project_id: str) -> str:
                 .filter(
                     Link.project_id.like(f"{project_id}%"),
                 )
-                .limit(100)
+                .limit(_DEFAULT_LIST_LIMIT)
                 .all()
             )
 
@@ -208,14 +218,14 @@ def links_resource(project_id: str) -> str:
             return _format_yaml({
                 "links": result,
                 "total": len(result),
-                "truncated": len(result) >= 100,
+                "truncated": len(result) >= _DEFAULT_LIST_LIMIT,
             })
     except Exception as e:
         return f"# Error loading links: {e}"
 
 
 @mcp.resource("tracertm://matrix/{project_id}")
-def matrix_resource(project_id: str) -> str:
+def matrix_resource(project_id: str) -> str:  # noqa: C901, PLR1702
     """Traceability matrix summary.
 
     Args:
@@ -223,7 +233,7 @@ def matrix_resource(project_id: str) -> str:
 
     Returns YAML summary of traceability coverage between views.
     """
-    try:
+    try:  # noqa: PLR1702
         storage = LocalStorageManager()
         with storage.get_session() as session:
             from tracertm.models.item import Item
@@ -364,8 +374,8 @@ def health_resource(project_id: str) -> str:
                     "blocked_items": status_counts.get("blocked", 0),
                 },
                 "status_distribution": status_counts,
-                "orphan_item_ids": orphans[:10],  # Show first 10
-                "stale_item_ids": stale_items[:10],  # Show first 10
+                "orphan_item_ids": orphans[:_MAX_ITEM_LIST_DISPLAY],  # Show first N items
+                "stale_item_ids": stale_items[:_MAX_ITEM_LIST_DISPLAY],  # Show first N items
             })
     except Exception as e:
         return f"# Error checking health: {e}"
@@ -373,7 +383,7 @@ def health_resource(project_id: str) -> str:
 
 # Materialized view resources
 @mcp.resource("tracertm://views/traceability/{project_id}")
-def traceability_view_resource(project_id: str) -> str:
+def traceability_view_resource(project_id: str) -> str:  # noqa: C901, PLR1702
     """Traceability view for a project.
 
     Shows the complete traceability chain from requirements to tests.
@@ -417,7 +427,7 @@ def traceability_view_resource(project_id: str) -> str:
             roots = [item for item in items if str(item.id) not in has_parent]
 
             def build_tree(item_id: str, depth: int = 0) -> dict[str, Any]:
-                if depth > 5:  # Prevent infinite recursion
+                if depth > _MAX_TREE_DEPTH:  # Prevent infinite recursion
                     return {"truncated": True}
                 item = item_lookup.get(item_id)
                 if not item:
@@ -431,24 +441,24 @@ def traceability_view_resource(project_id: str) -> str:
                 if item_id in children:
                     result["children"] = [
                         build_tree(child_id, depth + 1)
-                        for child_id in children[item_id][:10]  # Limit children
+                        for child_id in children[item_id][:_MAX_TREE_CHILDREN_DISPLAY]  # Limit children
                     ]
                 return result
 
-            trees = [build_tree(str(root.id)) for root in roots[:20]]  # Limit roots
+            trees = [build_tree(str(root.id)) for root in roots[:_MAX_ROOTS_DISPLAY]]  # Limit roots
 
             return _format_yaml({
                 "project_id": project_id,
                 "traceability_trees": trees,
                 "total_roots": len(roots),
-                "truncated": len(roots) > 20,
+                "truncated": len(roots) > _MAX_ROOTS_DISPLAY,
             })
     except Exception as e:
         return f"# Error building traceability view: {e}"
 
 
 @mcp.resource("tracertm://views/impact/{project_id}")
-def impact_view_resource(project_id: str) -> str:
+def impact_view_resource(project_id: str) -> str:  # noqa: C901
     """Impact analysis view for a project.
 
     Shows items with most downstream dependencies (highest impact).
@@ -516,7 +526,7 @@ def impact_view_resource(project_id: str) -> str:
 
             return _format_yaml({
                 "project_id": project_id,
-                "high_impact_items": impact_scores[:20],
+                "high_impact_items": impact_scores[:_MAX_ROOTS_DISPLAY],
                 "total_with_impact": len(impact_scores),
             })
     except Exception as e:

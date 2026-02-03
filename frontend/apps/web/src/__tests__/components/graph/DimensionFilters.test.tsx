@@ -2,6 +2,7 @@
  * Comprehensive tests for DimensionFilters component
  * Tests: rendering, filtering, display mode selection, filter management
  */
+/// <reference path="../../../test/user-event.d.ts" />
 
 import { render, screen, waitFor } from "@testing-library/react";
 import type { DimensionFilter } from "@tracertm/types";
@@ -192,7 +193,7 @@ describe("DimensionFilters Component", () => {
 			);
 
 			const maturityButton = screen.getByRole("button", { name: /Maturity/i });
-			await user.click(maturityButton);
+			await globalThis.user.click(maturityButton);
 
 			// Popover should open with filter options
 			await waitFor(() => {
@@ -211,10 +212,10 @@ describe("DimensionFilters Component", () => {
 			);
 
 			const maturityButton = screen.getByRole("button", { name: /Maturity/i });
-			await user.click(maturityButton);
+			await globalThis.user.click(maturityButton);
 
 			const ideaButton = screen.getByRole("button", { name: /idea/i });
-			await user.click(ideaButton);
+			await globalThis.user.click(ideaButton);
 
 			await waitFor(() => {
 				expect(onFiltersChange).toHaveBeenCalledWith(
@@ -240,13 +241,13 @@ describe("DimensionFilters Component", () => {
 			);
 
 			const maturityButton = screen.getByRole("button", { name: /Maturity/i });
-			await user.click(maturityButton);
+			await globalThis.user.click(maturityButton);
 
 			const ideaButton = screen.getByRole("button", { name: /idea/i });
-			await user.click(ideaButton);
+			await globalThis.user.click(ideaButton);
 
 			const draftButton = screen.getByRole("button", { name: /draft/i });
-			await user.click(draftButton);
+			await globalThis.user.click(draftButton);
 
 			await waitFor(() => {
 				expect(onFiltersChange).toHaveBeenLastCalledWith(
@@ -280,10 +281,10 @@ describe("DimensionFilters Component", () => {
 			);
 
 			const maturityButton = screen.getByRole("button", { name: /Maturity/i });
-			await user.click(maturityButton);
+			await globalThis.user.click(maturityButton);
 
 			const ideaButton = screen.getByRole("button", { name: /idea/i });
-			await user.click(ideaButton);
+			await globalThis.user.click(ideaButton);
 
 			await waitFor(() => {
 				expect(onFiltersChange).toHaveBeenCalledWith(
@@ -316,10 +317,10 @@ describe("DimensionFilters Component", () => {
 			);
 
 			const maturityButton = screen.getByRole("button", { name: /Maturity/i });
-			await user.click(maturityButton);
+			await globalThis.user.click(maturityButton);
 
 			const ideaButton = screen.getByRole("button", { name: /idea/i });
-			await user.click(ideaButton);
+			await globalThis.user.click(ideaButton);
 
 			await waitFor(() => {
 				expect(onFiltersChange).toHaveBeenCalledWith([]);
@@ -339,7 +340,7 @@ describe("DimensionFilters Component", () => {
 			const xButtons = screen.getAllByRole("button", { name: "" });
 			const maturityXButton = xButtons[0]; // First X button
 
-			await user.click(maturityXButton);
+			await globalThis.user.click(maturityXButton);
 
 			await waitFor(() => {
 				expect(onFiltersChange).toHaveBeenCalledWith(
@@ -361,7 +362,7 @@ describe("DimensionFilters Component", () => {
 			);
 
 			const clearAllButton = screen.getByRole("button", { name: /clear all/i });
-			await user.click(clearAllButton);
+			await globalThis.user.click(clearAllButton);
 
 			expect(onFiltersChange).toHaveBeenCalledWith([]);
 		});
@@ -379,7 +380,7 @@ describe("DimensionFilters Component", () => {
 			);
 
 			const coverageButton = screen.getByRole("button", { name: /Coverage/i });
-			await user.click(coverageButton);
+			await globalThis.user.click(coverageButton);
 
 			// Should show range slider
 			await waitFor(() => {
@@ -400,7 +401,7 @@ describe("DimensionFilters Component", () => {
 			);
 
 			const coverageButton = screen.getByRole("button", { name: /Coverage/i });
-			await user.click(coverageButton);
+			await globalThis.user.click(coverageButton);
 
 			await waitFor(() => {
 				expect(
@@ -431,7 +432,7 @@ describe("DimensionFilters Component", () => {
 			);
 
 			const coverageButton = screen.getByRole("button", { name: /Coverage/i });
-			await user.click(coverageButton);
+			await globalThis.user.click(coverageButton);
 
 			const clearButton = await screen.findByRole("button", { name: /Clear/i });
 			expect(clearButton).toBeInTheDocument();
@@ -467,7 +468,7 @@ describe("DimensionFilters Component", () => {
 			const buttons = screen.getAllByRole("button");
 			// Assume the second button in the mode selector is "Highlight"
 			// This is component-specific and may need adjustment
-			await user.click(buttons[1]);
+			await globalThis.user.click(buttons[1]);
 
 			// At least one mode change should be triggered
 			expect(onDisplayModeChange).toHaveBeenCalledTimes(0);
@@ -521,7 +522,7 @@ describe("DimensionFilters Component", () => {
 			const dimensionsButton = screen.getByRole("button", {
 				name: /Dimensions/i,
 			});
-			await user.click(dimensionsButton);
+			await globalThis.user.click(dimensionsButton);
 
 			// Full filter UI should be accessible
 			await waitFor(() => {
@@ -609,7 +610,8 @@ describe(applyDimensionFilters, () => {
 
 		const result = applyDimensionFilters(mockItems, filters);
 		expect(result).toHaveLength(1);
-		expect(result[0].id).toBe("item-1");
+		expect(result[0]).toBeDefined();
+		expect(result[0]!.id).toBe("item-1");
 	});
 
 	it("filters by 'in' operator with multiple values", () => {
@@ -644,7 +646,8 @@ describe(applyDimensionFilters, () => {
 
 		const result = applyDimensionFilters(mockItems, filters);
 		expect(result).toHaveLength(1);
-		expect(result[0].id).toBe("item-1");
+		expect(result[0]).toBeDefined();
+		expect(result[0]!.id).toBe("item-1");
 	});
 
 	it("filters by greater than operator", () => {

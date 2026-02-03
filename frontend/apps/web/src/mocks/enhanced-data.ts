@@ -1353,6 +1353,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-site-1",
 		targetId: "ui-page-home",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1361,6 +1363,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-site-1",
 		targetId: "ui-page-products",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1369,6 +1373,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-site-1",
 		targetId: "ui-page-product-detail",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1377,6 +1383,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-site-1",
 		targetId: "ui-page-cart",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1385,6 +1393,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-site-1",
 		targetId: "ui-page-checkout",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1393,6 +1403,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-site-1",
 		targetId: "ui-page-login",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1401,6 +1413,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-site-1",
 		targetId: "ui-page-register",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 
 	{
@@ -1410,6 +1424,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-page-home",
 		targetId: "ui-layout-hero",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1418,6 +1434,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-page-home",
 		targetId: "ui-layout-featured",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1426,6 +1444,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-page-home",
 		targetId: "ui-layout-categories",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 
 	{
@@ -1435,6 +1455,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-page-product-detail",
 		targetId: "ui-layout-product-info",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1443,6 +1465,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-page-product-detail",
 		targetId: "ui-layout-reviews",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 
 	{
@@ -1452,6 +1476,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-page-checkout",
 		targetId: "ui-layout-checkout-steps",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 
 	{
@@ -1461,6 +1487,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-layout-hero",
 		targetId: "ui-comp-hero-banner",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1469,6 +1497,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-layout-featured",
 		targetId: "ui-comp-product-card",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1477,6 +1507,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-layout-product-info",
 		targetId: "ui-comp-image-gallery",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1485,6 +1517,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-layout-product-info",
 		targetId: "ui-comp-price-display",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1493,6 +1527,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-layout-product-info",
 		targetId: "ui-comp-add-to-cart",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: lastWeek,
@@ -1501,6 +1537,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-layout-reviews",
 		targetId: "ui-comp-review-card",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 
 	{
@@ -1510,6 +1548,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-section-header",
 		targetId: "ui-comp-search-bar",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1518,6 +1558,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-section-header",
 		targetId: "ui-elem-cart-icon",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 
 	{
@@ -1527,6 +1569,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-layout-checkout-steps",
 		targetId: "ui-comp-shipping-form",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: lastWeek,
@@ -1535,6 +1579,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-layout-checkout-steps",
 		targetId: "ui-comp-payment-form",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 
 	{
@@ -1544,6 +1590,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-page-login",
 		targetId: "ui-comp-login-form",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1552,6 +1600,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-page-register",
 		targetId: "ui-comp-register-form",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: lastWeek,
@@ -1560,6 +1610,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-page-cart",
 		targetId: "ui-comp-cart-item",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: lastWeek,
@@ -1568,6 +1620,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-page-cart",
 		targetId: "ui-comp-cart-summary",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 
 	{
@@ -1577,6 +1631,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-comp-review-card",
 		targetId: "ui-elem-star-rating",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 
 	// Page Navigation (navigates_to as related_to)
@@ -1588,6 +1644,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-page-home",
 		targetId: "ui-page-products",
 		type: "related_to",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1597,6 +1655,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-page-products",
 		targetId: "ui-page-product-detail",
 		type: "related_to",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1606,6 +1666,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-page-product-detail",
 		targetId: "ui-page-cart",
 		type: "related_to",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1615,6 +1677,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-page-cart",
 		targetId: "ui-page-checkout",
 		type: "related_to",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1624,6 +1688,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-page-login",
 		targetId: "ui-page-register",
 		type: "related_to",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1633,6 +1699,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-page-register",
 		targetId: "ui-page-login",
 		type: "related_to",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 
 	// Shared component usage (uses as related_to)
@@ -1644,6 +1712,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-comp-login-form",
 		targetId: "ui-comp-error-modal",
 		type: "related_to",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1653,6 +1723,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-comp-register-form",
 		targetId: "ui-comp-error-modal",
 		type: "related_to",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: lastWeek,
@@ -1662,6 +1734,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-comp-payment-form",
 		targetId: "ui-comp-error-modal",
 		type: "related_to",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1671,6 +1745,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-comp-add-to-cart",
 		targetId: "ui-comp-loading-spinner",
 		type: "related_to",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: lastWeek,
@@ -1680,6 +1756,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-comp-checkout-steps",
 		targetId: "ui-comp-loading-spinner",
 		type: "related_to",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1689,6 +1767,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-comp-add-to-cart",
 		targetId: "ui-comp-toast",
 		type: "related_to",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 
 	// Product Hierarchy (parent_of)
@@ -1699,6 +1779,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "epic-auth",
 		targetId: "feature-login",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1707,6 +1789,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "epic-auth",
 		targetId: "feature-register",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1715,6 +1799,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "epic-cart",
 		targetId: "feature-cart-mgmt",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: lastWeek,
@@ -1723,6 +1809,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "epic-checkout",
 		targetId: "feature-payment",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 
 	{
@@ -1732,6 +1820,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "feature-login",
 		targetId: "story-login-email",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1740,6 +1830,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "feature-login",
 		targetId: "story-login-social",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1748,6 +1840,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "feature-register",
 		targetId: "story-register",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1756,6 +1850,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "feature-cart-mgmt",
 		targetId: "story-add-to-cart",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: lastWeek,
@@ -1764,6 +1860,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "feature-payment",
 		targetId: "story-checkout-payment",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 
 	{
@@ -1773,6 +1871,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "story-login-email",
 		targetId: "task-login-form",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1781,6 +1881,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "story-login-email",
 		targetId: "task-login-api",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1789,6 +1891,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "story-login-social",
 		targetId: "task-oauth-google",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: lastWeek,
@@ -1797,6 +1901,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "story-checkout-payment",
 		targetId: "task-stripe-setup",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: lastWeek,
@@ -1805,6 +1911,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "story-checkout-payment",
 		targetId: "task-payment-form",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 
 	// Technical Hierarchy (parent_of)
@@ -1815,6 +1923,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "svc-auth",
 		targetId: "api-auth-login",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1823,6 +1933,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "svc-auth",
 		targetId: "api-auth-register",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1831,6 +1943,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "svc-auth",
 		targetId: "api-auth-logout",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1839,6 +1953,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "svc-products",
 		targetId: "api-products-list",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1847,6 +1963,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "svc-products",
 		targetId: "api-products-detail",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1855,6 +1973,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "svc-cart",
 		targetId: "api-cart-add",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1863,6 +1983,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "svc-cart",
 		targetId: "api-cart-get",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: lastWeek,
@@ -1871,6 +1993,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "svc-payment",
 		targetId: "api-checkout",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 
 	// API to Database dependencies
@@ -1881,6 +2005,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "api-auth-login",
 		targetId: "db-users",
 		type: "depends_on",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1889,6 +2015,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "api-auth-register",
 		targetId: "db-users",
 		type: "depends_on",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1897,6 +2025,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "api-products-list",
 		targetId: "db-products",
 		type: "depends_on",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1905,6 +2035,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "api-products-detail",
 		targetId: "db-products",
 		type: "depends_on",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1913,6 +2045,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "api-cart-add",
 		targetId: "db-carts",
 		type: "depends_on",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1921,6 +2055,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "api-cart-add",
 		targetId: "db-cart-items",
 		type: "depends_on",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1929,6 +2065,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "api-cart-get",
 		targetId: "db-carts",
 		type: "depends_on",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: lastWeek,
@@ -1937,6 +2075,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "api-checkout",
 		targetId: "db-orders",
 		type: "depends_on",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: lastWeek,
@@ -1945,6 +2085,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "api-checkout",
 		targetId: "db-cart-items",
 		type: "depends_on",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 
 	// Test Hierarchy (parent_of)
@@ -1955,6 +2097,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "test-suite-auth",
 		targetId: "test-login-valid",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1963,6 +2107,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "test-suite-auth",
 		targetId: "test-login-invalid",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1971,6 +2117,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "test-suite-auth",
 		targetId: "test-register-valid",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1979,6 +2127,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "test-suite-cart",
 		targetId: "test-add-to-cart",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -1987,6 +2137,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "test-suite-cart",
 		targetId: "test-remove-from-cart",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: lastWeek,
@@ -1995,6 +2147,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "test-suite-checkout",
 		targetId: "test-checkout-success",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: now,
@@ -2003,6 +2157,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "test-suite-checkout",
 		targetId: "test-payment-failure",
 		type: "parent_of",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 
 	// Cross-domain: Tests verify Stories/Features
@@ -2013,6 +2169,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "test-suite-auth",
 		targetId: "epic-auth",
 		type: "tests",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -2021,6 +2179,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "test-login-valid",
 		targetId: "story-login-email",
 		type: "tests",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -2029,6 +2189,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "test-register-valid",
 		targetId: "story-register",
 		type: "tests",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -2037,6 +2199,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "test-add-to-cart",
 		targetId: "story-add-to-cart",
 		type: "tests",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: lastWeek,
@@ -2045,6 +2209,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "test-checkout-success",
 		targetId: "story-checkout-payment",
 		type: "tests",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 
 	// Cross-domain: Components implement Stories
@@ -2055,6 +2221,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-comp-login-form",
 		targetId: "story-login-email",
 		type: "implements",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -2063,6 +2231,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-comp-register-form",
 		targetId: "story-register",
 		type: "implements",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -2071,6 +2241,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-comp-add-to-cart",
 		targetId: "story-add-to-cart",
 		type: "implements",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: lastWeek,
@@ -2079,6 +2251,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-comp-payment-form",
 		targetId: "story-checkout-payment",
 		type: "implements",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 
 	// Cross-domain: UI Components call APIs
@@ -2090,6 +2264,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-comp-login-form",
 		targetId: "api-auth-login",
 		type: "depends_on",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -2099,6 +2275,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-comp-register-form",
 		targetId: "api-auth-register",
 		type: "depends_on",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -2108,6 +2286,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-comp-product-card",
 		targetId: "api-products-list",
 		type: "depends_on",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -2117,6 +2297,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-comp-add-to-cart",
 		targetId: "api-cart-add",
 		type: "depends_on",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: lastWeek,
@@ -2126,6 +2308,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-comp-cart-item",
 		targetId: "api-cart-get",
 		type: "depends_on",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: lastWeek,
@@ -2135,6 +2319,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "ui-comp-payment-form",
 		targetId: "api-checkout",
 		type: "depends_on",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 
 	// Cross-domain: Tasks implement APIs
@@ -2145,6 +2331,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "task-login-api",
 		targetId: "api-auth-login",
 		type: "implements",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -2153,6 +2341,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "task-login-form",
 		targetId: "ui-comp-login-form",
 		type: "implements",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: lastWeek,
@@ -2161,6 +2351,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "task-payment-form",
 		targetId: "ui-comp-payment-form",
 		type: "implements",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: lastWeek,
@@ -2169,6 +2361,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "task-stripe-setup",
 		targetId: "svc-payment",
 		type: "implements",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 
 	// Feature blocks Feature
@@ -2180,6 +2374,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "feature-login",
 		targetId: "feature-cart-mgmt",
 		type: "blocks",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 	{
 		createdAt: twoWeeksAgo,
@@ -2189,6 +2385,8 @@ export const enhancedLinks: Link[] = [
 		sourceId: "feature-cart-mgmt",
 		targetId: "feature-payment",
 		type: "blocks",
+		updatedAt: twoWeeksAgo,
+		version: 1,
 	},
 ];
 

@@ -126,7 +126,7 @@ function ProjectCard({
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align="end" className="w-48">
 								<DropdownMenuItem
-									onClick={(e) => {}}
+									onClick={() => {}}
 									className="gap-2 cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors"
 								>
 									<ExternalLink className="h-4 w-4" />
@@ -154,7 +154,7 @@ function ProjectCard({
 								</DropdownMenuItem>
 								<DropdownMenuSeparator />
 								<DropdownMenuItem
-									onClick={(e) => {}}
+									onClick={() => {}}
 									className="gap-2 text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer hover:bg-destructive/10 hover:text-destructive transition-colors"
 								>
 									<Trash2 className="h-4 w-4" />
@@ -340,7 +340,7 @@ function CreateProjectDialog({
 	const [description, setDescription] = useState("");
 	const [openIntegrations, setOpenIntegrations] = useState(true);
 	const createProject = useCreateProject();
-	const navigate = useNavigate();
+	const _navigate = useNavigate();
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -448,10 +448,10 @@ function CreateProjectDialog({
 }
 
 export function ProjectsListView() {
-	const navigate = useNavigate();
+	const _navigate = useNavigate();
 	const searchParams = useSearch({ strict: false }) as any;
 	const { data: projects, isLoading: projectsLoading } = useProjects();
-	const [projectItemCounts, setProjectItemCounts] = useState<
+	const [, _setProjectItemCounts] = useState<
 		Record<string, number>
 	>({});
 

@@ -133,7 +133,7 @@ export function useQuadTreeCulling({
 			indexDepth: indexStats.depth,
 		}));
 
-		if (process.env.NODE_ENV === "development") {
+		if (process.env["NODE_ENV"] === "development") {
 			logger.info(
 				`[QuadTree] Built index for ${nodes.length} nodes in ${buildTime.toFixed(2)}ms (depth: ${indexStats.depth})`,
 			);

@@ -119,7 +119,7 @@ This document provides a comprehensive overview of the unified infrastructure im
 
 | File | Purpose | Lines | Status |
 |------|---------|-------|--------|
-| `proto/tracertm.proto` | gRPC service definitions | 250 | ✅ Created |
+| `proto/tracertm/v1/tracertm.proto` | gRPC service definitions | 250 | ✅ Created |
 | `backend/pkg/proto/*.pb.go` | Generated Go code | ~2000 | ✅ Generated |
 | `src/tracertm/proto/*_pb2.py` | Generated Python code | ~1500 | ✅ Generated |
 

@@ -2959,7 +2959,7 @@ async def analyze_coverage_gaps(
                 safety_level = request.safety_level
 
         # Call the analytics service (safety_level: SafetyLevel | None from service)
-        from tracertm.services.spec_analytics_service_v2 import SafetyLevel as ServiceSafetyLevel
+        from tracertm.services.spec_analytics_service import SafetyLevel as ServiceSafetyLevel
 
         safety: ServiceSafetyLevel | None = safety_level if isinstance(safety_level, (ServiceSafetyLevel, type(None))) else None
         gaps = spec_analytics_service.analyze_coverage_gaps(

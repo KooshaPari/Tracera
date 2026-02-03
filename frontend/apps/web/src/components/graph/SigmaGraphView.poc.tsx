@@ -298,7 +298,10 @@ function usePerformanceMonitor(enabled: boolean): PerformanceStats | undefined {
 export function SigmaGraphView({
 	items,
 	links,
-}: Omit<SigmaGraphViewProps, "onNodeClick" | "onNodeHover">) {
+	// Optional handlers (used when sigma integration is enabled)
+	onNodeClick: _onNodeClick,
+	onNodeHover: _onNodeHover,
+}: SigmaGraphViewProps) {
 	const [showPerformance, _setShowPerformance] = useState(true);
 	const [_layout, _setLayout] = useState<LayoutAlgorithm>("random");
 	const [_isRunningLayout, _setIsRunningLayout] = useState(false);

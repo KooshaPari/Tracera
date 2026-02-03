@@ -1,5 +1,6 @@
 // Enhanced Graph View - Multi-perspective traceability visualization
 // Features: Multiple views, rich node pills, Storybook-like UI view
+/* eslint-disable max-lines-per-function, no-magic-numbers, react-perf/jsx-no-new-object-as-prop */
 
 import type { Item, Link, LinkType } from "@tracertm/types";
 import { Badge } from "@tracertm/ui/components/Badge";

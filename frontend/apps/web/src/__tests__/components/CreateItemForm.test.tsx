@@ -3,7 +3,6 @@
  */
 
 import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { CreateItemForm } from "../../components/forms/CreateItemForm";
 
@@ -16,14 +15,14 @@ describe(CreateItemForm, () => {
 	});
 
 	it("should render the form", async () => {
-		render(<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
+		const { container } = render(<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
 
 		// Check that a form exists
 		const form = container.querySelector("form");
 		expect(form).toBeInTheDocument();
 
 		// Check that the form has a title field
-		const titleInput = container.querySelector(
+		const titleInput = container?.querySelector(
 			'input[name="title"], input[aria-label*="Title" i]',
 		);
 		expect(titleInput).toBeInTheDocument();
@@ -49,7 +48,7 @@ describe(CreateItemForm, () => {
 		render(<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
 
 		const cancelButton = screen.getByText("Cancel");
-		await userEvent.click(cancelButton);
+		await globalThis.user.click(cancelButton);
 
 		expect(mockOnCancel).toHaveBeenCalledOnce();
 	});
@@ -58,13 +57,13 @@ describe(CreateItemForm, () => {
 		render(<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
 
 		const closeButton = screen.getByRole("button", { name: "" });
-		await userEvent.click(closeButton);
+		await globalThis.user.click(closeButton);
 
 		expect(mockOnCancel).toHaveBeenCalled();
 	});
 
 	it("should validate required fields", async () => {
-		render(<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
+		const { container } = render(<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
 
 		// Find submit button more specifically (within the form)
 		const form = container.querySelector("form");
@@ -73,14 +72,14 @@ describe(CreateItemForm, () => {
 			screen.queryByRole("button", { name: /create/i });
 
 		if (submitButton) {
-			await userEvent.click(submitButton);
+			await globalThis.user.click(submitButton);
 			// Check that form doesn't submit without title
 			expect(mockOnSubmit).not.toHaveBeenCalled();
 		}
 	});
 
 	it("should submit valid form data", async () => {
-		render(<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
+		const { container } = render(<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
 
 		// Find title input more flexibly
 		const titleEl =
@@ -89,7 +88,7 @@ describe(CreateItemForm, () => {
 		const titleInput = titleEl instanceof HTMLInputElement ? titleEl : null;
 
 		if (titleInput) {
-			await user.type(titleInput, "Test Item");
+			await globalThis.user.type(titleInput, "Test Item");
 
 			// Find submit button within form
 			const form = container.querySelector("form");
@@ -98,7 +97,7 @@ describe(CreateItemForm, () => {
 				screen.queryByRole("button", { name: /create/i });
 
 			if (submitButton) {
-				await user.click(submitButton);
+				await globalThis.user.click(submitButton);
 
 				// Just verify submit was called (field details vary by implementation)
 				await waitFor(
@@ -112,7 +111,7 @@ describe(CreateItemForm, () => {
 	});
 
 	it("should update type options when view changes", async () => {
-		render(<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
+		const { container } = render(<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
 
 		// Verify form rendered
 		expect(container.querySelector("form")).toBeInTheDocument();
@@ -132,7 +131,7 @@ describe(CreateItemForm, () => {
 	});
 
 	it("should handle all status options", () => {
-		render(<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
+		const { container } = render(<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
 
 		// Verify status select exists
 		const statusSelect =
@@ -142,7 +141,7 @@ describe(CreateItemForm, () => {
 	});
 
 	it("should handle all priority options", () => {
-		render(<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
+		const { container } = render(<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
 
 		// Verify priority select exists
 		const prioritySelect =
@@ -152,7 +151,7 @@ describe(CreateItemForm, () => {
 	});
 
 	it("should validate title length", async () => {
-		render(<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
+		const { container } = render(<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
 
 		// Find title input by various selectors with fallbacks
 		let titleEl = container.querySelector('input[name="title"]');
@@ -163,14 +162,14 @@ describe(CreateItemForm, () => {
 
 		if (titleInput) {
 			const longTitle = "a".repeat(501);
-			await userEvent.type(titleInput, longTitle);
+			await globalThis.user.type(titleInput, longTitle);
 			// Verify long title was entered
 			expect(titleInput.value.length).toBeGreaterThan(500);
 		}
 	});
 
 	it("should accept optional owner field", () => {
-		render(<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
+		const { container } = render(<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
 
 		// Verify owner field exists
 		const ownerInput =

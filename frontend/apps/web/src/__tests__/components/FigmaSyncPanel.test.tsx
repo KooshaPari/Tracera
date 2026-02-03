@@ -186,7 +186,8 @@ describe(FigmaSyncPanel, () => {
 
 		const syncButtons = screen.getAllByRole("button", { name: /Sync/i });
 		// Click the first sync button (the main header one)
-		fireEvent.click(syncButtons[0]);
+		const syncBtn = syncButtons[0];
+		if (syncBtn) fireEvent.click(syncBtn);
 
 		await waitFor(() => {
 			expect(onSync).toHaveBeenCalled();
@@ -261,7 +262,8 @@ describe(FigmaSyncPanel, () => {
 		const openButtons = screen.getAllByRole("button", {
 			name: /Open in Figma/i,
 		});
-		fireEvent.click(openButtons[0]);
+		const openBtn = openButtons[0];
+		if (openBtn) fireEvent.click(openBtn);
 
 		expect(onOpenInFigma).toHaveBeenCalledWith("comp-1");
 	});
@@ -279,7 +281,8 @@ describe(FigmaSyncPanel, () => {
 
 		// Expand Button component (has figmaNodeId)
 		const componentItems = screen.getAllByText("Button");
-		fireEvent.click(componentItems[0]);
+		const firstButton = componentItems[0];
+		if (firstButton) fireEvent.click(firstButton);
 
 		// Wait for details to appear
 		await waitFor(() => {
@@ -309,7 +312,7 @@ describe(FigmaSyncPanel, () => {
 	});
 
 	it("applies custom className", () => {
-		render(
+		const { container } = render(
 			<FigmaSyncPanel
 				syncState={mockSyncState}
 				components={mockComponents}

@@ -4,8 +4,11 @@
  */
 
 import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
+
+const setupUser = () => userEvent.setup();
 
 // Mock Link Sharing Component
 function MockLinkSharing({
@@ -336,6 +339,7 @@ describe("Link Sharing - Basic Functionality", () => {
 
 		render(<MockLinkSharing itemId="item-1" onShare={handleShare} />);
 
+		const user = setupUser();
 		const copyBtn = screen.getByRole("button", { name: /Copy/i });
 		await user.click(copyBtn);
 
@@ -351,6 +355,7 @@ describe("Link Sharing - Basic Functionality", () => {
 
 		render(<MockLinkSharing itemId="item-1" />);
 
+		const user = setupUser();
 		const copyBtn = screen.getByRole("button", { name: /Copy/i });
 		await user.click(copyBtn);
 
@@ -370,6 +375,7 @@ describe("Link Sharing - Basic Functionality", () => {
 
 		render(<MockLinkSharing itemId="item-1" />);
 
+		const user = setupUser();
 		const openBtn = screen.getByRole("button", { name: /Open in new tab/i });
 		await user.click(openBtn);
 
@@ -429,8 +435,13 @@ describe("Spec Creation - Submission", () => {
 
 		render(<MockSpecCreation onSpecCreate={handleCreate} />);
 
-		const nameInput = screen.getByLabelText("Specification Name");
-		const contentInput = screen.getByLabelText("Specification Content");
+		const user = setupUser();
+		const nameInput = screen.getByLabelText(
+			"Specification Name",
+		) as HTMLInputElement;
+		const contentInput = screen.getByLabelText(
+			"Specification Content",
+		) as HTMLInputElement;
 		const submitBtn = screen.getByRole("button", {
 			name: "Create Specification",
 		});
@@ -457,9 +468,14 @@ describe("Spec Creation - Submission", () => {
 
 		render(<MockSpecCreation onSpecCreate={handleCreate} />);
 
-		const nameInput = screen.getByLabelText("Specification Name");
-		const contentInput = screen.getByLabelText("Specification Content");
-		const submitBtn = screen.getByRole("button");
+		const user = setupUser();
+		const nameInput = screen.getByLabelText(
+			"Specification Name",
+		) as HTMLInputElement;
+		const contentInput = screen.getByLabelText(
+			"Specification Content",
+		) as HTMLInputElement;
+		const submitBtn = screen.getByRole("button") as HTMLButtonElement;
 
 		await user.type(nameInput, "Test API");
 		await user.type(contentInput, "content");
@@ -471,8 +487,13 @@ describe("Spec Creation - Submission", () => {
 	it("should clear form after successful submission", async () => {
 		render(<MockSpecCreation />);
 
-		const nameInput = screen.getByLabelText("Specification Name");
-		const contentInput = screen.getByLabelText("Specification Content");
+		const user = setupUser();
+		const nameInput = screen.getByLabelText(
+			"Specification Name",
+		) as HTMLInputElement;
+		const contentInput = screen.getByLabelText(
+			"Specification Content",
+		) as HTMLInputElement;
 		const submitBtn = screen.getByRole("button");
 
 		await user.type(nameInput, "Test API");
@@ -513,10 +534,11 @@ describe("Project Edit - Form Functionality", () => {
 			/>,
 		);
 
-		const nameInput = screen.getByDisplayValue("Original");
+		const user = setupUser();
+		const nameInput = screen.getByDisplayValue("Original") as HTMLInputElement;
 		const saveBtn = screen.getByRole("button", {
 			name: "Save Changes",
-		});
+		}) as HTMLButtonElement;
 
 		// Button should be disabled initially
 		expect(saveBtn.disabled).toBe(true);
@@ -539,7 +561,8 @@ describe("Project Edit - Form Functionality", () => {
 			/>,
 		);
 
-		const nameInput = screen.getByDisplayValue("Original");
+		const user = setupUser();
+		const nameInput = screen.getByDisplayValue("Original") as HTMLInputElement;
 		const resetBtn = screen.getByRole("button", { name: "Reset" });
 
 		await user.clear(nameInput);
@@ -564,7 +587,8 @@ describe("Project Edit - Form Functionality", () => {
 			/>,
 		);
 
-		const nameInput = screen.getByDisplayValue("Original");
+		const user = setupUser();
+		const nameInput = screen.getByDisplayValue("Original") as HTMLInputElement;
 		const saveBtn = screen.getByRole("button", { name: "Save Changes" });
 
 		await user.clear(nameInput);
@@ -584,7 +608,9 @@ describe("Reports Generation - Options", () => {
 	it("should provide multiple report types", () => {
 		render(<MockReportsGeneration />);
 
-		const typeSelect = screen.getByDisplayValue("Coverage Summary");
+		const typeSelect = screen.getByDisplayValue(
+			"Coverage Summary",
+		) as HTMLSelectElement;
 		expect(typeSelect.options).toHaveLength(4);
 		expect(typeSelect.options[0]).toHaveTextContent("Coverage Summary");
 		expect(typeSelect.options[1]).toHaveTextContent("Traceability Matrix");
@@ -595,7 +621,7 @@ describe("Reports Generation - Options", () => {
 	it("should provide multiple export formats", () => {
 		render(<MockReportsGeneration />);
 
-		const formatSelect = screen.getByDisplayValue("PDF");
+		const formatSelect = screen.getByDisplayValue("PDF") as HTMLSelectElement;
 		expect(formatSelect.options).toHaveLength(4);
 		expect(formatSelect.options[0]).toHaveTextContent("PDF");
 		expect(formatSelect.options[1]).toHaveTextContent("Excel");
@@ -608,8 +634,11 @@ describe("Reports Generation - Options", () => {
 
 		render(<MockReportsGeneration onGenerateReport={handleGenerate} />);
 
-		const typeSelect = screen.getByDisplayValue("Coverage Summary");
-		const formatSelect = screen.getByDisplayValue("PDF");
+		const user = setupUser();
+		const typeSelect = screen.getByDisplayValue(
+			"Coverage Summary",
+		) as HTMLSelectElement;
+		const formatSelect = screen.getByDisplayValue("PDF") as HTMLSelectElement;
 		const generateBtn = screen.getByRole("button", {
 			name: "Generate Report",
 		});
@@ -633,7 +662,8 @@ describe("Reports Generation - Options", () => {
 
 		render(<MockReportsGeneration onGenerateReport={handleGenerate} />);
 
-		const generateBtn = screen.getByRole("button");
+		const user = setupUser();
+		const generateBtn = screen.getByRole("button") as HTMLButtonElement;
 
 		await user.click(generateBtn);
 
@@ -683,6 +713,7 @@ describe("Contract and Compliance Features", () => {
 	it("should track compliance items", async () => {
 		render(<MockComplianceChecklist />);
 
+		const user = setupUser();
 		const checkboxes = screen.getAllByRole("checkbox");
 		expect(checkboxes).toHaveLength(3);
 

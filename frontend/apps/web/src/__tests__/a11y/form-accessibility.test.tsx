@@ -2,6 +2,7 @@
  * Accessibility Tests for Forms - Enhanced
  * Tests aria-describedby, required indicators, validation announcements, focus management
  */
+/// <reference path="./jest-axe.d.ts" />
 
 import { render } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -323,11 +324,11 @@ describe("Form Accessibility - Focus Management", () => {
 		expect(titleInput).toHaveFocus();
 
 		// Tab to next field
-		await user.tab();
+		await globalThis.user.tab();
 		expect(typeSelect).toHaveFocus();
 
 		// Tab to next field
-		await user.tab();
+		await globalThis.user.tab();
 		expect(descriptionTextarea).toHaveFocus();
 	});
 
@@ -413,7 +414,7 @@ describe("Form Accessibility - WCAG 2.1 AA Compliance", () => {
 		const emailEl = getByLabelText(/email/i);
 		const emailInput = emailEl instanceof HTMLInputElement ? emailEl : null;
 		expect(emailInput).not.toBeNull();
-		expect(emailInput!.autocomplete).toBe("email");
+		expect(emailInput!.getAttribute("autocomplete")).toBe("email");
 	});
 });
 

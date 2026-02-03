@@ -1,4 +1,4 @@
-import { useNavigate, useSearch } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import type { SpecificationSummary } from "@tracertm/types";
 import {
 	Button,
@@ -21,7 +21,7 @@ interface SpecificationsDashboardViewProps {
 export function SpecificationsDashboardView({
 	projectId,
 }: SpecificationsDashboardViewProps) {
-	const navigate = useNavigate();
+	const _navigate = useNavigate();
 	// Search params available for future filtering
 	undefined;
 

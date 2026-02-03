@@ -236,19 +236,16 @@ function runElkLayoutInWorker<T extends Record<string, unknown>>(
 			reject(new Error("Layout worker failed"));
 		});
 
-		worker.postMessage(
-			{
-				edges: edges.map((e) => ({
-					id: e.id,
-					source: e.source,
-					target: e.target,
-				})),
-				nodes: nodes.map((n) => ({ id: n.id })),
-				options: options as ElkOptionsPayload,
-				type: "layout",
-			},
-			worker.location.origin,
-		);
+		worker.postMessage({
+			edges: edges.map((e) => ({
+				id: e.id,
+				source: e.source,
+				target: e.target,
+			})),
+			nodes: nodes.map((n) => ({ id: n.id })),
+			options: options as ElkOptionsPayload,
+			type: "layout",
+		});
 	});
 }
 

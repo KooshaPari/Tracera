@@ -2,6 +2,7 @@
  * ChatHistoryPanel - List of past conversations with search, sort, and delete.
  * Borrows ideas from agent/chat history UIs: search, sort (newest/oldest), per-item delete, click to open.
  */
+/* eslint-disable func-style, max-lines-per-function, react/jsx-max-depth, react-perf/jsx-no-new-function-as-prop, sort-imports */
 
 import { Button, Input, ScrollArea, cn } from "@tracertm/ui";
 import {

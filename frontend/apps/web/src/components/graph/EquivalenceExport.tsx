@@ -24,6 +24,7 @@ import {
 	DialogTrigger,
 } from "@tracertm/ui/components/Dialog";
 import { Input } from "@tracertm/ui/components/Input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@tracertm/ui/components/ScrollArea";
 import { Separator } from "@tracertm/ui/components/Separator";
 import {
@@ -286,14 +287,13 @@ function EquivalenceExportComponent({
 							</CardHeader>
 							<CardContent className="space-y-3">
 								<div className="flex items-center gap-2">
-									<Input
+									<Checkbox
 										id="include-links"
-										type="checkbox"
 										checked={options.includeLinks}
-										onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+										onCheckedChange={(checked: boolean) =>
 											setOptions({
 												...options,
-												includeLinks: e.currentTarget.checked,
+												includeLinks: checked,
 											})
 										}
 										className="w-4 h-4"
@@ -308,14 +308,13 @@ function EquivalenceExportComponent({
 								</div>
 
 								<div className="flex items-center gap-2">
-									<Input
-										type="checkbox"
+									<Checkbox
 										id="include-concepts"
 										checked={options.includeConcepts}
-										onCheckedChange={(checked) =>
+										onCheckedChange={(checked: boolean) =>
 											setOptions({
 												...options,
-												includeConcepts: checked === true,
+												includeConcepts: checked,
 											})
 										}
 									/>
@@ -329,14 +328,13 @@ function EquivalenceExportComponent({
 								</div>
 
 								<div className="flex items-center gap-2">
-									<Input
-										type="checkbox"
+									<Checkbox
 										id="include-projections"
 										checked={options.includeProjections}
-										onCheckedChange={(checked) =>
+										onCheckedChange={(checked: boolean) =>
 											setOptions({
 												...options,
-												includeProjections: checked === true,
+												includeProjections: checked,
 											})
 										}
 									/>
@@ -360,14 +358,13 @@ function EquivalenceExportComponent({
 							</CardHeader>
 							<CardContent className="space-y-3">
 								<div className="flex items-center gap-2">
-									<Input
-										type="checkbox"
+									<Checkbox
 										id="include-confidence"
 										checked={options.includeConfidenceScores}
-										onCheckedChange={(checked) =>
+										onCheckedChange={(checked: boolean) =>
 											setOptions({
 												...options,
-												includeConfidenceScores: checked === true,
+												includeConfidenceScores: checked,
 											})
 										}
 									/>
@@ -380,14 +377,13 @@ function EquivalenceExportComponent({
 								</div>
 
 								<div className="flex items-center gap-2">
-									<Input
-										type="checkbox"
+									<Checkbox
 										id="include-sources"
 										checked={options.includeSources}
-										onCheckedChange={(checked) =>
+										onCheckedChange={(checked: boolean) =>
 											setOptions({
 												...options,
-												includeSources: checked === true,
+												includeSources: checked,
 											})
 										}
 									/>
@@ -464,11 +460,10 @@ function EquivalenceExportComponent({
 											] as const
 										).map((status) => (
 											<div key={status} className="flex items-center gap-2">
-												<Input
-													type="checkbox"
+												<Checkbox
 													id={`status-${status}`}
 													checked={filters.selectedStatuses.has(status)}
-													onCheckedChange={(checked) => {
+													onCheckedChange={(checked: boolean) => {
 														const newStatuses = new Set(
 															filters.selectedStatuses,
 														);
@@ -502,14 +497,13 @@ function EquivalenceExportComponent({
 												<label className="text-sm font-medium">Domains</label>
 												{uniqueDomains.map((domain) => (
 													<div key={domain} className="flex items-center gap-2">
-														<Input
-															type="checkbox"
+														<Checkbox
 															id={`domain-${domain}`}
 															checked={
 																filters.selectedDomains.size === 0 ||
 																filters.selectedDomains.has(domain)
 															}
-															onCheckedChange={(checked) => {
+															onCheckedChange={(checked: boolean) => {
 																const newDomains = new Set(
 																	filters.selectedDomains.size === 0
 																		? uniqueDomains

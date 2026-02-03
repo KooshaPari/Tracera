@@ -310,7 +310,7 @@ export function StreamingGraphViewExample() {
 				projectId={projectId}
 				showProgress
 				enablePrefetch
-				onViewportChange={(viewport) => {}}
+				onViewportChange={(_viewport) => {}}
 			/>
 		</div>
 	);

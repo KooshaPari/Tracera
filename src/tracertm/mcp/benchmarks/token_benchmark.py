@@ -12,6 +12,11 @@ from __future__ import annotations
 import json
 from typing import Any
 
+# Token batch size for benchmarking
+_TOKEN_BATCH_SIZE = 50
+# Target token reduction percentage for "achieved" status
+_TARGET_REDUCTION_PCT = 50
+
 # Mock data for testing
 MOCK_ITEM = {
     "id": "12345678-1234-1234-1234-123456789012",
@@ -108,7 +113,7 @@ def benchmark_single_item():
     print(f"  - Size: {size_reduction:.1f}%")
     print(f"  - Tokens: {token_reduction:.1f}%")
     print("  - Target: 50%")
-    print(f"  - Status: {'✅ ACHIEVED' if token_reduction >= 50 else '⚠️  SHORT'}")
+    print(f"  - Status: {'✅ ACHIEVED' if token_reduction >= _TARGET_REDUCTION_PCT else '⚠️  SHORT'}")
 
     return {
         "original_tokens": original_tokens,
@@ -168,7 +173,7 @@ def benchmark_list_response(item_count: int = 50):
     print(f"  - Size: {size_reduction:.1f}%")
     print(f"  - Tokens: {token_reduction:.1f}%")
     print("  - Target: 50%")
-    print(f"  - Status: {'✅ ACHIEVED' if token_reduction >= 50 else '⚠️  SHORT'}")
+    print(f"  - Status: {'✅ ACHIEVED' if token_reduction >= _TARGET_REDUCTION_PCT else '⚠️  SHORT'}")
 
     return {
         "original_tokens": original_tokens,
@@ -357,7 +362,7 @@ def main():
 
     print(f"\n📊 Average Token Reduction: {avg_reduction:.1f}%")
     print("🎯 Target: 50%")
-    print(f"📈 Status: {'✅ ACHIEVED' if avg_reduction >= 50 else '⚠️  SHORT'}")
+    print(f"📈 Status: {'✅ ACHIEVED' if avg_reduction >= _TARGET_REDUCTION_PCT else '⚠️  SHORT'}")
 
     print("\n📋 Breakdown:")
     print(f"  - Single Item: {results['single_item']['reduction_pct']:.1f}%")

@@ -12,11 +12,15 @@ from __future__ import annotations
 
 import asyncio
 import time
-from typing import Any, cast
+from typing import Any, Final, cast
 
 from tracertm.config.manager import ConfigManager
 from tracertm.database.connection import DatabaseConnection
 from tracertm.mcp.core import mcp
+
+# HTTP status codes for comparisons
+_STATUS_OK: Final[int] = 200
+_STATUS_BAD_REQUEST: Final[int] = 400
 
 
 def _actor_from_context(ctx: Any | None) -> dict[str, Any] | None:
@@ -67,7 +71,7 @@ def _error(message: str, action: str, code: str = "ERROR") -> dict[str, Any]:
 
 
 @mcp.tool()
-def auth_login(
+def auth_login(  # noqa: C901, PLR0911
     ctx: Any,
     authkit_domain: str,
     client_id: str,
@@ -104,7 +108,7 @@ def auth_login(
 
         with httpx.Client(timeout=30.0) as client:
             resp = client.post(device_endpoint, data=payload)
-            if resp.status_code >= 400:
+            if resp.status_code >= _STATUS_BAD_REQUEST:
                 return _error(
                     f"Device auth start failed: {resp.status_code} {resp.text}",
                     "auth_login",
@@ -136,7 +140,7 @@ def auth_login(
                 }
                 token_resp = client.post(token_endpoint, data=token_payload)
 
-                if token_resp.status_code == 200:
+                if token_resp.status_code == _STATUS_OK:
                     token_data = token_resp.json()
                     access_token = token_data.get("access_token")
                     if not access_token:

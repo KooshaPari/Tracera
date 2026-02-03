@@ -120,7 +120,10 @@ describe("Data Transform Worker Integration", () => {
 			value: Math.random() * 1000,
 		}));
 
-		const sorted = await api.sortData(data, "value", "asc");
+		const sorted = await api.sortData(data, {
+			direction: "asc",
+			field: "value",
+		});
 
 		expect(sorted).toHaveLength(data.length);
 
@@ -139,12 +142,11 @@ describe("Data Transform Worker Integration", () => {
 			{ category: "C", value: 30 },
 		];
 
-		const aggregated = await api.aggregateData(
-			data,
-			"category",
-			"value",
-			"sum",
-		);
+		const aggregated = await api.aggregateData(data, {
+			aggregateField: "value",
+			aggregationType: "sum",
+			groupByField: "category",
+		});
 
 		expect(aggregated).toEqual({
 			A: 25,
@@ -162,7 +164,7 @@ describe("Data Transform Worker Integration", () => {
 			{ value: 50 },
 		];
 
-		const stats = await api.calculateStatistics(data, "value");
+		const stats = await api.calculateStatistics(data, { field: "value" });
 
 		expect(stats.count).toBe(5);
 		expect(stats.sum).toBe(150);
@@ -181,7 +183,7 @@ describe("Data Transform Worker Integration", () => {
 			{ id: 2, name: "B" },
 		];
 
-		const deduped = await api.deduplicateData(data, "id");
+		const deduped = await api.deduplicateData(data, { field: "id" });
 
 		expect(deduped).toHaveLength(3);
 		expect(deduped.map((d) => d.id)).toEqual([1, 2, 3]);
@@ -429,7 +431,10 @@ describe("Performance Benchmarks", () => {
 		const api = wrap<DataTransformWorkerAPI>(worker);
 
 		const workerStart = performance.now();
-		const workerSorted = await api.sortData(data, "value", "asc");
+		const workerSorted = await api.sortData(data, {
+			direction: "asc",
+			field: "value",
+		});
 		const workerDuration = performance.now() - workerStart;
 
 		worker.terminate();

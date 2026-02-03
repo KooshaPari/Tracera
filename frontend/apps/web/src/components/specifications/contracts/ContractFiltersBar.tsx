@@ -105,16 +105,16 @@ export const ContractFiltersBar: FC<ContractFiltersBarProps> = ({
 				</SelectTrigger>
 				<SelectContent>
 					<SelectItem value="all">All Types ({contracts.length})</SelectItem>
-					<SelectItem value="api">API ({typeCounts.api || 0})</SelectItem>
+					<SelectItem value="api">API ({typeCounts["api"] ?? 0})</SelectItem>
 					<SelectItem value="function">
-						Function ({typeCounts.function || 0})
+						Function ({typeCounts["function"] ?? 0})
 					</SelectItem>
 					<SelectItem value="invariant">
-						Invariant ({typeCounts.invariant || 0})
+						Invariant ({typeCounts["invariant"] ?? 0})
 					</SelectItem>
-					<SelectItem value="data">Data ({typeCounts.data || 0})</SelectItem>
+					<SelectItem value="data">Data ({typeCounts["data"] ?? 0})</SelectItem>
 					<SelectItem value="integration">
-						Integration ({typeCounts.integration || 0})
+						Integration ({typeCounts["integration"] ?? 0})
 					</SelectItem>
 				</SelectContent>
 			</Select>

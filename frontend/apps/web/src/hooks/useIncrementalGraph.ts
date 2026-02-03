@@ -8,6 +8,7 @@
  * - Viewport-based loading
  * - Automatic state management
  */
+/* eslint-disable max-lines-per-function */
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { IncrementalGraphBuilder } from "../lib/graph/IncrementalGraphBuilder";
@@ -107,10 +108,10 @@ export function useIncrementalGraph(
 			onComplete: (result) => {
 				setState((prev) => ({
 					...prev,
-					nodes: [...result['nodes'].values()],
-					edges: [...result['edges'].values()],
-					metadata: result["metadata"],
+					edges: [...result["edges"].values()],
 					isLoading: false,
+					metadata: result["metadata"],
+					nodes: [...result["nodes"].values()],
 					progress: undefined,
 				}));
 			},
@@ -173,7 +174,7 @@ export function useIncrementalGraph(
 
 		try {
 			await builderRef.current.loadFromStream(url, viewportRequest);
-		} catch (error) {
+		} catch (_error) {
 			if (error instanceof Error && error.name !== "AbortError") {
 				setState((prev) => ({
 					...prev,
@@ -199,9 +200,9 @@ export function useIncrementalGraph(
 				// Use cached data
 				setState((prev) => ({
 					...prev,
-					nodes: cached.nodes,
 					edges: cached.edges,
 					isLoading: false,
+					nodes: cached.nodes,
 				}));
 				prefetchCacheRef.current.delete(cacheKey);
 				return;
@@ -210,8 +211,8 @@ export function useIncrementalGraph(
 			// Load from server
 			setState((prev) => ({
 				...prev,
-				isLoading: true,
 				error: undefined,
+				isLoading: true,
 			}));
 
 			const url = `${apiBaseUrl}/projects/${projectId}/graph/stream`;
@@ -289,7 +290,7 @@ export function useIncrementalGraph(
 	useEffect(() => {
 		if (prefetchDirection && enablePrefetch) {
 			const timer = setTimeout(() => {
-				undefined;
+				prefetchDirectionData();
 			}, 100); // Debounce prefetch
 
 			return () => clearTimeout(timer);
@@ -411,7 +412,7 @@ export function calculatePanVelocity(
 
 	const dx = newViewport.minX - oldViewport.minX;
 	const dy = newViewport.minY - oldViewport.minY;
-	const distance = Math.sqrt(dx * dx + dy * dy);
+	const distance = Math.hypot(dx, dy);
 
 	return (distance / deltaTime) * 1000; // Pixels per second
 }

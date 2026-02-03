@@ -75,6 +75,16 @@ interface DimensionValues {
 }
 
 // =============================================================================
+// CONSTANTS
+// =============================================================================
+
+const NOT_FOUND_INDEX = -1;
+const DEFAULT_DIMENSION_SIZE = 0.5;
+const MIN_DIMENSION_SIZE = 0.3;
+const MAX_DIMENSION_SIZE = 1.0;
+const SIZE_SCALING_FACTOR = 0.7;
+
+// =============================================================================
 // CONFIGURATION
 // =============================================================================
 
@@ -185,7 +195,7 @@ function DimensionFiltersComponent({
 				value,
 			};
 
-			if (existingIndex !== -1) {
+			if (existingIndex !== NOT_FOUND_INDEX) {
 				const updated = [...activeFilters];
 				updated[existingIndex] = newFilter;
 				onFiltersChange(updated);
@@ -656,26 +666,26 @@ export function getDimensionSize(
 	sizeDimension: keyof DimensionValues,
 ): number {
 	if (!dimensions) {
-		return 0.5;
+		return DEFAULT_DIMENSION_SIZE;
 	}
 	const value = dimensions[sizeDimension];
 	if (value === undefined) {
-		return 0.5;
+		return DEFAULT_DIMENSION_SIZE;
 	}
 
 	if (typeof value === "number") {
-		// Normalize 0-100 to 0.3-1.0
-		return 0.3 + (value / 100) * 0.7;
+		// Normalize 0-100 to MIN_DIMENSION_SIZE-MAX_DIMENSION_SIZE
+		return MIN_DIMENSION_SIZE + (value / 100) * SIZE_SCALING_FACTOR;
 	}
 
 	// For enum types, map to size
 	const config = DIMENSION_CONFIGS.find((c) => c.id === sizeDimension);
 	if (config?.values) {
 		const index = config.values.indexOf(value as string);
-		if (index !== -1) {
-			return 0.3 + (index / (config.values.length - 1)) * 0.7;
+		if (index !== NOT_FOUND_INDEX) {
+			return MIN_DIMENSION_SIZE + (index / (config.values.length - 1)) * SIZE_SCALING_FACTOR;
 		}
 	}
 
-	return 0.5;
+	return DEFAULT_DIMENSION_SIZE;
 }

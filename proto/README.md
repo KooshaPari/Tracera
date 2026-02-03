@@ -44,7 +44,7 @@ protoc --go_out=backend/pkg/proto \
   --go_opt=paths=source_relative \
   --go-grpc_out=backend/pkg/proto \
   --go-grpc_opt=paths=source_relative \
-  proto/tracertm.proto
+  proto/tracertm/v1/tracertm.proto
 ```
 
 **Output:**
@@ -55,10 +55,17 @@ protoc --go_out=backend/pkg/proto \
 
 ```bash
 # From project root
-python -m grpc_tools.protoc -I. \
+GRPC_TOOLS_PROTO_PATH="$(python - <<'PY'
+import os
+import grpc_tools
+print(os.path.join(os.path.dirname(grpc_tools.__file__), "_proto"))
+PY
+)"
+
+env -u PROTOC_INCLUDE python -m grpc_tools.protoc -Iproto -I"$GRPC_TOOLS_PROTO_PATH" \
   --python_out=src/tracertm/proto \
   --grpc_python_out=src/tracertm/proto \
-  proto/tracertm.proto
+  proto/tracertm/v1/tracertm.proto
 ```
 
 **Output:**

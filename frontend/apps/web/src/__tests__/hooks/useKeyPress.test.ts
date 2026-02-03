@@ -38,32 +38,38 @@ describe("useKeyPress Hook", () => {
 
 	describe("Modifier Key Matching", () => {
 		it("should match ctrl key when required", () => {
-			const ctrlRequired = true;
-			const ctrlPressed = true;
+			const ctrlRequired: boolean | undefined = true;
+			const ctrlPressed: boolean = true;
 			const matches =
 				ctrlRequired === undefined || ctrlPressed === ctrlRequired;
 			expect(matches).toBe(true);
 		});
 
 		it("should match shift key when required", () => {
-			const shiftRequired = true;
-			const shiftPressed = true;
+			const shiftRequired: boolean | undefined = true;
+			const shiftPressed: boolean = true;
 			const matches =
 				shiftRequired === undefined || shiftPressed === shiftRequired;
 			expect(matches).toBe(true);
 		});
 
 		it("should not match when ctrl not pressed but required", () => {
-			const ctrlRequired = true;
-			const ctrlPressed = false;
+			const ctrlRequired: boolean | undefined = true;
+			const ctrlPressed: boolean = false;
 			const matches =
 				ctrlRequired === undefined || ctrlPressed === ctrlRequired;
 			expect(matches).toBe(false);
 		});
 
 		it("should match multiple modifiers", () => {
-			const options = { ctrl: true, shift: false };
-			const event = { ctrlKey: true, shiftKey: false };
+			const options: { ctrl?: boolean; shift?: boolean } = {
+				ctrl: true,
+				shift: false,
+			};
+			const event: { ctrlKey: boolean; shiftKey: boolean } = {
+				ctrlKey: true,
+				shiftKey: false,
+			};
 
 			const ctrlMatch =
 				options.ctrl === undefined || event.ctrlKey === options.ctrl;
@@ -74,9 +80,18 @@ describe("useKeyPress Hook", () => {
 		});
 
 		it("should handle undefined modifiers as any", () => {
-			const options = { ctrl: undefined, shift: true };
-			const event1 = { ctrlKey: true, shiftKey: true };
-			const event2 = { ctrlKey: false, shiftKey: true };
+			const options: { ctrl?: boolean; shift?: boolean } = {
+				ctrl: undefined,
+				shift: true,
+			};
+			const event1: { ctrlKey: boolean; shiftKey: boolean } = {
+				ctrlKey: true,
+				shiftKey: true,
+			};
+			const event2: { ctrlKey: boolean; shiftKey: boolean } = {
+				ctrlKey: false,
+				shiftKey: true,
+			};
 
 			const match1 =
 				(options.ctrl === undefined || event1.ctrlKey === options.ctrl) &&

@@ -276,7 +276,8 @@ function applyFilters(
 
 		// Dimension filter
 		if (filters.dimensionKey && filters.dimensionValue) {
-			const dimensionValue = result.item.dimensions?.[filters.dimensionKey];
+			const dimensionKey = filters.dimensionKey as keyof ItemDimensions;
+			const dimensionValue = result.item.dimensions?.[dimensionKey];
 			if (dimensionValue !== filters.dimensionValue) {
 				return false;
 			}

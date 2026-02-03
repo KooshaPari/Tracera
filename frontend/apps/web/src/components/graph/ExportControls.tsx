@@ -2,7 +2,6 @@
 // Provides options to export graph in various formats (PNG, SVG, JSON, CSV)
 
 import { Button } from "@tracertm/ui/components/Button";
-import { Badge } from "@tracertm/ui/components/Badge";
 import { Alert } from "@tracertm/ui/components/Alert";
 import {
 	FileImage,
@@ -11,14 +10,9 @@ import {
 	FileText,
 	Loader2,
 	X,
-	Download,
 } from "lucide-react";
 import { useCallback, useState } from "react";
-import {
-	getNodesBounds,
-	getViewportForBounds,
-	useReactFlow,
-} from "@xyflow/react";
+import { useReactFlow } from "@xyflow/react";
 import { toPng, toSvg } from "html-to-image";
 import { logger } from "@/lib/logger";
 

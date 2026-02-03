@@ -171,19 +171,19 @@ export function useGraphLayoutWorker(
 					setError(null);
 				}
 			} catch (caughtError) {
-				const error = caughtError instanceof Error ? caughtError : new Error(String(caughtError));
+				const initError = caughtError instanceof Error ? caughtError : new Error(String(caughtError));
 				logger.error(
 					"[useGraphLayoutWorker] Failed to initialize worker:",
-					error,
+					initError,
 				);
 				if (mounted) {
-					setError(error);
+					setError(initError);
 					setIsReady(false);
 				}
 			}
 		}
 
-		undefined;
+		void initWorker();
 
 		return () => {
 			mounted = false;
@@ -240,7 +240,7 @@ export function useGraphLayoutWorker(
 						batchSize,
 					};
 
-					const generator = api.computeLayoutProgressive(
+					const generatorPromise = api.computeLayoutProgressive(
 						nodes,
 						edges,
 						progressiveOptions,
@@ -248,8 +248,9 @@ export function useGraphLayoutWorker(
 
 					let finalResult: LayoutResult | null = null;
 
-					// Consume async generator (Comlink proxy is async iterable at runtime)
-					for await (const result of generator as AsyncIterable<LayoutResult>) {
+					// Consume async generator (Comlink proxy returns promise of async iterable at runtime)
+					const generator = await (generatorPromise as Promise<AsyncIterable<LayoutResult>>);
+					for await (const result of generator) {
 						finalResult = result;
 						setProgress(result["progress"] || 0);
 
@@ -275,12 +276,12 @@ export function useGraphLayoutWorker(
 				setProgress(1);
 				return result;
 			} catch (caughtError) {
-				const error = caughtError instanceof Error ? caughtError : new Error(String(caughtError));
+				const layoutError = caughtError instanceof Error ? caughtError : new Error(String(caughtError));
 				logger.error(
 					"[useGraphLayoutWorker] Layout computation failed:",
-					error,
+					layoutError,
 				);
-				setError(error);
+				setError(layoutError);
 
 				// Fallback to synchronous layout
 				logger.warn(

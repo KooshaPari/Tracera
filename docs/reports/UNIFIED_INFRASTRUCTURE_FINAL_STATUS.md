@@ -62,7 +62,7 @@ The TraceRTM Unified Infrastructure Architecture has been **successfully impleme
 ### ✅ Phase 4: gRPC Inter-Service Communication
 - **Status**: COMPLETE
 - **Files Created**:
-  - `proto/tracertm.proto` - Service definitions
+  - `proto/tracertm/v1/tracertm.proto` - Service definitions
   - `backend/internal/grpc/server.go` - Go gRPC server
   - `src/tracertm/services/grpc_client.py` - Python gRPC client
   - Generated proto files (Go & Python)
@@ -194,7 +194,7 @@ The TraceRTM Unified Infrastructure Architecture has been **successfully impleme
 - `Procfile` - Overmind processes
 - `.overmind.env` - Environment
 - `backend/.air.toml` - Go hot-reload
-- `proto/tracertm.proto` - gRPC definitions
+- `proto/tracertm/v1/tracertm.proto` - gRPC definitions
 - `buf.yaml` - Proto linting
 - `buf.gen.yaml` - Proto generation
 

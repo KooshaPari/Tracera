@@ -171,14 +171,12 @@ const complete = async (
 			(apiClient.POST as ApiMethod<{
 				completed: boolean;
 				execution_id: string;
-			}>),
-			"/api/v1/projects/{project_id}/executions/{execution_id}/complete",
-			{
+			}>)("/api/v1/projects/{project_id}/executions/{execution_id}/complete", {
 				body: data,
 				params: {
 					path: { execution_id: executionId, project_id: projectId },
 				},
-			},
+			}),
 		),
 	);
 
@@ -188,12 +186,13 @@ const create = async (
 ): Promise<Execution> =>
 	handleApiResponse(
 		safeApiCall(
-			(apiClient.POST as ApiMethod<Execution>),
-			"/api/v1/projects/{project_id}/executions",
-			{
-				body: data,
-				params: { path: { project_id: projectId } },
-			},
+			(apiClient.POST as ApiMethod<Execution>)(
+				"/api/v1/projects/{project_id}/executions",
+				{
+					body: data,
+					params: { path: { project_id: projectId } },
+				},
+			),
 		),
 	);
 
@@ -210,13 +209,14 @@ const get = async (
 ): Promise<Execution> =>
 	handleApiResponse(
 		safeApiCall(
-			(apiClient.GET as ApiMethod<Execution>),
-			"/api/v1/projects/{project_id}/executions/{execution_id}",
-			{
-				params: {
-					path: { execution_id: executionId, project_id: projectId },
+			(apiClient.GET as ApiMethod<Execution>)(
+				"/api/v1/projects/{project_id}/executions/{execution_id}",
+				{
+					params: {
+						path: { execution_id: executionId, project_id: projectId },
+					},
 				},
-			},
+			),
 		),
 	);
 
@@ -225,11 +225,12 @@ const getConfig = async (
 ): Promise<ExecutionEnvironmentConfig> =>
 	handleApiResponse(
 		safeApiCall(
-			(apiClient.GET as ApiMethod<ExecutionEnvironmentConfig>),
-			"/api/v1/projects/{project_id}/execution-config",
-			{
-				params: { path: { project_id: projectId } },
-			},
+			(apiClient.GET as ApiMethod<ExecutionEnvironmentConfig>)(
+				"/api/v1/projects/{project_id}/execution-config",
+				{
+					params: { path: { project_id: projectId } },
+				},
+			),
 		),
 	);
 
@@ -247,11 +248,9 @@ const list = async (
 			(apiClient.GET as ApiMethod<{
 				executions: Execution[];
 				total: number;
-			}>),
-			"/api/v1/projects/{project_id}/executions",
-			{
+			}>)("/api/v1/projects/{project_id}/executions", {
 				params: { path: { project_id: projectId }, query: params },
-			},
+			}),
 		),
 	);
 
@@ -265,14 +264,15 @@ const listArtifacts = async (
 			(apiClient.GET as ApiMethod<{
 				artifacts: ExecutionArtifact[];
 				total: number;
-			}>),
-			"/api/v1/projects/{project_id}/executions/{execution_id}/artifacts",
-			{
-				params: {
-					path: { execution_id: executionId, project_id: projectId },
-					query: { artifact_type: artifactType },
+			}>)(
+				"/api/v1/projects/{project_id}/executions/{execution_id}/artifacts",
+				{
+					params: {
+						path: { execution_id: executionId, project_id: projectId },
+						query: { artifact_type: artifactType },
+					},
 				},
-			},
+			),
 		),
 	);
 
@@ -285,13 +285,11 @@ const start = async (
 			(apiClient.POST as ApiMethod<{
 				execution_id: string;
 				started: boolean;
-			}>),
-			"/api/v1/projects/{project_id}/executions/{execution_id}/start",
-			{
+			}>)("/api/v1/projects/{project_id}/executions/{execution_id}/start", {
 				params: {
 					path: { execution_id: executionId, project_id: projectId },
 				},
-			},
+			}),
 		),
 	);
 
@@ -301,12 +299,13 @@ const updateConfig = async (
 ): Promise<ExecutionEnvironmentConfig> =>
 	handleApiResponse(
 		safeApiCall(
-			(apiClient.PUT as ApiMethod<ExecutionEnvironmentConfig>),
-			"/api/v1/projects/{project_id}/execution-config",
-			{
-				body: data,
-				params: { path: { project_id: projectId } },
-			},
+			(apiClient.PUT as ApiMethod<ExecutionEnvironmentConfig>)(
+				"/api/v1/projects/{project_id}/execution-config",
+				{
+					body: data,
+					params: { path: { project_id: projectId } },
+				},
+			),
 		),
 	);
 
@@ -322,5 +321,5 @@ const executionsApi = {
 	updateConfig,
 };
 
+export { executionsApi };
 export default executionsApi;
-

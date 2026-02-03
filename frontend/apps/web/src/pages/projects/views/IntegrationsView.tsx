@@ -1,11 +1,3 @@
-import type {
-	IntegrationCredential,
-	IntegrationMapping,
-	IntegrationProvider,
-	SyncConflict,
-} from "@tracertm/types";
-import { logger } from "@/lib/logger";
-import { useState } from "react";
 import {
 	useConflicts,
 	useCreateMapping,
@@ -22,181 +14,377 @@ import {
 	useTriggerSync,
 	useValidateCredential,
 } from "../../../hooks/useIntegrations";
+import { logger } from "@/lib/logger";
+import type {
+	IntegrationCredential,
+	IntegrationMapping,
+	IntegrationProvider,
+	SyncConflict,
+} from "@tracertm/types";
+import { useCallback, useMemo, useState, type ChangeEvent } from "react";
 
-interface IntegrationsViewProps {
+type TabId = "overview" | "credentials" | "mappings" | "sync" | "conflicts";
+
+type TabConfig = {
+	id: TabId;
+	label: string;
+};
+
+type TabContentProps = {
+	activeTab: TabId;
+	conflicts: SyncConflict[];
+	conflictsLoading: boolean;
+	credentials: IntegrationCredential[];
+	credentialsLoading: boolean;
+	mappings: IntegrationMapping[];
+	mappingsLoading: boolean;
+	mode: "project" | "account";
 	projectId: string;
-	mode?: "project" | "account";
-	initialTab?: "overview" | "credentials" | "mappings" | "sync" | "conflicts";
-	allowedTabs?: (
-		| "overview"
-		| "credentials"
-		| "mappings"
-		| "sync"
-		| "conflicts"
-	)[];
-}
+	syncLoading: boolean;
+	syncStatus: unknown;
+	stats: unknown;
+	statsLoading: boolean;
+};
 
-export default function IntegrationsView({
-	projectId,
-	mode = "project",
-	initialTab = "overview",
-	allowedTabs,
-}: IntegrationsViewProps) {
-	const [activeTab, setActiveTab] = useState<
-		"overview" | "credentials" | "mappings" | "sync" | "conflicts"
-	>(initialTab);
-
-	const { data: statsData, isLoading: statsLoading } =
-		useIntegrationStats(projectId);
-	const { data: credentialsData, isLoading: credentialsLoading } =
-		useCredentials(projectId);
-	const { data: mappingsData, isLoading: mappingsLoading } =
-		useMappings(projectId);
-	const { data: syncStatus, isLoading: syncLoading } = useSyncStatus(projectId);
-	const { data: conflictsData, isLoading: conflictsLoading } = useConflicts(
-		projectId,
-		"pending",
-	);
-
-	const defaultTabs =
-		mode === "account"
-			? [
-					{ id: "overview", label: "Overview" },
-					{ id: "credentials", label: "Credentials" },
-				]
-			: [
-					{ id: "overview", label: "Overview" },
-					{ id: "mappings", label: "Mappings" },
-					{ id: "sync", label: "Sync Status" },
-					{ id: "conflicts", label: "Conflicts" },
-				];
-	const tabs = (
-		allowedTabs
-			? defaultTabs.filter((tab) =>
-					allowedTabs.includes(
-						tab.id as
-							| "overview"
-							| "credentials"
-							| "mappings"
-							| "sync"
-							| "conflicts",
-					),
-				)
-			: defaultTabs
-	) as {
-		id: "overview" | "credentials" | "mappings" | "sync" | "conflicts";
-		label: string;
-	}[];
-
-	return (
-		<div className="p-6">
-			<div className="mb-6">
-				<h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-					External Integrations
-				</h1>
-				<p className="text-gray-600 dark:text-gray-400">
-					Connect GitHub, GitHub Projects, and Linear to sync items
-					bidirectionally.
-				</p>
-			</div>
-
-			{/* Tabs */}
-			<div className="border-b border-gray-200 dark:border-gray-700 mb-6">
-				<nav className="flex space-x-8">
-					{tabs.map((tab) => (
-						<button
-							type="button"
-							key={tab.id}
-							onClick={() => setActiveTab(tab.id)}
-							className={`py-2 px-1 border-b-2 font-medium text-sm ${
-								activeTab === tab.id
-									? "border-blue-500 text-blue-600 dark:text-blue-400"
-									: "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400"
-							}`}
-						>
-							{tab.label}
-							{tab.id === "conflicts" &&
-								conflictsData &&
-								conflictsData.total > 0 && (
-									<span className="ml-2 bg-red-100 text-red-800 text-xs font-medium px-2 py-0.5 rounded dark:bg-red-900 dark:text-red-300">
-										{conflictsData.total}
-									</span>
-								)}
-						</button>
-					))}
-				</nav>
-			</div>
-
-			{/* Tab Content */}
-			{activeTab === "overview" && (
-				<OverviewTab
-					stats={statsData}
-					isLoading={statsLoading}
-					projectId={projectId}
-					mode={mode}
-				/>
-			)}
-			{activeTab === "credentials" && mode !== "project" && (
-				<CredentialsTab
-					credentials={credentialsData?.credentials || []}
-					isLoading={credentialsLoading}
-					projectId={projectId}
-				/>
-			)}
-			{activeTab === "mappings" && mode !== "account" && (
-				<MappingsTab
-					mappings={mappingsData?.mappings || []}
-					isLoading={mappingsLoading}
-					projectId={projectId}
-				/>
-			)}
-			{activeTab === "sync" && mode !== "account" && (
-				<SyncTab
-					syncStatus={syncStatus}
-					isLoading={syncLoading}
-					projectId={projectId}
-				/>
-			)}
-			{activeTab === "conflicts" && mode !== "account" && (
-				<ConflictsTab
-					conflicts={conflictsData?.conflicts || []}
-					isLoading={conflictsLoading}
-				/>
-			)}
-		</div>
-	);
-}
-
-// ==================== Overview Tab ====================
-
-function OverviewTab({
-	stats,
-	isLoading,
-	projectId,
-	mode,
-}: {
+type OverviewTabProps = {
 	stats: any;
 	isLoading: boolean;
 	projectId: string;
 	mode: "project" | "account";
-}) {
-	const startOAuth = useStartOAuth();
+};
 
-	const handleConnect = async (provider: IntegrationProvider) => {
-		const redirectUri = `${globalThis.location.origin}/integrations/callback`;
-		try {
-			const result = await startOAuth.mutateAsync({
-				credentialScope: mode === "account" ? "user" : "project",
-				projectId,
-				provider,
-				redirectUri,
-			});
-			// Redirect to OAuth provider
-			globalThis.location.href = result.auth_url;
-		} catch (error) {
-			logger.error("Failed to start OAuth:", error);
-		}
+type ProviderConnectSectionProps = {
+	mode: "project" | "account";
+	providers: Array<{ provider: IntegrationProvider }>;
+	onConnect: (provider: IntegrationProvider) => void;
+};
+
+type CredentialsTabProps = {
+	credentials: IntegrationCredential[];
+	isLoading: boolean;
+};
+
+type CredentialRowProps = {
+	credential: IntegrationCredential;
+	isConfirmingDelete: boolean;
+	isValidating: boolean;
+	onCancelDelete: () => void;
+	onConfirmDelete: (id: string) => void;
+	onRequestDelete: (id: string) => void;
+	onValidate: (id: string) => void;
+};
+
+type MappingCreateArgs = {
+	externalId: string;
+	externalKey?: string;
+	externalType: string;
+	externalUrl?: string;
+	mappingMetadata?: Record<string, unknown>;
+};
+
+type MappingFormProps = {
+	formState: ReturnType<typeof useMappingFormState>;
+};
+
+type MappingControlsProps = {
+	formState: ReturnType<typeof useMappingFormState>;
+};
+
+type MappingSourcesProps = {
+	formState: ReturnType<typeof useMappingFormState>;
+};
+
+type GitHubRepoListProps = {
+	onCreateMapping: (args: MappingCreateArgs) => Promise<void>;
+	onRepoSearchChange: (value: string) => void;
+	repoSearch: string;
+	repos: Array<{
+		id: string;
+		fullName: string;
+		description?: string;
+		htmlUrl?: string;
+	}>;
+};
+
+type RepoRowProps = {
+	onCreateMapping: (args: MappingCreateArgs) => Promise<void>;
+	repo: {
+		id: string;
+		fullName: string;
+		description?: string;
+		htmlUrl?: string;
 	};
+};
+
+type GitHubProjectListProps = {
+	onCreateMapping: (args: MappingCreateArgs) => Promise<void>;
+	onProjectOwnerChange: (value: string) => void;
+	onProjectOwnerOrgChange: (value: boolean) => void;
+	projectOwner: string;
+	projectOwnerIsOrg: boolean;
+	projects: Array<{
+		id: string;
+		title: string;
+		description?: string;
+		url?: string;
+	}>;
+};
+
+type GitHubProjectRowProps = {
+	onCreateMapping: (args: MappingCreateArgs) => Promise<void>;
+	project: {
+		id: string;
+		title: string;
+		description?: string;
+		url?: string;
+	};
+	projectOwner: string;
+	projectOwnerIsOrg: boolean;
+};
+
+const ACCOUNT_TABS: TabConfig[] = [
+	{ id: "overview", label: "Overview" },
+	{ id: "credentials", label: "Credentials" },
+];
+
+const PROJECT_TABS: TabConfig[] = [
+	{ id: "overview", label: "Overview" },
+	{ id: "mappings", label: "Mappings" },
+	{ id: "sync", label: "Sync Status" },
+	{ id: "conflicts", label: "Conflicts" },
+];
+
+const EMPTY_CREDENTIALS: IntegrationCredential[] = [];
+const EMPTY_MAPPINGS: IntegrationMapping[] = [];
+const EMPTY_CONFLICTS: SyncConflict[] = [];
+const ID_PREVIEW_LENGTH = 8;
+const PROVIDER_SELECT_ID = "integration-provider";
+const CREDENTIAL_SELECT_ID = "integration-credential";
+
+interface IntegrationsViewProps {
+	projectId: string;
+	mode?: "project" | "account";
+	initialTab?: TabId;
+	allowedTabs?: TabId[];
+}
+
+const useIntegrationsViewData = (projectId: string) => {
+	const stats = useIntegrationStats(projectId);
+	const credentials = useCredentials(projectId);
+	const mappings = useMappings(projectId);
+	const syncStatus = useSyncStatus(projectId);
+	const conflicts = useConflicts(projectId, "pending");
+
+	return { conflicts, credentials, mappings, stats, syncStatus };
+};
+
+const useIntegrationsTabs = (
+	mode: "project" | "account",
+	allowedTabs?: TabId[],
+): TabConfig[] => {
+	return useMemo(() => {
+		const defaultTabs = mode === "account" ? ACCOUNT_TABS : PROJECT_TABS;
+		if (!allowedTabs) {
+			return defaultTabs;
+		}
+		return defaultTabs.filter((tab) => allowedTabs.includes(tab.id));
+	}, [allowedTabs, mode]);
+};
+
+const IntegrationsView = ({
+	projectId,
+	mode = "project",
+	initialTab = "overview",
+	allowedTabs,
+}: IntegrationsViewProps): JSX.Element => {
+	const [activeTab, setActiveTab] = useState<TabId>(initialTab);
+
+	const { conflicts, credentials, mappings, stats, syncStatus } =
+		useIntegrationsViewData(projectId);
+
+	const credentialsList = credentials.data?.credentials ?? EMPTY_CREDENTIALS;
+	const mappingsList = mappings.data?.mappings ?? EMPTY_MAPPINGS;
+	const conflictsList = conflicts.data?.conflicts ?? EMPTY_CONFLICTS;
+	const conflictTotal = conflicts.data?.total ?? 0;
+	const tabs = useIntegrationsTabs(mode, allowedTabs);
+
+	const handleTabSelect = useCallback((tabId: TabId): void => {
+		setActiveTab(tabId);
+	}, []);
+
+	return (
+		<div className="p-6">
+			<PageHeader />
+			<TabsNav
+				activeTab={activeTab}
+				conflictCount={conflictTotal}
+				onSelect={handleTabSelect}
+				tabs={tabs}
+			/>
+			<TabContent
+				activeTab={activeTab}
+				conflicts={conflictsList}
+				conflictsLoading={conflicts.isLoading}
+				credentials={credentialsList}
+				credentialsLoading={credentials.isLoading}
+				mappings={mappingsList}
+				mappingsLoading={mappings.isLoading}
+				mode={mode}
+				projectId={projectId}
+				syncLoading={syncStatus.isLoading}
+				syncStatus={syncStatus.data}
+				stats={stats.data}
+				statsLoading={stats.isLoading}
+			/>
+		</div>
+	);
+};
+
+const PageHeader = (): JSX.Element => (
+	<div className="mb-6">
+		<h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+			External Integrations
+		</h1>
+		<p className="text-gray-600 dark:text-gray-400">
+			Connect GitHub, GitHub Projects, and Linear to sync items
+			bidirectionally.
+		</p>
+	</div>
+);
+
+const TabsNav = ({
+	activeTab,
+	conflictCount,
+	onSelect,
+	tabs,
+}: {
+	activeTab: TabId;
+	conflictCount: number;
+	onSelect: (tabId: TabId) => void;
+	tabs: TabConfig[];
+}): JSX.Element => (
+	<div className="border-b border-gray-200 dark:border-gray-700 mb-6">
+		<nav className="flex space-x-8">
+			{tabs.map((tab) => (
+				<TabButton
+					key={tab.id}
+					active={activeTab === tab.id}
+					conflictCount={conflictCount}
+					onSelect={onSelect}
+					tab={tab}
+				/>
+			))}
+		</nav>
+	</div>
+);
+
+const TabButton = ({
+	active,
+	conflictCount,
+	onSelect,
+	tab,
+}: {
+	active: boolean;
+	conflictCount: number;
+	onSelect: (tabId: TabId) => void;
+	tab: TabConfig;
+}): JSX.Element => {
+	const handleClick = useCallback(() => {
+		onSelect(tab.id);
+	}, [onSelect, tab.id]);
+
+	return (
+		<button
+			type="button"
+			onClick={handleClick}
+			className={`py-2 px-1 border-b-2 font-medium text-sm ${
+				active
+					? "border-blue-500 text-blue-600 dark:text-blue-400"
+					: "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400"
+			}`}
+		>
+			{tab.label}
+			{tab.id === "conflicts" && conflictCount > 0 && (
+				<span className="ml-2 bg-red-100 text-red-800 text-xs font-medium px-2 py-0.5 rounded dark:bg-red-900 dark:text-red-300">
+					{conflictCount}
+				</span>
+			)}
+		</button>
+	);
+};
+
+const TabContent = ({
+	activeTab,
+	conflicts,
+	conflictsLoading,
+	credentials,
+	credentialsLoading,
+	mappings,
+	mappingsLoading,
+	mode,
+	projectId,
+	syncLoading,
+	syncStatus,
+	stats,
+	statsLoading,
+}: TabContentProps): JSX.Element => (
+	<>
+		{activeTab === "overview" && (
+			<OverviewTab
+				stats={stats}
+				isLoading={statsLoading}
+				projectId={projectId}
+				mode={mode}
+			/>
+		)}
+		{activeTab === "credentials" && mode !== "project" && (
+			<CredentialsTab
+				credentials={credentials}
+				isLoading={credentialsLoading}
+			/>
+		)}
+		{activeTab === "mappings" && mode !== "account" && (
+			<MappingsTab
+				mappings={mappings}
+				isLoading={mappingsLoading}
+				projectId={projectId}
+			/>
+		)}
+		{activeTab === "sync" && mode !== "account" && (
+			<SyncTab syncStatus={syncStatus} isLoading={syncLoading} />
+		)}
+		{activeTab === "conflicts" && mode !== "account" && (
+			<ConflictsTab conflicts={conflicts} isLoading={conflictsLoading} />
+		)}
+	</>
+);
+
+const OverviewTab = ({
+	stats,
+	isLoading,
+	projectId,
+	mode,
+}: OverviewTabProps): JSX.Element => {
+	const startOAuth = useStartOAuth();
+	const providers = stats?.providers ?? [];
+
+	const handleConnect = useCallback(
+		async (provider: IntegrationProvider): Promise<void> => {
+			const redirectUri = `${globalThis.location.origin}/integrations/callback`;
+			try {
+				const result = await startOAuth.mutateAsync({
+					credentialScope: mode === "account" ? "user" : "project",
+					projectId,
+					provider,
+					redirectUri,
+				});
+				globalThis.location.href = result.auth_url;
+			} catch (error) {
+				logger.error("Failed to start OAuth:", error);
+			}
+		},
+		[mode, projectId, startOAuth],
+	);
 
 	if (isLoading) {
 		return <div className="animate-pulse">Loading stats...</div>;
@@ -204,192 +392,369 @@ function OverviewTab({
 
 	return (
 		<div className="space-y-6">
-			{/* Stats Cards */}
-			<div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-				<StatCard
-					title="Connected Providers"
-					value={stats?.providers?.length || 0}
-					subtitle="integrations active"
-				/>
-				<StatCard
-					title="Active Mappings"
-					value={stats?.mappings?.active || 0}
-					subtitle={`of ${stats?.mappings?.total || 0} total`}
-				/>
-				<StatCard
-					title="Sync Success Rate"
-					value={`${stats?.sync?.successRate || 0}%`}
-					subtitle={`${stats?.sync?.recentSyncs || 0} recent syncs`}
-				/>
-				<StatCard
-					title="Pending Conflicts"
-					value={stats?.conflicts?.pending || 0}
-					subtitle="need resolution"
-					warning={stats?.conflicts?.pending > 0}
-				/>
-			</div>
-
-			{/* Connect Providers */}
-			{mode === "account" ? (
-				<div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-					<h2 className="text-lg font-semibold mb-4">Connect New Provider</h2>
-					<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-						<ProviderCard
-							name="GitHub"
-							description="Sync issues, PRs, and repositories"
-							icon="github"
-							connected={stats?.providers?.some(
-								(p: any) => p.provider === "github",
-							)}
-							onConnect={() => handleConnect("github")}
-						/>
-						<ProviderCard
-							name="GitHub Projects"
-							description="Sync project boards and cards"
-							icon="github"
-							connected={stats?.providers?.some(
-								(p: any) => p.provider === "github_projects",
-							)}
-							onConnect={() => handleConnect("github_projects")}
-						/>
-						<ProviderCard
-							name="Linear"
-							description="Sync issues, projects, and teams"
-							icon="linear"
-							connected={stats?.providers?.some(
-								(p: any) => p.provider === "linear",
-							)}
-							onConnect={() => handleConnect("linear")}
-						/>
-					</div>
-				</div>
-			) : (
-				<div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-					<h2 className="text-lg font-semibold mb-2">
-						Account connections moved
-					</h2>
-					<p className="text-sm text-gray-500">
-						Link external accounts in Settings. Project mappings and sync
-						controls live here.
-					</p>
-				</div>
-			)}
-
-			{/* Provider Status */}
-			{stats?.providers && stats.providers.length > 0 && (
-				<div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-					<h2 className="text-lg font-semibold mb-4">Connected Providers</h2>
-					<div className="space-y-3">
-						{stats.providers.map((provider: any, index: number) => (
-							<div
-								key={`${provider.provider}-${index}`}
-								className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
-							>
-								<div className="flex items-center space-x-3">
-									<ProviderIcon provider={provider.provider} />
-									<div>
-										<div className="font-medium capitalize">
-											{provider.provider.replace("_", " ")}
-										</div>
-										<div className="text-sm text-gray-500">
-											{provider.credentialType}
-										</div>
-									</div>
-								</div>
-								<StatusBadge status={provider.status} />
-							</div>
-						))}
-					</div>
-				</div>
-			)}
+			<StatsCards stats={stats} />
+			<ProviderConnectSection
+				mode={mode}
+				providers={providers}
+				onConnect={handleConnect}
+			/>
+			<ProviderStatusList providers={providers} />
 		</div>
 	);
-}
+};
 
-// ==================== Credentials Tab ====================
+const StatsCards = ({ stats }: { stats: any }): JSX.Element => (
+	<div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+		<StatCard
+			title="Connected Providers"
+			value={stats?.providers?.length ?? 0}
+			subtitle="integrations active"
+		/>
+		<StatCard
+			title="Active Mappings"
+			value={stats?.mappings?.active ?? 0}
+			subtitle={`of ${stats?.mappings?.total ?? 0} total`}
+		/>
+		<StatCard
+			title="Sync Success Rate"
+			value={`${stats?.sync?.successRate ?? 0}%`}
+			subtitle={`${stats?.sync?.recentSyncs ?? 0} recent syncs`}
+		/>
+		<StatCard
+			title="Pending Conflicts"
+			value={stats?.conflicts?.pending ?? 0}
+			subtitle="need resolution"
+			warning={(stats?.conflicts?.pending ?? 0) > 0}
+		/>
+	</div>
+);
 
-function CredentialsTab({
-	credentials,
-	isLoading,
-	projectId: _projectId,
+const ProviderConnectSection = ({
+	mode,
+	providers,
+	onConnect,
+}: ProviderConnectSectionProps): JSX.Element => {
+	const connectedSet = useMemo(() => {
+		return new Set(providers.map((provider) => provider.provider));
+	}, [providers]);
+
+	if (mode !== "account") {
+		return <AccountConnectionsNotice />;
+	}
+
+	return (
+		<ProviderConnectGrid connectedSet={connectedSet} onConnect={onConnect} />
+	);
+};
+
+const AccountConnectionsNotice = (): JSX.Element => (
+	<div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+		<h2 className="text-lg font-semibold mb-2">Account connections moved</h2>
+		<p className="text-sm text-gray-500">
+			Link external accounts in Settings. Project mappings and sync controls
+			live here.
+		</p>
+	</div>
+);
+
+const ProviderConnectGrid = ({
+	connectedSet,
+	onConnect,
 }: {
-	credentials: IntegrationCredential[];
-	isLoading: boolean;
-	projectId: string;
-}) {
+	connectedSet: Set<IntegrationProvider>;
+	onConnect: (provider: IntegrationProvider) => void;
+}): JSX.Element => (
+	<div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+		<h2 className="text-lg font-semibold mb-4">Connect New Provider</h2>
+		<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+			<ProviderCard
+				connected={connectedSet.has("github")}
+				description="Sync issues, PRs, and repositories"
+				name="GitHub"
+				onConnect={onConnect}
+				providerId="github"
+			/>
+			<ProviderCard
+				connected={connectedSet.has("github_projects")}
+				description="Sync project boards and cards"
+				name="GitHub Projects"
+				onConnect={onConnect}
+				providerId="github_projects"
+			/>
+			<ProviderCard
+				connected={connectedSet.has("linear")}
+				description="Sync issues, projects, and teams"
+				name="Linear"
+				onConnect={onConnect}
+				providerId="linear"
+			/>
+		</div>
+	</div>
+);
+
+const ProviderStatusList = ({
+	providers,
+}: {
+	providers: Array<{
+		provider: IntegrationProvider;
+		credentialType?: string;
+		status: string;
+	}>;
+}): JSX.Element | null => {
+	if (!providers.length) {
+		return null;
+	}
+
+	return (
+		<div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+			<h2 className="text-lg font-semibold mb-4">Connected Providers</h2>
+			<div className="space-y-3">
+				{providers.map((provider) => (
+					<div
+						key={`${provider.provider}-${provider.credentialType ?? "default"}`}
+						className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
+					>
+						<div className="flex items-center space-x-3">
+							<ProviderIcon provider={provider.provider} />
+							<div>
+								<div className="font-medium capitalize">
+									{provider.provider.replace("_", " ")}
+								</div>
+								<div className="text-sm text-gray-500">
+									{provider.credentialType}
+								</div>
+							</div>
+						</div>
+						<StatusBadge status={provider.status} />
+					</div>
+				))}
+			</div>
+		</div>
+	);
+};
+
+const useCredentialActions = () => {
 	const deleteCredential = useDeleteCredential();
 	const validateCredential = useValidateCredential();
+	const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
+	const handleRequestDelete = useCallback((id: string) => {
+		setConfirmDeleteId(id);
+	}, []);
+
+	const handleCancelDelete = useCallback(() => {
+		setConfirmDeleteId(null);
+	}, []);
+
+	const handleConfirmDelete = useCallback(
+		(id: string) => {
+			deleteCredential.mutate(id);
+			setConfirmDeleteId(null);
+		},
+		[deleteCredential],
+	);
+
+	const handleValidate = useCallback(
+		(id: string) => {
+			validateCredential.mutate(id);
+		},
+		[validateCredential],
+	);
+
+	return {
+		confirmDeleteId,
+		handleCancelDelete,
+		handleConfirmDelete,
+		handleRequestDelete,
+		handleValidate,
+		isValidating: validateCredential.isPending,
+	};
+};
+
+const CredentialsEmptyState = (): JSX.Element => (
+	<div className="text-center py-12 text-gray-500">
+		No credentials configured. Connect a provider from the Overview tab.
+	</div>
+);
+
+const CredentialsTab = ({
+	credentials,
+	isLoading,
+}: CredentialsTabProps): JSX.Element => {
+	const {
+		confirmDeleteId,
+		handleCancelDelete,
+		handleConfirmDelete,
+		handleRequestDelete,
+		handleValidate,
+		isValidating,
+	} = useCredentialActions();
 
 	if (isLoading) {
 		return <div className="animate-pulse">Loading credentials...</div>;
 	}
 
 	if (credentials.length === 0) {
-		return (
-			<div className="text-center py-12 text-gray-500">
-				No credentials configured. Connect a provider from the Overview tab.
-			</div>
-		);
+		return <CredentialsEmptyState />;
 	}
 
 	return (
 		<div className="space-y-4">
 			{credentials.map((cred) => (
-				<div
+				<CredentialRow
 					key={cred.id}
-					className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4"
-				>
-					<div className="flex items-center justify-between">
-						<div className="flex items-center space-x-4">
-							<ProviderIcon provider={cred.provider} />
-							<div>
-								<div className="font-medium capitalize">
-									{cred.provider.replace("_", " ")}
-								</div>
-								<div className="text-sm text-gray-500">
-									Type: {cred.credentialType} | Scopes:{" "}
-									{cred.scopes?.join(", ") || "none"}
-								</div>
-								{cred.lastValidatedAt && (
-									<div className="text-xs text-gray-400">
-										Last validated:{" "}
-										{new Date(cred.lastValidatedAt).toLocaleString()}
-									</div>
-								)}
-							</div>
-						</div>
-						<div className="flex items-center space-x-2">
-							<StatusBadge status={cred.status} />
-							<button
-								type="button"
-								onClick={() => validateCredential.mutate(cred.id)}
-								disabled={validateCredential.isPending}
-								className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
-							>
-								Validate
-							</button>
-							<button
-								type="button"
-								onClick={() => {
-									if (confirm("Delete this credential?")) {
-										deleteCredential.mutate(cred.id);
-									}
-								}}
-								className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200"
-							>
-								Delete
-							</button>
-						</div>
-					</div>
-				</div>
+					credential={cred}
+					isConfirmingDelete={confirmDeleteId === cred.id}
+					isValidating={isValidating}
+					onCancelDelete={handleCancelDelete}
+					onConfirmDelete={handleConfirmDelete}
+					onRequestDelete={handleRequestDelete}
+					onValidate={handleValidate}
+				/>
 			))}
 		</div>
 	);
-}
+};
 
-// ==================== Mappings Tab ====================
+const CredentialRow = ({
+	credential,
+	isConfirmingDelete,
+	isValidating,
+	onCancelDelete,
+	onConfirmDelete,
+	onRequestDelete,
+	onValidate,
+}: CredentialRowProps): JSX.Element => {
+	const handleValidateClick = useCallback(() => {
+		onValidate(credential.id);
+	}, [credential.id, onValidate]);
 
-function MappingsTab({
+	const handleDeleteClick = useCallback(() => {
+		onRequestDelete(credential.id);
+	}, [credential.id, onRequestDelete]);
+
+	const handleConfirmDelete = useCallback(() => {
+		onConfirmDelete(credential.id);
+	}, [credential.id, onConfirmDelete]);
+
+	return (
+		<div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+			<div className="flex items-center justify-between">
+				<CredentialInfo credential={credential} />
+				<CredentialActions
+					isConfirmingDelete={isConfirmingDelete}
+					isValidating={isValidating}
+					onCancelDelete={onCancelDelete}
+					onConfirmDelete={handleConfirmDelete}
+					onDelete={handleDeleteClick}
+					onValidate={handleValidateClick}
+					status={credential.status}
+				/>
+			</div>
+		</div>
+	);
+};
+
+const CredentialInfo = ({
+	credential,
+}: {
+	credential: IntegrationCredential;
+}): JSX.Element => (
+	<div className="flex items-center space-x-4">
+		<ProviderIcon provider={credential.provider} />
+		<div>
+			<div className="font-medium capitalize">
+				{credential.provider.replace("_", " ")}
+			</div>
+			<div className="text-sm text-gray-500">
+				Type: {credential.credentialType} | Scopes:{" "}
+				{credential.scopes?.join(", ") || "none"}
+			</div>
+			{credential.lastValidatedAt && (
+				<div className="text-xs text-gray-400">
+					Last validated:{" "}
+					{new Date(credential.lastValidatedAt).toLocaleString()}
+				</div>
+			)}
+		</div>
+	</div>
+);
+
+const CredentialActions = ({
+	isConfirmingDelete,
+	isValidating,
+	onCancelDelete,
+	onConfirmDelete,
+	onDelete,
+	onValidate,
+	status,
+}: {
+	isConfirmingDelete: boolean;
+	isValidating: boolean;
+	onCancelDelete: () => void;
+	onConfirmDelete: () => void;
+	onDelete: () => void;
+	onValidate: () => void;
+	status: string;
+}): JSX.Element => (
+	<div className="flex items-center space-x-2">
+		<StatusBadge status={status} />
+		<button
+			type="button"
+			onClick={onValidate}
+			disabled={isValidating}
+			className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+		>
+			Validate
+		</button>
+		<CredentialDeleteActions
+			isConfirmingDelete={isConfirmingDelete}
+			onCancelDelete={onCancelDelete}
+			onConfirmDelete={onConfirmDelete}
+			onDelete={onDelete}
+		/>
+	</div>
+);
+
+const CredentialDeleteActions = ({
+	isConfirmingDelete,
+	onCancelDelete,
+	onConfirmDelete,
+	onDelete,
+}: {
+	isConfirmingDelete: boolean;
+	onCancelDelete: () => void;
+	onConfirmDelete: () => void;
+	onDelete: () => void;
+}): JSX.Element =>
+	isConfirmingDelete ? (
+		<div className="flex items-center space-x-2">
+			<button
+				type="button"
+				onClick={onConfirmDelete}
+				className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200"
+			>
+				Confirm
+			</button>
+			<button
+				type="button"
+				onClick={onCancelDelete}
+				className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
+			>
+				Cancel
+			</button>
+		</div>
+	) : (
+		<button
+			type="button"
+			onClick={onDelete}
+			className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200"
+		>
+			Delete
+		</button>
+	);
+
+const MappingsTab = ({
 	mappings,
 	isLoading,
 	projectId,
@@ -397,23 +762,50 @@ function MappingsTab({
 	mappings: IntegrationMapping[];
 	isLoading: boolean;
 	projectId: string;
-}) {
-	const triggerSync = useTriggerSync();
-	const createMapping = useCreateMapping();
-	const { data: credentialData } = useCredentials(projectId);
-	const credentials = credentialData?.credentials || [];
-	const [provider, setProvider] = useState<IntegrationProvider>("github");
-	const [credentialId, setCredentialId] = useState("");
-	const [repoSearch, setRepoSearch] = useState("");
-	const [projectOwner, setProjectOwner] = useState("");
-	const [projectOwnerIsOrg, setProjectOwnerIsOrg] = useState(false);
+}): JSX.Element => {
+	const formState = useMappingFormState(projectId);
 
-	const providerCredentials = credentials.filter(
-		(cred) => cred.provider === provider,
+	if (isLoading) {
+		return <div className="animate-pulse">Loading mappings...</div>;
+	}
+
+	return (
+		<div className="space-y-6">
+			<MappingForm formState={formState} />
+			<MappingList mappings={mappings} />
+		</div>
 	);
+};
 
-	const activeCredentialId = credentialId || providerCredentials[0]?.id || "";
+const useProviderCredentials = (
+	projectId: string,
+	provider: IntegrationProvider,
+	credentialId: string,
+) => {
+	const { data: credentialData } = useCredentials(projectId);
+	const credentials = credentialData?.credentials ?? EMPTY_CREDENTIALS;
+	const providerCredentials = useMemo(() => {
+		return credentials.filter((cred) => cred.provider === provider);
+	}, [credentials, provider]);
+	const activeCredentialId =
+		credentialId || providerCredentials[0]?.id || "";
 
+	return { activeCredentialId, providerCredentials };
+};
+
+const useMappingSourcesData = ({
+	activeCredentialId,
+	projectOwner,
+	projectOwnerIsOrg,
+	provider,
+	repoSearch,
+}: {
+	activeCredentialId: string;
+	projectOwner: string;
+	projectOwnerIsOrg: boolean;
+	provider: IntegrationProvider;
+	repoSearch: string;
+}) => {
 	const { data: githubRepos } = useGitHubRepos(
 		provider === "github" ? activeCredentialId : "",
 		repoSearch || undefined,
@@ -428,388 +820,734 @@ function MappingsTab({
 		provider === "linear" ? activeCredentialId : "",
 	);
 
-	const handleCreateMapping = async ({
-		externalId,
-		externalType,
-		externalUrl,
-		externalKey,
-		mappingMetadata,
-	}: {
-		externalId: string;
-		externalType: string;
-		externalUrl?: string;
-		externalKey?: string;
-		mappingMetadata?: Record<string, unknown>;
-	}) => {
-		if (!activeCredentialId) {
-			alert("Select a credential before creating a mapping.");
-			return;
-		}
-		await createMapping.mutateAsync({
-			credentialId: activeCredentialId,
-			projectId,
-			localItemId: projectId,
-			localItemType: "project",
-			externalId,
-			externalType,
-			...(externalUrl ? { externalUrl } : {}),
-			...(externalKey ? { externalKey } : {}),
-			...(mappingMetadata ? { mappingMetadata } : {}),
-			direction: "bidirectional",
-			syncEnabled: true,
-		});
-	};
+	return { githubProjects, githubRepos, linearProjects };
+};
 
-	if (isLoading) {
-		return <div className="animate-pulse">Loading mappings...</div>;
+const useMappingCreator = ({
+	activeCredentialId,
+	projectId,
+	setErrorMessage,
+}: {
+	activeCredentialId: string;
+	projectId: string;
+	setErrorMessage: (value: string | null) => void;
+}) => {
+	const createMapping = useCreateMapping();
+
+	return useCallback(
+		async ({
+			externalId,
+			externalKey,
+			externalType,
+			externalUrl,
+			mappingMetadata,
+		}: MappingCreateArgs) => {
+			if (!activeCredentialId) {
+				const message = "Select a credential before creating a mapping.";
+				setErrorMessage(message);
+				logger.warn(message);
+				return;
+			}
+			setErrorMessage(null);
+			const payload: Record<string, unknown> = {
+				credentialId: activeCredentialId,
+				direction: "bidirectional",
+				externalId,
+				externalKey,
+				externalType,
+				localItemId: projectId,
+				localItemType: "project",
+				projectId,
+				syncEnabled: true,
+			};
+			if (externalUrl) {
+				payload.externalUrl = externalUrl;
+			}
+			if (mappingMetadata) {
+				payload.mappingMetadata = mappingMetadata;
+			}
+			await createMapping.mutateAsync(payload as any);
+		},
+		[activeCredentialId, createMapping, projectId, setErrorMessage],
+	);
+};
+
+const useMappingFormState = (projectId: string) => {
+	const triggerSync = useTriggerSync();
+	const [provider, setProvider] = useState<IntegrationProvider>("github");
+	const [credentialId, setCredentialId] = useState("");
+	const [repoSearch, setRepoSearch] = useState("");
+	const [projectOwner, setProjectOwner] = useState("");
+	const [projectOwnerIsOrg, setProjectOwnerIsOrg] = useState(false);
+	const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+	const { activeCredentialId, providerCredentials } = useProviderCredentials(
+		projectId,
+		provider,
+		credentialId,
+	);
+	const { githubProjects, githubRepos, linearProjects } = useMappingSourcesData(
+		{
+			activeCredentialId,
+			projectOwner,
+			projectOwnerIsOrg,
+			provider,
+			repoSearch,
+		},
+	);
+	const handleCreateMapping = useMappingCreator({
+		activeCredentialId,
+		projectId,
+		setErrorMessage,
+	});
+
+	return {
+		activeCredentialId,
+		credentials: providerCredentials,
+		errorMessage,
+		githubProjects,
+		githubRepos,
+		handleCreateMapping,
+		linearProjects,
+		projectOwner,
+		projectOwnerIsOrg,
+		provider,
+		repoSearch,
+		setCredentialId,
+		setProjectOwner,
+		setProjectOwnerIsOrg,
+		setProvider,
+		setRepoSearch,
+		triggerSync,
+	};
+};
+
+const MappingForm = ({ formState }: MappingFormProps): JSX.Element => (
+	<div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 space-y-4">
+		<MappingHeader />
+		<MappingControls formState={formState} />
+		<MappingError message={formState.errorMessage} />
+		<MappingSources formState={formState} />
+	</div>
+);
+
+const MappingError = ({ message }: { message: string | null }): JSX.Element | null =>
+	message ? <div className="text-sm text-red-600">{message}</div> : null;
+
+const MappingHeader = (): JSX.Element => (
+	<div>
+		<h2 className="text-lg font-semibold">Link external repo/project</h2>
+		<p className="text-sm text-gray-500">
+			Attach this project to an external repository or planning system to enable
+			sync.
+		</p>
+	</div>
+);
+
+const MappingControls = ({ formState }: MappingControlsProps): JSX.Element => {
+	const {
+		activeCredentialId,
+		credentials,
+		provider,
+		setCredentialId,
+		setProvider,
+	} = formState;
+
+	const handleProviderChange = useCallback(
+		(event: ChangeEvent<HTMLSelectElement>) => {
+			setProvider(event.target.value as IntegrationProvider);
+		},
+		[setProvider],
+	);
+
+	const handleCredentialChange = useCallback(
+		(event: ChangeEvent<HTMLSelectElement>) => {
+			setCredentialId(event.target.value);
+		},
+		[setCredentialId],
+	);
+
+	return (
+		<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+			<ProviderSelect
+				provider={provider}
+				onProviderChange={handleProviderChange}
+			/>
+			<CredentialSelect
+				activeCredentialId={activeCredentialId}
+				credentials={credentials}
+				provider={provider}
+				onCredentialChange={handleCredentialChange}
+			/>
+		</div>
+	);
+};
+
+const ProviderSelect = ({
+	provider,
+	onProviderChange,
+}: {
+	provider: IntegrationProvider;
+	onProviderChange: (event: ChangeEvent<HTMLSelectElement>) => void;
+}): JSX.Element => (
+	<div className="space-y-2">
+		<label
+			htmlFor={PROVIDER_SELECT_ID}
+			className="text-xs font-semibold text-gray-500"
+		>
+			Provider
+		</label>
+		<select
+			id={PROVIDER_SELECT_ID}
+			className="w-full border rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-900"
+			value={provider}
+			onChange={onProviderChange}
+		>
+			<option value="github">GitHub</option>
+			<option value="github_projects">GitHub Projects</option>
+			<option value="linear">Linear</option>
+		</select>
+	</div>
+);
+
+const CredentialSelect = ({
+	activeCredentialId,
+	credentials,
+	provider,
+	onCredentialChange,
+}: {
+	activeCredentialId: string;
+	credentials: IntegrationCredential[];
+	provider: IntegrationProvider;
+	onCredentialChange: (event: ChangeEvent<HTMLSelectElement>) => void;
+}): JSX.Element => (
+	<div className="space-y-2 md:col-span-2">
+		<label
+			htmlFor={CREDENTIAL_SELECT_ID}
+			className="text-xs font-semibold text-gray-500"
+		>
+			Credential
+		</label>
+		<select
+			id={CREDENTIAL_SELECT_ID}
+			className="w-full border rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-900"
+			value={activeCredentialId}
+			onChange={onCredentialChange}
+		>
+			{credentials.length === 0 && (
+				<option value="">No credentials for {provider}.</option>
+			)}
+			{credentials.map((cred) => (
+				<option key={cred.id} value={cred.id}>
+					{cred.providerUserId || cred.id.slice(0, ID_PREVIEW_LENGTH)}
+				</option>
+			))}
+		</select>
+	</div>
+);
+
+const MappingSources = ({ formState }: MappingSourcesProps): JSX.Element => {
+	const {
+		githubProjects,
+		githubRepos,
+		handleCreateMapping,
+		linearProjects,
+		projectOwner,
+		projectOwnerIsOrg,
+		provider,
+		repoSearch,
+		setProjectOwner,
+		setProjectOwnerIsOrg,
+		setRepoSearch,
+	} = formState;
+
+	if (provider === "github") {
+		return (
+			<GitHubRepoList
+				onCreateMapping={handleCreateMapping}
+				onRepoSearchChange={setRepoSearch}
+				repoSearch={repoSearch}
+				repos={githubRepos?.repos ?? []}
+			/>
+		);
+	}
+
+	if (provider === "github_projects") {
+		return (
+			<GitHubProjectList
+				projects={githubProjects?.projects ?? []}
+				projectOwner={projectOwner}
+				projectOwnerIsOrg={projectOwnerIsOrg}
+				onCreateMapping={handleCreateMapping}
+				onProjectOwnerChange={setProjectOwner}
+				onProjectOwnerOrgChange={setProjectOwnerIsOrg}
+			/>
+		);
 	}
 
 	return (
-		<div className="space-y-6">
-			<div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 space-y-4">
-				<div>
-					<h2 className="text-lg font-semibold">Link external repo/project</h2>
-					<p className="text-sm text-gray-500">
-						Attach this project to an external repository or planning system to
-						enable sync.
-					</p>
-				</div>
+		<LinearProjectList
+			projects={linearProjects?.projects ?? []}
+			onCreateMapping={handleCreateMapping}
+		/>
+	);
+};
 
-				<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-					<div className="space-y-2">
-						<label className="text-xs font-semibold text-gray-500">
-							Provider
-						</label>
-						<select
-							className="w-full border rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-900"
-							value={provider}
-							onChange={(e) =>
-								setProvider(e.target.value as IntegrationProvider)
-							}
-						>
-							<option value="github">GitHub</option>
-							<option value="github_projects">GitHub Projects</option>
-							<option value="linear">Linear</option>
-						</select>
-					</div>
-					<div className="space-y-2 md:col-span-2">
-						<label className="text-xs font-semibold text-gray-500">
-							Credential
-						</label>
-						<select
-							className="w-full border rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-900"
-							value={activeCredentialId}
-							onChange={(e) => setCredentialId(e.target.value)}
-						>
-							{providerCredentials.length === 0 && (
-								<option value="">
-									No credentials for {provider}. Connect in Settings.
-								</option>
-							)}
-							{providerCredentials.map((cred) => (
-								<option key={cred.id} value={cred.id}>
-									{cred.providerUserId || cred.id.slice(0, 8)}
-								</option>
-							))}
-						</select>
-					</div>
-				</div>
+const GitHubRepoList = ({
+	onCreateMapping,
+	onRepoSearchChange,
+	repoSearch,
+	repos,
+}: GitHubRepoListProps): JSX.Element => {
+	const handleSearchChange = useCallback(
+		(event: ChangeEvent<HTMLInputElement>) => {
+			onRepoSearchChange(event.target.value);
+		},
+		[onRepoSearchChange],
+	);
 
-				{provider === "github" && (
-					<div className="space-y-3">
-						<input
-							className="w-full border rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-900"
-							placeholder="Search repositories..."
-							value={repoSearch}
-							onChange={(e) => setRepoSearch(e.target.value)}
-						/>
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-							{(githubRepos?.repos || []).map((repo) => (
-								<div
-									key={repo.id}
-									className="p-3 border rounded-lg flex items-center justify-between gap-3"
-								>
-									<div>
-										<div className="font-medium text-sm">{repo.fullName}</div>
-										<div className="text-xs text-gray-500">
-											{repo.description || "No description"}
-										</div>
-									</div>
-									<button
-										type="button"
-										onClick={() =>
-											handleCreateMapping({
-												externalId: repo.fullName,
-												externalKey: repo.fullName,
-												externalType: "github_repo",
-												externalUrl: repo.htmlUrl,
-												mappingMetadata: {
-													external_kind: "repo",
-													repo_full_name: repo.fullName,
-												},
-											})
-										}
-										className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
-									>
-										Link
-									</button>
-								</div>
-							))}
-						</div>
-					</div>
-				)}
-
-				{provider === "github_projects" && (
-					<div className="space-y-3">
-						<div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-							<input
-								className="w-full border rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-900 md:col-span-2"
-								placeholder="Owner or org (e.g. vercel)"
-								value={projectOwner}
-								onChange={(e) => setProjectOwner(e.target.value)}
-							/>
-							<label className="flex items-center gap-2 text-xs text-gray-600">
-								<input
-									type="checkbox"
-									checked={projectOwnerIsOrg}
-									onChange={(e) => setProjectOwnerIsOrg(e.target.checked)}
-								/>
-								Org owner
-							</label>
-						</div>
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-							{(githubProjects?.projects || []).map((project) => (
-								<div
-									key={project.id}
-									className="p-3 border rounded-lg flex items-center justify-between gap-3"
-								>
-									<div>
-										<div className="font-medium text-sm">{project.title}</div>
-										<div className="text-xs text-gray-500">
-											{project.description || "No description"}
-										</div>
-									</div>
-									<button
-										type="button"
-										onClick={() =>
-											handleCreateMapping({
-												externalId: project.id,
-												externalKey: project.title,
-												externalType: "github_project",
-												externalUrl: project.url,
-												mappingMetadata: {
-													external_kind: "project",
-													project_id: project.id,
-													project_owner: projectOwner,
-													project_owner_is_org: projectOwnerIsOrg,
-												},
-											})
-										}
-										className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
-									>
-										Link
-									</button>
-								</div>
-							))}
-						</div>
-					</div>
-				)}
-
-				{provider === "linear" && (
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-						{(linearProjects?.projects || []).map((project) => (
-							<div
-								key={project.id}
-								className="p-3 border rounded-lg flex items-center justify-between gap-3"
-							>
-								<div>
-									<div className="font-medium text-sm">{project.name}</div>
-									<div className="text-xs text-gray-500">
-										{project.description || "No description"}
-									</div>
-								</div>
-								<button
-									type="button"
-									onClick={() =>
-										handleCreateMapping({
-											externalId: project.id,
-											externalKey: project.name,
-											externalType: "linear_project",
-											externalUrl: project.url,
-											mappingMetadata: {
-												external_kind: "project",
-												project_id: project.id,
-											},
-										})
-									}
-									className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
-								>
-									Link
-								</button>
-							</div>
-						))}
-					</div>
-				)}
+	return (
+		<div className="space-y-3">
+			<input
+				className="w-full border rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-900"
+				placeholder="Search repositories..."
+				value={repoSearch}
+				onChange={handleSearchChange}
+			/>
+			<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+				{repos.map((repo) => (
+					<RepoRow key={repo.id} repo={repo} onCreateMapping={onCreateMapping} />
+				))}
 			</div>
-
-			{mappings.length === 0 ? (
-				<div className="text-center py-12 text-gray-500">
-					No mappings configured. Link a repo or project to enable sync.
-				</div>
-			) : (
-				<div className="space-y-4">
-					{mappings.map((mapping) => (
-						<div
-							key={mapping.id}
-							className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4"
-						>
-							<div className="flex items-center justify-between">
-								<div>
-									<div className="flex items-center space-x-2">
-										<span className="font-medium">{mapping.localItemType}</span>
-										<span className="text-gray-400">
-											{mapping.direction === "bidirectional" ? "<->" : "->"}
-										</span>
-										<span className="font-medium capitalize">
-											{mapping.provider} {mapping.externalType}
-										</span>
-									</div>
-									<div className="text-sm text-gray-500 mt-1">
-										Local: {mapping.localItemId.slice(0, 8)}... | External:{" "}
-										{mapping.externalKey || mapping.externalId}
-									</div>
-									{mapping.externalUrl && (
-										<a
-											href={mapping.externalUrl}
-											target="_blank"
-											rel="noopener noreferrer"
-											className="text-sm text-blue-500 hover:underline"
-										>
-											View external
-										</a>
-									)}
-								</div>
-								<div className="flex items-center space-x-2">
-									<StatusBadge status={mapping.status} />
-									<button
-										type="button"
-										onClick={() =>
-											triggerSync.mutate({
-												direction: "pull",
-												mappingId: mapping.id,
-											})
-										}
-										disabled={triggerSync.isPending}
-										className="px-3 py-1 text-sm bg-green-100 text-green-700 rounded hover:bg-green-200"
-									>
-										Sync
-									</button>
-								</div>
-							</div>
-						</div>
-					))}
-				</div>
-			)}
 		</div>
 	);
-}
+};
 
-// ==================== Sync Tab ====================
+const RepoRow = ({ onCreateMapping, repo }: RepoRowProps): JSX.Element => {
+	const handleLink = useCallback(() => {
+		onCreateMapping({
+			externalId: repo.fullName,
+			externalKey: repo.fullName,
+			externalType: "github_repo",
+			externalUrl: repo.htmlUrl,
+			mappingMetadata: {
+				external_kind: "repo",
+				repo_full_name: repo.fullName,
+			},
+		});
+	}, [onCreateMapping, repo.fullName, repo.htmlUrl]);
 
-function SyncTab({
+	return (
+		<div className="p-3 border rounded-lg flex items-center justify-between gap-3">
+			<div>
+				<div className="font-medium text-sm">{repo.fullName}</div>
+				<div className="text-xs text-gray-500">
+					{repo.description || "No description"}
+				</div>
+			</div>
+			<button
+				type="button"
+				onClick={handleLink}
+				className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+			>
+				Link
+			</button>
+		</div>
+	);
+};
+
+const GitHubProjectList = ({
+	onCreateMapping,
+	onProjectOwnerChange,
+	onProjectOwnerOrgChange,
+	projectOwner,
+	projectOwnerIsOrg,
+	projects,
+}: GitHubProjectListProps): JSX.Element => {
+	const handleOwnerChange = useCallback(
+		(event: ChangeEvent<HTMLInputElement>) => {
+			onProjectOwnerChange(event.target.value);
+		},
+		[onProjectOwnerChange],
+	);
+
+	const handleOrgToggle = useCallback(
+		(event: ChangeEvent<HTMLInputElement>) => {
+			onProjectOwnerOrgChange(event.target.checked);
+		},
+		[onProjectOwnerOrgChange],
+	);
+
+	return (
+		<div className="space-y-3">
+			<GitHubOwnerControls
+				projectOwner={projectOwner}
+				projectOwnerIsOrg={projectOwnerIsOrg}
+				onOwnerChange={handleOwnerChange}
+				onOrgToggle={handleOrgToggle}
+			/>
+			<GitHubProjectGrid
+				projects={projects}
+				onCreateMapping={onCreateMapping}
+				projectOwner={projectOwner}
+				projectOwnerIsOrg={projectOwnerIsOrg}
+			/>
+		</div>
+	);
+};
+
+const GitHubOwnerControls = ({
+	projectOwner,
+	projectOwnerIsOrg,
+	onOwnerChange,
+	onOrgToggle,
+}: {
+	projectOwner: string;
+	projectOwnerIsOrg: boolean;
+	onOwnerChange: (event: ChangeEvent<HTMLInputElement>) => void;
+	onOrgToggle: (event: ChangeEvent<HTMLInputElement>) => void;
+}): JSX.Element => (
+	<div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+		<input
+			className="w-full border rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-900 md:col-span-2"
+			placeholder="Owner or org (e.g. vercel)"
+			value={projectOwner}
+			onChange={onOwnerChange}
+		/>
+		<label className="flex items-center gap-2 text-xs text-gray-600">
+			<input type="checkbox" checked={projectOwnerIsOrg} onChange={onOrgToggle} />
+			Org owner
+		</label>
+	</div>
+);
+
+const GitHubProjectGrid = ({
+	onCreateMapping,
+	projectOwner,
+	projectOwnerIsOrg,
+	projects,
+}: {
+	onCreateMapping: (args: MappingCreateArgs) => Promise<void>;
+	projectOwner: string;
+	projectOwnerIsOrg: boolean;
+	projects: Array<{
+		id: string;
+		title: string;
+		description?: string;
+		url?: string;
+	}>;
+}): JSX.Element => (
+	<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+		{projects.map((project) => (
+			<GitHubProjectRow
+				key={project.id}
+				project={project}
+				onCreateMapping={onCreateMapping}
+				projectOwner={projectOwner}
+				projectOwnerIsOrg={projectOwnerIsOrg}
+			/>
+		))}
+	</div>
+);
+
+const GitHubProjectRow = ({
+	onCreateMapping,
+	project,
+	projectOwner,
+	projectOwnerIsOrg,
+}: GitHubProjectRowProps): JSX.Element => {
+	const handleLink = useCallback(() => {
+		onCreateMapping({
+			externalId: project.id,
+			externalKey: project.title,
+			externalType: "github_project",
+			externalUrl: project.url,
+			mappingMetadata: {
+				external_kind: "project",
+				project_id: project.id,
+				project_owner: projectOwner,
+				project_owner_is_org: projectOwnerIsOrg,
+			},
+		});
+	}, [onCreateMapping, project, projectOwner, projectOwnerIsOrg]);
+
+	return (
+		<div className="p-3 border rounded-lg flex items-center justify-between gap-3">
+			<div>
+				<div className="font-medium text-sm">{project.title}</div>
+				<div className="text-xs text-gray-500">
+					{project.description || "No description"}
+				</div>
+			</div>
+			<button
+				type="button"
+				onClick={handleLink}
+				className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+			>
+				Link
+			</button>
+		</div>
+	);
+};
+
+const LinearProjectList = ({
+	onCreateMapping,
+	projects,
+}: {
+	onCreateMapping: (args: {
+		externalId: string;
+		externalKey?: string;
+		externalType: string;
+		externalUrl?: string;
+		mappingMetadata?: Record<string, unknown>;
+	}) => Promise<void>;
+	projects: Array<{
+		id: string;
+		name: string;
+		description?: string;
+		url?: string;
+	}>;
+}): JSX.Element => (
+	<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+		{projects.map((project) => (
+			<LinearProjectRow
+				key={project.id}
+				project={project}
+				onCreateMapping={onCreateMapping}
+			/>
+		))}
+	</div>
+);
+
+const LinearProjectRow = ({
+	onCreateMapping,
+	project,
+}: {
+	onCreateMapping: (args: {
+		externalId: string;
+		externalKey?: string;
+		externalType: string;
+		externalUrl?: string;
+		mappingMetadata?: Record<string, unknown>;
+	}) => Promise<void>;
+	project: {
+		id: string;
+		name: string;
+		description?: string;
+		url?: string;
+	};
+}): JSX.Element => {
+	const handleLink = useCallback(() => {
+		onCreateMapping({
+			externalId: project.id,
+			externalKey: project.name,
+			externalType: "linear_project",
+			externalUrl: project.url,
+			mappingMetadata: {
+				external_kind: "project",
+				project_id: project.id,
+			},
+		});
+	}, [onCreateMapping, project]);
+
+	return (
+		<div className="p-3 border rounded-lg flex items-center justify-between gap-3">
+			<div>
+				<div className="font-medium text-sm">{project.name}</div>
+				<div className="text-xs text-gray-500">
+					{project.description || "No description"}
+				</div>
+			</div>
+			<button
+				type="button"
+				onClick={handleLink}
+				className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+			>
+				Link
+			</button>
+		</div>
+	);
+};
+
+const MappingList = ({ mappings }: { mappings: IntegrationMapping[] }): JSX.Element => {
+	if (mappings.length === 0) {
+		return (
+			<div className="text-center py-12 text-gray-500">
+				No mappings configured. Link a repo or project to enable sync.
+			</div>
+		);
+	}
+
+	return (
+		<div className="space-y-4">
+			{mappings.map((mapping) => (
+				<MappingRow key={mapping.id} mapping={mapping} />
+			))}
+		</div>
+	);
+};
+
+const MappingRow = ({ mapping }: { mapping: IntegrationMapping }): JSX.Element => {
+	const triggerSync = useTriggerSync();
+	const handleSync = useCallback(() => {
+		triggerSync.mutate({ direction: "pull", mappingId: mapping.id });
+	}, [mapping.id, triggerSync]);
+
+	return (
+		<div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+			<div className="flex items-center justify-between">
+				<div>
+					<div className="flex items-center space-x-2">
+						<span className="font-medium">{mapping.localItemType}</span>
+						<span className="text-gray-400">
+							{mapping.direction === "bidirectional" ? "<->" : "->"}
+						</span>
+						<span className="font-medium capitalize">
+							{mapping.provider} {mapping.externalType}
+						</span>
+					</div>
+					<div className="text-sm text-gray-500 mt-1">
+						Local: {mapping.localItemId.slice(0, ID_PREVIEW_LENGTH)}... | External:{" "}
+						{mapping.externalKey || mapping.externalId}
+					</div>
+					{mapping.externalUrl && (
+						<a
+							href={mapping.externalUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="text-sm text-blue-500 hover:underline"
+						>
+							View external
+						</a>
+					)}
+				</div>
+				<div className="flex items-center space-x-2">
+					<StatusBadge status={mapping.status} />
+					<button
+						type="button"
+						onClick={handleSync}
+						disabled={triggerSync.isPending}
+						className="px-3 py-1 text-sm bg-green-100 text-green-700 rounded hover:bg-green-200"
+					>
+						Sync
+					</button>
+				</div>
+			</div>
+		</div>
+	);
+};
+
+const SyncTab = ({
 	syncStatus,
 	isLoading,
-	projectId: _projectId,
 }: {
 	syncStatus: any;
 	isLoading: boolean;
-	projectId: string;
-}) {
+}): JSX.Element => {
 	if (isLoading) {
 		return <div className="animate-pulse">Loading sync status...</div>;
 	}
 
 	return (
 		<div className="space-y-6">
-			{/* Queue Status */}
-			<div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-				<h2 className="text-lg font-semibold mb-4">Sync Queue</h2>
-				<div className="grid grid-cols-4 gap-4">
-					<div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded">
-						<div className="text-2xl font-bold text-yellow-600">
-							{syncStatus?.queue?.pending || 0}
-						</div>
-						<div className="text-sm text-gray-500">Pending</div>
-					</div>
-					<div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded">
-						<div className="text-2xl font-bold text-blue-600">
-							{syncStatus?.queue?.processing || 0}
-						</div>
-						<div className="text-sm text-gray-500">Processing</div>
-					</div>
-					<div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded">
-						<div className="text-2xl font-bold text-green-600">
-							{syncStatus?.queue?.completed || 0}
-						</div>
-						<div className="text-sm text-gray-500">Completed</div>
-					</div>
-					<div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded">
-						<div className="text-2xl font-bold text-red-600">
-							{syncStatus?.queue?.failed || 0}
-						</div>
-						<div className="text-sm text-gray-500">Failed</div>
-					</div>
-				</div>
-			</div>
-
-			{/* Recent Syncs */}
-			<div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-				<h2 className="text-lg font-semibold mb-4">Recent Syncs</h2>
-				{syncStatus?.recentSyncs?.length > 0 ? (
-					<div className="space-y-2">
-						{syncStatus.recentSyncs.map((sync: any) => (
-							<div
-								key={sync.id}
-								className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded"
-							>
-								<div>
-									<div className="font-medium">
-										{sync.provider} - {sync.eventType}
-									</div>
-									<div className="text-sm text-gray-500">
-										{sync.itemsProcessed} items processed
-										{sync.itemsFailed > 0 && `, ${sync.itemsFailed} failed`}
-									</div>
-								</div>
-								<div className="text-right">
-									<StatusBadge status={sync.status} />
-									<div className="text-xs text-gray-400 mt-1">
-										{sync.startedAt &&
-											new Date(sync.startedAt).toLocaleString()}
-									</div>
-								</div>
-							</div>
-						))}
-					</div>
-				) : (
-					<div className="text-gray-500 text-center py-4">No recent syncs</div>
-				)}
-			</div>
+			<SyncQueueStats queue={syncStatus?.queue} />
+			<RecentSyncsList recentSyncs={syncStatus?.recentSyncs ?? []} />
 		</div>
 	);
-}
+};
 
-// ==================== Conflicts Tab ====================
+const SyncQueueStats = ({ queue }: { queue: any }): JSX.Element => (
+	<div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+		<h2 className="text-lg font-semibold mb-4">Sync Queue</h2>
+		<div className="grid grid-cols-4 gap-4">
+			<QueueStat label="Pending" value={queue?.pending ?? 0} tone="yellow" />
+			<QueueStat label="Processing" value={queue?.processing ?? 0} tone="blue" />
+			<QueueStat label="Completed" value={queue?.completed ?? 0} tone="green" />
+			<QueueStat label="Failed" value={queue?.failed ?? 0} tone="red" />
+		</div>
+	</div>
+);
 
-function ConflictsTab({
+const QueueStat = ({
+	label,
+	value,
+	tone,
+}: {
+	label: string;
+	value: number;
+	tone: "yellow" | "blue" | "green" | "red";
+}): JSX.Element => (
+	<div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded">
+		<div className={`text-2xl font-bold text-${tone}-600`}>{value}</div>
+		<div className="text-sm text-gray-500">{label}</div>
+	</div>
+);
+
+const RecentSyncsList = ({
+	recentSyncs,
+}: {
+	recentSyncs: Array<{
+		id: string;
+		provider: string;
+		eventType: string;
+		itemsProcessed: number;
+		itemsFailed: number;
+		startedAt?: string;
+		status: string;
+	}>;
+}): JSX.Element => (
+	<div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+		<h2 className="text-lg font-semibold mb-4">Recent Syncs</h2>
+		{recentSyncs.length > 0 ? (
+			<div className="space-y-2">
+				{recentSyncs.map((sync) => (
+					<RecentSyncRow key={sync.id} sync={sync} />
+				))}
+			</div>
+		) : (
+			<div className="text-gray-500 text-center py-4">No recent syncs</div>
+		)}
+	</div>
+);
+
+const RecentSyncRow = ({
+	sync,
+}: {
+	sync: {
+		provider: string;
+		eventType: string;
+		itemsProcessed: number;
+		itemsFailed: number;
+		startedAt?: string;
+		status: string;
+	};
+}): JSX.Element => (
+	<div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded">
+		<div>
+			<div className="font-medium">
+				{sync.provider} - {sync.eventType}
+			</div>
+			<div className="text-sm text-gray-500">
+				{sync.itemsProcessed} items processed
+				{sync.itemsFailed > 0 && `, ${sync.itemsFailed} failed`}
+			</div>
+		</div>
+		<div className="text-right">
+			<StatusBadge status={sync.status} />
+			<div className="text-xs text-gray-400 mt-1">
+				{sync.startedAt && new Date(sync.startedAt).toLocaleString()}
+			</div>
+		</div>
+	</div>
+);
+
+const ConflictsTab = ({
 	conflicts,
 	isLoading,
 }: {
 	conflicts: SyncConflict[];
 	isLoading: boolean;
-}) {
-	const resolveConflict = useResolveConflict();
-
+}): JSX.Element => {
 	if (isLoading) {
 		return <div className="animate-pulse">Loading conflicts...</div>;
 	}
@@ -825,104 +1563,127 @@ function ConflictsTab({
 	return (
 		<div className="space-y-4">
 			{conflicts.map((conflict) => (
-				<div
-					key={conflict.id}
-					className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4"
-				>
-					<div className="flex items-center justify-between mb-4">
-						<div>
-							<div className="font-medium">
-								{conflict.conflictType} conflict
-								{conflict.fieldName && ` - ${conflict.fieldName}`}
-							</div>
-							<div className="text-sm text-gray-500">
-								Provider: {conflict.provider}
-							</div>
-						</div>
-						<StatusBadge status={conflict.status} />
-					</div>
-
-					<div className="grid grid-cols-2 gap-4 mb-4">
-						<div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded">
-							<div className="text-sm font-medium text-blue-700 dark:text-blue-300">
-								Local Value
-							</div>
-							<div className="text-sm mt-1 font-mono">
-								{JSON.stringify(conflict.localValue, null, 2)}
-							</div>
-							{conflict.localModifiedAt && (
-								<div className="text-xs text-gray-500 mt-2">
-									Modified:{" "}
-									{new Date(conflict.localModifiedAt).toLocaleString()}
-								</div>
-							)}
-						</div>
-						<div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded">
-							<div className="text-sm font-medium text-purple-700 dark:text-purple-300">
-								External Value
-							</div>
-							<div className="text-sm mt-1 font-mono">
-								{JSON.stringify(conflict.externalValue, null, 2)}
-							</div>
-							{conflict.externalModifiedAt && (
-								<div className="text-xs text-gray-500 mt-2">
-									Modified:{" "}
-									{new Date(conflict.externalModifiedAt).toLocaleString()}
-								</div>
-							)}
-						</div>
-					</div>
-
-					<div className="flex space-x-2">
-						<button
-							type="button"
-							onClick={() =>
-								resolveConflict.mutate({
-									conflictId: conflict.id,
-									resolution: "local",
-								})
-							}
-							disabled={resolveConflict.isPending}
-							className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
-						>
-							Use Local
-						</button>
-						<button
-							type="button"
-							onClick={() =>
-								resolveConflict.mutate({
-									conflictId: conflict.id,
-									resolution: "external",
-								})
-							}
-							disabled={resolveConflict.isPending}
-							className="px-3 py-1 text-sm bg-purple-100 text-purple-700 rounded hover:bg-purple-200"
-						>
-							Use External
-						</button>
-						<button
-							type="button"
-							onClick={() =>
-								resolveConflict.mutate({
-									conflictId: conflict.id,
-									resolution: "skip",
-								})
-							}
-							disabled={resolveConflict.isPending}
-							className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
-						>
-							Skip
-						</button>
-					</div>
-				</div>
+				<ConflictRow key={conflict.id} conflict={conflict} />
 			))}
 		</div>
 	);
-}
+};
 
-// ==================== Helper Components ====================
+const ConflictRow = ({ conflict }: { conflict: SyncConflict }): JSX.Element => {
+	const resolveConflict = useResolveConflict();
+	const handleResolve = useCallback(
+		(resolution: "local" | "external" | "skip") => {
+			resolveConflict.mutate({ conflictId: conflict.id, resolution });
+		},
+		[conflict.id, resolveConflict],
+	);
 
-function StatCard({
+	return (
+		<div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+			<ConflictHeader conflict={conflict} />
+			<ConflictValues conflict={conflict} />
+			<ConflictActions
+				onResolve={handleResolve}
+				isPending={resolveConflict.isPending}
+			/>
+		</div>
+	);
+};
+
+const ConflictHeader = ({ conflict }: { conflict: SyncConflict }): JSX.Element => (
+	<div className="flex items-center justify-between mb-4">
+		<div>
+			<div className="font-medium">
+				{conflict.conflictType} conflict
+				{conflict.fieldName && ` - ${conflict.fieldName}`}
+			</div>
+			<div className="text-sm text-gray-500">Provider: {conflict.provider}</div>
+		</div>
+		<StatusBadge status={conflict.status} />
+	</div>
+);
+
+const ConflictValues = ({ conflict }: { conflict: SyncConflict }): JSX.Element => (
+	<div className="grid grid-cols-2 gap-4 mb-4">
+		<div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded">
+			<div className="text-sm font-medium text-blue-700 dark:text-blue-300">
+				Local Value
+			</div>
+			<div className="text-sm mt-1 font-mono">
+				{JSON.stringify(conflict.localValue, null, 2)}
+			</div>
+			{conflict.localModifiedAt && (
+				<div className="text-xs text-gray-500 mt-2">
+					Modified: {new Date(conflict.localModifiedAt).toLocaleString()}
+				</div>
+			)}
+		</div>
+		<div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded">
+			<div className="text-sm font-medium text-purple-700 dark:text-purple-300">
+				External Value
+			</div>
+			<div className="text-sm mt-1 font-mono">
+				{JSON.stringify(conflict.externalValue, null, 2)}
+			</div>
+			{conflict.externalModifiedAt && (
+				<div className="text-xs text-gray-500 mt-2">
+					Modified: {new Date(conflict.externalModifiedAt).toLocaleString()}
+				</div>
+			)}
+		</div>
+	</div>
+);
+
+const ConflictActions = ({
+	isPending,
+	onResolve,
+}: {
+	isPending: boolean;
+	onResolve: (resolution: "local" | "external" | "skip") => void;
+}): JSX.Element => {
+	const handleLocal = useCallback(() => {
+		onResolve("local");
+	}, [onResolve]);
+
+	const handleExternal = useCallback(() => {
+		onResolve("external");
+	}, [onResolve]);
+
+	const handleSkip = useCallback(() => {
+		onResolve("skip");
+	}, [onResolve]);
+
+	return (
+		<div className="flex space-x-2">
+			<button
+				type="button"
+				onClick={handleLocal}
+				disabled={isPending}
+				className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+			>
+				Use Local
+			</button>
+			<button
+				type="button"
+				onClick={handleExternal}
+				disabled={isPending}
+				className="px-3 py-1 text-sm bg-purple-100 text-purple-700 rounded hover:bg-purple-200"
+			>
+				Use External
+			</button>
+			<button
+				type="button"
+				onClick={handleSkip}
+				disabled={isPending}
+				className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
+			>
+				Skip
+			</button>
+		</div>
+	);
+};
+
+const StatCard = ({
 	title,
 	value,
 	subtitle,
@@ -932,43 +1693,47 @@ function StatCard({
 	value: string | number;
 	subtitle: string;
 	warning?: boolean;
-}) {
-	return (
+}): JSX.Element => (
+	<div
+		className={`bg-white dark:bg-gray-800 rounded-lg border p-4 ${
+			warning
+				? "border-red-300 dark:border-red-700"
+				: "border-gray-200 dark:border-gray-700"
+		}`}
+	>
+		<div className="text-sm text-gray-500">{title}</div>
 		<div
-			className={`bg-white dark:bg-gray-800 rounded-lg border p-4 ${
-				warning
-					? "border-red-300 dark:border-red-700"
-					: "border-gray-200 dark:border-gray-700"
+			className={`text-2xl font-bold ${
+				warning ? "text-red-600" : "text-gray-900 dark:text-white"
 			}`}
 		>
-			<div className="text-sm text-gray-500">{title}</div>
-			<div
-				className={`text-2xl font-bold ${warning ? "text-red-600" : "text-gray-900 dark:text-white"}`}
-			>
-				{value}
-			</div>
-			<div className="text-xs text-gray-400">{subtitle}</div>
+			{value}
 		</div>
-	);
-}
+		<div className="text-xs text-gray-400">{subtitle}</div>
+	</div>
+);
 
-function ProviderCard({
-	name,
-	description,
-	icon,
+const ProviderCard = ({
 	connected,
+	description,
+	name,
 	onConnect,
+	providerId,
 }: {
-	name: string;
-	description: string;
-	icon: string;
 	connected: boolean;
-	onConnect: () => void;
-}) {
+	description: string;
+	name: string;
+	onConnect: (provider: IntegrationProvider) => void;
+	providerId: IntegrationProvider;
+}): JSX.Element => {
+	const handleConnect = useCallback(() => {
+		onConnect(providerId);
+	}, [onConnect, providerId]);
+
 	return (
 		<div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
 			<div className="flex items-center space-x-3 mb-2">
-				<ProviderIcon provider={icon as IntegrationProvider} />
+				<ProviderIcon provider={providerId} />
 				<div className="font-medium">{name}</div>
 			</div>
 			<p className="text-sm text-gray-500 mb-4">{description}</p>
@@ -979,7 +1744,7 @@ function ProviderCard({
 			) : (
 				<button
 					type="button"
-					onClick={onConnect}
+					onClick={handleConnect}
 					className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
 				>
 					Connect
@@ -987,13 +1752,13 @@ function ProviderCard({
 			)}
 		</div>
 	);
-}
+};
 
-function ProviderIcon({
+const ProviderIcon = ({
 	provider,
 }: {
 	provider: IntegrationProvider | string;
-}) {
+}): JSX.Element => {
 	const className = "w-8 h-8";
 
 	if (provider === "github" || provider === "github_projects") {
@@ -1019,9 +1784,9 @@ function ProviderIcon({
 			?
 		</div>
 	);
-}
+};
 
-function StatusBadge({ status }: { status: string }) {
+const StatusBadge = ({ status }: { status: string }): JSX.Element => {
 	const colors: Record<string, string> = {
 		active:
 			"bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
@@ -1045,4 +1810,6 @@ function StatusBadge({ status }: { status: string }) {
 			{status}
 		</span>
 	);
-}
+};
+
+export { IntegrationsView };

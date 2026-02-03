@@ -138,7 +138,7 @@ async def authenticate_websocket(websocket: WebSocket, verify_token_func) -> dic
         except WebSocketDisconnect as e:
             # Normal closure (1000/1001) = client closed tab or navigated away
             code = getattr(e, "code", None)
-            if code in (1000, 1001):
+            if code in {1000, 1001}:
                 logger.info("WebSocket client disconnected before auth from %s (code=%s)", websocket.client, code)
             else:
                 logger.warning("WebSocket disconnected before auth from %s: %s", websocket.client, e)

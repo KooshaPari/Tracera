@@ -90,14 +90,14 @@ describe("Content Security Policy Tests", () => {
 				"https://app.tracertm.com",
 			];
 
-			const isAllowedScriptSource = (url: string): boolean => {
-				try {
-					const _urlObj = new URL(url);
-					return allowedScriptDomains.some((domain) => url.startsWith(domain));
-				} catch {
-					return false;
-				}
-			};
+				const isAllowedScriptSource = (url: string): boolean => {
+					try {
+						new URL(url);
+						return allowedScriptDomains.some((domain) => url.startsWith(domain));
+					} catch {
+						return false;
+					}
+				};
 
 			expect(isAllowedScriptSource("https://cdn.tracertm.com/script.js")).toBe(
 				true,
@@ -235,8 +235,8 @@ describe("Content Security Policy Tests", () => {
 			expect(productionCSP["script-src"]).not.toContain("'unsafe-inline'");
 		});
 
-		it("should allow development tools in dev mode", () => {
-			const isDev = process.env.NODE_ENV === "development";
+			it("should allow development tools in dev mode", () => {
+				const isDev = process.env["NODE_ENV"] === "development";
 
 			if (isDev) {
 				// Dev might need unsafe-eval for hot reload
@@ -377,11 +377,16 @@ describe("CSP Violation Handling", () => {
 		});
 	});
 
-	async function reportCSPViolation(violation: SecurityPolicyViolationEvent) {
-		await fetch("/api/security/csp-report", {
-			body: JSON.stringify(violation),
-			headers: { "Content-Type": "application/json" },
-			method: "POST",
+		type CSPViolationReport = {
+			blockedURI: string;
+			directive: string;
+		};
+
+		async function reportCSPViolation(violation: CSPViolationReport) {
+			await fetch("/api/security/csp-report", {
+				body: JSON.stringify(violation),
+				headers: { "Content-Type": "application/json" },
+				method: "POST",
 		});
 	}
 

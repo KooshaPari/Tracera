@@ -527,9 +527,7 @@ function FlowGraphViewInnerComponent({
 		const visibleEdgeIds = new Set(
 			visible.edges.map((ve: SpatialEdge) => ve.id),
 		);
-		const culledEdges = visibleLinks.filter((e: Edge) =>
-			visibleEdgeIds.has(e.id),
-		);
+		const culledEdges = visibleLinks.filter((e) => visibleEdgeIds.has(e.id));
 
 		return {
 			nodesToRender: culledNodes,
@@ -890,7 +888,7 @@ function FlowGraphViewInnerComponent({
 			};
 		}, [getCacheStats]),
 		edges: links,
-		enabled: process.env.NODE_ENV === "development",
+		enabled: process.env["NODE_ENV"] === "development",
 		lodDistribution: useMemo(() => {
 			const dist = { high: 0, low: 0, medium: 0, skeleton: 0 };
 			const zoom = getViewport?.()?.zoom ?? 1;
@@ -906,9 +904,9 @@ function FlowGraphViewInnerComponent({
 
 			return dist;
 		}, [visibleNodes, getViewport]),
-		logToConsole: process.env.NODE_ENV === "development",
+		logToConsole: process.env["NODE_ENV"] === "development",
 		nodes: items,
-		persistToStorage: process.env.NODE_ENV === "development",
+		persistToStorage: process.env["NODE_ENV"] === "development",
 		reportInterval: 5000,
 		visibleEdges: edgesForRendering,
 		visibleNodes,
@@ -1069,7 +1067,7 @@ function FlowGraphViewInnerComponent({
 								</Panel>
 
 								{/* Performance Monitor Panel (dev mode only) */}
-								{process.env.NODE_ENV === "development" &&
+								{process.env["NODE_ENV"] === "development" &&
 									performanceMonitor.currentMetrics && (
 										<Panel position="top-right" className="!m-1 sm:!m-2">
 											<div className="text-[9px] sm:text-[10px] bg-card/90 backdrop-blur-sm p-1.5 sm:p-2 rounded-md sm:rounded-lg border space-y-0.5 font-mono">

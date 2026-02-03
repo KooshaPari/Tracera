@@ -149,6 +149,8 @@ export const mockLinks: Link[] = [
 		sourceId: "item-1",
 		targetId: "item-2",
 		type: "implements",
+		updatedAt: lastWeek,
+		version: 1,
 	},
 	{
 		createdAt: yesterday,
@@ -157,6 +159,8 @@ export const mockLinks: Link[] = [
 		sourceId: "item-2",
 		targetId: "item-3",
 		type: "tests",
+		updatedAt: yesterday,
+		version: 1,
 	},
 	{
 		createdAt: yesterday,
@@ -165,6 +169,8 @@ export const mockLinks: Link[] = [
 		sourceId: "item-1",
 		targetId: "item-4",
 		type: "depends_on",
+		updatedAt: yesterday,
+		version: 1,
 	},
 	{
 		createdAt: lastWeek,
@@ -173,6 +179,8 @@ export const mockLinks: Link[] = [
 		sourceId: "item-4",
 		targetId: "item-5",
 		type: "depends_on",
+		updatedAt: lastWeek,
+		version: 1,
 	},
 ];
 

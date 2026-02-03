@@ -22,7 +22,7 @@ declare global {
 	}
 }
 
-interface WebSocketState {
+export interface WebSocketState {
 	// Connection state
 	activeChannels: Set<string>;
 	events: RealtimeEvent[];

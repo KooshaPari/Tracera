@@ -43,19 +43,18 @@ async def item_manage(
     return await _item_manage_impl(action, payload, ctx)
 
 
-async def _item_manage_impl(
+async def _item_manage_impl(  # noqa: C901
     action: str,
     payload: dict[str, Any] | None,
     ctx: Any | None,
 ) -> dict[str, Any]:
-    """Implementation of item management."""
+    """Implementation of item management via action dispatch."""
     payload = payload or {}
     action = action.lower()
-
     await _maybe_select_project(payload, ctx)
 
-    if action == "create":
-        result = await _call_tool(
+    async def _create() -> Any:
+        return await _call_tool(
             item_tools, "create_item",
             title=payload.get("title"),
             view=payload.get("view"),
@@ -68,16 +67,16 @@ async def _item_manage_impl(
             metadata=payload.get("metadata"),
             ctx=ctx,
         )
-        return _wrap(result, ctx, action)
-    if action == "get":
-        result = await _call_tool(
+
+    async def _get() -> Any:
+        return await _call_tool(
             item_tools, "get_item",
             item_id=payload.get("item_id"),
             ctx=ctx,
         )
-        return _wrap(result, ctx, action)
-    if action == "update":
-        result = await _call_tool(
+
+    async def _update() -> Any:
+        return await _call_tool(
             item_tools, "update_item",
             item_id=payload.get("item_id"),
             title=payload.get("title"),
@@ -88,16 +87,16 @@ async def _item_manage_impl(
             metadata=payload.get("metadata"),
             ctx=ctx,
         )
-        return _wrap(result, ctx, action)
-    if action == "delete":
-        result = await _call_tool(
+
+    async def _delete() -> Any:
+        return await _call_tool(
             item_tools, "delete_item",
             item_id=payload.get("item_id"),
             ctx=ctx,
         )
-        return _wrap(result, ctx, action)
-    if action == "query":
-        result = await _call_tool(
+
+    async def _query() -> Any:
+        return await _call_tool(
             item_tools, "query_items",
             view=payload.get("view"),
             item_type=payload.get("item_type"),
@@ -106,22 +105,33 @@ async def _item_manage_impl(
             limit=payload.get("limit", 50),
             ctx=ctx,
         )
-        return _wrap(result, ctx, action)
-    if action == "summarize_view":
-        result = await _call_tool(
+
+    async def _summarize_view() -> Any:
+        return await _call_tool(
             item_tools, "summarize_view",
             view=payload.get("view"),
             ctx=ctx,
         )
-        return _wrap(result, ctx, action)
-    if action == "bulk_update":
-        result = await _call_tool(
+
+    async def _bulk_update() -> Any:
+        return await _call_tool(
             item_tools, "bulk_update_items",
             view=payload.get("view"),
             status=payload.get("status"),
             new_status=payload.get("new_status"),
             ctx=ctx,
         )
-        return _wrap(result, ctx, action)
 
-    raise ToolError(f"Unknown item action: {action}")
+    handlers: dict[str, Any] = {
+        "create": _create,
+        "get": _get,
+        "update": _update,
+        "delete": _delete,
+        "query": _query,
+        "summarize_view": _summarize_view,
+        "bulk_update": _bulk_update,
+    }
+    if action not in handlers:
+        raise ToolError(f"Unknown item action: {action}")
+    result = await handlers[action]()
+    return _wrap(result, ctx, action)

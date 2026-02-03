@@ -5,7 +5,7 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { MCPClient } from "../../api/mcp-client";
-import { useMCP, useTool, useTools } from "../../hooks/useMCP";
+import { useMCP, useTool, useTools } from "../../hooks/useMcp";
 
 // Mock MCP client
 vi.mock("../../api/mcp-client", () => ({
@@ -32,7 +32,7 @@ vi.mock("../../api/mcp-client", () => ({
 	})),
 }));
 
-describe(useMCP, () => {
+describe("useMCP", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
@@ -119,7 +119,7 @@ describe(useMCP, () => {
 	});
 });
 
-describe(useTool, () => {
+describe("useTool", () => {
 	let mockClient: Partial<MCPClient>;
 
 	beforeEach(() => {
@@ -187,7 +187,7 @@ describe(useTool, () => {
 	});
 });
 
-describe(useTools, () => {
+describe("useTools", () => {
 	let mockClient: Partial<MCPClient>;
 
 	beforeEach(() => {
@@ -211,8 +211,8 @@ describe(useTools, () => {
 		});
 
 		expect(result.current.tools).toHaveLength(2);
-		expect(result.current.tools[0].name).toBe("tool1");
-		expect(result.current.tools[1].name).toBe("tool2");
+		expect(result.current.tools[0]?.name).toBe("tool1");
+		expect(result.current.tools[1]?.name).toBe("tool2");
 		expect(result.current.error).toBeNull();
 	});
 

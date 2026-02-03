@@ -5,45 +5,52 @@
  */
 /* eslint-disable no-unused-expressions -- intentional property access for @ts-expect-error tests */
 
-import type { components, paths } from "../../api/schema";
 import { logger } from "@/lib/logger";
 import { describe, expect, it } from "vitest";
 
-const pathsRecord = (p: typeof paths) => p as unknown as Record<string, unknown>;
-const schemasRecord = (c: typeof components) =>
-	(c.schemas ?? {}) as Record<string, unknown>;
+// Runtime schema for path/schema existence checks (types are in api/schema)
+import openApiSpec from "../../../public/specs/openapi.json";
+
+type OpenApiSpec = {
+	paths?: Record<string, unknown>;
+	components?: { schemas?: Record<string, unknown> };
+};
+const spec = openApiSpec as OpenApiSpec;
+const pathsRecord = (): Record<string, unknown> => spec.paths ?? {};
+const schemasRecord = (): Record<string, unknown> =>
+	(spec.components?.schemas as Record<string, unknown>) ?? {};
 
 describe("API Type Safety", () => {
 	describe("Path Definitions", () => {
 		it("should have auth login endpoint", () => {
 			const key = "/api/v1/auth/login";
-			expect(pathsRecord(paths)[key]).toBeDefined();
+			expect(pathsRecord()[key]).toBeDefined();
 		});
 
 		it("should have auth logout endpoint", () => {
 			const key = "/api/v1/auth/logout";
-			expect(pathsRecord(paths)[key]).toBeDefined();
+			expect(pathsRecord()[key]).toBeDefined();
 		});
 
 		it("should have graph analysis impact endpoint", () => {
 			const key = "/api/v1/graph/analysis/impact";
-			expect(pathsRecord(paths)[key]).toBeDefined();
+			expect(pathsRecord()[key]).toBeDefined();
 		});
 
 		it("should have graph analysis cycles endpoint", () => {
 			const key = "/api/v1/graph/analysis/cycles";
-			expect(pathsRecord(paths)[key]).toBeDefined();
+			expect(pathsRecord()[key]).toBeDefined();
 		});
 
 		it("should have docs search endpoint", () => {
 			const key = "/api/v1/docs/search";
-			expect(pathsRecord(paths)[key]).toBeDefined();
+			expect(pathsRecord()[key]).toBeDefined();
 		});
 	});
 
 	describe("Request Body Types", () => {
 		it("should have typed auth login request", () => {
-			const pathDef = pathsRecord(paths)["/api/v1/auth/login"];
+			const pathDef = pathsRecord()["/api/v1/auth/login"];
 			expect(typeof pathDef).toBe("object");
 		});
 
@@ -68,7 +75,7 @@ describe("API Type Safety", () => {
 
 	describe("Response Types", () => {
 		it("should have typed auth me response", () => {
-			expect(pathsRecord(paths)["/auth/me"]).toBeDefined();
+			expect(pathsRecord()["/auth/me"]).toBeDefined();
 		});
 
 		it("should have error response types", () => {
@@ -117,7 +124,7 @@ describe("API Type Safety", () => {
 		});
 
 		it("should have typed analysis response", () => {
-			expect(pathsRecord(paths)["/api/v1/graph/analysis/impact"]).toBeDefined();
+			expect(pathsRecord()["/api/v1/graph/analysis/impact"]).toBeDefined();
 		});
 	});
 
@@ -179,12 +186,12 @@ describe("API Type Safety", () => {
 
 	describe("Component Schemas", () => {
 		it("should have auth.User schema", () => {
-			const schemas = schemasRecord(components);
+			const schemas = schemasRecord();
 			expect(schemas["auth.User"]).toBeDefined();
 		});
 
 		it("should have handlers.ErrorResponse schema", () => {
-			const schemas = schemasRecord(components);
+			const schemas = schemasRecord();
 			expect(schemas["handlers.ErrorResponse"]).toBeDefined();
 		});
 	});

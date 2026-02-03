@@ -90,7 +90,7 @@ async def init_project(ctx: Context, progress: Progress = Progress()) -> str:
 
 
 @mcp.tool(task=TaskConfig(mode="forbidden"))
-async def run_workflow(
+async def run_workflow(  # noqa: C901, PLR0912, PLR0915
     ctx: Context,
     workflow_id: str,
     auto: bool = False,
@@ -230,7 +230,7 @@ async def run_workflow(
 
 
 @mcp.tool(task=TaskConfig(mode="forbidden"))
-async def run_phase(
+async def run_phase(  # noqa: C901
     ctx: Context,
     phase: int,
     parallel: bool = False,
