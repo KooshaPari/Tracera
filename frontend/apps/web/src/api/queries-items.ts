@@ -40,6 +40,9 @@ const useProjectItems = (
 	filters?: ItemFilters,
 	options?: UseQueryOptions<ItemListResponse>,
 ): UseQueryResult<ItemListResponse> => {
+	const queryFilters: Record<string, unknown> | undefined = filters
+		? { ...filters }
+		: undefined;
 	const baseOptions: UseQueryOptions<ItemListResponse> = {
 		enabled: Boolean(projectId),
 		queryFn: async (): Promise<ItemListResponse> =>
@@ -49,7 +52,7 @@ const useProjectItems = (
 					{
 						params: {
 							path: { projectId },
-							query: filters,
+							query: queryFilters,
 						},
 					},
 				),

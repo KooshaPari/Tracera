@@ -17,7 +17,7 @@ export { AdvancedSearchView } from "./AdvancedSearchView";
 export { AgentsView } from "./AgentsView";
 export { AgentWorkflowView } from "./AgentWorkflowView";
 export { ComplianceView } from "./ComplianceView";
-export { ContractListView } from "./ContractListView";
+export { default as ContractListView } from "./ContractListView";
 export { ContractView } from "./ContractView";
 // ============================================================================
 // Core Views

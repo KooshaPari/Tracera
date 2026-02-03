@@ -24,11 +24,14 @@ const createItem = itemsApi.create;
 const updateItem = itemsApi.update;
 const deleteItem = itemsApi.delete;
 
+const fetchProjectItems = fetchItems;
+
 export {
 	createItem,
 	deleteItem,
 	fetchItem,
 	fetchItems,
+	fetchProjectItems,
 	fetchRecentItems,
 	updateItem,
 };

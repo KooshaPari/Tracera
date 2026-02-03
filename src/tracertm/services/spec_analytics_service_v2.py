@@ -46,6 +46,39 @@ from typing import Any, ClassVar
 from pydantic import BaseModel, Field
 
 # =============================================================================
+# CONSTANTS - Thresholds and Limits
+# =============================================================================
+
+QUALITY_IMPROVEMENT_THRESHOLD = 0.7
+QUALITY_MIN_LENGTH = 30
+QUALITY_AND_COUNT_THRESHOLD = 2
+
+GRADE_A_THRESHOLD = 0.90
+GRADE_B_THRESHOLD = 0.80
+GRADE_C_THRESHOLD = 0.70
+GRADE_D_THRESHOLD = 0.60
+
+FLAKINESS_VARIANCE_MIN_SAMPLES = 2
+FLAKINESS_QUARANTINE_FAILURES = 3
+FLAKINESS_QUARANTINE_SCORE = 0.15
+FLAKINESS_QUARANTINE_RATE = 0.1
+FLAKINESS_ENTROPY_MIN_LENGTH = 2
+FLAKINESS_TRANSITION_MIN_LENGTH = 2
+FLAKINESS_DURATION_MIN_SAMPLES = 5
+FLAKINESS_DURATION_CV_THRESHOLD = 0.5
+FLAKINESS_RACE_MIN_LENGTH = 5
+FLAKINESS_STABLE_PASS_THRESHOLD = 15
+FLAKINESS_STABLE_FAILURE_RATE = 0.1
+FLAKINESS_BROKEN_FAILURE_THRESHOLD = 8
+FLAKINESS_VARIANCE_THRESHOLD = 0.5
+FLAKINESS_CLUSTER_MIN_FAILURES = 2
+
+FLAKINESS_SEVERITY_STABLE_MAX = 0.01
+FLAKINESS_SEVERITY_LOW_MAX = 0.05
+FLAKINESS_SEVERITY_MEDIUM_MAX = 0.15
+FLAKINESS_SEVERITY_HIGH_MAX = 0.30
+
+# =============================================================================
 # ENUMS - Comprehensive Classification Systems
 # =============================================================================
 
@@ -860,7 +893,8 @@ class RequirementQualityAnalyzer:
 
         # Determine improvement priorities
         improvement_priority = sorted(
-            [d.value for d in QualityDimension if scores.get(d.value, 1.0) < 0.7], key=lambda d: scores.get(d, 1.0)
+            [d.value for d in QualityDimension if scores.get(d.value, 1.0) < QUALITY_IMPROVEMENT_THRESHOLD],
+            key=lambda d: scores.get(d, 1.0),
         )
 
         return QualityScore(
@@ -961,7 +995,7 @@ class RequirementQualityAnalyzer:
                 )
 
         # Minimum length check
-        if len(text) < 30:
+        if len(text) < QUALITY_MIN_LENGTH:
             score -= 0.15
             issues.append(
                 QualityIssue(
@@ -1079,8 +1113,8 @@ class RequirementQualityAnalyzer:
         and_count = text.lower().count(" and ")
         or_count = text.lower().count(" or ")
 
-        if and_count > 2:
-            score -= 0.15 * (and_count - 2)
+        if and_count > QUALITY_AND_COUNT_THRESHOLD:
+            score -= 0.15 * (and_count - QUALITY_AND_COUNT_THRESHOLD)
             issues.append(
                 QualityIssue(
                     dimension=QualityDimension.SINGULARITY,
@@ -1239,13 +1273,13 @@ class RequirementQualityAnalyzer:
 
     def _score_to_grade(self, score: float) -> str:
         """Convert score to letter grade."""
-        if score >= 0.90:
+        if score >= GRADE_A_THRESHOLD:
             return "A"
-        if score >= 0.80:
+        if score >= GRADE_B_THRESHOLD:
             return "B"
-        if score >= 0.70:
+        if score >= GRADE_C_THRESHOLD:
             return "C"
-        if score >= 0.60:
+        if score >= GRADE_D_THRESHOLD:
             return "D"
         return "F"
 
@@ -1509,7 +1543,7 @@ class FlakinessDetector:
 
         # Duration variance
         duration_variance = None
-        if durations and len(durations) > 2:
+        if durations and len(durations) > FLAKINESS_VARIANCE_MIN_SAMPLES:
             mean_duration = statistics.mean(durations)
             if mean_duration > 0:
                 std_duration = statistics.stdev(durations)
@@ -1532,8 +1566,8 @@ class FlakinessDetector:
         # Quarantine recommendation
         quarantine_recommended = (
             severity in (FlakinessSeverity.HIGH, FlakinessSeverity.CRITICAL)
-            or max_failures >= 3
-            or (flakiness_score > 0.15 and failure_rate > 0.1)
+            or max_failures >= FLAKINESS_QUARANTINE_FAILURES
+            or (flakiness_score > FLAKINESS_QUARANTINE_SCORE and failure_rate > FLAKINESS_QUARANTINE_RATE)
         )
 
         # Suggested fix
@@ -1561,7 +1595,7 @@ class FlakinessDetector:
 
     def _calculate_entropy(self, statuses: list[str]) -> float:
         """Calculate Shannon entropy of status sequence."""
-        if len(statuses) < 2:
+        if len(statuses) < FLAKINESS_ENTROPY_MIN_LENGTH:
             return 0.0
 
         # Count symbol frequencies
@@ -1581,7 +1615,7 @@ class FlakinessDetector:
 
     def _count_transitions(self, statuses: list[str]) -> int:
         """Count state transitions in sequence."""
-        if len(statuses) < 2:
+        if len(statuses) < FLAKINESS_TRANSITION_MIN_LENGTH:
             return 0
 
         return sum(1 for i in range(1, len(statuses)) if statuses[i] != statuses[i - 1])
@@ -1607,16 +1641,16 @@ class FlakinessDetector:
         patterns = []
 
         # High duration variance suggests resource issues
-        if durations and len(durations) > 5:
+        if durations and len(durations) > FLAKINESS_DURATION_MIN_SAMPLES:
             mean_d = statistics.mean(durations)
             if mean_d > 0:
                 cv = statistics.stdev(durations) / mean_d
-                if cv > 0.5:
+                if cv > FLAKINESS_DURATION_CV_THRESHOLD:
                     patterns.append(FlakinessPattern.RESOURCE_DEPENDENT)
 
         # Check for alternating pattern (possible race condition)
         statuses = [r.get("status") for r in runs]
-        if len(statuses) > 5:
+        if len(statuses) > FLAKINESS_RACE_MIN_LENGTH:
             transitions = self._count_transitions(statuses)
             if transitions > len(statuses) * 0.6:
                 patterns.append(FlakinessPattern.RACE_CONDITION)
@@ -1643,10 +1677,10 @@ class FlakinessDetector:
         entropy_factor = 1 + (entropy * 0.5)
 
         # Consistency factor
-        if max_passes > 15 and failure_rate < 0.1:
+        if max_passes > FLAKINESS_STABLE_PASS_THRESHOLD and failure_rate < FLAKINESS_STABLE_FAILURE_RATE:
             # Mostly stable
             consistency_factor = 0.4
-        elif max_failures > 8:
+        elif max_failures > FLAKINESS_BROKEN_FAILURE_THRESHOLD:
             # Consistently failing (not really flaky, just broken)
             consistency_factor = 0.3
         else:
@@ -1654,7 +1688,7 @@ class FlakinessDetector:
 
         # Duration variance factor
         variance_factor = 1.0
-        if duration_variance and duration_variance > 0.5:
+        if duration_variance and duration_variance > FLAKINESS_VARIANCE_THRESHOLD:
             variance_factor = 1.2
 
         score = base_score * entropy_factor * consistency_factor * variance_factor
@@ -1665,7 +1699,7 @@ class FlakinessDetector:
         # Simplified - would use proper time series analysis
         failures = [i for i, (_, status) in enumerate(runs) if status in ("failed", "error", "flaky")]
 
-        if len(failures) < 2:
+        if len(failures) < FLAKINESS_CLUSTER_MIN_FAILURES:
             return None
 
         # Calculate gaps between failures
@@ -1683,13 +1717,13 @@ class FlakinessDetector:
 
     def _score_to_severity(self, score: float) -> FlakinessSeverity:
         """Map score to severity level."""
-        if score < 0.01:
+        if score < FLAKINESS_SEVERITY_STABLE_MAX:
             return FlakinessSeverity.STABLE
-        if score < 0.05:
+        if score < FLAKINESS_SEVERITY_LOW_MAX:
             return FlakinessSeverity.LOW
-        if score < 0.15:
+        if score < FLAKINESS_SEVERITY_MEDIUM_MAX:
             return FlakinessSeverity.MEDIUM
-        if score < 0.30:
+        if score < FLAKINESS_SEVERITY_HIGH_MAX:
             return FlakinessSeverity.HIGH
         return FlakinessSeverity.CRITICAL
 
@@ -1745,6 +1779,17 @@ class ODCClassifier:
         ODCImpact.CAPABILITY: ["feature", "capability", "function", "missing"],
         ODCImpact.INTEGRITY: ["data", "corruption", "integrity", "consistency", "loss"],
     }
+    TRIGGER_KEYWORDS: ClassVar[list[tuple[str, ODCTrigger]]] = [
+        ("code review", ODCTrigger.REVIEW),
+        ("review", ODCTrigger.REVIEW),
+        ("unit test", ODCTrigger.UNIT_TEST),
+        ("regression", ODCTrigger.REGRESSION_TEST),
+        ("customer", ODCTrigger.CUSTOMER_FOUND),
+        ("production", ODCTrigger.CUSTOMER_FOUND),
+        ("static", ODCTrigger.STATIC_ANALYSIS),
+        ("lint", ODCTrigger.STATIC_ANALYSIS),
+        ("system test", ODCTrigger.SYSTEM_TEST),
+    ]
 
     def classify(
         self, defect_description: str, trigger_context: str | None = None, impact_description: str | None = None
@@ -1786,25 +1831,17 @@ class ODCClassifier:
 
     def _classify_trigger(self, context: str | None) -> ODCTrigger:
         """Classify how defect was discovered."""
+        trigger = ODCTrigger.FUNCTION_TEST
         if not context:
-            return ODCTrigger.FUNCTION_TEST
+            return trigger
 
         context_lower = context.lower()
+        for keyword, trigger_value in self.TRIGGER_KEYWORDS:
+            if keyword in context_lower:
+                trigger = trigger_value
+                break
 
-        if "review" in context_lower or "code review" in context_lower:
-            return ODCTrigger.REVIEW
-        if "unit test" in context_lower:
-            return ODCTrigger.UNIT_TEST
-        if "regression" in context_lower:
-            return ODCTrigger.REGRESSION_TEST
-        if "customer" in context_lower or "production" in context_lower:
-            return ODCTrigger.CUSTOMER_FOUND
-        if "static" in context_lower or "lint" in context_lower:
-            return ODCTrigger.STATIC_ANALYSIS
-        if "system test" in context_lower:
-            return ODCTrigger.SYSTEM_TEST
-
-        return ODCTrigger.FUNCTION_TEST
+        return trigger
 
     def _classify_impact(self, description: str) -> ODCImpact:
         """Classify customer impact."""
@@ -1977,57 +2014,16 @@ class ImpactAnalyzer:
             item_metadata: Optional metadata for items (type, criticality, etc.)
             max_depth: Maximum traversal depth
         """
-        # BFS traversal for impact propagation
-        visited = set()
-        direct_impacts = []
-        transitive_impacts = []
-        affected_tests = []
-        affected_docs = []
-        depth = 0
-        current_level = [source_item_id]
+        (
+            direct_impacts,
+            transitive_impacts,
+            affected_tests,
+            affected_docs,
+            depth,
+        ) = self._collect_impacts(source_item_id, adjacency, item_metadata, max_depth)
 
-        while current_level and depth < max_depth:
-            next_level = []
-            for item_id in current_level:
-                if item_id in visited:
-                    continue
-                visited.add(item_id)
-
-                dependents = adjacency.get(item_id, [])
-                for dep_id in dependents:
-                    if dep_id not in visited:
-                        next_level.append(dep_id)
-
-                        if depth == 0:
-                            direct_impacts.append(dep_id)
-                        else:
-                            transitive_impacts.append(dep_id)
-
-                        # Categorize by type if metadata available
-                        if item_metadata:
-                            meta = item_metadata.get(dep_id, {})
-                            item_type = meta.get("type", "")
-                            if "test" in item_type.lower():
-                                affected_tests.append(dep_id)
-                            elif "doc" in item_type.lower():
-                                affected_docs.append(dep_id)
-
-            current_level = next_level
-            depth += 1
-
-        # Calculate blast radius
         blast_radius = len(direct_impacts) + len(transitive_impacts)
-
-        # Identify critical path (items with high criticality)
-        critical_path = []
-        if item_metadata:
-            all_affected = direct_impacts + transitive_impacts
-            for item_id in all_affected:
-                meta = item_metadata.get(item_id, {})
-                if meta.get("criticality", "") in ("high", "critical"):
-                    critical_path.append(item_id)
-
-        # Calculate risk score (0-100)
+        critical_path = self._find_critical_path(direct_impacts, transitive_impacts, item_metadata)
         risk_score = self._calculate_risk_score(blast_radius, len(critical_path), depth, item_metadata)
 
         return ImpactAnalysisResult(
@@ -2041,6 +2037,110 @@ class ImpactAnalyzer:
             affected_documents=affected_docs,
             risk_score=risk_score,
         )
+
+    def _collect_impacts(
+        self,
+        source_item_id: str,
+        adjacency: dict[str, list[str]],
+        item_metadata: dict[str, dict[str, Any]] | None,
+        max_depth: int,
+    ) -> tuple[list[str], list[str], list[str], list[str], int]:
+        visited = set()
+        direct_impacts: list[str] = []
+        transitive_impacts: list[str] = []
+        affected_tests: list[str] = []
+        affected_docs: list[str] = []
+        depth = 0
+        current_level = [source_item_id]
+
+        while current_level and depth < max_depth:
+            next_level = []
+            for item_id in current_level:
+                if item_id in visited:
+                    continue
+                visited.add(item_id)
+                dependents = adjacency.get(item_id, [])
+                next_level.extend(
+                    self._process_dependents(
+                        dependents=dependents,
+                        depth=depth,
+                        visited=visited,
+                        direct_impacts=direct_impacts,
+                        transitive_impacts=transitive_impacts,
+                        affected_tests=affected_tests,
+                        affected_docs=affected_docs,
+                        item_metadata=item_metadata,
+                    )
+                )
+            current_level = next_level
+            depth += 1
+
+        return direct_impacts, transitive_impacts, affected_tests, affected_docs, depth
+
+    def _process_dependents(
+        self,
+        *,
+        dependents: list[str],
+        depth: int,
+        visited: set[str],
+        direct_impacts: list[str],
+        transitive_impacts: list[str],
+        affected_tests: list[str],
+        affected_docs: list[str],
+        item_metadata: dict[str, dict[str, Any]] | None,
+    ) -> list[str]:
+        next_level: list[str] = []
+        for dep_id in dependents:
+            if dep_id in visited:
+                continue
+            next_level.append(dep_id)
+            self._record_impact(dep_id, depth, direct_impacts, transitive_impacts)
+            self._categorize_impact(dep_id, item_metadata, affected_tests, affected_docs)
+        return next_level
+
+    def _record_impact(
+        self,
+        dep_id: str,
+        depth: int,
+        direct_impacts: list[str],
+        transitive_impacts: list[str],
+    ) -> None:
+        if depth == 0:
+            direct_impacts.append(dep_id)
+        else:
+            transitive_impacts.append(dep_id)
+
+    def _categorize_impact(
+        self,
+        dep_id: str,
+        item_metadata: dict[str, dict[str, Any]] | None,
+        affected_tests: list[str],
+        affected_docs: list[str],
+    ) -> None:
+        if not item_metadata:
+            return
+        meta = item_metadata.get(dep_id, {})
+        item_type = meta.get("type", "")
+        item_type_lower = item_type.lower()
+        if "test" in item_type_lower:
+            affected_tests.append(dep_id)
+        elif "doc" in item_type_lower:
+            affected_docs.append(dep_id)
+
+    def _find_critical_path(
+        self,
+        direct_impacts: list[str],
+        transitive_impacts: list[str],
+        item_metadata: dict[str, dict[str, Any]] | None,
+    ) -> list[str]:
+        if not item_metadata:
+            return []
+        critical_path: list[str] = []
+        for item_id in direct_impacts + transitive_impacts:
+            meta = item_metadata.get(item_id, {})
+            if meta.get("criticality", "") in ("high", "critical"):
+                critical_path.append(item_id)
+        return critical_path
 
     def _calculate_risk_score(
         self, blast_radius: int, critical_count: int, depth: int, metadata: dict[str, dict[str, Any]] | None
@@ -2172,76 +2272,99 @@ class CoverageGapAnalyzer:
             trace_links: Existing trace links
             safety_level: Project-wide safety level if not per-requirement
         """
+        covered_reqs, linked_tests = self._build_trace_sets(trace_links)
         gaps = []
+        gaps.extend(self._find_requirement_gaps(requirements, covered_reqs, safety_level))
+        gaps.extend(self._find_orphaned_tests(tests, linked_tests))
+        gaps.extend(self._find_safety_coverage_gaps(tests, safety_level))
+        return gaps
 
-        # Build lookup sets
-        covered_reqs = set()
-        linked_tests = set()
-
+    def _build_trace_sets(self, trace_links: list[dict[str, Any]]) -> tuple[set[str], set[str]]:
+        covered_reqs: set[str] = set()
+        linked_tests: set[str] = set()
         for link in trace_links:
-            if link.get("link_type") == "verifies":
-                covered_reqs.add(link.get("target_id"))
-                linked_tests.add(link.get("source_id"))
+            if link.get("link_type") != "verifies":
+                continue
+            covered_reqs.add(link.get("target_id"))
+            linked_tests.add(link.get("source_id"))
+        return covered_reqs, linked_tests
 
-        # Find requirements without tests
+    def _find_requirement_gaps(
+        self,
+        requirements: list[dict[str, Any]],
+        covered_reqs: set[str],
+        safety_level: SafetyLevel | None,
+    ) -> list[CoverageGap]:
+        gaps: list[CoverageGap] = []
         for req in requirements:
             req_id = req["id"]
+            if req_id in covered_reqs:
+                continue
             req_safety = req.get("safety_level") or safety_level
-
-            if req_id not in covered_reqs:
-                severity = self._gap_severity(req_safety, req.get("criticality"))
-                gaps.append(
-                    CoverageGap(
-                        gap_type="no_tests",
-                        item_id=req_id,
-                        item_type="requirement",
-                        severity=severity,
-                        current_coverage=0.0,
-                        required_coverage=100.0,
-                        safety_level=req_safety,
-                        suggestion=f"Add test cases to verify requirement {req_id}",
-                    )
+            severity = self._gap_severity(req_safety, req.get("criticality"))
+            gaps.append(
+                CoverageGap(
+                    gap_type="no_tests",
+                    item_id=req_id,
+                    item_type="requirement",
+                    severity=severity,
+                    current_coverage=0.0,
+                    required_coverage=100.0,
+                    safety_level=req_safety,
+                    suggestion=f"Add test cases to verify requirement {req_id}",
                 )
+            )
+        return gaps
 
-        # Find orphaned tests (not linked to requirements)
+    def _find_orphaned_tests(self, tests: list[dict[str, Any]], linked_tests: set[str]) -> list[CoverageGap]:
+        gaps: list[CoverageGap] = []
         for test in tests:
             test_id = test["id"]
-            if test_id not in linked_tests:
+            if test_id in linked_tests:
+                continue
+            gaps.append(
+                CoverageGap(
+                    gap_type="orphaned_test",
+                    item_id=test_id,
+                    item_type="test",
+                    severity="low",
+                    current_coverage=0.0,
+                    required_coverage=0.0,
+                    suggestion=f"Link test {test_id} to its corresponding requirement",
+                )
+            )
+        return gaps
+
+    def _find_safety_coverage_gaps(
+        self,
+        tests: list[dict[str, Any]],
+        safety_level: SafetyLevel | None,
+    ) -> list[CoverageGap]:
+        if not safety_level:
+            return []
+        required_coverage = self.SAFETY_COVERAGE_REQUIREMENTS.get(safety_level)
+        if not required_coverage:
+            return []
+        gaps: list[CoverageGap] = []
+        for test in tests:
+            test_coverage = test.get("coverage", {})
+            for coverage_type, required in required_coverage.items():
+                actual = test_coverage.get(coverage_type.value, 0)
+                if actual >= required:
+                    continue
                 gaps.append(
                     CoverageGap(
-                        gap_type="orphaned_test",
-                        item_id=test_id,
+                        gap_type="insufficient_coverage",
+                        item_id=test["id"],
                         item_type="test",
-                        severity="low",
-                        current_coverage=0.0,
-                        required_coverage=0.0,
-                        suggestion=f"Link test {test_id} to its corresponding requirement",
+                        severity="critical" if coverage_type == CoverageType.MCDC else "high",
+                        expected_coverage_type=coverage_type,
+                        current_coverage=actual,
+                        required_coverage=required,
+                        safety_level=safety_level,
+                        suggestion=f"Increase {coverage_type.value} coverage from {actual}% to {required}%",
                     )
                 )
-
-        # Check coverage levels for safety requirements
-        if safety_level and safety_level in self.SAFETY_COVERAGE_REQUIREMENTS:
-            required_coverage = self.SAFETY_COVERAGE_REQUIREMENTS[safety_level]
-
-            for test in tests:
-                test_coverage = test.get("coverage", {})
-                for coverage_type, required in required_coverage.items():
-                    actual = test_coverage.get(coverage_type.value, 0)
-                    if actual < required:
-                        gaps.append(
-                            CoverageGap(
-                                gap_type="insufficient_coverage",
-                                item_id=test["id"],
-                                item_type="test",
-                                severity="critical" if coverage_type == CoverageType.MCDC else "high",
-                                expected_coverage_type=coverage_type,
-                                current_coverage=actual,
-                                required_coverage=required,
-                                safety_level=safety_level,
-                                suggestion=f"Increase {coverage_type.value} coverage from {actual}% to {required}%",
-                            )
-                        )
-
         return gaps
 
     def _gap_severity(self, safety_level: SafetyLevel | None, criticality: str | None) -> str:

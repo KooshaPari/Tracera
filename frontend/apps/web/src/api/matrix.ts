@@ -89,4 +89,4 @@ const exportMatrix = async (
 
 const matrixApi = { exportMatrix, fetchMatrix };
 
-export { matrixApi, type TraceabilityMatrix };
+export { exportMatrix, fetchMatrix, matrixApi, type TraceabilityMatrix };

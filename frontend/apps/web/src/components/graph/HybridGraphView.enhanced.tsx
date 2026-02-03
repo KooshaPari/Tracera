@@ -22,7 +22,7 @@ import { RichNodeDetailPanel } from "./sigma/RichNodeDetailPanel";
 import { useHybridGraph } from "@/hooks/useHybridGraph";
 import type { HybridGraphConfig } from "@/hooks/useHybridGraph";
 import { Badge } from "@/components/ui/badge";
-import { _Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Activity, AlertTriangle, Layers, Zap } from "lucide-react";
 
 interface HybridGraphViewProps {

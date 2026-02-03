@@ -4,22 +4,96 @@ Extracted from main.py to reduce complexity (C901 violations).
 Breaks down the monolithic startup_event (complexity 36) into focused functions.
 """
 
+import asyncio
 import logging
 import os
-from typing import Any
+import sys
+from typing import TYPE_CHECKING, Any
 
 from fastapi import FastAPI
 
 from tracertm.services.cache_service import RedisUnavailableError
 
+if TYPE_CHECKING:
+    from tracertm.preflight import PreflightCheck
+
 logger = logging.getLogger(__name__)
 
 
-async def run_preflight_checks() -> tuple[str, ...]:
+def _backoff_delay(attempt: int, initial: float, cap: float, multiplier: float = 1.5) -> float:
+    """Progressive backoff: initial, then initial*multiplier, ... capped at cap."""
+    delay = initial * (multiplier ** (attempt - 1))
+    return min(delay, cap)
+
+
+async def _poll_one_service(
+    service_name: str,
+    check: "PreflightCheck",
+    is_required: bool,
+    interval_initial: float,
+    interval_max: float,
+) -> tuple[str, bool]:
+    """Poll one preflight check indefinitely with progressive backoff (cap interval_max). Returns (check.name, ok)."""
+    from tracertm.preflight import run_single_check
+
+    # Initial wait so dependent services can start
+    await asyncio.sleep(interval_initial)
+    attempt = 0
+    while True:
+        attempt += 1
+        result = await asyncio.to_thread(run_single_check, check)
+        if result.ok:
+            logger.info("[%s] %s ok (after attempt %d)", service_name, check.name, attempt)
+            return (check.name, True)
+        delay = _backoff_delay(attempt, interval_initial, interval_max)
+        logger.info(
+            "[%s] %s failed (attempt %d), retrying in %.1fs",
+            service_name,
+            check.name,
+            attempt,
+            delay,
+        )
+        await asyncio.sleep(delay)
+
+
+async def _poll_services(
+    service_name: str,
+    required_names: tuple[str, ...],
+    optional_names: tuple[str, ...],
+    interval_initial: float = 2.0,
+    interval_max: float = 30.0,
+) -> None:
+    """Poll required services in parallel with indefinite retries and progressive backoff (cap interval_max)."""
+    from tracertm.preflight import build_api_checks
+
+    checks = build_api_checks()
+    to_poll_required = [c for c in checks if c.name in required_names and c.url and c.url.strip()]
+    missing_required = [
+        n for n in required_names if not any(c.name == n and c.url and c.url.strip() for c in checks)
+    ]
+    if missing_required:
+        raise RuntimeError(f"Preflight failed for: {', '.join(missing_required)} (missing url)")
+
+    # Required: poll all in parallel with indefinite retry and progressive backoff
+    if to_poll_required:
+        names = ", ".join(c.name for c in to_poll_required)
+        sys.stderr.write(
+            f"[{service_name}] Polling required (indefinite retry, backoff cap {interval_max}s): {names}...\n"
+        )
+        sys.stderr.flush()
+        results = await asyncio.gather(
+            *[_poll_one_service(service_name, c, True, interval_initial, interval_max) for c in to_poll_required]
+        )
+        required_failures = [name for name, ok in results if not ok]
+        if required_failures:
+            raise RuntimeError(f"Preflight failed for: {'; '.join(required_failures)}")
+
+
+async def run_preflight_checks() -> tuple[tuple[str, ...], tuple[str, ...]]:
     """Run preflight checks for all required services except those we poll.
 
     Returns:
-        Tuple of service names that were checked and passed.
+        Tuple of (service names that were checked and passed, required_poll_services).
     """
     from tracertm.preflight import build_api_checks, run_preflight
 
@@ -28,7 +102,7 @@ async def run_preflight_checks() -> tuple[str, ...]:
     optional_poll: tuple[str, ...] = ()
     all_checks = build_api_checks()
     excluded = set(required_poll + optional_poll)
-    checked_now = [c.name for c in all_checks if c.name not in excluded and c.url and c.url.strip()]
+    checked_now = tuple(c.name for c in all_checks if c.name not in excluded and c.url and c.url.strip())
 
     run_preflight(
         "python-api",
@@ -37,13 +111,11 @@ async def run_preflight_checks() -> tuple[str, ...]:
         exclude_names=required_poll + optional_poll,
     )
 
-    return tuple(checked_now), required_poll
+    return checked_now, required_poll
 
 
 async def poll_required_services() -> None:
     """Poll required services with retries and progressive backoff."""
-    from tracertm.api.main import _poll_services
-
     # Wait & poll required services in parallel; retry indefinitely with progressive backoff (cap 30s).
     await _poll_services(
         "python-api",

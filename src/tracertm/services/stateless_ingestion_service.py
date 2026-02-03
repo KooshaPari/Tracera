@@ -47,6 +47,48 @@ class StatelessIngestionService:
                 f"Invalid file extension: {path.suffix}. Expected {label}"
             )
 
+    def _ensure_file_exists(self, path: Path, file_path: str) -> None:
+        if not path.exists():
+            raise FileNotFoundError(f"File not found: {file_path}")
+
+    def _read_text(self, path: Path) -> str:
+        return path.read_text(encoding="utf-8")
+
+    def _markdown_dry_run(self, content: str) -> dict[str, Any]:
+        header_count = len(re.findall(r"^(#{1,6})\s+", content, re.MULTILINE))
+        link_count = len(re.findall(r"\[([^\]]+)\]\(([^\)]+)\)", content))
+        return {
+            "dry_run": True,
+            "headers_found": header_count,
+            "links_found": link_count,
+            "would_create_items": header_count,
+            "would_create_links": link_count,
+        }
+
+    def _ingest_markdown_content(
+        self,
+        *,
+        body: str,
+        metadata: dict[str, Any],
+        path: Path,
+        project_id: str,
+        view: str,
+    ) -> tuple[list[str], list[tuple[str, str]]]:
+        items_created, headers = self._collect_markdown_headers(
+            body=body,
+            project_id=project_id,
+            view=view,
+            metadata=metadata,
+            path=path,
+        )
+        links_created = self._create_markdown_links(
+            body=body,
+            project_id=project_id,
+            headers=headers,
+            items_created=items_created,
+        )
+        return items_created, links_created
+
     def _parse_frontmatter(self, content: str) -> tuple[dict[str, Any], str]:
         if frontmatter:
             try:
@@ -199,6 +241,18 @@ class StatelessIngestionService:
             return sum(self._count_yaml_items(value) for value in data) + len(data)
         return 0
 
+    def _detect_yaml_format(self, data: dict[str, Any], path: Path) -> str:
+        if "openapi" in data or "swagger" in data:
+            return "openapi"
+        if (
+            "bmad" in str(path).lower()
+            or "bmad" in data
+            or "requirements" in data
+            or ("spec" in data and "requirements" in data.get("spec", {}))
+        ):
+            return "bmad"
+        return "yaml"
+
     def _schema_name_from_ref(self, schema_ref: str) -> str | None:
         return schema_ref.split("/")[-1] if schema_ref else None
 
@@ -236,6 +290,403 @@ class StatelessIngestionService:
             self.session.add(link)
             links_created.append((source_item_id, target_item_id))
 
+    def _ensure_openapi_project_id(
+        self,
+        data: dict[str, Any],
+        file_path: str,
+        project_id: str | None,
+    ) -> str:
+        if project_id:
+            return project_id
+        project_name = data.get("info", {}).get("title", Path(file_path).stem)
+        description = data.get("info", {}).get("description", "")
+        return self._get_or_create_project(
+            project_id=None,
+            name=project_name,
+            description=description,
+            validate_existing=False,
+        )
+
+    def _create_openapi_schema_items(
+        self,
+        schemas: dict[str, Any],
+        *,
+        project_id: str,
+        file_path: str,
+        items_created: list[str],
+    ) -> dict[str, str]:
+        schema_items: dict[str, str] = {}
+        for schema_name, schema_def in schemas.items():
+            item = Item(
+                id=str(uuid4()),
+                project_id=project_id,
+                title=f"Schema: {schema_name}",
+                view="API",
+                item_type="schema",
+                status="todo",
+                description=schema_def.get("description", ""),
+                item_metadata={
+                    "format": "openapi",
+                    "openapi_schema": schema_def,
+                    "schema_name": schema_name,
+                    "schema_type": schema_def.get("type", "object"),
+                    "source_file": file_path,
+                },
+                version=1,
+            )
+            item_id = self._create_item(item)
+            schema_items[schema_name] = item_id
+            items_created.append(item_id)
+        return schema_items
+
+    def _iter_openapi_operations(
+        self,
+        paths: dict[str, Any],
+    ) -> Iterable[tuple[str, str, dict[str, Any]]]:
+        for path, methods in paths.items():
+            for method, operation in methods.items():
+                if method.startswith("x-"):
+                    continue
+                if isinstance(operation, dict):
+                    yield path, method, operation
+
+    def _create_openapi_endpoint_item(
+        self,
+        *,
+        project_id: str,
+        file_path: str,
+        method: str,
+        path: str,
+        operation: dict[str, Any],
+    ) -> str:
+        operation_id = operation.get("operationId", f"{method}_{path}")
+        summary = operation.get("summary", operation_id)
+        item = Item(
+            id=str(uuid4()),
+            project_id=project_id,
+            title=f"{method.upper()} {path}",
+            view="API",
+            item_type="endpoint",
+            status="todo",
+            description=operation.get("description", summary),
+            item_metadata={
+                "format": "openapi",
+                "method": method.upper(),
+                "openapi_spec": operation,
+                "operation_id": operation_id,
+                "path": path,
+                "source_file": file_path,
+            },
+            version=1,
+        )
+        return self._create_item(item)
+
+    def _link_openapi_operation_schemas(
+        self,
+        *,
+        project_id: str,
+        operation: dict[str, Any],
+        source_item_id: str,
+        schema_items: dict[str, str],
+        links_created: list[tuple[str, str]],
+    ) -> None:
+        request_body = operation.get("requestBody", {})
+        if request_body:
+            content = request_body.get("content", {})
+            schema_names = self._iter_schema_names_from_content(content)
+            self._link_schema_names(
+                project_id=project_id,
+                source_item_id=source_item_id,
+                schema_items=schema_items,
+                schema_names=schema_names,
+                link_type="uses",
+                links_created=links_created,
+            )
+
+        responses_op = operation.get("responses", {})
+        for response_def in responses_op.values():
+            if not isinstance(response_def, dict):
+                continue
+            content = response_def.get("content", {})
+            schema_names = self._iter_schema_names_from_content(content)
+            self._link_schema_names(
+                project_id=project_id,
+                source_item_id=source_item_id,
+                schema_items=schema_items,
+                schema_names=schema_names,
+                link_type="returns",
+                links_created=links_created,
+            )
+
+    def _link_related_endpoints(
+        self,
+        *,
+        project_id: str,
+        path_item_map: dict[str, dict[str, str]],
+        links_created: list[tuple[str, str]],
+    ) -> None:
+        for methods in path_item_map.values():
+            method_items = list(methods.values())
+            for i in range(len(method_items)):
+                for j in range(i + 1, len(method_items)):
+                    link = Link(
+                        id=str(uuid4()),
+                        project_id=project_id,
+                        source_item_id=method_items[i],
+                        target_item_id=method_items[j],
+                        link_type="related_to",
+                    )
+                    self.session.add(link)
+                    links_created.append((method_items[i], method_items[j]))
+
+    def _ensure_bmad_project_id(
+        self,
+        data: dict[str, Any],
+        file_path: str,
+        project_id: str | None,
+    ) -> str:
+        if project_id:
+            return project_id
+        project_name = data.get("project", {}).get("name", Path(file_path).stem)
+        description = data.get("project", {}).get("description", "")
+        return self._get_or_create_project(
+            project_id=None,
+            name=project_name,
+            description=description,
+            validate_existing=False,
+        )
+
+    def _extract_bmad_requirements(self, data: dict[str, Any]) -> list[dict[str, Any]]:
+        requirements = data.get("requirements", [])
+        if requirements:
+            return requirements
+        return data.get("spec", {}).get("requirements", [])
+
+    def _resolve_bmad_view(self, req_type: str) -> str:
+        if req_type in ["test", "test_case", "test_spec"]:
+            return "TEST"
+        if req_type in ["code", "implementation", "component"]:
+            return "CODE"
+        if req_type in ["api", "endpoint", "service"]:
+            return "API"
+        return "FEATURE"
+
+    def _build_bmad_metadata(self, req: dict[str, Any], file_path: str, req_id: str) -> dict[str, Any]:
+        base_fields = {"id", "title", "description", "text", "type", "status", "parent_id"}
+        extra_fields = {key: value for key, value in req.items() if key not in base_fields}
+        return {
+            "format": "bmad",
+            "owner": req.get("owner"),
+            "priority": req.get("priority", "medium"),
+            "requirement_id": req_id,
+            "source_file": file_path,
+            "tags": req.get("tags", []),
+            **extra_fields,
+        }
+
+    def _create_bmad_requirement_items(
+        self,
+        requirements: list[dict[str, Any]],
+        *,
+        project_id: str,
+        file_path: str,
+    ) -> tuple[list[str], dict[str, str]]:
+        items_created: list[str] = []
+        req_id_map: dict[str, str] = {}
+        for req in requirements:
+            req_id = req.get("id", req.get("requirement_id", str(uuid4())))
+            title = req.get("title", req.get("name", req_id))
+            req_type = req.get("type", "requirement")
+            view = self._resolve_bmad_view(req_type)
+            parent_key = req.get("parent_id")
+            parent_id = req_id_map.get(parent_key) if parent_key else None
+            item = Item(
+                id=str(uuid4()),
+                project_id=project_id,
+                title=title,
+                view=view,
+                item_type=req_type,
+                status=req.get("status", "todo"),
+                description=req.get("description", req.get("text", "")),
+                parent_id=parent_id,
+                item_metadata=self._build_bmad_metadata(req, file_path, req_id),
+                version=1,
+            )
+            item_id = self._create_item(item)
+            req_id_map[req_id] = item_id
+            items_created.append(item_id)
+        return items_created, req_id_map
+
+    def _create_bmad_traceability_links(
+        self,
+        traceability: list[dict[str, Any]],
+        *,
+        project_id: str,
+        req_id_map: dict[str, str],
+        links_created: list[tuple[str, str]],
+    ) -> None:
+        for trace in traceability:
+            source_id = trace.get("source")
+            target_id = trace.get("target")
+            link_type = trace.get("type", "traces_to")
+            source_item = req_id_map.get(source_id)
+            target_item = req_id_map.get(target_id)
+            if not source_item or not target_item:
+                continue
+            link = Link(
+                id=str(uuid4()),
+                project_id=project_id,
+                source_item_id=source_item,
+                target_item_id=target_item,
+                link_type=link_type,
+                metadata={
+                    "format": "bmad",
+                    "traceability_rule": trace.get("rule"),
+                },
+            )
+            self.session.add(link)
+            links_created.append((source_item, target_item))
+
+    def _create_bmad_dependency_links(
+        self,
+        requirements: list[dict[str, Any]],
+        *,
+        project_id: str,
+        req_id_map: dict[str, str],
+        links_created: list[tuple[str, str]],
+    ) -> None:
+        for req in requirements:
+            req_id = req.get("id", req.get("requirement_id"))
+            if req_id not in req_id_map:
+                continue
+            source_item = req_id_map[req_id]
+
+            parent_id = req.get("parent_id")
+            if parent_id and parent_id in req_id_map:
+                link = Link(
+                    id=str(uuid4()),
+                    project_id=project_id,
+                    source_item_id=source_item,
+                    target_item_id=req_id_map[parent_id],
+                    link_type="child_of",
+                )
+                self.session.add(link)
+                links_created.append((source_item, req_id_map[parent_id]))
+
+            depends_on = req.get("depends_on", [])
+            depends_list = [depends_on] if isinstance(depends_on, str) else depends_on
+            for dep_id in depends_list:
+                if dep_id not in req_id_map:
+                    continue
+                link = Link(
+                    id=str(uuid4()),
+                    project_id=project_id,
+                    source_item_id=source_item,
+                    target_item_id=req_id_map[dep_id],
+                    link_type="depends_on",
+                )
+                self.session.add(link)
+                links_created.append((source_item, req_id_map[dep_id]))
+
+    def _create_yaml_item(
+        self,
+        *,
+        project_id: str,
+        file_path: str,
+        title: str,
+        view: str,
+        item_type: str,
+        description: str,
+        item_metadata: dict[str, Any],
+        parent_id: str | None,
+    ) -> str:
+        item = Item(
+            id=str(uuid4()),
+            project_id=project_id,
+            title=title,
+            view=view,
+            item_type=item_type,
+            status="todo",
+            description=description,
+            item_metadata={
+                "format": "yaml",
+                "source_file": file_path,
+                **item_metadata,
+            },
+            parent_id=parent_id,
+            version=1,
+        )
+        return self._create_item(item)
+
+    def _ingest_yaml_dict(
+        self,
+        data: dict[str, Any],
+        *,
+        project_id: str,
+        file_path: str,
+        view: str,
+        items_created: list[str],
+        parent_id: str | None,
+    ) -> None:
+        for key, value in data.items():
+            if isinstance(value, dict):
+                item_id = self._create_yaml_item(
+                    project_id=project_id,
+                    file_path=file_path,
+                    title=str(key),
+                    view=view,
+                    item_type="section",
+                    description=str(value.get("description", "")),
+                    item_metadata={"yaml_data": value},
+                    parent_id=parent_id,
+                )
+                items_created.append(item_id)
+                self._ingest_yaml_dict(
+                    value,
+                    project_id=project_id,
+                    file_path=file_path,
+                    view=view,
+                    items_created=items_created,
+                    parent_id=item_id,
+                )
+            elif isinstance(value, list):
+                self._ingest_yaml_list(
+                    value,
+                    key=key,
+                    project_id=project_id,
+                    file_path=file_path,
+                    view=view,
+                    items_created=items_created,
+                    parent_id=parent_id,
+                )
+
+    def _ingest_yaml_list(
+        self,
+        items: list[Any],
+        *,
+        key: str,
+        project_id: str,
+        file_path: str,
+        view: str,
+        items_created: list[str],
+        parent_id: str | None,
+    ) -> None:
+        for index, item_data in enumerate(items):
+            if not isinstance(item_data, dict):
+                continue
+            title = item_data.get("title", item_data.get("name", f"{key}_{index}"))
+            item_id = self._create_yaml_item(
+                project_id=project_id,
+                file_path=file_path,
+                title=title,
+                view=view,
+                item_type="item",
+                description=str(item_data.get("description", "")),
+                item_metadata={"yaml_data": item_data},
+                parent_id=parent_id,
+            )
+            items_created.append(item_id)
+
     def ingest_markdown(
         self,
         file_path: str,
@@ -263,144 +714,35 @@ class StatelessIngestionService:
         Returns:
             Dictionary with ingestion results
         """
-        if project_id is not None:
-            project_id = str(project_id)
+        pid = str(project_id) if project_id is not None else None
         path = Path(file_path)
-        if not path.exists():
-            raise FileNotFoundError(f"File not found: {file_path}")
+        self._ensure_file_exists(path, file_path)
 
-        # Validate file
-        if validate and path.suffix.lower() not in [".md", ".markdown", ".mdx"]:
-            raise ValueError(f"Invalid file extension: {path.suffix}. Expected .md, .markdown, or .mdx")
+        if validate:
+            self._validate_file_extension(
+                path,
+                (".md", ".markdown", ".mdx"),
+                ".md, .markdown, or .mdx",
+            )
 
-        content = path.read_text(encoding="utf-8")
-
+        content = self._read_text(path)
         if dry_run:
-            # Just validate and return what would be created
-            header_count = len(re.findall(r"^(#{1,6})\s+", content, re.MULTILINE))
-            link_count = len(re.findall(r"\[([^\]]+)\]\(([^\)]+)\)", content))
-            return {
-                "dry_run": True,
-                "headers_found": header_count,
-                "links_found": link_count,
-                "would_create_items": header_count,
-                "would_create_links": link_count,
-            }
+            return self._markdown_dry_run(content)
 
-        # Parse frontmatter if present
-        if frontmatter:
-            try:
-                post = frontmatter.loads(content)
-                metadata = post.metadata
-                body = post.content
-            except Exception:
-                # No frontmatter, treat entire file as body
-                metadata = {}
-                body = content
-        else:
-            # No frontmatter library, treat entire file as body
-            metadata = {}
-            body = content
-
-        # Get or create project
-        if not project_id:
-            project_name = metadata.get("project", path.stem)
-            project = self.session.query(Project).filter(Project.name == project_name).first()
-            if not project:
-                project = Project(
-                    id=str(uuid4()),
-                    name=project_name,
-                    description=metadata.get("description", ""),
-                )
-                self.session.add(project)
-                self.session.flush()
-            project_id = str(project.id)
-        else:
-            project = self.session.query(Project).filter(Project.id == project_id).first()
-            if not project:
-                raise ValueError(f"Project not found: {project_id}")
-
-        # Parse markdown structure
-        items_created = []
-        links_created = []
-
-        # Extract headers as items
-        header_pattern = r"^(#{1,6})\s+(.+)$"
-        headers = []
-        parent_stack: list[str | None] = [None]
-
-        for line in body.split("\n"):
-            match = re.match(header_pattern, line)
-            if match:
-                level = len(match.group(1))
-                title = match.group(2).strip()
-
-                # Adjust parent stack based on level
-                while len(parent_stack) > level:
-                    parent_stack.pop()
-                if len(parent_stack) < level:
-                    parent_stack.extend([None] * (level - len(parent_stack)))
-
-                parent_id = parent_stack[-1] if parent_stack else None
-
-                # Determine item type based on level
-                item_type = self._determine_item_type(level, metadata)
-
-                # Create item
-                item = Item(
-                    id=str(uuid4()),
-                    project_id=project_id,
-                    title=title,
-                    view=view,
-                    item_type=item_type,
-                    status=metadata.get("status", "todo"),
-                    description=self._extract_section_content(body, line),
-                    item_metadata={
-                        "source_file": str(path),
-                        "header_level": level,
-                        **metadata,
-                    },
-                    parent_id=parent_id,
-                    version=1,
-                )
-                self.session.add(item)
-                self.session.flush()
-
-                items_created.append(str(item.id))
-                headers.append((level, item.id, title))
-
-                # Update parent stack
-                if len(parent_stack) <= level:
-                    parent_stack.append(str(item.id))
-                else:
-                    parent_stack[level - 1] = str(item.id)
-
-        # Extract markdown links
-        link_pattern = r"\[([^\]]+)\]\(([^\)]+)\)"
-        for match in re.finditer(link_pattern, body):
-            match.group(1)
-            link_url = match.group(2)
-
-            # Try to find source item (item containing this link)
-            # For simplicity, link to the last created item
-            if items_created:
-                source_id = items_created[-1]
-
-                # If link_url is an internal reference (starts with #), try to find target
-                if link_url.startswith("#"):
-                    target_title = link_url[1:].replace("-", " ").title()
-                    # Try to find matching header
-                    for _level, item_id, title in headers:
-                        if title.lower() == target_title.lower():
-                            link = Link(
-                                id=str(uuid4()),
-                                project_id=project_id,
-                                source_item_id=source_id,
-                                target_item_id=item_id,
-                                link_type="relates_to",
-                            )
-                            self.session.add(link)
-                            links_created.append((source_id, item_id))
+        metadata, body = self._parse_frontmatter(content)
+        project_id = self._get_or_create_project(
+            project_id=pid,
+            name=metadata.get("project", path.stem),
+            description=metadata.get("description", ""),
+            validate_existing=True,
+        )
+        items_created, links_created = self._ingest_markdown_content(
+            body=body,
+            metadata=metadata,
+            path=path,
+            project_id=project_id,
+            view=view,
+        )
 
         return {
             "project_id": project_id,
@@ -432,15 +774,12 @@ class StatelessIngestionService:
         Returns:
             Dictionary with ingestion results
         """
-        # MDX is similar to Markdown, but we need to handle JSX
-        # For MVP, treat as markdown and extract JSX components separately
         path = Path(file_path)
         if not path.exists():
             raise FileNotFoundError(f"File not found: {file_path}")
 
-        # Validate file
-        if validate and path.suffix.lower() not in [".mdx"]:
-            raise ValueError(f"Invalid file extension: {path.suffix}. Expected .mdx")
+        if validate:
+            self._validate_file_extension(path, (".mdx",), ".mdx")
 
         content = path.read_text(encoding="utf-8")
 
@@ -455,39 +794,18 @@ class StatelessIngestionService:
                 "would_create_items": header_count + jsx_count,
             }
 
-        # Parse frontmatter
-        if frontmatter:
-            try:
-                post = frontmatter.loads(content)
-                metadata = post.metadata
-                body = post.content
-            except Exception:
-                metadata = {}
-                body = content
-        else:
-            metadata = {}
-            body = content
-
-        # Extract JSX components (basic pattern matching)
+        metadata, body = self._parse_frontmatter(content)
         jsx_pattern = r"<(\w+)([^>]*)>([^<]*)</\1>"
         jsx_components = re.findall(jsx_pattern, body)
 
-        # Get or create project
         pid: str | None = str(project_id) if project_id is not None else None
-        if not pid:
-            project_name = metadata.get("project", path.stem)
-            project = self.session.query(Project).filter(Project.name == project_name).first()
-            if not project:
-                project = Project(
-                    id=str(uuid4()),
-                    name=project_name,
-                    description=metadata.get("description", ""),
-                )
-                self.session.add(project)
-                self.session.flush()
-            pid = str(project.id)
+        pid = self._get_or_create_project(
+            project_id=pid,
+            name=metadata.get("project", path.stem),
+            description=metadata.get("description", ""),
+            validate_existing=False,
+        )
 
-        # Process as markdown first
         result = self.ingest_markdown(file_path, pid, view)
 
         # Add JSX components as CODE view items
@@ -495,7 +813,7 @@ class StatelessIngestionService:
         for component_name, attrs, content in jsx_components:
             item = Item(
                 id=str(uuid4()),
-                project_id=project_id,
+                project_id=pid,
                 title=f"{component_name} Component",
                 view="CODE",
                 item_type="component",
@@ -547,9 +865,8 @@ class StatelessIngestionService:
         if not path.exists():
             raise FileNotFoundError(f"File not found: {file_path}")
 
-        # Validate file
-        if validate and path.suffix.lower() not in [".yaml", ".yml"]:
-            raise ValueError(f"Invalid file extension: {path.suffix}. Expected .yaml or .yml")
+        if validate:
+            self._validate_file_extension(path, (".yaml", ".yml"), ".yaml or .yml")
 
         content = path.read_text(encoding="utf-8")
 
@@ -561,34 +878,21 @@ class StatelessIngestionService:
         if not isinstance(data, dict[str, Any]):
             raise ValueError("YAML root must be a dictionary")
 
-        # Detect format
-        format_type = "yaml"
-        if "openapi" in data or "swagger" in data:
-            format_type = "openapi"
-        elif (
-            "bmad" in str(path).lower()
-            or "bmad" in data
-            or "requirements" in data
-            or ("spec" in data and "requirements" in data.get("spec", {}))
-        ):
-            format_type = "bmad"
+        format_type = self._detect_yaml_format(data, path)
 
         if dry_run:
-            # Estimate what would be created
             if format_type == "openapi":
                 paths = data.get("paths", {})
                 schemas = data.get("components", {}).get("schemas", {})
+                endpoint_count = sum(
+                    len([m for m in methods if not m.startswith("x-")]) for methods in paths.values()
+                )
                 return {
                     "dry_run": True,
                     "format": "openapi",
-                    "endpoints_found": sum(
-                        len([m for m in methods if not m.startswith("x-")]) for methods in paths.values()
-                    ),
+                    "endpoints_found": endpoint_count,
                     "schemas_found": len(schemas),
-                    "would_create_items": sum(
-                        len([m for m in methods if not m.startswith("x-")]) for methods in paths.values()
-                    )
-                    + len(schemas),
+                    "would_create_items": endpoint_count + len(schemas),
                 }
             if format_type == "bmad":
                 requirements = data.get("requirements", []) or data.get("spec", {}).get("requirements", [])
@@ -599,20 +903,7 @@ class StatelessIngestionService:
                     "would_create_items": len(requirements),
                 }
 
-            # Generic YAML - estimate from structure
-            def count_items(d: Any) -> int:
-                count = 0
-                if isinstance(d, dict[str, Any]):
-                    count += len(d)
-                    for v in d.values():
-                        count += count_items(v)
-                elif isinstance(d, list[Any]):
-                    count += len(d)
-                    for item in d:
-                        count += count_items(item)
-                return count
-
-            item_count = count_items(data)
+            item_count = self._count_yaml_items(data)
             return {
                 "dry_run": True,
                 "format": "yaml",
@@ -620,7 +911,6 @@ class StatelessIngestionService:
                 "would_create_items": item_count,
             }
 
-        # Actual ingestion
         if format_type == "openapi":
             return self._ingest_openapi_spec(data, file_path, pid)
         if format_type == "bmad":
@@ -629,20 +919,7 @@ class StatelessIngestionService:
 
     def _ingest_openapi_spec(self, data: dict[str, Any], file_path: str, project_id: str | None) -> dict[str, Any]:
         """Ingest OpenAPI/Swagger specification with enhanced component extraction."""
-        # Get or create project
-        if not project_id:
-            project_name = data.get("info", {}).get("title", Path(file_path).stem)
-            project = self.session.query(Project).filter(Project.name == project_name).first()
-            if not project:
-                project = Project(
-                    id=str(uuid4()),
-                    name=project_name,
-                    description=data.get("info", {}).get("description", ""),
-                )
-                self.session.add(project)
-                self.session.flush()
-            project_id = str(project.id)
-
+        project_id = self._ensure_openapi_project_id(data, file_path, project_id)
         items_created = []
         links_created = []
         path_item_map: dict[str, dict[str, str]] = {}  # path -> method -> item_id
@@ -650,121 +927,38 @@ class StatelessIngestionService:
         # Extract components (schemas, responses, parameters)
         components = data.get("components", {})
         schemas = components.get("schemas", {})
-        components.get("responses", {})
-        components.get("parameters", {})
+        schema_items = self._create_openapi_schema_items(
+            schemas,
+            project_id=project_id,
+            file_path=file_path,
+            items_created=items_created,
+        )
 
-        # Create items for schemas
-        schema_items: dict[str, str] = {}
-        for schema_name, schema_def in schemas.items():
-            item = Item(
-                id=str(uuid4()),
-                project_id=project_id,
-                title=f"Schema: {schema_name}",
-                view="API",
-                item_type="schema",
-                status="todo",
-                description=schema_def.get("description", ""),
-                item_metadata={
-                    "source_file": file_path,
-                    "schema_name": schema_name,
-                    "schema_type": schema_def.get("type", "object"),
-                    "format": "openapi",
-                    "openapi_schema": schema_def,
-                },
-                version=1,
-            )
-            self.session.add(item)
-            self.session.flush()
-            schema_items[schema_name] = str(item.id)
-            items_created.append(str(item.id))
-
-        # Create API view items for paths
         paths = data.get("paths", {})
-        for path, methods in paths.items():
-            path_item_map[path] = {}
-            for method, operation in methods.items():
-                if not isinstance(operation, dict[str, Any]) or method.startswith("x-"):
-                    continue
+        for path, method, operation in self._iter_openapi_operations(paths):
+            path_item_map.setdefault(path, {})
+            item_id = self._create_openapi_endpoint_item(
+                project_id=project_id,
+                file_path=file_path,
+                method=method,
+                path=path,
+                operation=operation,
+            )
+            path_item_map[path][method] = item_id
+            items_created.append(item_id)
+            self._link_openapi_operation_schemas(
+                project_id=project_id,
+                operation=operation,
+                source_item_id=item_id,
+                schema_items=schema_items,
+                links_created=links_created,
+            )
 
-                operation_id = operation.get("operationId", f"{method}_{path}")
-                summary = operation.get("summary", operation_id)
-
-                item = Item(
-                    id=str(uuid4()),
-                    project_id=project_id,
-                    title=f"{method.upper()} {path}",
-                    view="API",
-                    item_type="endpoint",
-                    status="todo",
-                    description=operation.get("description", summary),
-                    item_metadata={
-                        "source_file": file_path,
-                        "method": method.upper(),
-                        "path": path,
-                        "operation_id": operation_id,
-                        "openapi_spec": operation,
-                        "format": "openapi",
-                    },
-                    version=1,
-                )
-                self.session.add(item)
-                self.session.flush()
-                path_item_map[path][method] = str(item.id)
-                items_created.append(str(item.id))
-
-                # Link to request/response schemas
-                request_body = operation.get("requestBody", {})
-                if request_body:
-                    content = request_body.get("content", {})
-                    for content_schema in content.values():
-                        schema_ref = content_schema.get("schema", {}).get("$ref", "")
-                        if schema_ref:
-                            schema_name = schema_ref.split("/")[-1]
-                            if schema_name in schema_items:
-                                link = Link(
-                                    id=str(uuid4()),
-                                    project_id=project_id,
-                                    source_item_id=item.id,
-                                    target_item_id=schema_items[schema_name],
-                                    link_type="uses",
-                                )
-                                self.session.add(link)
-                                links_created.append((item.id, schema_items[schema_name]))
-
-                # Link to response schemas
-                responses_op = operation.get("responses", {})
-                for response_def in responses_op.values():
-                    if isinstance(response_def, dict[str, Any]):
-                        content = response_def.get("content", {})
-                        for content_schema in content.values():
-                            schema_ref = content_schema.get("schema", {}).get("$ref", "")
-                            if schema_ref:
-                                schema_name = schema_ref.split("/")[-1]
-                                if schema_name in schema_items:
-                                    link = Link(
-                                        id=str(uuid4()),
-                                        project_id=project_id,
-                                        source_item_id=item.id,
-                                        target_item_id=schema_items[schema_name],
-                                        link_type="returns",
-                                    )
-                                    self.session.add(link)
-                                    links_created.append((item.id, schema_items[schema_name]))
-
-        # Create links between related endpoints (same path, different methods)
-        for methods in path_item_map.values():
-            method_items = list(methods.values())
-            for i in range(len(method_items)):
-                for j in range(i + 1, len(method_items)):
-                    link = Link(
-                        id=str(uuid4()),
-                        project_id=project_id,
-                        source_item_id=method_items[i],
-                        target_item_id=method_items[j],
-                        link_type="related_to",
-                    )
-                    self.session.add(link)
-                    links_created.append((method_items[i], method_items[j]))
+        self._link_related_endpoints(
+            project_id=project_id,
+            path_item_map=path_item_map,
+            links_created=links_created,
+        )
 
         return {
             "project_id": project_id,
@@ -778,133 +972,29 @@ class StatelessIngestionService:
 
     def _ingest_bmad_format(self, data: dict[str, Any], file_path: str, project_id: str | None) -> dict[str, Any]:
         """Ingest BMad format with enhanced requirement linking and traceability."""
-        # Get or create project
-        if not project_id:
-            project_name = data.get("project", {}).get("name", Path(file_path).stem)
-            project = self.session.query(Project).filter(Project.name == project_name).first()
-            if not project:
-                project = Project(
-                    id=str(uuid4()),
-                    name=project_name,
-                    description=data.get("project", {}).get("description", ""),
-                )
-                self.session.add(project)
-                self.session.flush()
-            project_id = str(project.id)
+        project_id = self._ensure_bmad_project_id(data, file_path, project_id)
+        links_created: list[tuple[str, str]] = []
 
-        items_created = []
-        links_created = []
-        req_id_map: dict[str, str] = {}  # requirement_id -> item_id
+        requirements = self._extract_bmad_requirements(data)
+        items_created, req_id_map = self._create_bmad_requirement_items(
+            requirements,
+            project_id=project_id,
+            file_path=file_path,
+        )
 
-        # BMad format structure - support multiple requirement types
-        requirements = data.get("requirements", [])
-        if not requirements:
-            # Try alternative structure
-            requirements = data.get("spec", {}).get("requirements", [])
-
-        # Create items for requirements
-        for req in requirements:
-            req_id = req.get("id", req.get("requirement_id", str(uuid4())))
-            title = req.get("title", req.get("name", req_id))
-
-            # Determine view based on requirement type
-            req_type = req.get("type", "requirement")
-            view = "FEATURE"
-            if req_type in ["test", "test_case", "test_spec"]:
-                view = "TEST"
-            elif req_type in ["code", "implementation", "component"]:
-                view = "CODE"
-            elif req_type in ["api", "endpoint", "service"]:
-                view = "API"
-
-            item = Item(
-                id=str(uuid4()),
-                project_id=project_id,
-                title=title,
-                view=view,
-                item_type=req_type,
-                status=req.get("status", "todo"),
-                description=req.get("description", req.get("text", "")),
-                parent_id=req_id_map.get(req.get("parent_id")) if req.get("parent_id") else None,
-                item_metadata={
-                    "source_file": file_path,
-                    "format": "bmad",
-                    "requirement_id": req_id,
-                    "priority": req.get("priority", "medium"),
-                    "owner": req.get("owner"),
-                    "tags": req.get("tags", []),
-                    **{
-                        k: v
-                        for k, v in req.items()
-                        if k not in ["id", "title", "description", "text", "type", "status", "parent_id"]
-                    },
-                },
-                version=1,
-            )
-            self.session.add(item)
-            self.session.flush()
-            req_id_map[req_id] = str(item.id)
-            items_created.append(str(item.id))
-
-        # Create traceability links
-        traceability = data.get("traceability", [])
-        if not traceability:
-            traceability = data.get("spec", {}).get("traceability", [])
-
-        for trace in traceability:
-            source_id = trace.get("source")
-            target_id = trace.get("target")
-            link_type = trace.get("type", "traces_to")
-
-            if source_id in req_id_map and target_id in req_id_map:
-                link = Link(
-                    id=str(uuid4()),
-                    project_id=project_id,
-                    source_item_id=req_id_map[source_id],
-                    target_item_id=req_id_map[target_id],
-                    link_type=link_type,
-                    metadata={
-                        "format": "bmad",
-                        "traceability_rule": trace.get("rule"),
-                    },
-                )
-                self.session.add(link)
-                links_created.append((req_id_map[source_id], req_id_map[target_id]))
-
-        # Also create links from requirement dependencies
-        for req in requirements:
-            req_id = req.get("id", req.get("requirement_id"))
-            if req_id not in req_id_map:
-                continue
-
-            # Link to parent
-            parent_id = req.get("parent_id")
-            if parent_id and parent_id in req_id_map:
-                link = Link(
-                    id=str(uuid4()),
-                    project_id=project_id,
-                    source_item_id=req_id_map[req_id],
-                    target_item_id=req_id_map[parent_id],
-                    link_type="child_of",
-                )
-                self.session.add(link)
-                links_created.append((req_id_map[req_id], req_id_map[parent_id]))
-
-            # Link to dependencies
-            depends_on = req.get("depends_on", [])
-            if isinstance(depends_on, str):
-                depends_on = [depends_on]
-            for dep_id in depends_on:
-                if dep_id in req_id_map:
-                    link = Link(
-                        id=str(uuid4()),
-                        project_id=project_id,
-                        source_item_id=req_id_map[req_id],
-                        target_item_id=req_id_map[dep_id],
-                        link_type="depends_on",
-                    )
-                    self.session.add(link)
-                    links_created.append((req_id_map[req_id], req_id_map[dep_id]))
+        traceability = data.get("traceability", []) or data.get("spec", {}).get("traceability", [])
+        self._create_bmad_traceability_links(
+            traceability,
+            project_id=project_id,
+            req_id_map=req_id_map,
+            links_created=links_created,
+        )
+        self._create_bmad_dependency_links(
+            requirements,
+            project_id=project_id,
+            req_id_map=req_id_map,
+            links_created=links_created,
+        )
 
         return {
             "project_id": project_id,
@@ -924,72 +1014,21 @@ class StatelessIngestionService:
         view: str,
     ) -> dict[str, Any]:
         """Ingest generic YAML structure."""
-        # Get or create project
-        if not project_id:
-            project_name = data.get("name", Path(file_path).stem)
-            project = self.session.query(Project).filter(Project.name == project_name).first()
-            if not project:
-                project = Project(
-                    id=str(uuid4()),
-                    name=project_name,
-                    description=data.get("description", ""),
-                )
-                self.session.add(project)
-                self.session.flush()
-            project_id = str(project.id)
-
-        items_created = []
-
-        # Recursively process YAML structure
-        def process_dict(d: dict[str, Any], parent_id: str | None = None) -> None:
-            for key, value in d.items():
-                if isinstance(value, dict[str, Any]):
-                    # Create item for this key
-                    item = Item(
-                        id=str(uuid4()),
-                        project_id=project_id,
-                        title=str(key),
-                        view=view,
-                        item_type="section",
-                        status="todo",
-                        description=str(value.get("description", "")),
-                        item_metadata={
-                            "source_file": file_path,
-                            "format": "yaml",
-                            "yaml_data": value,
-                        },
-                        parent_id=parent_id,
-                        version=1,
-                    )
-                    self.session.add(item)
-                    self.session.flush()
-                    items_created.append(str(item.id))
-                    # Recursively process nested dict
-                    process_dict(value, str(item.id))
-                elif isinstance(value, list[Any]):
-                    for i, item_data in enumerate(value):
-                        if isinstance(item_data, dict[str, Any]):
-                            item = Item(
-                                id=str(uuid4()),
-                                project_id=project_id,
-                                title=item_data.get("title", item_data.get("name", f"{key}_{i}")),
-                                view=view,
-                                item_type="item",
-                                status="todo",
-                                description=str(item_data.get("description", "")),
-                                item_metadata={
-                                    "source_file": file_path,
-                                    "format": "yaml",
-                                    "yaml_data": item_data,
-                                },
-                                parent_id=parent_id,
-                                version=1,
-                            )
-                            self.session.add(item)
-                            self.session.flush()
-                            items_created.append(str(item.id))
-
-        process_dict(data)
+        project_id = self._get_or_create_project(
+            project_id=project_id,
+            name=data.get("name", Path(file_path).stem),
+            description=data.get("description", ""),
+            validate_existing=False,
+        )
+        items_created: list[str] = []
+        self._ingest_yaml_dict(
+            data,
+            project_id=project_id,
+            file_path=file_path,
+            view=view,
+            items_created=items_created,
+            parent_id=None,
+        )
 
         return {
             "project_id": project_id,

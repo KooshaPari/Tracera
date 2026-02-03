@@ -1,14 +1,6 @@
 import { type FC, useCallback } from "react";
-import type { ContractStatus } from "../../..";
-import {
-	Button,
-	Input,
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
 interface CreateContractModalProps {
@@ -28,8 +20,10 @@ export const CreateContractModal: FC<CreateContractModalProps> = ({
 
 	return (
 		<div className="fixed inset-0 z-50 flex items-center justify-center">
-			<div
+			<button
+				type="button"
 				className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+				aria-label="Close dialog"
 				onClick={onClose}
 			/>
 			<div
@@ -75,18 +69,16 @@ export const CreateContractModal: FC<CreateContractModalProps> = ({
 							>
 								Type
 							</label>
-							<Select>
-								<SelectTrigger id="contract-type" className="h-10">
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="api">API</SelectItem>
-									<SelectItem value="function">Function</SelectItem>
-									<SelectItem value="invariant">Invariant</SelectItem>
-									<SelectItem value="data">Data</SelectItem>
-									<SelectItem value="integration">Integration</SelectItem>
-								</SelectContent>
-							</Select>
+							<select
+								id="contract-type"
+								className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm"
+							>
+								<option value="api">API</option>
+								<option value="function">Function</option>
+								<option value="invariant">Invariant</option>
+								<option value="data">Data</option>
+								<option value="integration">Integration</option>
+							</select>
 						</div>
 
 						<div>
@@ -96,18 +88,16 @@ export const CreateContractModal: FC<CreateContractModalProps> = ({
 							>
 								Status
 							</label>
-							<Select>
-								<SelectTrigger id="contract-status" className="h-10">
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="draft">Draft</SelectItem>
-									<SelectItem value="active">Active</SelectItem>
-									<SelectItem value="verified">Verified</SelectItem>
-									<SelectItem value="violated">Violated</SelectItem>
-									<SelectItem value="deprecated">Deprecated</SelectItem>
-								</SelectContent>
-							</Select>
+							<select
+								id="contract-status"
+								className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm"
+							>
+								<option value="draft">Draft</option>
+								<option value="active">Active</option>
+								<option value="verified">Verified</option>
+								<option value="violated">Violated</option>
+								<option value="deprecated">Deprecated</option>
+							</select>
 						</div>
 					</div>
 

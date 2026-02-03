@@ -3,7 +3,7 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { fetchDependencyAnalysis, fetchImpactAnalysis } from "../../api/impact";
+import impactApi from "../../api/impact";
 
 // Mock endpoints
 vi.mock("../../api/endpoints", () => ({
@@ -20,33 +20,33 @@ describe("Impact API", () => {
 		vi.clearAllMocks();
 	});
 
-	describe(fetchImpactAnalysis, () => {
+	describe(impactApi.fetchImpactAnalysis, () => {
 		it("should fetch impact analysis", async () => {
 			const mockAnalysis = {
-				affected_count: 0,
-				affected_items: [],
+				affectedCount: 0,
+				affectedItems: [],
 				depth: 5,
-				item_id: "item-1",
+				itemId: "item-1",
 			};
 			vi.mocked(graphApi.getImpactAnalysis).mockResolvedValue(mockAnalysis);
 
-			const result = await fetchImpactAnalysis("item-1", 5);
+			const result = await impactApi.fetchImpactAnalysis("item-1", 5);
 			expect(result).toEqual(mockAnalysis);
 			expect(graphApi.getImpactAnalysis).toHaveBeenCalledWith("item-1", 5);
 		});
 	});
 
-	describe(fetchDependencyAnalysis, () => {
+	describe(impactApi.fetchDependencyAnalysis, () => {
 		it("should fetch dependency analysis", async () => {
 			const mockAnalysis = {
 				dependencies: [],
-				dependency_count: 0,
+				dependencyCount: 0,
 				depth: 5,
-				item_id: "item-1",
+				itemId: "item-1",
 			};
 			vi.mocked(graphApi.getDependencyAnalysis).mockResolvedValue(mockAnalysis);
 
-			const result = await fetchDependencyAnalysis("item-1", 5);
+			const result = await impactApi.fetchDependencyAnalysis("item-1", 5);
 			expect(result).toEqual(mockAnalysis);
 			expect(graphApi.getDependencyAnalysis).toHaveBeenCalledWith("item-1", 5);
 		});

@@ -23,6 +23,8 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { api } from "../api/endpoints";
 
+const SIMULATED_GENERATION_DELAY_MS = 1500;
+
 type ReportFormat = "json" | "csv" | "pdf" | "xlsx";
 
 interface ReportTemplate {
@@ -110,7 +112,7 @@ export function ReportsView() {
 				return { success: true };
 			}
 			// Simulate long generation for PDF/XLSX
-			await new Promise((r) => setTimeout(r, 1500));
+			await new Promise((r) => setTimeout(r, SIMULATED_GENERATION_DELAY_MS));
 			toast.info(
 				`${templateId.toUpperCase()} generation initialized in background`,
 			);

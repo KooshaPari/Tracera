@@ -3,6 +3,7 @@
  */
 /* eslint-disable @typescript-eslint/no-unsafe-type-assertion -- mock return values for useItems/useProjects */
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import userEvent from "@testing-library/user-event";
 import { render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useItems } from "../../hooks/useItems";
@@ -32,8 +33,10 @@ vi.mock("../../hooks/useProjects", () => ({
 
 describe(ItemsTreeView, () => {
 	let queryClient: QueryClient;
+	let user: ReturnType<typeof userEvent.setup>;
 
 	beforeEach(() => {
+		user = userEvent.setup();
 		queryClient = new QueryClient({
 			defaultOptions: {
 				mutations: { retry: false },

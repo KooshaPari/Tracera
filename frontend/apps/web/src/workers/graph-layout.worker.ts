@@ -40,263 +40,427 @@ export interface LayoutResult {
 
 export type ProgressCallback = (progress: number) => void;
 
-/**
- * Dagre-style hierarchical layout
- */
-function layoutDagre(
-	nodes: LayoutNode[],
-	edges: LayoutEdge[],
-	options: LayoutOptions,
-	onProgress?: ProgressCallback,
-): LayoutResult {
-	onProgress?.(0);
+type LayoutTaskOptions = LayoutOptions & { onProgress?: ProgressCallback };
 
-	const nodeMap = new Map(nodes.map((n) => [n.id, n]));
+const ZERO = 0;
+const ONE = 1;
+const TWO = 2;
+const DEFAULT_NODE_SEP = 60;
+const DEFAULT_RANK_SEP = 100;
+const DEFAULT_MARGIN_X = 40;
+const DEFAULT_MARGIN_Y = 40;
+const DEFAULT_FORCE_ITERATIONS = 100;
+const DEFAULT_FORCE_WIDTH = 1000;
+const DEFAULT_FORCE_HEIGHT = 800;
+const DEFAULT_FORCE_DAMPING = 0.1;
+const DEFAULT_VELOCITY_DECAY = 0.9;
+const DEFAULT_BOUNDARY_PADDING = 50;
+const DEFAULT_MIN_DISTANCE = 0.01;
+const DEFAULT_GRID_PROGRESS_STEP = 10;
+const PROGRESS_START = 0;
+const PROGRESS_GRAPH_READY = 20;
+const PROGRESS_INDEGREE_READY = 40;
+const PROGRESS_LEVELS_READY = 60;
+const PROGRESS_GROUPED = 80;
+const PROGRESS_COMPLETE = 100;
+
+const reportProgress = (onProgress: ProgressCallback | undefined, value: number): void => {
+	if (onProgress) {
+		onProgress(value);
+	}
+};
+
+const clamp = (value: number, min: number, max: number): number =>
+	Math.max(min, Math.min(max, value));
+
+const createAdjacency = (nodes: LayoutNode[], edges: LayoutEdge[]): Map<string, string[]> => {
 	const graph = new Map<string, string[]>();
-
-	// Build adjacency list
 	for (const node of nodes) {
 		graph.set(node.id, []);
 	}
 	for (const edge of edges) {
-		if (graph.has(edge.source)) {
-			graph.get(edge.source)!.push(edge.target);
+		const targets = graph.get(edge.source);
+		if (targets) {
+			targets.push(edge.target);
 		}
 	}
+	return graph;
+};
 
-	onProgress?.(20);
+const createInDegree = (nodes: LayoutNode[], graph: Map<string, string[]>): Map<string, number> => {
+	const inDegree = new Map<string, number>();
+	for (const node of nodes) {
+		inDegree.set(node.id, ZERO);
+	}
+	for (const targets of graph.values()) {
+		for (const target of targets) {
+			inDegree.set(target, (inDegree.get(target) ?? ZERO) + ONE);
+		}
+	}
+	return inDegree;
+};
 
-	// Topological sort with level assignment
+const assignLevels = (
+	graph: Map<string, string[]>,
+	inDegree: Map<string, number>,
+): { levels: Map<string, number>; maxLevel: number } => {
 	const levels = new Map<string, number>();
 	const visited = new Set<string>();
-	const inDegree = new Map<string, number>();
+	let queue: string[] = [];
 
-	// Calculate in-degrees
-	for (const node of nodes) {
-		inDegree.set(node.id, 0);
-	}
-	for (const [, targets] of graph) {
-		for (const target of targets) {
-			inDegree.set(target, (inDegree.get(target) ?? 0) + 1);
-		}
-	}
-
-	onProgress?.(40);
-
-	// Kahn's algorithm for topological sort
-	const queue: string[] = [];
 	for (const [nodeId, degree] of inDegree) {
-		if (degree === 0) {
+		if (degree === ZERO) {
 			queue.push(nodeId);
-			levels.set(nodeId, 0);
+			levels.set(nodeId, ZERO);
 		}
 	}
 
-	let level = 0;
-	while (queue.length > 0) {
+	let level = ZERO;
+	while (queue.length > ZERO) {
 		const levelSize = queue.length;
 		const nextQueue: string[] = [];
 
-		for (let i = 0; i < levelSize; i += 1) {
-			const nodeId = queue.shift()!;
+		for (let i = ZERO; i < levelSize; i += ONE) {
+			const nodeId = queue[i];
+			if (!nodeId) {
+				continue;
+			}
 			visited.add(nodeId);
 
 			const targets = graph.get(nodeId) ?? [];
 			for (const target of targets) {
-				const newDegree = (inDegree.get(target) ?? 0) - 1;
+				const newDegree = (inDegree.get(target) ?? ZERO) - ONE;
 				inDegree.set(target, newDegree);
 
-				if (newDegree === 0 && !visited.has(target)) {
+				if (newDegree === ZERO && !visited.has(target)) {
 					nextQueue.push(target);
-					levels.set(target, level + 1);
+					levels.set(target, level + ONE);
 				}
 			}
 		}
 
-		queue.push(...nextQueue);
-		level += 1;
+		queue = nextQueue;
+		level += ONE;
 	}
 
-	onProgress?.(60);
+	return { levels, maxLevel: level };
+};
 
-	// Handle remaining nodes (cycles or disconnected)
+const fillMissingLevels = (
+	nodes: LayoutNode[],
+	levels: Map<string, number>,
+	defaultLevel: number,
+): void => {
 	for (const node of nodes) {
 		if (!levels.has(node.id)) {
-			levels.set(node.id, level);
+			levels.set(node.id, defaultLevel);
 		}
 	}
+};
 
-	// Group nodes by level
+const groupByLevel = (levels: Map<string, number>): Map<number, string[]> => {
 	const levelGroups = new Map<number, string[]>();
 	for (const [nodeId, nodeLevel] of levels) {
-		if (!levelGroups.has(nodeLevel)) {
-			levelGroups.set(nodeLevel, []);
+		const group = levelGroups.get(nodeLevel);
+		if (group) {
+			group.push(nodeId);
+		} else {
+			levelGroups.set(nodeLevel, [nodeId]);
 		}
-		levelGroups.get(nodeLevel)!.push(nodeId);
+	}
+	return levelGroups;
+};
+
+const calculateLevelWidth = (
+	nodeIds: string[],
+	nodeMap: Map<string, LayoutNode>,
+	nodeSep: number,
+): number => {
+	const totalNodeWidth = nodeIds.reduce((sum, id) => {
+		const node = nodeMap.get(id);
+		return sum + (node ? node.width : ZERO);
+	}, ZERO);
+	const totalSepWidth = Math.max(ZERO, nodeIds.length - ONE) * nodeSep;
+	return totalNodeWidth + totalSepWidth;
+};
+
+const calculateMaxLevelWidth = (
+	levelGroups: Map<number, string[]>,
+	nodeMap: Map<string, LayoutNode>,
+	nodeSep: number,
+): number => {
+	let maxWidth = ZERO;
+	for (const nodeIds of levelGroups.values()) {
+		const levelWidth = calculateLevelWidth(nodeIds, nodeMap, nodeSep);
+		maxWidth = Math.max(maxWidth, levelWidth);
+	}
+	return maxWidth;
+};
+
+const placeLevelNodes = (
+	nodeIds: string[],
+	nodeMap: Map<string, LayoutNode>,
+	positions: Record<string, { x: number; y: number }>,
+	config: {
+		isHorizontal: boolean;
+		isReverse: boolean;
+		primaryCoord: number;
+		secondaryStart: number;
+		offset: number;
+		nodeSep: number;
+		marginX: number;
+		marginY: number;
+		maxWidth: number;
+		maxHeight: number;
+	},
+): { maxWidth: number; maxHeight: number } => {
+	const {
+		isHorizontal,
+		isReverse,
+		primaryCoord,
+		secondaryStart,
+		offset,
+		nodeSep,
+		marginX,
+		marginY,
+		maxWidth,
+		maxHeight,
+	} = config;
+
+	let currentSecondary = secondaryStart;
+	let nextMaxWidth = maxWidth;
+	let nextMaxHeight = maxHeight;
+
+	for (const nodeId of nodeIds) {
+		const node = nodeMap.get(nodeId);
+		if (!node) {
+			continue;
+		}
+
+		if (isHorizontal) {
+			const x = isReverse ? nextMaxWidth - primaryCoord : primaryCoord;
+			const y = currentSecondary + offset;
+			positions[nodeId] = { x, y };
+			nextMaxWidth = Math.max(nextMaxWidth, x + node.width + marginX);
+			nextMaxHeight = Math.max(nextMaxHeight, y + node.height + marginY);
+		} else {
+			const x = currentSecondary + offset;
+			const y = isReverse ? nextMaxHeight - primaryCoord : primaryCoord;
+			positions[nodeId] = { x, y };
+			nextMaxWidth = Math.max(nextMaxWidth, x + node.width + marginX);
+			nextMaxHeight = Math.max(nextMaxHeight, y + node.height + marginY);
+		}
+
+		currentSecondary += node.width + nodeSep;
 	}
 
-	onProgress?.(80);
+	return { maxHeight: nextMaxHeight, maxWidth: nextMaxWidth };
+};
 
-	// Calculate positions
+const normalizeSize = (width: number, height: number): { width: number; height: number } => ({
+	width: width || DEFAULT_FORCE_WIDTH,
+	height: height || DEFAULT_FORCE_HEIGHT,
+});
+
+/**
+ * Dagre-style hierarchical layout
+ */
+const layoutDagre = (
+	nodes: LayoutNode[],
+	edges: LayoutEdge[],
+	options: LayoutTaskOptions,
+): LayoutResult => {
+	const { onProgress } = options;
+	reportProgress(onProgress, PROGRESS_START);
+
+	const nodeMap = new Map(nodes.map((node) => [node.id, node]));
+	const graph = createAdjacency(nodes, edges);
+	reportProgress(onProgress, PROGRESS_GRAPH_READY);
+
+	const inDegree = createInDegree(nodes, graph);
+	reportProgress(onProgress, PROGRESS_INDEGREE_READY);
+
+	const { levels, maxLevel } = assignLevels(graph, inDegree);
+	reportProgress(onProgress, PROGRESS_LEVELS_READY);
+
+	fillMissingLevels(nodes, levels, maxLevel);
+	const levelGroups = groupByLevel(levels);
+	reportProgress(onProgress, PROGRESS_GROUPED);
+
 	const positions: Record<string, { x: number; y: number }> = {};
-	const nodeSep = options.nodeSep ?? 60;
-	const rankSep = options.rankSep ?? 100;
-	const marginX = options.marginX ?? 40;
-	const marginY = options.marginY ?? 40;
+	const nodeSep = options.nodeSep ?? DEFAULT_NODE_SEP;
+	const rankSep = options.rankSep ?? DEFAULT_RANK_SEP;
+	const marginX = options.marginX ?? DEFAULT_MARGIN_X;
+	const marginY = options.marginY ?? DEFAULT_MARGIN_Y;
 
-	let maxWidth = 0;
-	let maxHeight = 0;
+	let maxWidth = ZERO;
+	let maxHeight = ZERO;
 
 	const direction = options.direction ?? "TB";
 	const isHorizontal = direction === "LR" || direction === "RL";
 	const isReverse = direction === "BT" || direction === "RL";
+	const maxLevelWidth = calculateMaxLevelWidth(levelGroups, nodeMap, nodeSep);
 
 	for (const [nodeLevel, nodeIds] of levelGroups) {
-		const levelNodes = nodeIds.map((id) => nodeMap.get(id)!);
-		const totalLevelWidth = levelNodes.reduce((sum, n) => sum + n.width, 0);
-		const totalSepWidth = (nodeIds.length - 1) * nodeSep;
-
+		const levelWidth = calculateLevelWidth(nodeIds, nodeMap, nodeSep);
+		const offset = (maxLevelWidth - levelWidth) / TWO;
 		const primaryCoord = marginY + nodeLevel * rankSep;
-		let secondaryCoord = marginX;
+		const secondaryStart = marginX;
 
-		// Center nodes in level
-		const levelWidth = totalLevelWidth + totalSepWidth;
-		const maxLevelWidth = Math.max(
-			...[...levelGroups.values()].map((ids) => {
-				const lvlNodes = ids.map((id) => nodeMap.get(id)!);
-				return (
-					lvlNodes.reduce((sum, n) => sum + n.width, 0) +
-					(ids.length - 1) * nodeSep
-				);
-			}),
-		);
-		const offset = (maxLevelWidth - levelWidth) / 2;
-
-		for (const nodeId of nodeIds) {
-			const node = nodeMap.get(nodeId)!;
-
-			if (isHorizontal) {
-				const x = isReverse ? maxWidth - primaryCoord : primaryCoord;
-				const y = secondaryCoord + offset;
-				positions[nodeId] = { x, y };
-				maxWidth = Math.max(maxWidth, x + node.width + marginX);
-				maxHeight = Math.max(maxHeight, y + node.height + marginY);
-			} else {
-				const x = secondaryCoord + offset;
-				const y = isReverse ? maxHeight - primaryCoord : primaryCoord;
-				positions[nodeId] = { x, y };
-				maxWidth = Math.max(maxWidth, x + node.width + marginX);
-				maxHeight = Math.max(maxHeight, y + node.height + marginY);
-			}
-
-			secondaryCoord += node.width + nodeSep;
-		}
+		const updated = placeLevelNodes(nodeIds, nodeMap, positions, {
+			isHorizontal,
+			isReverse,
+			primaryCoord,
+			secondaryStart,
+			offset,
+			nodeSep,
+			marginX,
+			marginY,
+			maxWidth,
+			maxHeight,
+		});
+		maxWidth = updated.maxWidth;
+		maxHeight = updated.maxHeight;
 	}
 
-	onProgress?.(100);
+	reportProgress(onProgress, PROGRESS_COMPLETE);
 
 	return {
 		positions,
-		size: { height: maxHeight || 600, width: maxWidth || 800 },
+		size: normalizeSize(maxWidth, maxHeight),
 	};
-}
+};
 
-/**
- * Force-directed layout (simple spring model)
- */
-function layoutForce(
+const initializeForcePositions = (
 	nodes: LayoutNode[],
-	edges: LayoutEdge[],
-	options: LayoutOptions,
-	onProgress?: ProgressCallback,
-): LayoutResult {
-	const iterations = options.iterations ?? 100;
-	const width = 1000;
-	const height = 800;
-
-	// Initialize random positions
-	const positions = new Map<
-		string,
-		{ x: number; y: number; vx: number; vy: number }
-	>();
+	width: number,
+	height: number,
+): Map<string, { x: number; y: number; vx: number; vy: number }> => {
+	const positions = new Map<string, { x: number; y: number; vx: number; vy: number }>();
 	for (const node of nodes) {
 		positions.set(node.id, {
-			vx: 0,
-			vy: 0,
+			vx: ZERO,
+			vy: ZERO,
 			x: Math.random() * width,
 			y: Math.random() * height,
 		});
 	}
+	return positions;
+};
 
-	const k = Math.sqrt((width * height) / nodes.length);
-	const c = 0.1; // Damping factor
-
-	for (let iteration = 0; iteration < iterations; iteration += 1) {
-		// Repulsive forces between all nodes
-		for (let i = 0; i < nodes.length; i += 1) {
-			const node1 = nodes[i];
-			const pos1 = positions.get(node1.id)!;
-
-			for (let j = i + 1; j < nodes.length; j += 1) {
-				const node2 = nodes[j];
-				const pos2 = positions.get(node2.id)!;
-
-				const dx = pos2.x - pos1.x;
-				const dy = pos2.y - pos1.y;
-				const distance = Math.sqrt(dx * dx + dy * dy) || 0.01;
-
-				const force = (k * k) / distance;
-				const fx = (dx / distance) * force;
-				const fy = (dy / distance) * force;
-
-				pos1.vx -= fx;
-				pos1.vy -= fy;
-				pos2.vx += fx;
-				pos2.vy += fy;
-			}
+const applyRepulsion = (
+	nodes: LayoutNode[],
+	positions: Map<string, { x: number; y: number; vx: number; vy: number }>,
+	k: number,
+): void => {
+	for (let i = ZERO; i < nodes.length; i += ONE) {
+		const node1 = nodes[i];
+		if (!node1) {
+			continue;
+		}
+		const pos1 = positions.get(node1.id);
+		if (!pos1) {
+			continue;
 		}
 
-		// Attractive forces along edges
-		for (const edge of edges) {
-			const pos1 = positions.get(edge.source);
-			const pos2 = positions.get(edge.target);
-
-			if (!pos1 || !pos2) {
+		for (let j = i + ONE; j < nodes.length; j += ONE) {
+			const node2 = nodes[j];
+			if (!node2) {
+				continue;
+			}
+			const pos2 = positions.get(node2.id);
+			if (!pos2) {
 				continue;
 			}
 
 			const dx = pos2.x - pos1.x;
 			const dy = pos2.y - pos1.y;
-			const distance = Math.sqrt(dx * dx + dy * dy) || 0.01;
+			const distance = Math.max(Math.hypot(dx, dy), DEFAULT_MIN_DISTANCE);
+			const force = (k * k) / distance;
 
-			const force = distance / k;
-			const fx = (dx / distance) * force;
-			const fy = (dy / distance) * force;
-
-			pos1.vx += fx;
-			pos1.vy += fy;
-			pos2.vx -= fx;
-			pos2.vy -= fy;
-		}
-
-		// Update positions with damping
-		for (const [_nodeId, pos] of positions) {
-			pos.x += pos.vx * c;
-			pos.y += pos.vy * c;
-			pos.vx *= 0.9;
-			pos.vy *= 0.9;
-
-			// Keep within bounds
-			pos.x = Math.max(50, Math.min(width - 50, pos.x));
-			pos.y = Math.max(50, Math.min(height - 50, pos.y));
-		}
-
-		if (iteration % 10 === 0) {
-			onProgress?.((iteration / iterations) * 100);
+			pos1.vx -= (dx / distance) * force;
+			pos1.vy -= (dy / distance) * force;
+			pos2.vx += (dx / distance) * force;
+			pos2.vy += (dy / distance) * force;
 		}
 	}
+};
 
-	onProgress?.(100);
+const applyAttraction = (
+	edges: LayoutEdge[],
+	positions: Map<string, { x: number; y: number; vx: number; vy: number }>,
+	k: number,
+): void => {
+	for (const edge of edges) {
+		const pos1 = positions.get(edge.source);
+		const pos2 = positions.get(edge.target);
+
+		if (!pos1 || !pos2) {
+			continue;
+		}
+
+		const dx = pos2.x - pos1.x;
+		const dy = pos2.y - pos1.y;
+		const distance = Math.max(Math.hypot(dx, dy), DEFAULT_MIN_DISTANCE);
+		const force = distance / k;
+
+		pos1.vx += (dx / distance) * force;
+		pos1.vy += (dy / distance) * force;
+		pos2.vx -= (dx / distance) * force;
+		pos2.vy -= (dy / distance) * force;
+	}
+};
+
+const updateForcePositions = (
+	positions: Map<string, { x: number; y: number; vx: number; vy: number }>,
+	width: number,
+	height: number,
+): void => {
+	for (const pos of positions.values()) {
+		pos.x += pos.vx * DEFAULT_FORCE_DAMPING;
+		pos.y += pos.vy * DEFAULT_FORCE_DAMPING;
+		pos.vx *= DEFAULT_VELOCITY_DECAY;
+		pos.vy *= DEFAULT_VELOCITY_DECAY;
+
+		pos.x = clamp(pos.x, DEFAULT_BOUNDARY_PADDING, width - DEFAULT_BOUNDARY_PADDING);
+		pos.y = clamp(pos.y, DEFAULT_BOUNDARY_PADDING, height - DEFAULT_BOUNDARY_PADDING);
+	}
+};
+
+const reportIteration = (
+	onProgress: ProgressCallback | undefined,
+	iteration: number,
+	iterations: number,
+): void => {
+	if (iteration % DEFAULT_GRID_PROGRESS_STEP === ZERO) {
+		reportProgress(onProgress, (iteration / iterations) * PROGRESS_COMPLETE);
+	}
+};
+
+/**
+ * Force-directed layout (simple spring model)
+ */
+const layoutForce = (
+	nodes: LayoutNode[],
+	edges: LayoutEdge[],
+	options: LayoutTaskOptions,
+): LayoutResult => {
+	const { onProgress } = options;
+	const iterations = options.iterations ?? DEFAULT_FORCE_ITERATIONS;
+	const width = DEFAULT_FORCE_WIDTH;
+	const height = DEFAULT_FORCE_HEIGHT;
+
+	const positions = initializeForcePositions(nodes, width, height);
+	const k = Math.sqrt((width * height) / Math.max(nodes.length, ONE));
+
+	for (let iteration = ZERO; iteration < iterations; iteration += ONE) {
+		applyRepulsion(nodes, positions, k);
+		applyAttraction(edges, positions, k);
+		updateForcePositions(positions, width, height);
+		reportIteration(onProgress, iteration, iterations);
+	}
+
+	reportProgress(onProgress, PROGRESS_COMPLETE);
 
 	const result: Record<string, { x: number; y: number }> = {};
 	for (const [nodeId, pos] of positions) {
@@ -307,31 +471,31 @@ function layoutForce(
 		positions: result,
 		size: { height, width },
 	};
-}
+};
 
 /**
  * Grid layout (fallback for unsupported layouts)
  */
-function layoutGrid(
+const layoutGrid = (
 	nodes: LayoutNode[],
 	_edges: LayoutEdge[],
-	options: LayoutOptions,
-	onProgress?: ProgressCallback,
-): LayoutResult {
-	onProgress?.(0);
+	options: LayoutTaskOptions,
+): LayoutResult => {
+	const { onProgress } = options;
+	reportProgress(onProgress, PROGRESS_START);
 
 	const positions: Record<string, { x: number; y: number }> = {};
 	const perRow = Math.ceil(Math.sqrt(nodes.length));
-	const nodeSep = options.nodeSep ?? 60;
-	const marginX = options.marginX ?? 40;
-	const marginY = options.marginY ?? 40;
+	const nodeSep = options.nodeSep ?? DEFAULT_NODE_SEP;
+	const marginX = options.marginX ?? DEFAULT_MARGIN_X;
+	const marginY = options.marginY ?? DEFAULT_MARGIN_Y;
 
-	let maxWidth = 0;
-	let maxHeight = 0;
+	let maxWidth = ZERO;
+	let maxHeight = ZERO;
 
-	nodes.forEach((node, i) => {
-		const col = i % perRow;
-		const row = Math.floor(i / perRow);
+	nodes.forEach((node, index) => {
+		const col = index % perRow;
+		const row = Math.floor(index / perRow);
 
 		const x = marginX + col * (node.width + nodeSep);
 		const y = marginY + row * (node.height + nodeSep);
@@ -340,46 +504,45 @@ function layoutGrid(
 		maxWidth = Math.max(maxWidth, x + node.width + marginX);
 		maxHeight = Math.max(maxHeight, y + node.height + marginY);
 
-		if (i % 10 === 0) {
-			onProgress?.((i / nodes.length) * 100);
+		if (index % DEFAULT_GRID_PROGRESS_STEP === ZERO) {
+			reportProgress(onProgress, (index / Math.max(nodes.length, ONE)) * PROGRESS_COMPLETE);
 		}
 	});
 
-	onProgress?.(100);
+	reportProgress(onProgress, PROGRESS_COMPLETE);
 
 	return {
 		positions,
 		size: { height: maxHeight, width: maxWidth },
 	};
-}
+};
 
 /**
  * Main layout function
  */
-function computeLayout(
+const computeLayout = (
 	nodes: LayoutNode[],
 	edges: LayoutEdge[],
-	options: LayoutOptions,
-	onProgress?: ProgressCallback,
-): LayoutResult {
-	if (nodes.length === 0) {
-		return { positions: {}, size: { height: 0, width: 0 } };
+	options: LayoutTaskOptions,
+): LayoutResult => {
+	if (nodes.length === ZERO) {
+		return { positions: {}, size: { height: ZERO, width: ZERO } };
 	}
 
 	switch (options.type) {
 		case "dagre":
 		case "hierarchical":
 		case "elk": {
-			return layoutDagre(nodes, edges, options, onProgress);
+			return layoutDagre(nodes, edges, options);
 		}
 		case "force": {
-			return layoutForce(nodes, edges, options, onProgress);
+			return layoutForce(nodes, edges, options);
 		}
 		default: {
-			return layoutGrid(nodes, edges, options, onProgress);
+			return layoutGrid(nodes, edges, options);
 		}
 	}
-}
+};
 
 // Worker API
 const api = {

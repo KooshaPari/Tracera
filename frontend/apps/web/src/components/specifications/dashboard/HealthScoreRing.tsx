@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 // Constants for animation and styling
-const ANIMATION_DURATION_MS = 500;
+const _ANIMATION_DURATION_MS = 500;
 const FRAME_INTERVAL_MS = 16; // ~60fps
 const ANIMATION_STEPS = 30;
 const SCORE_EXCELLENT = 90;
@@ -152,8 +152,8 @@ export const HealthScoreRing = ({
 					animate={{ opacity: 1, y: 0 }}
 					transition={{ delay: 0.4 }}
 				>
-					{data.map((item, idx) => (
-						<div key={idx} className="flex items-center gap-2">
+					{data.map((item) => (
+						<div key={item.name} className="flex items-center gap-2">
 							<div
 								className="w-3 h-3 rounded-full shrink-0"
 								style={{ backgroundColor: item.color }}

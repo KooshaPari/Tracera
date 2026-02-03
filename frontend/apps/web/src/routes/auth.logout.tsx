@@ -19,17 +19,17 @@ const LogoutPage = () => {
 				await logout();
 				await Promise.resolve(signOut());
 				setTimeout(() => {
-					void navigate({ to: "/auth/login" });
+					navigate({ to: "/auth/login" });
 				}, LOGOUT_REDIRECT_DELAY_MS);
 			} catch (error) {
 				logger.error("Logout error:", error);
-				void navigate({ to: "/auth/login" });
+				navigate({ to: "/auth/login" });
 			} finally {
 				setIsLoggingOut(false);
 			}
 		};
 
-		void performLogout();
+		performLogout();
 	}, [logout, signOut, navigate]);
 
 	return (

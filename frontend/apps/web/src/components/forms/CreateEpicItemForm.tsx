@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { X } from "lucide-react";
 import { useCallback, useEffect, useRef } from "react";
+import type { Resolver } from "react-hook-form";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import {
@@ -75,7 +76,7 @@ export function CreateEpicItemForm({
 	} = useForm<EpicFormData>({
 		defaultValues: { priority: "medium", status: "todo" },
 		mode: "onBlur",
-		resolver: zodResolver(epicSchema),
+		resolver: zodResolver(epicSchema) as Resolver<EpicFormData>,
 	});
 
 	const onSubmitWithAnnouncement = useCallback(
@@ -166,7 +167,7 @@ export function CreateEpicItemForm({
 
 				<form
 					ref={formRef}
-					onSubmit={handleSubmit(onSubmitWithAnnouncement)}
+					onSubmit={handleSubmit(onSubmitWithAnnouncement as (data: EpicFormData) => void)}
 					className="mt-6 space-y-6"
 				>
 					{/* Epic Details Section */}

@@ -12,6 +12,24 @@ import type { RequirementNodeData } from "../nodes/RequirementNode";
 import type { TestNodeData } from "../nodes/TestNode";
 import type { RichNodeData } from "../RichNodePill";
 
+type NormalizedTestStatus = TestNodeData["lastRunStatus"];
+
+function normalizeTestStatus(
+	status: TestItem["lastExecutionResult"],
+): NormalizedTestStatus {
+	switch (status) {
+		case "passed":
+		case "failed":
+		case "skipped":
+		case "error":
+			return status;
+		case "blocked":
+			return "failed";
+		default:
+			return undefined;
+	}
+}
+
 /**
  * Type guards
  */
@@ -42,7 +60,7 @@ function transformTestItem(item: TestItem): Partial<TestNodeData> {
 		coveragePercent: metadata["coveragePercent"] as number | undefined,
 		flakinessScore: metadata["flakinessScore"] as number | undefined,
 		framework: metadata["framework"] as string | undefined,
-		lastRunStatus: item["lastExecutionResult"],
+		lastRunStatus: normalizeTestStatus(item["lastExecutionResult"]),
 		safetyLevel: metadata["safetyLevel"] as
 			| "safe"
 			| "quarantined"
@@ -62,26 +80,26 @@ function transformRequirementItem(
 	const { qualityMetrics } = item;
 
 	return {
-		earsPatternType: metadata.earsPatternType as
+		earsPatternType: metadata["earsPatternType"] as
 			| "ubiquitous"
 			| "event_driven"
 			| "state_driven"
 			| "optional"
 			| "unwanted"
 			| undefined,
-		riskLevel: metadata.riskLevel as
+		riskLevel: metadata["riskLevel"] as
 			| "low"
 			| "medium"
 			| "high"
 			| "critical"
 			| undefined,
 		verifiabilityScore: qualityMetrics?.completenessScore,
-		verificationStatus: metadata.verificationStatus as
+		verificationStatus: metadata["verificationStatus"] as
 			| "not_verified"
 			| "partially_verified"
 			| "verified"
 			| undefined,
-		wsjfScore: metadata.wsjfScore as number | undefined,
+		wsjfScore: metadata["wsjfScore"] as number | undefined,
 	};
 }
 
@@ -98,15 +116,15 @@ function transformEpicItem(item: EpicItem): Partial<EpicNodeData> {
 					| "medium"
 					| "high"
 					| "critical")
-			: (metadata.businessValue as
+			: (metadata["businessValue"] as
 					| "low"
 					| "medium"
 					| "high"
 					| "critical"
 					| undefined),
-		completedStoryCount: metadata.completedStoryCount as number | undefined,
-		storyCount: metadata.storyCount as number | undefined,
-		timelineProgress: metadata.timelineProgress as number | undefined,
+		completedStoryCount: metadata["completedStoryCount"] as number | undefined,
+		storyCount: metadata["storyCount"] as number | undefined,
+		timelineProgress: metadata["timelineProgress"] as number | undefined,
 	};
 }
 

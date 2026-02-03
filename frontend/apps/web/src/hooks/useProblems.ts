@@ -14,6 +14,24 @@ const { getAuthHeaders } = client;
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
+const IMPACT_LEVEL_BY_NUMBER: Record<number, ImpactLevel> = {
+	1: "low",
+	2: "medium",
+	3: "high",
+	4: "critical",
+};
+
+function toImpactLevel(value: unknown): ImpactLevel {
+	if (value === undefined || value === null) return "medium";
+	if (typeof value === "string" && ["critical", "high", "medium", "low"].includes(value)) {
+		return value as ImpactLevel;
+	}
+	if (typeof value === "number" && value in IMPACT_LEVEL_BY_NUMBER) {
+		return IMPACT_LEVEL_BY_NUMBER[value];
+	}
+	return "medium";
+}
+
 // Transform API response (snake_case) to frontend format (camelCase)
 function transformProblem(data: Record<string, unknown>): Problem {
 	return {
@@ -33,7 +51,7 @@ function transformProblem(data: Record<string, unknown>): Problem {
 		createdAt: data["created_at"] as string,
 		description: data["description"] as string | undefined,
 		id: data["id"] as string,
-		impactLevel: data["impact_level"] as ImpactLevel,
+		impactLevel: toImpactLevel(data["impact_level"]),
 		knowledgeArticleId: data["knowledge_article_id"] as string | undefined,
 		knownErrorId: data["known_error_id"] as string | undefined,
 		metadata: data["metadata"] as Record<string, unknown> | undefined,
@@ -46,7 +64,7 @@ function transformProblem(data: Record<string, unknown>): Problem {
 		permanentFixImplementedAt: data["permanent_fix_implemented_at"] as
 			| string
 			| undefined,
-		priority: data["priority"] as ImpactLevel,
+		priority: toImpactLevel(data["priority"]),
 		problemNumber: data["problem_number"] as string,
 		projectId: data["project_id"] as string,
 		rcaCompletedAt: data["rca_completed_at"] as string | undefined,
@@ -68,7 +86,7 @@ function transformProblem(data: Record<string, unknown>): Problem {
 		targetResolutionDate: data["target_resolution_date"] as string | undefined,
 		title: data["title"] as string,
 		updatedAt: data["updated_at"] as string,
-		urgency: data["urgency"] as ImpactLevel,
+		urgency: toImpactLevel(data["urgency"]),
 		version: (data["version"] as number | undefined) ?? 0,
 		workaroundAvailable: data["workaround_available"] as boolean,
 		workaroundDescription: data["workaround_description"] as string | undefined,
@@ -396,7 +414,7 @@ export function useCreateProblem() {
 	return useMutation({
 		mutationFn: createProblem,
 		onSuccess: () => {
-			void queryClient.invalidateQueries({ queryKey: ["problems"] });
+			queryClient.invalidateQueries({ queryKey: ["problems"] });
 		},
 	});
 }
@@ -412,7 +430,7 @@ export function useUpdateProblem() {
 			data: Partial<CreateProblemData>;
 		}) => updateProblem(id, data),
 		onSuccess: (_, _vars) => {
-			void queryClient.invalidateQueries({ queryKey: ["problems"] });
+			queryClient.invalidateQueries({ queryKey: ["problems"] });
 		},
 	});
 }
@@ -430,7 +448,7 @@ export function useTransitionProblemStatus() {
 			reason?: string;
 		}) => transitionProblemStatus(id, toStatus, reason),
 		onSuccess: () => {
-			void queryClient.invalidateQueries({ queryKey: ["problems"] });
+			queryClient.invalidateQueries({ queryKey: ["problems"] });
 		},
 	});
 }
@@ -441,7 +459,7 @@ export function useRecordRCA() {
 		mutationFn: ({ id, data }: { id: string; data: RCAData }) =>
 			recordRCA(id, data),
 		onSuccess: () => {
-			void queryClient.invalidateQueries({ queryKey: ["problems"] });
+			queryClient.invalidateQueries({ queryKey: ["problems"] });
 		},
 	});
 }
@@ -459,7 +477,7 @@ export function useCloseProblem() {
 			closureNotes?: string;
 		}) => closeProblem(id, resolutionType, closureNotes),
 		onSuccess: () => {
-			void queryClient.invalidateQueries({ queryKey: ["problems"] });
+			queryClient.invalidateQueries({ queryKey: ["problems"] });
 		},
 	});
 }
@@ -469,7 +487,7 @@ export function useDeleteProblem() {
 	return useMutation({
 		mutationFn: deleteProblem,
 		onSuccess: () => {
-			void queryClient.invalidateQueries({ queryKey: ["problems"] });
+			queryClient.invalidateQueries({ queryKey: ["problems"] });
 		},
 	});
 }

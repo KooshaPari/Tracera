@@ -42,6 +42,11 @@ from tracertm.services.contract_service import ContractService
 from tracertm.services.feature_service import CreateFeatureInput, FeatureService
 from tracertm.services.scenario_service import ScenarioService
 
+MIN_ADR_CONTEXT_LEN = 50
+MIN_ADR_DECISION_LEN = 20
+MIN_ADR_CONSEQUENCES_LEN = 20
+MIN_CONTRACT_TITLE_LEN = 10
+
 # =============================================================================
 # Response Models
 # =============================================================================
@@ -326,15 +331,15 @@ async def verify_adr_compliance(
         warnings = []
 
         # Verify context is present and detailed
-        if not adr.context or len(adr.context) < 50:
+        if not adr.context or len(adr.context) < MIN_ADR_CONTEXT_LEN:
             issues.append("Context must be detailed (minimum 50 characters)")
 
         # Verify decision is present
-        if not adr.decision or len(adr.decision) < 20:
+        if not adr.decision or len(adr.decision) < MIN_ADR_DECISION_LEN:
             issues.append("Decision must be present and clear (minimum 20 characters)")
 
         # Verify consequences are documented
-        if not adr.consequences or len(adr.consequences) < 20:
+        if not adr.consequences or len(adr.consequences) < MIN_ADR_CONSEQUENCES_LEN:
             warnings.append("Consequences should be documented")
 
         # Verify traceability
@@ -598,7 +603,7 @@ async def verify_contract_compliance(
             issues.append("Postconditions must be defined")
 
         # Verify title
-        if not contract.title or len(contract.title) < 10:
+        if not contract.title or len(contract.title) < MIN_CONTRACT_TITLE_LEN:
             issues.append("Title must be present and descriptive")
 
         # Check for state machine if transitions are defined

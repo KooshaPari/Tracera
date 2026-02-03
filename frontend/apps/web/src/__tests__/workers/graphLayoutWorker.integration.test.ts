@@ -243,7 +243,10 @@ describe("Graph Layout Worker Implementation", () => {
 				target: `${i + 1}`,
 			}));
 
-			const benchmark = await benchmarkLayout(nodes, edges, "grid", 3);
+			const benchmark = await benchmarkLayout(nodes, edges, {
+				algorithm: "grid",
+				iterations: 3,
+			});
 
 			expect(benchmark.algorithm).toBe("grid");
 			expect(benchmark.nodeCount).toBe(10);

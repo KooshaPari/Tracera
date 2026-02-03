@@ -17,7 +17,6 @@ describe(BulkActionToolbar, () => {
 	const getMockDelete = () => vi.fn();
 	const getMockSelectAll = () => vi.fn();
 	const getMockSelectNone = () => vi.fn();
-	const _getMockOnActionComplete = () => vi.fn();
 
 	const getDeleteAction = (): BulkAction => ({
 		action: getMockDelete(),

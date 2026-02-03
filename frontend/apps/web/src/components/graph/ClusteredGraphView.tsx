@@ -34,7 +34,7 @@ import {
 	ZoomIn,
 	ZoomOut,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ClusterNode as _ClusterNodeType } from "../../lib/graphClustering";
 import { useClusterEdges, useClustering } from "../../hooks/useClustering";
 import type { ClusteringAlgorithm } from "../../hooks/useClustering";
@@ -47,7 +47,6 @@ import { NodeDetailPanel } from "./NodeDetailPanel";
 import { RichNodePill } from "./RichNodePill";
 import type { RichNodeData } from "./RichNodePill";
 import type { EnhancedNodeData } from "./types";
-import { ENHANCED_TYPE_COLORS } from "./types";
 
 const customNodeTypes = {
 	clusterNode: ClusterNode,
@@ -125,7 +124,7 @@ export function ClusteredGraphView({
 					onDrillDown: drillDownToCluster,
 					onItemSelect: setSelectedNodeId,
 					onToggle: toggleCluster,
-				} as ClusterNodeData,
+				} as ClusterNodeData as Record<string, unknown>,
 				id: cluster.id,
 				position: { x: 0, y: 0 },
 				type: "clusterNode",
@@ -498,7 +497,7 @@ export function ClusteredGraphView({
 								perspective: [],
 								status: selectedNode.status,
 								type: selectedNode.type || "item",
-							} as EnhancedNodeData
+							} as unknown as EnhancedNodeData
 						}
 						relatedItems={relatedItems}
 						incomingLinks={incomingLinks}

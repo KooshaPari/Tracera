@@ -4,6 +4,7 @@
  */
 
 import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import type {
 	CanonicalConcept,
 	CanonicalProjection,
@@ -95,13 +96,13 @@ describe("EquivalencePanel Component", () => {
 	let onViewItem: ReturnType<typeof vi.fn>;
 	let onConfirmEquivalence: ReturnType<typeof vi.fn>;
 	let onRejectEquivalence: ReturnType<typeof vi.fn>;
-	let _onCreateEquivalence: ReturnType<typeof vi.fn>;
+	let user: ReturnType<typeof userEvent.setup>;
 
 	beforeEach(() => {
 		onViewItem = vi.fn();
 		onConfirmEquivalence = vi.fn();
 		onRejectEquivalence = vi.fn();
-		_onCreateEquivalence = vi.fn();
+		user = userEvent.setup();
 		vi.clearAllMocks();
 	});
 
@@ -399,7 +400,7 @@ describe("EquivalencePanel Component", () => {
 		});
 
 		it("stops event propagation when clicking action buttons", async () => {
-			render(
+			const { container } = render(
 				<EquivalencePanel
 					selectedItem={mockItem}
 					equivalenceLinks={[mockSuggestedLink]}
@@ -489,7 +490,7 @@ describe("EquivalencePanel Component", () => {
 
 	describe("Loading States", () => {
 		it("shows loading spinner when isLoading is true", () => {
-			render(
+			const { container } = render(
 				<EquivalencePanel
 					selectedItem={mockItem}
 					equivalenceLinks={[]}

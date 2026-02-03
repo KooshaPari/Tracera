@@ -6,7 +6,7 @@ import { logger } from "@/lib/logger";
 const DashboardView = lazy(() =>
 	import("@/views/DashboardView").then((m) => {
 		const Comp = m.DashboardView;
-		if (Comp == null) {
+		if (Comp === null || Comp === undefined) {
 			logger.error("DashboardView module did not export a component", m);
 			return {
 				default: () => (
@@ -41,12 +41,15 @@ export const Route = createFileRoute("/home")({
 	loader: async () => {
 		// Preload dashboard data for enterprise feel
 		try {
-			const [{ fetchProjects }, { fetchRecentItems }, { fetchSystemStatus }] =
-				await Promise.all([
-					import("@/api/projects"),
-					import("@/api/items"),
-					import("@/api/system"),
-				]);
+			const [
+				{ fetchProjects },
+				{ fetchRecentItems },
+				{ fetchSystemStatus },
+			] = await Promise.all([
+				import("@/api/projects"),
+				import("@/api/items"),
+				import("@/api/system"),
+			]);
 
 			const [projects, recentItems, systemStatus] = await Promise.all([
 				fetchProjects().catch(() => []),

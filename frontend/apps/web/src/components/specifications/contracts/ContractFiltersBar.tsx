@@ -1,17 +1,7 @@
 import { type FC, useCallback, useMemo } from "react";
-import type { Contract, ContractStatus } from "../../..";
-import {
-	Card,
-	Filter,
-	Input,
-	Search,
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-	Shield,
-} from "lucide-react";
+import { Card, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@tracertm/ui";
+import { Filter, Search, Shield } from "lucide-react";
+import type { Contract, ContractStatus } from "@tracertm/types";
 
 interface ContractFiltersBarProps {
 	readonly searchQuery: string;

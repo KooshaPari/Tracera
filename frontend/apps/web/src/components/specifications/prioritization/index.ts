@@ -16,9 +16,9 @@ export {
 	RICEBreakdown,
 	RICEScoreBadge,
 	RICEScoreCard,
-} from "./RICEScoreCard";
+} from "./RiceScoreCard";
 // WSJF (Weighted Shortest Job First)
 export {
 	WSJFCalculator,
 	WSJFScoreBadge,
-} from "./WSJFCalculator";
+} from "./WsjfCalculator";

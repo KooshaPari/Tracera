@@ -1,4 +1,5 @@
 /* eslint-disable func-style, jsx-a11y/click-events-have-key-events, jsx-max-depth, max-lines-per-function, no-magic-numbers, react-perf/jsx-no-new-object-as-prop, react-perf/jsx-no-new-function-as-prop, sort-imports */
+const MAX_CLUSTER_SIZE = 200;
 /**
  * Cluster Node Component
  *
@@ -78,7 +79,7 @@ function isClusterNodeData(data: unknown): data is ClusterNodeData {
 function getClusterSize(nodeCount: number): { width: number; height: number } {
 	const baseSize = 80;
 	const scaleFactor = Math.log10(nodeCount + 1) * 20;
-	const size = Math.min(baseSize + scaleFactor, 200);
+	const size = Math.min(baseSize + scaleFactor, MAX_CLUSTER_SIZE);
 
 	return { height: size, width: size };
 }
@@ -102,8 +103,20 @@ function CollapsedClusterView({
 		cluster.metadata.internalEdges /
 		Math.max((cluster.size * (cluster.size - 1)) / 2, 1);
 
+	const handleKeyDown = useCallback(
+		(e: React.KeyboardEvent) => {
+			if (e.key === "Enter" || e.key === " ") {
+				e.preventDefault();
+				onToggle();
+			}
+		},
+		[onToggle],
+	);
+
 	return (
 		<div
+			role="button"
+			tabIndex={0}
 			className={cn(
 				"rounded-lg border-2 bg-background/95 backdrop-blur-sm",
 				"hover:shadow-xl hover:border-primary/60 transition-all cursor-pointer",
@@ -116,6 +129,7 @@ function CollapsedClusterView({
 				width,
 			}}
 			onClick={onToggle}
+			onKeyDown={handleKeyDown}
 		>
 			{/* Level indicator */}
 			<div className="absolute top-1 left-1">
@@ -337,11 +351,19 @@ function ExpandedClusterView({
 					{items.slice(0, 10).map((item) => (
 						<div
 							key={item.id}
+							role="button"
+							tabIndex={0}
 							className={cn(
 								"p-2 rounded-md border bg-card text-xs hover:bg-accent transition-colors",
 								"cursor-pointer truncate",
 							)}
 							onClick={() => data.onItemSelect?.(item.id)}
+							onKeyDown={(e) => {
+								if ((e.key === "Enter" || e.key === " ") && data.onItemSelect) {
+									e.preventDefault();
+									data.onItemSelect(item.id);
+								}
+							}}
 							title={item.title}
 						>
 							<div className="truncate font-medium">{item.title}</div>

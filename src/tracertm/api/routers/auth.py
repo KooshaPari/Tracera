@@ -346,8 +346,8 @@ async def refresh_access_token(
 
     # Verify refresh token
     # In production, look up in database
-    MIN_REFRESH_TOKEN_LEN = 10
-    if not refresh_token or len(refresh_token) < MIN_REFRESH_TOKEN_LEN:
+    min_refresh_token_len = 10
+    if not refresh_token or len(refresh_token) < min_refresh_token_len:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid refresh token",

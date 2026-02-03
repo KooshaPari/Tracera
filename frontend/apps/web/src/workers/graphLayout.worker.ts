@@ -13,8 +13,8 @@
  */
 
 import * as Comlink from "comlink";
-import type { ElkExtendedEdge, ElkNode } from "elkjs";
 import * as ELKModule from "elkjs/lib/elk.bundled.js";
+import type { ElkExtendedEdge, ElkNode } from "elkjs";
 import { logger } from "@/lib/logger";
 
 // ============================================================================
@@ -74,11 +74,46 @@ export interface ProgressCallback {
 	(result: LayoutResult): void;
 }
 
+type BenchmarkOptions = { algorithm: LayoutAlgorithm; iterations?: number };
+
+// ============================================================================
+// CONSTANTS
+// ============================================================================
+
+const ZERO = 0;
+const ONE = 1;
+const TWO = 2;
+const HALF = 0.5;
+const ONE_POINT_FIVE = 1.5;
+const DEFAULT_NODE_WIDTH = 200;
+const DEFAULT_NODE_HEIGHT = 120;
+const DEFAULT_NODE_SEP = 60;
+const DEFAULT_RANK_SEP = 100;
+const DEFAULT_MARGIN_X = 40;
+const DEFAULT_MARGIN_Y = 40;
+const DEFAULT_CENTER_X = 500;
+const DEFAULT_CENTER_Y = 400;
+const DEFAULT_RADIUS_MIN = 300;
+const DEFAULT_RADIUS_FACTOR = 20;
+const DEFAULT_JITTER_SPREAD = 50;
+const DEFAULT_REPULSION = 5000;
+const DEFAULT_ATTRACTION = 0.1;
+const DEFAULT_DAMPING = 0.9;
+const DEFAULT_ITERATIONS_MAX = 50;
+const DEFAULT_ITERATIONS_MIN = 20;
+const DEFAULT_ITERATIONS_BASE = 100;
+const DEFAULT_ITERATIONS_DIVISOR = 100;
+const DEFAULT_NORMALIZE_PADDING = 50;
+const DEFAULT_SIZE_PADDING = 100;
+const DEFAULT_ORPHAN_SEGMENTS = 8;
+const DEFAULT_BASE_RADIUS_MULTIPLIER = ONE_POINT_FIVE;
+const DEFAULT_BATCH_SIZE = 100;
+const DEFAULT_BENCHMARK_ITERATIONS = 5;
+
 // ============================================================================
 // ELK SETUP
 // ============================================================================
 
-// Direction mapping from dagre convention to ELK
 const DIRECTION_MAP: Record<string, string> = {
 	BT: "UP",
 	LR: "RIGHT",
@@ -86,10 +121,9 @@ const DIRECTION_MAP: Record<string, string> = {
 	TB: "DOWN",
 };
 
-// Lazy ELK initialization to avoid test environment issues
 let elkInstance: any = null;
 
-function getELK() {
+const getELK = () => {
 	if (!elkInstance) {
 		try {
 			const ELK = (ELKModule as any).default || ELKModule;
@@ -100,46 +134,68 @@ function getELK() {
 		}
 	}
 	return elkInstance;
-}
+};
 
 // ============================================================================
-// LAYOUT ALGORITHMS
+// SHARED HELPERS
 // ============================================================================
 
-/**
- * ELK Layout Algorithm (Hierarchical DAG)
- * Best for: Flow charts, timelines, tree structures
- * Complexity: O(n log n) where n = nodes
- */
-async function layoutWithELK(
-	nodes: LayoutNode[],
-	edges: LayoutEdge[],
-	options: LayoutOptions,
-): Promise<LayoutResult> {
-	if (nodes.length === 0) {
-		return { positions: {}, size: { height: 0, width: 0 } };
-	}
+const createEmptyResult = (): LayoutResult => ({
+	positions: {},
+	size: { height: ZERO, width: ZERO },
+});
 
+const resolveSpacingOptions = (options: LayoutOptions) => ({
+	marginX: options.marginX ?? DEFAULT_MARGIN_X,
+	marginY: options.marginY ?? DEFAULT_MARGIN_Y,
+	nodeSep: options.nodeSep ?? DEFAULT_NODE_SEP,
+	nodeHeight: options.nodeHeight ?? DEFAULT_NODE_HEIGHT,
+	nodeWidth: options.nodeWidth ?? DEFAULT_NODE_WIDTH,
+	rankSep: options.rankSep ?? DEFAULT_RANK_SEP,
+});
+
+const resolveCenterOptions = (options: LayoutOptions) => ({
+	centerX: options.centerX ?? DEFAULT_CENTER_X,
+	centerY: options.centerY ?? DEFAULT_CENTER_Y,
+	nodeHeight: options.nodeHeight ?? DEFAULT_NODE_HEIGHT,
+	nodeWidth: options.nodeWidth ?? DEFAULT_NODE_WIDTH,
+});
+
+const computeSize = (
+	width: number,
+	height: number,
+	marginX: number,
+	marginY: number,
+): { width: number; height: number } => ({
+	height: height + marginY,
+	width: width + marginX,
+});
+
+// ============================================================================
+// ELK LAYOUT
+// ============================================================================
+
+const buildElkGraph = (nodes: LayoutNode[], edges: LayoutEdge[], options: LayoutOptions): ElkNode => {
 	const {
 		direction = "TB",
-		nodeSep = 60,
-		rankSep = 100,
-		marginX = 40,
-		marginY = 40,
-		nodeWidth = 200,
-		nodeHeight = 120,
+		nodeSep = DEFAULT_NODE_SEP,
+		rankSep = DEFAULT_RANK_SEP,
+		marginX = DEFAULT_MARGIN_X,
+		marginY = DEFAULT_MARGIN_Y,
+		nodeWidth = DEFAULT_NODE_WIDTH,
+		nodeHeight = DEFAULT_NODE_HEIGHT,
 	} = options;
 
-	const graph: ElkNode = {
-		children: nodes.map((n) => ({
-			height: n.height || nodeHeight,
-			id: n.id,
-			width: n.width || nodeWidth,
+	return {
+		children: nodes.map((node) => ({
+			height: node.height || nodeHeight,
+			id: node.id,
+			width: node.width || nodeWidth,
 		})),
-		edges: edges.map((e) => ({
-			id: e.id,
-			sources: [e.source],
-			targets: [e.target],
+		edges: edges.map((edge) => ({
+			id: edge.id,
+			sources: [edge.source],
+			targets: [edge.target],
 		})) as ElkExtendedEdge[],
 		id: "root",
 		layoutOptions: {
@@ -152,75 +208,76 @@ async function layoutWithELK(
 			"elk.spacing.nodeNode": String(nodeSep),
 		},
 	};
+};
 
-	const elk = getELK();
-	const result = await elk.layout(graph);
-
-	// Extract positions
+const extractElkPositions = (
+	result: ElkNode,
+	options: LayoutOptions,
+): { positions: Record<string, NodePosition>; size: { width: number; height: number } } => {
+	const { marginX, marginY, nodeHeight, nodeWidth } = resolveSpacingOptions(options);
 	const positions: Record<string, NodePosition> = {};
-	let maxX = 0;
-	let maxY = 0;
+	let maxX = ZERO;
+	let maxY = ZERO;
 
 	for (const child of result.children || []) {
-		if (child.x !== undefined && child.y !== undefined) {
-			positions[child.id] = { x: child.x, y: child.y };
-			maxX = Math.max(maxX, child.x + (child.width || nodeWidth));
-			maxY = Math.max(maxY, child.y + (child.height || nodeHeight));
+		if (child.x === undefined || child.y === undefined) {
+			continue;
 		}
+		positions[child.id] = { x: child.x, y: child.y };
+		maxX = Math.max(maxX, child.x + (child.width || nodeWidth));
+		maxY = Math.max(maxY, child.y + (child.height || nodeHeight));
 	}
 
 	return {
 		positions,
-		size: { height: maxY + marginY, width: maxX + marginX },
+		size: computeSize(maxX, maxY, marginX, marginY),
 	};
-}
+};
 
-/**
- * Dagre Layout Algorithm (Simple DAG)
- * Best for: Simple directed graphs
- * Complexity: O(n + e) where n = nodes, e = edges
- */
-function layoutWithDagre(
+const layoutWithELK = async (
 	nodes: LayoutNode[],
 	edges: LayoutEdge[],
 	options: LayoutOptions,
-): LayoutResult {
-	if (nodes.length === 0) {
-		return { positions: {}, size: { height: 0, width: 0 } };
+): Promise<LayoutResult> => {
+	if (nodes.length === ZERO) {
+		return createEmptyResult();
 	}
 
-	const {
-		nodeWidth = 200,
-		nodeHeight = 120,
-		nodeSep = 60,
-		rankSep = 100,
-		marginX = 40,
-		marginY = 40,
-	} = options;
+	const elk = getELK();
+	const graph = buildElkGraph(nodes, edges, options);
+	const result = await elk.layout(graph);
+	return extractElkPositions(result, options);
+};
 
-	// Build adjacency list
+// ============================================================================
+// DAGRE-STYLE LAYOUT
+// ============================================================================
+
+const buildAdjacency = (nodes: LayoutNode[], edges: LayoutEdge[]): Map<string, string[]> => {
 	const graph = new Map<string, string[]>();
 	for (const node of nodes) {
 		graph.set(node.id, []);
 	}
 	for (const edge of edges) {
-		if (graph.has(edge.source)) {
-			graph.get(edge.source)!.push(edge.target);
+		const targets = graph.get(edge.source);
+		if (targets) {
+			targets.push(edge.target);
 		}
 	}
+	return graph;
+};
 
-	// Topological sort with level assignment
+const assignDagreLevels = (graph: Map<string, string[]>): Map<string, number> => {
 	const levels = new Map<string, number>();
 	const visited = new Set<string>();
 
-	function assignLevel(nodeId: string): number {
+	const assignLevel = (nodeId: string): number => {
 		if (visited.has(nodeId)) {
-			return levels.get(nodeId) || 0;
+			return levels.get(nodeId) ?? ZERO;
 		}
 		visited.add(nodeId);
 
-		let maxIncomingLevel = -1;
-		// Find incoming edges
+		let maxIncomingLevel = -ONE;
 		for (const [source, targets] of graph) {
 			if (targets.includes(nodeId)) {
 				const srcLevel = assignLevel(source);
@@ -228,35 +285,49 @@ function layoutWithDagre(
 			}
 		}
 
-		const nodeLevel = maxIncomingLevel + 1;
+		const nodeLevel = maxIncomingLevel + ONE;
 		levels.set(nodeId, nodeLevel);
 		return nodeLevel;
-	}
+	};
 
-	// Assign levels to all nodes
 	for (const nodeId of graph.keys()) {
 		assignLevel(nodeId);
 	}
 
-	// Group nodes by level
+	return levels;
+};
+
+const groupByLevel = (levels: Map<string, number>): Map<number, string[]> => {
 	const levelGroups = new Map<number, string[]>();
 	for (const [nodeId, level] of levels) {
-		if (!levelGroups.has(level)) {
-			levelGroups.set(level, []);
+		const group = levelGroups.get(level);
+		if (group) {
+			group.push(nodeId);
+		} else {
+			levelGroups.set(level, [nodeId]);
 		}
-		levelGroups.get(level)!.push(nodeId);
 	}
+	return levelGroups;
+};
 
-	// Calculate positions
+const computeDagrePositions = (
+	levelGroups: Map<number, string[]>,
+	options: LayoutOptions,
+): LayoutResult => {
+	const { marginX, marginY, nodeHeight, nodeWidth, nodeSep, rankSep } =
+		resolveSpacingOptions(options);
 	const positions: Record<string, NodePosition> = {};
-	let maxWidth = 0;
-	let maxHeight = 0;
+	let maxWidth = ZERO;
+	let maxHeight = ZERO;
 
 	const maxLevel = Math.max(...levelGroups.keys());
+	const centerThreshold = DEFAULT_BENCHMARK_ITERATIONS;
+
 	for (const [level, nodeIds] of levelGroups) {
 		const y = marginY + level * (nodeHeight + rankSep);
 		const levelWidth = nodeIds.length * (nodeWidth + nodeSep);
-		const startX = marginX + (maxLevel > 5 ? -levelWidth / 2 : 0);
+		const shouldCenter = maxLevel > centerThreshold;
+		const startX = marginX + (shouldCenter ? -levelWidth / TWO : ZERO);
 
 		nodeIds.forEach((nodeId, index) => {
 			const x = startX + index * (nodeWidth + nodeSep);
@@ -270,159 +341,209 @@ function layoutWithDagre(
 		positions,
 		size: { height: maxHeight, width: maxWidth },
 	};
-}
+};
 
-/**
- * D3 Force Layout Algorithm (Organic network)
- * Best for: Exploratory analysis, relationship discovery
- * Complexity: O(n² * iterations) - expensive but produces natural layouts
- */
-function layoutWithForce(
+const layoutWithDagre = (
 	nodes: LayoutNode[],
 	edges: LayoutEdge[],
 	options: LayoutOptions,
-): LayoutResult {
-	if (nodes.length === 0) {
-		return { positions: {}, size: { height: 0, width: 0 } };
+): LayoutResult => {
+	if (nodes.length === ZERO) {
+		return createEmptyResult();
 	}
 
-	const { nodeWidth = 200, nodeHeight = 120, nodeSep = 60 } = options;
+	const graph = buildAdjacency(nodes, edges);
+	const levels = assignDagreLevels(graph);
+	const levelGroups = groupByLevel(levels);
+	return computeDagrePositions(levelGroups, options);
+};
 
-	// Initialize positions with jitter
-	const positions = new Map<
-		string,
-		{ x: number; y: number; vx: number; vy: number }
-	>();
+// ============================================================================
+// FORCE LAYOUT
+// ============================================================================
+
+const initForcePositions = (
+	nodes: LayoutNode[],
+	options: LayoutOptions,
+): Map<string, { x: number; y: number; vx: number; vy: number }> => {
+	const { nodeWidth, nodeHeight, nodeSep } = resolveSpacingOptions(options);
 	const cols = Math.ceil(Math.sqrt(nodes.length));
+	const positions = new Map<string, { x: number; y: number; vx: number; vy: number }>();
 
 	nodes.forEach((node, index) => {
-		const baseX = (index % cols) * (nodeWidth + nodeSep * 2);
-		const baseY = Math.floor(index / cols) * (nodeHeight + nodeSep * 2);
+		const baseX = (index % cols) * (nodeWidth + nodeSep * TWO);
+		const baseY = Math.floor(index / cols) * (nodeHeight + nodeSep * TWO);
 		positions.set(node.id, {
-			vx: 0,
-			vy: 0,
-			x: baseX + (Math.random() - 0.5) * 50,
-			y: baseY + (Math.random() - 0.5) * 50,
+			vx: ZERO,
+			vy: ZERO,
+			x: baseX + (Math.random() - HALF) * DEFAULT_JITTER_SPREAD,
+			y: baseY + (Math.random() - HALF) * DEFAULT_JITTER_SPREAD,
 		});
 	});
 
-	// Build edge map
+	return positions;
+};
+
+const buildAdjacencySet = (edges: LayoutEdge[]): Map<string, Set<string>> => {
 	const adjacency = new Map<string, Set<string>>();
 	for (const edge of edges) {
-		if (!adjacency.has(edge.source)) adjacency.set(edge.source, new Set());
-		if (!adjacency.has(edge.target)) adjacency.set(edge.target, new Set());
-		adjacency.get(edge.source)!.add(edge.target);
-		adjacency.get(edge.target)!.add(edge.source);
+		if (!adjacency.has(edge.source)) {
+			adjacency.set(edge.source, new Set());
+		}
+		if (!adjacency.has(edge.target)) {
+			adjacency.set(edge.target, new Set());
+		}
+		adjacency.get(edge.source)?.add(edge.target);
+		adjacency.get(edge.target)?.add(edge.source);
 	}
+	return adjacency;
+};
 
-	// Run simulation
-	const iterations = Math.min(
-		50,
-		Math.max(20, 100 - Math.floor(nodes.length / 100)),
-	);
-	const repulsionStrength = 5000;
-	const attractionStrength = 0.1;
-	const damping = 0.9;
+const computeForceIterations = (nodeCount: number): number => {
+	const reduced = DEFAULT_ITERATIONS_BASE - Math.floor(nodeCount / DEFAULT_ITERATIONS_DIVISOR);
+	return Math.min(DEFAULT_ITERATIONS_MAX, Math.max(DEFAULT_ITERATIONS_MIN, reduced));
+};
 
-	for (let iter = 0; iter < iterations; iter++) {
-		// Repulsion between all nodes
-		for (const node1 of nodes) {
-			const p1 = positions.get(node1.id)!;
-			for (const node2 of nodes) {
-				if (node1.id === node2.id) continue;
-				const p2 = positions.get(node2.id)!;
-
-				const dx = p1.x - p2.x;
-				const dy = p1.y - p2.y;
-				const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-				const force = repulsionStrength / (dist * dist);
-
-				p1.vx += (dx / dist) * force;
-				p1.vy += (dy / dist) * force;
+const applyForceRepulsion = (
+	nodes: LayoutNode[],
+	positions: Map<string, { x: number; y: number; vx: number; vy: number }>,
+): void => {
+	for (const node1 of nodes) {
+		const p1 = positions.get(node1.id);
+		if (!p1) {
+			continue;
+		}
+		for (const node2 of nodes) {
+			if (node1.id === node2.id) {
+				continue;
 			}
-		}
+			const p2 = positions.get(node2.id);
+			if (!p2) {
+				continue;
+			}
 
-		// Attraction along edges
-		for (const edge of edges) {
-			const p1 = positions.get(edge.source);
-			const p2 = positions.get(edge.target);
-			if (!p1 || !p2) continue;
+			const dx = p1.x - p2.x;
+			const dy = p1.y - p2.y;
+			const dist = Math.max(Math.hypot(dx, dy), ONE);
+			const force = DEFAULT_REPULSION / (dist * dist);
 
-			const dx = p2.x - p1.x;
-			const dy = p2.y - p1.y;
-
-			p1.vx += dx * attractionStrength;
-			p1.vy += dy * attractionStrength;
-			p2.vx -= dx * attractionStrength;
-			p2.vy -= dy * attractionStrength;
-		}
-
-		// Apply velocities and damping
-		for (const node of nodes) {
-			const p = positions.get(node.id)!;
-			p.x += p.vx;
-			p.y += p.vy;
-			p.vx *= damping;
-			p.vy *= damping;
+			p1.vx += (dx / dist) * force;
+			p1.vy += (dy / dist) * force;
 		}
 	}
+};
 
-	// Normalize positions to positive quadrant
+const applyForceAttraction = (
+	edges: LayoutEdge[],
+	positions: Map<string, { x: number; y: number; vx: number; vy: number }>,
+): void => {
+	for (const edge of edges) {
+		const p1 = positions.get(edge.source);
+		const p2 = positions.get(edge.target);
+		if (!p1 || !p2) {
+			continue;
+		}
+
+		const dx = p2.x - p1.x;
+		const dy = p2.y - p1.y;
+		p1.vx += dx * DEFAULT_ATTRACTION;
+		p1.vy += dy * DEFAULT_ATTRACTION;
+		p2.vx -= dx * DEFAULT_ATTRACTION;
+		p2.vy -= dy * DEFAULT_ATTRACTION;
+	}
+};
+
+const applyForceDamping = (
+	nodes: LayoutNode[],
+	positions: Map<string, { x: number; y: number; vx: number; vy: number }>,
+): void => {
+	for (const node of nodes) {
+		const p = positions.get(node.id);
+		if (!p) {
+			continue;
+		}
+		p.x += p.vx;
+		p.y += p.vy;
+		p.vx *= DEFAULT_DAMPING;
+		p.vy *= DEFAULT_DAMPING;
+	}
+};
+
+const normalizePositions = (
+	positions: Map<string, { x: number; y: number }>,
+): { bounds: { minX: number; minY: number; maxX: number; maxY: number }; result: Record<string, NodePosition> } => {
 	let minX = Infinity;
 	let minY = Infinity;
 	let maxX = -Infinity;
 	let maxY = -Infinity;
 
-	for (const p of positions.values()) {
-		minX = Math.min(minX, p.x);
-		minY = Math.min(minY, p.y);
-		maxX = Math.max(maxX, p.x);
-		maxY = Math.max(maxY, p.y);
+	for (const pos of positions.values()) {
+		minX = Math.min(minX, pos.x);
+		minY = Math.min(minY, pos.y);
+		maxX = Math.max(maxX, pos.x);
+		maxY = Math.max(maxY, pos.y);
 	}
 
 	const result: Record<string, NodePosition> = {};
-	for (const [id, p] of positions) {
+	for (const [id, pos] of positions) {
 		result[id] = {
-			x: p.x - minX + 50,
-			y: p.y - minY + 50,
+			x: pos.x - minX + DEFAULT_NORMALIZE_PADDING,
+			y: pos.y - minY + DEFAULT_NORMALIZE_PADDING,
 		};
 	}
 
+	return { bounds: { maxX, maxY, minX, minY }, result };
+};
+
+const layoutWithForce = (
+	nodes: LayoutNode[],
+	edges: LayoutEdge[],
+	options: LayoutOptions,
+): LayoutResult => {
+	if (nodes.length === ZERO) {
+		return createEmptyResult();
+	}
+
+	const { nodeHeight, nodeWidth } = resolveSpacingOptions(options);
+	const positions = initForcePositions(nodes, options);
+	buildAdjacencySet(edges);
+
+	const iterations = computeForceIterations(nodes.length);
+	for (let iter = ZERO; iter < iterations; iter += ONE) {
+		applyForceRepulsion(nodes, positions);
+		applyForceAttraction(edges, positions);
+		applyForceDamping(nodes, positions);
+	}
+
+	const { bounds, result } = normalizePositions(positions);
 	return {
 		positions: result,
 		size: {
-			height: maxY - minY + nodeHeight + 100,
-			width: maxX - minX + nodeWidth + 100,
+			height: bounds.maxY - bounds.minY + nodeHeight + DEFAULT_SIZE_PADDING,
+			width: bounds.maxX - bounds.minX + nodeWidth + DEFAULT_SIZE_PADDING,
 		},
 	};
-}
+};
 
-/**
- * Grid Layout Algorithm
- * Best for: Quick overview, many items
- * Complexity: O(n)
- */
-function layoutWithGrid(
+// ============================================================================
+// GRID LAYOUT
+// ============================================================================
+
+const layoutWithGrid = (
 	nodes: LayoutNode[],
 	_edges: LayoutEdge[],
 	options: LayoutOptions,
-): LayoutResult {
-	if (nodes.length === 0) {
-		return { positions: {}, size: { height: 0, width: 0 } };
+): LayoutResult => {
+	if (nodes.length === ZERO) {
+		return createEmptyResult();
 	}
 
-	const {
-		nodeWidth = 200,
-		nodeHeight = 120,
-		nodeSep = 60,
-		marginX = 40,
-		marginY = 40,
-	} = options;
-
+	const { marginX, marginY, nodeHeight, nodeWidth, nodeSep } =
+		resolveSpacingOptions(options);
 	const cols = Math.ceil(Math.sqrt(nodes.length));
 	const positions: Record<string, NodePosition> = {};
-	let maxWidth = 0;
-	let maxHeight = 0;
+	let maxWidth = ZERO;
+	let maxHeight = ZERO;
 
 	nodes.forEach((node, index) => {
 		const x = marginX + (index % cols) * (nodeWidth + nodeSep);
@@ -436,206 +557,215 @@ function layoutWithGrid(
 		positions,
 		size: { height: maxHeight, width: maxWidth },
 	};
-}
+};
 
-/**
- * Circular Layout Algorithm
- * Best for: Cyclic processes, peer relationships
- * Complexity: O(n)
- */
-function layoutWithCircular(
+// ============================================================================
+// CIRCULAR LAYOUT
+// ============================================================================
+
+const layoutWithCircular = (
 	nodes: LayoutNode[],
 	_edges: LayoutEdge[],
 	options: LayoutOptions,
-): LayoutResult {
-	if (nodes.length === 0) {
-		return { positions: {}, size: { height: 0, width: 0 } };
+): LayoutResult => {
+	if (nodes.length === ZERO) {
+		return createEmptyResult();
 	}
 
-	const {
-		nodeWidth = 200,
-		nodeHeight = 120,
-		centerX = 500,
-		centerY = 400,
-	} = options;
-
+	const { centerX, centerY, nodeHeight, nodeWidth } = resolveCenterOptions(options);
 	const count = nodes.length;
-	const radius = Math.max(300, count * 20);
-	const angleStep = (2 * Math.PI) / count;
-
+	const radius = Math.max(DEFAULT_RADIUS_MIN, count * DEFAULT_RADIUS_FACTOR);
+	const angleStep = (TWO * Math.PI) / count;
 	const positions: Record<string, NodePosition> = {};
 
 	nodes.forEach((node, index) => {
-		const angle = index * angleStep - Math.PI / 2;
+		const angle = index * angleStep - Math.PI / TWO;
 		positions[node.id] = {
-			x: centerX + radius * Math.cos(angle) - nodeWidth / 2,
-			y: centerY + radius * Math.sin(angle) - nodeHeight / 2,
+			x: centerX + radius * Math.cos(angle) - nodeWidth / TWO,
+			y: centerY + radius * Math.sin(angle) - nodeHeight / TWO,
 		};
 	});
 
 	const size = {
-		height: centerY * 2 + radius + nodeHeight,
-		width: centerX * 2 + radius + nodeWidth,
+		height: centerY * TWO + radius + nodeHeight,
+		width: centerX * TWO + radius + nodeWidth,
 	};
 
 	return { positions, size };
-}
+};
 
-/**
- * Radial Layout Algorithm (Mind Map)
- * Best for: Brainstorming, centered exploration
- * Complexity: O(n + e)
- */
-function layoutWithRadial(
-	nodes: LayoutNode[],
-	edges: LayoutEdge[],
-	options: LayoutOptions,
-): LayoutResult {
-	if (nodes.length === 0) {
-		return { positions: {}, size: { height: 0, width: 0 } };
-	}
+// ============================================================================
+// RADIAL LAYOUT
+// ============================================================================
 
-	const {
-		nodeWidth = 200,
-		nodeHeight = 120,
-		centerX = 500,
-		centerY = 400,
-	} = options;
-
-	// Find root nodes (no incoming edges)
-	const hasIncoming = new Set(edges.map((e) => e.target));
-	const roots = nodes.filter((n) => !hasIncoming.has(n.id));
-
-	// Build adjacency list
+const buildChildrenMap = (edges: LayoutEdge[]): Map<string, string[]> => {
 	const children = new Map<string, string[]>();
 	for (const edge of edges) {
-		if (!children.has(edge.source)) {
-			children.set(edge.source, []);
+		const list = children.get(edge.source);
+		if (list) {
+			list.push(edge.target);
+		} else {
+			children.set(edge.source, [edge.target]);
 		}
-		children.get(edge.source)!.push(edge.target);
 	}
+	return children;
+};
 
-	// Assign depths via BFS
+const findRoots = (nodes: LayoutNode[], edges: LayoutEdge[]): LayoutNode[] => {
+	const hasIncoming = new Set(edges.map((edge) => edge.target));
+	return nodes.filter((node) => !hasIncoming.has(node.id));
+};
+
+const assignDepths = (
+	roots: LayoutNode[],
+	children: Map<string, string[]>,
+): Map<string, number> => {
 	const depths = new Map<string, number>();
-	const queue: { id: string; depth: number }[] = roots.map((r) => ({
-		depth: 0,
-		id: r.id,
+	const queue: { id: string; depth: number }[] = roots.map((root) => ({
+		depth: ZERO,
+		id: root.id,
 	}));
+	let index = ZERO;
 
-	while (queue.length > 0) {
-		const { id, depth } = queue.shift()!;
-		if (depths.has(id)) continue;
+	while (index < queue.length) {
+		const entry = queue[index];
+		index += ONE;
+		if (!entry) {
+			continue;
+		}
+		const { depth, id } = entry;
+		if (depths.has(id)) {
+			continue;
+		}
 		depths.set(id, depth);
 
 		const nodeChildren = children.get(id) || [];
 		for (const childId of nodeChildren) {
 			if (!depths.has(childId)) {
-				queue.push({ depth: depth + 1, id: childId });
+				queue.push({ depth: depth + ONE, id: childId });
 			}
 		}
 	}
 
-	// Group by depth
+	return depths;
+};
+
+const groupByDepth = (depths: Map<string, number>): Map<number, string[]> => {
 	const byDepth = new Map<number, string[]>();
 	for (const [id, depth] of depths) {
-		if (!byDepth.has(depth)) byDepth.set(depth, []);
-		byDepth.get(depth)!.push(id);
+		const group = byDepth.get(depth);
+		if (group) {
+			group.push(id);
+		} else {
+			byDepth.set(depth, [id]);
+		}
+	}
+	return byDepth;
+};
+
+const layoutWithRadial = (
+	nodes: LayoutNode[],
+	edges: LayoutEdge[],
+	options: LayoutOptions,
+): LayoutResult => {
+	if (nodes.length === ZERO) {
+		return createEmptyResult();
 	}
 
-	// Position nodes radially
+	const { centerX, centerY, nodeHeight, nodeWidth } = resolveCenterOptions(options);
+	const roots = findRoots(nodes, edges);
+	const children = buildChildrenMap(edges);
+	const depths = assignDepths(roots, children);
+	const byDepth = groupByDepth(depths);
+
 	const positions: Record<string, NodePosition> = {};
-	const baseRadius = Math.max(nodeWidth, nodeHeight) * 1.5;
+	const baseRadius = Math.max(nodeWidth, nodeHeight) * DEFAULT_BASE_RADIUS_MULTIPLIER;
 
-	byDepth.forEach((nodeIds, depth) => {
-		const radius = (depth + 1) * baseRadius;
-		const angleStep = (2 * Math.PI) / nodeIds.length;
-
+	for (const [depth, nodeIds] of byDepth) {
+		const radius = (depth + ONE) * baseRadius;
+		const angleStep = (TWO * Math.PI) / nodeIds.length;
 		nodeIds.forEach((id, index) => {
-			const angle = index * angleStep - Math.PI / 2;
+			const angle = index * angleStep - Math.PI / TWO;
 			positions[id] = {
-				x: centerX + radius * Math.cos(angle) - nodeWidth / 2,
-				y: centerY + radius * Math.sin(angle) - nodeHeight / 2,
+				x: centerX + radius * Math.cos(angle) - nodeWidth / TWO,
+				y: centerY + radius * Math.sin(angle) - nodeHeight / TWO,
 			};
 		});
-	});
+	}
 
-	// Handle orphan nodes
-	let orphanIndex = 0;
-	const orphanRadius = (byDepth.size + 1) * baseRadius;
-
+	let orphanIndex = ZERO;
+	const orphanRadius = (byDepth.size + ONE) * baseRadius;
 	for (const node of nodes) {
-		if (!positions[node.id]) {
-			const angle = (orphanIndex++ * 2 * Math.PI) / 8 - Math.PI / 2;
-			positions[node.id] = {
-				x: centerX + orphanRadius * Math.cos(angle) - nodeWidth / 2,
-				y: centerY + orphanRadius * Math.sin(angle) - nodeHeight / 2,
-			};
+		if (positions[node.id]) {
+			continue;
 		}
+		const angle = (orphanIndex * TWO * Math.PI) / DEFAULT_ORPHAN_SEGMENTS - Math.PI / TWO;
+		orphanIndex += ONE;
+		positions[node.id] = {
+			x: centerX + orphanRadius * Math.cos(angle) - nodeWidth / TWO,
+			y: centerY + orphanRadius * Math.sin(angle) - nodeHeight / TWO,
+		};
 	}
 
 	const maxDepth = byDepth.size;
 	const size = {
-		height: centerY * 2 + maxDepth * baseRadius + nodeHeight,
-		width: centerX * 2 + maxDepth * baseRadius + nodeWidth,
+		height: centerY * TWO + maxDepth * baseRadius + nodeHeight,
+		width: centerX * TWO + maxDepth * baseRadius + nodeWidth,
 	};
 
 	return { positions, size };
-}
+};
 
 // ============================================================================
 // PROGRESSIVE LAYOUT
 // ============================================================================
 
-/**
- * Progressive layout computation with streaming results
- * Allows UI to show partial results while computation continues
- */
-async function* layoutProgressive(
+const buildPartialResult = (
+	result: LayoutResult,
+	isPartial: boolean,
+	progress: number,
+): LayoutResult => ({
+	isPartial,
+	positions: result.positions,
+	progress,
+	size: result.size,
+});
+
+const layoutProgressive = async function* (
 	nodes: LayoutNode[],
 	edges: LayoutEdge[],
 	options: LayoutOptions,
 ): AsyncGenerator<LayoutResult> {
-	const batchSize = options.batchSize || 100;
+	const batchSize = options.batchSize || DEFAULT_BATCH_SIZE;
 	const totalBatches = Math.ceil(nodes.length / batchSize);
 
-	// For now, we'll implement progressive for grid layout (simplest)
-	// Future: Implement for ELK and other algorithms
 	if (options.algorithm === "grid") {
-		for (let i = 0; i < totalBatches; i++) {
+		for (let i = ZERO; i < totalBatches; i += ONE) {
 			const start = i * batchSize;
 			const end = Math.min(start + batchSize, nodes.length);
-			const batchNodes = nodes.slice(0, end);
-
+			const batchNodes = nodes.slice(ZERO, end);
 			const result = layoutWithGrid(batchNodes, edges, options);
-			yield {
-				...result,
-				isPartial: i < totalBatches - 1,
-				progress: (i + 1) / totalBatches,
-			};
+			yield buildPartialResult(result, i < totalBatches - ONE, (i + ONE) / totalBatches);
 		}
-	} else {
-		// For complex algorithms, just compute once
-		const result = await computeLayout(nodes, edges, options);
-		yield result;
+		return;
 	}
-}
+
+	const result = await computeLayout(nodes, edges, options);
+	yield result;
+};
 
 // ============================================================================
 // MAIN API
 // ============================================================================
 
-/**
- * Compute graph layout using specified algorithm
- */
-export async function computeLayout(
+export const computeLayout = async (
 	nodes: LayoutNode[],
 	edges: LayoutEdge[],
 	options: LayoutOptions,
-): Promise<LayoutResult> {
+): Promise<LayoutResult> => {
 	const startTime = performance.now();
 
 	let result: LayoutResult;
-
 	switch (options.algorithm) {
 		case "elk":
 			result = await layoutWithELK(nodes, edges, options);
@@ -665,27 +795,55 @@ export async function computeLayout(
 	);
 
 	return result;
-}
+};
 
-/**
- * Compute layout progressively with streaming results
- */
-export async function* computeLayoutProgressive(
+export const computeLayoutProgressive = async function* (
 	nodes: LayoutNode[],
 	edges: LayoutEdge[],
 	options: LayoutOptions,
 ): AsyncGenerator<LayoutResult> {
 	yield* layoutProgressive(nodes, edges, options);
-}
+};
 
-/**
- * Benchmark layout algorithm performance
- */
-export async function benchmarkLayout(
+const summarizeBenchmark = (
+	times: number[],
+	algorithm: LayoutAlgorithm,
+	nodeCount: number,
+	edgeCount: number,
+	iterations: number,
+): {
+	algorithm: LayoutAlgorithm;
+	nodeCount: number;
+	edgeCount: number;
+	iterations: number;
+	avgTime: number;
+	minTime: number;
+	maxTime: number;
+	stdDev: number;
+} => {
+	const avgTime = times.reduce((sum, time) => sum + time, ZERO) / times.length;
+	const minTime = Math.min(...times);
+	const maxTime = Math.max(...times);
+	const variance =
+		times.reduce((sum, time) => sum + (time - avgTime) ** TWO, ZERO) / times.length;
+	const stdDev = Math.sqrt(variance);
+
+	return {
+		algorithm,
+		avgTime,
+		edgeCount,
+		iterations,
+		maxTime,
+		minTime,
+		nodeCount,
+		stdDev,
+	};
+};
+
+export const benchmarkLayout = async (
 	nodes: LayoutNode[],
 	edges: LayoutEdge[],
-	algorithm: LayoutAlgorithm,
-	iterations: number = 5,
+	options: BenchmarkOptions,
 ): Promise<{
 	algorithm: LayoutAlgorithm;
 	nodeCount: number;
@@ -695,35 +853,19 @@ export async function benchmarkLayout(
 	minTime: number;
 	maxTime: number;
 	stdDev: number;
-}> {
+}> => {
+	const iterations = options.iterations ?? DEFAULT_BENCHMARK_ITERATIONS;
 	const times: number[] = [];
 
-	for (let i = 0; i < iterations; i++) {
+	for (let i = ZERO; i < iterations; i += ONE) {
 		const start = performance.now();
-		await computeLayout(nodes, edges, { algorithm });
+		await computeLayout(nodes, edges, { algorithm: options.algorithm });
 		const duration = performance.now() - start;
 		times.push(duration);
 	}
 
-	const avgTime = times.reduce((a, b) => a + b, 0) / times.length;
-	const minTime = Math.min(...times);
-	const maxTime = Math.max(...times);
-	const variance =
-		times.reduce((sum, time) => sum + Math.pow(time - avgTime, 2), 0) /
-		times.length;
-	const stdDev = Math.sqrt(variance);
-
-	return {
-		algorithm,
-		avgTime,
-		edgeCount: edges.length,
-		iterations,
-		maxTime,
-		minTime,
-		nodeCount: nodes.length,
-		stdDev,
-	};
-}
+	return summarizeBenchmark(times, options.algorithm, nodes.length, edges.length, iterations);
+};
 
 // ============================================================================
 // EXPOSE API VIA COMLINK

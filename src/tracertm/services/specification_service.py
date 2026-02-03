@@ -54,6 +54,14 @@ class ContractOptions:
 
 
 @dataclass
+class ContractContent:
+    """Core content for Contract creation."""
+    item_id: str
+    title: str
+    contract_type: str
+
+
+@dataclass
 class FeatureOptions:
     """Optional parameters for Feature creation."""
     description: str | None = None
@@ -65,6 +73,12 @@ class FeatureOptions:
     tags: list[str] | None = None
     related_requirements: list[str] | None = None
     related_adrs: list[str] | None = None
+
+
+@dataclass
+class FeatureContent:
+    """Core content for Feature creation."""
+    name: str
 
 
 @dataclass
@@ -85,12 +99,27 @@ class ScenarioOptions:
 
 
 @dataclass
+class ScenarioContent:
+    """Core content for Scenario creation."""
+    title: str
+    gherkin_text: str
+
+
+@dataclass
 class StepDefinitionOptions:
     """Optional parameters for StepDefinition creation."""
     language: str = "python"
     description: str | None = None
     parameters: list[dict] | None = None
     tags: list[str] | None = None
+
+
+@dataclass
+class StepDefinitionContent:
+    """Core content for StepDefinition creation."""
+    step_pattern: str
+    step_type: str
+    implementation_code: str
 
 
 async def _maybe_await(value: Any) -> Any:
@@ -267,9 +296,7 @@ class ContractService:
     async def create(
         self,
         project_id: str,
-        item_id: str,
-        title: str,
-        contract_type: str,
+        content: ContractContent,
         options: ContractOptions | None = None,
     ) -> Contract:
         """Create a new Contract."""
@@ -294,10 +321,10 @@ class ContractService:
         contract = Contract(
             id=str(uuid.uuid4()),
             project_id=project_id,
-            item_id=item_id,
+            item_id=content.item_id,
             contract_number=contract_number,
-            title=title,
-            contract_type=contract_type,
+            title=content.title,
+            contract_type=content.contract_type,
             status="draft",
             preconditions=opts.preconditions or [],
             postconditions=opts.postconditions or [],
@@ -439,7 +466,7 @@ class FeatureService:
     async def create(
         self,
         project_id: str,
-        name: str,
+        content: FeatureContent,
         options: FeatureOptions | None = None,
     ) -> Feature:
         """Create a new Feature."""
@@ -465,7 +492,7 @@ class FeatureService:
             id=str(uuid.uuid4()),
             project_id=project_id,
             feature_number=feature_number,
-            name=name,
+            name=content.name,
             description=opts.description,
             as_a=opts.as_a,
             i_want=opts.i_want,
@@ -581,8 +608,7 @@ class ScenarioService:
     async def create(
         self,
         feature_id: str,
-        title: str,
-        gherkin_text: str,
+        content: ScenarioContent,
         options: ScenarioOptions | None = None,
     ) -> Scenario:
         """Create a new Scenario."""
@@ -614,9 +640,9 @@ class ScenarioService:
             id=str(uuid.uuid4()),
             feature_id=feature_id,
             scenario_number=scenario_number,
-            title=title,
+            title=content.title,
             description=opts.description,
-            gherkin_text=gherkin_text,
+            gherkin_text=content.gherkin_text,
             is_outline=opts.is_outline,
             background=opts.background or [],
             given_steps=opts.given or [],
@@ -747,9 +773,7 @@ class StepDefinitionService:
     async def create(
         self,
         project_id: str,
-        step_pattern: str,
-        step_type: str,
-        implementation_code: str,
+        content: StepDefinitionContent,
         options: StepDefinitionOptions | None = None,
     ) -> dict[str, Any]:
         """Create a new Step Definition."""
@@ -757,9 +781,9 @@ class StepDefinitionService:
         return {
             "id": str(uuid.uuid4()),
             "project_id": project_id,
-            "step_pattern": step_pattern,
-            "step_type": step_type,  # given, when, then
-            "implementation_code": implementation_code,
+            "step_pattern": content.step_pattern,
+            "step_type": content.step_type,  # given, when, then
+            "implementation_code": content.implementation_code,
             "language": opts.language,
             "description": opts.description,
             "parameters": opts.parameters or [],

@@ -7,6 +7,8 @@ const createLink = linksApi.create;
 const updateLink = linksApi.update;
 const deleteLink = linksApi.delete;
 
+export { createLink, deleteLink, fetchLink, fetchLinks, updateLink };
+
 const linksApiExports = {
 	createLink,
 	deleteLink,

@@ -6,7 +6,9 @@ import { ItemDetailRouter } from "@/views/details";
 
 function ItemDetailComponent() {
 	const { projectId, itemId } = useParams({ strict: false });
-	const { data: item, isLoading, error } = useItem(projectId, itemId);
+	const projectIdValue = projectId ?? "";
+	const itemIdValue = itemId ?? "";
+	const { data: item, isLoading, error } = useItem(itemIdValue);
 
 	if (isLoading) {
 		return (
@@ -31,7 +33,7 @@ function ItemDetailComponent() {
 		);
 	}
 
-	return <ItemDetailRouter item={item} projectId={projectId} />;
+	return <ItemDetailRouter item={item} projectId={projectIdValue} />;
 }
 
 export const Route = createFileRoute(

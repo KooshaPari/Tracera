@@ -15,13 +15,13 @@ const TASK_PRIORITY = {
 
 type TaskPriority = (typeof TASK_PRIORITY)[keyof typeof TASK_PRIORITY];
 
-type WorkerTask<T = unknown, R = unknown> = {
-	data: T;
+type WorkerTask = {
+	data: unknown;
 	id: string;
 	onProgress?: (progress: number) => void;
 	priority: TaskPriority;
 	reject: (error: Error) => void;
-	resolve: (result: R) => void;
+	resolve: (result: unknown) => void;
 	timeout?: number;
 	transferables?: Transferable[];
 	type: string;
@@ -52,7 +52,7 @@ type WorkerMessage<T = unknown> = {
 	type: "result" | "error" | "progress";
 };
 
-class WorkerPool {
+export class WorkerPool {
 	public static readonly TaskPriority = TASK_PRIORITY;
 
 	private cleanupInterval?: ReturnType<typeof setInterval>;
@@ -76,10 +76,10 @@ class WorkerPool {
 			workerFactory: config.workerFactory,
 		};
 
-		let index = 0;
-		while (index < this.config.minWorkers) {
+		let workerIndex = 0;
+		while (workerIndex < this.config.minWorkers) {
 			this.createWorker();
-			index += 1;
+			workerIndex += 1;
 		}
 
 		this.startCleanup();
@@ -100,27 +100,8 @@ class WorkerPool {
 		}
 
 		return new Promise<R>((resolve, reject) => {
-			const randomSuffix = Math.random()
-				.toString(TASK_ID_RANDOM_BASE)
-				.slice(2, 2 + TASK_ID_RANDOM_LENGTH);
-			const timeout = options.timeout ?? this.config.taskTimeout;
-			const priority = options.priority ?? TASK_PRIORITY.NORMAL;
-
-			const task: WorkerTask<T, R> = {
-				data,
-				id: `task-${Date.now()}-${randomSuffix}`,
-				onProgress: options.onProgress,
-				priority,
-				reject,
-				resolve,
-				timeout,
-				transferables: options.transferables,
-				type,
-			};
-
-			this.taskQueue.push(task);
-			this.taskQueue.sort((first, second) => second.priority - first.priority);
-			this.processQueue();
+			const task = this.createTask(type, data, options, resolve, reject);
+			this.enqueueTask(task);
 		});
 	}
 
@@ -128,7 +109,7 @@ class WorkerPool {
 		const busyWorkers = this.workers.filter((worker) => worker.busy).length;
 		const idleWorkers = this.workers.filter((worker) => !worker.busy).length;
 		const totalTasksProcessed = this.workers.reduce(
-			(sum, worker) => sum + worker.taskCount,
+			(runningTotal, worker) => runningTotal + worker.taskCount,
 			0,
 		);
 
@@ -146,7 +127,7 @@ class WorkerPool {
 
 		if (this.cleanupInterval) {
 			clearInterval(this.cleanupInterval);
-			this.cleanupInterval = void 0;
+			this.cleanupInterval = undefined;
 		}
 
 		for (const task of this.taskQueue) {
@@ -158,9 +139,7 @@ class WorkerPool {
 		for (const worker of this.workers) {
 			try {
 				worker.worker.terminate();
-			} catch {
-				void 0;
-			}
+			} catch {}
 		}
 
 		this.workers = [];
@@ -191,9 +170,9 @@ class WorkerPool {
 			workerInstance.worker.postMessage(payload, task.transferables ?? []);
 		} catch (error) {
 			clearTimeout(timeoutId);
-			workerInstance.timeoutId = void 0;
+			workerInstance.timeoutId = undefined;
 			workerInstance.busy = false;
-			workerInstance.currentTaskId = void 0;
+			workerInstance.currentTaskId = undefined;
 
 			if (error instanceof Error) {
 				task.reject(error);
@@ -220,14 +199,12 @@ class WorkerPool {
 		}
 
 		for (const worker of workersToRemove) {
-			const index = this.workers.indexOf(worker);
-			if (index >= 0) {
+			const workerIndex = this.workers.indexOf(worker);
+			if (workerIndex >= 0) {
 				try {
 					worker.worker.terminate();
-				} catch {
-					void 0;
-				}
-				this.workers.splice(index, 1);
+				} catch {}
+				this.workers.splice(workerIndex, 1);
 			}
 		}
 	}
@@ -236,10 +213,10 @@ class WorkerPool {
 		const worker = this.config.workerFactory();
 		const instance: WorkerInstance = {
 			busy: false,
-			currentTaskId: void 0,
+			currentTaskId: undefined,
 			lastUsed: Date.now(),
 			taskCount: 0,
-			timeoutId: void 0,
+			timeoutId: undefined,
 			worker,
 		};
 
@@ -261,7 +238,7 @@ class WorkerPool {
 			return queuedTask;
 		}
 
-		return void 0;
+		return undefined;
 	}
 
 	private getAvailableWorker(): WorkerInstance | void {
@@ -308,21 +285,21 @@ class WorkerPool {
 
 		if (workerInstance.timeoutId) {
 			clearTimeout(workerInstance.timeoutId);
-			workerInstance.timeoutId = void 0;
+			workerInstance.timeoutId = undefined;
 		}
 
 		if (message.type === "result") {
 			workerInstance.busy = false;
-			workerInstance.currentTaskId = void 0;
+			workerInstance.currentTaskId = undefined;
 			workerInstance.lastUsed = Date.now();
-			task.resolve(message.data as unknown);
+			task.resolve(message.data);
 			this.processQueue();
 			return;
 		}
 
 		if (message.type === "error") {
 			workerInstance.busy = false;
-			workerInstance.currentTaskId = void 0;
+			workerInstance.currentTaskId = undefined;
 			workerInstance.lastUsed = Date.now();
 			task.reject(new Error(message.error ?? "Worker task failed"));
 			this.processQueue();
@@ -356,18 +333,16 @@ class WorkerPool {
 	}
 
 	private restartWorker(workerInstance: WorkerInstance): void {
-		const index = this.workers.indexOf(workerInstance);
-		if (index < 0) {
+		const workerIndex = this.workers.indexOf(workerInstance);
+		if (workerIndex < 0) {
 			return;
 		}
 
 		try {
 			workerInstance.worker.terminate();
-		} catch {
-			void 0;
-		}
+		} catch {}
 
-		this.workers[index] = this.createWorker();
+		this.workers[workerIndex] = this.createWorker();
 		this.processQueue();
 	}
 
@@ -376,6 +351,47 @@ class WorkerPool {
 			this.cleanupIdleWorkers();
 		}, CLEANUP_INTERVAL_MS);
 	}
+
+	private createTask<T = unknown, R = unknown>(
+		type: string,
+		data: T,
+		options: {
+			onProgress?: (progress: number) => void;
+			priority?: TaskPriority;
+			timeout?: number;
+			transferables?: Transferable[];
+		},
+		resolve: (result: R) => void,
+		reject: (error: Error) => void,
+	): WorkerTask {
+		const timeout = options.timeout ?? this.config.taskTimeout;
+		const priority = options.priority ?? TASK_PRIORITY.NORMAL;
+
+		return {
+			data,
+			id: this.generateTaskId(),
+			onProgress: options.onProgress,
+			priority,
+			reject,
+			resolve: resolve as (result: unknown) => void,
+			timeout,
+			transferables: options.transferables,
+			type,
+		};
+	}
+
+	private enqueueTask(task: WorkerTask): void {
+		this.taskQueue.push(task);
+		this.taskQueue.sort((first, second) => second.priority - first.priority);
+		this.processQueue();
+	}
+
+	private generateTaskId(): string {
+		const randomSuffix = Math.random()
+			.toString(TASK_ID_RANDOM_BASE)
+			.slice(2, 2 + TASK_ID_RANDOM_LENGTH);
+		return `task-${Date.now()}-${randomSuffix}`;
+	}
 }
 
-export default WorkerPool;
+export const TaskPriority = TASK_PRIORITY;

@@ -16,7 +16,7 @@ const isUrl = function (url: string): boolean {
 
 const isValidProjectName = function (name: string): boolean {
 	const nameRegex = new RegExp(
-		`^[a-zA-Z0-9\\s-_]{${MIN_PROJECT_NAME_LENGTH},${MAX_PROJECT_NAME_LENGTH}}$`,
+		`^[a-zA-Z0-9\\s_\\-]{${MIN_PROJECT_NAME_LENGTH},${MAX_PROJECT_NAME_LENGTH}}$`,
 	);
 	return nameRegex.test(name);
 };

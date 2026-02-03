@@ -1,3 +1,4 @@
+/* eslint-disable func-style, import/no-default-export, max-lines-per-function, no-magic-numbers, react/jsx-max-depth, react-perf/jsx-no-new-object-as-prop */
 import type { VelocityDataPoint } from "@atoms/types";
 import type React from "react";
 import { useEffect, useState } from "react";

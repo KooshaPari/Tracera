@@ -1,10 +1,8 @@
+/* eslint-disable complexity, func-style, max-lines-per-function, react/jsx-max-depth, react-perf/jsx-no-new-function-as-prop, unicorn/no-nested-ternary */
+import { client } from "@/api/client";
+import { CardErrorFallback } from "@/lib/lazy-loading";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { CardErrorFallback } from "@/lib/lazy-loading";
-import { Badge } from "@tracertm/ui/components/Badge";
-import { Button } from "@tracertm/ui/components/Button";
-import { Card } from "@tracertm/ui/components/Card";
-import { Input } from "@tracertm/ui/components/Input";
 import {
 	Select,
 	SelectContent,
@@ -12,17 +10,18 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@tracertm/ui/components/Select";
-import { Skeleton } from "@tracertm/ui/components/Skeleton";
 import {
 	Tabs,
 	TabsContent,
 	TabsList,
 	TabsTrigger,
 } from "@tracertm/ui/components/Tabs";
+import { Badge } from "@tracertm/ui/components/Badge";
+import { Button } from "@tracertm/ui/components/Button";
+import { Card } from "@tracertm/ui/components/Card";
+import { Input } from "@tracertm/ui/components/Input";
+import { Skeleton } from "@tracertm/ui/components/Skeleton";
 import { useState } from "react";
-import { client } from "@/api/client";
-// Note: useParams from @tanstack/react-router requires route context
-// For now, we'll handle project_id via filters
 import type { SearchResult } from "../api/types";
 
 const { getAuthHeaders } = client;

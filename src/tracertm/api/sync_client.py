@@ -16,6 +16,10 @@ from loguru import logger
 
 from tracertm.config.manager import ConfigManager
 
+HTTP_CONFLICT = 409
+HTTP_UNAUTHORIZED = 401
+HTTP_TOO_MANY_REQUESTS = 429
+
 
 class SyncOperation(StrEnum):
     """Sync operation types."""
@@ -318,7 +322,7 @@ class ApiClient:
                 response = await self.client.request(method, endpoint, **kwargs)
 
                 # Check for rate limiting
-                if response.status_code == 429:
+                if response.status_code == HTTP_TOO_MANY_REQUESTS:
                     retry_after_raw = response.headers.get("Retry-After", "60")
                     try:
                         retry_after = float(retry_after_raw)
@@ -332,7 +336,7 @@ class ApiClient:
                     )
 
                 # Check for auth errors
-                if response.status_code == 401:
+                if response.status_code == HTTP_UNAUTHORIZED:
                     raise AuthenticationError(
                         "Authentication failed. Check API token.",
                         status_code=401,
@@ -345,7 +349,7 @@ class ApiClient:
 
             except httpx.HTTPStatusError as e:
                 # Handle 409 Conflict errors specially
-                if e.response.status_code == 409:
+                if e.response.status_code == HTTP_CONFLICT:
                     data = e.response.json() if e.response.content else {}
                     conflicts = [Conflict.from_dict(c) for c in data.get("conflicts", [])]
                     raise ConflictError(
@@ -453,7 +457,7 @@ class ApiClient:
             data = response.json()
             return UploadResult.from_dict(data)
         except httpx.HTTPStatusError as exc:
-            if exc.response is not None and exc.response.status_code == 409:
+            if exc.response is not None and exc.response.status_code == HTTP_CONFLICT:
                 response_payload = exc.response.json()
                 conflicts_raw: list[Any] = response_payload.get("conflicts", [])
                 conflicts: list[Conflict] = [

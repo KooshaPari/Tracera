@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 
+const BYTES_PER_KB = 1024;
+const BYTES_PER_MB = BYTES_PER_KB * BYTES_PER_KB;
+
 export interface MemoryStats {
 	usedJSHeapSize: number; // MB
 	totalJSHeapSize: number; // MB
@@ -26,10 +29,10 @@ export function useMemoryMonitor(
 		function measureMemory() {
 			const { memory } = performance as any;
 			setStats({
-				jsHeapSizeLimit: memory.jsHeapSizeLimit / 1024 / 1024,
-				totalJSHeapSize: memory.totalJSHeapSize / 1024 / 1024,
+				jsHeapSizeLimit: memory.jsHeapSizeLimit / BYTES_PER_MB,
+				totalJSHeapSize: memory.totalJSHeapSize / BYTES_PER_MB,
 				usage: memory.usedJSHeapSize / memory.jsHeapSizeLimit,
-				usedJSHeapSize: memory.usedJSHeapSize / 1024 / 1024,
+				usedJSHeapSize: memory.usedJSHeapSize / BYTES_PER_MB,
 			});
 		}
 

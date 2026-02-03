@@ -15,56 +15,56 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 // Transform API response (snake_case) to frontend format (camelCase)
 function transformWebhook(data: Record<string, unknown>): WebhookIntegration {
 	return {
-		apiKey: data["api_key"],
-		autoCompleteRun: data["auto_complete_run"],
-		autoCreateRun: data["auto_create_run"],
-		callbackHeaders: data["callback_headers"],
-		callbackUrl: data["callback_url"],
-		createdAt: data["created_at"],
-		defaultSuiteId: data["default_suite_id"],
-		description: data["description"],
-		enabledEvents: data["enabled_events"],
-		eventFilters: data["event_filters"],
-		failedRequests: data["failed_requests"],
-		id: data["id"],
-		lastErrorMessage: data["last_error_message"],
-		lastFailureAt: data["last_failure_at"],
-		lastRequestAt: data["last_request_at"],
-		lastSuccessAt: data["last_success_at"],
-		metadata: data["webhook_metadata"],
-		name: data.name,
-		projectId: data["project_id"],
-		provider: data["provider"],
-		rateLimitPerMinute: data["rate_limit_per_minute"],
-		status: data.status,
-		successfulRequests: data["successful_requests"],
-		totalRequests: data["total_requests"],
-		updatedAt: data["updated_at"],
-		verifySignatures: data["verify_signatures"],
-		version: data["version"],
-		webhookSecret: data["webhook_secret"],
+		apiKey: data["api_key"] as string | undefined,
+		autoCompleteRun: data["auto_complete_run"] as boolean,
+		autoCreateRun: data["auto_create_run"] as boolean,
+		callbackHeaders: data["callback_headers"] as Record<string, string> | undefined,
+		callbackUrl: data["callback_url"] as string | undefined,
+		createdAt: data["created_at"] as string | undefined,
+		defaultSuiteId: data["default_suite_id"] as string | undefined,
+		description: data["description"] as string | undefined,
+		enabledEvents: data["enabled_events"] as string[] | undefined,
+		eventFilters: data["event_filters"] as Record<string, unknown> | undefined,
+		failedRequests: data["failed_requests"] as number,
+		id: data["id"] as string,
+		lastErrorMessage: data["last_error_message"] as string | undefined,
+		lastFailureAt: data["last_failure_at"] as string | undefined,
+		lastRequestAt: data["last_request_at"] as string | undefined,
+		lastSuccessAt: data["last_success_at"] as string | undefined,
+		metadata: data["webhook_metadata"] as Record<string, unknown> | undefined,
+		name: data["name"] as string,
+		projectId: data["project_id"] as string,
+		provider: data["provider"] as WebhookProvider,
+		rateLimitPerMinute: data["rate_limit_per_minute"] as number,
+		status: data["status"] as WebhookStatus,
+		successfulRequests: data["successful_requests"] as number,
+		totalRequests: data["total_requests"] as number,
+		updatedAt: data["updated_at"] as string | undefined,
+		verifySignatures: data["verify_signatures"] as boolean,
+		version: data["version"] as number,
+		webhookSecret: data["webhook_secret"] as string | undefined,
 	};
 }
 
 function transformWebhookLog(data: Record<string, unknown>): WebhookLog {
 	return {
-		createdAt: data["created_at"],
-		errorMessage: data["error_message"],
-		eventType: data["event_type"],
-		httpMethod: data["http_method"],
-		id: data["id"],
-		payloadSizeBytes: data["payload_size_bytes"],
-		processingTimeMs: data["processing_time_ms"],
-		requestBodyPreview: data["request_body_preview"],
-		requestHeaders: data["request_headers"],
-		requestId: data["request_id"],
-		resultsSubmitted: data["results_submitted"],
-		sourceIp: data["source_ip"],
-		statusCode: data["status_code"],
-		success: data["success"],
-		testRunId: data["test_run_id"],
-		userAgent: data["user_agent"],
-		webhookId: data["webhook_id"],
+		createdAt: data["created_at"] as string,
+		errorMessage: data["error_message"] as string | undefined,
+		eventType: data["event_type"] as string,
+		httpMethod: data["http_method"] as string,
+		id: data["id"] as string,
+		payloadSizeBytes: data["payload_size_bytes"] as number | undefined,
+		processingTimeMs: data["processing_time_ms"] as number | undefined,
+		requestBodyPreview: data["request_body_preview"] as string | undefined,
+		requestHeaders: data["request_headers"] as Record<string, unknown> | undefined,
+		requestId: data["request_id"] as string | undefined,
+		resultsSubmitted: data["results_submitted"] as boolean,
+		sourceIp: data["source_ip"] as string | undefined,
+		statusCode: data["status_code"] as number | undefined,
+		success: data["success"] as boolean,
+		testRunId: data["test_run_id"] as string | undefined,
+		userAgent: data["user_agent"] as string | undefined,
+		webhookId: data["webhook_id"] as string,
 	};
 }
 
@@ -190,8 +190,8 @@ async function updateWebhook(
 	data: UpdateWebhookData,
 ): Promise<WebhookIntegration> {
 	const payload: Record<string, unknown> = {};
-	if (data.name !== undefined) {
-		payload.name = data.name;
+	if (data["name"] !== undefined) {
+		payload.name = data["name"] as string;
 	}
 	if (data["description"] !== undefined) {
 		payload["description"] = data["description"];
@@ -367,10 +367,10 @@ export function useWebhook(id: string | undefined) {
 }
 
 export function useCreateWebhook() {
-	const queryClient = useQueryClient();
+	const _queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: createWebhook,
-		onSuccess: (data) => {
+		onSuccess: (_data) => {
 			undefined;
 			undefined;
 		},

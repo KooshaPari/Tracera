@@ -1,7 +1,7 @@
 // React hooks for execution management
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { executionsApi } from "../api/executions";
+import executionsApi from "../api/executions";
 import type {
 	ExecutionComplete,
 	ExecutionCreate,

@@ -52,7 +52,7 @@ const buildHandlers = (
 	},
 });
 
-const ADRView = (): JSX.Element => {
+const ADRView = (): React.ReactNode => {
 	const { projectId } = useParams({ strict: false });
 	const normalizedProjectId = projectId || "";
 	const { data: adrsData } = useADRs({

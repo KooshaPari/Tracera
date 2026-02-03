@@ -62,10 +62,7 @@ def should_bypass_for_user(request: Request, claims: dict[str, Any] | None) -> b
         return True
 
     # Check if user has bypass flag in claims
-    if claims and claims.get("bypass_rate_limit"):
-        return True
-
-    return False
+    return bool(claims and claims.get("bypass_rate_limit"))
 
 
 def get_rate_limit_key(request: Request, claims: dict[str, Any] | None) -> str:
@@ -84,8 +81,7 @@ def get_rate_limit_key(request: Request, claims: dict[str, Any] | None) -> str:
 
     key = claims.get("sub") if claims else None
     client_ip = get_client_ip(request) if inspect.signature(get_client_ip).parameters else get_client_ip()
-    key = key or request.headers.get("X-User-ID") or client_ip or "anonymous"
-    return key
+    return key or request.headers.get("X-User-ID") or client_ip or "anonymous"
 
 
 def get_resolved_limit(request: Request) -> int | None:
@@ -140,12 +136,13 @@ def check_rate_limit(
         _rate_limit_counts[rate_key] = 0
     _rate_limit_counts[rate_key] += 1
 
-    if allowed is False:
-        return False
-    elif resolved_limit is not None and _rate_limit_counts[rate_key] > (resolved_limit or 0):
-        return False
-
-    return True
+    return not (
+        allowed is False
+        or (
+            resolved_limit is not None
+            and _rate_limit_counts[rate_key] > (resolved_limit or 0)
+        )
+    )
 
 
 def raise_rate_limit_error(key: str, request: Request) -> None:

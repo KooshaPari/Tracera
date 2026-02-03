@@ -111,22 +111,21 @@ export function SearchView() {
 						<div className="grid grid-cols-1 gap-4 stagger-children">
 							{results.items.map((item) => {
 								const raw = item as Item & {
+									item_view?: string;
 									project_id?: string;
 									view_type?: string;
-									item_view?: string;
 								};
 								const projectId = item.projectId ?? raw.project_id;
-								const viewType =
-									item.view ?? raw.view_type ?? raw.item_view ?? "feature";
+								const viewTypeCandidate1 = item.view ?? raw.view_type;
+								const viewTypeCandidate2 = viewTypeCandidate1 ?? raw.item_view;
+								const viewType = viewTypeCandidate2 ?? "feature";
+
+								const targetPath = projectId
+									? `/projects/${projectId}/views/${String(viewType).toLowerCase()}/${item.id}`
+									: "/projects";
+
 								return (
-									<Link
-										key={item.id}
-										to={
-											projectId
-												? `/projects/${projectId}/views/${String(viewType).toLowerCase()}/${item.id}`
-												: "/projects"
-										}
-									>
+									<Link key={item.id} to={targetPath}>
 										<Card className="p-6 border-none bg-card/50 hover:bg-card shadow-sm hover:shadow-xl active:scale-[0.99] transition-all duration-200 ease-out group rounded-[2rem]">
 											<div className="flex flex-col md:flex-row md:items-center gap-6">
 												<div className="h-12 w-12 rounded-2xl bg-muted flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors">

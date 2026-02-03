@@ -26,7 +26,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@tracertm/ui/components/Select";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 // NOTE: These imports will work after installing dependencies
 // Commented out to prevent build errors before installation
@@ -77,7 +77,9 @@ function generateRandomGraph(
 		items.push({
 			createdAt: new Date().toISOString(),
 			id: `node-${i}`,
+			priority: "medium",
 			projectId: "test",
+			status: "todo",
 			title: `Node ${i}`,
 			type: ["feature", "requirement", "task", "test"][i % 4] as any,
 			updatedAt: new Date().toISOString(),

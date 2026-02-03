@@ -391,7 +391,7 @@ describe("Sidebar Navigation", () => {
 			await user.keyboard("{Escape}");
 
 			// Search input should be cleared
-			expect(searchInput.value).toBe("");
+			expect(searchInput).toHaveValue("");
 		});
 
 		it("shows no results message when search has no matches", async () => {

@@ -1,12 +1,7 @@
 import { type FC, useMemo } from "react";
-import {
-	Card,
-	CheckCircle2,
-	Shield,
-	ShieldAlert,
-	ShieldCheck,
-} from "lucide-react";
-import type { Contract } from "../../..";
+import { Card } from "@tracertm/ui";
+import { CheckCircle2, Shield, ShieldAlert, ShieldCheck } from "lucide-react";
+import type { Contract } from "@tracertm/types";
 
 interface VerificationSummaryCardsProps {
 	contracts: readonly Contract[];

@@ -1,3 +1,4 @@
+/* eslint-disable func-style */
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { ItemsTableView } from "@/views/ItemsTableView";
 

@@ -8,6 +8,8 @@
  * - Filter by change type
  * - Expandable diff details
  */
+/* eslint-disable max-lines-per-function -- complex diff UI */
+/* eslint-disable react/no-array-index-key -- field changes have no stable id */
 
 import type {
 	DiffItem,
@@ -358,6 +360,14 @@ function DiffItemRow({
 			<div
 				className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5"
 				onClick={() => hasFieldChanges && onToggleExpand()}
+				onKeyDown={(e) => {
+					if (hasFieldChanges && (e.key === "Enter" || e.key === " ")) {
+						e.preventDefault();
+						onToggleExpand();
+					}
+				}}
+				role="button"
+				tabIndex={hasFieldChanges ? 0 : undefined}
 			>
 				{/* Expand toggle */}
 				{hasFieldChanges ? (
@@ -434,7 +444,7 @@ function DiffItemRow({
 							</thead>
 							<tbody className="divide-y divide-gray-200 dark:divide-gray-700">
 								{item.fieldChanges!.map((change, index) => (
-									<tr key={index}>
+									<tr key={`${change.field}-${index}`}>
 										<td className="px-3 py-2 font-medium text-gray-900 dark:text-gray-100">
 											{change.field}
 										</td>
@@ -532,4 +542,5 @@ function getTypeIcon(type: string): React.ReactNode {
 	return <FileText className="w-4 h-4" />;
 }
 
+// eslint-disable-next-line import/no-default-export -- route/legacy import
 export default VersionDiff;

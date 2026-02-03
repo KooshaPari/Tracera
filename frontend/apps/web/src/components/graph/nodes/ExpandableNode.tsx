@@ -532,19 +532,20 @@ function isExpandableNodeData(data: unknown): data is ExpandableNodeData {
 	const obj = data as Record<string, unknown>;
 
 	// Required properties
+	const item = obj["item"];
 	if (
-		typeof obj.item !== "object" ||
-		obj.item === null ||
-		typeof (obj.item as Record<string, unknown>).id !== "string"
+		typeof item !== "object" ||
+		item === null ||
+		typeof (item as Record<string, unknown>)["id"] !== "string"
 	) {
 		return false;
 	}
 
-	if (typeof obj.label !== "string") {
+	if (typeof obj["label"] !== "string") {
 		return false;
 	}
 
-	if (typeof obj.type !== "string") {
+	if (typeof obj["type"] !== "string") {
 		return false;
 	}
 

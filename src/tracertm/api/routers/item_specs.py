@@ -14,6 +14,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.api.deps import auth_guard, get_db
 
+RISK_THRESHOLD_CRITICAL = 80
+RISK_THRESHOLD_HIGH = 60
+RISK_THRESHOLD_MEDIUM = 40
+SIMILARITY_DUPLICATE_THRESHOLD = 0.95
+
 # =============================================================================
 # Response Models
 # =============================================================================
@@ -2789,7 +2794,13 @@ async def analyze_impact(
             )
 
         risk_category = (
-            "critical" if result.risk_score >= 80 else "high" if result.risk_score >= 60 else "medium" if result.risk_score >= 40 else "low"
+            "critical"
+            if result.risk_score >= RISK_THRESHOLD_CRITICAL
+            else "high"
+            if result.risk_score >= RISK_THRESHOLD_HIGH
+            else "medium"
+            if result.risk_score >= RISK_THRESHOLD_MEDIUM
+            else "low"
         )
         return ImpactAnalysisResponse(
             spec_id=result.source_item_id,
@@ -3153,7 +3164,7 @@ async def analyze_similarity(
                 similarity = float(np.dot(source_vec, other_vec) / norm_product)
 
                 if similarity >= threshold:
-                    is_duplicate = similarity >= 0.95
+                    is_duplicate = similarity >= SIMILARITY_DUPLICATE_THRESHOLD
                     item = {
                         "item_id": emb.spec_id,
                         "item_title": f"{emb.spec_type}:{emb.spec_id}",  # Default title

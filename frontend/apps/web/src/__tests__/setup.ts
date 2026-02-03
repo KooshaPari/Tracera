@@ -2,6 +2,10 @@
  * Test setup and configuration
  */
 
+import "@testing-library/jest-dom";
+import { cleanup } from "@testing-library/react";
+import { afterEach, vi } from "vitest";
+
 type TestGlobals = typeof globalThis & {
 	WebGL2RenderingContext?: unknown;
 	IntersectionObserver?: new (...args: unknown[]) => unknown;
@@ -23,18 +27,12 @@ if (typeof globalThis !== "undefined") {
 		UNSIGNED_INT: 5125,
 		UNSIGNED_SHORT: 5123,
 	};
-	(globalThis as TestGlobals).WebGL2RenderingContext =
-		WebGL2RenderingContextMock;
+	Object.defineProperty(globalThis, "WebGL2RenderingContext", {
+		configurable: true,
+		value: WebGL2RenderingContextMock as unknown as typeof WebGL2RenderingContext,
+		writable: true,
+	});
 }
-
-import { cleanup } from "@testing-library/react";
-import { afterEach, vi } from "vitest";
-import "@testing-library/jest-dom";
-import { toHaveNoViolations } from "jest-axe";
-import { expect } from "vitest";
-
-// Extend Vitest matchers with jest-axe
-expect.extend(toHaveNoViolations);
 
 // Mock TanStack Router API routes (createAPIFileRoute is from TanStack Start but imported from react-router)
 vi.mock("@tanstack/react-router", async () => {
@@ -139,7 +137,11 @@ const IntersectionObserverMock = class {
 	}
 	unobserve() {}
 };
-(globalThis as TestGlobals).IntersectionObserver = IntersectionObserverMock;
+Object.defineProperty(globalThis, "IntersectionObserver", {
+	configurable: true,
+	value: IntersectionObserverMock as unknown as typeof IntersectionObserver,
+	writable: true,
+});
 
 // Mock ResizeObserver
 const ResizeObserverMock = class {
@@ -147,7 +149,11 @@ const ResizeObserverMock = class {
 	observe() {}
 	unobserve() {}
 };
-(globalThis as TestGlobals).ResizeObserver = ResizeObserverMock;
+Object.defineProperty(globalThis, "ResizeObserver", {
+	configurable: true,
+	value: ResizeObserverMock as unknown as typeof ResizeObserver,
+	writable: true,
+});
 
 // Mock pointer capture methods for Radix UI components
 if (typeof globalThis !== "undefined" && typeof Element !== "undefined") {
@@ -199,9 +205,11 @@ class MockWebSocket {
 	}
 }
 
-(globalThis as TestGlobals).WebSocket = MockWebSocket as new (
-	url: string,
-) => unknown;
+Object.defineProperty(globalThis, "WebSocket", {
+	configurable: true,
+	value: MockWebSocket as unknown as typeof WebSocket,
+	writable: true,
+});
 
 // Mock HTMLCanvasElement for graph visualization
 if (typeof globalThis !== "undefined") {
@@ -248,9 +256,11 @@ if (typeof globalThis !== "undefined") {
 			callback(new Blob());
 		}
 	};
-	(globalThis as TestGlobals).HTMLCanvasElement = MockCanvas as new (
-		...args: unknown[]
-	) => unknown;
+	Object.defineProperty(globalThis, "HTMLCanvasElement", {
+		configurable: true,
+		value: MockCanvas as unknown as typeof HTMLCanvasElement,
+		writable: true,
+	});
 }
 
 // Mock fetch globally for API tests

@@ -1,9 +1,12 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { requireAuth } from "@/lib/route-guards";
 
-const FeaturesPage = () => null;
+function FeaturesPage() {
+	return null;
+}
 
 export const Route = createFileRoute("/projects/$projectId/features" as any)({
+	component: FeaturesPage,
 	beforeLoad: ({ params }) => {
 		requireAuth();
 		throw redirect({
@@ -12,5 +15,4 @@ export const Route = createFileRoute("/projects/$projectId/features" as any)({
 			to: "/projects/$projectId/specifications",
 		});
 	},
-	component: FeaturesPage,
 });

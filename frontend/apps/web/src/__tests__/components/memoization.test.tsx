@@ -1,5 +1,5 @@
 import { render } from "@testing-library/react";
-import React, { memo, useCallback, useMemo } from "react";
+import { memo, useCallback, useMemo } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 interface TestItem {

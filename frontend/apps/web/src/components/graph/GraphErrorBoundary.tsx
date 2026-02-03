@@ -24,7 +24,7 @@ export class GraphErrorBoundary extends Component<Props, State> {
 		return { error, hasError: true };
 	}
 
-	componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+	override componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
 		logger.error("Graph error boundary caught:", error, errorInfo);
 		this.props.onError?.(error, errorInfo);
 	}
@@ -33,7 +33,7 @@ export class GraphErrorBoundary extends Component<Props, State> {
 		this.setState({ error: null, hasError: false });
 	};
 
-	render() {
+	override render() {
 		if (this.state.hasError && this.state.error) {
 			if (this.props.fallback) {
 				return this.props.fallback(this.state.error, this.reset);

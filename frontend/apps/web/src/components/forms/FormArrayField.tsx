@@ -1,7 +1,7 @@
 import { Button } from "@tracertm/ui";
 import { Plus, Trash2 } from "lucide-react";
 import type * as React from "react";
-import type { ArrayPath, Control, FieldValues } from "react-hook-form";
+import type { ArrayPath, Control, FieldArray, FieldValues } from "react-hook-form";
 import { useFieldArray } from "react-hook-form";
 import { cn } from "@/lib/utils";
 
@@ -11,7 +11,7 @@ export interface FormArrayFieldProps<T extends FieldValues> {
 	label: string;
 	helpText?: string;
 	renderField: (index: number) => React.ReactNode;
-	defaultValue?: unknown;
+	defaultValue?: FieldArray<T, ArrayPath<T>>;
 	addButtonLabel?: string;
 	removeButtonLabel?: string;
 	minItems?: number;
@@ -55,7 +55,13 @@ export function FormArrayField<T extends FieldValues>({
 					type="button"
 					variant="outline"
 					size="sm"
-					onClick={() => append(defaultValue)}
+					onClick={() => {
+						if (defaultValue !== undefined) {
+							append(defaultValue);
+						} else {
+							append({} as FieldArray<T, ArrayPath<T>>);
+						}
+					}}
 					disabled={!canAdd}
 					aria-label={addButtonLabel}
 				>

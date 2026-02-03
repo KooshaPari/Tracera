@@ -117,18 +117,20 @@ export function DataTransformExample() {
 
 		try {
 			// Sort data
-			const sorted = await worker.sortData(data, "value", "desc");
+			const sorted = await worker.sortData(data, {
+				direction: "desc",
+				field: "value",
+			});
 
 			// Calculate statistics
-			const stats = await worker.calculateStatistics(data, "value");
+			const stats = await worker.calculateStatistics(data, { field: "value" });
 
 			// Aggregate by category
-			const aggregated = await worker.aggregateData(
-				data,
-				"category",
-				"value",
-				"sum",
-			);
+			const aggregated = await worker.aggregateData(data, {
+				aggregateField: "value",
+				aggregationType: "sum",
+				groupByField: "category",
+			});
 
 			setResult({
 				aggregated,

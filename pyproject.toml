@@ -951,7 +951,7 @@ max-statements = 50
 "tests/unit/test_error_path_cli_tui.py" = ["ASYNC240"]
 "tests/unit/test_error_path_coverage.py" = ["ASYNC240"]
 "src/tracertm/agent/test_events.py" = ["S101", "S108"]
-"src/tracertm/services/agents/codex_service.py" = ["S404"]  # subprocess for tool execution; controlled
+"src/tracertm/services/agents/codex_service.py" = ["C901", "S404"]  # subprocess for tool execution; controlled
 "src/tracertm/services/ai_tools.py" = ["S404"]  # subprocess for CLI; controlled
 "src/tracertm/services/execution/docker_orchestrator.py" = ["S404"]  # subprocess for docker; controlled
 "src/tracertm/services/execution/native_orchestrator.py" = ["S404"]  # subprocess for sandbox; controlled
@@ -1022,6 +1022,27 @@ max-statements = 50
 # Root-level Docker example (container tmpfs; try/except-pass in cleanup)
 "DOCKER_SDK_ASYNC_EXAMPLES.py" = ["S108", "S110", "N999"]  # example script name
 "scripts/DOCKER_SDK_ASYNC_EXAMPLES.py" = ["S108", "S110", "N999"]
+# Service files with complex business logic - relax complexity rules
+"src/tracertm/services/spec_analytics_service_v2.py" = ["C901", "PLR0911", "PLR0912", "PLR0913", "PLR2004"]
+"src/tracertm/services/stateless_ingestion_service.py" = ["C901", "PLR0913", "UP035"]
+"src/tracertm/services/temporal_service.py" = ["PLR0913"]
+"src/tracertm/services/traceability_matrix_service.py" = ["C901"]
+"src/tracertm/services/webhook_service.py" = ["C901", "PLR0911", "PLR0912", "PLR0913", "PLR0915"]
+"src/tracertm/services/workos_auth_service.py" = ["C901"]
+"src/tracertm/storage/local_storage.py" = ["C901", "PLR0912", "PLR0913", "PLR0915", "PLR2004"]
+"src/tracertm/storage/markdown_parser.py" = ["C901", "PLR0912", "PLR0915", "PLR2004"]
+# Additional service files with complex business logic
+"src/tracertm/services/adr_service.py" = ["PLR0913"]
+"src/tracertm/services/advanced_traceability_service.py" = ["C901"]
+"src/tracertm/services/agent_metrics_service.py" = ["C901"]
+"src/tracertm/services/agent_monitoring_service.py" = ["C901"]
+"src/tracertm/services/ai_service.py" = ["C901", "PLR0912", "PLR0913", "PLR1702"]
+"src/tracertm/services/ai_tools.py" = ["C901"]
+"src/tracertm/services/critical_path_service.py" = ["C901"]
+"src/tracertm/services/cycle_detection_service.py" = ["C901"]
+"src/tracertm/services/execution/native_orchestrator.py" = ["ASYNC109", "ASYNC240"]
+"src/tracertm/services/recording/playwright_service.py" = ["PLR0913"]
+"src/tracertm/services/spec_analytics_service.py" = ["PLR2004"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["tracertm"]

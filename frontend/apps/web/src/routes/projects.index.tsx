@@ -22,14 +22,16 @@ const ProjectsListView = lazy(() =>
 	}),
 );
 
+function ProjectsComponent() {
+	return (
+		<Suspense fallback={<ChunkLoadingSkeleton message="Loading projects..." />}>
+			<ProjectsListView />
+		</Suspense>
+	);
+}
+
 export const Route = createFileRoute("/projects/")({
 	beforeLoad: () => requireAuth(),
 	component: ProjectsComponent,
 	loader: async () => ({}),
 });
-
-const ProjectsComponent = () => (
-	<Suspense fallback={<ChunkLoadingSkeleton message="Loading projects..." />}>
-		<ProjectsListView />
-	</Suspense>
-);

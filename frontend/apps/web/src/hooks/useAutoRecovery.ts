@@ -33,7 +33,7 @@ export function useAutoRecovery(
 		retryCount: 0,
 	});
 
-	const retryTimeoutRef = useRef<NodeJS.Timeout>();
+	const retryTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
 	useEffect(() => {
 		if (!error) {
@@ -47,7 +47,7 @@ export function useAutoRecovery(
 		}
 
 		const delay = exponentialBackoff
-			? retryDelay * Math.pow(2, state.retryCount)
+			? retryDelay * 2 ** state.retryCount
 			: retryDelay;
 
 		setState((prev) => ({

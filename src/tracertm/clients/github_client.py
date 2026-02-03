@@ -36,6 +36,9 @@ class GitHubNotFoundError(GitHubClientError):
     """Resource not found."""
 
 
+HTTP_CREATED = 201
+
+
 class GitHubClient:
     """GitHub API client with rate limiting and error handling.
 
@@ -110,7 +113,7 @@ class GitHubClient:
                     },
                 )
 
-                if response.status_code != 201:
+                if response.status_code != HTTP_CREATED:
                     raise GitHubAuthError(f"Failed to get installation token: {response.text}")
 
                 token_data = response.json()

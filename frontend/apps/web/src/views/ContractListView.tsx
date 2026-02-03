@@ -159,4 +159,5 @@ const ContractListView: FC<ContractListViewProps> = ({ projectId }) => {
 	);
 };
 
+export { ContractListView };
 export default ContractListView;

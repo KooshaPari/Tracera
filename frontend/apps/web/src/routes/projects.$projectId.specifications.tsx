@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@tracertm/ui";
 import {
 	BookOpen,
@@ -26,7 +26,6 @@ export const Route = createFileRoute("/projects/$projectId/specifications")({
 function SpecificationsRoute() {
 	const { projectId } = Route.useParams();
 	const { tab } = Route.useSearch();
-	const navigate = useNavigate();
 	const allowedTabs = new Set([
 		"overview",
 		"item-specs",
@@ -37,8 +36,8 @@ function SpecificationsRoute() {
 	]);
 	const currentTab = allowedTabs.has(tab) ? tab : "overview";
 
-	const handleTabChange = (value: string) => {
-		undefined;
+	const handleTabChange = (_value: string) => {
+		// Tab change handled by Tabs component via value/onValueChange
 	};
 
 	return (

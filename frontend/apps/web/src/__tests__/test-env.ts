@@ -8,7 +8,7 @@ import { populateGlobal } from "vitest/environments";
 
 export default class CustomTestEnvironment implements Environment {
 	name = "custom-test-env";
-	dom: JSDOM;
+	dom!: JSDOM;
 	transformMode = "ssr" as const;
 
 	async setup(global: typeof globalThis, { jsdom = {} }: EnvironmentOptions) {

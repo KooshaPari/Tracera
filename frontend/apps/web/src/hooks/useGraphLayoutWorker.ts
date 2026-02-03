@@ -362,12 +362,10 @@ export function useGraphLayoutBenchmark() {
 				throw new Error("Worker not ready");
 			}
 
-			return apiRef.current.benchmarkLayout(
-				nodes,
-				edges,
+			return apiRef.current.benchmarkLayout(nodes, edges, {
 				algorithm,
 				iterations,
-			);
+			});
 		},
 		[isReady],
 	);

@@ -4,6 +4,7 @@
  */
 
 import { render } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { axe } from "./setup";
 
@@ -311,6 +312,7 @@ describe("Form Accessibility - Focus Management", () => {
 
 	it("should support keyboard navigation through form fields", async () => {
 		const { getByLabelText, getByPlaceholderText } = render(<AccessibleForm />);
+		const user = userEvent.setup();
 
 		const titleInput = getByLabelText(/title/i);
 		const typeSelect = getByLabelText(/type/i);
@@ -331,6 +333,7 @@ describe("Form Accessibility - Focus Management", () => {
 
 	it("should support Shift+Tab for reverse navigation", async () => {
 		const { getByLabelText } = render(<AccessibleForm />);
+		const user = userEvent.setup();
 
 		const titleInput = getByLabelText(/title/i);
 		const typeSelect = getByLabelText(/type/i);
@@ -410,7 +413,7 @@ describe("Form Accessibility - WCAG 2.1 AA Compliance", () => {
 		const emailEl = getByLabelText(/email/i);
 		const emailInput = emailEl instanceof HTMLInputElement ? emailEl : null;
 		expect(emailInput).not.toBeNull();
-		expect(emailInput!.autoComplete).toBe("email");
+		expect(emailInput!.autocomplete).toBe("email");
 	});
 });
 

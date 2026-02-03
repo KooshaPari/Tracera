@@ -119,37 +119,37 @@ export function useProject(id: string) {
 }
 
 export function useCreateProject() {
-	const queryClient = useQueryClient();
+	const _queryClient = useQueryClient();
 	const token = useAuthStore((s) => s.token);
 	return useMutation({
 		mutationFn: (data: { name: string; description?: string }) =>
 			createProject(data, token),
 		onSuccess: () => {
-			undefined;
+			_queryClient.invalidateQueries({ queryKey: ["projects"] });
 		},
 	});
 }
 
 export function useUpdateProject() {
-	const queryClient = useQueryClient();
+	const _queryClient = useQueryClient();
 	const token = useAuthStore((s) => s.token);
 	return useMutation({
-		mutationFn: ({ id, data }: { id: string; data: Partial<Project> }) =>
+		mutationFn: ({ data, id }: { id: string; data: Partial<Project> }) =>
 			updateProject(id, data, token),
-		onSuccess: (_, { id }) => {
-			undefined;
-			undefined;
+		onSuccess: (_, { id: _id }) => {
+			_queryClient.invalidateQueries({ queryKey: ["projects"] });
+			_queryClient.invalidateQueries({ queryKey: ["project", _id] });
 		},
 	});
 }
 
 export function useDeleteProject() {
-	const queryClient = useQueryClient();
+	const _queryClient = useQueryClient();
 	const token = useAuthStore((s) => s.token);
 	return useMutation({
 		mutationFn: (id: string) => deleteProject(id, token),
 		onSuccess: () => {
-			undefined;
+			_queryClient.invalidateQueries({ queryKey: ["projects"] });
 		},
 	});
 }

@@ -21,169 +21,282 @@ export interface TransformOptions {
 
 export type ProgressCallback = (progress: number) => void;
 
+const ZERO = 0;
+const ONE = 1;
+const TWO = 2;
+const CHUNK_SIZE = 1000;
+const PROGRESS_START = 0;
+const PROGRESS_COMPLETE = 100;
+const PROGRESS_STAGE_ONE = 30;
+const PROGRESS_STAGE_TWO = 50;
+const PROGRESS_STAGE_THREE = 70;
+const PROGRESS_STAGE_FOUR = 90;
+
+type FilterOptions = {
+	field: string;
+	predicate: (value: unknown) => boolean;
+	onProgress?: ProgressCallback;
+};
+
+type SortOptions = {
+	field: string;
+	direction?: "asc" | "desc";
+	onProgress?: ProgressCallback;
+};
+
+type AggregateOptions = {
+	groupByField: string;
+	aggregateField: string;
+	aggregationType: "sum" | "avg" | "min" | "max" | "count";
+	onProgress?: ProgressCallback;
+};
+
+type NormalizeOptions = {
+	field: string;
+	onProgress?: ProgressCallback;
+};
+
+type DeduplicateOptions = {
+	field: string;
+	onProgress?: ProgressCallback;
+};
+
+type StatisticsOptions = {
+	field: string;
+	onProgress?: ProgressCallback;
+};
+
+type PivotOptions = {
+	rowField: string;
+	columnField: string;
+	valueField: string;
+	onProgress?: ProgressCallback;
+};
+
+type JoinOptions = {
+	leftKey: string;
+	rightKey: string;
+	joinType?: "inner" | "left" | "right" | "outer";
+	onProgress?: ProgressCallback;
+};
+
+const reportProgress = (callback: ProgressCallback | undefined, value: number): void => {
+	if (callback) {
+		callback(value);
+	}
+};
+
+const calculateProgress = (current: number, total: number): number => {
+	if (total <= ZERO) {
+		return PROGRESS_COMPLETE;
+	}
+	return (current / total) * PROGRESS_COMPLETE;
+};
+
+const normalizeComparable = (value: unknown): number | string => {
+	if (typeof value === "number") {
+		return value;
+	}
+	if (typeof value === "string") {
+		return value;
+	}
+	return String(value);
+};
+
+const compareValues = (first: unknown, second: unknown, direction: "asc" | "desc"): number => {
+	if (first === second) {
+		return ZERO;
+	}
+
+	const leftValue = normalizeComparable(first);
+	const rightValue = normalizeComparable(second);
+	const comparison = leftValue < rightValue ? -ONE : ONE;
+	return direction === "asc" ? comparison : -comparison;
+};
+
+const createEmptyStats = () => ({
+	count: ZERO,
+	max: ZERO,
+	mean: ZERO,
+	median: ZERO,
+	min: ZERO,
+	stdDev: ZERO,
+	sum: ZERO,
+});
+
 /**
  * Filter large dataset
  */
-function filterData<T extends Record<string, any>>(
+const filterData = <T extends Record<string, unknown>>(
 	data: T[],
-	field: string,
-	predicate: (value: any) => boolean,
-	onProgress?: ProgressCallback,
-): T[] {
+	options: FilterOptions,
+): T[] => {
+	const { field, onProgress, predicate } = options;
 	const result: T[] = [];
-	const chunkSize = 1000;
 
-	for (let i = 0; i < data.length; i += chunkSize) {
-		const chunk = data.slice(i, Math.min(i + chunkSize, data.length));
+	for (let startIndex = ZERO; startIndex < data.length; startIndex += CHUNK_SIZE) {
+		const endIndex = Math.min(startIndex + CHUNK_SIZE, data.length);
 
-		for (const item of chunk) {
+		for (let itemIndex = startIndex; itemIndex < endIndex; itemIndex += ONE) {
+			const item = data[itemIndex];
+			if (item === undefined) {
+				continue;
+			}
 			if (predicate(item[field])) {
 				result.push(item);
 			}
 		}
 
-		onProgress?.(((i + chunkSize) / data.length) * 100);
+		reportProgress(onProgress, calculateProgress(endIndex, data.length));
 	}
 
-	onProgress?.(100);
+	reportProgress(onProgress, PROGRESS_COMPLETE);
 	return result;
-}
+};
 
 /**
  * Sort large dataset
  */
-function sortData<T extends Record<string, any>>(
+const sortData = <T extends Record<string, unknown>>(
 	data: T[],
-	field: string,
-	direction: "asc" | "desc" = "asc",
+	options: SortOptions,
+): T[] => {
+	const { direction = "asc", field, onProgress } = options;
+	reportProgress(onProgress, PROGRESS_START);
+
+	const sorted = [...data].toSorted((first, second) =>
+		compareValues(first[field], second[field], direction),
+	);
+
+	reportProgress(onProgress, PROGRESS_COMPLETE);
+	return sorted;
+};
+
+const pushGroupValue = (
+	groups: Map<string, number[]>,
+	groupKey: string,
+	value: number,
+): void => {
+	const existing = groups.get(groupKey);
+	if (existing) {
+		existing.push(value);
+	} else {
+		groups.set(groupKey, [value]);
+	}
+};
+
+const buildGroups = <T extends Record<string, unknown>>(
+	data: T[],
+	groupByField: string,
+	aggregateField: string,
 	onProgress?: ProgressCallback,
-): T[] {
-	onProgress?.(0);
+): Map<string, number[]> => {
+	const groups = new Map<string, number[]>();
 
-	const sorted = [...data].toSorted((a, b) => {
-		const aVal = a[field];
-		const bVal = b[field];
+	for (let itemIndex = ZERO; itemIndex < data.length; itemIndex += ONE) {
+		const item = data[itemIndex];
+		if (!item) {
+			continue;
+		}
+		const groupKey = String(item[groupByField]);
+		const value = Number(item[aggregateField]);
 
-		if (aVal === bVal) {
-			return 0;
+		if (!Number.isNaN(value)) {
+			pushGroupValue(groups, groupKey, value);
 		}
 
-		const comparison = aVal < bVal ? -1 : 1;
-		return direction === "asc" ? comparison : -comparison;
-	});
+		if (itemIndex % CHUNK_SIZE === ZERO) {
+			reportProgress(onProgress, (itemIndex / data.length) * PROGRESS_STAGE_TWO);
+		}
+	}
 
-	onProgress?.(100);
-	return sorted;
-}
+	return groups;
+};
+
+const aggregateValues = (values: number[], aggregationType: AggregateOptions["aggregationType"]): number => {
+	if (values.length === ZERO) {
+		return ZERO;
+	}
+
+	switch (aggregationType) {
+		case "sum":
+			return values.reduce((sum, value) => sum + value, ZERO);
+		case "avg":
+			return values.reduce((sum, value) => sum + value, ZERO) / values.length;
+		case "min":
+			return Math.min(...values);
+		case "max":
+			return Math.max(...values);
+		case "count":
+			return values.length;
+	}
+};
 
 /**
  * Aggregate data by field
  */
-function aggregateData<T extends Record<string, any>>(
+const aggregateData = <T extends Record<string, unknown>>(
 	data: T[],
-	groupByField: string,
-	aggregateField: string,
-	aggregationType: "sum" | "avg" | "min" | "max" | "count",
-	onProgress?: ProgressCallback,
-): Record<string, number> {
-	onProgress?.(0);
+	options: AggregateOptions,
+): Record<string, number> => {
+	const { aggregateField, aggregationType, groupByField, onProgress } = options;
+	reportProgress(onProgress, PROGRESS_START);
 
-	const groups = new Map<string, number[]>();
+	const groups = buildGroups(data, groupByField, aggregateField, onProgress);
+	reportProgress(onProgress, PROGRESS_STAGE_TWO);
 
-	// Group data
-	for (let i = 0; i < data.length; i += 1) {
-		const item = data[i];
-		const groupKey = String(item[groupByField]);
-
-		if (!groups.has(groupKey)) {
-			groups.set(groupKey, []);
-		}
-
-		const value = Number(item[aggregateField]);
-		if (!isNaN(value)) {
-			groups.get(groupKey)!.push(value);
-		}
-
-		if (i % 1000 === 0) {
-			onProgress?.((i / data.length) * 50);
-		}
-	}
-
-	onProgress?.(50);
-
-	// Perform aggregation
 	const result: Record<string, number> = {};
-	let processed = 0;
+	let processed = ZERO;
 
 	for (const [key, values] of groups) {
-		if (values.length === 0) {
-			result[key] = 0;
-			continue;
-		}
-
-		switch (aggregationType) {
-			case "sum": {
-				result[key] = values.reduce((a, b) => a + b, 0);
-				break;
-			}
-			case "avg": {
-				result[key] = values.reduce((a, b) => a + b, 0) / values.length;
-				break;
-			}
-			case "min": {
-				result[key] = Math.min(...values);
-				break;
-			}
-			case "max": {
-				result[key] = Math.max(...values);
-				break;
-			}
-			case "count": {
-				result[key] = values.length;
-				break;
-			}
-		}
-
-		processed += 1;
-		onProgress?.(50 + (processed / groups.size) * 50);
+		result[key] = aggregateValues(values, aggregationType);
+		processed += ONE;
+		reportProgress(
+			onProgress,
+			PROGRESS_STAGE_TWO + (processed / Math.max(groups.size, ONE)) * PROGRESS_STAGE_TWO,
+		);
 	}
 
-	onProgress?.(100);
+	reportProgress(onProgress, PROGRESS_COMPLETE);
 	return result;
-}
+};
 
-/**
- * Normalize data (scale to 0-1 range)
- */
-function normalizeData<T extends Record<string, any>>(
+const computeMinMax = <T extends Record<string, unknown>>(
 	data: T[],
 	field: string,
-	onProgress?: ProgressCallback,
-): T[] {
-	onProgress?.(0);
-
-	// Find min and max
+): { min: number; max: number } => {
 	let min = Infinity;
 	let max = -Infinity;
 
 	for (const item of data) {
 		const value = Number(item[field]);
-		if (!isNaN(value)) {
+		if (!Number.isNaN(value)) {
 			min = Math.min(min, value);
 			max = Math.max(max, value);
 		}
 	}
 
-	onProgress?.(30);
+	return { max, min };
+};
 
-	// Normalize
-	const range = max - min || 1;
-	const result = data.map((item, i) => {
+const normalizeItems = <T extends Record<string, unknown>>(
+	data: T[],
+	field: string,
+	min: number,
+	max: number,
+	onProgress?: ProgressCallback,
+): T[] => {
+	const range = max - min || ONE;
+
+	return data.map((item, itemIndex) => {
 		const value = Number(item[field]);
-		const normalized = isNaN(value) ? 0 : (value - min) / range;
+		const normalized = Number.isNaN(value) ? ZERO : (value - min) / range;
 
-		if (i % 1000 === 0) {
-			onProgress?.(30 + (i / data.length) * 70);
+		if (itemIndex % CHUNK_SIZE === ZERO) {
+			reportProgress(
+				onProgress,
+				PROGRESS_STAGE_ONE + (itemIndex / data.length) * PROGRESS_STAGE_THREE,
+			);
 		}
 
 		return {
@@ -191,26 +304,44 @@ function normalizeData<T extends Record<string, any>>(
 			[`${field}_normalized`]: normalized,
 		};
 	});
+};
 
-	onProgress?.(100);
+/**
+ * Normalize data (scale to 0-1 range)
+ */
+const normalizeData = <T extends Record<string, unknown>>(
+	data: T[],
+	options: NormalizeOptions,
+): T[] => {
+	const { field, onProgress } = options;
+	reportProgress(onProgress, PROGRESS_START);
+
+	const { min, max } = computeMinMax(data, field);
+	reportProgress(onProgress, PROGRESS_STAGE_ONE);
+
+	const result = normalizeItems(data, field, min, max, onProgress);
+	reportProgress(onProgress, PROGRESS_COMPLETE);
 	return result;
-}
+};
 
 /**
  * Deduplicate data by field
  */
-function deduplicateData<T extends Record<string, any>>(
+const deduplicateData = <T extends Record<string, unknown>>(
 	data: T[],
-	field: string,
-	onProgress?: ProgressCallback,
-): T[] {
-	onProgress?.(0);
+	options: DeduplicateOptions,
+): T[] => {
+	const { field, onProgress } = options;
+	reportProgress(onProgress, PROGRESS_START);
 
-	const seen = new Set<any>();
+	const seen = new Set<unknown>();
 	const result: T[] = [];
 
-	for (let i = 0; i < data.length; i += 1) {
-		const item = data[i];
+	for (let itemIndex = ZERO; itemIndex < data.length; itemIndex += ONE) {
+		const item = data[itemIndex];
+		if (!item) {
+			continue;
+		}
 		const value = item[field];
 
 		if (!seen.has(value)) {
@@ -218,22 +349,54 @@ function deduplicateData<T extends Record<string, any>>(
 			result.push(item);
 		}
 
-		if (i % 1000 === 0) {
-			onProgress?.((i / data.length) * 100);
+		if (itemIndex % CHUNK_SIZE === ZERO) {
+			reportProgress(onProgress, calculateProgress(itemIndex, data.length));
 		}
 	}
 
-	onProgress?.(100);
+	reportProgress(onProgress, PROGRESS_COMPLETE);
 	return result;
-}
+};
+
+const extractNumericValues = (data: Record<string, unknown>[], field: string): number[] => {
+	const values: number[] = [];
+	for (const item of data) {
+		const value = Number(item[field]);
+		if (!Number.isNaN(value)) {
+			values.push(value);
+		}
+	}
+	return values;
+};
+
+const computeMedian = (values: number[]): number => {
+	const sorted = [...values].toSorted((first, second) => first - second);
+	const count = sorted.length;
+	const middle = Math.floor(count / TWO);
+
+	if (count % TWO === ZERO) {
+		const lower = sorted[middle - ONE];
+		const upper = sorted[middle];
+		if (lower === undefined || upper === undefined) {
+			return ZERO;
+		}
+		return (lower + upper) / TWO;
+	}
+	return sorted[middle] ?? ZERO;
+};
+
+const computeStandardDeviation = (values: number[], mean: number): number => {
+	const squaredDiffs = values.map((value) => (value - mean) ** TWO);
+	const variance = squaredDiffs.reduce((sum, value) => sum + value, ZERO) / values.length;
+	return Math.sqrt(variance);
+};
 
 /**
  * Calculate statistics for a numeric field
  */
-function calculateStatistics(
-	data: Record<string, any>[],
-	field: string,
-	onProgress?: ProgressCallback,
+const calculateStatistics = (
+	data: Record<string, unknown>[],
+	options: StatisticsOptions,
 ): {
 	count: number;
 	sum: number;
@@ -242,58 +405,31 @@ function calculateStatistics(
 	stdDev: number;
 	min: number;
 	max: number;
-} {
-	onProgress?.(0);
+} => {
+	const { field, onProgress } = options;
+	reportProgress(onProgress, PROGRESS_START);
 
-	const values: number[] = [];
+	const values = extractNumericValues(data, field);
+	reportProgress(onProgress, PROGRESS_STAGE_ONE);
 
-	for (const item of data) {
-		const value = Number(item[field]);
-		if (!isNaN(value)) {
-			values.push(value);
-		}
-	}
-
-	onProgress?.(30);
-
-	if (values.length === 0) {
-		return {
-			count: 0,
-			max: 0,
-			mean: 0,
-			median: 0,
-			min: 0,
-			stdDev: 0,
-			sum: 0,
-		};
+	if (values.length === ZERO) {
+		return createEmptyStats();
 	}
 
 	const count = values.length;
-	const sum = values.reduce((a, b) => a + b, 0);
+	const sum = values.reduce((total, value) => total + value, ZERO);
 	const mean = sum / count;
+	reportProgress(onProgress, PROGRESS_STAGE_TWO);
 
-	onProgress?.(50);
+	const median = computeMedian(values);
+	reportProgress(onProgress, PROGRESS_STAGE_THREE);
 
-	// Median
-	const sorted = [...values].toSorted((a, b) => a - b);
-	const median =
-		count % 2 === 0
-			? (sorted[count / 2 - 1] + sorted[count / 2]) / 2
-			: sorted[Math.floor(count / 2)];
-
-	onProgress?.(70);
-
-	// Standard deviation
-	const squaredDiffs = values.map((v) => Math.pow(v - mean, 2));
-	const variance = squaredDiffs.reduce((a, b) => a + b, 0) / count;
-	const stdDev = Math.sqrt(variance);
-
-	onProgress?.(90);
+	const stdDev = computeStandardDeviation(values, mean);
+	reportProgress(onProgress, PROGRESS_STAGE_FOUR);
 
 	const min = Math.min(...values);
 	const max = Math.max(...values);
-
-	onProgress?.(100);
+	reportProgress(onProgress, PROGRESS_COMPLETE);
 
 	return {
 		count,
@@ -304,77 +440,78 @@ function calculateStatistics(
 		stdDev,
 		sum,
 	};
-}
+};
 
 /**
  * Pivot data (transform rows to columns)
  */
-function pivotData<T extends Record<string, any>>(
+const pivotData = <T extends Record<string, unknown>>(
 	data: T[],
-	rowField: string,
-	columnField: string,
-	valueField: string,
-	onProgress?: ProgressCallback,
-): Record<string, Record<string, any>> {
-	onProgress?.(0);
+	options: PivotOptions,
+): Record<string, Record<string, unknown>> => {
+	const { columnField, onProgress, rowField, valueField } = options;
+	reportProgress(onProgress, PROGRESS_START);
 
-	const result: Record<string, Record<string, any>> = {};
+	const result: Record<string, Record<string, unknown>> = {};
 
-	for (let i = 0; i < data.length; i += 1) {
-		const item = data[i];
+	for (let itemIndex = ZERO; itemIndex < data.length; itemIndex += ONE) {
+		const item = data[itemIndex];
+		if (!item) {
+			continue;
+		}
 		const rowKey = String(item[rowField]);
-		const colKey = String(item[columnField]);
+		const columnKey = String(item[columnField]);
 		const value = item[valueField];
 
 		if (!result[rowKey]) {
 			result[rowKey] = {};
 		}
 
-		result[rowKey][colKey] = value;
+		result[rowKey][columnKey] = value;
 
-		if (i % 1000 === 0) {
-			onProgress?.((i / data.length) * 100);
+		if (itemIndex % CHUNK_SIZE === ZERO) {
+			reportProgress(onProgress, calculateProgress(itemIndex, data.length));
 		}
 	}
 
-	onProgress?.(100);
+	reportProgress(onProgress, PROGRESS_COMPLETE);
 	return result;
-}
+};
 
 /**
  * Join two datasets
  */
-function joinData<T extends Record<string, any>, U extends Record<string, any>>(
+const joinData = <T extends Record<string, unknown>, U extends Record<string, unknown>>(
 	left: T[],
 	right: U[],
-	leftKey: string,
-	rightKey: string,
-	joinType: "inner" | "left" | "right" | "outer" = "inner",
-	onProgress?: ProgressCallback,
-): (T & U)[] {
-	onProgress?.(0);
+	options: JoinOptions,
+): (T & U)[] => {
+	const { joinType = "inner", leftKey, onProgress, rightKey } = options;
+	reportProgress(onProgress, PROGRESS_START);
 
-	// Build index for right table
-	const rightIndex = new Map<any, U[]>();
+	const rightIndex = new Map<unknown, U[]>();
 	for (const item of right) {
 		const key = item[rightKey];
-		if (!rightIndex.has(key)) {
-			rightIndex.set(key, []);
+		const list = rightIndex.get(key);
+		if (list) {
+			list.push(item);
+		} else {
+			rightIndex.set(key, [item]);
 		}
-		rightIndex.get(key)!.push(item);
 	}
 
-	onProgress?.(30);
+	reportProgress(onProgress, PROGRESS_STAGE_ONE);
 
 	const result: (T & U)[] = [];
-
-	// Join
-	for (let i = 0; i < left.length; i += 1) {
-		const leftItem = left[i];
+	for (let itemIndex = ZERO; itemIndex < left.length; itemIndex += ONE) {
+		const leftItem = left[itemIndex];
+		if (!leftItem) {
+			continue;
+		}
 		const key = leftItem[leftKey];
 		const rightItems = rightIndex.get(key) || [];
 
-		if (rightItems.length > 0) {
+		if (rightItems.length > ZERO) {
 			for (const rightItem of rightItems) {
 				result.push({ ...leftItem, ...rightItem });
 			}
@@ -382,14 +519,17 @@ function joinData<T extends Record<string, any>, U extends Record<string, any>>(
 			result.push({ ...leftItem } as T & U);
 		}
 
-		if (i % 1000 === 0) {
-			onProgress?.(30 + (i / left.length) * 70);
+		if (itemIndex % CHUNK_SIZE === ZERO) {
+			reportProgress(
+				onProgress,
+				PROGRESS_STAGE_ONE + (itemIndex / left.length) * PROGRESS_STAGE_THREE,
+			);
 		}
 	}
 
-	onProgress?.(100);
+	reportProgress(onProgress, PROGRESS_COMPLETE);
 	return result;
-}
+};
 
 // Worker API
 const api = {
@@ -399,7 +539,7 @@ const api = {
 	filterData,
 	joinData,
 	normalizeData,
-	pivotData,
+pivotData,
 	sortData,
 };
 

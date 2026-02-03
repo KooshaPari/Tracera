@@ -44,8 +44,8 @@ describe(groupBy, () => {
 			{ id: "3", type: "A" },
 		];
 		const result = groupBy(items, "type");
-		expect(result.A).toHaveLength(2);
-		expect(result.B).toHaveLength(1);
+		expect(result["A"]).toHaveLength(2);
+		expect(result["B"]).toHaveLength(1);
 	});
 
 	it("should handle empty array", () => {
@@ -60,7 +60,7 @@ describe(groupBy, () => {
 		];
 		const result = groupBy(items, "type");
 		expect(Object.keys(result)).toHaveLength(1);
-		expect(result.A).toHaveLength(2);
+		expect(result["A"]).toHaveLength(2);
 	});
 
 	it("should handle numeric keys", () => {
@@ -80,8 +80,9 @@ describe(groupBy, () => {
 			{ id: "2", type: "A", value: 20 },
 		];
 		const result = groupBy(items, "type");
-		expect(result.A[0]?.value).toBe(10);
-		expect(result.A[1]?.value).toBe(20);
+		const groupA = result["A"];
+		expect(groupA?.[0]?.value).toBe(10);
+		expect(groupA?.[1]?.value).toBe(20);
 	});
 });
 
@@ -355,12 +356,19 @@ describe(isEmpty, () => {
 
 describe(merge, () => {
 	it("should merge objects", () => {
-		const result = merge({ a: 1 }, { b: 2 }, { c: 3 });
+		const result = merge(
+			{ a: 1 } as Record<string, number>,
+			{ b: 2 } as Record<string, number>,
+			{ c: 3 } as Record<string, number>,
+		);
 		expect(result).toEqual({ a: 1, b: 2, c: 3 });
 	});
 
 	it("should override properties", () => {
-		const result = merge({ a: 1 }, { a: 2 });
+		const result = merge(
+			{ a: 1 } as Record<string, number>,
+			{ a: 2 } as Record<string, number>,
+		);
 		expect(result).toEqual({ a: 2 });
 	});
 
@@ -456,7 +464,7 @@ describe(isNotNull, () => {
 	});
 
 	it("should return false for undefined", () => {
-		expect(isNotNull()).toBe(false);
+		expect(isNotNull(undefined)).toBe(false);
 	});
 });
 
@@ -468,7 +476,7 @@ describe(isDefined, () => {
 	});
 
 	it("should return false for undefined", () => {
-		expect(isDefined()).toBe(false);
+		expect(isDefined(undefined)).toBe(false);
 	});
 });
 
@@ -593,46 +601,49 @@ describe(throttle, () => {
 describe("TraceRTM utilities", () => {
 	const mockItems: Item[] = [
 		{
-			created_at: "2024-01-01T00:00:00Z",
+			createdAt: "2024-01-01T00:00:00Z",
 			id: "1",
 			priority: "high",
-			project_id: "proj-1",
+			projectId: "proj-1",
 			status: "todo",
 			title: "Feature 1",
 			type: "feature",
-			updated_at: "2024-01-01T00:00:00Z",
-			view: "features",
+			updatedAt: "2024-01-01T00:00:00Z",
+			version: 1,
+			view: "feature",
 		},
 		{
-			created_at: "2024-01-01T00:00:00Z",
+			createdAt: "2024-01-01T00:00:00Z",
 			id: "2",
 			parentId: "1",
 			priority: "medium",
-			project_id: "proj-1",
+			projectId: "proj-1",
 			status: "done",
 			title: "Feature 2",
 			type: "feature",
-			updated_at: "2024-01-01T00:00:00Z",
+			updatedAt: "2024-01-01T00:00:00Z",
+			version: 1,
 			view: "code",
 		},
 		{
-			created_at: "2024-01-01T00:00:00Z",
+			createdAt: "2024-01-01T00:00:00Z",
 			id: "3",
 			priority: "low",
-			project_id: "proj-1",
+			projectId: "proj-1",
 			status: "in_progress",
 			title: "Feature 3",
 			type: "feature",
-			updated_at: "2024-01-01T00:00:00Z",
-			view: "features",
+			updatedAt: "2024-01-01T00:00:00Z",
+			version: 1,
+			view: "feature",
 		},
 	];
 
 	describe(getItemsByView, () => {
 		it("should filter items by view", () => {
-			const result = getItemsByView(mockItems, "features");
+			const result = getItemsByView(mockItems, "feature");
 			expect(result).toHaveLength(2);
-			expect(result.every((item) => item.view === "features")).toBe(true);
+			expect(result.every((item) => item.view === "feature")).toBe(true);
 		});
 
 		it("should return empty array for non-existent view", () => {
@@ -641,7 +652,7 @@ describe("TraceRTM utilities", () => {
 		});
 
 		it("should handle empty items array", () => {
-			const result = getItemsByView([], "features");
+			const result = getItemsByView([], "feature");
 			expect(result).toEqual([]);
 		});
 	});
@@ -667,39 +678,42 @@ describe("TraceRTM utilities", () => {
 	describe(getItemAncestors, () => {
 		const hierarchyItems: Item[] = [
 			{
-				created_at: "2024-01-01T00:00:00Z",
+				createdAt: "2024-01-01T00:00:00Z",
 				id: "1",
 				priority: "high",
-				project_id: "proj-1",
+				projectId: "proj-1",
 				status: "todo",
 				title: "Root",
 				type: "feature",
-				updated_at: "2024-01-01T00:00:00Z",
-				view: "features",
+				updatedAt: "2024-01-01T00:00:00Z",
+				version: 1,
+				view: "feature",
 			},
 			{
-				created_at: "2024-01-01T00:00:00Z",
+				createdAt: "2024-01-01T00:00:00Z",
 				id: "2",
 				parentId: "1",
 				priority: "high",
-				project_id: "proj-1",
+				projectId: "proj-1",
 				status: "todo",
 				title: "Child",
 				type: "feature",
-				updated_at: "2024-01-01T00:00:00Z",
-				view: "features",
+				updatedAt: "2024-01-01T00:00:00Z",
+				version: 1,
+				view: "feature",
 			},
 			{
-				created_at: "2024-01-01T00:00:00Z",
+				createdAt: "2024-01-01T00:00:00Z",
 				id: "3",
 				parentId: "2",
 				priority: "high",
-				project_id: "proj-1",
+				projectId: "proj-1",
 				status: "todo",
 				title: "Grandchild",
 				type: "feature",
-				updated_at: "2024-01-01T00:00:00Z",
-				view: "features",
+				updatedAt: "2024-01-01T00:00:00Z",
+				version: 1,
+				view: "feature",
 			},
 		];
 
@@ -724,20 +738,24 @@ describe("TraceRTM utilities", () => {
 	describe(getLinkedItems, () => {
 		const mockLinks: Link[] = [
 			{
-				created_at: "2024-01-01T00:00:00Z",
+				createdAt: "2024-01-01T00:00:00Z",
 				id: "link-1",
-				project_id: "proj-1",
+				projectId: "proj-1",
 				sourceId: "1",
 				targetId: "2",
 				type: "depends_on",
+				updatedAt: "2024-01-01T00:00:00Z",
+				version: 1,
 			},
 			{
-				created_at: "2024-01-01T00:00:00Z",
+				createdAt: "2024-01-01T00:00:00Z",
 				id: "link-2",
-				project_id: "proj-1",
+				projectId: "proj-1",
 				sourceId: "2",
 				targetId: "3",
 				type: "implements",
+				updatedAt: "2024-01-01T00:00:00Z",
+				version: 1,
 			},
 		];
 
@@ -874,7 +892,7 @@ describe("localStorage utilities", () => {
 
 describe(copyToClipboard, () => {
 	it("should use clipboard API when available", async () => {
-		const mockWriteText = vi.fn().mockResolvedValue();
+		const mockWriteText = vi.fn().mockResolvedValue(undefined);
 		Object.assign(navigator, {
 			clipboard: { writeText: mockWriteText },
 		});
