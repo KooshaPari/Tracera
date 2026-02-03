@@ -181,66 +181,115 @@ def normalize_path(raw: str, cwd: Path) -> str:
     return raw
 
 
+def should_skip_line(line_stripped: str) -> bool:
+    """Check if line should be skipped during parsing."""
+    if not line_stripped or line_stripped.startswith(("Running ", "[")):
+        return True
+    # Skip make / shell noise
+    if line_stripped.startswith(("make[", "$ ")) or "*** [" in line:
+        return True
+    return False
+
+
+def parse_pattern_match(kind: str, groups: tuple, cwd: Path, line_stripped: str) -> tuple[str, int | None, str] | None:
+    """Parse a matched pattern into an issue tuple."""
+    g = groups
+
+    if kind == "go":
+        file_path = normalize_path(g[0], cwd)
+        line_no = int(g[1])
+        msg = g[3] if len(g) == 4 else (g[2] if len(g) >= 3 else line_stripped)
+        return (file_path, line_no, msg)
+
+    if kind == "go_fail":
+        return ("backend (Go tests)", None, f"FAIL: {g[0]}")
+
+    if kind == "ruff":
+        return (normalize_path(g[0], cwd), int(g[1]), f"{g[3]} {g[4]}")
+
+    if kind == "mypy":
+        return (normalize_path(g[0], cwd), int(g[1]), g[2])
+
+    if kind == "pytest_file":
+        return (normalize_path(g[0], cwd), None, "FAILED test")
+
+    if kind in ("fe_biome", "fe_biome2", "fe_tsc"):
+        file_path = normalize_path(g[0], cwd)
+        line_no = int(g[1])
+        msg = g[3] if len(g) > 3 else line_stripped
+        return (file_path, line_no, msg)
+
+    return None
+
+
+def try_generic_patterns(line_stripped: str, cwd: Path) -> tuple[str, int | None, str] | None:
+    """Try generic file:line patterns."""
+    for pat in FILE_LINE_PATTERNS:
+        m = pat.match(line_stripped)
+        if m:
+            g = m.groups()
+            file_path = normalize_path(g[0], cwd)
+            line_no = int(g[1])
+            msg = g[3] if len(g) == 4 else g[2]
+            return (file_path, line_no, msg)
+    return None
+
+
+def try_gofmt_pattern(line_stripped: str, suite_name: str, cwd: Path) -> tuple[str, int | None, str] | None:
+    """Try gofmt-specific pattern."""
+    if suite_name == "Go":
+        m = GOFMT_FILE.match(line_stripped)
+        if m and not line_stripped.startswith("cd ") and "vet" not in line_stripped:
+            return (normalize_path(m.group(1), cwd), None, "gofmt: needs formatting")
+    return None
+
+
+def try_main_patterns(line: str, line_stripped: str, cwd: Path) -> tuple[str, int | None, str] | None:
+    """Try main pattern matching."""
+    for pat, kind in PATTERNS:
+        m = pat.search(line) or (pat.match(line) if line else None)
+        if m:
+            issue = parse_pattern_match(kind, m.groups(), cwd, line_stripped)
+            if issue:
+                return issue
+    return None
+
+
+def process_log_line(raw_line: str, suite_name: str, cwd: Path) -> tuple[str, int | None, str] | None:
+    """Process a single log line and extract issue if present."""
+    line = strip_ansi(raw_line)
+    line_stripped = line.strip()
+
+    if should_skip_line(line_stripped):
+        return None
+
+    # Try main patterns
+    issue = try_main_patterns(line, line_stripped, cwd)
+    if issue:
+        return issue
+
+    # Try generic patterns
+    issue = try_generic_patterns(line_stripped, cwd)
+    if issue:
+        return issue
+
+    # Try gofmt pattern
+    return try_gofmt_pattern(line_stripped, suite_name, cwd)
+
+
 def extract_issues(log_path: Path, suite_name: str, cwd: Path) -> list[tuple[str, int | None, str]]:
+    """Extract issues from log file using various pattern matchers."""
     if not log_path.exists():
         return []
-    issues = []
+
     text = log_path.read_text(errors="replace")
+    issues = []
+
     for raw_line in text.splitlines():
-        line = strip_ansi(raw_line)
-        line_stripped = line.strip()
-        if not line_stripped or line_stripped.startswith(("Running ", "[")):
-            continue
-        # Skip make / shell noise
-        if line_stripped.startswith(("make[", "$ ")) or "*** [" in line:
-            continue
-        for pat, kind in PATTERNS:
-            m = pat.search(line) or (pat.match(line) if line else None)
-            if not m:
-                continue
-            g = m.groups()
-            if kind == "go":
-                file_path = normalize_path(g[0], cwd)
-                line_no = int(g[1])
-                msg = g[3] if len(g) == 4 else (g[2] if len(g) >= 3 else line_stripped)
-                issues.append((file_path, line_no, msg))
-                break
-            if kind == "go_fail":
-                issues.append(("backend (Go tests)", None, f"FAIL: {g[0]}"))
-                break
-            if kind == "ruff":
-                issues.append((normalize_path(g[0], cwd), int(g[1]), f"{g[3]} {g[4]}"))
-                break
-            if kind == "mypy":
-                issues.append((normalize_path(g[0], cwd), int(g[1]), g[2]))
-                break
-            if kind == "pytest_file":
-                issues.append((normalize_path(g[0], cwd), None, "FAILED test"))
-                break
-            if kind in ("fe_biome", "fe_biome2", "fe_tsc"):
-                file_path = normalize_path(g[0], cwd)
-                line_no = int(g[1])
-                msg = g[3] if len(g) > 3 else line_stripped
-                issues.append((file_path, line_no, msg))
-                break
-        else:
-            # Generic file:line / file(line) patterns (any linter)
-            for pat in FILE_LINE_PATTERNS:
-                m = pat.match(line_stripped)
-                if not m:
-                    continue
-                g = m.groups()
-                file_path = normalize_path(g[0], cwd)
-                line_no = int(g[1])
-                msg = g[3] if len(g) == 4 else g[2]
-                issues.append((file_path, line_no, msg))
-                break
-            else:
-                # Gofmt -l: single path per line
-                if suite_name == "Go":
-                    m = GOFMT_FILE.match(line_stripped)
-                    if m and not line_stripped.startswith("cd ") and "vet" not in line_stripped:
-                        issues.append((normalize_path(m.group(1), cwd), None, "gofmt: needs formatting"))
+        issue = process_log_line(raw_line, suite_name, cwd)
+        if issue:
+            issues.append(issue)
+
     return issues
 
 
@@ -343,9 +392,8 @@ def print_action_plan_by_log(failed_suites: list[str], with_content: list[tuple[
     print(f"Logs: {LOG_DIR}")
 
 
-def run_report_split() -> int:
-    """Report from per-step logs: group Lint/Type by file, Tests separate."""
-    cwd = Path.cwd()
+def collect_issues_by_file(cwd: Path) -> tuple[dict, dict]:
+    """Collect issues from split logs, grouped by file and category."""
     by_file_lint: dict[str, list[tuple[str, int | None, str]]] = defaultdict(list)
     by_file_test: dict[str, list[tuple[str, int | None, str]]] = defaultdict(list)
 
@@ -358,11 +406,11 @@ def run_report_split() -> int:
             else:
                 by_file_test[file_path].append(entry)
 
-    failed_steps = get_failed_steps_from_last_run()
-    failed_from_logs = [name for name, _ in detect_failed_steps_from_logs()]
-    failed_steps = sorted(set(failed_steps) | set(failed_from_logs))
+    return by_file_lint, by_file_test
 
-    sep = "=" * 72
+
+def print_issues_by_category(by_file_lint: dict, by_file_test: dict, sep: str) -> None:
+    """Print lint and test issues grouped by file."""
     if by_file_lint:
         print(f"\n{sep}")
         print("Lint/Type (by file)")
@@ -374,6 +422,7 @@ def run_report_split() -> int:
                 loc = f"  line {line_no}" if line_no is not None else ""
                 print(f"    {c(step_name.split()[0])}[{step_name}]{cr()}{loc}  {msg}")
         print(f"\n{sep}")
+
     if by_file_test:
         print(f"\n{sep}")
         print("Tests (by file)")
@@ -386,6 +435,54 @@ def run_report_split() -> int:
                 print(f"    {c(step_name.split()[0])}[{step_name}]{cr()}{loc}  {msg}")
         print(f"\n{sep}")
 
+
+def print_failed_steps_details(failed_steps: list[str], cwd: Path, sep: str) -> None:
+    """Print details for failed steps when no by-file issues found."""
+    print(f"\n{sep}")
+    print(f"{C_FAIL}FAILED STEPS{cr()} (by log)")
+    print(sep)
+
+    for stem, display_name, _, suite_for_patterns in SPLIT_STEPS:
+        if stem not in failed_steps:
+            continue
+
+        log_path = LOG_DIR / f"{stem}.log"
+        if not log_path.exists():
+            print(f"  {display_name}  (no log)")
+            continue
+
+        text = log_path.read_text(errors="replace")
+        by_file = extract_by_file_from_log_text(text, cwd, suite_for_patterns)
+        print(f"\n  {c(display_name.split()[0])}[{display_name}]{cr()}  {log_path}")
+
+        if by_file:
+            for fp in sorted(by_file.keys()):
+                print(f"    {fp}")
+                for line_no, msg in by_file[fp]:
+                    loc = f"  line {line_no}" if line_no is not None else ""
+                    print(f"      {loc}  {msg[:200]}" + ("..." if len(msg) > 200 else ""))
+        else:
+            lines = excerpt_lines(log_path)
+            for ln in lines[:15]:
+                print(f"      {ln[:200]}")
+
+    print(f"\n{sep}")
+
+
+def run_report_split() -> int:
+    """Report from per-step logs: group Lint/Type by file, Tests separate."""
+    cwd = Path.cwd()
+    by_file_lint, by_file_test = collect_issues_by_file(cwd)
+
+    failed_steps = get_failed_steps_from_last_run()
+    failed_from_logs = [name for name, _ in detect_failed_steps_from_logs()]
+    failed_steps = sorted(set(failed_steps) | set(failed_from_logs))
+
+    sep = "=" * 72
+
+    # Print by-file issues if found
+    print_issues_by_category(by_file_lint, by_file_test, sep)
+
     if by_file_lint or by_file_test:
         if failed_steps:
             print(f"\n{C_FAIL}FAILED STEPS:{cr()} " + ", ".join(failed_steps))
@@ -394,30 +491,8 @@ def run_report_split() -> int:
 
     # No parseable by-file: show failed steps and per-step log excerpts
     if failed_steps:
-        print(f"\n{sep}")
-        print(f"{C_FAIL}FAILED STEPS{cr()} (by log)")
-        print(sep)
-        for stem, display_name, _, suite_for_patterns in SPLIT_STEPS:
-            if stem not in failed_steps:
-                continue
-            log_path = LOG_DIR / f"{stem}.log"
-            if not log_path.exists():
-                print(f"  {display_name}  (no log)")
-                continue
-            text = log_path.read_text(errors="replace")
-            by_file = extract_by_file_from_log_text(text, cwd, suite_for_patterns)
-            print(f"\n  {c(display_name.split()[0])}[{display_name}]{cr()}  {log_path}")
-            if by_file:
-                for fp in sorted(by_file.keys()):
-                    print(f"    {fp}")
-                    for line_no, msg in by_file[fp]:
-                        loc = f"  line {line_no}" if line_no is not None else ""
-                        print(f"      {loc}  {msg[:200]}" + ("..." if len(msg) > 200 else ""))
-            else:
-                lines = excerpt_lines(log_path)
-                for ln in lines[:15]:
-                    print(f"      {ln[:200]}")
-        print(f"\n{sep}")
+        print_failed_steps_details(failed_steps, cwd, sep)
+
     print(f"Logs: {LOG_DIR}")
     return 0
 
