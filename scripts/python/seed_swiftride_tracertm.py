@@ -31,88 +31,139 @@ from contextlib import nullcontext
 from pathlib import Path
 
 
-def parse_sql_values_line(line: str) -> list[str | int | None]:
-    """Parse a single VALUES row: ('a', 'b', NULL, 1, ...). Handles quoted strings with ''."""
-    line = line.strip().rstrip(",").strip()  # allow trailing comma
-    if not line.startswith("("):
-        return []
-    # Find matching closing paren (avoid matching ) inside NOW())
+def handle_string_char(c: str, i: int, line: str, in_string: bool, escape: bool) -> tuple[bool, bool, int]:
+    """Handle a character while inside a string. Returns (in_string, escape, new_position)."""
+    if escape:
+        return in_string, False, i + 1
+
+    if c == "'" and i + 1 < len(line) and line[i + 1] == "'":
+        return in_string, True, i + 2
+
+    if c == "'":
+        return False, False, i + 1
+
+    return in_string, False, i + 1
+
+
+def find_matching_paren(line: str) -> int:
+    """Find the matching closing parenthesis, handling strings correctly."""
     depth = 0
-    end = -1
     i = 0
     in_string = False
     escape = False
+
     while i < len(line):
         c = line[i]
+
         if in_string:
-            if escape:
-                escape = False
-            elif c == "'" and i + 1 < len(line) and line[i + 1] == "'":
-                escape = True
-                i += 1
-            elif c == "'":
-                in_string = False
-            i += 1
+            in_string, escape, i = handle_string_char(c, i, line, in_string, escape)
             continue
+
         if c == "'":
             in_string = True
             i += 1
             continue
+
         if c == "(":
             depth += 1
         elif c == ")":
             depth -= 1
             if depth == 0:
-                end = i
-                break
+                return i
+
         i += 1
+
+    return -1
+
+
+def parse_quoted_string(inner: str, start: int) -> tuple[str, int]:
+    """Parse a quoted string starting at position start. Returns (value, new_position)."""
+    j = start + 1
+    buf = []
+
+    while j < len(inner):
+        if inner[j] == "'":
+            if j + 1 < len(inner) and inner[j + 1] == "'":
+                buf.append("'")
+                j += 2
+                continue
+            break
+        buf.append(inner[j])
+        j += 1
+
+    return "".join(buf), j + 1
+
+
+def parse_number(inner: str, start: int) -> tuple[int, int]:
+    """Parse an integer starting at position start. Returns (value, new_position)."""
+    j = start + 1 if inner[start] == "-" else start
+    while j < len(inner) and inner[j].isdigit():
+        j += 1
+    return int(inner[start:j]), j
+
+
+def skip_to_comma(inner: str, start: int) -> int:
+    """Skip to next comma from start position."""
+    j = start
+    while j < len(inner) and inner[j] != ",":
+        j += 1
+    return j
+
+
+def parse_value_at_position(inner: str, i: int) -> tuple[str | int | None, int] | None:
+    """Parse a single value starting at position i. Returns (value, new_position) or None."""
+    # Quoted string
+    if inner[i] == "'":
+        value, new_i = parse_quoted_string(inner, i)
+        return value, new_i
+
+    # NULL
+    if inner[i : i + 4] == "NULL":
+        return None, i + 4
+
+    # Number (including negative)
+    if inner[i].isdigit() or (inner[i] == "-" and i + 1 < len(inner) and inner[i + 1].isdigit()):
+        value, new_i = parse_number(inner, i)
+        return value, new_i
+
+    # NOW() function
+    if inner[i] == "N" and inner[i : i + 3] == "NOW":
+        new_i = skip_to_comma(inner, i)
+        return None, new_i  # placeholder for timestamp
+
+    return None
+
+
+def parse_sql_values_line(line: str) -> list[str | int | None]:
+    """Parse a single VALUES row: ('a', 'b', NULL, 1, ...). Handles quoted strings with ''."""
+    line = line.strip().rstrip(",").strip()
+
+    if not line.startswith("("):
+        return []
+
+    end = find_matching_paren(line)
     if end == -1:
         return []
+
     inner = line[1:end].strip()
     parts: list[str | int | None] = []
     i = 0
+
     while i < len(inner):
-        # skip leading comma/space
+        # Skip leading comma/space
         while i < len(inner) and inner[i] in " \t,":
             i += 1
+
         if i >= len(inner):
             break
-        if inner[i] == "'":
-            # quoted string
-            j = i + 1
-            buf = []
-            while j < len(inner):
-                if inner[j] == "'":
-                    if j + 1 < len(inner) and inner[j + 1] == "'":
-                        buf.append("'")
-                        j += 2
-                        continue
-                    break
-                buf.append(inner[j])
-                j += 1
-            parts.append("".join(buf))
-            i = j + 1
-            continue
-        if inner[i : i + 4] == "NULL":
-            parts.append(None)
-            i += 4
-            continue
-        if inner[i].isdigit() or (inner[i] == "-" and i + 1 < len(inner) and inner[i + 1].isdigit()):
-            j = i + 1 if inner[i] == "-" else i
-            while j < len(inner) and inner[j].isdigit():
-                j += 1
-            parts.append(int(inner[i:j]))
-            i = j
-            continue
-        if inner[i] == "N" and inner[i : i + 3] == "NOW":
-            # NOW() - skip; we'll use NOW() in output
-            j = i
-            while j < len(inner) and inner[j] != ",":
-                j += 1
-            parts.append(None)  # placeholder for timestamp
-            i = j
-            continue
-        i += 1
+
+        result = parse_value_at_position(inner, i)
+        if result:
+            value, i = result
+            parts.append(value)
+        else:
+            i += 1
+
     return parts
 
 
