@@ -5,9 +5,14 @@
 #
 # PERFORMANCE NOTES:
 # - Slow checks (mypy, basedpyright, semgrep, interrogate, pytest) moved to CI
-# - Fast linting/formatting kept in pre-commit
+# - Fast linting/formatting kept in pre-commit with STRICT configs
 # - Parallel execution enabled
 # - File filtering optimized for changed files only
+#
+# PHASE 1 LINTING INTEGRATION:
+# - Python: Ruff with complexity rules (C90, PLR) - FAST
+# - Frontend: oxlint with standard config (AI-strict in CI) - FAST
+# - Go: gofmt only (golangci-lint 7 new linters in CI) - FAST
 
 repos:
   # ============================================================================
@@ -15,15 +20,18 @@ repos:
   # ============================================================================
 
   # Ruff - Lightning-fast linting and formatting (Python)
+  # Uses pyproject.toml config with complexity rules (C90, PLR)
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.14.0
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
-        # Only check staged Python files
+        # Complexity limits from pyproject.toml:
+        # - McCabe max-complexity: 7
+        # - max-args: 5, max-branches: 12, max-returns: 6, max-statements: 50
         pass_filenames: true
       - id: ruff-format
-        # Only format staged Python files
+        # Strict format: double quotes, 4-space indent, trailing commas
         pass_filenames: true
 
   # Basic file quality checks (very fast)
@@ -76,12 +84,28 @@ repos:
         files: ^backend/
         pass_filenames: true
 
-  # Frontend - Biome (fast lint + format)
+  # Frontend - oxlint (fast, strict linting)
+  # Uses standard .oxlintrc.json (AI-strict config moved to CI)
   - repo: local
     hooks:
-      - id: biome-frontend
-        name: biome (frontend - fast)
-        entry: bash -c 'cd frontend && bun run check:fix'
+      - id: oxlint-frontend
+        name: oxlint (frontend - standard config)
+        entry: bash -c 'cd frontend && bun run lint'
+        language: system
+        pass_filenames: false
+        files: ^frontend/.*\.(js|ts|tsx|jsx|mjs|cjs)$
+        # Standard config includes:
+        # - TypeScript strict rules
+        # - Complexity limits (max 50 lines/fn, max 3 params, depth 3)
+        # - React performance checks
+        # - Import/circular dependency detection
+
+  # Frontend - oxfmt (fast format)
+  - repo: local
+    hooks:
+      - id: oxfmt-frontend
+        name: oxfmt (frontend - format only)
+        entry: bash -c 'cd frontend && bun run format'
         language: system
         pass_filenames: false
         files: ^frontend/.*\.(js|ts|tsx|jsx|json|mjs|cjs)$
@@ -96,7 +120,9 @@ repos:
 # - Semgrep (security) - runs in CI quality.yml
 # - Interrogate (docstring coverage) - runs in CI quality.yml
 # - Tach (architecture boundaries) - runs in CI quality.yml
-# - golangci-lint (Go comprehensive lint) - runs in CI ci.yml
+# - golangci-lint (7 new linters: dupl, goconst, funlen, mnd, nolintlint,
+#   gochecknoglobals, perfsprint) - runs in CI ci.yml
+# - oxlint AI-strict config (max strictness) - runs in CI quality.yml
 # - pytest (tests) - runs in CI ci.yml and tests.yml
 #
 # Run these manually when needed:
@@ -107,6 +133,7 @@ repos:
 #   uv run interrogate -vv src/
 #   uv run tach check
 #   cd backend && golangci-lint run
+#   cd frontend && bun oxlint -c .oxlintrc.json.ai-strict
 #   pytest
 # ============================================================================
 

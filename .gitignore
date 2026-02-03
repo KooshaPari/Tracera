@@ -1,4 +1,12 @@
 backups/archive
+
+# Rollback system (keep structure, ignore contents)
+.deployments/snapshots/*
+.deployments/backups/*
+!.deployments/.gitkeep
+.rollback-logs/*
+!.rollback-logs/.gitkeep
+
 # Dependencies
 node_modules/
 bun.lockb
@@ -82,6 +90,9 @@ yarn-error.log*
 
 # Backend/CLI (we're only upgrading frontend)
 backend/
+!backend/.golangci.yml
+!backend/golangci-baseline.json
+!backend/golangci-phase1-summary.txt
 cli/
 
 # Local MinIO (Homebrew)
